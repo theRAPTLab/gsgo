@@ -239,7 +239,7 @@ UR.HookPhase(
     new Promise((resolve, reject) => {
       // console.log(...PR('LOADING ASSET MANIFEST...'));
       (async () => {
-        await ASSETS.PromiseLoadAssets('auto');
+        await ASSETS.PromiseLoadAssets('dev');
         // console.log(...PR('ASSETS LOADED'));
         ASSETS_LOADED = true;
         resolve();

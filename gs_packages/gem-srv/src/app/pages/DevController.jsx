@@ -67,17 +67,16 @@ class CharController extends React.Component {
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     MOD.Initialize(this, { sampleRate: SENDING_FPS });
     HookResize(window);
-    const gql = UR.GetDatabaseEndpoint();
-    fetch(gql, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({ query: '{ locales }' })
-    })
-      .then(r => r.json())
-      .then(data => log('data returned:', data));
+    UR.Query(
+      `
+    query getLocales {
+      locales {
+        id
+        name
+      }
+    }
+    `
+    ).then(data => log('test: gql locales returned', data.data.locales));
   }
 
   componentWillUnmount() {
