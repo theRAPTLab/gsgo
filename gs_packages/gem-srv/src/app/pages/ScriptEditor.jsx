@@ -40,6 +40,9 @@ const PR = UR.PrefixUtil('SCRIPTEDITOR');
 const DBG = false;
 
 const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
+# TAG isCharControllable true
+# TAG isPozyxControllable true
+# TAG isPTrackControllable false
 # PROGRAM DEFINE
 useFeature Costume
 featCall Costume setCostume 'circle.json' 0
