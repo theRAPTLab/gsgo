@@ -18,29 +18,29 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
-import * as TRANSPILER from 'script/transpiler-v2';
-import 'modules/datacore/dc-project'; // must import to load db
+import RNG from '../../../modules/sim/sequencer';
+import * as TRANSPILER from '../../../modules/sim/script/transpiler-v2';
+import '../../../modules/datacore/dc-project'; // must import to load db
 import {
   GetAllAgents,
   GetAgentById,
   DeleteAgent,
   DeleteInstance,
   GetInstancesType
-} from 'modules/datacore/dc-agents';
+} from '../../../modules/datacore/dc-agents';
 import {
   PTRACK_TRANSFORM,
   POZYX_TRANSFORM,
   InputsReset
-} from 'modules/datacore/dc-inputs';
-import * as ACProject from 'modules/appcore/ac-project';
-import * as ACMetadata from 'modules/appcore/ac-metadata';
-import * as ACBlueprints from 'modules/appcore/ac-blueprints';
-import * as ACInstances from 'modules/appcore/ac-instances';
+} from '../../../modules/datacore/dc-inputs';
+import * as ACProject from '../../../modules/appcore/ac-project';
+import * as ACMetadata from '../../../modules/appcore/ac-metadata';
+import * as ACBlueprints from '../../../modules/appcore/ac-blueprints';
+import * as ACInstances from '../../../modules/appcore/ac-instances';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ReportMemory } from 'modules/render/api-render';
-import { IsRunning, RoundHasBeenStarted } from 'modules/sim/api-sim';
+import { ReportMemory } from '../../../modules/render/api-render';
+import { IsRunning, RoundHasBeenStarted } from '../../../modules/sim/api-sim';
 import SIMCTRL from './mod-sim-control';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -495,7 +495,7 @@ function m_RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
     }
     return true; // ignore other methods
   });
-  instance.initScript = TRANSPILER.TextifyScript(scrubbedScriptUnits);
+  instance.initScript = TRANSPILER.ScriptToText(scrubbedScriptUnits);
   return instance;
 }
 
