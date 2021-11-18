@@ -43,7 +43,7 @@ class SpriteLoader extends AssetLoader {
   /** please initialize queue mechanism through super(type) */
   constructor(assetType: TAssetType) {
     super(assetType);
-    console.log(...PR(`creating ${assetType} loader instance...`));
+    if (DBG) console.log(...PR(`creating ${assetType} loader instance...`));
     this._loader = new PIXI.Loader();
     this._loadCount = 0;
     this._loadProgress = this._loadProgress.bind(this);

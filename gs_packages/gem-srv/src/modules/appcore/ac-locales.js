@@ -305,7 +305,7 @@ UR.HookPhase(
   () =>
     new Promise((resolve, reject) => {
       m_LoadLocaleInfo();
-      console.log(...PR('resolved LOAD_DB'));
+      if (DBG) console.log(...PR('resolved LOAD_DB'));
       resolve();
     })
 );

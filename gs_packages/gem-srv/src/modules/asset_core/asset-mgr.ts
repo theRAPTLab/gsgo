@@ -32,7 +32,7 @@ import { GS_ASSETS_ROUTE, GS_ASSETS_PATH } from '../../../config/gem-settings';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('ASSETM', 'TagGreen');
-const DBG = true;
+const DBG = false;
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -65,7 +65,7 @@ function m_RegisterLoader(loader: TAssetLoader) {
  */
 async function m_LoadManifest(route) {
   const url = `${route}?manifest`;
-  console.log(...PR('loading', url));
+  if (DBG) console.log(...PR('loading', url));
   let json: any;
   try {
     json = await fetch(url).then(async response => {
