@@ -21,6 +21,7 @@ const LOG = require('./client-status');
 // classes
 const PhaseMachine = require('./class-phase-machine');
 const StateGroupMgr = require('./class-state-group-mgr');
+const ViewStateMgr = require('./class-viewstate');
 //
 const {
   IsBrowser,
