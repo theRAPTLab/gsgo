@@ -29,13 +29,17 @@ STATE.initializeState({
     }
   ],
   instanceidList: [],
-  currentInstance: {
-    // currently being edited
-    id: '0',
-    label: 'empty',
-    bpid: 'bp',
-    initScript: '// init'
-  }
+  currentInstance: undefined
+  // currentInstance is the instance currently being edited
+  // it should be undefined by default
+  //
+  // Uncomment to debug
+  // currentInstance: {
+  //   id: '0',
+  //   label: 'empty',
+  //   bpid: 'bp',
+  //   initScript: '// init'
+  // }
 });
 /// These are the primary methods you'll need to use to read and write
 /// state on the behalf of code using APPCORE.
