@@ -92,7 +92,7 @@ class InstanceEditor extends React.Component {
   componentDidMount() {
     const { id } = this.props;
     const { currentInstance } = UR.ReadFlatStateGroups('instances');
-    if (currentInstance.id === id) {
+    if (currentInstance && currentInstance.id === id) {
       this.setState({ instance: currentInstance });
     }
     UR.SubscribeState('instances', this.urStateUpdated);
