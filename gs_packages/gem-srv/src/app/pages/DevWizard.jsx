@@ -11,71 +11,25 @@
 
 import UR from '@gemstep/ursys/client';
 import React, { useState } from 'react';
+import '../../lib/css/gem-ui.css';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
-
-// SELECT RUNTIME MODULES FOR APP
-import * as ASSETS from '../../modules/asset_core';
-import {
-  TextToScript,
-  TokenToString,
-  DecodeTokenPrimitive
-} from '../../modules/sim/script/transpiler-v2';
 import { useStylesHOC } from './elements/page-styles';
 //
-import '../../lib/css/gem-ui.css';
-import { GS_ASSETS_DEV_ROOT } from '../../../config/gem-settings';
-//
+import { ScriptToText } from '../../modules/sim/script/transpiler-v2';
 import { ProgramPrinter } from './components/ProgramPrinter';
-
-/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const SCRIPT = `
-# BLUEPRINT Bee AgentAAA
-# PROGRAM DEFINE
-addProp frame Number 3
-useFeature Movement
-# PROGRAM UPDATE
-prop skin setTo "bunny.json"
-featCall agent.Movement jitterPos -5 5
-
-// comment allez vous?
-
-# PROGRAM EVENT
-onEvent Tick [[
-  ifExpr {{ agent.getProp('name').value==='bun0' }} [[
-    dbgOut 'my tick' 'agent instance' {{ agent.getProp('name').value }}
-    dbgOut foolish game
-    if {{ true }} [[
-      dbgOut 'nested nested'
-    ]]
-  ]]
-  prop agent.x setTo  0
-  prop agent.y setTo 0
-]]
-# PROGRAM CONDITION
-when Bee sometest [[
-  dbgOut SingleTest
-]]
-when Bee sometest Bee [[
-  dbgOut PairTest
-]]
-`.trim();
+import * as WIZCORE from '../../modules/appcore/ac-gui-mvvm';
 
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-const PR = UR.PrefixUtil('WIZ', 'TagApp');
+const PR = UR.PrefixUtil('DEWIZ', 'TagApp');
 
+/// cheeseball event handlers for testing
 let M_STATE;
 function m_SetStateUpdater(handler) {
   M_STATE = handler;
 }
-
-const HANDLE_CLICK = event => {
-  const data = event.target.getAttribute('data');
-  console.log(`data clicked ${data}`);
-};
 const HANDLE_SELECT = event => {
   const data = event.target.getAttribute('data');
   console.log(`selected ${data}`);
@@ -91,137 +45,9 @@ const HANDLE_TOK = (event, tok, settok, state) => {
     console.log('got a block', tok);
   }
 };
-/// UTILITIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** This is a cheeseball key indexer for rendering react children. Probably
- *  not the best way to do it but hey this is a prototype
- */
-let KEY = 0;
-let INDENT = 0;
-let TAB = 20;
-function u_Key(prefix) {
-  return `${prefix}${KEY++}`;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** A GToken is the representation of a non-array element of a ScriptUnit
- *  @param {string|number} value - the token to render
- */
-function GToken(props) {
-  const { token } = props; // the scriptunit to render
-  // initialize our token state
-  const [mytok, setmytok] = useState(token);
-  //
-  const key = u_Key('tok');
-  const value = DecodeTokenPrimitive(mytok);
-
-  if (typeof value !== 'object') {
-    // a javascript primitive type
-    return (
-      <div
-        className="glabel"
-        key={key}
-        data={key}
-        onClick={e => HANDLE_TOK(e, mytok, setmytok)}
-      >
-        {value}
-      </div>
-    );
-  }
-  if (Array.isArray(value)) {
-    // it's a block
-    return <div>whut</div>;
-  }
-  // must be a token
-  const text = TokenToString(value);
-  return (
-    <div
-      className="glabel"
-      key={key}
-      data={key}
-      onClick={e => HANDLE_TOK(e, mytok, setmytok)}
-    >
-      {text}
-    </div>
-  );
-}
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** A GLine contains a number of Tokens, each of which is clickable. Eventually
- *  it will be built in a GLine Editor of some kind.
- *  @param {object} props.statement - a script unit array, which can contain
- *  script unit arrays as elements also!
- *  @return - jsx
- */
-function GLine(props) {
-  const { statement, indent } = props;
-  const toks = [];
-  statement.forEach(tok => {
-    const val = DecodeTokenPrimitive(tok);
-    if (typeof val !== 'object') {
-      // a javascript primitive type
-      // toks.push(<div key={u_Key('tok')}>{val}</div>);
-      const id = u_Key('tok');
-      toks.push(
-        <GToken
-          onClick={() => {
-            HANDLE_CLICK(id);
-            console.log('foo', id);
-          }}
-          token={tok}
-          key={u_Key('tok')}
-        />
-      );
-    } else {
-      // val is a token
-      // is it a block token?
-      if (Array.isArray(val.block)) {
-        toks.push(
-          <GBlock key={u_Key('block')} script={val.block} indent={indent + 1} />
-        );
-        return;
-      }
-      // get a text representation of the token
-      const text = TokenToString(tok);
-      toks.push(<GToken token={tok} key={u_Key('text')} />);
-    }
-  });
-  return (
-    <div
-      style={{ paddingLeft: `${indent * 8}px` }}
-      key={u_Key('line')}
-      className="gwiz line"
-    >
-      {toks}
-    </div>
-  );
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GBlock(props) {
-  // script is a tokenized program source, an array of statements
-  // that are comprised of keywords and their parameters
-  const { script, indent } = props;
-  // inside of containing block, return a line for each
-  const blockContent = [];
-  // assemble the content
-  script.forEach(stmt => {
-    blockContent.push(
-      <GLine
-        className="gwiz line"
-        key={u_Key('line')}
-        indent={indent}
-        statement={stmt}
-      />
-    );
-  });
-  const key = u_Key('line');
-  return (
-    <div className="gwiz block" key={key}>
-      {blockContent}
-    </div>
-  );
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestGraphics(props) {
+function TestGraphics() {
   return (
     <div>
       <div className="gunit gk0" />
@@ -245,37 +71,57 @@ class DevWizard extends React.Component {
   constructor() {
     super();
     this.box = React.createRef(); // used for current box
-    this.state = { script: TextToScript(SCRIPT), DBGDRAW: 0 };
+    this.state = WIZCORE.State();
+    // bind methods that are called asynchronously
+    this.handleWIZCORE = this.handleWIZCORE.bind(this);
+    this.updateWIZCORE = this.updateWIZCORE.bind(this);
   }
 
   componentDidMount() {
+    document.title = 'DEV WIZARD';
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
-    document.title = 'DEV WIZARD';
-    // end HookPhase
-    if (DBG) console.log(...PR('mounted'));
+
+    // add event handlers for root component
     document.addEventListener('click', this.handleClick);
-    m_SetStateUpdater(this.handleExternalState);
+    m_SetStateUpdater(this.handleWIZCORE); // this is the old handler
+
+    // add a subscriber
+    WIZCORE.SubscribeState(this.handleWIZCORE);
   }
 
+  /** handle WIZCORE event updates */
+  handleWIZCORE = (evt, state) => {
+    // hack: just send the entire local state to WIZCORE to force
+    // complete rerender
+    const { script_tokens } = state;
+    const script_text = ScriptToText(script_tokens);
+    this.setState({ script_tokens, script_text }, () => {
+      if (DBG) console.log('handleWIZCORE() completed');
+    });
+  };
+
+  /** send state to WIZCORE */
+  updateWIZCORE = () => {
+    WIZCORE.SendState({ script_tokens: this.state.script_tokens }, () => {
+      if (DBG) console.log('updateWIZCORE() completed');
+    });
+  };
+
+  /** local click handling */
   handleClick = event => {
     // handle click-outside
     if (this.box && !this.box.current.contains(event.target)) {
       console.log('you just clicked outside of box!');
-    } else HANDLE_CLICK(event);
-  };
-
-  handleExternalState = () => {
-    console.log('updating state');
-    this.setState({ DBGDRAW: Math.random() }, () => {
-      console.log('should update script');
-    });
+      return;
+    }
+    const data = event.target.getAttribute('data');
+    console.log(`data clicked ${JSON.stringify(data)}`);
   };
 
   render() {
     const { classes } = this.props;
-    const { script } = this.state;
-    KEY = 0;
+    const { script_tokens, script_text } = this.state;
     //
     return (
       <div
@@ -301,10 +147,11 @@ class DevWizard extends React.Component {
             boxSizing: 'border-box',
             gridColumnEnd: 'span 1',
             minWidth: '280px',
-            whiteSpace: 'pre'
+            whiteSpace: 'pre',
+            overflow: 'hidden'
           }}
         >
-          {SCRIPT}
+          {script_text}
         </div>
         <div
           ref={this.box}
@@ -319,9 +166,12 @@ class DevWizard extends React.Component {
             overflow: 'scroll'
           }}
         >
-          <ProgramPrinter program={script} />
-          {/* <GBlock indent={0} script={script} />
-          <TestGraphics /> */}
+          <TestGraphics />
+          <hr style={{ clear: 'left', marginTop: '60px' }} />
+          <ProgramPrinter
+            program={script_tokens}
+            updateHandler={this.updateWIZCORE}
+          />
         </div>
         <div
           id="console-bottom"
@@ -334,21 +184,6 @@ class DevWizard extends React.Component {
     );
   }
 }
-
-/// PHASE MACHINE INTERFACES //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HookPhase(
-  'UR/LOAD_ASSETS',
-  () =>
-    new Promise((resolve, reject) => {
-      // console.log(...PR('LOADING ASSET MANIFEST...'));
-      (async () => {
-        await ASSETS.PromiseLoadAssets(GS_ASSETS_DEV_ROOT);
-        // console.log(...PR('ASSETS LOADED'));
-        resolve();
-      })();
-    })
-);
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

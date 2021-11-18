@@ -9,7 +9,7 @@
 let TOOLS;
 const HFUNCS = []; // stack of hfuncs in ur_handle, which
 const PR = s => [
-  `%c[DBGTOOL] ${s}%c`,
+  `%cUR.AddConsoleTool(): ${s}%c`,
   'color:#000;background-color:yellow;padding:3px 5px;border-radius:2px;',
   'color:auto;background-color:auto;'
 ];
@@ -57,7 +57,7 @@ function addConsoleTool(obj) {
       });
       console.log(...PR(`installed window${info}()`));
     } catch (e) {
-      console.warn(...PR(`addConsoleTool: ${e}`));
+      console.warn(...PR(`error ${e}`));
     }
   });
 }

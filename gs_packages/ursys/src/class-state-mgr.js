@@ -1,8 +1,19 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  View Model State Manager
+  URSYS State Manager
 
-  For use by modular application core features (i.e. APPCORE)
+  For use by modular application core features that require a centralized
+  state object that can be shared between modules. It does something similar
+  to Redux, but requires less boilerplate code.
+
+  DATA STRUCTURES
+
+  * vmStateEvent is an object with event-specific properties. When sent
+    to subscribers, it contains a groupName property matching the name of
+    the StateManager instance (e.g. LOCALE). This is not required (or even
+    settable) when using SendState( vmStateEvent )
+
+  TODO: Extend to support Networked State
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -11,7 +22,7 @@ const PROMPT = require('./util/prompts');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = PROMPT.makeStyleFormatter('VMSTATE', 'TagPink');
+const PR = PROMPT.makeStyleFormatter('USTATE', 'TagPink');
 ///
 const VM_STATE = {}; // global viewstate
 const GROUPS = new Map();
@@ -19,8 +30,7 @@ const PROPMAP = new Map();
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-export default class ViewModelState {
+class StateMgr {
   /// CONSTRUCTOR /////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   constructor(groupName) {
@@ -47,20 +57,29 @@ export default class ViewModelState {
 
   /// MAIN CLASS METHODS //////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** return the current vmstate */
+  /** Return a COPY of the current vmstate */
   State() {
-    return VM_STATE[this.name];
+    // const state = { ...VM_STATE[this.name] };
+    const state = this._derefProps({ ...VM_STATE[this.name] });
+    return state;
   }
 
-  /** handle a vmstate update from a subscribing module */
-  SendState(vmStateEvent) {
-    // receive { type, ...data }
+  /** Handle a vmstate update from a subscribing module. It checks that
+   *  the keys in the object are defined for this stategroup before
+   *  queueing the action
+   *  @param {object} vmStateEvent - object with group-specific props
+   *  @param {string} vmStateEvent._group - mandatory event group
+   */
+  SendState(vmStateEvent, callback) {
     if (this._isValidState(vmStateEvent)) {
-      this._enqueue(vmStateEvent);
-    }
+      const action = { vmStateEvent, callback };
+      this._enqueue(action);
+    } else throw Error('invalid vmState update received', vmStateEvent);
   }
 
-  /** subscribe to state */
+  /** Subscribe to state. The subscriber function looks like:
+   *  ( vmStateEvent, currentState ) => void
+   */
   SubscribeState(subFunc) {
     if (typeof subFunc !== 'function') throw Error('subscriber must be function');
     if (this.subs.has(subFunc))
@@ -68,15 +87,15 @@ export default class ViewModelState {
     this.subs.add(subFunc);
   }
 
-  /** unsubscribe state */
+  /** Unsubscribe state */
   UnsubscribeState(subFunc) {
     if (!this.subs.delete(subFunc))
-      console.warn(...PR('function not subscribed for', this.nam));
+      console.warn(...PR('function not subscribed for', this.name));
   }
 
   /// HELPER METHODS //////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** set the state object directly. used to initialize the state from within
+  /** Set the state object directly. used to initialize the state from within
    *  an appcore module. skips state validation because the VM_STATE entry
    *  is an empty object
    */
@@ -92,7 +111,7 @@ export default class ViewModelState {
     if (VM_STATE[this.name]) {
       Object.keys(stateObj).forEach(k => {
         // skip the viewStateEvent key
-        if (k === 'type') return;
+        if (k === '_group') return;
         // check for duplicate keys. they must be unique across ALL state groups
         const assTo = PROPMAP.get(k);
         if (assTo !== undefined) throw Error(`${k} already assigned to ${assTo}`);
@@ -104,53 +123,77 @@ export default class ViewModelState {
     } else throw Error(`${this.name} does't exist in VM_STATE`);
   }
 
-  /** return true if the state event matches this manager's name */
-  _isValidState(vmStateEVent) {
+  /** Return true if the event object conforms to expectations (see below) */
+  _isValidState(vmStateEvent) {
     // test 1 - is this event handled this manager instance?
-    const type = vmStateEVent.type.trim().toUpperCase();
-    if (type !== this.name) return false;
-    // test 2 - do the keys in event exist in state already?
+    // const grp = vmStateEvent._group.trim().toUpperCase();
+    // if (grp !== this.name) return false;
+
+    // test 2 - any keys must already be defined in the store to
+    // avoid typo-based errors and other such crapiness
     const curState = VM_STATE[this.name];
     let keysOk = true;
-    Object.keys(vmStateEVent).forEach(k => {
+    Object.keys(vmStateEvent).forEach(k => {
       keysOk = keysOk && curState[k] !== undefined;
     });
     return keysOk;
   }
 
-  /** take a vmstate object and update the VM_STATE entry */
+  /** Scan the object properties for arrays, and mutate with a new array.
+   *  In the case of an array containing references, the references will still
+   *  be the same but the array itself will be different
+   */
+  _derefProps(vmStateEvent) {
+    Object.keys(vmStateEvent).forEach(k => {
+      if (Array.isArray(vmStateEvent[k])) vmStateEvent[k] = [...vmStateEvent[k]];
+    });
+    return vmStateEvent;
+  }
+
+  /** Take a vmstate event object and update the VM_STATE entry with
+   *  its property values. This creates an entirely new state object
+   */
   _mergeState(vmStateEvent) {
     if (!this._isValidState(vmStateEvent)) return;
-    // we want to merge with special processing for array types
-    // first make a new state object
-    const newState = { ...VM_STATE[this.name], ...vmStateEvent };
-    // then duplicate arrays if there are any
-    Object.keys(newState).forEach(k => {
-      if (Array.isArray(newState[k])) newState[k] = [...newState[k]];
+    // first make a new state object with copies of arrays
+    const newState = this._derefProps({
+      ...VM_STATE[this.name],
+      ...vmStateEvent
     });
+    // set the state
+    VM_STATE[this.name] = newState;
   }
 
-  /** forward the event to everyone */
+  /** Forward the event to everyone. The vmStateEvent object contains
+   *  properties that changed, and the shape matches the initializing object
+   */
   _notifySubs(vmStateEvent) {
     const subs = [...this.subs.values()];
-    subs.forEach(sub => sub(vmStateEvent));
+    vmStateEvent.stateGroup = this.name; // mixed-case names reserved by system
+    // also include the total state
+    const currentState = this._derefProps({ ...VM_STATE[this.name] });
+    subs.forEach(sub => sub(vmStateEvent, currentState));
   }
 
-  /** placeholder queueing system that doesn't do much now */
-  _enqueue(vmStateEvent) {
-    this.queue.push(vmStateEvent);
+  /** Placeholder queueing system that doesn't do much now */
+  _enqueue(action) {
+    this.queue.push(action);
     // placeholder processes immediately
     this._dequeue();
   }
 
-  /** placeholder dequeing system that doesn't do much now */
+  /** Placeholder dequeing system that doesn't do much now */
   _dequeue() {
-    let vmStateEvent = this.queue.unshift();
-    while (vmStateEvent !== undefined) {
+    const callbacks = [];
+    let action = this.queue.shift();
+    while (action !== undefined) {
+      const { vmStateEvent, callback } = action;
       this._mergeState(vmStateEvent);
       this._notifySubs(vmStateEvent);
-      vmStateEvent = this.queue.unshift();
+      if (typeof callback === 'function') callbacks.push(callback);
+      action = this.queue.shift();
     }
+    callbacks.forEach(f => f());
   }
 }
 
@@ -158,7 +201,7 @@ export default class ViewModelState {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ERRS = [];
 try {
-  const vms = new ViewModelState('Test');
+  const vms = new StateMgr('Test');
   expect(vms.name).to.be.equal('TEST'); // state names are forced to uppercase
 } catch (e) {
   ERRS.push([e.message, 'color:white;background-color:orange;padding:2px 4px']);
@@ -170,3 +213,7 @@ if (ERRS.length) {
   });
   console.groupEnd();
 }
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+module.exports = StateMgr;

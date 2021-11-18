@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   ScriptUnit to JSX Renderer - Given a source tokens for a program, return
@@ -10,10 +12,16 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
+import { expect } from '@hapi/code';
 import {
   TokenToString,
   DecodeTokenPrimitive
 } from '../../../modules/sim/script/transpiler-v2';
+import * as WIZCORE from '../../../modules/appcore/ac-gui-mvvm';
+
+/// DEBUG CONSTANTS ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = true;
 
 /// LINE PRINTING MACHINE //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -99,31 +107,55 @@ function PrintToken(tok) {
   // should not get block tokens
   if (Array.isArray(tok.block)) throw Error('unexpected block token');
 
+  // QUICK AND DIRTY TOKEN TEST
+  if (DBG) expect(WIZCORE.IsTokenInMaster(tok)).to.be.true();
+
   // decode the token
   const dtok = DecodeTokenPrimitive(tok);
   // did token represent simple value?
   if (typeof dtok !== 'object') {
-    m_Print(
-      <div className="gwiz gtoken styleOpen" line={LINE_NUM} index={LINE_IDX}>
-        {dtok}
-      </div>
-    );
+    m_Print(<GToken text={dtok} token={tok} />);
     return;
   }
   // if got this far, token is an extended type
   // get the text representation of the token and print it
-  const text = TokenToString(dtok);
-  m_Print(
-    <div className="gwiz gtoken styleOpen" line={LINE_NUM} index={LINE_IDX}>
+  m_Print(<GToken text={TokenToString(dtok)} token={tok} />);
+}
+
+/// REACT COMPONENTS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** React component to render a token and accept props from PrintToken()
+ *  generator. We want to grab the specific token reference associated with
+ *  this token so we can updated it then WIZCORE.SendState() it. But how???
+ */
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let UPDATE_HANDLER = () => {};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GToken(props) {
+  const data = `${LINE_NUM}.${LINE_IDX}`;
+  const { token, text } = props;
+
+  return (
+    <div
+      className="gwiz gtoken styleOpen"
+      data={data}
+      onClick={() => {
+        if (token.token) {
+          if (DBG) console.log(`changing '${token.token}' to 'foo'`);
+          token.token = 'foo';
+          UPDATE_HANDLER();
+        }
+      }}
+    >
       {text}
     </div>
   );
 }
-
-/// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** React component called from DevWizard */
 export function ProgramPrinter(props) {
-  const { program } = props;
+  const { program, updateHandler } = props;
+  if (typeof updateHandler === 'function') UPDATE_HANDLER = updateHandler;
   m_Clear();
   PrintBlock(program);
   return PAGE;
