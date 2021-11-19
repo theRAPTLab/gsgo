@@ -55,7 +55,7 @@ function DecodeTokenPrimitive(arg) {
   const { token, value, string } = arg; // primitive values
   const { objref, program, block, expr } = arg; // req runtime eval
   if (directive) return arg; // directive = _pragma, cmd
-  if (comment) return `// ${comment}`;
+  if (comment !== undefined) return `// ${comment}`;
   if (line !== undefined) return arg; // blank lines
   if (token !== undefined) return token;
   if (value !== undefined) return value;

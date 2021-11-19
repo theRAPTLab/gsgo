@@ -173,11 +173,11 @@ class ScriptTokenizer {
     const s2 = this.line[this.index] || 'EOL';
     const s3 = this.line.substring(this.index + 1) || '';
     const pr = prompt === undefined ? '' : `${prompt}`;
-    console.warn(
+    console.log(
       `%c${s1}%c${s2}%c${s3} %c${pr}`,
-      'color:black;',
+      'color:black;background-color:#FFF0D0;padding:2px 4px',
       'background-color:#FFB000',
-      'color:#C0C0C0',
+      'color:#C0C0C0;background-color:#FFF0D0;padding:2px 4px',
       'color:white;background-color:#FF0000;padding:2px 0 2px 0'
     );
   }
@@ -187,18 +187,26 @@ class ScriptTokenizer {
    *  has occurred.
    */
   throwError(err) {
-    let range = 5;
-    let start = Math.max(this.linesIndex - range, 0);
+    let range = 1; // number of lines to print before/after error
+    let start = Math.max(this.linesIndex - range - 1, 0);
     for (let ii = start; ii < this.linesIndex - 1; ii++) {
       const lnum = `${ii + 1}`.padStart(3, '0');
-      console.warn(`${lnum}: %c${this.lines[ii]}`, 'color:#C0C0C0;');
+      console.log(
+        `%c${lnum}: %c${this.lines[ii]}`,
+        'background-color:#FFF0D0;padding:2px 4px',
+        'color:#C0C0C0;background-color:#FFF0D0'
+      );
     }
     this.showCursor('TOKEN ERROR');
     start = Math.min(this.linesIndex + 1, this.linesIndex);
-    let end = Math.min(this.linesIndex + range - 1, this.linesCount);
+    let end = Math.min(this.linesIndex + range, this.linesCount);
     for (let ii = start; ii < end; ii++) {
       const lnum = `${ii + 1}`.padStart(3, '0');
-      console.warn(`${lnum}: %c${this.lines[ii]}`, 'color:#C0C0C0;');
+      console.log(
+        `%c${lnum}: %c${this.lines[ii]}`,
+        'background-color:#FFF0D0;padding:2px 4px',
+        'color:#C0C0C0;background-color:#FFF0D0'
+      );
     }
     throw Error(err);
   }

@@ -12,7 +12,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
-import { expect } from '@hapi/code';
 import {
   TokenToString,
   DecodeTokenPrimitive
@@ -21,7 +20,7 @@ import * as WIZCORE from '../../../modules/appcore/ac-gui-mvvm';
 
 /// DEBUG CONSTANTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
+const DBG = false;
 
 /// LINE PRINTING MACHINE //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,6 +31,14 @@ let LINE_NUM = 0;
 let LINE_IDX = 0;
 let LINE_BUF = [];
 let PAGE = [];
+//
+let CHEESE_KEY = 0;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function u_Key(prefix = '') {
+  const key = `${prefix}${CHEESE_KEY}`;
+  CHEESE_KEY++;
+  return key;
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_Indent() {
   ++INDENT;
@@ -66,6 +73,7 @@ function m_NextLine() {
     <div
       className="gwiz lineLead newline"
       style={{ width: `${ww}em`, paddingTop: '5px' }}
+      key={u_Key('nl')}
     >
       {LINE_NUM}
     </div>
@@ -107,18 +115,16 @@ function PrintToken(tok) {
   // should not get block tokens
   if (Array.isArray(tok.block)) throw Error('unexpected block token');
 
-  // QUICK AND DIRTY TOKEN TEST
-  if (!WIZCORE.IsTokenInMaster(tok)) console.log('missing tok');
   // decode the token
   const dtok = DecodeTokenPrimitive(tok);
   // did token represent simple value?
   if (typeof dtok !== 'object') {
-    m_Print(<GToken text={dtok} token={tok} />);
+    m_Print(<GToken text={dtok} token={tok} key={u_Key('tok')} />);
     return;
   }
   // if got this far, token is an extended type
   // get the text representation of the token and print it
-  m_Print(<GToken text={TokenToString(dtok)} token={tok} />);
+  m_Print(<GToken text={TokenToString(dtok)} token={tok} key={u_Key('tok')} />);
 }
 
 /// REACT COMPONENTS //////////////////////////////////////////////////////////

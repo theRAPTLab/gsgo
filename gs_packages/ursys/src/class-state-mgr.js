@@ -12,6 +12,9 @@
     to subscribers, it contains a groupName property matching the name of
     the StateManager instance (e.g. LOCALE). This is not required (or even
     settable) when using SendState( vmStateEvent )
+  * The difference between vmStateEvent and vmState is that the latter is
+    the complete state object, whereas the event has the same shape but
+    only includes the changed properties
 
   TODO: Extend to support Networked State
 
@@ -34,11 +37,12 @@ class StateMgr {
   /// CONSTRUCTOR /////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   constructor(groupName) {
-    if (GROUPS.has(groupName)) throw Error('duplicate vmstate name');
+    if (GROUPS.has(groupName)) throw Error('duplicate clonedEvent name');
     this.name = groupName.trim().toUpperCase();
     this.init = false;
     this.subs = new Set();
     this.queue = [];
+    this.taps = [];
     VM_STATE[this.name] = {};
     GROUPS.set(this.name, this);
     // bind 'this' for use with async code
@@ -48,6 +52,8 @@ class StateMgr {
     this.SubscribeState = this.SubscribeState.bind(this);
     this.UnsubscribeState = this.UnsubscribeState.bind(this);
     this._initializeState = this._initializeState.bind(this);
+    this._insertStateEvent = this._insertStateEvent.bind(this);
+    this._interceptState = this._interceptState.bind(this);
     this._isValidState = this._isValidState.bind(this);
     this._mergeState = this._mergeState.bind(this);
     this._notifySubs = this._notifySubs.bind(this);
@@ -57,22 +63,25 @@ class StateMgr {
 
   /// MAIN CLASS METHODS //////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Return a COPY of the current vmstate */
+  /** Return a COPY of the current clonedEvent */
   State() {
     // const state = { ...VM_STATE[this.name] };
     const state = this._derefProps({ ...VM_STATE[this.name] });
     return state;
   }
 
-  /** Handle a vmstate update from a subscribing module. It checks that
-   *  the keys in the object are defined for this stategroup before
-   *  queueing the action
+  /** Handle a clonedEvent update from a subscribing module. The incoming
+   *  vmstateEvent is checked against the master state object to ensure it
+   *  contains valid keys. Any filter functions are allowed to mutate a copy of
+   *  the incoming state event.
    *  @param {object} vmStateEvent - object with group-specific props
-   *  @param {string} vmStateEvent._group - mandatory event group
    */
   SendState(vmStateEvent, callback) {
     if (this._isValidState(vmStateEvent)) {
-      const action = { vmStateEvent, callback };
+      const clonedEvent = this._cloneStateObject(vmStateEvent);
+      this.taps.forEach(tap => tap(clonedEvent));
+      // queue the action for processing
+      const action = { vmStateEvent: clonedEvent, callback };
       this._enqueue(action);
     } else throw Error('invalid vmState update received', vmStateEvent);
   }
@@ -105,7 +114,7 @@ class StateMgr {
     // make sure stateObj has only lower_case keys
     Object.keys(stateObj).forEach(k => {
       if (k.toLowerCase() !== k)
-        throw Error(`${k} vmstate props must be lowercase`);
+        throw Error(`${k} clonedEvent props must be lowercase`);
     });
     // check that VM_STATE entry is valid (should be created by constructor)
     if (VM_STATE[this.name]) {
@@ -123,8 +132,27 @@ class StateMgr {
     } else throw Error(`${this.name} does't exist in VM_STATE`);
   }
 
+  /** When SendState() is invoked, give the instance manager a change to
+   *  inspect the incoming state and do a side-effect and/or a filter.
+   *  They will run in order of interceptor registration
+   *  @param {function} tapFunc - receive stateEvent to mutate or act-on
+   */
+  _interceptState(tapFunc) {
+    if (typeof tapFunc !== 'function')
+      throw Error(`'${tapFunc}' is not a function`);
+    this.taps.push(tapFunc);
+  }
+
+  /** Allow synthesis of a state event by adding to queue without
+   *  immediately executing it. For use by _interceptState only.
+   *  Creates an action { vmStateEvent, callback }
+   */
+  _insertStateEvent(vmStateEvent, callback) {
+    this._enqueue({ vmStateEvent, callback });
+  }
+
   /** Return true if the event object conforms to expectations (see below) */
-  _isValidState(vmStateEvent) {
+  _isValidState(vmState) {
     // test 1 - is this event handled this manager instance?
     // const grp = vmStateEvent._group.trim().toUpperCase();
     // if (grp !== this.name) return false;
@@ -133,7 +161,7 @@ class StateMgr {
     // avoid typo-based errors and other such crapiness
     const curState = VM_STATE[this.name];
     let keysOk = true;
-    Object.keys(vmStateEvent).forEach(k => {
+    Object.keys(vmState).forEach(k => {
       keysOk = keysOk && curState[k] !== undefined;
     });
     return keysOk;
@@ -143,29 +171,38 @@ class StateMgr {
    *  In the case of an array containing references, the references will still
    *  be the same but the array itself will be different
    */
-  _derefProps(vmStateEvent) {
-    Object.keys(vmStateEvent).forEach(k => {
-      if (Array.isArray(vmStateEvent[k])) vmStateEvent[k] = [...vmStateEvent[k]];
+  _derefProps(vmState) {
+    Object.keys(vmState).forEach(k => {
+      if (Array.isArray(vmState[k])) vmState[k] = [...vmState[k]];
     });
-    return vmStateEvent;
+    return vmState;
   }
 
-  /** Take a vmstate event object and update the VM_STATE entry with
+  /** Utility method to clone state event. It handles array cloning as well but
+   *  is otherwise a shallow clone
+   */
+  _cloneStateObject(vmState) {
+    const clone = this._derefProps({ ...vmState });
+    return clone;
+  }
+
+  /** Take a clonedEvent event object and update the VM_STATE entry with
    *  its property values. This creates an entirely new state object
    */
-  _mergeState(vmStateEvent) {
-    if (!this._isValidState(vmStateEvent)) return;
+  _mergeState(vmState) {
+    if (!this._isValidState(vmState)) return;
     // first make a new state object with copies of arrays
     const newState = this._derefProps({
       ...VM_STATE[this.name],
-      ...vmStateEvent
+      ...vmState
     });
     // set the state
     VM_STATE[this.name] = newState;
   }
 
   /** Forward the event to everyone. The vmStateEvent object contains
-   *  properties that changed, and the shape matches the initializing object
+   *  properties that changed only, appending a 'stateGroup' identifier
+   *  that tells you who sent it
    */
   _notifySubs(vmStateEvent) {
     const subs = [...this.subs.values()];
@@ -175,14 +212,29 @@ class StateMgr {
     subs.forEach(sub => sub(vmStateEvent, currentState));
   }
 
-  /** Placeholder queueing system that doesn't do much now */
+  /** Placeholder queueing system that doesn't do much now.
+   *  An action is { vmStateEvent, callback }
+   */
   _enqueue(action) {
+    const { vmStateEvent, callback } = action;
+    if (!this._isValidState(vmStateEvent)) {
+      console.warn(...PR('bad vmStateEvent', vmStateEvent));
+      return;
+    }
+    if (callback && typeof callback !== 'function') {
+      console.warn(
+        ...PR('call must be function, not', typeof callback, callback)
+      );
+      return;
+    }
     this.queue.push(action);
     // placeholder processes immediately
     this._dequeue();
   }
 
-  /** Placeholder dequeing system that doesn't do much now */
+  /** Placeholder dequeing system that doesn't do much now.
+   *  An action is { vmStateEvent, callback }
+   */
   _dequeue() {
     const callbacks = [];
     let action = this.queue.shift();

@@ -25,20 +25,11 @@ import { TextToScript, ScriptToText } from '../sim/script/transpiler-v2';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AC-MVVM', 'TagCyan');
 const DBG = false;
+// initial script text
+const DEFAULT_TEXT = `
+# BLUEPRINT HoneyBee Bee
 
-/// INITIALIZE STATE MODULE ///////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Main methods that will be forwarded to users of this module
-const {
-  _initializeState, // special state initializer method
-  State, // return state
-  SendState, // send { type, ...data } action to save
-  SubscribeState, // provide listener for { type, ...data } on change
-  UnsubscribeState // remove listener
-} = new UR.class.StateMgr('WIZARDVIEW');
-
-let script_text = `
-# BLUEPRINT Bee AgentAAA
+// start of agent definition
 # PROGRAM DEFINE
 addProp frame Number 3
 useFeature Movement
@@ -46,15 +37,17 @@ useFeature Movement
 prop skin setTo "bunny.json"
 featCall agent.Movement jitterPos -5 5
 
-// comment allez vous?
+// start of frame updates
+#PROGRAM UPDATE
+featCall Movement flapwings
 
+// start of interactive code
 # PROGRAM EVENT
 onEvent Tick [[
   ifExpr {{ agent.getProp('name').value==='bun0' }} [[
     dbgOut 'my tick' 'agent instance' {{ agent.getProp('name').value }}
-    dbgOut foolish game
     if {{ true }} [[
-      dbgOut 'nested nested'
+      // nested nested
     ]]
   ]]
   prop agent.x setTo  0
@@ -67,13 +60,7 @@ when Bee sometest [[
 when Bee sometest Bee [[
   dbgOut PairTest
 ]]
-
 `.trim();
-let script_tokens = TextToScript(script_text);
-_initializeState({
-  script_tokens, // an array of tokenized statements
-  script_text // the source text
-});
 
 /// MODULE HELPERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -112,8 +99,50 @@ function IsTokenInMaster(tok) {
   return found;
 }
 
-/// CONSOLE DEBUGGERS /////////////////////////////////////////////////////////
+/// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// create the new instance, and extract the methods we plan to use
+const STORE = new UR.class.StateMgr('WIZARDVIEW');
+/// extract methods we want to use interrnally or export
+const {
+  _initializeState, // special state initializer method
+  _interceptState, // special state interceptor method
+  _insertStateEvent, // use internal method to add actions on intercept
+  State, // return state
+  SendState, // send { type, ...data } action to save
+  SubscribeState, // provide listener for { type, ...data } on change
+  UnsubscribeState // remove listener
+} = STORE;
+
+/// declare the allowed state keys for 'WIZARDVIEW'
+let script_text = DEFAULT_TEXT;
+let script_tokens = TextToScript(script_text);
+_initializeState({
+  script_tokens, // an array of tokenized statements
+  script_text // the source text
+});
+/// spy on incoming SendState events to trigger side effects and/or mutate
+/// the event before it's enqueued as an action.
+_interceptState(state => {
+  // if script_text is changing, we also want to emit new script_token
+  if (state.script_text) {
+    try {
+      const toks = TextToScript(state.script_text);
+      _insertStateEvent({ script_tokens: toks }, () => {
+        // console.log('new script_tokens update queued');
+      });
+    } catch (e) {
+      // ignore TextTpScript compiler errors during live typing
+    }
+  }
+  if (state.script_tokens) {
+    const text = ScriptToText(state.script_tokens);
+    _insertStateEvent({ script_text: text }, () => {
+      // console.log('new script_text update queued');
+    });
+  }
+});
+/// add some console debug helpers to inspect state
 UR.AddConsoleTool({
   'dump_vm': () => {
     const jt = JSON.stringify(State().script_tokens);
