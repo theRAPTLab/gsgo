@@ -42,7 +42,7 @@ import GAgent from 'lib/class-gagent';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword, GetFeature } from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from 'app/pages/elements/page-xui-styles';
+import { useStylesHOC } from 'app/pages/helpers/page-xui-styles';
 import { TextToScript } from 'modules/sim/script/tools/text-to-script';
 import InputElement from '../components/InputElement';
 import SelectElement from '../components/SelectElement';

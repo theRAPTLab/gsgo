@@ -12,8 +12,8 @@ import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 import { Init, HookResize } from '../../modules/render/api-render';
 import FormTransform from './components/FormTransform';
-import * as MOD from './elements/dev-faketrack-ui';
-import { useStylesHOC } from './elements/page-styles';
+import * as MOD from './helpers/dev-faketrack-ui';
+import { useStylesHOC } from './helpers/page-styles';
 import '../../lib/css/tracker.css';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////

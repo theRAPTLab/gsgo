@@ -14,7 +14,7 @@ import React, { useState } from 'react';
 import '../../lib/css/gem-ui.css';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
-import { useStylesHOC } from './elements/page-styles';
+import { useStylesHOC } from './helpers/page-styles';
 //
 import { ScriptToText } from '../../modules/sim/script/transpiler-v2';
 import { ProgramPrinter } from './components/ProgramPrinter';

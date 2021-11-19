@@ -108,8 +108,7 @@ function PrintToken(tok) {
   if (Array.isArray(tok.block)) throw Error('unexpected block token');
 
   // QUICK AND DIRTY TOKEN TEST
-  if (DBG) expect(WIZCORE.IsTokenInMaster(tok)).to.be.true();
-
+  if (!WIZCORE.IsTokenInMaster(tok)) console.log('missing tok');
   // decode the token
   const dtok = DecodeTokenPrimitive(tok);
   // did token represent simple value?
@@ -134,7 +133,6 @@ let UPDATE_HANDLER = () => {};
 function GToken(props) {
   const data = `${LINE_NUM}.${LINE_IDX}`;
   const { token, text } = props;
-
   return (
     <div
       className="gwiz gtoken styleOpen"

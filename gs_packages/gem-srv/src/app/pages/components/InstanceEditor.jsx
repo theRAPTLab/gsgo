@@ -37,7 +37,7 @@ import * as ACInstances from 'modules/appcore/ac-instances';
 import * as TRANSPILER from 'script/transpiler-v2';
 import { UpdateScript } from 'modules/sim/script/tools/script-to-jsx';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 import InputField from './InputField';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////

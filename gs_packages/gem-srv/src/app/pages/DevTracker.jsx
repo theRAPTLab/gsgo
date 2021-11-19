@@ -16,7 +16,7 @@ import * as RENDERER from '../../modules/render/api-render';
 import * as ASSETS from '../../modules/asset_core';
 //
 import FormTransform from './components/FormTransform';
-import { useStylesHOC } from './elements/page-styles';
+import { useStylesHOC } from './helpers/page-styles';
 //
 import '../../lib/css/tracker.css';
 

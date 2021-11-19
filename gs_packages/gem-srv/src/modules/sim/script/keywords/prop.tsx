@@ -40,7 +40,7 @@ import Keyword, {
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from 'app/pages/elements/page-xui-styles';
+import { useStylesHOC } from 'app/pages/helpers/page-xui-styles';
 import { TextToScript } from 'modules/sim/script/tools//text-to-script';
 import GVarElement from '../components/GVarElement';
 

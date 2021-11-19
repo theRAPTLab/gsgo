@@ -15,8 +15,8 @@ import clsx from 'clsx';
 /// URSYS STUFF ///////////////////////////////////////////////////////////////
 import UR from '@gemstep/ursys/client';
 import { Init, HookResize } from '../../modules/render/api-render';
-import * as MOD from './elements/dev-controller-ui';
-import { useStylesHOC } from './elements/page-styles';
+import * as MOD from './helpers/dev-controller-ui';
+import { useStylesHOC } from './helpers/page-styles';
 import '../../lib/css/charcontrol.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

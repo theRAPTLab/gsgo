@@ -21,7 +21,7 @@ import { CodeJar } from '../../lib/vendor/codejar';
 import '../../lib/vendor/prism.css';
 
 // this is where classes.* for css are defined
-import { useStylesHOC } from './elements/page-styles';
+import { useStylesHOC } from './helpers/page-styles';
 
 /// RUN TESTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

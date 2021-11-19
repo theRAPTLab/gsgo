@@ -15,8 +15,8 @@ import { withStyles } from '@material-ui/core/styles';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import UR from '@gemstep/ursys/client';
-import SIMCTRL from './elements/mod-sim-control';
-import * as PROJSERVER from './elements/project-server';
+import SIMCTRL from './helpers/mod-sim-control';
+import * as PROJSERVER from './helpers/project-server';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import MissionMapEditor from './MissionMapEditor';
@@ -36,7 +36,7 @@ import '../../lib/css/tracker.css';
 
 /// STYLES ////////////////////////////////////////////////////////////////////
 // this is where classes.* for css are defined
-import { useStylesHOC } from './elements/page-xui-styles';
+import { useStylesHOC } from './helpers/page-xui-styles';
 import './scrollbar.css';
 import PanelProjectEditor from './components/PanelProjectEditor';
 

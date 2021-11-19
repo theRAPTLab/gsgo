@@ -9,7 +9,7 @@ import { CreateFileFromTemplate } from 'modules/datacore/dc-project'; // Have to
 import * as ACProjects from 'modules/appcore/ac-projects'; // Have to import to access state
 
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 import { GS_ASSETS_PROJECT_ROOT } from '../../../../config/gem-settings';
 
 import PanelChrome from './PanelChrome';
