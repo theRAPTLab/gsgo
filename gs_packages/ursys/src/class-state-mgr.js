@@ -190,7 +190,7 @@ class StateMgr {
    *  its property values. This creates an entirely new state object
    */
   _mergeState(vmState) {
-    if (!this._isValidState(vmState)) return;
+    if (!this._isValidState(vmState)) return undefined;
     // first make a new state object with copies of arrays
     const newState = this._derefProps({
       ...VM_STATE[this.name],
@@ -198,6 +198,8 @@ class StateMgr {
     });
     // set the state
     VM_STATE[this.name] = newState;
+    // also return the new state object
+    return newState;
   }
 
   /** Forward the event to everyone. The vmStateEvent object contains
@@ -237,14 +239,17 @@ class StateMgr {
    */
   _dequeue() {
     const callbacks = [];
+    // iterate over all actions in queue
     let action = this.queue.shift();
     while (action !== undefined) {
       const { vmStateEvent, callback } = action;
-      this._mergeState(vmStateEvent);
-      this._notifySubs(vmStateEvent);
+      const updatedState = this._mergeState(vmStateEvent);
+      this._notifySubs(updatedState);
       if (typeof callback === 'function') callbacks.push(callback);
+      // get next action in queue
       action = this.queue.shift();
     }
+    // issues callbacks after ALL actions have completed
     callbacks.forEach(f => f());
   }
 }
