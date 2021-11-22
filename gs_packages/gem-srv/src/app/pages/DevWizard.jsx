@@ -48,7 +48,7 @@ function TestGraphics() {
 class DevWizard extends React.Component {
   constructor() {
     super();
-    this.box = React.createRef(); // used for current box
+    this.boxRef = React.createRef(); // used for current box
     this.state = WIZCORE.State();
     // bind methods that are called asynchronously
     this.handleWizUpdate = this.handleWizUpdate.bind(this);
@@ -70,20 +70,20 @@ class DevWizard extends React.Component {
     WIZCORE.SubscribeState(this.handleWizUpdate);
   }
 
-  /** handle WIZCORE event updates */
-  handleWizUpdate = (evt, vmState) => {
-    this.setState(vmState, () => {
-      if (DBG) console.log('handleWizUpdate() completed');
+  /** INCOMING: handle WIZCORE event updates */
+  handleWizUpdate = (vmStateEvent, all) => {
+    this.setState(vmStateEvent, () => {
+      if (DBG) console.log('handleWizUpdate() completed', vmStateEvent);
     });
   };
 
-  /** send updated toks to WIZCORE on change */
+  /** OUTGOING: send updated toks to WIZCORE on change */
   updateWizToks = () => {
     WIZCORE.SendState({ script_tokens: this.state.script_tokens }, () => {
       if (DBG) console.log('updateWizToks() completed');
     });
   };
-  /** send updated text to WIZCORE on change */
+  /** OUTGOING: send updated text to WIZCORE on change */
   updateWizText = () => {
     WIZCORE.SendState({ script_text: this.state.script_text }, () => {
       if (DBG) console.log('updateWizText() completed');
@@ -93,7 +93,7 @@ class DevWizard extends React.Component {
   /** local click handling */
   handleClick = event => {
     // handle click-outside
-    if (this.box && !this.box.current.contains(event.target)) {
+    if (this.boxRef && !this.boxRef.current.contains(event.target)) {
       if (DBG) console.log('you just clicked outside of box!');
       return;
     }
@@ -143,7 +143,7 @@ class DevWizard extends React.Component {
         />
 
         <div
-          ref={this.box}
+          ref={this.boxRef}
           id="root-renderer"
           className={classes.main}
           style={{
