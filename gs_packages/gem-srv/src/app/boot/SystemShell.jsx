@@ -39,6 +39,12 @@ class SystemShell extends React.Component {
     this.state = { hasError: false };
   }
 
+  // https://reactjs.org/docs/error-boundaries.html
+  static getDerivedStateFromError(error) {
+    // Update state so the next render will show the fallback UI.
+    return { hasError: true };
+  }
+
   render() {
     const { hasError, error } = this.state;
     // omg an error???
