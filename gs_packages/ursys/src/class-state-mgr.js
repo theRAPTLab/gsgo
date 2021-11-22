@@ -204,7 +204,7 @@ class StateMgr {
 
   /** Forward the event to everyone. The vmStateEvent object contains
    *  properties that changed only, appending a 'stateGroup' identifier
-   *  that tells you who sent it
+   *  that tells you who sent it. Sends a read-only copy.
    */
   _notifySubs(vmStateEvent) {
     const subs = [...this.subs.values()];
@@ -243,8 +243,8 @@ class StateMgr {
     let action = this.queue.shift();
     while (action !== undefined) {
       const { vmStateEvent, callback } = action;
-      const updatedState = this._mergeState(vmStateEvent);
-      this._notifySubs(updatedState);
+      this._mergeState(vmStateEvent); // merge partial state into state
+      this._notifySubs(vmStateEvent); // send partial state to subs
       if (typeof callback === 'function') callbacks.push(callback);
       // get next action in queue
       action = this.queue.shift();
