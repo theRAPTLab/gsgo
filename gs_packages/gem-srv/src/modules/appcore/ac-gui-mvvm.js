@@ -88,7 +88,7 @@ function GetAllTokenObjects(statements) {
 function IsTokenInMaster(tok) {
   // script_tokens is an array of statements
   let found = false;
-  const all = GetAllTokenObjects(script_tokens);
+  const all = GetAllTokenObjects(State().script_tokens);
   all.forEach(stok => {
     found = found || tok === stok;
   });
@@ -107,7 +107,6 @@ const STORE = new UR.class.StateMgr('WIZARDVIEW');
 const {
   _initializeState, // special state initializer method
   _interceptState, // special state interceptor method
-  _insertStateEvent, // use internal method to add actions on intercept
   State, // return state
   SendState, // send { type, ...data } action to save
   SubscribeState, // provide listener for { type, ...data } on change
@@ -115,33 +114,35 @@ const {
 } = STORE;
 
 /// declare the allowed state keys for 'WIZARDVIEW'
-let script_text = DEFAULT_TEXT;
-let script_tokens = TextToScript(script_text);
 _initializeState({
-  script_tokens, // an array of tokenized statements
-  script_text // the source text
+  script_text: DEFAULT_TEXT, // the source text
+  script_tokens: TextToScript(DEFAULT_TEXT) // an array of tokenized statements
 });
-/// spy on incoming SendState events to trigger side effects and/or mutate
-/// the event before it's enqueued as an action.
+
+/// spy on incoming SendState events and modify/add events as needed
 _interceptState(state => {
+  const { script_text, script_tokens } = state;
+
   // if script_text is changing, we also want to emit new script_token
-  if (state.script_text) {
+  if (!script_tokens && script_text) {
     try {
-      const toks = TextToScript(state.script_text);
-      _insertStateEvent({ script_tokens: toks }, () => {
-        // console.log('new script_tokens update queued');
-      });
+      const toks = TextToScript(script_text);
+      state.script_tokens = toks;
     } catch (e) {
       // ignore TextTpScript compiler errors during live typing
     }
   }
-  if (state.script_tokens) {
-    const text = ScriptToText(state.script_tokens);
-    _insertStateEvent({ script_text: text }, () => {
-      // console.log('new script_text update queued');
-    });
+  // if script_tokens is changing, we also want to emit new script_text
+  if (!script_text && script_tokens) {
+    try {
+      const text = ScriptToText(state.script_tokens);
+      state.script_text = text;
+    } catch (e) {
+      // ignore TextTpScript compiler errors during live typing
+    }
   }
 });
+
 /// add some console debug helpers to inspect state
 UR.AddConsoleTool({
   'dump_vm': () => {
