@@ -7,13 +7,30 @@
 
   Wizard - Rendering shapes
 
+  EVENT ROUTING - The React front-end just handles view state that is sent from
+  appcore modules. It also reroutes view state changes to appcore modules.
+  The primary way that this.setState() is called is if an appcore module
+  fires a notification to it.
+
+  <DevWizard>
+  document.onClick ->   this.handleDocClick
+                        checks the event target for top-level for out-of-box
+                        selection, otherwise extracts data from clicked element
+  TextArea.onChange ->  this.handleTextInput
+                        reads text and sends to WIZCORE
+  handleWizUpdate <-    main this.setState() handler, as we loop all events
+                        through WIZCORE
+
+  <ProgramPrinter>
+  GToken.onClick ->     UPDATE_HANDLER()
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import React, { useState } from 'react';
+import React from 'react';
 import '../../lib/css/gem-ui.css';
-import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
+import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from './helpers/page-styles';
 //
 import { ProgramPrinter } from './components/ProgramPrinter';
@@ -63,15 +80,15 @@ class DevWizard extends React.Component {
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
 
-    // add event handlers for root component
-    document.addEventListener('click', this.handleClick);
+    // add top-level click andler
+    document.addEventListener('click', this.handleDocClick);
 
     // add a subscriber
     WIZCORE.SubscribeState(this.handleWizUpdate);
   }
 
   /** INCOMING: handle WIZCORE event updates */
-  handleWizUpdate = (vmStateEvent, all) => {
+  handleWizUpdate = vmStateEvent => {
     this.setState(vmStateEvent, () => {
       if (DBG) console.log('handleWizUpdate() completed', vmStateEvent);
     });
@@ -91,7 +108,7 @@ class DevWizard extends React.Component {
   };
 
   /** local click handling */
-  handleClick = event => {
+  handleDocClick = event => {
     // handle click-outside
     if (this.boxRef && !this.boxRef.current.contains(event.target)) {
       if (DBG) console.log('you just clicked outside of box!');
@@ -156,10 +173,7 @@ class DevWizard extends React.Component {
         >
           <TestGraphics />
           <hr style={{ clear: 'left', marginTop: '60px' }} />
-          <ProgramPrinter
-            program={script_tokens}
-            updateHandler={this.updateWizToks}
-          />
+          <ProgramPrinter program={script_tokens} />
         </div>
         <div
           id="console-bottom"

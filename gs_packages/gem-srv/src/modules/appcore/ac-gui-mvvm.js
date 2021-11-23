@@ -117,7 +117,9 @@ const {
 /// declare the allowed state keys for 'WIZARDVIEW'
 _initializeState({
   script_text: DEFAULT_TEXT, // the source text
-  script_tokens: TextToScript(DEFAULT_TEXT) // an array of tokenized statements
+  script_tokens: TextToScript(DEFAULT_TEXT), // an array of tokenized statements
+  sel_line_num: -1, // selected line of wizard. If < 0 it is not set
+  sel_line_idx: -1 // select index into line. If < 0 it is not set
 });
 
 /// spy on incoming SendState events and modify/add events as needed
@@ -144,18 +146,19 @@ _interceptState(state => {
   }
 });
 
-/// add some console debug helpers to inspect state
-UR.AddConsoleTool({
-  'dump_vm': () => {
-    const jt = JSON.stringify(State().script_tokens);
-    console.log(...PR(jt));
-  }
-});
+/// EVENT DISPATCHERS (REDUCERS) //////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function DispatchClick(event, data) {
+  const { type, token, line, index } = data;
+  console.log(`${type} clicked line:${line} index:${index} token:`, token);
+  SendState({ sel_line_num: line, sel_line_idx: index });
+}
 
 /// FORWARDED STATE METHODS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// main api
+/// dispatchers
+export { DispatchClick };
+/// utilities
 export { IsTokenInMaster, GetAllTokenObjects };
-
-/// also forward StateModule methods for use by users of this module
+/// forwarded state methods
 export { State, SendState, SubscribeState, UnsubscribeState };

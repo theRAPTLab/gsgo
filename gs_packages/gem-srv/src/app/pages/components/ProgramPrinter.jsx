@@ -6,8 +6,9 @@
   ScriptUnit to JSX Renderer - Given a source tokens for a program, return
   an array of array of JSX elements
 
-  API METHODS
-  * GetProgramJSX( program: ScriptUnit[] )
+  COMPONENT USAGE
+
+    <PrintProgram program={scriptUnits} />
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -20,7 +21,7 @@ import * as WIZCORE from '../../../modules/appcore/ac-gui-mvvm';
 
 /// DEBUG CONSTANTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
+const DBG = true;
 
 /// LINE PRINTING MACHINE //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -82,22 +83,24 @@ function m_NextLine() {
 
 /// PRINT CONTROLLER METHODS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function PrintBlock(block) {
-  block.forEach(stm => {
+function PrintBlock(props) {
+  const { block } = props;
+  block.forEach(statement => {
     // print statement array by reference
-    PrintStatement(stm);
+    PrintStatement({ statement });
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function PrintStatement(stm) {
-  stm.forEach((tok, idx) => {
+function PrintStatement(props) {
+  const { statement } = props;
+  statement.forEach((tok, idx) => {
     // if it's a block token then have to print it
     // (pass array by reference)
     if (idx === 0) m_NextLine();
     if (Array.isArray(tok.block)) {
       m_Indent();
       //
-      PrintBlock(tok.block);
+      PrintBlock({ block: tok.block });
       //
       m_Outdent();
       return;
@@ -105,26 +108,43 @@ function PrintStatement(stm) {
     // check for blank lines
     if (tok.line !== undefined) return;
     // otherwise just print
-    PrintToken(tok);
+    PrintToken({ token: tok });
   });
   // flush buffer after statement is printed, increment line
   m_Flush();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function PrintToken(tok) {
+function PrintToken(props) {
+  const { token } = props;
   // should not get block tokens
-  if (Array.isArray(tok.block)) throw Error('unexpected block token');
-
+  if (Array.isArray(token.block)) throw Error('unexpected block token');
+  // create objects to capture current values
+  const data = { type: 'token', token, line: LINE_NUM, index: LINE_IDX };
+  const dispatcher = event => WIZCORE.DispatchClick(event, data);
   // decode the token
-  const dtok = DecodeTokenPrimitive(tok);
-  // did token represent simple value?
+  const dtok = DecodeTokenPrimitive(token);
+  // is token a SIMPLE VALUE?
   if (typeof dtok !== 'object') {
-    m_Print(<GToken text={dtok} token={tok} key={u_Key('tok')} />);
+    m_Print(
+      <GToken
+        label={dtok}
+        token={token}
+        dispatcher={dispatcher}
+        key={u_Key('tok')}
+      />
+    );
     return;
   }
-  // if got this far, token is an extended type
-  // get the text representation of the token and print it
-  m_Print(<GToken text={TokenToString(dtok)} token={tok} key={u_Key('tok')} />);
+  // token must be NON-SIMPLE VALUE
+  // placeholder: just print the text representation of the token
+  m_Print(
+    <GToken
+      label={TokenToString(dtok)}
+      token={token}
+      dispatcher={dispatcher}
+      key={u_Key('tok')}
+    />
+  );
 }
 
 /// REACT COMPONENTS //////////////////////////////////////////////////////////
@@ -134,33 +154,19 @@ function PrintToken(tok) {
  *  this token so we can updated it then WIZCORE.SendState() it. But how???
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let UPDATE_HANDLER = () => {};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GToken(props) {
-  const data = `${LINE_NUM}.${LINE_IDX}`;
-  const { token, text } = props;
+  const { label, dispatcher } = props;
   return (
-    <div
-      className="gwiz gtoken styleOpen"
-      data={data}
-      onClick={() => {
-        if (token.token) {
-          if (DBG) console.log(`changing '${token.token}' to 'foo'`);
-          token.token = 'foo';
-          UPDATE_HANDLER();
-        }
-      }}
-    >
-      {text}
+    <div className="gwiz gtoken styleOpen" onClick={dispatcher}>
+      {label}
     </div>
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** React component called from DevWizard */
 export function ProgramPrinter(props) {
-  const { program, updateHandler } = props;
-  if (typeof updateHandler === 'function') UPDATE_HANDLER = updateHandler;
+  const { program } = props;
   m_Clear();
-  PrintBlock(program);
+  PrintBlock({ block: program });
   return PAGE;
 }
