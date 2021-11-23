@@ -20,7 +20,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-const { expect } = require('@hapi/code');
+// const { expect } = require('@hapi/code');
 const PROMPT = require('./util/prompts');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -60,6 +60,9 @@ class StateMgr {
     this._enqueue = this._enqueue.bind(this);
     this._dequeue = this._dequeue.bind(this);
   }
+
+  /// DEBUG UTILITIES /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   /// MAIN CLASS METHODS //////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -102,7 +105,7 @@ class StateMgr {
       console.warn(...PR('function not subscribed for', this.name));
   }
 
-  /// HELPER METHODS //////////////////////////////////////////////////////////
+  /// CLASS HELPER METHODS ////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Set the state object directly. used to initialize the state from within
    *  an appcore module. skips state validation because the VM_STATE entry
@@ -254,23 +257,29 @@ class StateMgr {
   }
 }
 
-/// TESTING PLAYGROUND ////////////////////////////////////////////////////////
+/// STATIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ERRS = [];
-try {
-  const vms = new StateMgr('Test');
-  expect(vms.name).to.be.equal('TEST'); // state names are forced to uppercase
-} catch (e) {
-  ERRS.push([e.message, 'color:white;background-color:orange;padding:2px 4px']);
-}
-if (ERRS.length) {
-  console.group(...PR('RUNTIME CLASS VALIDATION ERRORS'));
-  ERRS.forEach(([message, css], idx) => {
-    console.log(`${idx}\n%c${message}`, css);
-  });
-  console.groupEnd();
+/** return a READ-ONLY object containing state for a particular group */
+function RO_GetStateGroupByName(groupName) {
+  if (typeof groupName !== 'string') throw Error(`${groupName} is not a string`);
+  const bucket = groupName.trim().toUpperCase();
+  if (bucket !== groupName)
+    throw Error(`groupNames should be all uppercase, not ${bucket}`);
+  const state = VM_STATE[bucket];
+  if (!state) throw Error(`stateGroup ${bucket} is not defined`);
+
+  // create a read-only copy of state and set all its properties to
+  // unwriteable
+  const readOnlyState = { ...state };
+  for (const prop of Object.keys(readOnlyState)) {
+    Object.defineProperty(readOnlyState, prop, {
+      writable: false
+    });
+  }
+  return readOnlyState;
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+StateMgr.RO_GetStateGroupByName = RO_GetStateGroupByName;
 module.exports = StateMgr;

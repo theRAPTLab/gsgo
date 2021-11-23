@@ -19,6 +19,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import StateMgr from '@gemstep/ursys/src/class-state-mgr';
 import { TextToScript, ScriptToText } from '../sim/script/transpiler-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -102,7 +103,7 @@ function IsTokenInMaster(tok) {
 /// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// create the new instance, and extract the methods we plan to use
-const STORE = new UR.class.StateMgr('WIZARDVIEW');
+const STORE = new StateMgr('WIZARDVIEW');
 /// extract methods we want to use interrnally or export
 const {
   _initializeState, // special state initializer method
