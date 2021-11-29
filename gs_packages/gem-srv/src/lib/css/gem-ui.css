@@ -74,6 +74,20 @@
   margin: 1px 1px;
   user-select: none;
 }
+.gwiz.gtoken.first {
+  color: gray;
+  user-select: none;
+  position: absolute;
+  left: 0;
+  min-height: 1em;
+}
+.gwiz.gline {
+  float: left;
+  clear: left;
+}
+.gwiz.gline.blank {
+  background-color: inherit;
+}
 .gwiz.styleOpen {
   border: 0px solid #707070;
   background-color: #ddd;

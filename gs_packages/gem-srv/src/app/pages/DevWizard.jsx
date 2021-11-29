@@ -33,8 +33,8 @@ import clsx from 'clsx';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from './helpers/page-styles';
 //
-import { ProgramPrinter } from './components/ProgramPrinter';
-import * as WIZCORE from '../../modules/appcore/ac-gui-mvvm';
+import { WizardView } from './elements/ProgramPrinter';
+import * as WIZCORE from '../../modules/appcore/ac-wizcore';
 
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -173,7 +173,7 @@ class DevWizard extends React.Component {
         >
           <TestGraphics />
           <hr style={{ clear: 'left', marginTop: '60px' }} />
-          <ProgramPrinter program={script_tokens} />
+          <WizardView vmPage={this.state.script_page} />
         </div>
         <div
           id="console-bottom"

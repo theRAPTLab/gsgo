@@ -255,7 +255,7 @@ class ScriptTokenizer {
     while (this.linesIndex < this.linesCount) {
       const nodes = this.gobbleLine();
       if (nodes.length > 0) units.push(nodes);
-      else units.push([{ comment: 'blank' }]);
+      else units.push([{ line: '' }]);
     } // end while lines<lines.length
 
     // return a Script array of ScriptUnit arrays

@@ -28,17 +28,17 @@ import {
 import 'script/keywords/_all_keywords';
 
 // tooling imports
+import { TextToScript } from './tools/text-to-script';
+import { ScriptToText, TokenToString } from './tools/script-to-text';
+import { ScriptToJSX } from './tools/script-to-jsx';
 import {
-  TextToScript,
   CompileScript,
-  ScriptToText,
   CompileBlueprint,
-  TokenToString,
   DecodeStatement,
   DecodeToken,
   DecodeTokenPrimitive
-} from './tools/_all_tools';
-import { ScriptToJSX } from './tools/script-to-jsx';
+} from './tools/script-compiler';
+import { ScriptToLines } from './tools/script-utilities';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -372,7 +372,8 @@ export {
   TokenToString, // for converting a token to its text representation
   DecodeTokenPrimitive, // for decoding the value of a token, returns token otherwise
   DecodeToken, // Working with DecodeTokenPrimitive, converts a token into runtime entity
-  DecodeStatement // Works with DecodeToken to create runtime enties
+  DecodeStatement, // Works with DecodeToken to create runtime enties
+  ScriptToLines // converts script into a viewmodel suitable for rendering as lines
 };
 
 /// BLUEPRINT OPERATIONS

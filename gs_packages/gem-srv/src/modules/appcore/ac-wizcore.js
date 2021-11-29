@@ -20,7 +20,11 @@
 
 import UR from '@gemstep/ursys/client';
 import StateMgr from '@gemstep/ursys/src/class-state-mgr';
-import { TextToScript, ScriptToText } from '../sim/script/transpiler-v2';
+import {
+  TextToScript,
+  ScriptToText,
+  ScriptToLines
+} from '../sim/script/transpiler-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -118,6 +122,7 @@ const {
 _initializeState({
   script_text: DEFAULT_TEXT, // the source text
   script_tokens: TextToScript(DEFAULT_TEXT), // an array of tokenized statements
+  script_page: ScriptToLines(TextToScript(DEFAULT_TEXT)), // an array of statements turned into lines
   sel_line_num: -1, // selected line of wizard. If < 0 it is not set
   sel_line_idx: -1 // select index into line. If < 0 it is not set
 });
