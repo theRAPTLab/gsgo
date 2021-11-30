@@ -52,6 +52,7 @@ class StateMgr {
     this.SubscribeState = this.SubscribeState.bind(this);
     this.UnsubscribeState = this.UnsubscribeState.bind(this);
     this._initializeState = this._initializeState.bind(this);
+    this._setState = this._setState.bind(this);
     this._insertStateEvent = this._insertStateEvent.bind(this);
     this._interceptState = this._interceptState.bind(this);
     this._isValidState = this._isValidState.bind(this);
@@ -117,7 +118,7 @@ class StateMgr {
     // make sure stateObj has only lower_case keys
     Object.keys(stateObj).forEach(k => {
       if (k.toLowerCase() !== k)
-        throw Error(`${k} clonedEvent props must be lowercase`);
+        throw Error(`${k} _initState props must be lowercase`);
     });
     // check that VM_STATE entry is valid (should be created by constructor)
     if (VM_STATE[this.name]) {
@@ -133,6 +134,13 @@ class StateMgr {
       VM_STATE[this.name] = stateObj; // initialize!
       this.init = true;
     } else throw Error(`${this.name} does't exist in VM_STATE`);
+  }
+
+  /** In some cases, we want to update state but not trigger subscribers
+   *  related to it. Alias for _mergeState()
+   */
+  _setState(stateObj) {
+    this._mergeState(stateObj);
   }
 
   /** When SendState() is invoked, give the instance manager a change to

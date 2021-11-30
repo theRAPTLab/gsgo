@@ -29,10 +29,9 @@ import {
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AC-MVVM', 'TagCyan');
-const DBG = false;
+const DBG = true;
 const DEFAULT_TEXT = `
 # BLUEPRINT HoneyBee Bee
-
 // start of agent definition
 # PROGRAM DEFINE
 addProp frame Number 3
@@ -64,6 +63,7 @@ when Bee sometest [[
 when Bee sometest Bee [[
   dbgOut PairTest
 ]]
+
 `.trim();
 
 /// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
@@ -74,6 +74,7 @@ const STORE = new StateMgr('WIZARDVIEW');
 const {
   _initializeState, // special state initializer method
   _interceptState, // special state interceptor method
+  _setState, // special state set without notifier
   State, // return state
   SendState, // send { type, ...data } action to save
   SubscribeState, // provide listener for { type, ...data } on change
@@ -98,8 +99,9 @@ _interceptState(state => {
     try {
       const toks = TextToScript(script_text);
       state.script_tokens = toks;
+      state.script_page = ScriptToLines(toks);
     } catch (e) {
-      // ignore TextTpScript compiler errors during live typing
+      // ignore TextToScript compiler errors during live typing
     }
   }
   // if script_tokens is changing, we also want to emit new script_text
@@ -107,6 +109,7 @@ _interceptState(state => {
     try {
       const text = ScriptToText(state.script_tokens);
       state.script_text = text;
+      state.script_page = ScriptToLines(script_tokens);
     } catch (e) {
       // ignore TextTpScript compiler errors during live typing
     }
@@ -132,6 +135,13 @@ function DispatchClick(event) {
   // if nothing processed, thne unset selection
   if (DBG) console.log('unhandled click. deselecting');
   SendState({ sel_line_num: -1, sel_line_pos: -1 });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function WizardTextChanged(text) {
+  const script_tokens = TextToScript(text);
+  const script_page = ScriptToLines(script_tokens);
+  SendState({ script_page });
+  _setState({ script_text: text });
 }
 
 /// WIZCORE HELPER METHODS ////////////////////////////////////////////////////
@@ -174,7 +184,7 @@ function IsTokenInMaster(tok) {
 /// FORWARDED STATE METHODS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// dispatchers
-export { DispatchClick };
+export { DispatchClick, WizardTextChanged };
 /// utilities
 export { IsTokenInMaster, GetAllTokenObjects };
 /// forwarded state methods

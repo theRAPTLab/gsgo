@@ -14,6 +14,7 @@ import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export class WizardText extends React.Component {
@@ -23,6 +24,7 @@ export class WizardText extends React.Component {
     this.jarRef = React.createRef();
     //
     this.handleWizUpdate = this.handleWizUpdate.bind(this);
+    this.updateWizText = this.updateWizText.bind(this);
   }
 
   componentDidMount() {
@@ -31,21 +33,36 @@ export class WizardText extends React.Component {
     };
     const editor = this.jarRef.current;
     this.jar = CodeJar(editor, highlight);
-    this.jar.onUpdate(code => {
-      this.setState({ script_text: code });
+    this.wizTimer = null;
+
+    this.jar.onUpdate(text => {
+      // do a delayed update
+      if (this.wizTimer) clearInterval(this.wizTimer);
+      this.wizTimer = setTimeout(() => {
+        this.updateWizText(null, text);
+      }, 500);
     });
+
     // add a subscriber
     WIZCORE.SubscribeState(this.handleWizUpdate);
   }
 
   /** INCOMING: handle WIZCORE event updates */
   handleWizUpdate = vmStateEvent => {
-    this.setState(vmStateEvent, () => {});
+    /// CARELESS UPDATE ///
+    // this.setState(vmStateEvent);
+    /// CAREFUL UPDATE ///
+    const { script_tokens } = vmStateEvent;
+    if (DBG && script_tokens) console.log('tokens updated');
+  };
+
+  /** OUTGOING: send updated text to WIZCORE on change */
+  updateWizText = (event, text) => {
+    WIZCORE.WizardTextChanged(text);
   };
 
   render() {
     const { script_text, sel_line_num } = this.state;
-    console.log('rendering', sel_line_num);
     return (
       <pre
         className="language-gemscript line-numbers match-braces"

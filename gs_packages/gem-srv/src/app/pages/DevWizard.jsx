@@ -51,9 +51,6 @@ class DevWizard extends React.Component {
     this.state = WIZCORE.State();
     // bind methods that are called asynchronously
     this.handleWizUpdate = this.handleWizUpdate.bind(this);
-    this.updateWizToks = this.updateWizToks.bind(this);
-    this.updateWizText = this.updateWizText.bind(this);
-    this.handleTextInput = this.handleTextInput.bind(this);
   }
 
   componentDidMount() {
@@ -71,33 +68,12 @@ class DevWizard extends React.Component {
 
   /** INCOMING: handle WIZCORE event updates */
   handleWizUpdate = vmStateEvent => {
-    this.setState(vmStateEvent, () => {
-      if (DBG) console.log('handleWizUpdate() completed', vmStateEvent);
-    });
-  };
+    // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
+    this.setState(vmStateEvent);
 
-  /** OUTGOING: send updated toks to WIZCORE on change */
-  updateWizToks = () => {
-    const { script_tokens } = this.state;
-    WIZCORE.SendState({ script_tokens }, () => {
-      if (DBG) console.log('updateWizToks() completed');
-    });
-  };
-  /** OUTGOING: send updated text to WIZCORE on change */
-  updateWizText = () => {
-    const { script_text } = this.state;
-    WIZCORE.SendState({ script_text }, () => {
-      if (DBG) console.log('updateWizText() completed');
-    });
-  };
-
-  /** route document clicks to WIZCORE dispatcher */
-  handleDocClick = event => {};
-
-  /** local textarea changes */
-  handleTextInput = event => {
-    const script_text = event.target.value;
-    this.setState({ script_text }, this.updateWizText);
+    // CAREFUL VERSION
+    // const { script_page } = vmStateEvent;
+    // if (script_page) this.setState({ script_page });
   };
 
   render() {
