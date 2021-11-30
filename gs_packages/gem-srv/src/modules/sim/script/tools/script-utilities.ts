@@ -79,6 +79,10 @@ function m_TokenOut(tok: IToken): void {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_LineOut(): void {
+  // don't export zero buffer lines which happens when m_StatementToLines
+  // has no statement tokens
+  if (LINE_BUF.length === 0) return;
+  // otherwise do the thing
   const { level, lineNum } = m_Info();
   const line: VMTokenLine = {
     tokenList: LINE_BUF,
@@ -102,8 +106,8 @@ function m_StatementToLines(statement: TScriptUnit): void {
     // (1) if it's a block token then nested print
     if (Array.isArray(tok.block)) {
       if (DBG) DBGTEXT += 'BLOCK ';
-      m_Indent();
       m_LineOut();
+      m_Indent();
       m_BlockToLines({ block: tok.block });
       m_Outdent();
       return;

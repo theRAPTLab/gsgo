@@ -28,6 +28,18 @@ function u_Key(prefix = '') {
   return key;
 }
 
+/// META ELEMENTS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GLineSpace() {
+  return <div className="gwiz gtoken">&nbsp;</div>;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GLineNum(props) {
+  const { lineNum } = props;
+  const numLabel = `R${lineNum}`;
+  return <div className="gwiz gtoken first">{numLabel}</div>;
+}
+
 /// COMPONENTS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GLine(props) {
@@ -42,24 +54,21 @@ function GLine(props) {
     </>
   );
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GLineNum(props) {
-  const { lineNum } = props;
-  return <div className="gwiz gtoken first">{lineNum}</div>;
-}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GToken(props) {
   const { token, dispatcher, data } = props;
 
-  if (token === undefined) {
-    return <div className="gwiz gtoken blank">&nbsp;</div>;
-  }
   const dtok = DecodeTokenPrimitive(token);
   let label;
 
   if (typeof dtok !== 'object') label = dtok;
   else label = TokenToString(dtok);
-
+  // blank line? Just emit a line space
+  if (label === '') {
+    return <GLineSpace />;
+  }
+  // if not, emit the token element
   return (
     <div
       className="gwiz gtoken styleOpen"
@@ -88,11 +97,8 @@ export function WizardView(props) {
   vmPage.forEach(line => {
     const { lineNum, level, tokenList } = line;
     const lineBuffer = [];
-    // iterate over tokenList
-    if (tokenList.length === 0) {
-      lineBuffer.push(<GToken />);
-      DBGTEXT += '[NO LIST]';
-    } else {
+    // iterate over tokenList if it exists
+    if (tokenList.length > 0) {
       tokenList.forEach(tokInfo => {
         const { lineNum: num, token, linePos: pos } = tokInfo;
         let label;
@@ -103,6 +109,8 @@ export function WizardView(props) {
         lineBuffer.push(<GToken label={label} data={data} token={token} />);
         DBGTEXT += `{${data}} `;
       });
+    } else {
+      lineBuffer.push(<GLineSpace />);
     }
     //
     const num = String(lineNum).padStart(3, '0');

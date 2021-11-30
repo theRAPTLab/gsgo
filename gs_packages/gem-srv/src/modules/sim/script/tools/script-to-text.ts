@@ -42,7 +42,7 @@ function TokenToString(tok: IToken, indent: number) {
   if (expr) return `{{ ${expr} }}`; // { expr = string }
   if (program) return `[[ ${program} ]]`; // { program = string name of stored program }
   if (directive) return '#';
-  if (line !== undefined) return `${line}`;
+  if (line !== undefined) return '';
   console.warn('unknown argument type:', tok);
   throw Error('unknown argument type');
 }
