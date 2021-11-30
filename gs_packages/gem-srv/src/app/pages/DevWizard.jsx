@@ -14,6 +14,7 @@ import clsx from 'clsx';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from './helpers/page-styles';
 //
+import { WizardText } from './elements/WizardText';
 import { WizardView } from './elements/WizardView';
 import * as WIZCORE from '../../modules/appcore/ac-wizcore';
 
@@ -101,7 +102,7 @@ class DevWizard extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { script_text, script_page, sel_line_num, sel_line_pos } = this.state;
+    const { script_page, sel_line_num, sel_line_pos } = this.state;
     const selText =
       sel_line_num < 0 ? 'no selection' : `${sel_line_num},${sel_line_pos}`;
     //
@@ -122,19 +123,26 @@ class DevWizard extends React.Component {
           <span style={{ fontSize: '32px' }}>DEV/WIZARD</span>{' '}
           {UR.ConnectionString()}
         </div>
-        <textarea
+
+        <div
           id="console-left"
-          className={clsx(classes.cell, classes.left)}
+          className={clsx(
+            classes.cell,
+            classes.left,
+            'language-gemscript',
+            'line-numbers'
+          )}
           style={{
             boxSizing: 'border-box',
             gridColumnEnd: 'span 1',
             minWidth: '280px',
             whiteSpace: 'pre',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            backgroundColor: '#2d2d2d'
           }}
-          value={script_text}
-          onChange={this.handleTextInput}
-        />
+        >
+          <WizardText />
+        </div>
 
         <div
           ref={this.boxRef}

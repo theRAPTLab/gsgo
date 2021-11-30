@@ -21,6 +21,10 @@ import {
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
+// whether to render blank lines that come from a ]] block, which has
+// no visual equivalent. This will cause line numbers to be discontinuous, but
+// will match the script_text line numbers
+const RENDER_BLOCK_CLOSE = false; // also see script-utilities COUNT_ALL_LINES
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,8 +51,7 @@ function GLineSpace() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GLineNum(props) {
   const { lineNum } = props;
-  const numLabel = `R${lineNum}`;
-  return <div className="gwiz gtoken first">{numLabel}</div>;
+  return <div className="gwiz gtoken first">{lineNum}</div>;
 }
 
 /// COMPONENTS ////////////////////////////////////////////////////////////////
@@ -97,6 +100,7 @@ function GToken(props) {
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let DBGTEXT = '';
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function WizardView(props) {
   DBGTEXT = '';
   const { vmPage } = props;
@@ -105,14 +109,13 @@ export function WizardView(props) {
   vmPage.forEach(line => {
     const { lineNum, level, tokenList } = line;
     const lineBuffer = [];
+    const hasTokens = tokenList.length > 0;
     // iterate over tokenList if it exists
-    if (tokenList.length > 0) {
+    if (hasTokens) {
       tokenList.forEach(tokInfo => {
         const { lineNum: num, token, linePos: pos } = tokInfo;
-        let label;
         const dtok = DecodeTokenPrimitive(token);
-        if (typeof dtok !== 'object') label = dtok;
-        else label = TokenToString(token);
+        const label = typeof dtok !== 'object' ? dtok : TokenToString(token);
         const tokId = `${num},${pos}`;
         lineBuffer.push(
           <GToken key={u_Key()} label={label} tokenId={tokId} token={token} />
@@ -120,17 +123,22 @@ export function WizardView(props) {
         DBGTEXT += `{${tokId}} `;
       });
     } else {
-      lineBuffer.push(<GLineSpace />);
+      // insert a blank line into the liner buffer
+      // eslint-disable-next-line no-lonely-if
+      if (RENDER_BLOCK_CLOSE) lineBuffer.push(<GLineSpace />);
     }
     //
     const num = String(lineNum).padStart(3, '0');
     //
-    pageBuffer.push(
-      <GLine key={u_Key()} lineNum={num} level={level}>
-        {lineBuffer}
-      </GLine>
-    );
-    DBGTEXT += '\n';
+    if (hasTokens || RENDER_BLOCK_CLOSE) {
+      pageBuffer.push(
+        <GLine key={u_Key()} lineNum={num} level={level}>
+          {lineBuffer}
+        </GLine>
+      );
+      DBGTEXT += '\n';
+    }
+    //
   });
   if (DBG) {
     console.groupCollapsed('Wizard DBG');

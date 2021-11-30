@@ -13,6 +13,9 @@ import { VMToken, VMTokenLine } from 'lib/t-ui.d';
 const DBG = false;
 let DBGTEXT = '';
 
+// whether to count blank lines or not
+const COUNT_ALL_LINES = true; // see WizardView RENDER_BLOCK_CLOSE
+
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a script of ScriptUnit statements, return a PAGE of VMTokenLine and
@@ -32,8 +35,9 @@ export function ScriptToLines(program: TScriptUnit[]): VMTokenLine[] {
 /// convert statements that contain nested statements in their line-by-line
 /// equivalent
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let START_LINE = 1;
 let INDENT = 0;
-let LINE_NUM = 0;
+let LINE_NUM = START_LINE;
 let LINE_POS = 0;
 let LINE_BUF = [];
 let PAGE = [];
@@ -53,7 +57,7 @@ function m_Info() {
 function m_Clear(): void {
   LINE_BUF = [];
   LINE_POS = 0;
-  LINE_NUM = 0;
+  LINE_NUM = START_LINE;
   PAGE = [];
   DBGTEXT = '';
 }
@@ -81,9 +85,11 @@ function m_TokenOut(tok: IToken): void {
 function m_LineOut(): void {
   // don't export zero buffer lines which happens when m_StatementToLines
   // has no statement tokens
+
   // ALTERNATIVELY, we can assume it is a CLOSING ]] and render that instead
   // for consistent numbering between scriptText and scriptWizard views
-  if (LINE_BUF.length === 0) return;
+  if (LINE_BUF.length === 0 && !COUNT_ALL_LINES) return;
+
   // otherwise do the thing
   const { level, lineNum } = m_Info();
   const line: VMTokenLine = {
