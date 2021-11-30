@@ -2,12 +2,13 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  ScriptUnit to JSX Renderer - Given a source tokenList for a program, return
-  an array of array of JSX elements
+  WizardView - Given a script_page array of renderable state, emit
+  a clickable wizard GUI.
 
   COMPONENT USAGE
 
-    <PrintProgram program={scriptUnits} />
+    <WizardView vmPage={this.state.script_page} />
+    where script_page is defined in ac-wizcore
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -19,13 +20,23 @@ import {
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let CHEESE_KEY = 0;
 const DBG = false;
+
+/// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const KEY_BITS = -1 + 2 ** 16;
+let KEY_COUNTER = 0;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Generates a sequential key index for React lists that increments and wraps
+ *  back to 0 after 16 bits exceeded. The output is a 4-digit hex string.
+ *  This assumes that no more than 65536 elements are rendered at a time,
+ *  which is pretty safe bet :-) We have to do this because our script_page
+ *  elements do not have unique ids.
+ */
 function u_Key(prefix = '') {
-  const key = `${prefix}${CHEESE_KEY}`;
-  CHEESE_KEY++;
-  return key;
+  const hex = KEY_COUNTER.toString(16).padStart(4, '0');
+  if (++KEY_COUNTER > KEY_BITS) KEY_COUNTER = 0;
+  return `${prefix}${hex}`;
 }
 
 /// META ELEMENTS /////////////////////////////////////////////////////////////
@@ -42,6 +53,7 @@ function GLineNum(props) {
 
 /// COMPONENTS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** wrapper for a GToken */
 function GLine(props) {
   const { lineNum, level, children } = props;
   const indent = level * 2 + 4;
@@ -56,8 +68,9 @@ function GLine(props) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** representation of a script unit i.e. token */
 function GToken(props) {
-  const { token, dispatcher, data } = props;
+  const { tokenId, token } = props;
 
   const dtok = DecodeTokenPrimitive(token);
   let label;
@@ -70,12 +83,7 @@ function GToken(props) {
   }
   // if not, emit the token element
   return (
-    <div
-      className="gwiz gtoken styleOpen"
-      onClick={dispatcher}
-      data={data}
-      key={u_Key('tok')}
-    >
+    <div className="gwiz gtoken styleOpen" data-tokenid={tokenId}>
       {label}
     </div>
   );
@@ -105,9 +113,11 @@ export function WizardView(props) {
         const dtok = DecodeTokenPrimitive(token);
         if (typeof dtok !== 'object') label = dtok;
         else label = TokenToString(token);
-        const data = `${num}:${pos}`;
-        lineBuffer.push(<GToken label={label} data={data} token={token} />);
-        DBGTEXT += `{${data}} `;
+        const tokId = `${num},${pos}`;
+        lineBuffer.push(
+          <GToken key={u_Key()} label={label} tokenId={tokId} token={token} />
+        );
+        DBGTEXT += `{${tokId}} `;
       });
     } else {
       lineBuffer.push(<GLineSpace />);
@@ -116,7 +126,7 @@ export function WizardView(props) {
     const num = String(lineNum).padStart(3, '0');
     //
     pageBuffer.push(
-      <GLine lineNum={num} level={level}>
+      <GLine key={u_Key()} lineNum={num} level={level}>
         {lineBuffer}
       </GLine>
     );

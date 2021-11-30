@@ -29,8 +29,7 @@ import {
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AC-MVVM', 'TagCyan');
-const DBG = false;
-// initial script text
+const DBG = true;
 const DEFAULT_TEXT = `
 # BLUEPRINT HoneyBee Bee
 
@@ -67,7 +66,75 @@ when Bee sometest Bee [[
 ]]
 `.trim();
 
-/// MODULE HELPERS ////////////////////////////////////////////////////////////
+/// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// create the new instance, and extract the methods we plan to use
+const STORE = new StateMgr('WIZARDVIEW');
+/// extract methods we want to use interrnally or export
+const {
+  _initializeState, // special state initializer method
+  _interceptState, // special state interceptor method
+  State, // return state
+  SendState, // send { type, ...data } action to save
+  SubscribeState, // provide listener for { type, ...data } on change
+  UnsubscribeState // remove listener
+} = STORE;
+
+/// declare the allowed state keys for 'WIZARDVIEW'
+_initializeState({
+  script_text: DEFAULT_TEXT, // the source text
+  script_tokens: TextToScript(DEFAULT_TEXT), // an array of tokenized statements
+  script_page: ScriptToLines(TextToScript(DEFAULT_TEXT)), // an array of statements turned into lines
+  sel_line_num: -1, // selected line of wizard. If < 0 it is not set
+  sel_line_pos: -1 // select index into line. If < 0 it is not set
+});
+
+/// spy on incoming SendState events and modify/add events as needed
+_interceptState(state => {
+  const { script_text, script_tokens } = state;
+
+  // if script_text is changing, we also want to emit new script_token
+  if (!script_tokens && script_text) {
+    try {
+      const toks = TextToScript(script_text);
+      state.script_tokens = toks;
+    } catch (e) {
+      // ignore TextTpScript compiler errors during live typing
+    }
+  }
+  // if script_tokens is changing, we also want to emit new script_text
+  if (!script_text && script_tokens) {
+    try {
+      const text = ScriptToText(state.script_tokens);
+      state.script_text = text;
+    } catch (e) {
+      // ignore TextTpScript compiler errors during live typing
+    }
+  }
+});
+
+/// EVENT DISPATCHERS (REDUCERS) //////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function DispatchClick(event) {
+  // handle click-outside
+  if (this.boxRef && !this.boxRef.current.contains(event.target)) {
+    if (DBG) console.log('you just clicked outside of box!');
+    return;
+  }
+  // did a GToken get clicked? It will have token-id set
+  const tokId = event.target.getAttribute('data-tokenid');
+  if (tokId !== null) {
+    if (DBG) console.log(`data clicked ${JSON.stringify(tokId)}`);
+    const [line, pos] = tokId.split(',');
+    SendState({ sel_line_num: line, sel_line_pos: pos });
+    return;
+  }
+  // if nothing processed, thne unset selection
+  if (DBG) console.log('unhandled click. deselecting');
+  SendState({ sel_line_num: -1, sel_line_pos: -1 });
+}
+
+/// WIZCORE HELPER METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return a flat array of all token objects for refence comparison purposes */
 function GetAllTokenObjects(statements) {
@@ -102,61 +169,6 @@ function IsTokenInMaster(tok) {
     else console.log('%ctokens are different objects', 'color:red', tok);
   }
   return found;
-}
-
-/// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// create the new instance, and extract the methods we plan to use
-const STORE = new StateMgr('WIZARDVIEW');
-/// extract methods we want to use interrnally or export
-const {
-  _initializeState, // special state initializer method
-  _interceptState, // special state interceptor method
-  State, // return state
-  SendState, // send { type, ...data } action to save
-  SubscribeState, // provide listener for { type, ...data } on change
-  UnsubscribeState // remove listener
-} = STORE;
-
-/// declare the allowed state keys for 'WIZARDVIEW'
-_initializeState({
-  script_text: DEFAULT_TEXT, // the source text
-  script_tokens: TextToScript(DEFAULT_TEXT), // an array of tokenized statements
-  script_page: ScriptToLines(TextToScript(DEFAULT_TEXT)), // an array of statements turned into lines
-  sel_line_num: -1, // selected line of wizard. If < 0 it is not set
-  sel_line_idx: -1 // select index into line. If < 0 it is not set
-});
-
-/// spy on incoming SendState events and modify/add events as needed
-_interceptState(state => {
-  const { script_text, script_tokens } = state;
-
-  // if script_text is changing, we also want to emit new script_token
-  if (!script_tokens && script_text) {
-    try {
-      const toks = TextToScript(script_text);
-      state.script_tokens = toks;
-    } catch (e) {
-      // ignore TextTpScript compiler errors during live typing
-    }
-  }
-  // if script_tokens is changing, we also want to emit new script_text
-  if (!script_text && script_tokens) {
-    try {
-      const text = ScriptToText(state.script_tokens);
-      state.script_text = text;
-    } catch (e) {
-      // ignore TextTpScript compiler errors during live typing
-    }
-  }
-});
-
-/// EVENT DISPATCHERS (REDUCERS) //////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function DispatchClick(event, data) {
-  const { type, token, line, index } = data;
-  console.log(`${type} clicked line:${line} index:${index} token:`, token);
-  SendState({ sel_line_num: line, sel_line_idx: index });
 }
 
 /// FORWARDED STATE METHODS ///////////////////////////////////////////////////

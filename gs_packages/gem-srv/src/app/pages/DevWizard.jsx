@@ -1,28 +1,9 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable react/destructuring-assignment */
-/* eslint-disable react/no-array-index-key */
 
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Wizard - Rendering shapes
-
-  EVENT ROUTING - The React front-end just handles view state that is sent from
-  appcore modules. It also reroutes view state changes to appcore modules.
-  The primary way that this.setState() is called is if an appcore module
-  fires a notification to it.
-
-  <DevWizard>
-  document.onClick ->   this.handleDocClick
-                        checks the event target for top-level for out-of-box
-                        selection, otherwise extracts data from clicked element
-  TextArea.onChange ->  this.handleTextInput
-                        reads text and sends to WIZCORE
-  handleWizUpdate <-    main this.setState() handler, as we loop all events
-                        through WIZCORE
-
-  <ProgramPrinter>
-  GToken.onClick ->     UPDATE_HANDLER()
+  Wizard - Rendering Visual UI for Script Editing
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -33,12 +14,12 @@ import clsx from 'clsx';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from './helpers/page-styles';
 //
-import { WizardView } from './elements/ProgramPrinter';
+import { WizardView } from './elements/WizardView';
 import * as WIZCORE from '../../modules/appcore/ac-wizcore';
 
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
+const DBG = true;
 const PR = UR.PrefixUtil('DEWIZ', 'TagApp');
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -81,7 +62,7 @@ class DevWizard extends React.Component {
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
 
     // add top-level click andler
-    document.addEventListener('click', this.handleDocClick);
+    document.addEventListener('click', WIZCORE.DispatchClick);
 
     // add a subscriber
     WIZCORE.SubscribeState(this.handleWizUpdate);
@@ -96,27 +77,21 @@ class DevWizard extends React.Component {
 
   /** OUTGOING: send updated toks to WIZCORE on change */
   updateWizToks = () => {
-    WIZCORE.SendState({ script_tokens: this.state.script_tokens }, () => {
+    const { script_tokens } = this.state;
+    WIZCORE.SendState({ script_tokens }, () => {
       if (DBG) console.log('updateWizToks() completed');
     });
   };
   /** OUTGOING: send updated text to WIZCORE on change */
   updateWizText = () => {
-    WIZCORE.SendState({ script_text: this.state.script_text }, () => {
+    const { script_text } = this.state;
+    WIZCORE.SendState({ script_text }, () => {
       if (DBG) console.log('updateWizText() completed');
     });
   };
 
-  /** local click handling */
-  handleDocClick = event => {
-    // handle click-outside
-    if (this.boxRef && !this.boxRef.current.contains(event.target)) {
-      if (DBG) console.log('you just clicked outside of box!');
-      return;
-    }
-    const data = event.target.getAttribute('data');
-    if (DBG) console.log(`data clicked ${JSON.stringify(data)}`);
-  };
+  /** route document clicks to WIZCORE dispatcher */
+  handleDocClick = event => {};
 
   /** local textarea changes */
   handleTextInput = event => {
@@ -126,7 +101,9 @@ class DevWizard extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { script_tokens, script_text } = this.state;
+    const { script_text, script_page, sel_line_num, sel_line_pos } = this.state;
+    const selText =
+      sel_line_num < 0 ? 'no selection' : `${sel_line_num},${sel_line_pos}`;
     //
     return (
       <div
@@ -173,14 +150,14 @@ class DevWizard extends React.Component {
         >
           <TestGraphics />
           <hr style={{ clear: 'left', marginTop: '60px' }} />
-          <WizardView vmPage={this.state.script_page} />
+          <WizardView vmPage={script_page} />
         </div>
         <div
           id="console-bottom"
           className={clsx(classes.cell, classes.bottom)}
           style={{ gridColumnEnd: 'span 2' }}
         >
-          console-bottom {this.state.DBGDRAW}
+          selection: {selText}
         </div>
       </div>
     );

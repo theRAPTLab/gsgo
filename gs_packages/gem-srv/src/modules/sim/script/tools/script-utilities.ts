@@ -81,6 +81,8 @@ function m_TokenOut(tok: IToken): void {
 function m_LineOut(): void {
   // don't export zero buffer lines which happens when m_StatementToLines
   // has no statement tokens
+  // ALTERNATIVELY, we can assume it is a CLOSING ]] and render that instead
+  // for consistent numbering between scriptText and scriptWizard views
   if (LINE_BUF.length === 0) return;
   // otherwise do the thing
   const { level, lineNum } = m_Info();
