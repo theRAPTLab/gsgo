@@ -61,6 +61,7 @@ const sFoot = {
   padding: PAD,
   backgroundColor: BG_COL
 };
+/// STYLING CSS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const sError = {
   textAlign: 'right',
@@ -69,6 +70,16 @@ const sError = {
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function Header(props) {
+  const { label } = props;
+  return (
+    <header style={sHead}>
+      <span style={{ fontSize: '32px' }}>{label}</span> {UR.ConnectionString()}
+    </header>
+  );
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** prototype SVG-based background styling of boxes */
 function TestGraphics() {
   return (
     <div>
@@ -127,14 +138,11 @@ class DevWizard extends React.Component {
     //
     return (
       <div id="gui-wizard" style={sParent}>
-        <header style={sHead}>
-          <span style={{ fontSize: '32px' }}>DEV/WIZARD</span>{' '}
-          {UR.ConnectionString()}
-        </header>
-        <section className="language-gemscript line-numbers" style={sLeft}>
+        <Header label="DEV/WIZARD" />
+        <section style={sLeft}>
           <WizardText />
         </section>
-        <section ref={this.boxRef} style={sRight}>
+        <section style={sRight}>
           <TestGraphics />
           <hr style={{ clear: 'left', marginTop: '60px' }} />
           <WizardView vmPage={script_page} />

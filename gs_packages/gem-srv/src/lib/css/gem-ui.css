@@ -33,6 +33,8 @@
   min-height: 50px;
   min-width: 16px;
   background-origin: border-box;
+  display: grid;
+  place-items: center;
 }
 .glabel {
   user-select: none;
