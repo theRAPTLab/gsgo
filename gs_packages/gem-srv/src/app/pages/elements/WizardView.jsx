@@ -17,6 +17,7 @@ import {
   TokenToString,
   DecodeTokenPrimitive
 } from '../../../modules/sim/script/transpiler-v2';
+import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -58,11 +59,13 @@ function GLineNum(props) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** wrapper for a GToken */
 function GLine(props) {
-  const { lineNum, level, children } = props;
+  const { lineNum, level, children, selected } = props;
   const indent = level * 2 + 4;
+  const classes = selected ? 'gwiz gline selected' : 'gwiz gline';
+
   return (
     <>
-      <div className="gwiz gline" style={{ marginLeft: `${indent}em` }}>
+      <div className={classes} style={{ marginLeft: `${indent}em` }}>
         <GLineNum lineNum={lineNum} />
         {children}
       </div>
@@ -73,8 +76,7 @@ function GLine(props) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** representation of a script unit i.e. token */
 function GToken(props) {
-  const { tokenId, token } = props;
-
+  const { tokenId, token, selected } = props;
   const dtok = DecodeTokenPrimitive(token);
   let label;
 
@@ -84,9 +86,13 @@ function GToken(props) {
   if (label === '') {
     return <GLineSpace />;
   }
+  let classes = selected
+    ? 'gwiz gtoken styleOpen selected'
+    : 'gwiz gtoken styleOpen';
+
   // if not, emit the token element
   return (
-    <div className="gwiz gtoken styleOpen" data-tokenid={tokenId}>
+    <div className={classes} data-tokenid={tokenId}>
       {label}
     </div>
   );
@@ -105,6 +111,8 @@ export function WizardView(props) {
   DBGTEXT = '';
   const { vmPage } = props;
   const pageBuffer = [];
+  const selTokId = WIZCORE.SelectedTokId();
+  const selLineNum = WIZCORE.SelectedLineNum();
 
   vmPage.forEach(line => {
     const { lineNum, level, tokenList } = line;
@@ -117,8 +125,15 @@ export function WizardView(props) {
         const dtok = DecodeTokenPrimitive(token);
         const label = typeof dtok !== 'object' ? dtok : TokenToString(token);
         const tokId = `${num},${pos}`;
+        const selected = tokId === selTokId;
         lineBuffer.push(
-          <GToken key={u_Key()} label={label} tokenId={tokId} token={token} />
+          <GToken
+            key={u_Key()}
+            selected={selected}
+            label={label}
+            tokenId={tokId}
+            token={token}
+          />
         );
         DBGTEXT += `{${tokId}} `;
       });
@@ -131,8 +146,9 @@ export function WizardView(props) {
     const num = String(lineNum).padStart(3, '0');
     //
     if (hasTokens || RENDER_BLOCK_CLOSE) {
+      const selected = selLineNum === lineNum;
       pageBuffer.push(
-        <GLine key={u_Key()} lineNum={num} level={level}>
+        <GLine key={u_Key()} selected={selected} lineNum={num} level={level}>
           {lineBuffer}
         </GLine>
       );

@@ -78,7 +78,7 @@ class DevWizard extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { script_page, sel_line_num, sel_line_pos } = this.state;
+    const { script_page, sel_line_num, sel_line_pos, error } = this.state;
     const selText =
       sel_line_num < 0 ? 'no selection' : `${sel_line_num},${sel_line_pos}`;
     //
@@ -141,7 +141,16 @@ class DevWizard extends React.Component {
           className={clsx(classes.cell, classes.bottom)}
           style={{ gridColumnEnd: 'span 2' }}
         >
-          selection: {selText}
+          <div>selection: {selText}</div>
+          <div
+            style={{
+              textAlign: 'right',
+              backgroundColor: 'red',
+              color: 'white'
+            }}
+          >
+            {error}
+          </div>
         </div>
       </div>
     );

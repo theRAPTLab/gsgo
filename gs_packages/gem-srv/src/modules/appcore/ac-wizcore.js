@@ -87,7 +87,8 @@ _initializeState({
   script_tokens: TextToScript(DEFAULT_TEXT), // an array of tokenized statements
   script_page: ScriptToLines(TextToScript(DEFAULT_TEXT)), // an array of statements turned into lines
   sel_line_num: -1, // selected line of wizard. If < 0 it is not set
-  sel_line_pos: -1 // select index into line. If < 0 it is not set
+  sel_line_pos: -1, // select index into line. If < 0 it is not set
+  error: '' // used fo error messages
 });
 
 /// spy on incoming SendState events and modify/add events as needed
@@ -127,7 +128,7 @@ function DispatchClick(event) {
   // did a GToken get clicked? It will have token-id set
   const tokId = event.target.getAttribute('data-tokenid');
   if (tokId !== null) {
-    if (DBG) console.log(`data clicked ${JSON.stringify(tokId)}`);
+    if (DBG) console.log(`clicked token ${JSON.stringify(tokId)}`);
     const [line, pos] = tokId.split(',');
     SendState({ sel_line_num: line, sel_line_pos: pos });
     return;
@@ -138,10 +139,17 @@ function DispatchClick(event) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function WizardTextChanged(text) {
-  const script_tokens = TextToScript(text);
-  const script_page = ScriptToLines(script_tokens);
-  SendState({ script_page });
-  _setState({ script_text: text });
+  let script_tokens;
+  try {
+    script_tokens = TextToScript(text);
+    const script_page = ScriptToLines(script_tokens);
+    SendState({ script_page });
+    _setState({ script_text: text });
+  } catch (e) {
+    SendState({ error: e.toString() });
+    return;
+  }
+  SendState({ error: '' });
 }
 
 /// WIZCORE HELPER METHODS ////////////////////////////////////////////////////
@@ -159,6 +167,18 @@ function GetAllTokenObjects(statements) {
     });
   });
   return allToks;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function SelectedTokId() {
+  const { sel_line_num, sel_line_pos } = State();
+  if (sel_line_num < 0) return undefined;
+  if (sel_line_pos < 0) return `${sel_line_num}`;
+  return `${sel_line_num},${sel_line_pos}`;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function SelectedLineNum() {
+  const { sel_line_num } = State();
+  return Number(sel_line_num);
 }
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
@@ -187,5 +207,6 @@ function IsTokenInMaster(tok) {
 export { DispatchClick, WizardTextChanged };
 /// utilities
 export { IsTokenInMaster, GetAllTokenObjects };
+export { SelectedTokId, SelectedLineNum };
 /// forwarded state methods
 export { State, SendState, SubscribeState, UnsubscribeState };

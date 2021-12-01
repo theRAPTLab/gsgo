@@ -39,8 +39,9 @@ function TokenToString(tok: IToken, indent: number) {
     });
     return `[[\n${lines}${''.padStart(indent, ' ')}]]`;
   }
+  if (expr === '') return '{{ ??? }}}'; // happens during live typing
   if (expr) return `{{ ${expr} }}`; // { expr = string }
-  if (program === '') return '[[ ??? ]]';
+  if (program === '') return '[[ ??? ]]'; // happens during live typing
   if (program) return `[[ ${program} ]]`; // { program = string name of stored program }
   if (directive) return '#';
   if (line !== undefined) return '';

@@ -208,7 +208,7 @@ class ScriptTokenizer {
         'color:#C0C0C0;background-color:#FFF0D0'
       );
     }
-    throw Error(err);
+    throw Error(`${err} @${this.linesIndex}:${this.index}`);
   }
 
   /** GEMSCRIPT HACK ** jsep is an expression parser that works on lines.
@@ -397,7 +397,7 @@ class ScriptTokenizer {
         this.throwError(
           `GobbleNumericLiteral: Expected exponent (${
             number + this.exprI(this.index)
-          }) at ${this.index}`
+          })`
         );
       }
     }
@@ -407,10 +407,10 @@ class ScriptTokenizer {
       this.throwError(
         `GobbleNumericLiteral: Variable names cannot start with a number (${
           number + this.exprI(this.index)
-        }) at ${this.index}`
+        })`
       );
     } else if (chCode === PERIOD_CODE) {
-      this.throwError(`GobbleNumericLiteral: Unexpected period at ${this.index}`);
+      this.throwError(`GobbleNumericLiteral: Unexpected period`);
     }
     return { value: parseFloat(number) }; // was: return parseFloat(number);
   }
@@ -458,9 +458,7 @@ class ScriptTokenizer {
       }
     }
     if (!closed)
-      this.throwError(
-        `GobbleStringLiteral: Unclosed quote after "${str}" at ${this.index}`
-      );
+      this.throwError(`GobbleStringLiteral: Unclosed quote after "${str}"`);
     return { string: str }; // was: return str;
   }
 
@@ -476,9 +474,7 @@ class ScriptTokenizer {
     if (isIdentifierStart(ch)) {
       this.index++;
     } else {
-      this.throwError(
-        `GobbleIdentifier: Unexpected ${this.exprI(this.index)} at ${this.index}`
-      );
+      this.throwError(`GobbleIdentifier: Unexpected ${this.exprI(this.index)}`);
     }
     while (this.index < this.length) {
       ch = this.exprICode(this.index);
@@ -554,7 +550,7 @@ class ScriptTokenizer {
       this.index++;
       return node;
     }
-    return this.throwError(`GobbleGroup: Unclosed ( at ${this.index}`);
+    return this.throwError(`GobbleGroup: Unclosed (`);
   }
 
   /** GEMSCRIPT HACK ** In GEMSCRIPT, a {{ }} designates an expression, and the
@@ -578,7 +574,7 @@ class ScriptTokenizer {
       str += String.fromCharCode(ch);
     }
     return this.throwError(
-      `GobbleExpressionString: Unclosed inline {{ at ${this.index} for ${str}`
+      `GobbleExpressionString: Unclosed inline {{ for ${str}`
     );
   }
 

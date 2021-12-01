@@ -60,10 +60,11 @@ function DecodeTokenPrimitive(arg) {
   if (token !== undefined) return token;
   if (value !== undefined) return value;
   if (string !== undefined) return string;
-  if (program === '') return arg;
+  if (program === '') return arg; // happens during live typing
   if (program) return arg; // { program = string name of stored program }
   if (Array.isArray(block)) return arg; // { block = array of arrays of tok }
   if (objref) return arg; // { objref = array of string parts }
+  if (expr === '') return arg; // happens during live typing
   if (expr) return arg; // { expr = string }
   console.warn('unknown argument type:', arg);
   throw Error('unknown argument type');
