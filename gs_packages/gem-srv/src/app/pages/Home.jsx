@@ -14,11 +14,12 @@ import { useStylesHOC } from './helpers/page-styles';
 
 /// RUN UNIT TESTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// import '../../modules/tests/test-expr-parser'; // test parser evaluation
-// import '../../modules/tests/test-script-parser'; // test script parser
-// import '../../modules/tests/test-compiler'; // test compiler
-// import '../../modules/tests/test-script-runtime'; // test runtime keyword functions
-// import '../../modules/tests/test-keywords'; // test individual keywords
+// Tests Lasted Reviewed: Dec 1, 2021
+// import '../../modules/tests/test-expr-parser'; // test parser evaluation PASS
+// import '../../modules/tests/test-script-parser'; // test script parser PASS
+// import '../../modules/tests/test-compiler'; // test compiler (needs update)
+// import '../../modules/tests/test-script-runtime'; // test instances (needs update)
+// import '../../modules/tests/test-keywords'; // test keywords (needs update)
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

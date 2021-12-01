@@ -103,7 +103,7 @@ when Fish touches Algae [[
   prop Algae.foodEnergy setTo 0
   dbgOut 'fish'
 ]]
-`;
+`.trim();
 
 const PadAgent = `
 # BLUEPRINT Pad
@@ -121,7 +121,7 @@ when Fish touches Algae [[
   prop agent.foodEnergy sub 10
   dbgOut 'fish' Fish.id
 ]]
-`;
+`.trim();
 
 const BeeAgent = `
 # BLUEPRINT Bee
@@ -141,7 +141,7 @@ dbgOut agent.Costume.costumeName
 featPropPop agent.Costume.costumeName
 dbgOut agent.Costume.costumeName
 dbgStack
-`;
+`.trim();
 
 const WorldAgent = `
 # BLUEPRINT World
@@ -150,7 +150,7 @@ useFeature Costume
 addProp ticker Number 0
 # PROGRAM UPDATE
 prop ticker add 1
-`;
+`.trim();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// TEST CODE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
