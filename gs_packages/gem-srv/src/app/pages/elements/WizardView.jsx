@@ -51,8 +51,13 @@ function GLineSpace() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GLineNum(props) {
-  const { lineNum } = props;
-  return <div className="gwiz gtoken first">{lineNum}</div>;
+  const { lineNum, level } = props;
+  const indent = level * 2;
+  return (
+    <div className="gwiz gtoken first" style={{ marginRight: `${indent}rem` }}>
+      {lineNum}
+    </div>
+  );
 }
 
 /// COMPONENTS ////////////////////////////////////////////////////////////////
@@ -60,13 +65,12 @@ function GLineNum(props) {
 /** wrapper for a GToken */
 function GLine(props) {
   const { lineNum, level, children, selected } = props;
-  const indent = level * 2 + 4;
   const classes = selected ? 'gwiz gline selected' : 'gwiz gline';
 
   return (
     <>
-      <div className={classes} style={{ marginLeft: `${indent}em` }}>
-        <GLineNum lineNum={lineNum} />
+      <div className={classes}>
+        <GLineNum lineNum={lineNum} level={level} />
         {children}
       </div>
     </>

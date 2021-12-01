@@ -7,21 +7,66 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import UR from '@gemstep/ursys/client';
 import React from 'react';
-import '../../lib/css/gem-ui.css';
-import clsx from 'clsx';
-import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from './helpers/page-styles';
-//
+import UR from '@gemstep/ursys/client';
+import * as WIZCORE from '../../modules/appcore/ac-wizcore';
 import { WizardText } from './elements/WizardText';
 import { WizardView } from './elements/WizardView';
-import * as WIZCORE from '../../modules/appcore/ac-wizcore';
+//
+import '../../lib/css/gem-ui.css';
 
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
+const DBG = false;
 const PR = UR.PrefixUtil('DEWIZ', 'TagApp');
+
+/// LAYOUT CSS ////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const BG_COL = '#ddd';
+const PAD = '10px';
+const sParent = {
+  display: 'grid',
+  width: '100vw',
+  height: '100vh',
+  gridTemplateRows: 'auto 1fr auto',
+  gridTemplateColumns: 'auto auto'
+};
+const sHead = {
+  gridColumn: '1 / 3',
+  // extra styling
+  padding: PAD,
+  backgroundColor: BG_COL
+};
+const sLeft = {
+  gridColumn: '1 / 2',
+  // extra styling
+  boxSizing: 'border-box',
+  whiteSpace: 'pre',
+  overflowY: 'scroll',
+  overflowX: 'none',
+  backgroundColor: '#2d2d2d'
+};
+const sRight = {
+  gridColumn: '2 / 3',
+  // extra styling
+  padding: PAD,
+  display: 'inline-list-item',
+  whiteSpace: 'nowrap',
+  overflowY: 'scroll',
+  overflowX: 'none'
+};
+const sFoot = {
+  gridColumn: '1 / 3',
+  // extra styling
+  padding: PAD,
+  backgroundColor: BG_COL
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const sError = {
+  textAlign: 'right',
+  backgroundColor: 'red',
+  color: 'white'
+};
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestGraphics() {
@@ -54,7 +99,7 @@ class DevWizard extends React.Component {
   }
 
   componentDidMount() {
-    console.log(...PR('root component mounted'));
+    if (DBG) console.log(...PR('root component mounted'));
     document.title = 'DEV WIZARD';
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
@@ -70,88 +115,34 @@ class DevWizard extends React.Component {
   handleWizUpdate = vmStateEvent => {
     // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
     this.setState(vmStateEvent);
-
     // CAREFUL VERSION
     // const { script_page } = vmStateEvent;
     // if (script_page) this.setState({ script_page });
   };
 
   render() {
-    const { classes } = this.props;
     const { script_page, sel_line_num, sel_line_pos, error } = this.state;
     const selText =
       sel_line_num < 0 ? 'no selection' : `${sel_line_num},${sel_line_pos}`;
     //
     return (
-      <div
-        className={classes.root}
-        style={{
-          gridTemplateColumns: '50% auto',
-          gridTemplateRows: '50px auto 50px',
-          boxSizing: 'border-box'
-        }}
-      >
-        <div
-          id="console-top"
-          className={clsx(classes.cell, classes.top, classes.devBG)}
-          style={{ gridColumnEnd: 'span 2' }}
-        >
+      <div id="gui-wizard" style={sParent}>
+        <header style={sHead}>
           <span style={{ fontSize: '32px' }}>DEV/WIZARD</span>{' '}
           {UR.ConnectionString()}
-        </div>
-
-        <div
-          id="console-left"
-          className={clsx(
-            classes.cell,
-            classes.left,
-            'language-gemscript',
-            'line-numbers'
-          )}
-          style={{
-            boxSizing: 'border-box',
-            gridColumnEnd: 'span 1',
-            minWidth: '280px',
-            whiteSpace: 'pre',
-            overflow: 'hidden',
-            backgroundColor: '#2d2d2d'
-          }}
-        >
+        </header>
+        <section className="language-gemscript line-numbers" style={sLeft}>
           <WizardText />
-        </div>
-
-        <div
-          ref={this.boxRef}
-          id="root-renderer"
-          className={classes.main}
-          style={{
-            gridColumnEnd: 'span 1',
-            display: 'inline-list-item',
-            whiteSpace: 'nowrap',
-            overflowY: 'scroll',
-            overflowX: 'none'
-          }}
-        >
+        </section>
+        <section ref={this.boxRef} style={sRight}>
           <TestGraphics />
           <hr style={{ clear: 'left', marginTop: '60px' }} />
           <WizardView vmPage={script_page} />
-        </div>
-        <div
-          id="console-bottom"
-          className={clsx(classes.cell, classes.bottom)}
-          style={{ gridColumnEnd: 'span 2' }}
-        >
+        </section>
+        <footer style={sFoot}>
           <div>selection: {selText}</div>
-          <div
-            style={{
-              textAlign: 'right',
-              backgroundColor: 'red',
-              color: 'white'
-            }}
-          >
-            {error}
-          </div>
-        </div>
+          <div style={sError}>{error}</div>
+        </footer>
       </div>
     );
   }
@@ -160,4 +151,4 @@ class DevWizard extends React.Component {
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// include MaterialUI styles
-export default withStyles(useStylesHOC)(DevWizard);
+export default DevWizard;
