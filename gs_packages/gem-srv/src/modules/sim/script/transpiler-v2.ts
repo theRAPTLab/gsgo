@@ -177,12 +177,12 @@ function ExtractBlueprintProperties(bpText): any[] {
   if (!bpText) return properties; // During update script can be undefined
   const scriptUnits = TextToScript(bpText);
   scriptUnits.forEach(unit => {
-    if (unit[0] && unit[0].token === 'addProp') {
+    if (unit[0] && unit[0].identifier === 'addProp') {
       // add them to the top of the list
       properties.unshift({
-        name: unit[1].token,
-        type: unit[2].token.toLowerCase(),
-        defaultValue: Object.values(unit[3]), // might be a 'value' or 'string' or 'token'
+        name: unit[1].identifier,
+        type: unit[2].identifier.toLowerCase(),
+        defaultValue: Object.values(unit[3]), // might be a 'value' or 'string' or 'identifier'
         isFeatProp: false
       });
     }
@@ -225,8 +225,8 @@ function ExtractFeaturesUsed(bpText: string): string[] {
   const featureNames = [];
   const scriptUnits = TextToScript(bpText);
   scriptUnits.forEach(unit => {
-    if (unit[0] && unit[0].token === 'useFeature') {
-      featureNames.push(unit[1].token);
+    if (unit[0] && unit[0].identifier === 'useFeature') {
+      featureNames.push(unit[1].identifier);
     }
   });
   return featureNames;
