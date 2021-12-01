@@ -40,6 +40,7 @@ export class WizardText extends React.Component {
       if (this.wizTimer) clearInterval(this.wizTimer);
       this.wizTimer = setTimeout(() => {
         this.updateWizText(null, text);
+        this.wizTimer = undefined;
       }, 500);
     });
 
@@ -51,14 +52,28 @@ export class WizardText extends React.Component {
   handleWizUpdate = vmStateEvent => {
     /// CARELESS UPDATE ///
     // this.setState(vmStateEvent);
+
     /// CAREFUL UPDATE ///
     const { script_tokens, sel_line_num, error } = vmStateEvent;
+    //
     if (DBG && script_tokens) console.log('tokens updated');
-    if (sel_line_num && sel_line_num > 0) {
+    //
+    if (sel_line_num !== undefined) {
       this.setState({ sel_line_num }, () => {
-        Prism.highlightElement(this.jarRef.current);
+        if (sel_line_num > 0) {
+          Prism.highlightElement(this.jarRef.current);
+        } else {
+          // style the line highlight div because plugin doesn't
+          // seem to provide a way to turn it off
+          const matches = document.getElementsByClassName('line-highlight');
+          if (matches.length === 1) {
+            matches[0].style = 'none';
+          }
+        }
       });
     }
+
+    //
     if (error && error !== '') {
       console.log('error', error);
       const re = /@(\d+).*/;
