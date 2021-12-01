@@ -82,7 +82,7 @@ class InputElement extends React.Component<any, any> {
     const { argindex, onSave, type } = this.props;
     if (isDirty || forceSave) {
       if (type === 'string') {
-        // wrap strings in quotes or the parameter will be treated as a token
+        // wrap strings in quotes or the parameter will be treated as an identifier
         args[argindex] = `"${args[argindex]}"`;
       }
       if (type === 'number' && String(args[argindex]).startsWith('.')) {

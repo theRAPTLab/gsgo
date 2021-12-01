@@ -490,8 +490,8 @@ export function InstanceRequestEdit(data) {
 function m_RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
   const scriptUnits = TRANSPILER.TextToScript(instance.initScript);
   const scrubbedScriptUnits = scriptUnits.filter(unit => {
-    if (unit[0] && unit[0].token === 'prop') {
-      return validPropNames.includes(unit[1].token);
+    if (unit[0] && unit[0].identifier === 'prop') {
+      return validPropNames.includes(unit[1].identifier);
     }
     return true; // ignore other methods
   });

@@ -20,11 +20,11 @@ const PR = UR.PrefixUtil('TEXTIFY', 'TagDebug');
  */
 function TokenToString(tok: IToken, indent: number) {
   const { directive, comment, line } = tok; // meta information
-  const { token, value, string } = tok; // primitive values
+  const { identifier, value, string } = tok; // primitive values
   const { objref, program, block, expr } = tok; // req runtime eval
   // special case: this is a keyword or variable
-  if (token !== undefined) {
-    return token;
+  if (identifier !== undefined) {
+    return identifier;
   }
   // regular tokens
   if (value !== undefined) return value;

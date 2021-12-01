@@ -52,12 +52,12 @@ function m_CheckForError(code: TSMCProgram, unit: TScriptUnit, ...args: any[]) {
 /** utility to return the 'decoded' value of a token */
 function DecodeTokenPrimitive(arg) {
   const { directive, comment, line } = arg; // meta information
-  const { token, value, string } = arg; // primitive values
+  const { identifier, value, string } = arg; // primitive values
   const { objref, program, block, expr } = arg; // req runtime eval
   if (directive) return arg; // directive = _pragma, cmd
   if (comment !== undefined) return `// ${comment}`;
   if (line !== undefined) return arg; // blank lines
-  if (token !== undefined) return token;
+  if (identifier !== undefined) return identifier;
   if (value !== undefined) return value;
   if (string !== undefined) return string;
   if (program === '') return arg; // happens during live typing

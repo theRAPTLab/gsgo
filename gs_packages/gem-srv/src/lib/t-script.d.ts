@@ -130,7 +130,6 @@ export interface IToken {
   block?: TScriptUnit[]; // gobbleMultiBlock()
   objref?: string[]; // gobbleParts()
   // standard types
-  token?: string; // gobbleParts() - why does this exist?
   identifier?: string; // gobbleIdentifier()
   string?: string; // gobbleStringLiteral()
   value?: number; // gobbleNumericLiteral()

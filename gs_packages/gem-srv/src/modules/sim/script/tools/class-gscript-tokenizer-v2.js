@@ -533,7 +533,7 @@ class ScriptTokenizer {
      *  {string:'bar'}]. At compile time this is converted to an argument {
      *  objref: ['foo','bar'])
      */
-    if (node.length === 1) return { token: node[0].identifier };
+    if (node.length === 1) return { identifier: node[0].identifier };
     return { objref: node }; // was: return node;
   }
 

@@ -65,7 +65,7 @@ function ScriptToConsole(units: TScriptUnit[], lines: string[] = []) {
     blkn = 0;
     arr.forEach(item => {
       const {
-        token,
+        identifier,
         objref,
         directive,
         value,
@@ -74,7 +74,7 @@ function ScriptToConsole(units: TScriptUnit[], lines: string[] = []) {
         block,
         expr
       } = item;
-      if (token) str.push(token);
+      if (identifier) str.push(identifier);
       if (objref) {
         str.push(objref.join('.'));
       }
