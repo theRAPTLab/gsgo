@@ -52,8 +52,19 @@ export class WizardText extends React.Component {
     /// CARELESS UPDATE ///
     // this.setState(vmStateEvent);
     /// CAREFUL UPDATE ///
-    const { script_tokens } = vmStateEvent;
+    const { script_tokens, sel_line_num, error } = vmStateEvent;
     if (DBG && script_tokens) console.log('tokens updated');
+    if (sel_line_num && sel_line_num > 0) {
+      this.setState({ sel_line_num }, () => {
+        Prism.highlightElement(this.jarRef.current);
+      });
+    }
+    if (error && error !== '') {
+      console.log('error', error);
+      const re = /@(\d+).*/;
+      const errLine = Number(re.exec(error)[1]);
+      WIZCORE.SendState({ sel_line_num: errLine });
+    }
   };
 
   /** OUTGOING: send updated text to WIZCORE on change */
@@ -68,7 +79,7 @@ export class WizardText extends React.Component {
         className="language-gemscript line-numbers match-braces"
         data-line={sel_line_num}
         style={{
-          fontSize: '10px',
+          fontSize: '12px',
           lineHeight: 1,
           whiteSpace: 'pre-line'
         }}
