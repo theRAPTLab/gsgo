@@ -90,6 +90,9 @@
   border: 0px solid #707070;
   background-color: rgba(221, 221, 221, 1);
 }
+.gwiz.styleKey {
+  font-weight: bold;
+}
 .gwiz.styleSolid {
   background-color: black;
 }

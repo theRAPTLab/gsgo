@@ -80,7 +80,7 @@ function GLine(props) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** representation of a script unit i.e. token */
 function GToken(props) {
-  const { tokenKey, token, selected } = props;
+  const { tokenKey, token, selected, position } = props;
   const dtok = DecodeTokenPrimitive(token);
   let label;
 
@@ -93,6 +93,7 @@ function GToken(props) {
   let classes = selected
     ? 'gwiz gtoken styleOpen selected'
     : 'gwiz gtoken styleOpen';
+  if (token.identifier && position === 0) classes += ' styleKey';
 
   // if not, emit the token element
   return (
@@ -123,7 +124,7 @@ export function WizardView(props) {
     const hasTokens = tokenList.length > 0;
     // iterate over tokenList if it exists
     if (hasTokens) {
-      tokenList.forEach(tokInfo => {
+      tokenList.forEach((tokInfo, idx) => {
         const { token, tokenKey } = tokInfo;
         const dtok = DecodeTokenPrimitive(token);
         const label = typeof dtok !== 'object' ? dtok : TokenToString(token);
@@ -131,6 +132,7 @@ export function WizardView(props) {
         lineBuffer.push(
           <GToken
             key={u_Key()}
+            position={idx}
             selected={selected}
             label={label}
             tokenKey={tokenKey}
