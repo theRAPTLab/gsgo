@@ -177,14 +177,18 @@ function GetAllTokenObjects(statements) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SelectedTokenId() {
   const { sel_line_num, sel_line_pos } = State();
-  if (sel_line_num < 0) return undefined;
-  if (sel_line_pos < 0) return `${sel_line_num}`;
+  if (sel_line_num < 1) return undefined; // START_COUNT=1 in script-utilities
+  if (sel_line_pos < 1) return `${sel_line_num}`;
   return `${sel_line_num},${sel_line_pos}`;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SelectedLineNum() {
   const { sel_line_num } = State();
   return Number(sel_line_num);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function SelectedToken() {
+  return State('script_map').get(SelectedTokenId());
 }
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
@@ -213,6 +217,6 @@ function IsTokenInMaster(tok) {
 export { DispatchClick, WizardTextChanged };
 /// utilities
 export { IsTokenInMaster, GetAllTokenObjects };
-export { SelectedTokenId, SelectedLineNum };
+export { SelectedTokenId, SelectedLineNum, SelectedToken };
 /// forwarded state methods
 export { State, SendState, SubscribeState, UnsubscribeState };

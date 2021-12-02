@@ -82,11 +82,12 @@ function Header(props) {
 function WizardEdit(props) {
   const { sel_line_num: line, sel_line_pos: pos } = WIZCORE.State();
   if (line > 0 && pos > 0) {
+    const tok = WIZCORE.SelectedToken();
     return (
       <>
         <hr style={{ clear: 'left', marginTop: '60px' }} />
         <div style={{ backgroundColor: 'pink', padding: '10px' }}>
-          SELECTION EDIT {line} {pos}
+          SELECTION EDIT {line} {pos} {JSON.stringify(tok)}
         </div>
       </>
     );
@@ -163,7 +164,6 @@ class DevWizard extends React.Component {
         <section style={sRight}>
           <TestGraphics />
           <WizardView vmPage={script_page} />
-          <hr style={{ clear: 'all', marginTop: '60px' }} />
           <WizardEdit />
         </section>
         <footer style={sFoot}>
