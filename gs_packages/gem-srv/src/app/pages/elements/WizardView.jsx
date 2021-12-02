@@ -115,9 +115,8 @@ export function WizardView(props) {
   DBGTEXT = '';
   const { vmPage } = props;
   const pageBuffer = [];
-  const selTokId = WIZCORE.SelectedTokId();
+  const selTokId = WIZCORE.SelectedTokenId();
   const selLineNum = WIZCORE.SelectedLineNum();
-
   vmPage.forEach(line => {
     const { lineNum, level, tokenList } = line;
     const lineBuffer = [];
@@ -125,7 +124,7 @@ export function WizardView(props) {
     // iterate over tokenList if it exists
     if (hasTokens) {
       tokenList.forEach(tokInfo => {
-        const { lineNum: num, token, linePos: pos, tokenKey } = tokInfo;
+        const { token, tokenKey } = tokInfo;
         const dtok = DecodeTokenPrimitive(token);
         const label = typeof dtok !== 'object' ? dtok : TokenToString(token);
         const selected = tokenKey === selTokId;

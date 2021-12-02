@@ -38,10 +38,10 @@ export function ScriptToLines(
 /// convert statements that contain nested statements in their line-by-line
 /// equivalent
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let START_LINE = 1;
+let START_COUNT = 1; // set to 1 for no 0 indexes
 let INDENT = 0;
-let LINE_NUM = START_LINE;
-let LINE_POS = 0;
+let LINE_NUM = START_COUNT;
+let LINE_POS = START_COUNT;
 let LINE_BUF = [];
 let PAGE = [];
 let MAP = new Map<string, IToken>();
@@ -60,8 +60,8 @@ function m_Info() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_Clear(): void {
   LINE_BUF = [];
-  LINE_POS = 0;
-  LINE_NUM = START_LINE;
+  LINE_POS = START_COUNT;
+  LINE_NUM = START_COUNT;
   PAGE = [];
   MAP.clear();
   DBGTEXT = '';
@@ -83,7 +83,7 @@ function m_TokenOut(tok: IToken): void {
   LINE_BUF.push(tokInfo);
   m_NextPos();
   if (DBG) {
-    if (LINE_POS === 0) DBGTEXT += `${level} {${lineNum}:${linePos}} `;
+    if (LINE_POS === START_COUNT) DBGTEXT += `${level} {${lineNum}:${linePos}} `;
     else DBGTEXT += `{${lineNum}:${linePos}} `;
   }
 }
@@ -105,7 +105,7 @@ function m_LineOut(): void {
   };
   PAGE.push(line);
   LINE_BUF = [];
-  LINE_POS = 0;
+  LINE_POS = START_COUNT;
   m_NextLine();
   if (DBG) DBGTEXT += '\n';
 }

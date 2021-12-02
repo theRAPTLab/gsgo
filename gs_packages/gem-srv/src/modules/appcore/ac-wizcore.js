@@ -36,13 +36,6 @@ const DEFAULT_TEXT = `
 # PROGRAM DEFINE
 addProp frame Number 3
 useFeature Movement
-# PROGRAM UPDATE
-prop skin setTo "bunny.json"
-featCall agent.Movement jitterPos -5 5
-
-// start of frame updates
-#PROGRAM UPDATE
-featCall Movement flapwings
 
 // start of interactive code
 # PROGRAM EVENT
@@ -56,14 +49,8 @@ onEvent Tick [[
   prop agent.x setTo  0
   prop agent.y setTo 0
 ]]
-# PROGRAM CONDITION
-when Bee sometest [[
-  dbgOut SingleTest
-]]
-when Bee sometest Bee [[
-  dbgOut PairTest
-]]
 
+// end of script
 `.trim();
 
 /// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
@@ -129,21 +116,27 @@ _interceptState(state => {
 function DispatchClick(event) {
   // did a GToken get clicked? It will have token-id set
   const tokenKey = event.target.getAttribute('data-key');
+  const newState = {};
   if (tokenKey !== null) {
     if (DBG) console.log(`clicked token ${JSON.stringify(tokenKey)}`);
     const [line, pos] = tokenKey.split(',');
-    SendState({ sel_line_num: line, sel_line_pos: pos });
+    newState.sel_line_num = line;
+    newState.sel_line_pos = pos;
 
     /** HACK TEST **/
     const token = State('script_map').get(tokenKey);
+
     // console.log('clicked id', token.identifier);
     if (token.identifier) {
-      token.identifier = '[fake edit]';
+      token.identifier = 'Edited';
       // force all tokens to update
-      SendState({ script_tokens: State('script_tokens') });
+      const script_tokens = State('script_tokens');
+      const script_text = ScriptToText(script_tokens);
+      newState.script_text = script_text;
     }
-
     /** END TEST **/
+    // send accumulated state updates
+    SendState(newState);
     return;
   }
   // if nothing processed, then unset selection
@@ -155,9 +148,9 @@ function WizardTextChanged(text) {
   let script_tokens;
   try {
     script_tokens = TextToScript(text);
-    const script_page = ScriptToLines(script_tokens);
+    const [script_page] = ScriptToLines(script_tokens);
     SendState({ script_page });
-    _setState({ script_text: text });
+    _setState({ script_text: text, script_tokens });
   } catch (e) {
     SendState({ error: e.toString() });
     return;
@@ -182,7 +175,7 @@ function GetAllTokenObjects(statements) {
   return allToks;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SelectedTokId() {
+function SelectedTokenId() {
   const { sel_line_num, sel_line_pos } = State();
   if (sel_line_num < 0) return undefined;
   if (sel_line_pos < 0) return `${sel_line_num}`;
@@ -220,6 +213,6 @@ function IsTokenInMaster(tok) {
 export { DispatchClick, WizardTextChanged };
 /// utilities
 export { IsTokenInMaster, GetAllTokenObjects };
-export { SelectedTokId, SelectedLineNum };
+export { SelectedTokenId, SelectedLineNum };
 /// forwarded state methods
 export { State, SendState, SubscribeState, UnsubscribeState };

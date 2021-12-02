@@ -79,22 +79,40 @@ function Header(props) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function WizardEdit(props) {
+  const { sel_line_num: line, sel_line_pos: pos } = WIZCORE.State();
+  if (line > 0 && pos > 0) {
+    return (
+      <>
+        <hr style={{ clear: 'left', marginTop: '60px' }} />
+        <div style={{ backgroundColor: 'pink', padding: '10px' }}>
+          SELECTION EDIT {line} {pos}
+        </div>
+      </>
+    );
+  }
+  return null;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** prototype SVG-based background styling of boxes */
 function TestGraphics() {
   return (
-    <div>
-      <div className="gunit gk0" />
-      <div className="gunit gk">
-        <div className="glabel">keyword</div>
-      </div>
-      <div className="gunit gk1" />
+    <>
+      <div>
+        <div className="gunit gk0" />
+        <div className="gunit gk">
+          <div className="glabel">keyword</div>
+        </div>
+        <div className="gunit gk1" />
 
-      <div className="gunit ga0" />
-      <div className="gunit ga">
-        <div className="glabel">assign</div>
+        <div className="gunit ga0" />
+        <div className="gunit ga">
+          <div className="glabel">assign</div>
+        </div>
+        <div className="gunit ga1" />
       </div>
-      <div className="gunit ga1" />
-    </div>
+      <hr style={{ clear: 'left', marginTop: '60px' }} />
+    </>
   );
 }
 
@@ -144,8 +162,9 @@ class DevWizard extends React.Component {
         </section>
         <section style={sRight}>
           <TestGraphics />
-          <hr style={{ clear: 'left', marginTop: '60px' }} />
           <WizardView vmPage={script_page} />
+          <hr style={{ clear: 'all', marginTop: '60px' }} />
+          <WizardEdit />
         </section>
         <footer style={sFoot}>
           <div>selection: {selText}</div>

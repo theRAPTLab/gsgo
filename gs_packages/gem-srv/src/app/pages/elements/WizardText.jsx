@@ -10,6 +10,7 @@ import { CodeJar } from '../../../lib/vendor/codejar';
 import '../../../lib/vendor/prism.css';
 import '../../../lib/vendor/prism_extended.css';
 import '../../../lib/css/prism_linehighlight.css'; // override TomorrowNight
+import { ScriptToText } from '../../../modules/sim/script/transpiler-v2';
 import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -56,7 +57,10 @@ export class WizardText extends React.Component {
     /// CAREFUL UPDATE ///
     const { script_tokens, sel_line_num, error } = vmStateEvent;
     //
-    if (DBG && script_tokens) console.log('tokens updated');
+    if (script_tokens) {
+      const text = ScriptToText(script_tokens);
+      this.setState({ script_text: text });
+    }
     //
     if (sel_line_num !== undefined) {
       this.setState({ sel_line_num }, () => {
