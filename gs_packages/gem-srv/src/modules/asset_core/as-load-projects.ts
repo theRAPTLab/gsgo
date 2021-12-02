@@ -20,7 +20,7 @@ import { GS_ASSETS_ROUTE } from '../../../config/gem-settings';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AS-PROJECT');
 const ASSET_URL = `${GS_ASSETS_ROUTE}`;
-const DBG = true;
+const DBG = false;
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

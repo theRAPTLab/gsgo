@@ -125,7 +125,7 @@ function m_MapLinesToTokens(vmPage: VMTokenLine[]) {
 function m_StatementToLines(statement: TScriptUnit): void {
   // process all the tokens in the statement
   if (statement.length === 0) {
-    console.log('surprise', statement);
+    if (DBG) console.log('Empty Statement', statement);
     return;
   }
   statement.forEach((tok: IToken) => {

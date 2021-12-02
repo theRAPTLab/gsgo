@@ -26,32 +26,25 @@ import {
   ScriptToLines
 } from '../sim/script/transpiler-v2';
 
+import { PromiseLoadAssets } from '../asset_core/asset-mgr';
+import {
+  GS_ASSETS_PROJECT_ROOT,
+  GS_ASSETS_PATH
+} from '../../../config/gem-settings';
+
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AC-MVVM', 'TagCyan');
 const DBG = true;
-const DEFAULT_TEXT = `
-# BLUEPRINT HoneyBee Bee
-// start of agent definition
-# PROGRAM DEFINE
-addProp frame Number 3
-useFeature Movement
-
-// start of interactive code
-# PROGRAM EVENT
-onEvent Tick [[
-  ifExpr {{ agent.getProp('name').value==='bun0' }} [[
-    dbgOut 'my tick' 'agent instance' {{ agent.getProp('name').value }}
-    if {{ true }} [[
-      // nested nested
-    ]]
-  ]]
-  prop agent.x setTo  0
-  prop agent.y setTo 0
-]]
-
-// end of script
-`.trim();
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DO_FAKE_EDIT = false;
+const DEFAULT_PROJECT_ID = 'decomposition';
+let DEFAULT_TEXT = '// WILL LOAD FROM PROJECT LOADER (see debug cli)';
+let PROJECTS;
+let SPRITES;
+(async () => {
+  [PROJECTS, SPRITES] = await PromiseLoadAssets(GS_ASSETS_PROJECT_ROOT);
+})();
 
 /// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -111,6 +104,66 @@ _interceptState(state => {
   }
 });
 
+/// CONSOLE TOOL INSTALL //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function DBG_ListProjectIds() {
+  const projects = PROJECTS.getProjectsList();
+  console.log(`PROJECTS IN ${GS_ASSETS_PATH}/${GS_ASSETS_PROJECT_ROOT}`);
+  projects.forEach(prj => {
+    console.log('prjid:', prj.id);
+  });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function DBG_ListBPIds(prjId) {
+  const project = PROJECTS.getProjectByProjId(prjId);
+  if (!project || project.id === undefined)
+    return `no projectId '${prjId}' in ${GS_ASSETS_PROJECT_ROOT}`;
+  console.log(`BLUEPRINTS FOR PROJECT '${prjId}'`);
+  const { blueprints } = project;
+  if (Array.isArray(blueprints))
+    blueprints.forEach(bp => {
+      console.log('bpId:', bp.id);
+    });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function DBG_LoadProjectId(prjId = DEFAULT_PROJECT_ID) {
+  // concatenate all scripts
+  let script_text = `SCRIPT DUMP OF '${prjId}'`;
+  const { blueprints } = PROJECTS.getProjectByProjId(prjId);
+  blueprints.forEach(bp => {
+    const { id, label, scriptText } = bp;
+    script_text += `\n\n// AUTOMATIC BLUEPRINT EXTRACTION OF: ${id} //\n${scriptText}`;
+  });
+  SendState({ script_text }, () => {});
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function DBG_LoadProjectBlueprint(prjId, bpId) {
+  const { blueprints } = PROJECTS.getProjectByProjId(prjId);
+  if (!blueprints) return `no projectId '${prjId}'`;
+  const found = blueprints.find(bp => bp.id === bpId);
+  if (!found) return `no blueprint '${bpId}' found in '${prjId}'`;
+  const { scriptText } = found;
+  SendState({ script_text: scriptText }, () => {});
+  console.log('list of blueprint ids for project:', prjId);
+  DBG_ListBPIds(prjId);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.AddConsoleTool({
+  'loadProjectBPs': (projId = DEFAULT_PROJECT_ID) => {
+    return DBG_LoadProjectId(projId);
+  },
+  'loadProjectBP': (projId, bpId) => {
+    return DBG_LoadProjectBlueprint(projId, bpId);
+  },
+  'listProjects': () => {
+    return DBG_ListProjectIds();
+  },
+  'listBPs': prjId => {
+    return DBG_ListBPIds(prjId);
+  }
+});
+
 /// EVENT DISPATCHERS (REDUCERS) //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function DispatchClick(event) {
@@ -127,12 +180,14 @@ function DispatchClick(event) {
     const token = State('script_map').get(tokenKey);
 
     // console.log('clicked id', token.identifier);
-    if (token.identifier) {
-      token.identifier = 'Edited';
-      // force all tokens to update
-      const script_tokens = State('script_tokens');
-      const script_text = ScriptToText(script_tokens);
-      newState.script_text = script_text;
+    if (DO_FAKE_EDIT) {
+      if (token.identifier) {
+        token.identifier = 'Edited';
+        // force all tokens to update
+        const script_tokens = State('script_tokens');
+        const script_text = ScriptToText(script_tokens);
+        newState.script_text = script_text;
+      }
     }
     /** END TEST **/
     // send accumulated state updates
