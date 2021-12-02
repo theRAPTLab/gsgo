@@ -26,6 +26,8 @@ export type VMToken = {
   token: object; // the actual token object e.g. { string:'foo' }
   lineNum: number; // the line that this token is appearing in
   linePos: number; // the position of this token in the line
+  level: number; // the nesting level of this lineNum
+  tokenKey: string; // hash key '{lineNum},{linePos}'
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a line of VMToken, with additional UI-relevant data */

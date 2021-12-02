@@ -68,9 +68,10 @@ class StateMgr {
   /// MAIN CLASS METHODS //////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Return a COPY of the current clonedEvent */
-  State() {
+  State(key) {
     // const state = { ...VM_STATE[this.name] };
     const state = this._derefProps({ ...VM_STATE[this.name] });
+    if (typeof key === 'string' && key.length > 0) return state[key];
     return state;
   }
 

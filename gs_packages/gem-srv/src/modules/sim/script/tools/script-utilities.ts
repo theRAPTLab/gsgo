@@ -21,11 +21,14 @@ const COUNT_ALL_LINES = true; // see WizardView RENDER_BLOCK_CLOSE
 /** given a script of ScriptUnit statements, return a PAGE of VMTokenLine and
  *  VMToken
  */
-export function ScriptToLines(program: TScriptUnit[]): VMTokenLine[] {
+export function ScriptToLines(
+  program: TScriptUnit[]
+): [VMTokenLine[], Map<string, IToken>] {
   m_Clear();
-  m_BlockToLines({ block: program });
+  m_ProgramToLines(program); // updates PAGE
+  m_MapLinesToTokens(PAGE); // updates MAP
   if (DBG) console.log(DBGTEXT);
-  return PAGE;
+  return [PAGE, MAP];
 }
 
 /// LINE PRINTING MACHINE //////////////////////////////////////////////////////
@@ -41,6 +44,7 @@ let LINE_NUM = START_LINE;
 let LINE_POS = 0;
 let LINE_BUF = [];
 let PAGE = [];
+let MAP = new Map<string, IToken>();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_Indent(): void {
   ++INDENT;
@@ -59,6 +63,7 @@ function m_Clear(): void {
   LINE_POS = 0;
   LINE_NUM = START_LINE;
   PAGE = [];
+  MAP.clear();
   DBGTEXT = '';
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -69,11 +74,12 @@ function m_NextLine(): void {
 function m_NextPos(): void {
   LINE_POS++;
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_TokenOut(tok: IToken): void {
   const { lineNum, linePos, level } = m_Info();
-  const tokInfo: VMToken = { token: tok, lineNum, linePos };
+  const tokenKey = `${lineNum},${linePos}`;
+
+  const tokInfo: VMToken = { token: tok, lineNum, level, linePos, tokenKey };
   LINE_BUF.push(tokInfo);
   m_NextPos();
   if (DBG) {
@@ -104,6 +110,18 @@ function m_LineOut(): void {
   if (DBG) DBGTEXT += '\n';
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given a page of lines of tokens, create the reverse lookup map */
+function m_MapLinesToTokens(vmPage: VMTokenLine[]) {
+  MAP.clear();
+  vmPage.forEach(vmTokLine => {
+    const { tokenList } = vmTokLine;
+    tokenList.forEach(vmTok => {
+      const { tokenKey, token } = vmTok;
+      MAP.set(tokenKey, token);
+    });
+  });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_StatementToLines(statement: TScriptUnit): void {
   // process all the tokens in the statement
   if (statement.length === 0) {
@@ -116,7 +134,7 @@ function m_StatementToLines(statement: TScriptUnit): void {
       if (DBG) DBGTEXT += 'BLOCK ';
       m_LineOut();
       m_Indent();
-      m_BlockToLines({ block: tok.block });
+      tok.block.forEach(bstm => m_StatementToLines(bstm));
       m_Outdent();
       return;
     }
@@ -127,7 +145,9 @@ function m_StatementToLines(statement: TScriptUnit): void {
   m_LineOut();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_BlockToLines(tok: IToken): void {
-  const { block } = tok;
-  block.forEach(statement => m_StatementToLines(statement));
+/** Main Entry Point: Convert a tokenized script into a "page" of "lines" of
+ *  tokens
+ */
+function m_ProgramToLines(program) {
+  program.forEach(stm => m_StatementToLines(stm));
 }

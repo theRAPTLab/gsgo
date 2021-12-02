@@ -80,7 +80,7 @@ function GLine(props) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** representation of a script unit i.e. token */
 function GToken(props) {
-  const { tokenId, token, selected } = props;
+  const { tokenKey, token, selected } = props;
   const dtok = DecodeTokenPrimitive(token);
   let label;
 
@@ -96,7 +96,7 @@ function GToken(props) {
 
   // if not, emit the token element
   return (
-    <div className={classes} data-tokenid={tokenId}>
+    <div className={classes} data-key={tokenKey}>
       {label}
     </div>
   );
@@ -125,21 +125,20 @@ export function WizardView(props) {
     // iterate over tokenList if it exists
     if (hasTokens) {
       tokenList.forEach(tokInfo => {
-        const { lineNum: num, token, linePos: pos } = tokInfo;
+        const { lineNum: num, token, linePos: pos, tokenKey } = tokInfo;
         const dtok = DecodeTokenPrimitive(token);
         const label = typeof dtok !== 'object' ? dtok : TokenToString(token);
-        const tokId = `${num},${pos}`;
-        const selected = tokId === selTokId;
+        const selected = tokenKey === selTokId;
         lineBuffer.push(
           <GToken
             key={u_Key()}
             selected={selected}
             label={label}
-            tokenId={tokId}
+            tokenKey={tokenKey}
             token={token}
           />
         );
-        DBGTEXT += `{${tokId}} `;
+        DBGTEXT += `{${tokenKey}} `;
       });
     } else {
       // insert a blank line into the liner buffer

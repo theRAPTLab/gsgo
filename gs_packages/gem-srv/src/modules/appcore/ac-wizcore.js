@@ -82,10 +82,13 @@ const {
 } = STORE;
 
 /// declare the allowed state keys for 'WIZARDVIEW'
+const scriptToks = TextToScript(DEFAULT_TEXT);
+const [scriptPage, lineMap] = ScriptToLines(scriptToks);
 _initializeState({
   script_text: DEFAULT_TEXT, // the source text
-  script_tokens: TextToScript(DEFAULT_TEXT), // an array of tokenized statements
-  script_page: ScriptToLines(TextToScript(DEFAULT_TEXT)), // an array of statements turned into lines
+  script_tokens: scriptToks, // an array of tokenized statements
+  script_page: scriptPage, // an array of statements turned into lines
+  script_map: lineMap, // lookup map
   sel_line_num: -1, // selected line of wizard. If < 0 it is not set
   sel_line_pos: -1, // select index into line. If < 0 it is not set
   error: '' // used fo error messages
@@ -100,7 +103,9 @@ _interceptState(state => {
     try {
       const toks = TextToScript(script_text);
       state.script_tokens = toks;
-      state.script_page = ScriptToLines(toks);
+      const [vmPage, tokMap] = ScriptToLines(toks);
+      state.script_page = vmPage;
+      state.script_map = tokMap;
     } catch (e) {
       // ignore TextToScript compiler errors during live typing
     }
@@ -110,7 +115,9 @@ _interceptState(state => {
     try {
       const text = ScriptToText(state.script_tokens);
       state.script_text = text;
-      state.script_page = ScriptToLines(script_tokens);
+      const [vmPage, tokMap] = ScriptToLines(script_tokens);
+      state.script_page = vmPage;
+      state.script_map = tokMap;
     } catch (e) {
       // ignore TextTpScript compiler errors during live typing
     }
@@ -120,20 +127,26 @@ _interceptState(state => {
 /// EVENT DISPATCHERS (REDUCERS) //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function DispatchClick(event) {
-  // handle click-outside
-  if (this.boxRef && !this.boxRef.current.contains(event.target)) {
-    if (DBG) console.log('you just clicked outside of box!');
-    return;
-  }
   // did a GToken get clicked? It will have token-id set
-  const tokId = event.target.getAttribute('data-tokenid');
-  if (tokId !== null) {
-    if (DBG) console.log(`clicked token ${JSON.stringify(tokId)}`);
-    const [line, pos] = tokId.split(',');
+  const tokenKey = event.target.getAttribute('data-key');
+  if (tokenKey !== null) {
+    if (DBG) console.log(`clicked token ${JSON.stringify(tokenKey)}`);
+    const [line, pos] = tokenKey.split(',');
     SendState({ sel_line_num: line, sel_line_pos: pos });
+
+    /** HACK TEST **/
+    const token = State('script_map').get(tokenKey);
+    // console.log('clicked id', token.identifier);
+    if (token.identifier) {
+      token.identifier = '[fake edit]';
+      // force all tokens to update
+      SendState({ script_tokens: State('script_tokens') });
+    }
+
+    /** END TEST **/
     return;
   }
-  // if nothing processed, thne unset selection
+  // if nothing processed, then unset selection
   if (DBG) console.log('unhandled click. deselecting');
   SendState({ sel_line_num: -1, sel_line_pos: -1 });
 }
