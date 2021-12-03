@@ -130,6 +130,11 @@ class SpriteLoader extends AssetLoader {
 
       // (2)
       // now start PIXI loader, which will callback when it's loaded
+      console.groupCollapsed(...PR('[ Hidden PixiJS cache warnings ]'));
+      console.log(
+        "%cNOTE: cache warnings are a debug feature in PixiJS that can't be easily turned off, so we just hide them.",
+        'color:red'
+      );
       this._loader.load(load => {
         const resources = [...Object.entries(load.resources)];
         resources.forEach(kv => {
@@ -147,7 +152,8 @@ class SpriteLoader extends AssetLoader {
         });
         ++this._loadCount;
         resolve(this);
-      });
+        console.groupEnd();
+      }); // end of loadAssets
     };
     return new Promise(loadAssets);
   }
