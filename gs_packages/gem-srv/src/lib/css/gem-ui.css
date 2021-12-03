@@ -71,7 +71,7 @@
   box-sizing: border-box;
 }
 .gwiz.gtoken {
-  float: left;
+  display: inline-block;
   padding: 4px 12px;
   margin: 1px 1px;
   user-select: none;
@@ -82,8 +82,7 @@
   min-height: 1em;
 }
 .gwiz.gline {
-  float: left;
-  clear: left;
+  display: block;
   border-bottom: 1px solid white;
 }
 .gwiz.styleOpen {
@@ -98,10 +97,10 @@
 }
 .gwiz.lineLead {
   min-height: 1em;
-  float: left;
+  display: inline-block;
 }
 .gwiz.newline {
-  clear: left;
+  display: block;
 }
 .gtoken.selected {
   background-color: rgba(255, 166, 0, 1) !important; /* orange */
