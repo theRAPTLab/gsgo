@@ -81,10 +81,10 @@ function GLine(props) {
 /** representation of a script unit i.e. token */
 function GToken(props) {
   const { tokenKey, token, selected, position } = props;
-  const dtok = DecodeTokenPrimitive(token);
+  const dtok = DecodeTokenPrimitive(token); // simple values or object
   let label;
 
-  if (typeof dtok !== 'object') label = dtok;
+  if (typeof dtok !== 'object') label = dtok.toString();
   else label = TokenToString(dtok);
   // blank line? Just emit a line space
   if (label === '') {

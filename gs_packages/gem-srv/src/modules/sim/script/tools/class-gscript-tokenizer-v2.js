@@ -36,13 +36,15 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import { createImportSpecifier } from 'typescript';
+
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const string = 'class-script-tokenizer-v2';
 const charAtFunc = string.charAt;
 const charCodeAtFunc = string.charCodeAt;
 const t = true;
-let DBG = true;
+let DBG = false;
 const DBG_MB = false;
 
 /// CHAR CODES ////////////////////////////////////////////////////////////////
@@ -83,10 +85,12 @@ const binary_ops = {
   '/': 10,
   '%': 10
 };
-const literals = {
-  'true': true,
-  'false': false,
-  'null': null
+
+// convert word-based literals to value literals
+const literalRemapper = {
+  'true': { value: true },
+  'false': { value: false },
+  'null': { value: null }
 };
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
@@ -174,10 +178,10 @@ class ScriptTokenizer {
     const s3 = this.line.substring(this.index + 1) || '';
     const pr = prompt === undefined ? '' : `${prompt}`;
     console.log(
-      `%c${s1}%c${s2}%c${s3} %c${pr}`,
+      `%c${s1}%c${s2}%c${s3}%c${pr}`,
       'color:black;background-color:#FFF0D0;padding:2px 4px',
       'background-color:#FFB000',
-      'color:#C0C0C0;background-color:#FFF0D0;padding:2px 4px',
+      'color:#C0C0C0;background-color:#FFF0D0;padding:2px 0 2px 0',
       'color:white;background-color:#FF0000;padding:2px 0 2px 0'
     );
   }
@@ -247,7 +251,7 @@ class ScriptTokenizer {
     this.line = '';
     this.index = 0;
     this.length = this.line.length;
-    DBG = flag === 'show'; // override DBG status if pass 'show'
+    DBG = DBG || flag === 'show'; // override DBG status if pass 'show'
     this.blockDepth = 0;
 
     let units = [];
@@ -486,11 +490,9 @@ class ScriptTokenizer {
     }
     identifier = this.line.slice(start, this.index);
 
-    if (Object.prototype.hasOwnProperty.call(literals, identifier)) {
-      return { identifier: literals[identifier] }; // was: return literals[identifier];
+    if (Object.prototype.hasOwnProperty.call(literalRemapper, identifier)) {
+      return literalRemapper[identifier];
     }
-
-    //
     return { identifier }; // was: return identifier;
   }
 
@@ -533,7 +535,7 @@ class ScriptTokenizer {
      *  {string:'bar'}]. At compile time this is converted to an argument {
      *  objref: ['foo','bar'])
      */
-    if (node.length === 1) return { identifier: node[0].identifier };
+    if (node.length === 1) return node[0];
     return { objref: node }; // was: return node;
   }
 

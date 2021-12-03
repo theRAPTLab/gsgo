@@ -23,11 +23,10 @@ function TokenToString(tok: IToken, indent: number) {
   const { identifier, value, string } = tok; // primitive values
   const { objref, program, block, expr } = tok; // req runtime eval
   // special case: this is a keyword or variable
-  if (identifier !== undefined) {
-    return identifier;
-  }
+  if (identifier !== undefined) return identifier;
   // regular tokens
-  if (value !== undefined) return value;
+  if (value !== undefined) return value.toString();
+
   if (string !== undefined) return `"${string}"`;
   if (objref) return objref.join('.');
   if (comment !== undefined) return `// ${comment}`;

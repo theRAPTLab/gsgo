@@ -39,7 +39,12 @@ const DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DO_FAKE_EDIT = false;
 const DEFAULT_PROJECT_ID = 'decomposition';
-let DEFAULT_TEXT = '// WILL LOAD FROM PROJECT LOADER (see debug cli)';
+let DEFAULT_TEXT = `
+// WILL LOAD FROM PROJECT LOADER (see debug cli)
+keyword arg arg arg [[
+  keyword arg arg arg
+]]
+`.trim();
 let PROJECTS;
 let SPRITES;
 (async () => {
@@ -161,6 +166,9 @@ UR.AddConsoleTool({
   },
   'listBPs': prjId => {
     return DBG_ListBPIds(prjId);
+  },
+  'dumpToken': (row, col) => {
+    return State('script_map').get(`${row},${col}`);
   }
 });
 
