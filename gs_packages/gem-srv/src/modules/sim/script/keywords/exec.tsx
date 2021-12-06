@@ -7,7 +7,7 @@
 
 import React from 'react';
 import Keyword from 'lib/class-keyword';
-import { TOpcode, TScriptUnit } from 'lib/t-script';
+import { TOpcode, TArguments, TScriptUnit, TMethod } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -23,13 +23,13 @@ export class exec extends Keyword {
    *  NOTE: when compile is called, all arguments have already been expanded
    *  from {{ }} to a ParseTree
    */
-  compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, expression] = unit;
+  compile(dtoks: TArguments): TOpcode[] {
+    const [kw, expression] = dtoks;
     if (typeof expression !== 'object') {
       console.log('non ast expression', expression);
       return [];
     }
-    return [agent => agent.exec(expression)];
+    return [agent => agent.exec(expression as TMethod)];
   }
 
   /** return a state object that turn react state back into source */

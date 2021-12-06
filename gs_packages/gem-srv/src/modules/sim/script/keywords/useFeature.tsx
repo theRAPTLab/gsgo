@@ -24,21 +24,17 @@ export class useFeature extends Keyword {
   compile(unit: TScriptUnit): TOpcode[] {
     const [kw, featureName] = unit;
     const progout = [];
-    progout.push(addFeature(featureName));
+    progout.push(addFeature(featureName as string));
     return progout;
-  }
-
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { featureName } = state;
-    return [this.keyword, featureName];
   }
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
     const [kw, featureName] = unit;
-    const isEditable = children ? children.isEditable : false;
-    const isInstanceEditor = children ? children.isInstanceEditor : false;
+    const isEditable = children ? (children as any).isEditable : false;
+    const isInstanceEditor = children
+      ? (children as any).isInstanceEditor
+      : false;
     const jsx = <>useFeature {featureName}</>;
     if (!isInstanceEditor || isEditable) {
       return super.jsx(index, unit, jsx);

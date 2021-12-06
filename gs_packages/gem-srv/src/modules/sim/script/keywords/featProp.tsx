@@ -39,7 +39,14 @@ import Keyword, {
   K_ScriptifyText
 } from 'lib/class-keyword';
 import GAgent from 'lib/class-gagent';
-import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
+import {
+  IAgent,
+  IState,
+  TOpcode,
+  TScriptUnit,
+  TArguments,
+  IToken
+} from 'lib/t-script';
 import { RegisterKeyword, GetFeature } from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from 'app/pages/helpers/page-xui-styles';
@@ -81,7 +88,6 @@ type MyProps = {
   isEditable: boolean;
   isDeletable: boolean;
   isInstanceEditor: boolean;
-  serialize: (state: MyState) => TScriptUnit;
   classes: Object;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -91,10 +97,9 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
   serialize: (state: MyState) => TScriptUnit;
   constructor(props: MyProps) {
     super(props);
-    const { index, state, serialize } = props;
+    const { index, state } = props;
     this.index = index;
     this.state = { ...state }; // copy state prop
-    this.serialize = serialize;
     this.onDeleteLine = this.onDeleteLine.bind(this);
     this.onSelectFeature = this.onSelectFeature.bind(this);
     this.onSelectPropName = this.onSelectPropName.bind(this);
@@ -179,10 +184,10 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
     const deletablejsx = (
       <>
         {isDeletable && (
-          <div className={classes.instanceEditorLine}>
+          <div className={(classes as any).instanceEditorLine}>
             <button
               type="button"
-              className={classes.buttonMini}
+              className={(classes as any).buttonMini}
               onClick={this.onDeleteLine}
             >
               <DeleteIcon fontSize="small" />
@@ -282,15 +287,14 @@ export class featProp extends Keyword {
   constructor() {
     super('featProp');
     this.args = ['refArg:object', 'methodName:string', '...args'];
-    this.serialize = this.serialize.bind(this);
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, refArg, featPropName, methodName, ...args] = unit;
+  compile(dtoks: TArguments): TOpcode[] {
+    const [kw, refArg, featPropName, methodName, ...args] = dtoks;
     // ref is an array of strings that are fields in dot addressing
     // like agent.x
-    const ref = refArg.objref || [refArg];
+    const ref = (refArg as IToken).objref || [refArg];
     const len = ref.length;
 
     // create a function that will be used to callReferences the objref
@@ -307,7 +311,7 @@ export class featProp extends Keyword {
         mName: string,
         ...prms
       ) => {
-        return agent.getFeatProp(ref[0], pName)[mName](...prms);
+        return agent.getFeatProp(ref[0] as string, pName)[mName](...prms);
       };
     } else if (len === 2) {
       /** EXPLICIT REF *******************************************************/
@@ -319,7 +323,7 @@ export class featProp extends Keyword {
         mName: string,
         ...prms
       ) => {
-        const c = context[ref[0]]; // GAgent context
+        const c = context[ref[0] as string]; // GAgent context
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         return c.getFeatProp(ref[1], pName)[mName](...prms);
       };
@@ -343,21 +347,6 @@ export class featProp extends Keyword {
     //     p[methodName](...args);
     //   }
     // ];
-  }
-
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    // ORIG
-    // const { featPropName, methodName, ...args } = state;
-    // return [this.keyword, featName, featPropName, methodName, ...args];
-
-    const { featName, context, featPropName, methodName, args } = state;
-    const refArg =
-      context && context !== 'agent' ? `${context}.${featName}` : featName;
-    const scriptArr = [this.keyword, refArg, featPropName, methodName, ...args];
-    const scriptText = K_TextifyScriptUnitValues(scriptArr);
-    const scriptUnits = K_ScriptifyText(scriptText);
-    return scriptUnits;
   }
 
   /** return rendered component representation */
@@ -392,19 +381,23 @@ export class featProp extends Keyword {
       methodName,
       args,
       featPropMethods: [], // set by PropElement
-      parentLineIndices: children ? children.parentLineIndices : undefined,
-      blockIndex: children ? children.blockIndex : undefined
+      parentLineIndices: children
+        ? (children as any).parentLineIndices
+        : undefined,
+      blockIndex: children ? (children as any).blockIndex : undefined
     };
-    const isEditable = children ? children.isEditable : false;
-    const isDeletable = children ? children.isDeletable : false;
-    const isInstanceEditor = children ? children.isInstanceEditor : false;
+    const isEditable = children ? (children as any).isEditable : false;
+    const isDeletable = children ? (children as any).isDeletable : false;
+    const isInstanceEditor = children
+      ? (children as any).isInstanceEditor
+      : false;
 
     // Retrieve Feature Properties
     // featPropMap is a map of maps of maps
     // featPropMap: Map <featName, featProps>
     // featProps: Map <featPropName, propDef>
     // propDef: { name, type, defaultValue, isFeatProp }
-    const featPropMap = children ? children.featPropMap : new Map();
+    const featPropMap = children ? (children as any).featPropMap : new Map();
 
     const StyledFeatPropElement = withStyles(useStylesHOC)(FeatPropElement);
     const jsx = (
@@ -417,7 +410,6 @@ export class featProp extends Keyword {
         isEditable={isEditable}
         isDeletable={isDeletable}
         isInstanceEditor={isInstanceEditor}
-        serialize={this.serialize}
       />
     );
     if (!isInstanceEditor || isEditable) {

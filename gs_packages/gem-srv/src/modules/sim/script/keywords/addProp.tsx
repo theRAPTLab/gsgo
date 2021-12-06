@@ -23,23 +23,19 @@ export class AddProp extends Keyword {
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
     const [kw, propName, propType, initValue] = unit;
-    const propCtor = GetVarCtor(propType);
+    const propCtor = GetVarCtor(propType as string);
     const progout = [];
-    progout.push(addProp(propName, propCtor, initValue));
+    progout.push(addProp(propName as string, propCtor, initValue));
     return progout;
-  }
-
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { propName, propType, initValue } = state;
-    return [this.keyword, propName, propType, initValue];
   }
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
     const [kw, propName, propType, initValue] = unit;
-    const isEditable = children ? children.isEditable : false;
-    const isInstanceEditor = children ? children.isInstanceEditor : false;
+    const isEditable = children ? (children as any).isEditable : false;
+    const isInstanceEditor = children
+      ? (children as any).isInstanceEditor
+      : false;
     if (!isInstanceEditor || isEditable) {
       return super.jsx(
         index,

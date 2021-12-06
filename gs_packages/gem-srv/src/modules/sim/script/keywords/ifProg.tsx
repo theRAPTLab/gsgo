@@ -5,10 +5,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import Keyword from 'lib/class-keyword';
-import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from 'modules/datacore';
-import { SingleAgentConditional } from 'script/conditions';
+import Keyword from '../../../../lib/class-keyword';
+import { IAgent, IState, TOpcode, TScriptUnit } from '../../../../lib/t-script';
+import { RegisterKeyword } from '../../../datacore';
+import { SingleAgentConditional } from '../conditions';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -17,7 +17,7 @@ export class ifProg extends Keyword {
 
   constructor() {
     super('ifProg');
-    this.args = ['test', 'consq', 'alter'];
+    this.args = ['test:string', 'consq:block', 'alter:block'];
   }
 
   compile(unit: TScriptUnit): TOpcode[] {

@@ -47,7 +47,7 @@ export class when extends Keyword {
       prog.push((agent, state) => {
         const passed = GetInteractionResults(key);
         passed.forEach(subject => {
-          const ctx = { [A]: subject };
+          const ctx = { [A as string]: subject };
           agent.exec(consq, ctx);
         });
       });
@@ -71,7 +71,7 @@ export class when extends Keyword {
             return;
           }
 
-          const ctx = { [A]: aa, [B]: bb };
+          const ctx = { [A as string]: aa, [B as string]: bb };
           agent.exec(consq, ctx);
         }); // foreach
       });
@@ -94,58 +94,13 @@ export class when extends Keyword {
       out = `${kw} invalid number of arguments`;
     } else if (unit.length === 4) {
       const [kw, A, testName, consq] = unit;
-      if (consq && Array.isArray(consq)) {
-        const blockIndex = 3; // the position in the unit array to replace <when> <agent> <testName> <conseq>
-        // already nested?
-        if (options.parentLineIndices !== undefined) {
-          // nested parentIndices!
-          options.parentLineIndices = [
-            ...options.parentLineIndices,
-            { index, blockIndex }
-          ];
-        } else {
-          options.parentLineIndices = [{ index, blockIndex }]; // for nested lines
-        }
-        cc = ScriptToJSX(consq, options);
-      }
       out = `${kw} ${A} ${testName}`;
     } else if (unit.length === 5) {
       const [kw, A, testName, B, consq] = unit;
-      if (consq && Array.isArray(consq)) {
-        const blockIndex = 4; // the position in the unit array to replace <when> <agent> <testName> <conseq>
-        // already nested?
-        if (options.parentLineIndices !== undefined) {
-          // nested parentIndices!
-          options.parentLineIndices = [
-            ...options.parentLineIndices,
-            { index, blockIndex }
-          ];
-        } else {
-          options.parentLineIndices = [{ index, blockIndex }]; // for nested lines
-        }
-        cc = ScriptToJSX(consq, options);
-      }
       out = `${kw} ${A} ${testName} ${B}`;
     }
-    const isEditable = options ? options.isEditable : false;
-    const isInstanceEditor = options ? options.isInstanceEditor : false;
 
-    if (!isInstanceEditor || isEditable) {
-      return super.jsx(
-        index,
-        unit,
-        <>
-          {out} {cc}
-        </>
-      );
-    }
-    return super.jsxMin(
-      index,
-      unit,
-      <>
-        {out} (+{cc.length} lines)
-      </>
-    );
+    return super.jsx(index, unit, <>when {out}</>);
   }
 } // end of UseFeature
 

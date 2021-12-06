@@ -138,10 +138,10 @@ export interface IToken {
   comment?: string; // gobbleComment()
   line?: string; // as-is line insertion
 }
-export type TScriptUnit = [...IToken[]]; // variable length array of token objs
+export type TScriptUnit = IToken[]; // tokens from script-parser
 export type TArg = number | string | IToken;
-export type TArguments = TArg[];
-export type TScript = TScriptUnit[]; // We use TScriptUnit[] in cod
+export type TArguments = TArg[]; // decoded tokens provided to compile functions
+export type TScript = TScriptUnit[]; // We use TScriptUnit[] in code
 
 /// COMPILER OUPUT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -194,7 +194,6 @@ export interface IKeyword {
   keyword: string;
   args: string[];
   compile(unit: TScriptUnit): TOpcode[];
-  serialize(state: object): TScriptUnit;
   jsx(index: number, state: object, children?: any[]): any;
   getName(): string;
 }
@@ -213,6 +212,9 @@ export interface IScriptUpdate {
   index: number;
   scriptUnit: TScriptUnit;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** function signatures for 'dereferencing' function in keyword compilers */
+export type DerefMethod = (agent: IAgent, context: object) => IScopeable;
 
 /// AGENT INSTANCING //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -236,7 +238,7 @@ export interface IState {
   scope: IScopeable[]; // scope stack (current execution context)
   flags: IComparator; // condition flags
   peek(): TStackable;
-  pop(num: number): TStackable[]; // return n things as array
+  pop(num?: number): TStackable[]; // return n things as array
   push(...args: any): void;
   reset(): void;
 }

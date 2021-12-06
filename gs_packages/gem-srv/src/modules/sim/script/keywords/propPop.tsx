@@ -16,7 +16,7 @@ export class propPop extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('propPop');
-    this.args = ['objref', 'optionalMethod', 'optionalArgs'];
+    this.args = ['objRef:object', 'optMethod:string', '...optArgs:any'];
   }
 
   /** create smc blueprint code objects */
@@ -31,8 +31,9 @@ export class propPop extends Keyword {
       // if (optMethod === undefined) p.value = state.pop();
 
       // use setTo so that min/max are honored
-      if (optMethod === undefined) p.setTo(state.pop());
-      else p[optMethod](...state.stack);
+      // eslint-disable-next-line @typescript-eslint/dot-notation
+      if (optMethod === undefined) p['setTo'](state.pop());
+      else p[optMethod as string](...state.stack);
     });
     return progout;
   }
@@ -46,8 +47,10 @@ export class propPop extends Keyword {
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
     const [kw, objref, optMethod, ...optArgs] = unit;
-    const isEditable = children ? children.isEditable : false;
-    const isInstanceEditor = children ? children.isInstanceEditor : false;
+    const isEditable = children ? (children as any).isEditable : false;
+    const isInstanceEditor = children
+      ? (children as any).isInstanceEditor
+      : false;
 
     const jsx = <>propPop {`'${objref}'`}</>;
     if (!isInstanceEditor || isEditable) {

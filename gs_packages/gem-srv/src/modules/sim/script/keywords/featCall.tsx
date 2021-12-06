@@ -47,13 +47,13 @@ export class featCall extends Keyword {
       /** IMPLICIT REF *******************************************************/
       /// e.g. 'Costume' is interpreted as 'agent.Costume'
       callRef = (agent: IAgent, context: any, mName: string, ...prms) => {
-        return agent.callFeatMethod(ref[0], mName, ...prms);
+        return agent.callFeatMethod(ref[0] as string, mName, ...prms);
       };
     } else if (len === 2) {
       /** EXPLICIT REF *******************************************************/
       /// e.g. 'agent.Costume' or 'Bee.Costume'
       callRef = (agent: IAgent, context: any, mName: string, ...prms) => {
-        const c = context[ref[0]]; // GAgent context
+        const c = context[ref[0] as string]; // GAgent context
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         return c.callFeatMethod(ref[1], mName, ...prms);
       };

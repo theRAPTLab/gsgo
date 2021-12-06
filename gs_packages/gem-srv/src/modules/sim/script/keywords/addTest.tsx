@@ -9,9 +9,15 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import Keyword from 'lib/class-keyword';
-import { TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword, RegisterTest } from 'modules/datacore';
+import Keyword from '../../../../lib/class-keyword';
+import {
+  IAgent,
+  TArguments,
+  TOpcode,
+  TScriptUnit,
+  TMethod
+} from '../../../../lib/t-script';
+import { RegisterKeyword, RegisterTest } from '../../../datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,15 +32,11 @@ export class addTest extends Keyword {
    *  NOTE: when compile is called, all arguments have already been expanded
    *  from {{ }} to a ParseTree
    */
-  compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, testName, test] = unit;
+  compile(dtoks: TArguments): TOpcode[] {
+    const [kw, testName, block] = dtoks;
     const conds = [
-      agent => {
-        if (RegisterTest(testName, test))
-          console.log(`registering test '${testName}' ${test.type ? 'AST' : ''}`);
-        else console.log(`overwriting test '${testName}'`);
-        RegisterTest(testName, test);
-        return testName;
+      (agent: IAgent) => {
+        RegisterTest(testName as string, block);
       }
     ];
     return conds;

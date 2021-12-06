@@ -37,7 +37,7 @@ import Keyword, {
   K_JSXFieldsFromUnit,
   K_TextifyScriptUnitValues
 } from 'lib/class-keyword';
-import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
+import { IAgent, IState, TOpcode, TScriptUnit, TArguments } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from 'app/pages/helpers/page-xui-styles';
@@ -74,44 +74,48 @@ type MyProps = {
   isEditable: boolean;
   isDeletable: boolean;
   isInstanceEditor: boolean;
-  serialize: (state: MyState) => TScriptUnit;
   classes: Object;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class PropElement extends React.Component<MyProps, MyState> {
   index: number; // ui index
   keyword: string; // keyword
-  serialize: (state: MyState) => TScriptUnit;
+
   constructor(props: MyProps) {
     super(props);
-    const { index, state, serialize } = props;
+    const { index, state } = props;
     this.index = index;
     this.state = { ...state }; // copy state prop
-    this.serialize = serialize;
     this.onDeleteLine = this.onDeleteLine.bind(this);
     this.onValueChange = this.onValueChange.bind(this);
     this.onSelectPropName = this.onSelectPropName.bind(this);
     this.onSelectMethod = this.onSelectMethod.bind(this);
     this.saveData = this.saveData.bind(this);
   }
+
   componentDidMount() {}
+
   onDeleteLine(e) {
     e.preventDefault(); // prevent click from deselecting instance
     e.stopPropagation();
     const updata = { index: this.index };
     UR.RaiseMessage('SCRIPT_LINE_DELETE', updata);
   }
+
   onValueChange() {
     UR.RaiseMessage('SCRIPT_IS_DIRTY');
   }
+
   onSelectPropName(value) {
     this.setState({ propName: value }, () => this.saveData());
   }
+
   onSelectMethod(value) {
     this.setState({ methodName: value }, () => this.saveData());
   }
+
   /**
-   * @param {boolean} exitEdit Tell InstanceEditor to exit edit mode.
+   *  @param {boolean} exitEdit Tell InstanceEditor to exit edit mode.
    *                           Used to handle exiting edit on "Enter"
    */
   saveData(exitEdit = false) {
@@ -119,15 +123,16 @@ class PropElement extends React.Component<MyProps, MyState> {
     const updata = {
       index: this.index,
       parentLineIndices,
-      scriptUnit: this.serialize(this.state),
       exitEdit
     };
     UR.RaiseMessage('SCRIPT_UI_CHANGED', updata);
   }
+
   stopEvent(e) {
     e.preventDefault(); // prevent click from deselecting instance
     e.stopPropagation();
   }
+
   render() {
     const {
       index,
@@ -145,10 +150,10 @@ class PropElement extends React.Component<MyProps, MyState> {
     const deletablejsx = (
       <>
         {isDeletable && (
-          <div className={classes.instanceEditorLine}>
+          <div className={(classes as any).instanceEditorLine}>
             <button
               type="button"
-              className={classes.buttonMini}
+              className={(classes as any).buttonMini}
               onClick={this.onDeleteLine}
               onPointerDown={this.stopEvent}
             >
@@ -232,34 +237,22 @@ export class prop extends Keyword {
 
   constructor() {
     super('prop');
-    this.args = ['refArg:object', 'methodName:string', '...args'];
-    this.serialize = this.serialize.bind(this);
+    this.args = ['refArg:object', 'methodName:string', '...optArgs:any'];
     this.type = '';
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, refArg, methodName, ...args] = unit;
+  compile(dtoks: TArguments): TOpcode[] {
+    const [kw, refArg, methodName, ...args] = dtoks;
     // create a function that will be used to dereferences the objref
     // into an actual call
     const deref = K_DerefProp(refArg);
     return [
       (agent: IAgent, state: IState) => {
-        const p = deref(agent, state.ctx, methodName, ...args);
-        p[methodName](...args);
+        const p = deref(agent, state.ctx);
+        p[methodName as string](...args);
       }
     ];
-  }
-
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    // pull `type` and 'propMethods' out so it doesn't get mixed in with `...arg`
-    const { context, propName, methodName, type, propMethods, args } = state;
-    const refArg = context ? `${context}.${propName}` : propName;
-    const scriptArr = [this.keyword, refArg, methodName, ...args];
-    const scriptText = K_TextifyScriptUnitValues(scriptArr);
-    const scriptUnits = TextToScript(scriptText);
-    return scriptUnits;
   }
 
   /** return rendered component representation */
@@ -316,7 +309,6 @@ export class prop extends Keyword {
         isEditable={isEditable}
         isDeletable={isDeletable}
         isInstanceEditor={isInstanceEditor}
-        serialize={this.serialize}
       />
     );
     if (!isInstanceEditor || isEditable) {

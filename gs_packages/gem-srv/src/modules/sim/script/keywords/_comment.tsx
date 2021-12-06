@@ -28,17 +28,13 @@ export class _comment extends Keyword {
     return [];
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { _comment } = state;
-    return ['//', _comment];
-  }
-
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
     const [kw, cmt] = unit;
     const comment = cmt === '' ? '...' : cmt;
-    const isInstanceEditor = children ? children.isInstanceEditor : false;
+    const isInstanceEditor = children
+      ? (children as any).isInstanceEditor
+      : false;
 
     if (!isInstanceEditor) {
       // Script Editor, add line numbers

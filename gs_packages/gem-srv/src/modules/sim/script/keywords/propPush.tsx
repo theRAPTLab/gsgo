@@ -27,7 +27,7 @@ export class propPush extends Keyword {
     progout.push((agent, state) => {
       const p = deref(agent, state.ctx);
       if (optMethod === undefined) state.push(p.value);
-      else state.push(p[optMethod](...optArgs));
+      else state.push(p[optMethod as string](...optArgs));
     });
     return progout;
   }

@@ -18,7 +18,14 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { IKeyword, TOpcode, TScriptUnit, IAgent } from 'lib/t-script';
+import {
+  IKeyword,
+  TOpcode,
+  TScriptUnit,
+  IAgent,
+  DerefMethod,
+  IScopeable
+} from 'lib/t-script';
 import GScriptTokenizer from '../modules/sim/script/tools/class-gscript-tokenizer-v2';
 import { Evaluate } from '../modules/sim/script/tools/class-expr-evaluator-v2';
 
@@ -39,21 +46,6 @@ const styleLine = { borderTop: '1px dotted gray' };
 const styleContent = { padding: '0.5em', overflow: 'hidden' };
 const DBG = false;
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** HACK: used to generate ever-increasing ID for rendering. They are all unique
- *  because our rendering loop just rerenders the entire list into a GUI every
- *  time. This is probably not the way to do it efficiently in React.
- */
-let ID_GENERATOR = 0;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Key id generator used by the base jsx() wrapper to create unique
- *  keys so React doesn't complain. This is probably bad and inefficient
- *  but it works for now.
- */
-function m_GenerateKey() {
-  return ID_GENERATOR++;
-}
-
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Keyword implements IKeyword {
@@ -71,10 +63,7 @@ class Keyword implements IKeyword {
   compile(unit: TScriptUnit, idx?: number): TOpcode[] {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
-  /** override to output a serialized array representation for eventual reserialization */
-  serialize(state: object): TScriptUnit {
-    throw Error(`${this.keyword}.serialize() must be overridden by subclassers`);
-  }
+
   /** override in subclass */
   jsx(index: number, srcLine: TScriptUnit, children?: any): any {
     // note that styleIndex below has to have weird typescript
@@ -232,7 +221,7 @@ function _jsxifyArg(arg: any) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** used by keyword compile-time to retreve a prop object dereferencing function
  *  that will be executed at runtime */
-function K_DerefProp(refArg) {
+function K_DerefProp(refArg): DerefMethod {
   // ref is an array of strings that are fields in dot addressing
   // like agent.x
   const ref = refArg.objref || [refArg];
@@ -244,7 +233,7 @@ function K_DerefProp(refArg) {
     /** IMPLICIT REF *******************************************************/
     /// e.g. 'x' is assumed to be 'agent.x'
     deref = (agent: IAgent, context: any) => {
-      const p = agent.getProp(ref[0]);
+      const p: IScopeable = agent.getProp(ref[0]);
       if (p === undefined) {
         console.log('agent', agent);
         throw Error(`agent missing prop '${ref[0]}'`);
@@ -257,7 +246,7 @@ function K_DerefProp(refArg) {
     deref = (agent: IAgent, context: any) => {
       const c = ref[0] === 'agent' ? agent : context[ref[0]];
       if (c === undefined) throw Error(`context missing '${ref[0]}' key`);
-      const p = c.getProp(ref[1]);
+      const p: IScopeable = c.getProp(ref[1]);
       if (p === undefined) throw Error(`missing prop '${ref[1]}'`);
       return p;
     };

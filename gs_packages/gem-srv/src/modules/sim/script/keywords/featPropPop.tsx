@@ -35,13 +35,14 @@ export class featPropPop extends Keyword {
       /** IMPLICIT REF *******************************************************/
       /// e.g. 'Costume' is interpreted as 'agent.Costume'
       callRef = (agent: IAgent, context: any, pName: string, arg) => {
-        return agent.getFeatProp(ref[0], pName).setTo(arg);
+        // eslint-disable-next-line @typescript-eslint/dot-notation
+        return agent.getFeatProp(ref[0] as string, pName)['setTo'](arg);
       };
     } else if (len === 2) {
       /** EXPLICIT REF *******************************************************/
       /// e.g. 'agent.Costume' or 'Bee.Costume'
       callRef = (agent: IAgent, context: any, pName: string, arg) => {
-        const c = context[ref[0]]; // GAgent context
+        const c = context[ref[0] as string]; // GAgent context
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         return c.getFeatProp(ref[1], pName).setTo(arg);
       };
@@ -77,8 +78,10 @@ export class featPropPop extends Keyword {
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
     const [kw, objref, optMethod, ...optArgs] = unit;
-    const isEditable = children ? children.isEditable : false;
-    const isInstanceEditor = children ? children.isInstanceEditor : false;
+    const isEditable = children ? (children as any).isEditable : false;
+    const isInstanceEditor = children
+      ? (children as any).isInstanceEditor
+      : false;
 
     const jsx = <>featPropPop {`'${objref}'`}</>;
     if (!isInstanceEditor || isEditable) {

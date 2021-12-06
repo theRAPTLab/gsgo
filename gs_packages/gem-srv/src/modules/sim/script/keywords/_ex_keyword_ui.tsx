@@ -9,9 +9,10 @@
 
 import UR from '@gemstep/ursys/client';
 import React from 'react';
-import Keyword from 'lib/class-keyword';
-import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from 'modules/datacore';
+
+import Keyword from '../../../../lib/class-keyword';
+import { TOpcode, TScriptUnit } from '../../../../lib/t-script';
+import { RegisterKeyword, GetTest, UtilFirstValue } from '../../../datacore';
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -90,11 +91,7 @@ export class defTemplate extends Keyword {
       templateName: unit[1],
       baseTemplate: unit[2]
     };
-    return super.jsx(
-      index,
-      unit,
-      <ScriptElement index={index} state={state} serialize={this.serialize} />
-    );
+    return super.jsx(index, unit, <>ex_keyword_ui</>);
   }
 } // end of DefTemplate
 
