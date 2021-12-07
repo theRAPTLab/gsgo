@@ -2,7 +2,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { FEATURES } from 'modules/datacore';
+import { GetFeature } from 'modules/datacore/dc-features';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,9 +45,9 @@ function AddMethod(agent, method, func) {
  *  @returns {FeatureLib} - for chaining agent calls
  */
 function AddFeature(agent, feature) {
-  if (agent.feature[feature))
+  if (agent.feature[feature])
     throw Error(`feature '${feature}' already to blueprint`);
-  const fpack = FEATURES.get(feature);
+  const fpack = GetFeature(feature);
   if (!fpack) throw Error(`'${feature}' is not an available feature`);
   agent.features.set(fpack.name, fpack);
   // this should return agent

@@ -433,8 +433,11 @@ class PanelScript extends React.Component {
   OnToggleWizard(e, value) {
     console.log('clicked', value);
     if (value === null) return; // skip repeated clicks
-    const currentScript = this.jar.toString();
-    const jsx = CompileToJSX(currentScript);
+    // const currentScript = this.jar.toString();
+    // const jsx = CompileToJSX(currentScript);
+    const jsx = (
+      <p>Sri has diabled CompileToJSX() in PanelScript.OnToggleWizard()</p>
+    );
     this.setState({ jsx, viewMode: value });
   }
 
