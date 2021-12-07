@@ -32,26 +32,12 @@ export class exec extends Keyword {
     return [agent => agent.exec(expression as TMethod)];
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { testName, consequent, alternate } = state;
-    return [this.keyword, testName, consequent, alternate];
-  }
-
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any): any {
-    const [kw, testName, consequent, alternate] = unit;
-    const cc = consequent ? 'TRUE:[consequent]' : '';
-    const aa = alternate ? 'FALSE:[alternate]' : '';
-    return super.jsx(
-      index,
-      unit,
-      <>
-        exec {testName} {cc} {aa}
-      </>
-    );
+    const [keyword, testName, consequent, alternate] = unit;
+    return <>{keyword}</>;
   }
-} // end of DefProp
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

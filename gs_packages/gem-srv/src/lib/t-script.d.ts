@@ -21,7 +21,7 @@ export interface IScopeable {
   getProp: (name: string) => IScopeable;
   addMethod: (name: String, callable: TMethod) => void;
   getMethod: (name: string) => TMethod;
-  serialize: () => any[];
+  serialize?: () => any[];
   //  get value(): any; // works with typescript 3.6+
   //  set value(val:any); // works with typescript 3.6+
   value: any;

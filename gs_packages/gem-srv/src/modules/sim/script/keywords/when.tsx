@@ -79,30 +79,16 @@ export class when extends Keyword {
     return prog;
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { min, max, floor } = state;
-    return [this.keyword, min, max, floor];
-  }
-
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, options: any, children?: any[]): any {
-    let out;
-    let cc = '';
-    if (unit.length < 4 || unit.length > 5) {
-      const [kw] = unit;
-      out = `${kw} invalid number of arguments`;
-    } else if (unit.length === 4) {
-      const [kw, A, testName, consq] = unit;
-      out = `${kw} ${A} ${testName}`;
-    } else if (unit.length === 5) {
-      const [kw, A, testName, B, consq] = unit;
-      out = `${kw} ${A} ${testName} ${B}`;
-    }
-
-    return super.jsx(index, unit, <>when {out}</>);
+    const [keyword] = unit;
+    return (
+      <>
+        {keyword} {unit.length}
+      </>
+    );
   }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

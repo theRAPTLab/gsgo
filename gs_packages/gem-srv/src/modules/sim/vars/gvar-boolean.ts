@@ -55,11 +55,6 @@ export class GVarBoolean extends SM_Object implements IScopeable {
     this.value = this.value && this.fuzzy < -0.75;
     return this;
   }
-  serialize() {
-    const values = super.serialize();
-    values.push('fuzzy', this.fuzzy);
-    return values;
-  }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

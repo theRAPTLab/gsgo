@@ -33,18 +33,12 @@ export class onEvent extends Keyword {
     return []; // subscriptions don't need to return any compiled code
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { event, consq } = state;
-    return [this.keyword, event, consq];
-  }
-
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, options: any, children?: any[]): any {
-    const [kw, event, consq] = unit;
-    return super.jsx(index, unit, <>onEvent</>);
+    const [keyword, event, consq] = unit;
+    return <>{keyword}</>;
   }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

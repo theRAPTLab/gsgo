@@ -183,13 +183,6 @@ export class GVarNumber extends SM_Object implements IScopeable {
   clear() {
     this.value = null;
   }
-  serialize() {
-    const values = super.serialize();
-    values.push('nvalue', this.nvalue);
-    values.push('min', this.min);
-    values.push('max', this.max);
-    return values;
-  }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

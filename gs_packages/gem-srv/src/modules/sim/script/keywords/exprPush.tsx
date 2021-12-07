@@ -33,26 +33,12 @@ export class exprPush extends Keyword {
     return code;
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { expr } = state;
-    return [this.keyword, expr];
-  }
-
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any): any {
-    const [kw, expr] = unit;
-    const isEditable = children ? children.isEditable : false;
-    const isInstanceEditor = children ? children.isInstanceEditor : false;
-
-    const jsx = <>exprPush {`'${expr}'`}</>;
-
-    if (!isInstanceEditor || isEditable) {
-      return super.jsx(index, unit, jsx);
-    }
-    return super.jsxMin(index, unit, jsx);
+    const [keyword, expr] = unit;
+    return <>{keyword}</>;
   }
-} // end of DefProp
+} // end of keyword definiition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

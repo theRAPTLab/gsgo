@@ -29,18 +29,12 @@ export class keywordErr extends Keyword {
     return [];
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { error } = state;
-    return [this.keyword, error];
-  }
-
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw] = unit;
-    return super.jsx(index, unit, <>unknown keyword: {`'${kw}'`}</>);
+    const [keyword] = unit;
+    return <>{keyword}</>;
   }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

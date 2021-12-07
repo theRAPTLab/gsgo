@@ -59,25 +59,12 @@ export class _pragma extends Keyword {
     return [(agent, state) => state.reset()];
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { pragmaName, value } = state;
-    return [this.keyword, pragmaName, value];
-  }
-
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
     const pragmaName = unit[1];
-    const value = unit[2];
-    return super.jsx(
-      index,
-      unit,
-      <>
-        # {pragmaName} {unit.slice(2).join(' ')}
-      </>
-    );
+    return <>{pragmaName}</>;
   }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

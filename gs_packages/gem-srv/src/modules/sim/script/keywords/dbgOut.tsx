@@ -49,18 +49,12 @@ export class dbgOut extends Keyword {
     return progout;
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { error } = state;
-    return [this.keyword, error];
-  }
-
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw, ...args] = unit;
-    return super.jsx(index, unit, <>{`${kw} ${args}`}</>);
+    const [keyword, ...args] = unit;
+    return <>{keyword}</>;
   }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

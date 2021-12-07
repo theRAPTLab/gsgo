@@ -106,79 +106,12 @@ export class every extends Keyword {
     return prog;
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { event, period, ...args } = state;
-    let runAtStart = '';
-    let consq;
-    if (args.length > 1) {
-      runAtStart = String(args[0]);
-      consq = args[1];
-    } else {
-      consq = args[0];
-    }
-    return [this.keyword, period, runAtStart, consq];
-  }
-
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, options: any, children?: any[]): any {
-    const [kw, period, ...args] = unit;
-    let runAtStart = '';
-    let consq;
-    let blockIndex;
-    if (args.length > 1) {
-      runAtStart = String(args[0]);
-      consq = args[1];
-      blockIndex = 3; // the position in the unit array to replace <ifExpr> <expr> <conseq>
-    } else {
-      consq = args[0];
-      blockIndex = 2;
-    }
-    if (options.parentLineIndices !== undefined) {
-      // nested parentIndices!
-      options.parentLineIndices = [
-        ...options.parentLineIndices,
-        {
-          index,
-          blockIndex
-        }
-      ];
-    } else {
-      options.parentLineIndices = [
-        {
-          index,
-          blockIndex
-        }
-      ]; // for nested lines
-    }
-    const cc = ScriptToJSX(consq, options);
-    const isEditable = options ? options.isEditable : false;
-    const isInstanceEditor = options ? options.isInstanceEditor : false;
-
-    const jsx = (
-      <>
-        every {`'${period}'`} {runAtStart} {cc}
-      </>
-    );
-
-    if (!isInstanceEditor || isEditable) {
-      return super.jsx(
-        index,
-        unit,
-        <>
-          every {`'${period}'`} {runAtStart} {cc}
-        </>
-      );
-    }
-    return super.jsxMin(
-      index,
-      unit,
-      <>
-        every {`'${period}'`} {runAtStart} (+{consq.length} lines)
-      </>
-    );
+    const [keyword, period, ...args] = unit;
+    return <>{keyword}</>;
   }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

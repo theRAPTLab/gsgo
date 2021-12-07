@@ -35,26 +35,12 @@ export class ifProg extends Keyword {
     return cout;
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { min, max, floor } = state;
-    return [this.keyword, min, max, floor];
-  }
-
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const testName = unit[1];
-    const conseq = unit[2];
-    const alter = unit[3];
-    return super.jsx(
-      index,
-      unit,
-      <>
-        on {testName} TRUE {conseq}, ELSE {alter}
-      </>
-    );
+    const [keyword, testName, conseq, alter] = unit;
+    return <>{keyword}</>;
   }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

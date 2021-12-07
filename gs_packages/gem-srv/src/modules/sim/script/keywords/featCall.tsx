@@ -68,83 +68,12 @@ export class featCall extends Keyword {
     ];
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { featCallName, methodName, ...args } = state;
-    return [this.keyword, featCallName, ...args];
-  }
-
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, options: any, children?: any[]): any {
-    const [kw, refArg, methodName, ...arg] = unit;
-
-    // Dereference Ref ("Costume" or "Moth.Costume")
-    const ref = refArg.objref || [refArg];
-    const len = ref.length;
-    let refDisplay = '';
-    if (len === 1) {
-      /** IMPLICIT REF *******************************************************/
-      /// e.g. 'Costume' is interpreted as 'agent.Costume'
-      refDisplay = `${ref[0]}`;
-    } else if (len === 2) {
-      /** EXPLICIT REF *******************************************************/
-      /// e.g. 'agent.Costume' or 'Bee.Costume'
-      refDisplay = `${ref[0]}.${ref[1]}`;
-    }
-
-    // look for blocks in arg
-    // clean up args
-    // The actual blockIndex will be argIndex + 3
-    // since we have to count <kw> <refArg> <methodName>
-    const SYNTAX_OFFSET = 3;
-    const args = arg.map((a, argIndex) => {
-      if (Array.isArray(a)) {
-        const blockIndex = argIndex + SYNTAX_OFFSET; // the position in the unit array to replace <ifExpr> <expr> <conseq>
-        // already nested?
-        if (options.parentLineIndices !== undefined) {
-          // nested parentIndices!
-          options.parentLineIndices = [
-            ...options.parentLineIndices,
-            { index, blockIndex }
-          ];
-        } else {
-          options.parentLineIndices = [{ index, blockIndex }]; // for nested lines
-        }
-        return <div key={blockIndex}>{ScriptToJSX(a, options)}</div>;
-      }
-      return a;
-    });
-
-    const isEditable = options ? options.isEditable : false;
-    const isInstanceEditor = options ? options.isInstanceEditor : false;
-
-    if (!isInstanceEditor || isEditable) {
-      return super.jsx(
-        index,
-        unit,
-        <>
-          featCall {refDisplay}.{methodName} {[...args]}
-        </>
-      );
-    }
-    return super.jsxMin(
-      index,
-      unit,
-      <>
-        featCall {refDisplay}.{methodName} (+{args.length} lines)
-      </>
-    );
-
-    // ORIG
-    // return super.jsx(
-    //   index,
-    //   unit,
-    //   <>
-    //     featCall {ref}.{methodName}({args.join(' ')})
-    //   </>
-    // );
+    const [keyword, refArg, methodName, ...arg] = unit;
+    return <>{keyword}</>;
   }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

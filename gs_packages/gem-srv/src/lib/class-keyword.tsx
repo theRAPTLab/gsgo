@@ -65,7 +65,7 @@ class Keyword implements IKeyword {
   }
 
   /** override in subclass */
-  jsx(index: number, srcLine: TScriptUnit, children?: any): any {
+  jsx(index: number, unit: TScriptUnit, children?: any): any {
     // note that styleIndex below has to have weird typescript
     // stuff for originally hyphenated CSS properties so it doesn't
     // get marked by the linter as invalid CSS
@@ -78,10 +78,6 @@ class Keyword implements IKeyword {
         <div style={styleContent}>{children}</div>
       </div>
     );
-  }
-  /** minimized jsx for use in InstanceEditor */
-  jsxMin(index: number, srcLine: TScriptUnit, children?: any): any {
-    return <span key={index}>{children}&ensp;</span>;
   }
 
   /// UTILITY METHODS /////////////////////////////////////////////////////////

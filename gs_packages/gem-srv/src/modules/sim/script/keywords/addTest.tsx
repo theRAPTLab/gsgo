@@ -41,25 +41,12 @@ export class addTest extends Keyword {
     ];
     return conds;
   }
-
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { testName, expr } = state;
-    return [this.keyword, testName, expr];
-  }
-
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any): any {
-    const [kw, testName, expr] = unit;
-    return super.jsx(
-      index,
-      unit,
-      <>
-        addTest {testName} = {expr}
-      </>
-    );
+    const [keyword, testName, expr] = unit;
+    return <>{keyword}</>;
   }
-} // end of DefProp
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
