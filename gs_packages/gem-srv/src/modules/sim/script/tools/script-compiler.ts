@@ -27,6 +27,7 @@ import { ScriptTest, BlueprintTest } from './test-data/td-compiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
 const PR = UR.PrefixUtil('COMPILE', 'TagDebug');
 const Scriptifier = new GScriptTokenizer();
 
@@ -311,16 +312,17 @@ function TestCompileBlueprint(tests) {
 
 /// CONSOLE TOOL INSTALL //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.AddConsoleTool({
-  'compile_test': () => {
-    console.clear();
-    TestCompile(ScriptTest);
-  },
-  'blueprint_test': () => {
-    console.clear();
-    TestCompileBlueprint(BlueprintTest);
-  }
-});
+if (DBG)
+  UR.AddConsoleTool({
+    'run_compiler_tests': () => {
+      console.clear();
+      TestCompile(ScriptTest);
+    },
+    'run_blueprint_tests': () => {
+      console.clear();
+      TestCompileBlueprint(BlueprintTest);
+    }
+  });
 // UR.HookPhase('UR/APP_START', () => TestCompile(Script));
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

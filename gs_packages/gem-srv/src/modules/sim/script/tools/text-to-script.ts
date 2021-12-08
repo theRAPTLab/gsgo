@@ -15,6 +15,7 @@ import { Blocks } from './test-data/td-tokenizer';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TOKENIZE', 'TagDebug');
 const gstDBG = new GScriptTokenizer();
+const DBG = false;
 
 /// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,17 +47,18 @@ function TestScriptifyText(tests: { [key: string]: any }) {
 
 /// CONSOLE TOOL INSTALL //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.AddConsoleTool({
-  'scriptify_test': () => {
-    console.clear();
-    TestScriptifyText(Blocks);
-  },
-  'tokenize': (text, spc = 0) => {
-    const script = gstDBG.tokenize(text);
-    console.log(JSON.stringify(script, null, spc));
-    return script;
-  }
-});
+if (DBG)
+  UR.AddConsoleTool({
+    'run_scriptify_tests': () => {
+      console.clear();
+      TestScriptifyText(Blocks);
+    },
+    'run_tokenize_tests': (text, spc = 0) => {
+      const script = gstDBG.tokenize(text);
+      console.log(JSON.stringify(script, null, spc));
+      return script;
+    }
+  });
 // UR.HookPhase('UR/APP_START', () => TestTokenizeScripts(Blocks));
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

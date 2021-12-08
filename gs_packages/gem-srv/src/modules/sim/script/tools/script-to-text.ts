@@ -11,6 +11,7 @@ import { Blocks } from './test-data/td-tokenizer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
 const PR = UR.PrefixUtil('TEXTIFY', 'TagDebug');
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
@@ -106,12 +107,13 @@ function TestTextifyScript(tests: { [key: string]: any }) {
 
 /// CONSOLE TOOL INSTALL //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.AddConsoleTool({
-  'textify_test': () => {
-    console.clear();
-    TestTextifyScript(Blocks);
-  }
-});
+if (DBG)
+  UR.AddConsoleTool({
+    'run_textify_tests': () => {
+      console.clear();
+      TestTextifyScript(Blocks);
+    }
+  });
 // UR.HookPhase('UR/APP_START', () => TestTextifyScript(Blocks));
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

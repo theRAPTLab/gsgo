@@ -29,6 +29,7 @@ import {
   DecodeTokenPrimitive
 } from './tools/script-compiler';
 import { ScriptToLines } from './tools/script-utilities';
+import * as SYMBOLS from './tools/symbol-utilities';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -151,64 +152,70 @@ function RemoveAgent(instanceDef: TInstance) {
 /// CONSOLE TESTING ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** can a simpler context object be created as a wrapper that doesn't bloat
- *  every object? */
-UR.AddConsoleTool({
-  test_context: () => {
-    const bpText = `
+ *  every object?
+ *  this is playground code to figure out how to create the Expression
+ *  context object that is simpler than our current version, such that
+ *  agent.prop('x').value becomes just x or agent.x
+ */
+if (DBG)
+  UR.AddConsoleTool({
+    run_context_tests: () => {
+      const bpText = `
     # BLUEPRINT ContextTester
     # PROGRAM DEFINE
     addProp aNumber Number 0
     addProp aBool Boolean false
     addProp aString String 'hello'
     `.trim();
-    // create base agent
-    const agent = new GAgent('context_tester');
-    // invoke blueprint creation
-    const bpScript = TextToScript(bpText);
-    if (!bpScript) return `error: compiler error\n${bpText}`;
-    const bdl = CompileBlueprint(bpScript);
-    if (!bdl) return `error: bad bundle from text:\n${bpText}`;
-    console.log(`attaching blueprint '${bdl.name}' to ${agent.name}`);
-    // return a fancy wrapper object that will be used as context for
-    // expressions
-    // x, y
-    const ctx1 = {
-      agent: {
-        get x() {
-          return agent.prop.x.value;
-        },
-        set x(val) {
+      // create base agent
+      const agent = new GAgent('context_tester');
+      // invoke blueprint creation
+      const bpScript = TextToScript(bpText);
+      if (!bpScript) return `error: compiler error\n${bpText}`;
+      const bdl = CompileBlueprint(bpScript);
+      if (!bdl) return `error: bad bundle from text:\n${bpText}`;
+      console.log(`attaching blueprint '${bdl.name}' to ${agent.name}`);
+      // return a fancy wrapper object that will be used as context for
+      // expressions
+      // x, y
+      const ctx1 = {
+        agent: {
+          get x() {
+            return agent.prop.x.value;
+          },
+          set x(val) {
+            agent.prop.x.value = val;
+          }
+        }
+      };
+      // how about using defineProperty programmatically?
+      const ctx2 = {};
+      Object.defineProperty(ctx2, 'x', {
+        get: () => agent.prop.x.value,
+        set: val => {
           agent.prop.x.value = val;
         }
-      }
-    };
-    // how about using defineProperty programmatically?
-    const ctx2 = {};
-    Object.defineProperty(ctx2, 'x', {
-      get: () => agent.prop.x.value,
-      set: val => {
-        agent.prop.x.value = val;
-      }
-    });
-
-    // this would be defined on GAgent
-    function addContext(prop) {
-      Object.defineProperty(this.context, prop, {
-        get: () => this.prop[prop].value,
-        set: val => {
-          this.prop.x.value = val;
-        }
       });
+
+      // this would be defined on GAgent
+      function addContext(prop) {
+        Object.defineProperty(this.context, prop, {
+          get: () => this.prop[prop].value,
+          set: val => {
+            this.prop.x.value = val;
+          }
+        });
+      }
+      // set window.ctx
+      (window as any).ctx = ctx2;
+      return 'inspect window.ctx';
     }
-    // set window.ctx
-    (window as any).ctx = ctx2;
-    return 'inspect window.ctx';
-  }
-});
+  });
 // automatically fire test code because I hate typing
-setTimeout(() => {
-  console.log((window as any).test_context());
-}, 500);
+if (DBG)
+  setTimeout(() => {
+    console.log((window as any).run_context_tests());
+  }, 500);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -240,4 +247,4 @@ export {
 };
 
 /// BLUEPRINT SYMBOL
-export * from './tools/symbol-utilities';
+export * from './tools/script-extraction-utilities';

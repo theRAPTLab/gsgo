@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -40,16 +41,44 @@ const DBG = true;
 const DO_FAKE_EDIT = false;
 const DEFAULT_PROJECT_ID = 'decomposition';
 let DEFAULT_TEXT = `
-// WILL LOAD FROM PROJECT LOADER (see debug cli)
-keyword arg arg arg [[
-  keyword arg arg arg
+# BLUEPRINT TestAgent
+# PROGRAM DEFINE
+addFeature Costume
+addFeature Movement
+addFeature AgentWidgets
+addProp vulnerable number 0
+
+# PROGRAM INIT
+// no first time initialization
+
+# PROGRAM UPDATE
+// no every simtick update
+
+# PROGRAM EVENT
+onEvent Start [[
+  prop Costume.colorScaleIndex setTo colorIndx
+  call Movement.wanderUntilInside TreeTrunk
+  prop vulnerable setTo 1
+  prop AgentWidgets.text setTo ""
+]]
+onEvent Tick [[
+  prop x setTo {{ x + direction * speed }}
+  if {{ direction === 1 && x > 400 || direction === -1 && x< -400 }} [[
+    prop x setTo {{ 400 * direction * -1 }}
+  ]]
+]]
+
+# PROGRAM CONDITION
+// new syntax
+when Moth lastTouches TreeTrunk [[
+  call Moth.Movement.wanderUntilInside TreeTrunk
+  prop Moth.vulnerable setTo 1
+  prop Moth.alpha setMin 1
+  prop Moth.alpha setTo 1
+  call Moth.Costume.setPose 0
+  prop Moth.moving setTo 1
 ]]
 `.trim();
-let PROJECTS;
-let SPRITES;
-(async () => {
-  [PROJECTS, SPRITES] = await PromiseLoadAssets(GS_ASSETS_PROJECT_ROOT);
-})();
 
 /// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -111,7 +140,16 @@ _interceptState(state => {
 
 /// CONSOLE TOOL INSTALL //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function DBG_ListProjectIds() {
+let PROJECTS;
+let SPRITES;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+async function DBG_LoadAssets() {
+  [PROJECTS, SPRITES] = await PromiseLoadAssets(GS_ASSETS_PROJECT_ROOT);
+  console.log(`'${GS_ASSETS_PROJECT_ROOT}' assets loaded`);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+async function DBG_ListProjectsIds() {
+  if (PROJECTS === undefined) await DBG_LoadAssets();
   const projects = PROJECTS.getProjectsList();
   console.log(`PROJECTS IN ${GS_ASSETS_PATH}/${GS_ASSETS_PROJECT_ROOT}`);
   projects.forEach(prj => {
@@ -119,7 +157,9 @@ function DBG_ListProjectIds() {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function DBG_ListBPIds(prjId) {
+async function DBG_ListBPIds(prjId) {
+  if (PROJECTS === undefined) await DBG_LoadAssets();
+  if (typeof prjId !== 'string') return 'prjId required. use listProjects()';
   const project = PROJECTS.getProjectByProjId(prjId);
   if (!project || project.id === undefined)
     return `no projectId '${prjId}' in ${GS_ASSETS_PROJECT_ROOT}`;
@@ -131,7 +171,8 @@ function DBG_ListBPIds(prjId) {
     });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function DBG_LoadProjectId(prjId = DEFAULT_PROJECT_ID) {
+async function DBG_LoadAllBlueprints(prjId = DEFAULT_PROJECT_ID) {
+  if (PROJECTS === undefined) await DBG_LoadAssets();
   // concatenate all scripts
   let script_text = `SCRIPT DUMP OF '${prjId}'`;
   const { blueprints } = PROJECTS.getProjectByProjId(prjId);
@@ -140,9 +181,11 @@ function DBG_LoadProjectId(prjId = DEFAULT_PROJECT_ID) {
     script_text += `\n\n// AUTOMATIC BLUEPRINT EXTRACTION OF: ${id} //\n${scriptText}`;
   });
   SendState({ script_text }, () => {});
+  return `loaded all scripts found in ${GS_ASSETS_PROJECT_ROOT}`;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function DBG_LoadProjectBlueprint(prjId, bpId) {
+async function DBG_LoadProjectBlueprint(prjId, bpId) {
+  if (PROJECTS === undefined) await DBG_LoadAssets();
   const { blueprints } = PROJECTS.getProjectByProjId(prjId);
   if (!blueprints) return `no projectId '${prjId}'`;
   const found = blueprints.find(bp => bp.id === bpId);
@@ -154,23 +197,34 @@ function DBG_LoadProjectBlueprint(prjId, bpId) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.AddConsoleTool({
-  'loadProjectBPs': (projId = DEFAULT_PROJECT_ID) => {
-    return DBG_LoadProjectId(projId);
-  },
-  'loadProjectBP': (projId, bpId) => {
-    return DBG_LoadProjectBlueprint(projId, bpId);
-  },
-  'listProjects': () => {
-    return DBG_ListProjectIds();
-  },
-  'listBPs': prjId => {
-    return DBG_ListBPIds(prjId);
-  },
-  'dumpToken': (row, col) => {
-    return State('script_map').get(`${row},${col}`);
-  }
-});
+if (DBG)
+  UR.AddConsoleTool({
+    'loadAssets': () => {
+      DBG_LoadAssets();
+      if (PROJECTS === undefined) return 'loading assets...';
+    },
+    'loadProjectBPs': (projId = DEFAULT_PROJECT_ID) => {
+      DBG_LoadAllBlueprints(projId);
+      if (PROJECTS === undefined) return 'loading assets...';
+    },
+    'loadProjectBP': (projId, bpId) => {
+      DBG_LoadProjectBlueprint(projId, bpId);
+      if (PROJECTS === undefined) return 'loading assets...';
+    },
+    'listProjects': () => {
+      DBG_ListProjectsIds();
+      if (PROJECTS === undefined) return 'loading assets...';
+    },
+    'listBPs': prjId => {
+      DBG_ListBPIds(prjId);
+      if (PROJECTS === undefined) return 'loading assets...';
+    },
+    'dumpToken': (row, col) => {
+      if (typeof row !== 'number') return 'arg1 is row number';
+      if (typeof col !== 'number') return 'arg2 is col number';
+      return State('script_map').get(`${row},${col}`);
+    }
+  });
 
 /// EVENT DISPATCHERS (REDUCERS) //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
