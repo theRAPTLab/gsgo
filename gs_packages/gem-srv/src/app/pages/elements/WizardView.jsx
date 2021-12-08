@@ -85,6 +85,7 @@ function GToken(props) {
   let label;
 
   if (typeof dtok !== 'object') label = dtok.toString();
+  else if (Array.isArray(dtok)) label = dtok.join('.');
   else label = TokenToString(dtok);
   // blank line? Just emit a line space
   if (label === '') {

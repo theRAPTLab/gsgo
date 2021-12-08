@@ -34,15 +34,15 @@
     JSEP project, under MIT License. Copyright (c) 2013 Stephen Oney,
     http://jsep.from.so/ see: https://ericsmekens.github.io/jsep/
 
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////xa///////////////////*/
 
-import { createImportSpecifier } from 'typescript';
+import { IToken } from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const string = 'class-script-tokenizer-v2';
-const charAtFunc = string.charAt;
-const charCodeAtFunc = string.charCodeAt;
+const STRING_OBJ = 'used to deref chatAt, charCodeAt';
+const charAtFunc = STRING_OBJ.charAt;
+const charCodeAtFunc = STRING_OBJ.charCodeAt;
 const t = true;
 let DBG = false;
 const DBG_MB = false;
@@ -86,11 +86,29 @@ const binary_ops = {
   '%': 10
 };
 
+/// TOKEN UTILITIES ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // convert word-based literals to value literals
 const literalRemapper = {
   'true': { value: true },
   'false': { value: false },
   'null': { value: null }
+};
+// keys are valid token types, values are validation functions
+const validTokenMap = {
+  directive: arg => typeof arg === 'string' && arg !== '',
+  comment: arg => typeof arg === 'string',
+  line: arg => typeof arg === 'string',
+  value: arg =>
+    typeof arg === 'number' || typeof arg === 'boolean' || arg === null,
+  string: arg => typeof arg === 'string',
+  program: arg => typeof arg === 'string' && arg !== '',
+  block: arg => Array.isArray(arg),
+  identifier: arg => typeof arg === 'string' && arg !== '',
+  objref: arg =>
+    Array.isArray(arg) &&
+    arg.every(item => typeof item === 'string' && item !== ''),
+  expr: arg => typeof arg === 'string' && arg !== ''
 };
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
@@ -139,7 +157,17 @@ const isIdentifierPart = ch => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class ScriptTokenizer {
   //
-  constructor(doFlags) {
+  do: boolean;
+  linesIndex: number;
+  line: string;
+  index: number;
+  lastIndex: number;
+  length: number;
+  blockDepth: number;
+  lines: string[];
+  linesCount: number;
+  //
+  constructor(doFlags?: any) {
     if (doFlags)
       console.log('ScriptTokenizer initialized with showCursor tracing');
     doFlags = doFlags || {
@@ -171,7 +199,7 @@ class ScriptTokenizer {
    *  give you a stack trace so you can see how deeply nested you are into the
    *  gobbler
    */
-  showCursor(prompt) {
+  showCursor(prompt?: string) {
     const lnum = `${this.linesIndex}`.padStart(3, '0');
     const s1 = `${lnum}: ${this.line.substring(0, this.index)}`;
     const s2 = this.line[this.index] || 'EOL';
@@ -237,15 +265,10 @@ class ScriptTokenizer {
   /** GEMSCRIPT HACK ** this is significantly modified from jsep to do line-by-
    *  line parsing.
    */
-  tokenize(src, flag) {
-    if (typeof src === 'string') src = src.split('\n');
-    if (!Array.isArray(src)) {
-      const err =
-        'tokenize() receives either a linefeed-delimited text or an ARRAY of string';
-      console.warn(err);
-      throw Error(err);
-    }
-    this.lines = src; // an array of strings
+  tokenize(src: string, flag?: string) {
+    let lines: string[];
+    if (typeof src === 'string') lines = src.split('\n');
+    this.lines = lines; // an array of strings
     this.linesCount = this.lines.length;
     this.linesIndex = 0;
     this.line = '';
@@ -689,11 +712,29 @@ class ScriptTokenizer {
 const scriptifier = new ScriptTokenizer();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// public instance
-function Tokenize(text) {
+function Tokenize(text: string): IToken[] {
   return scriptifier.tokenize(text);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Utility to validate token types
+/// returns [ token_type, token_value ] if it is a valid token,
+/// [undefined, undefined] otherwise
+function UnpackToken(tok: IToken): [string, any] {
+  const types = Object.keys(tok);
+  // an IToken can only contain one property
+  if (types.length > 1) return [undefined, undefined];
+  // test if valid type key
+  const [type] = types; // extract the type
+  const test = validTokenMap[type];
+  // test if type key value is expected type
+  if (typeof test !== 'function') return [undefined, undefined];
+  if (!test(tok[type])) return [undefined, undefined];
+  // if got this far, it's a valid token, so return its decoded value
+  // as [ tokenType, tokenValue ]
+  return [type, tok[type]];
 }
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default ScriptTokenizer;
-export { Tokenize };
+export { Tokenize, UnpackToken };

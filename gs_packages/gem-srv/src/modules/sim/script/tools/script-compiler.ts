@@ -22,7 +22,7 @@ import {
 import GAgent from 'lib/class-gagent';
 
 import { ParseExpression } from './class-expr-parser-v2';
-import GScriptTokenizer from './class-gscript-tokenizer-v2';
+import GScriptTokenizer, { UnpackToken } from './class-gscript-tokenizer-v2';
 import { ScriptTest, BlueprintTest } from './test-data/td-compiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -50,7 +50,17 @@ function m_CheckForError(code: TSMCProgram, unit: TScriptUnit, ...args: any[]) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** utility to return the 'decoded' value of a token */
-function DecodeTokenPrimitive(arg) {
+function DecodeTokenPrimitiveNew(arg) {
+  const [type, value] = UnpackToken(arg);
+  if (type === undefined) {
+    console.warn('unknown argument type:', arg);
+    throw Error('unknown argument type');
+  }
+  if (type === 'comment') return `// ${value}`;
+  return value;
+}
+/** old version of DecodeTokenPrimitive does not use gscript-tokenizer UnpackToken */
+function DecodeTokenPrimitiveOld(arg) {
   const { directive, comment, line } = arg; // meta information
   const { identifier, value, string } = arg; // primitive values
   const { objref, program, block, expr } = arg; // req runtime eval
@@ -73,9 +83,26 @@ function DecodeTokenPrimitive(arg) {
 /** return 'expanded' version of argument, suitable for passing to a keyword
  *  compiler
  */
-function DecodeToken(tok: IToken): any {
+function DecodeTokenNew(tok: IToken): any {
+  const [type, value] = UnpackToken(tok);
+  if (type === undefined)
+    throw Error(`DecodeToken invalid token ${JSON.stringify(tok)}`);
+  if (type === 'identifier') return value;
+  if (type === 'objref') return value;
+  if (type === 'string') return value;
+  if (type === 'value') return value;
+  if (type === 'line') return value;
+  if (type === 'expr') return { expr: ParseExpression(value) };
+  if (type === 'comment') return `// ${value}`;
+  if (type === 'directive') return '_pragma';
+  if (type === 'block') return CompileScript(value);
+  if (type === 'program') return GetProgram(value);
+  throw Error(`DecodeToken unhandled type ${type}`);
+}
+/** old version of DecodeToken does not use gscript-tokenizer UnpackToken */
+function DecodeTokenOld(tok: IToken): any {
   if (tok.comment !== undefined) return `// ${tok.comment}`; // compile will skip
-  const arg = DecodeTokenPrimitive(tok); // convert
+  const arg = DecodeTokenPrimitiveOld(tok); // convert
   // check special types
   if (arg.directive) return '_pragma'; // { directive, cmd } for compile-time processing
   if (typeof arg.expr === 'string') {
@@ -107,7 +134,7 @@ function r_Execute(smcode: TSMCProgram, agent: GAgent, state: SM_State): void {
  */
 function DecodeStatement(toks: TScriptUnit): any[] {
   const dUnit: TScriptUnit = toks.map((tok, ii) => {
-    let arg = DecodeToken(tok);
+    let arg = DecodeTokenNew(tok);
     return arg;
   });
   return dUnit;
@@ -299,5 +326,8 @@ UR.AddConsoleTool({
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export { CompileScript, CompileBlueprint };
-export { DecodeToken, DecodeStatement };
-export { DecodeTokenPrimitive };
+export {
+  DecodeTokenNew as DecodeToken,
+  DecodeTokenPrimitiveNew as DecodeTokenPrimitive,
+  DecodeStatement
+};
