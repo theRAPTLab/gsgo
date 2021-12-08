@@ -235,7 +235,6 @@ export type TInstanceMap = Map<string, TInstance[]>; // string is blueprint name
 export interface IState {
   stack: TStackable[]; // data stack (pass values in/out)
   ctx: {}; // a context object (dependent on caller)
-  scope: IScopeable[]; // scope stack (current execution context)
   flags: IComparator; // condition flags
   peek(): TStackable;
   pop(num?: number): TStackable[]; // return n things as array
