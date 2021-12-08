@@ -8,7 +8,7 @@
 import React from 'react';
 import Keyword from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
-import { addProp } from 'script/ops/_all';
+import { addProp } from 'script/ops/agent-ops';
 import { RegisterKeyword, GetVarCtor } from 'modules/datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
