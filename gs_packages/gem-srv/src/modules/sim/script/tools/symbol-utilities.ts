@@ -18,7 +18,7 @@ import { StringToParts } from 'lib/util-path';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = true;
 
-/// MOCKED ARGUMENT SYMBOL DATA ///////////////////////////////////////////////
+/// ARGUMENT SYMBOL DATA //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** the GPROP_SYMBOLS map holds the list of GPROP_TYPES (e.g. GBoolean)
  *  and all the associated properties and methods that are available on it.
@@ -28,9 +28,12 @@ enum GPROP_TYPES {
   GString,
   GNumber
 }
-/** T_ARGS is the list of GPROP */
+/** T_ARGS is the list of argument types. It's used in two ways:
+ *  1. describing the type of GPROP when building symbol tables
+ *  2. describing the types of compile-time parameters expected
+ */
 enum T_ARG {
-  // literal js types
+  // primitive types
   boolean,
   string,
   number,
@@ -39,35 +42,46 @@ enum T_ARG {
   objref,
   any
 }
-type T_PROPS = {
-  [propName: string]: {
-    argInfo: string;
-    argType: T_ARG;
-  };
-};
-type T_METHODS = {
-  [methodName: string]: {
-    argInfo: string;
-    argType: T_ARG;
-  };
-};
-interface GPROP_INFO {
-  props: T_PROPS;
-  methods: T_METHODS;
+/** ARG_SYMBOLS is used by keywords to define type purpose and type of arguments
+ *  expected from a decoded TScriptUnit
+ */
+interface ARG_SYMBOLS {
+  argInfo: string;
+  argType: T_ARG;
 }
-const GPROP_SYMBOLS = new Map<GPROP_TYPES, GPROP_INFO>();
+/** T_PROP_SYMBOLS are a list of SM_Object props, if there are any. GPROPs
+ *  don't have them, but AGENTs and FEATUREs do */
+type T_PROP_SYMBOLS = {
+  [propName: string]: ARG_SYMBOLS;
+};
+/** T_METHOD_SYMBOLS are the list of SM_Object methods and their arguments.
+ *  GPROPs and FEATUREs have methods (e.g. setTo) but AGENTs do not
+ */
+type T_METHOD_SYMBOLS = {
+  [methodName: string]: Array<ARG_SYMBOLS>;
+};
+/** SM_SYMBOLS contains symbol information for all props and methods of an
+ *  SM_OBJECT like a GVAR, AGENT, or FEATURE
+ */
+interface SM_SYMBOLS {
+  props: T_PROP_SYMBOLS;
+  methods: T_METHOD_SYMBOLS;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const GPROP_SYMBOLS = new Map<GPROP_TYPES, SM_SYMBOLS>();
 
-/// MOCKED BLUEPRINT SYMBOL DATA //////////////////////////////////////////////
+/// BLUEPRINT SYMBOL DATA /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** The blueprints dictionary uses AgentType as key to dictionaries of the
  *  added properties, added methods, and added Feature properties and methods.
  *  The undecorated base Agent is always in this table.
  */
 interface BLUEPRINT_INFO {
-  Features: { [FeatureName: string]: GPROP_INFO };
-  props: T_PROPS;
-  methods: T_METHODS;
+  Features: { [FeatureName: string]: SM_SYMBOLS };
+  props: T_PROP_SYMBOLS;
+  methods: T_METHOD_SYMBOLS;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BLUEPRINT_SYMBOLS = new Map<string, BLUEPRINT_INFO>();
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
