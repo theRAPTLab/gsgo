@@ -3,6 +3,10 @@
 
   ScriptUnit Utilities
 
+  * ScriptToLines converts a program of scriptUnit statements into
+    a line-based data structure suitable for rendering as an array of
+    React elements
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { TScriptUnit, IToken } from 'lib/t-script.d';
@@ -16,21 +20,6 @@ let DBGTEXT = '';
 // whether to count blank lines or not
 const COUNT_ALL_LINES = true; // see WizardView RENDER_BLOCK_CLOSE
 
-/// API METHODS ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a script of ScriptUnit statements, return a PAGE of VMTokenLine and
- *  VMToken
- */
-export function ScriptToLines(
-  program: TScriptUnit[]
-): [VMTokenLine[], Map<string, IToken>] {
-  m_Clear();
-  m_ProgramToLines(program); // updates PAGE
-  m_MapLinesToTokens(PAGE); // updates MAP
-  if (DBG) console.log(DBGTEXT);
-  return [PAGE, MAP];
-}
-
 /// LINE PRINTING MACHINE //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// A "token printer" that maintains a current line buffer. The line buffer is
@@ -38,13 +27,14 @@ export function ScriptToLines(
 /// convert statements that contain nested statements in their line-by-line
 /// equivalent
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let START_COUNT = 1; // set to 1 for no 0 indexes
+const LINE_START_NUM = 1; // set to 1 for no 0 indexes
 let INDENT = 0;
-let LINE_NUM = START_COUNT;
-let LINE_POS = START_COUNT;
+let STM_STACK = [];
+let LINE_NUM = LINE_START_NUM;
+let LINE_POS = LINE_START_NUM;
 let LINE_BUF = [];
 let PAGE = [];
-let MAP = new Map<string, IToken>();
+let MAP = new Map<string, IToken>(); // reverse lookup from tokenIdstring to token
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_Indent(): void {
   ++INDENT;
@@ -60,11 +50,23 @@ function m_Info() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_Clear(): void {
   LINE_BUF = [];
-  LINE_POS = START_COUNT;
-  LINE_NUM = START_COUNT;
+  LINE_POS = LINE_START_NUM;
+  LINE_NUM = LINE_START_NUM;
+  STM_STACK = [];
   PAGE = [];
   MAP.clear();
   DBGTEXT = '';
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** used to save the current statement for the token, though this information
+ *  can also be pulled from the PAGE data structure by lineNum
+ */
+function m_PushStatement(stm: TScriptUnit): void {
+  STM_STACK.push(stm); // save statement on stack
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_PopStatement(): TScriptUnit {
+  return STM_STACK.pop(); // save statement on stack
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_NextLine(): void {
@@ -83,7 +85,8 @@ function m_TokenOut(tok: IToken): void {
   LINE_BUF.push(tokInfo);
   m_NextPos();
   if (DBG) {
-    if (LINE_POS === START_COUNT) DBGTEXT += `${level} {${lineNum}:${linePos}} `;
+    if (LINE_POS === LINE_START_NUM)
+      DBGTEXT += `${level} {${lineNum}:${linePos}} `;
     else DBGTEXT += `{${lineNum}:${linePos}} `;
   }
 }
@@ -99,13 +102,13 @@ function m_LineOut(): void {
   // otherwise do the thing
   const { level, lineNum } = m_Info();
   const line: VMTokenLine = {
-    tokenList: LINE_BUF,
+    tokenList: [...LINE_BUF],
     level,
     lineNum
   };
   PAGE.push(line);
   LINE_BUF = [];
-  LINE_POS = START_COUNT;
+  LINE_POS = LINE_START_NUM;
   m_NextLine();
   if (DBG) DBGTEXT += '\n';
 }
@@ -128,6 +131,7 @@ function m_StatementToLines(statement: TScriptUnit): void {
     if (DBG) console.log('Empty Statement', statement);
     return;
   }
+  m_PushStatement(statement); // set current statement context
   statement.forEach((tok: IToken) => {
     // (1) if it's a block token then nested print
     if (Array.isArray(tok.block)) {
@@ -141,6 +145,7 @@ function m_StatementToLines(statement: TScriptUnit): void {
     // (3) "print" the token to the line buffer
     m_TokenOut(tok);
   });
+  m_PopStatement(); // remove current statement context
   // flush buffer after statement is printed, increment line
   m_LineOut();
 }
@@ -151,3 +156,23 @@ function m_StatementToLines(statement: TScriptUnit): void {
 function m_ProgramToLines(program) {
   program.forEach(stm => m_StatementToLines(stm));
 }
+
+/// EXPORTED API METHODS //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given a script of ScriptUnit statements, return a PAGE of VMTokenLine and
+ *  VMToken
+ */
+export function ScriptToLines(
+  program: TScriptUnit[]
+): [VMTokenLine[], Map<string, IToken>] {
+  m_Clear();
+  m_ProgramToLines(program); // updates PAGE
+  m_MapLinesToTokens(PAGE); // updates MAP
+  if (DBG) console.log(DBGTEXT);
+  return [PAGE, MAP];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** this has to be taken into account by modules indexing into State()
+ *  line and script maps (see ac-wizcore)
+ */
+export { LINE_START_NUM };

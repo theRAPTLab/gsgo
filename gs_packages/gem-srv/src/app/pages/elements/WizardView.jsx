@@ -115,11 +115,11 @@ let DBGTEXT = '';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function WizardView(props) {
   DBGTEXT = '';
-  const { vmPage } = props;
+  const { script_page } = props;
   const pageBuffer = [];
   const selTokId = WIZCORE.SelectedTokenId();
   const selLineNum = WIZCORE.SelectedLineNum();
-  vmPage.forEach(line => {
+  script_page.forEach(line => {
     const { lineNum, level, tokenList } = line;
     const lineBuffer = [];
     const hasTokens = tokenList.length > 0;

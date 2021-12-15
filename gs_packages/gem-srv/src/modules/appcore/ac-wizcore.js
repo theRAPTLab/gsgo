@@ -24,14 +24,9 @@ import StateMgr from '@gemstep/ursys/src/class-state-mgr';
 import {
   TextToScript,
   ScriptToText,
-  ScriptToLines
+  ScriptToLines,
+  LINE_START_NUM
 } from '../sim/script/transpiler-v2';
-
-import { PromiseLoadAssets } from '../asset_core/asset-mgr';
-import {
-  GS_ASSETS_PROJECT_ROOT,
-  GS_ASSETS_PATH
-} from '../../../config/gem-settings';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,7 +34,7 @@ const PR = UR.PrefixUtil('AC-MVVM', 'TagCyan');
 const DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DO_FAKE_EDIT = false;
-const DEFAULT_PROJECT_ID = 'decomposition';
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let DEFAULT_TEXT = `
 # BLUEPRINT TestAgent
 # PROGRAM DEFINE
@@ -105,10 +100,10 @@ const {
 const scriptToks = TextToScript(DEFAULT_TEXT);
 const [scriptPage, lineMap] = ScriptToLines(scriptToks);
 _initializeState({
-  script_text: DEFAULT_TEXT, // the source text
-  script_tokens: scriptToks, // an array of tokenized statements
-  script_page: scriptPage, // an array of statements turned into lines
-  script_map: lineMap, // lookup map
+  script_text: DEFAULT_TEXT, // the source text (WizardText)
+  script_tokens: scriptToks, // source tokens (from text)
+  script_page: scriptPage, // source tokens 'printed' as lines
+  line_tokmap: lineMap, // lookup map from tokenLine+Pos to original token
   sel_line_num: -1, // selected line of wizard. If < 0 it is not set
   sel_line_pos: -1, // select index into line. If < 0 it is not set
   error: '' // used fo error messages
@@ -125,7 +120,7 @@ _interceptState(state => {
       state.script_tokens = toks;
       const [vmPage, tokMap] = ScriptToLines(toks);
       state.script_page = vmPage;
-      state.script_map = tokMap;
+      state.line_tokmap = tokMap;
     } catch (e) {
       // ignore TextToScript compiler errors during live typing
     }
@@ -137,128 +132,41 @@ _interceptState(state => {
       state.script_text = text;
       const [vmPage, tokMap] = ScriptToLines(script_tokens);
       state.script_page = vmPage;
-      state.script_map = tokMap;
+      state.line_tokmap = tokMap;
     } catch (e) {
       // ignore TextTpScript compiler errors during live typing
     }
   }
 });
 
-/// CONSOLE TOOL INSTALL //////////////////////////////////////////////////////
+/// EVENT DISPATCHERS ("REDUCERS") ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let PROJECTS;
-let SPRITES;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function DBG_LoadAssets() {
-  [PROJECTS, SPRITES] = await PromiseLoadAssets(GS_ASSETS_PROJECT_ROOT);
-  console.log(`'${GS_ASSETS_PROJECT_ROOT}' assets loaded`);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function DBG_ListProjectsIds() {
-  if (PROJECTS === undefined) await DBG_LoadAssets();
-  const projects = PROJECTS.getProjectsList();
-  console.log(`PROJECTS IN ${GS_ASSETS_PATH}/${GS_ASSETS_PROJECT_ROOT}`);
-  projects.forEach(prj => {
-    console.log('prjid:', prj.id);
-  });
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function DBG_ListBPIds(prjId) {
-  if (PROJECTS === undefined) await DBG_LoadAssets();
-  if (typeof prjId !== 'string') return 'prjId required. use listProjects()';
-  const project = PROJECTS.getProjectByProjId(prjId);
-  if (!project || project.id === undefined)
-    return `no projectId '${prjId}' in ${GS_ASSETS_PROJECT_ROOT}`;
-  console.log(`BLUEPRINTS FOR PROJECT '${prjId}'`);
-  const { blueprints } = project;
-  if (Array.isArray(blueprints))
-    blueprints.forEach(bp => {
-      console.log('bpId:', bp.id);
-    });
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function DBG_LoadAllBlueprints(prjId = DEFAULT_PROJECT_ID) {
-  if (PROJECTS === undefined) await DBG_LoadAssets();
-  // concatenate all scripts
-  let script_text = `SCRIPT DUMP OF '${prjId}'`;
-  const { blueprints } = PROJECTS.getProjectByProjId(prjId);
-  blueprints.forEach(bp => {
-    const { id, label, scriptText } = bp;
-    script_text += `\n\n// AUTOMATIC BLUEPRINT EXTRACTION OF: ${id} //\n${scriptText}`;
-  });
-  SendState({ script_text }, () => {});
-  return `loaded all scripts found in ${GS_ASSETS_PROJECT_ROOT}`;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function DBG_LoadProjectBlueprint(prjId, bpId) {
-  if (PROJECTS === undefined) await DBG_LoadAssets();
-  const { blueprints } = PROJECTS.getProjectByProjId(prjId);
-  if (!blueprints) return `no projectId '${prjId}'`;
-  const found = blueprints.find(bp => bp.id === bpId);
-  if (!found) return `no blueprint '${bpId}' found in '${prjId}'`;
-  const { scriptText } = found;
-  SendState({ script_text: scriptText }, () => {});
-  console.log('list of blueprint ids for project:', prjId);
-  DBG_ListBPIds(prjId);
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if (DBG)
-  UR.AddConsoleTool({
-    'loadAssets': () => {
-      DBG_LoadAssets();
-      if (PROJECTS === undefined) return 'loading assets...';
-    },
-    'loadProjectBPs': (projId = DEFAULT_PROJECT_ID) => {
-      DBG_LoadAllBlueprints(projId);
-      if (PROJECTS === undefined) return 'loading assets...';
-    },
-    'loadProjectBP': (projId, bpId) => {
-      DBG_LoadProjectBlueprint(projId, bpId);
-      if (PROJECTS === undefined) return 'loading assets...';
-    },
-    'listProjects': () => {
-      DBG_ListProjectsIds();
-      if (PROJECTS === undefined) return 'loading assets...';
-    },
-    'listBPs': prjId => {
-      DBG_ListBPIds(prjId);
-      if (PROJECTS === undefined) return 'loading assets...';
-    },
-    'dumpToken': (row, col) => {
-      if (typeof row !== 'number') return 'arg1 is row number';
-      if (typeof col !== 'number') return 'arg2 is col number';
-      return State('script_map').get(`${row},${col}`);
-    }
-  });
-
-/// EVENT DISPATCHERS (REDUCERS) //////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Called by the document handler set in DevWizard. There are no other
+ *  click handlers
+ */
 function DispatchClick(event) {
-  // did a GToken get clicked? It will have token-id set
-  const tokenKey = event.target.getAttribute('data-key');
   const newState = {};
+
+  // (1) GToken was clicked?
+  const tokenKey = event.target.getAttribute('data-key');
   if (tokenKey !== null) {
-    if (DBG) console.log(`clicked token ${JSON.stringify(tokenKey)}`);
+    if (DBG) console.log(`WIZCORE: click on token ${JSON.stringify(tokenKey)}`);
     const [line, pos] = tokenKey.split(',');
-    newState.sel_line_num = line;
-    newState.sel_line_pos = pos;
 
-    /** HACK TEST **/
-    const token = State('script_map').get(tokenKey);
+    newState.sel_line_num = line; // STATE UPDATE: selected line
+    newState.sel_line_pos = pos; // STATE UPDATE: selected pos
 
-    // console.log('clicked id', token.identifier);
-    if (DO_FAKE_EDIT) {
-      if (token.identifier) {
-        token.identifier = 'Edited';
-        // force all tokens to update
-        const script_tokens = State('script_tokens');
-        const script_text = ScriptToText(script_tokens);
-        newState.script_text = script_text;
-      }
+    if (DBG) {
+      // const token = State('line_tokmap').get(tokenKey);
+      // token.identifier = 'Edited'; // INDIRECT STATE UPDATE: modified token
+
+      // force all tokens to update after editing the token
+      const script_tokens = State('script_tokens');
+      const script_text = ScriptToText(script_tokens);
+      newState.script_text = script_text; // STATE UPDATE: new script text
     }
-    /** END TEST **/
-    // send accumulated state updates
+
+    // notify subscribers of dependent state changes
     SendState(newState);
     return;
   }
@@ -267,6 +175,11 @@ function DispatchClick(event) {
   SendState({ sel_line_num: -1, sel_line_pos: -1 });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Called by DevWizard after text editing has stopped and there has been no
+ *  input for a few hundred milliseconds. updates the script_page (token)
+ *  display and also updates the text/script privately without sending the
+ *  changes bak out
+ */
 function WizardTextChanged(text) {
   let script_tokens;
   try {
@@ -310,8 +223,16 @@ function SelectedLineNum() {
   return Number(sel_line_num);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return selection information, used for interactive lookup */
 function SelectedToken() {
-  return State('script_map').get(SelectedTokenId());
+  const token = State('line_tokmap').get(SelectedTokenId());
+  const context = {}; // TODO: look up scope from symbol-utilities
+  const { sel_line_num: lineNum, sel_line_pos: linePos, script_page } = State();
+  if (lineNum > 0 && linePos > 0) {
+    const tokenList = script_page[lineNum - LINE_START_NUM];
+    return { token, context, lineNum, linePos, tokenList };
+  }
+  return undefined;
 }
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////

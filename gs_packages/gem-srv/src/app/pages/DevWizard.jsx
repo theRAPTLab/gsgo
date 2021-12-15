@@ -12,6 +12,7 @@ import UR from '@gemstep/ursys/client';
 import * as WIZCORE from '../../modules/appcore/ac-wizcore';
 import { WizardText } from './elements/WizardText';
 import { WizardView } from './elements/WizardView';
+import { WizardEdit } from './elements/WizardEdit';
 //
 import '../../lib/css/gem-ui.css';
 
@@ -29,7 +30,7 @@ const sParent = {
   width: '100vw',
   height: '100vh',
   gridTemplateRows: 'auto 1fr auto',
-  gridTemplateColumns: 'auto auto'
+  gridTemplateColumns: '50% auto' // force
 };
 const sHead = {
   gridColumn: '1 / 3',
@@ -50,8 +51,6 @@ const sRight = {
   gridColumn: '2 / 3',
   // extra styling
   padding: PAD,
-  display: 'inline-list-item',
-  whiteSpace: 'nowrap',
   overflowY: 'scroll',
   overflowX: 'none'
 };
@@ -77,21 +76,6 @@ function Header(props) {
       <span style={{ fontSize: '32px' }}>{label}</span> {UR.ConnectionString()}
     </header>
   );
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function WizardEdit(props) {
-  const { sel_line_num: line, sel_line_pos: pos } = WIZCORE.State();
-  if (line > 0 && pos > 0) {
-    const tok = WIZCORE.SelectedToken();
-    return (
-      <div className="wizardEdit">
-        <div style={{ backgroundColor: 'pink', padding: '10px' }}>
-          SELECTION EDIT {line} {pos} {JSON.stringify(tok)}
-        </div>
-      </div>
-    );
-  }
-  return null;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** prototype SVG-based background styling of boxes */
@@ -167,7 +151,7 @@ class DevWizard extends React.Component {
             }}
           >
             <TestGraphics />
-            <WizardView vmPage={script_page} />
+            <WizardView script_page={script_page} />
             <WizardEdit />
           </div>
         </section>

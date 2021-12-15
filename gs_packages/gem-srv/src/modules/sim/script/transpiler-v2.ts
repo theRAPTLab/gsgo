@@ -28,7 +28,7 @@ import {
   DecodeToken,
   DecodeTokenPrimitive
 } from './tools/script-compiler';
-import { ScriptToLines } from './tools/script-utilities';
+import { ScriptToLines, LINE_START_NUM } from './tools/script-utilities';
 import { TestObjref } from './tools/symbol-utilities';
 
 // dummy to import symbol-utilities otherwise it gets treeshaken out
@@ -239,7 +239,8 @@ export {
   DecodeTokenPrimitive, // for decoding the value of a token, returns token otherwise
   DecodeToken, // Working with DecodeTokenPrimitive, converts a token into runtime entity
   DecodeStatement, // Works with DecodeToken to create runtime enties
-  ScriptToLines // converts script into a viewmodel suitable for rendering as lines
+  ScriptToLines, // converts script into a viewmodel suitable for rendering as lines
+  LINE_START_NUM // either 0 or 1, read to modify index
 };
 
 /// BLUEPRINT OPERATIONS
