@@ -165,5 +165,17 @@ export function WizardView(props) {
     console.groupCollapsed('Wizard DBG');
     console.log(DBGTEXT);
   }
-  return pageBuffer;
+  return (
+    <div
+      className="wizardView"
+      style={{
+        display: 'inline-list-item',
+        whiteSpace: 'nowrap',
+        overflowY: 'scroll',
+        overflowX: 'none'
+      }}
+    >
+      {pageBuffer}
+    </div>
+  );
 }

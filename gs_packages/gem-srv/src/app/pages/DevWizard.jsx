@@ -84,12 +84,11 @@ function WizardEdit(props) {
   if (line > 0 && pos > 0) {
     const tok = WIZCORE.SelectedToken();
     return (
-      <>
-        <hr style={{ clear: 'left', marginTop: '60px' }} />
+      <div className="wizardEdit">
         <div style={{ backgroundColor: 'pink', padding: '10px' }}>
           SELECTION EDIT {line} {pos} {JSON.stringify(tok)}
         </div>
-      </>
+      </div>
     );
   }
   return null;
@@ -98,22 +97,20 @@ function WizardEdit(props) {
 /** prototype SVG-based background styling of boxes */
 function TestGraphics() {
   return (
-    <>
-      <div>
-        <div className="gunit gk0" />
-        <div className="gunit gk">
-          <div className="glabel">keyword</div>
-        </div>
-        <div className="gunit gk1" />
-
-        <div className="gunit ga0" />
-        <div className="gunit ga">
-          <div className="glabel">assign</div>
-        </div>
-        <div className="gunit ga1" />
+    <div className="testGraphics">
+      <div className="gunit gk0" />
+      <div className="gunit gk">
+        <div className="glabel">keyword</div>
       </div>
-      <hr style={{ clear: 'left', marginTop: '60px' }} />
-    </>
+      <div className="gunit gk1" />
+      <div className="gunit ga0" />
+      <div className="gunit ga">
+        <div className="glabel">assign</div>
+      </div>
+      <div className="gunit ga1" />
+      <br />
+      <hr style={{ clear: 'left', marginTop: '40px' }} />
+    </div>
   );
 }
 
@@ -154,7 +151,7 @@ class DevWizard extends React.Component {
     const { script_page, sel_line_num, sel_line_pos, error } = this.state;
     const selText =
       sel_line_num < 0 ? 'no selection' : `${sel_line_num},${sel_line_pos}`;
-    //
+    //a
     return (
       <div id="gui-wizard" style={sParent}>
         <Header label="DEV/WIZARD" />
@@ -162,9 +159,17 @@ class DevWizard extends React.Component {
           <WizardText />
         </section>
         <section style={sRight}>
-          <TestGraphics />
-          <WizardView vmPage={script_page} />
-          <WizardEdit />
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateRows: 'auto 1fr auto',
+              height: '100%'
+            }}
+          >
+            <TestGraphics />
+            <WizardView vmPage={script_page} />
+            <WizardEdit />
+          </div>
         </section>
         <footer style={sFoot}>
           <div>selection: {selText}</div>
