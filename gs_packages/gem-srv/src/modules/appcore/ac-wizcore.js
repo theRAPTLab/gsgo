@@ -77,6 +77,12 @@ when Moth lastTouches TreeTrunk [[
   prop Moth.alpha setTo 1
   call Moth.Costume.setPose 0
   prop Moth.moving setTo 1
+  call Moth.Movement.wanderUntilInside TreeTrunk
+  prop Moth.vulnerable setTo 1
+  prop Moth.alpha setMin 1
+  prop Moth.alpha setTo 1
+  call Moth.Costume.setPose 0
+  prop Moth.moving setTo 1
 ]]
 `.trim();
 

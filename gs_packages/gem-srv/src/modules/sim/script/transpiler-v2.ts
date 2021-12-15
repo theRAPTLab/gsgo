@@ -29,7 +29,10 @@ import {
   DecodeTokenPrimitive
 } from './tools/script-compiler';
 import { ScriptToLines } from './tools/script-utilities';
-import * as SYMBOLS from './tools/symbol-utilities';
+import { TestObjref } from './tools/symbol-utilities';
+
+// dummy to import symbol-utilities otherwise it gets treeshaken out
+TestObjref({});
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
