@@ -142,3 +142,11 @@
     --font-size: 16px;
   }
 }
+
+/*
+ * Pico overrides for CodeJar
+ */
+#app-container pre > code {
+  padding: 0;
+  display: inline;
+}
