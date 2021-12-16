@@ -19,7 +19,11 @@ import 'script/keywords/_all_keywords';
 
 // tooling imports
 import { TextToScript } from './tools/text-to-script';
-import { ScriptToText, TokenToString } from './tools/script-to-text';
+import {
+  ScriptToText,
+  StatementToText,
+  TokenToString
+} from './tools/script-to-text';
 import { ScriptToJSX } from './tools/script-to-jsx';
 import {
   CompileScript,
@@ -236,6 +240,7 @@ export {
   CompileBlueprint, // combine scriptunits through m_CompileBundle
   ScriptToConsole, // used in DevCompiler print script to console
   TokenToString, // for converting a token to its text representation
+  StatementToText, // convert scriptUnit[] to text
   DecodeTokenPrimitive, // for decoding the value of a token, returns token otherwise
   DecodeToken, // Working with DecodeTokenPrimitive, converts a token into runtime entity
   DecodeStatement, // Works with DecodeToken to create runtime enties

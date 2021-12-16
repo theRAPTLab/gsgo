@@ -65,8 +65,12 @@ function m_PushStatement(stm: TScriptUnit): void {
   STM_STACK.push(stm); // save statement on stack
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_PopStatement(): TScriptUnit {
+function m_PopStatement(): TScriptUnit[] {
   return STM_STACK.pop(); // save statement on stack
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_PeekStatement(): TScriptUnit[] {
+  return STM_STACK[STM_STACK.length - 1];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_NextLine(): void {
@@ -101,8 +105,13 @@ function m_LineOut(): void {
 
   // otherwise do the thing
   const { level, lineNum } = m_Info();
+  const lineStatement = LINE_BUF.map(t => {
+    return t.token;
+  });
+  const tokenList = [...LINE_BUF];
   const line: VMTokenLine = {
-    tokenList: [...LINE_BUF],
+    lineStatement,
+    tokenList,
     level,
     lineNum
   };

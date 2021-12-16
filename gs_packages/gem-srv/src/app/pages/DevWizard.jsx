@@ -14,6 +14,7 @@ import { WizardText } from './elements/WizardText';
 import { WizardView } from './elements/WizardView';
 import { WizardEdit } from './elements/WizardEdit';
 //
+import '../../lib/vendor/pico.min.css';
 import '../../lib/css/gem-ui.css';
 
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
@@ -139,10 +140,10 @@ class DevWizard extends React.Component {
     return (
       <div id="gui-wizard" style={sParent}>
         <Header label="DEV/WIZARD" />
-        <section style={sLeft}>
+        <div style={sLeft}>
           <WizardText />
-        </section>
-        <section style={sRight}>
+        </div>
+        <div style={sRight}>
           <div
             style={{
               display: 'grid',
@@ -154,7 +155,7 @@ class DevWizard extends React.Component {
             <WizardView script_page={script_page} />
             <WizardEdit />
           </div>
-        </section>
+        </div>
         <footer style={sFoot}>
           <div>selection: {selText}</div>
           <div style={sError}>{error}</div>

@@ -25,6 +25,7 @@ import {
   TextToScript,
   ScriptToText,
   ScriptToLines,
+  StatementToText,
   LINE_START_NUM
 } from '../sim/script/transpiler-v2';
 
@@ -142,7 +143,9 @@ _interceptState(state => {
 /// EVENT DISPATCHERS ("REDUCERS") ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Called by the document handler set in DevWizard. There are no other
- *  click handlers
+ *  click handlers. Note that event is a React synthetic event which wraps
+ *  the native event. https://reactjs.org/docs/events.html
+ *  List of mouse events: https://www.w3.org/TR/DOM-Level-3-Events/#events-mouseevents
  */
 function DispatchClick(event) {
   const newState = {};
@@ -153,8 +156,8 @@ function DispatchClick(event) {
     if (DBG) console.log(`WIZCORE: click on token ${JSON.stringify(tokenKey)}`);
     const [line, pos] = tokenKey.split(',');
 
-    newState.sel_line_num = line; // STATE UPDATE: selected line
-    newState.sel_line_pos = pos; // STATE UPDATE: selected pos
+    newState.sel_line_num = Number(line); // STATE UPDATE: selected line
+    newState.sel_line_pos = Number(pos); // STATE UPDATE: selected pos
 
     if (DBG) {
       // const token = State('line_tokmap').get(tokenKey);
@@ -174,6 +177,13 @@ function DispatchClick(event) {
   if (DBG) console.log('unhandled click. deselecting');
   SendState({ sel_line_num: -1, sel_line_pos: -1 });
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function DispatchEditorClick(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  console.log('form click', event);
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Called by DevWizard after text editing has stopped and there has been no
  *  input for a few hundred milliseconds. updates the script_page (token)
@@ -230,9 +240,20 @@ function SelectedToken() {
   const { sel_line_num: lineNum, sel_line_pos: linePos, script_page } = State();
   if (lineNum > 0 && linePos > 0) {
     const tokenList = script_page[lineNum - LINE_START_NUM];
-    return { token, context, lineNum, linePos, tokenList };
+    return {
+      token,
+      context,
+      lineNum,
+      linePos,
+      tokenList
+    };
   }
   return undefined;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetLineScriptText(lineStatement) {
+  console.log(JSON.stringify(lineStatement));
+  return StatementToText(lineStatement);
 }
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
@@ -258,9 +279,9 @@ function IsTokenInMaster(tok) {
 /// FORWARDED STATE METHODS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// dispatchers
-export { DispatchClick, WizardTextChanged };
+export { DispatchClick, WizardTextChanged, DispatchEditorClick };
 /// utilities
 export { IsTokenInMaster, GetAllTokenObjects };
-export { SelectedTokenId, SelectedLineNum, SelectedToken };
+export { SelectedTokenId, SelectedLineNum, SelectedToken, GetLineScriptText };
 /// forwarded state methods
 export { State, SendState, SubscribeState, UnsubscribeState };

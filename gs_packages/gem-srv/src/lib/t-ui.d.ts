@@ -37,5 +37,5 @@ export type VMTokenLine = {
   tokenList: VMToken[]; // the VMTokens in this VMLine
   lineNum: number; // the line number
   level: number; // the nesting level of this line
-  statement?: TScriptUnit[]; // parent statement
+  lineStatement?: TScriptUnit[]; // parent statement
 };

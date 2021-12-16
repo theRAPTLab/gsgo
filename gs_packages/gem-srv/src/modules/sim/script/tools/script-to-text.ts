@@ -118,4 +118,4 @@ if (DBG)
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { TokenToString, ScriptToText };
+export { TokenToString, StatementToText, ScriptToText };
