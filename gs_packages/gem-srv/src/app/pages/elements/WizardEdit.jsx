@@ -18,6 +18,7 @@ function Unimplemented(props) {
   return (
     <form>
       <label forhtml="select">Unimplemented Edit Box</label>
+      <span style={{ fontFamily: 'monospace' }}>{JSON.stringify(tok)}</span>
     </form>
   );
 }
