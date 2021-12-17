@@ -2,12 +2,12 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  WizardView - Given a script_page array of renderable state, emit
+  ScriptView - Given a script_page array of renderable state, emit
   a clickable wizard GUI.
 
   COMPONENT USAGE
 
-    <WizardView vmPage={this.state.script_page} />
+    <ScriptView vmPage={this.state.script_page} />
     where script_page is defined in ac-wizcore
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
@@ -120,15 +120,16 @@ export function ScriptView(props) {
   const selTokId = WIZCORE.SelectedTokenId();
   const selLineNum = WIZCORE.SelectedLineNum();
   script_page.forEach(line => {
-    const { lineNum, level, tokenList } = line;
+    const { lineNum, level, vmTokens } = line;
     const lineBuffer = [];
-    const hasTokens = tokenList.length > 0;
-    // iterate over tokenList if it exists
+    const hasTokens = vmTokens.length > 0;
+    // iterate over vmTokens if it exists
     if (hasTokens) {
-      tokenList.forEach((tokInfo, idx) => {
-        const { token, tokenKey } = tokInfo;
-        const dtok = DecodeTokenPrimitive(token);
-        const label = typeof dtok !== 'object' ? dtok : TokenToString(token);
+      vmTokens.forEach((tokInfo, idx) => {
+        const { scriptToken, tokenKey } = tokInfo;
+        const dtok = DecodeTokenPrimitive(scriptToken);
+        const label =
+          typeof dtok !== 'object' ? dtok : TokenToString(scriptToken);
         const selected = tokenKey === selTokId;
         lineBuffer.push(
           <GToken
@@ -137,7 +138,7 @@ export function ScriptView(props) {
             selected={selected}
             label={label}
             tokenKey={tokenKey}
-            token={token}
+            token={scriptToken}
           />
         );
         DBGTEXT += `{${tokenKey}} `;

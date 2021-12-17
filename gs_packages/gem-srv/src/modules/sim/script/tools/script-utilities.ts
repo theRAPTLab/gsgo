@@ -108,10 +108,10 @@ function m_LineOut(): void {
   const lineStatement = LINE_BUF.map(t => {
     return t.token;
   });
-  const tokenList = [...LINE_BUF];
+  const vmTokens = [...LINE_BUF];
   const line: VMTokenLine = {
     lineStatement,
-    tokenList,
+    vmTokens,
     level,
     lineNum
   };
@@ -126,8 +126,8 @@ function m_LineOut(): void {
 function m_MapLinesToTokens(vmPage: VMTokenLine[]) {
   MAP.clear();
   vmPage.forEach(vmTokLine => {
-    const { tokenList } = vmTokLine;
-    tokenList.forEach(vmTok => {
+    const { vmTokens } = vmTokLine;
+    vmTokens.forEach(vmTok => {
       const { tokenKey, token } = vmTok;
       MAP.set(tokenKey, token);
     });

@@ -29,6 +29,19 @@ import {
   LINE_START_NUM
 } from '../sim/script/transpiler-v2';
 
+/// EXPORTED STATE METHODS ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export { State, SendState, SubscribeState, UnsubscribeState };
+
+/// EXPORTED EVENT DISPATCHERS ////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export { DispatchClick, WizardTextChanged, DispatchEditorClick };
+
+/// EXPORTED VIEWMODEL INFO UTILS //////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export { IsTokenInMaster, GetAllTokenObjects };
+export { SelectedTokenId, SelectedLineNum, SelectedTokenInfo, GetLineScriptText };
+
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AC-MVVM', 'TagCyan');
@@ -178,6 +191,9 @@ function DispatchClick(event) {
   SendState({ sel_line_num: -1, sel_line_pos: -1 });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Called by the EditBox component, or anything that wants to intercept
+ *  a click before DispatchClick() guesses no token was clicked
+ */
 function DispatchEditorClick(event) {
   event.preventDefault();
   event.stopPropagation();
@@ -185,8 +201,8 @@ function DispatchEditorClick(event) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Called by DevWizard after text editing has stopped and there has been no
- *  input for a few hundred milliseconds. updates the script_page (token)
+/** Called after text editing in CodeJar has stopped and there has been no
+ *  input for a few hundred milliseconds. Updates the script_page (token)
  *  display and also updates the text/script privately without sending the
  *  changes bak out
  */
@@ -206,7 +222,7 @@ function WizardTextChanged(text) {
 
 /// WIZCORE HELPER METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return a flat array of all token objects for refence comparison purposes */
+/** Return a flat array of all token objects for refence comparison purposes */
 function GetAllTokenObjects(statements) {
   const allToks = [];
   statements.forEach(stm => {
@@ -221,6 +237,9 @@ function GetAllTokenObjects(statements) {
   return allToks;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Return the string of form '1,2', which is the line number and line position
+ *  with 1 being the first element. This string is used as a hash.
+ */
 function SelectedTokenId() {
   const { sel_line_num, sel_line_pos } = State();
   if (sel_line_num < 1) return undefined; // START_COUNT=1 in script-utilities
@@ -228,29 +247,31 @@ function SelectedTokenId() {
   return `${sel_line_num},${sel_line_pos}`;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Return the current line number */
 function SelectedLineNum() {
   const { sel_line_num } = State();
   return Number(sel_line_num);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return selection information, used for interactive lookup */
-function SelectedToken() {
+/** Return selection information, used for interactive lookup */
+function SelectedTokenInfo() {
   const token = State('line_tokmap').get(SelectedTokenId());
   const context = {}; // TODO: look up scope from symbol-utilities
   const { sel_line_num: lineNum, sel_line_pos: linePos, script_page } = State();
   if (lineNum > 0 && linePos > 0) {
-    const tokenList = script_page[lineNum - LINE_START_NUM];
+    const vmTokens = script_page[lineNum - LINE_START_NUM];
     return {
-      token,
-      context,
-      lineNum,
-      linePos,
-      tokenList
+      token, // the VMToken
+      context, // the context for this vmToken
+      lineNum, // line number in VMPage
+      linePos, // line position in VMPage[lineNum]
+      vmTokens // all the VMTokens in this line
     };
   }
   return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Return a string version of a ScriptUnit */
 function GetLineScriptText(lineStatement) {
   console.log(JSON.stringify(lineStatement));
   return StatementToText(lineStatement);
@@ -276,18 +297,10 @@ function IsTokenInMaster(tok) {
   return found;
 }
 
+/// DEBUGGING METHODS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.AddConsoleTool({
   script: () => {
     console.log(JSON.stringify(State().script_tokens, null, 2));
   }
 });
-
-/// FORWARDED STATE METHODS ///////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// dispatchers
-export { DispatchClick, WizardTextChanged, DispatchEditorClick };
-/// utilities
-export { IsTokenInMaster, GetAllTokenObjects };
-export { SelectedTokenId, SelectedLineNum, SelectedToken, GetLineScriptText };
-/// forwarded state methods
-export { State, SendState, SubscribeState, UnsubscribeState };

@@ -13,7 +13,7 @@ import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function Placeholder(props) {
   const { selection } = props;
-  const { token: tok, lineNum, linePos, tokenList } = selection;
+  const { token: tok, lineNum, linePos, vmTokens } = selection;
   return (
     <form>
       <label>Unimplemented Edit Box</label>

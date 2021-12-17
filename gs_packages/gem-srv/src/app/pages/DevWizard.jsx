@@ -34,7 +34,7 @@ import * as WIZCORE from '../../modules/appcore/ac-wizcore';
 // import * as TESTS from '../../modules/appcore/ac-wizcore-tests';
 // import { StyledTokenTest } from './elements/StyledExample';
 import { ScriptText } from './elements/WizardDevText';
-import { ScriptView } from './elements/WizardView';
+import { ScriptView } from './elements/WizardScriptView';
 import { EditBox } from './elements/WizardEditBox';
 import {
   sGrid,

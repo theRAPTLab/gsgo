@@ -14,17 +14,29 @@ import { Placeholder } from './EditPlaceholder';
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return component if valid line, null otherwise. used by DevWizard */
+/** Returns a token editing box based on the currently selected token
+ *  as defined in WIZCORE. The EditBox appears when a token is clicked, and
+ *  is used by DevWizard.
+ */
 export function EditBox(/* props */) {
   let content = null;
-  const sel = WIZCORE.SelectedToken();
+
+  // SETUP ////////////////////////////////////////////////////////////////////
+  const sel = WIZCORE.SelectedTokenInfo();
   if (sel) {
-    const { token: tok, lineNum, linePos, tokenList } = sel;
+    const { token: tok, lineNum, linePos, vmTokens } = sel;
+    // (1) is this a keyword?
     if (linePos === 1 && tok.identifier !== undefined)
       content = <Keyword selection={sel} />;
-    else content = <Placeholder selection={sel} />;
+    else {
+      // (2) it is a token, so figure out arguments
+
+      content = <Placeholder selection={sel} />;
+    }
   }
-  if (!content) return content;
+
+  // RENDER ///////////////////////////////////////////////////////////////////
+  if (!content) return null;
   return (
     <div
       className="WizardEdit"

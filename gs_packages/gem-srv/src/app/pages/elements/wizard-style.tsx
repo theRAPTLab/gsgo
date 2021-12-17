@@ -51,8 +51,17 @@ export const sFoot = {
   padding: PAD,
   backgroundColor: BG_COL
 };
-
-/// STYLING CSS ///////////////////////////////////////////////////////////////
+/// GRID LAYOUT CSS ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const sButtonGrid = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+  gap: '10px'
+};
+export const sButtonBreak = {
+  gridColumnStart: 1
+};
+/// BOX STYLING CSS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export const sError = {
   textAlign: 'right',

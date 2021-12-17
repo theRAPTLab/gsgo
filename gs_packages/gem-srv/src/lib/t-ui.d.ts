@@ -34,7 +34,7 @@ export type VMToken = {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a line of VMToken, with additional UI-relevant data */
 export type VMTokenLine = {
-  tokenList: VMToken[]; // the VMTokens in this VMLine
+  vmTokens: VMToken[]; // the VMTokens in this VMLine
   lineNum: number; // the line number
   level: number; // the nesting level of this line
   lineStatement?: TScriptUnit[]; // parent statement
