@@ -255,14 +255,14 @@ function SelectedLineNum() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return selection information, used for interactive lookup */
 function SelectedTokenInfo() {
-  const token = State('line_tokmap').get(SelectedTokenId());
+  const scriptToken = State('line_tokmap').get(SelectedTokenId());
   const context = {}; // TODO: look up scope from symbol-utilities
   const { sel_line_num: lineNum, sel_line_pos: linePos, script_page } = State();
   if (lineNum > 0 && linePos > 0) {
     const vmTokens = script_page[lineNum - LINE_START_NUM];
     return {
-      token, // the VMToken
-      context, // the context for this vmToken
+      scriptToken, // the actual scriptunit token
+      context, // the memory context for this token
       lineNum, // line number in VMPage
       linePos, // line position in VMPage[lineNum]
       vmTokens // all the VMTokens in this line

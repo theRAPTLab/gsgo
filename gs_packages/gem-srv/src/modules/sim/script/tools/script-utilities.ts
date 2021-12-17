@@ -85,7 +85,13 @@ function m_TokenOut(tok: IToken): void {
   const { lineNum, linePos, level } = m_Info();
   const tokenKey = `${lineNum},${linePos}`;
 
-  const tokInfo: VMToken = { token: tok, lineNum, level, linePos, tokenKey };
+  const tokInfo: VMToken = {
+    scriptToken: tok,
+    lineNum,
+    level,
+    linePos,
+    tokenKey
+  };
   LINE_BUF.push(tokInfo);
   m_NextPos();
   if (DBG) {
@@ -106,7 +112,7 @@ function m_LineOut(): void {
   // otherwise do the thing
   const { level, lineNum } = m_Info();
   const lineStatement = LINE_BUF.map(t => {
-    return t.token;
+    return t.scriptToken;
   });
   const vmTokens = [...LINE_BUF];
   const line: VMTokenLine = {
@@ -128,8 +134,8 @@ function m_MapLinesToTokens(vmPage: VMTokenLine[]) {
   vmPage.forEach(vmTokLine => {
     const { vmTokens } = vmTokLine;
     vmTokens.forEach(vmTok => {
-      const { tokenKey, token } = vmTok;
-      MAP.set(tokenKey, token);
+      const { tokenKey, scriptToken } = vmTok;
+      MAP.set(tokenKey, scriptToken);
     });
   });
 }
