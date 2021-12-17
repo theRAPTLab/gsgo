@@ -18,7 +18,7 @@ import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
 const DBG = false;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class WizardText extends React.Component {
+export class ScriptText extends React.Component {
   constructor() {
     super();
     this.state = WIZCORE.State();

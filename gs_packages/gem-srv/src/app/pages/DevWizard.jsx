@@ -3,17 +3,50 @@
 
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Wizard - Rendering Visual UI for Script Editing
+  This is the root component for Wizard GUI Development
+
+  It relies heavily on the appcore module WIZCORE to manage clicks and
+  state. The goal is not to have any logic in the root component at all.
+
+  The design of the GUI components are such that they all rely on WIZCORE
+  to manage viewmodel state, which is React-friendly shallow objects.
+
+  The component reads initial state from WIZCORE in the constructor,
+  and also subscribes to WIZCORE state changes. Upon receiving a state
+  change, the component calls its own setState() to cause rerendering.
+
+  Likewise, when an event occurs on the document level it is 'dispatched'
+  to the Dispatch Click Handler in WIZCORE, which can inspect the event to
+  determine what action should be taken. Since WIZCORE holds both viewmodel
+  state for the entire UI and has direct access to DATACORE modules, it can
+  make the appropriate changes to data and then synchronize viewmodel state.
+
+  Since all Wizard GUI components can subscribe to WIZCORE, they all update
+  without props passing or other convoluted message handling. The trick is
+  to write all components to work purely as state-driven dumb interfaces,
+  as they should be.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as WIZCORE from '../../modules/appcore/ac-wizcore';
-import { WizardText } from './elements/WizardText';
-import { WizardView } from './elements/WizardView';
-import { WizardEdit } from './elements/WizardEdit';
-//
+// import * as TESTS from '../../modules/appcore/ac-wizcore-tests';
+// import { StyledTokenTest } from './elements/StyledExample';
+import { ScriptText } from './elements/WizardDevText';
+import { ScriptView } from './elements/WizardView';
+import { EditBox } from './elements/WizardEditBox';
+import {
+  sGrid,
+  sHead,
+  sLeft,
+  sRight,
+  sRightGrid,
+  sFoot,
+  sError
+} from './elements/wizard-style';
+
+// import CSS straight into module, will appear as inline style
 import '../../lib/vendor/pico.min.css';
 import '../../lib/css/gem-ui.css';
 
@@ -22,80 +55,14 @@ import '../../lib/css/gem-ui.css';
 const DBG = false;
 const PR = UR.PrefixUtil('DEWIZ', 'TagApp');
 
-/// LAYOUT CSS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const BG_COL = '#ddd';
-const PAD = '10px';
-const sParent = {
-  display: 'grid',
-  width: '100vw',
-  height: '100vh',
-  gridTemplateRows: 'auto 1fr auto',
-  gridTemplateColumns: '50% auto' // force
-};
-const sHead = {
-  gridColumn: '1 / 3',
-  // extra styling
-  padding: PAD,
-  backgroundColor: BG_COL
-};
-const sLeft = {
-  gridColumn: '1 / 2',
-  // extra styling
-  boxSizing: 'border-box',
-  whiteSpace: 'pre',
-  overflowY: 'scroll',
-  overflowX: 'none',
-  backgroundColor: '#2d2d2d'
-};
-const sRight = {
-  gridColumn: '2 / 3',
-  // extra styling
-  padding: PAD,
-  overflowY: 'scroll',
-  overflowX: 'none'
-};
-const sFoot = {
-  gridColumn: '1 / 3',
-  // extra styling
-  padding: PAD,
-  backgroundColor: BG_COL
-};
-/// STYLING CSS ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const sError = {
-  textAlign: 'right',
-  backgroundColor: 'red',
-  color: 'white'
-};
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Header(props) {
+/** duplicate the old style from material-ui home.jsx */
+function DevHeader(props) {
   const { label } = props;
   return (
     <header style={sHead}>
       <span style={{ fontSize: '32px' }}>{label}</span> {UR.ConnectionString()}
     </header>
-  );
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** prototype SVG-based background styling of boxes */
-function TestGraphics() {
-  return (
-    <div className="testGraphics">
-      <div className="gunit gk0" />
-      <div className="gunit gk">
-        <div className="glabel">keyword</div>
-      </div>
-      <div className="gunit gk1" />
-      <div className="gunit ga0" />
-      <div className="gunit ga">
-        <div className="glabel">assign</div>
-      </div>
-      <div className="gunit ga1" />
-      <br />
-      <hr style={{ clear: 'left', marginTop: '40px' }} />
-    </div>
   );
 }
 
@@ -104,7 +71,6 @@ function TestGraphics() {
 class DevWizard extends React.Component {
   constructor() {
     super();
-    this.boxRef = React.createRef(); // used for current box
     this.state = WIZCORE.State();
     // bind methods that are called asynchronously
     this.handleWizUpdate = this.handleWizUpdate.bind(this);
@@ -115,10 +81,8 @@ class DevWizard extends React.Component {
     document.title = 'DEV WIZARD';
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
-
-    // add top-level click andler
+    // add top-level click handler
     document.addEventListener('click', WIZCORE.DispatchClick);
-
     // add a subscriber
     WIZCORE.SubscribeState(this.handleWizUpdate);
   }
@@ -133,27 +97,21 @@ class DevWizard extends React.Component {
   };
 
   render() {
-    const { script_page, sel_line_num, sel_line_pos, error } = this.state;
-    const selText =
-      sel_line_num < 0 ? 'no selection' : `${sel_line_num},${sel_line_pos}`;
-    //a
+    const {
+      script_page,
+      sel_line_num: num,
+      sel_line_pos: pos,
+      error
+    } = this.state;
+    const selText = num < 0 ? 'no selection' : `${num},${pos}`;
     return (
-      <div id="gui-wizard" style={sParent}>
-        <Header label="DEV/WIZARD" />
-        <div style={sLeft}>
-          <WizardText />
-        </div>
+      <div id="gui-wizard" style={sGrid}>
+        <DevHeader label="DEV/WIZARD" />
+        <ScriptText style={sLeft} />
         <div style={sRight}>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateRows: 'auto 1fr auto',
-              height: '100%'
-            }}
-          >
-            <TestGraphics />
-            <WizardView script_page={script_page} />
-            <WizardEdit />
+          <div style={sRightGrid}>
+            <ScriptView script_page={script_page} />
+            <EditBox />
           </div>
         </div>
         <footer style={sFoot}>

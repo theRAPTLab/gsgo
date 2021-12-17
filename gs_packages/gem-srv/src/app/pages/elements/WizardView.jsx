@@ -113,7 +113,7 @@ function GToken(props) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let DBGTEXT = '';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function WizardView(props) {
+export function ScriptView(props) {
   DBGTEXT = '';
   const { script_page } = props;
   const pageBuffer = [];

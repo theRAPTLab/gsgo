@@ -276,6 +276,12 @@ function IsTokenInMaster(tok) {
   return found;
 }
 
+UR.AddConsoleTool({
+  script: () => {
+    console.log(JSON.stringify(State().script_tokens, null, 2));
+  }
+});
+
 /// FORWARDED STATE METHODS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// dispatchers

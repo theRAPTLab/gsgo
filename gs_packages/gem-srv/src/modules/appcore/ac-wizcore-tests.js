@@ -2,6 +2,7 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   AC WIZCORE TEST MODULE
+  copy these back to
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -16,19 +17,18 @@ import { State, SendState } from './ac-wizcore';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DEFAULT_PROJECT_ID = 'decomposition';
-const DBG = false;
 
 /// CONSOLE TOOL INSTALL //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let PROJECTS;
 let SPRITES;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function DBG_LoadAssets() {
+export async function DBG_LoadAssets() {
   [PROJECTS, SPRITES] = await PromiseLoadAssets(GS_ASSETS_PROJECT_ROOT);
   console.log(`'${GS_ASSETS_PROJECT_ROOT}' assets loaded`);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function DBG_ListProjectsIds() {
+export async function DBG_ListProjectsIds() {
   if (PROJECTS === undefined) await DBG_LoadAssets();
   const projects = PROJECTS.getProjectsList();
   console.log(`PROJECTS IN ${GS_ASSETS_PATH}/${GS_ASSETS_PROJECT_ROOT}`);
@@ -37,7 +37,7 @@ async function DBG_ListProjectsIds() {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function DBG_ListBPIds(prjId) {
+export async function DBG_ListBPIds(prjId) {
   if (PROJECTS === undefined) await DBG_LoadAssets();
   if (typeof prjId !== 'string') return 'prjId required. use listProjects()';
   const project = PROJECTS.getProjectByProjId(prjId);
@@ -51,7 +51,7 @@ async function DBG_ListBPIds(prjId) {
     });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function DBG_LoadAllBlueprints(prjId = DEFAULT_PROJECT_ID) {
+export async function DBG_LoadAllBlueprints(prjId = DEFAULT_PROJECT_ID) {
   if (PROJECTS === undefined) await DBG_LoadAssets();
   // concatenate all scripts
   let script_text = `SCRIPT DUMP OF '${prjId}'`;
@@ -64,7 +64,7 @@ async function DBG_LoadAllBlueprints(prjId = DEFAULT_PROJECT_ID) {
   return `loaded all scripts found in ${GS_ASSETS_PROJECT_ROOT}`;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function DBG_LoadProjectBlueprint(prjId, bpId) {
+export async function DBG_LoadProjectBlueprint(prjId, bpId) {
   if (PROJECTS === undefined) await DBG_LoadAssets();
   const { blueprints } = PROJECTS.getProjectByProjId(prjId);
   if (!blueprints) return `no projectId '${prjId}'`;
@@ -77,31 +77,30 @@ async function DBG_LoadProjectBlueprint(prjId, bpId) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if (DBG)
-  UR.AddConsoleTool({
-    'loadAssets': () => {
-      DBG_LoadAssets();
-      if (PROJECTS === undefined) return 'loading assets...';
-    },
-    'loadProjectBPs': (projId = DEFAULT_PROJECT_ID) => {
-      DBG_LoadAllBlueprints(projId);
-      if (PROJECTS === undefined) return 'loading assets...';
-    },
-    'loadProjectBP': (projId, bpId) => {
-      DBG_LoadProjectBlueprint(projId, bpId);
-      if (PROJECTS === undefined) return 'loading assets...';
-    },
-    'listProjects': () => {
-      DBG_ListProjectsIds();
-      if (PROJECTS === undefined) return 'loading assets...';
-    },
-    'listBPs': prjId => {
-      DBG_ListBPIds(prjId);
-      if (PROJECTS === undefined) return 'loading assets...';
-    },
-    'dumpToken': (row, col) => {
-      if (typeof row !== 'number') return 'arg1 is row number';
-      if (typeof col !== 'number') return 'arg2 is col number';
-      return State('line_tokmap').get(`${row},${col}`);
-    }
-  });
+UR.AddConsoleTool({
+  'loadAssets': () => {
+    DBG_LoadAssets();
+    if (PROJECTS === undefined) return 'loading assets...';
+  },
+  'loadProjectBPs': (projId = DEFAULT_PROJECT_ID) => {
+    DBG_LoadAllBlueprints(projId);
+    if (PROJECTS === undefined) return 'loading assets...';
+  },
+  'loadProjectBP': (projId, bpId) => {
+    DBG_LoadProjectBlueprint(projId, bpId);
+    if (PROJECTS === undefined) return 'loading assets...';
+  },
+  'listProjects': () => {
+    DBG_ListProjectsIds();
+    if (PROJECTS === undefined) return 'loading assets...';
+  },
+  'listBPs': prjId => {
+    DBG_ListBPIds(prjId);
+    if (PROJECTS === undefined) return 'loading assets...';
+  },
+  'dumpToken': (row, col) => {
+    if (typeof row !== 'number') return 'arg1 is row number';
+    if (typeof col !== 'number') return 'arg2 is col number';
+    return State('line_tokmap').get(`${row},${col}`);
+  }
+});
