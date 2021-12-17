@@ -288,6 +288,7 @@ class ScriptTokenizer {
     // return a Script array of ScriptUnit arrays
     if (this.blockDepth > 0)
       this.throwError(`EOF without ${this.blockDepth} unclosed blocks`);
+
     return units;
   }
 
@@ -660,23 +661,25 @@ class ScriptTokenizer {
       if (this.line.substring(0, 1) === DIRECTIVE) return this.gobbleDirective();
       unit = [];
       // scan line character-by-character to end-of-line
-      while (this.index < this.length) {
-        let ch = this.exprICode(this.index);
-        let chn = this.exprICode(this.index + 1);
-        // EXIT CONDITION: closing ]] return
-        if (ch === CBRACK_CODE && chn === CBRACK_CODE) {
-          this.index += 2;
-          // return statement in block token
-          if (DBG_MB)
-            console.warn(`GM[${this.blockDepth}] statement rtn`, statements);
-          this.blockDepth--;
-          return { block: statements };
+      if (this.index === this.length) unit.push({ line: '' });
+      else
+        while (this.index < this.length) {
+          let ch = this.exprICode(this.index);
+          let chn = this.exprICode(this.index + 1);
+          // EXIT CONDITION: closing ]] return
+          if (ch === CBRACK_CODE && chn === CBRACK_CODE) {
+            this.index += 2;
+            // return statement in block token
+            if (DBG_MB)
+              console.warn(`GM[${this.blockDepth}] statement rtn`, statements);
+            this.blockDepth--;
+            return { block: statements };
+          }
+          // collect tokens
+          const tok = this.gobbleToken();
+          if (DBG_MB) console.warn(`GM[${this.blockDepth}] unit addtok`, tok);
+          unit.push(tok);
         }
-        // collect tokens
-        const tok = this.gobbleToken();
-        if (DBG_MB) console.warn(`GM[${this.blockDepth}] unit addtok`, tok);
-        unit.push(tok);
-      }
       // the entire line is processed, so push unit as a statement
       if (DBG_MB) console.warn(`GM[${this.blockDepth}] statement add`, unit);
       statements.push(unit);
