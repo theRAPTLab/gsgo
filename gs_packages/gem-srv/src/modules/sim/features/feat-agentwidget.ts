@@ -317,6 +317,33 @@ class WidgetPack extends GFeature {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 }
 
+/// SYMBOLS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+WidgetPack.Symbols = {
+  props: {
+    text: 'string',
+    meter: 'number',
+    meterColor: 'number',
+    isLargeGraphic: 'boolean',
+    graphValue: 'number',
+    barGraphProp: 'string',
+    barGraphPropFeature: 'string',
+    textProp: 'string',
+    meterProp: 'string'
+  },
+  methods: {
+    showMessage: { args: ['propname:string'] },
+    bindTextTo: { args: ['propname:string'] },
+    bindMeterTo: { args: ['propname:string'] },
+    setMeterPosition: { args: ['position:string'] },
+    bindGraphTo: { args: ['propname:string', 'frequency:number'] },
+    bindGraphToGlobalProp: { args: ['propname:string', 'frequency:number'] },
+    bindLineGraphHistogramToFeatProp: {
+      args: ['feature:string', 'propname:string']
+    }
+  }
+};
+
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new WidgetPack(FEATID);

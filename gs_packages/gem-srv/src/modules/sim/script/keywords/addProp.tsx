@@ -7,6 +7,7 @@
 
 import React from 'react';
 import Keyword from 'lib/class-keyword';
+import { AddSymbol } from 'modules/datacore/dc-script-bundle';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { addProp } from 'script/ops/agent-ops';
 import { RegisterKeyword, GetVarCtor } from 'modules/datacore';

@@ -10,6 +10,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import { GetFeature, GetProgram, GetTest, GetBlueprint } from 'modules/datacore';
 import { TabProps } from '@material-ui/core';
 import { IToken } from 'lib/t-script.d';
 import { StringToParts } from 'lib/util-path';
@@ -32,7 +33,7 @@ enum GPROP_TYPES {
  *  1. describing the type of GPROP when building symbol tables
  *  2. describing the types of compile-time parameters expected
  */
-enum T_ARG {
+enum EArgType {
   // primitive types
   boolean,
   string,
@@ -42,23 +43,23 @@ enum T_ARG {
   objref,
   any
 }
-/** ARG_SYMBOLS is used by keywords to define type purpose and type of arguments
+/** IARG_SYMBOLS is used by keywords to define type purpose and type of arguments
  *  expected from a decoded TScriptUnit
  */
-interface ARG_SYMBOLS {
+interface IARG_SYMBOLS {
   argInfo: string;
-  argType: T_ARG;
+  argType: EArgType;
 }
 /** T_PROP_SYMBOLS are a list of SM_Object props, if there are any. GPROPs
  *  don't have them, but AGENTs and FEATUREs do */
 type T_PROP_SYMBOLS = {
-  [propName: string]: ARG_SYMBOLS;
+  [propName: string]: IARG_SYMBOLS;
 };
 /** T_METHOD_SYMBOLS are the list of SM_Object methods and their arguments.
  *  GPROPs and FEATUREs have methods (e.g. setTo) but AGENTs do not
  */
 type T_METHOD_SYMBOLS = {
-  [methodName: string]: Array<ARG_SYMBOLS>;
+  [methodName: string]: Array<IARG_SYMBOLS>;
 };
 /** SM_SYMBOLS contains symbol information for all props and methods of an
  *  SM_OBJECT like a GVAR, AGENT, or FEATURE
@@ -174,6 +175,39 @@ const ARGUMENT_DECODE_TABLE = {
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return 'agent' if part is 'agent', undefined otherwise */
+function isAgentLiteral(parts: string[], index: number = 0) {
+  const part = parts[index];
+  return part === 'agent' ? 'agent' : undefined;
+}
+/** return feature module if part matches, undefined otherwise */
+function isFeatureName(parts: string[], index: number) {
+  const featName = parts[index];
+  return GetFeature(featName);
+}
+/** return prop if propName matches, undefined otherwise */
+function isPropName(parts: string[], index: number) {
+  const propName = parts[index];
+  // propName has to check current blueprint. Maybe part of bundle class.
+}
+/** return Blueprint is bpName maptches, undefined otherwise */
+function isBlueprintName(parts: string[], index: number) {
+  const bpName = parts[index];
+  return GetBlueprint(bpName);
+}
+
+function isFeaturePropName(parts: string[], index: number) {
+  // Feature propName has to be in FeatureMap somewhere
+  const featPropName = parts[index];
+}
+
+/** if an out-of-bounds part index requested, then 'terminal' */
+function isTerminal(parts: string[], index: number) {
+  return index > parts.length - 1;
+}
+function reportError(parts: string[], index: number) {
+  console.warn('unhandled objref condition', parts.join('.'));
+}
 
 /// FILTERS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

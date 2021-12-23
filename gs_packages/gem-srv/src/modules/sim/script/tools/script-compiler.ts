@@ -15,9 +15,9 @@ import SM_Bundle from 'lib/class-sm-bundle';
 import { GetKeyword } from 'modules/datacore/dc-script-engine';
 import { GetProgram } from 'modules/datacore/dc-named-methods';
 import {
-  AddToBundle,
+  BundleOut,
   SetBundleName,
-  SetBundleTag
+  BundleTag
 } from 'modules/datacore/dc-script-bundle';
 import GAgent from 'lib/class-gagent';
 
@@ -174,7 +174,7 @@ function CompileStatement(statement: TScriptUnit, idx?: number): TSMCProgram {
   // otherwise, compile the statement!
   kwProcessor = GetKeyword(kw);
   if (!kwProcessor) kwProcessor = GetKeyword('keywordErr');
-  const compiledStatement = kwProcessor.compile(kwArgs, idx); // qbits is the subsequent parameters
+  const compiledStatement = kwProcessor.compile(kwArgs, idx);
   return compiledStatement;
 } /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Compile ScriptUnits into a TSMCProgram (TOpcode[]). It ignores
@@ -200,8 +200,6 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
   const fn = 'CompileBlueprint';
   let objcode;
   const bdl = new SM_Bundle();
-  const compilerAgent = new GAgent('CompilerAgent');
-  const compilerState = new SM_State();
   //
   if (!Array.isArray(script)) throw Error(`${fn}: bad script`);
   if (script.length === 0) return bdl;
@@ -219,27 +217,18 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
     // special case 2: tag processing
     const [lead, kw, tagName, tagValue] = DecodeStatement(stm);
     if (lead === '_pragma' && kw.toUpperCase() === 'TAG') {
-      SetBundleTag(bdl, tagName, tagValue);
+      BundleTag(bdl, tagName, tagValue);
       return;
     }
 
-    // special case 3: run pragma compile-time scripts
-    // ??? this does not seem to run snymore...maybe not necesary
-    // BL: this doesn't run because stm[0] is now a {directive: '#'}
-    //     it's not clear that it needs to?
-    if (stm[0] === '#') {
-      objcode = CompileStatement([{ directive: '#' }, ...stm.slice(1)]);
-      r_Execute(objcode, compilerAgent, compilerState);
-      const result = compilerState.stack.pop();
-      if (result === '_blueprint')
-        throw Error(`${fn}: extraneous BLUEPRINT directive`);
-      return; // done with case 2
-    }
     // normal processing of statement
     objcode = CompileStatement(stm, ii);
     objcode = m_CheckForError(objcode, stm);
-    AddToBundle(bdl, objcode);
+    // save objcode to current bundle section, which can be changed
+    // through pragma PROGRAM
+    BundleOut(bdl, objcode);
   }); // script forEach
+
   if (bdl.name === undefined) throw Error(`${fn}: missing BLUEPRINT directive`);
   bdl.setType(EBundleType.BLUEPRINT);
   return bdl;

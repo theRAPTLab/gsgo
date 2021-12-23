@@ -16,9 +16,9 @@ import {
   IKeyObject,
   IAgent,
   IScopeable,
-  TStackable,
-  TMethod,
-  TValue
+  TSymbolMap,
+  TSymbolDef,
+  TMethod
 } from './t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -57,7 +57,9 @@ class SM_Object implements IScopeable {
   meta: { type: symbol; name?: string };
   prop: IKeyObject;
   method: IKeyObject;
-
+  //
+  static Symbols: TSymbolDef; // symbol data
+  //
   constructor(initValue?: any) {
     // init is a literal value
     this._value = initValue;

@@ -86,15 +86,16 @@ export interface IFeature {
   featAddProp(agent: IAgent, key: string, prop: IScopeable): void;
   featAddMethod(mName: string, smc_or_f: FeatureMethod): void;
   featGetMethod(mName: string): FeatureMethod;
+  Symbols?: TSymbolData;
 }
 export type FeatureMethod = (agent: IAgent, ...any) => any;
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Weird Typescript syntax for declaring a Constructor of a IScopeable,
  *  when these are passed to a class that manages instances of other classes
  */
 export interface IScopeableCtor {
   new (value?: any, ...args: any[]): IScopeable;
+  Symbols?: TSymbolData;
 }
 /** Declare an object with keys. If you use just object, typescript will complain
  *  every time you add an undeclared property name
@@ -162,6 +163,24 @@ export interface ISMCPrograms {
   conseq?: TSMCProgram; // program to run on true
   alter?: TSMCProgram; // program to run otherwise
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** exported from GVars and GFeatures attached to */
+export type TSymbolArgType = string; // 'name:argtype'
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** data description of symbols for features, props */
+export type TSymbolData = {
+  methods?: {
+    [methodName: string]: { args?: TSymbolArgType[]; returns?: TSymbolArgType };
+  };
+  props?: { [propName: string]: TSymbolArgType };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** blueprint symbol data format */
+export type TSymbolMap = {
+  props?: Map<string, IScopeable>;
+  methods?: Map<string, any[]>; // map method name to array of arguments
+  features?: Map<string, IFeature>; // mape to feature
+};
 /** An ISMCBundle is a dictionary of TSCMPrograms. See also dc-script-bundle for
  *  the BUNDLE_OUTS definition, which maps the bundle props to a particular
  *  runtime context (e.g. BLUEPRINT) A TSMCProgram is just TOpcode[] A
@@ -171,10 +190,12 @@ export interface ISMCBundle extends ISMCPrograms {
   name?: string; // the blueprint name of the bundle, if any
   parent?: string; // the parent bundle, if any
   type?: EBundleType; // enum type (see below)
-  tags: Map<string, any>;
+  symbols?: TSymbolMap;
+  tags: Map<string, any>; // ben's hack for 'character controlable' blueprints
   setTag(tagName: string, value: any);
   getTag(tagName: string): any;
 }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** defines the kinds of bundles */
 export enum EBundleType {
@@ -186,6 +207,12 @@ export enum EBundleType {
   G_COND = 'gcondition', // named global state based on condition
   G_TEST = 'gtest' // named global test returning true or false
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** new compile() function output spec */
+export type TObjectCode = {
+  objcode?: TOpcode[];
+  symbols?: TSymbolData;
+};
 
 /// SCRIPT UNIT TRANSPILER ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

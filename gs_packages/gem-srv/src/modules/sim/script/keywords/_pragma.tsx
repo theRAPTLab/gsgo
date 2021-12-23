@@ -1,10 +1,10 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "_pragma" keyword object
+  implementation of keyword "_pragma" keyword object, which is represented
+  by a leading # in scriptText
 
-  NOTE: This is a SYSTEM KEYWORD used for "# DIRECTIVE" syntax, and not
-  intended for direct use. It implements a number of compiler directives,
-  which are defined in the PRAGMA dictionary below.
+  It implements a number of compiler directives, which are defined in the
+  PRAGMA dictionary below.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 

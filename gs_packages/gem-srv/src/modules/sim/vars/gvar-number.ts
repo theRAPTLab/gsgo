@@ -185,6 +185,20 @@ export class GVarNumber extends SM_Object implements IScopeable {
   }
 }
 
+/// SYMBOLS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+GVarNumber.Symbols = {
+  methods: {
+    value: { returns: 'value:number' },
+    setWrap: { args: ['nvalue:number'] },
+    setMin: { args: ['nvalue:number'] },
+    setMax: { args: ['nvalue:number'] },
+    setTo: { args: ['nvalue:number'] },
+    setToRnd: { args: ['min:number', 'max:number', 'asInteger:boolean'] },
+    add: { args: ['num:number'] }
+  }
+};
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
