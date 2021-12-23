@@ -5,10 +5,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword from 'lib/class-keyword';
-import { AddSymbol } from 'modules/datacore/dc-script-bundle';
-import { TOpcode, TScriptUnit } from 'lib/t-script';
+import { TOpcode, TScriptUnit, TSymbolData, TSymbolArgType } from 'lib/t-script';
 import { addProp } from 'script/ops/agent-ops';
 import { RegisterKeyword, GetVarCtor } from 'modules/datacore';
 
@@ -18,22 +16,22 @@ export class AddProp extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('addProp');
-    this.args = ['propName string', 'propType string', 'initValue any'];
+    this.args = ['propName:string', 'propType:string', 'initValue:any'];
   }
 
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, propName, propType, initValue] = unit;
+    const [, propName, propType, initValue] = unit;
     const propCtor = GetVarCtor(propType as string);
     const progout = [];
     progout.push(addProp(propName as string, propCtor, initValue));
     return progout;
   }
 
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [keyword, propName, propType, initValue] = unit;
-    return <>{keyword}</>;
+  symbolize(unit: TScriptUnit): TSymbolData {
+    const [, propName, propType] = unit;
+    const propCtor = GetVarCtor(propType as string);
+    return { props: { [propName as string]: propCtor } };
   }
 } // end of keyword definition
 

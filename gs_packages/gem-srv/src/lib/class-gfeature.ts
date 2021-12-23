@@ -47,7 +47,7 @@ import {
   FeatureMethod,
   IAgent,
   IScopeable,
-  TSymbolDef,
+  TSymbolData,
   TStackable
 } from 'lib/t-script';
 import { GVarDictionary } from 'modules/sim/vars/_all_vars';
@@ -66,7 +66,7 @@ class Feature implements IFeature {
   meta: { feature: string };
   method: IKeyObject;
   //
-  static Symbols: TSymbolDef; // symbol data
+  static Symbols: TSymbolData; // symbol data
   //
   constructor(name: string) {
     this.meta = {

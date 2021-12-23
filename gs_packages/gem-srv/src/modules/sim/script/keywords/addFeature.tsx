@@ -5,18 +5,18 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { GetFeature } from 'modules/datacore/dc-features';
 import Keyword from 'lib/class-keyword';
 import { TOpcode, TScriptUnit, TSymbolData, TOpcodeErr } from 'lib/t-script';
 import { addFeature } from 'script/ops/agent-ops';
+import { GetFeature } from 'modules/datacore/dc-features';
 import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class useFeature extends Keyword {
+export class AddFeature extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
-    super('useFeature');
+    super('addFeature');
     this.args = ['featureName:string'];
   }
 
@@ -41,4 +41,4 @@ export class useFeature extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(useFeature);
+RegisterKeyword(AddFeature);

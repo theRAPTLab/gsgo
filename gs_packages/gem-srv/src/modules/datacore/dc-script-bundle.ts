@@ -4,7 +4,13 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { TOpcode, ISMCBundle, EBundleType, TSymbolMap } from 'lib/t-script.d';
+import {
+  TOpcode,
+  ISMCBundle,
+  EBundleType,
+  TSymbolMap,
+  TSymbolData
+} from 'lib/t-script.d';
 
 /// valid keys are defined in ISMCBundle, and values indicate the
 /// context that these program
@@ -24,6 +30,7 @@ const BUNDLE_CONTEXTS = [
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// const PR = UR.PrefixUtil('DCBDL');
+const DBG = true;
 
 /// GLOBAL DATACORE STATE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -96,31 +103,31 @@ export function CompilerState() {
  *  { props: { [propName]: propType } }
  *  { methods: { [methodName]: methodArgs } }
  */
-export function AddSymbol(bdl: ISMCBundle, symdata: TSymbolMap) {
+export function AddSymbol(bdl: ISMCBundle, symdata: TSymbolData) {
   if (bdl.symbols === undefined) bdl.symbols = {};
-  const symbols = bdl.symbols;
+  const _bdlsym = bdl.symbols;
+
+  if (symdata.info) console.log('info:', symdata.info);
+
   if (symdata.features) {
-    if (symbols.features === undefined) symbols.features = new Map();
-    for (const [key, value] of Object.entries(symdata.features)) {
-      if (symbols.features[key]) console.warn('feature', key, 'exists');
-      symbols.features[key] = value;
+    // featureName --> featureModule
+    if (_bdlsym.features === undefined) _bdlsym.features = new Map();
+    for (const [key, feat] of Object.entries(symdata.features)) {
+      if (_bdlsym.features.has(key)) console.warn('feature', key, 'exists');
+      _bdlsym.features.set(key, feat);
+      // if (DBG) console.log(bdl.name, 'addFeature', key);
     }
   }
   if (symdata.props) {
-    if (symbols.props === undefined) symbols.props = new Map();
-    for (const [key, value] of Object.entries(symdata.props)) {
-      if (symbols.props[key]) console.warn('prop', key, 'exists');
-      symbols.props[key] = value;
+    // propName --->
+    if (_bdlsym.props === undefined) _bdlsym.props = new Map();
+    for (const [key, argType] of Object.entries(symdata.props)) {
+      if (_bdlsym.props.has(key)) console.warn('prop', key, 'exists');
+      _bdlsym.props.set(key, argType);
+      // if (DBG) console.log(bdl.name, 'addProp', key, argType);
     }
   }
-  if (symdata.methods) {
-    if (symbols.methods === undefined) symbols.methods = new Map();
-    for (const [key, value] of Object.entries(symdata.methods)) {
-      if (symbols.methods[key]) console.warn('method', key, 'exists');
-      symbols.methods[key] = value;
-    }
-  }
-  console.log(JSON.stringify(bdl.symbols));
+  if (symdata.error) console.log('symbol error:', symdata.error);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function BundleTag(

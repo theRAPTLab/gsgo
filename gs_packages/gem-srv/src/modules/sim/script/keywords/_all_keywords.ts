@@ -10,7 +10,8 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// PROGRAM DEFINE
 export * from './addProp'; // use during DEFINE
-export * from './useFeature';
+export * from './useFeature'; // deprecated
+export * from './addFeature'; // replace useFeature
 // export * from './addTest'; // add a named test
 /// PROGRAM UPDATE
 export * from './prop'; // objref method args

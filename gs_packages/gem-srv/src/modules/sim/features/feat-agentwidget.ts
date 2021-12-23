@@ -28,14 +28,10 @@ import FLAGS from 'modules/flags';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const FEATID = 'AgentWidgets';
-const PR = UR.PrefixUtil(FEATID);
-const DBG = false;
-
 const WIDGET_AGENTS = new Map();
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /**
  * Returns agent if it exists.
  * If it doesn't exist anymore (e.g. CharControl has dropped), remove it from

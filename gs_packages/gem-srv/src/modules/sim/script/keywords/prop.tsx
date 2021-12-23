@@ -30,19 +30,9 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import DeleteIcon from '@material-ui/icons/VisibilityOff';
-import UR from '@gemstep/ursys/client';
-import Keyword, {
-  K_DerefProp,
-  K_JSXFieldsFromUnit,
-  K_TextifyScriptUnitValues
-} from 'lib/class-keyword';
-import { IAgent, IState, TOpcode, TScriptUnit, TArguments } from 'lib/t-script';
+import Keyword, { K_DerefProp } from 'lib/class-keyword';
+import { IAgent, IState, TOpcode, TSymbolData, TArguments } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
-import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from 'app/pages/helpers/page-xui-styles';
-import { TextToScript } from 'modules/sim/script/tools//text-to-script';
-import GVarElement from '../components/GVarElement';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -72,13 +62,6 @@ export class prop extends Keyword {
         p[methodName as string](...args);
       }
     ];
-  }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any): any {
-    const expUnit = K_JSXFieldsFromUnit(unit);
-    const [keyword, refArg, methodName, ...args] = expUnit;
-    return <>{keyword}</>;
   }
 } // end of keyword definition
 

@@ -27,25 +27,6 @@ export class _comment extends Keyword {
   compile(unit: TScriptUnit): TOpcode[] {
     return [];
   }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw, cmt] = unit;
-    const comment = cmt === '' ? '...' : cmt;
-    const isInstanceEditor = children
-      ? (children as any).isInstanceEditor
-      : false;
-
-    if (!isInstanceEditor) {
-      // Script Editor, add line numbers
-      return super.jsx(
-        index,
-        unit,
-        <i style={{ color: 'gray' }}>{`${comment}`}</i>
-      );
-    }
-    return ''; // skip comments for instance editors
-  }
 } // end of UseFeature
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

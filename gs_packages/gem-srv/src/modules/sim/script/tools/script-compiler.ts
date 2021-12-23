@@ -8,7 +8,13 @@
 
 import UR from '@gemstep/ursys/client';
 
-import { TScriptUnit, TSMCProgram, IToken, EBundleType } from 'lib/t-script.d';
+import {
+  TScriptUnit,
+  TSMCProgram,
+  IToken,
+  TSymbolData,
+  EBundleType
+} from 'lib/t-script.d';
 import SM_State from 'lib/class-sm-state';
 import SM_Bundle from 'lib/class-sm-bundle';
 
@@ -17,6 +23,7 @@ import { GetProgram } from 'modules/datacore/dc-named-methods';
 import {
   BundleOut,
   SetBundleName,
+  AddSymbol,
   BundleTag
 } from 'modules/datacore/dc-script-bundle';
 import GAgent from 'lib/class-gagent';
@@ -33,8 +40,8 @@ const Scriptifier = new GScriptTokenizer();
 
 /// COMPILER SUPPORT FUNCTIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** parse-out strings in the code array, which are errors */
-function m_CheckForError(code: TSMCProgram, unit: TScriptUnit, ...args: any[]) {
+/** filter-out errors in the code array, which are strings instead of functions */
+function m_StripErrors(code: TSMCProgram, unit: TScriptUnit, ...args: any[]) {
   const out = code.filter(f => {
     if (typeof f === 'function') return true;
     if (Array.isArray(f)) {
@@ -43,6 +50,7 @@ function m_CheckForError(code: TSMCProgram, unit: TScriptUnit, ...args: any[]) {
       const where = line !== undefined ? `line ${line}` : '';
       console.log(...PR(`ERR: ${err} ${where}`), unit);
     }
+    // got a single string, so is error
     if (typeof f === 'string')
       console.log(...PR(`ERR: '${f}' ${args.join(' ')}`), unit);
     return false;
@@ -94,7 +102,7 @@ function DecodeTokenNew(tok: IToken): any {
   if (type === 'value') return value;
   if (type === 'line') return value;
   if (type === 'expr') return { expr: ParseExpression(value) };
-  if (type === 'comment') return `// ${value}`;
+  if (type === 'comment') return { comment: value };
   if (type === 'directive') return '_pragma';
   if (type === 'block') return CompileScript(value);
   if (type === 'program') return GetProgram(value);
@@ -135,8 +143,12 @@ function r_Execute(smcode: TSMCProgram, agent: GAgent, state: SM_State): void {
  */
 function DecodeStatement(toks: TScriptUnit): any[] {
   const dUnit: TScriptUnit = toks.map((tok, ii) => {
-    let arg = DecodeTokenNew(tok);
-    return arg;
+    if (ii === 0) {
+      const arg = DecodeTokenNew(tok);
+      if (typeof arg === 'object' && arg.comment) return '_comment';
+      return arg;
+    }
+    return DecodeTokenNew(tok);
   });
   return dUnit;
 }
@@ -148,7 +160,7 @@ function DecodeStatement(toks: TScriptUnit): any[] {
 function is_Keyword(tok: any): boolean {
   // don't compile comment lines, but compile everything else
   if (typeof tok === 'string') {
-    if (tok.length > 0) return !tok.startsWith('//');
+    if (tok.length > 0) return true;
     return false; // the case for blank lines, now allowed
   }
   // this shouldn't happen, but just ruling it out
@@ -179,7 +191,22 @@ function CompileStatement(statement: TScriptUnit, idx?: number): TSMCProgram {
   if (!kwProcessor) kwProcessor = GetKeyword('keywordErr');
   const compiledStatement = kwProcessor.compile(kwArgs, idx);
   return compiledStatement;
-} /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** a mirror of CompileStatement, extracts the symbol data as a separate pass
+ *  so we don't have to rewrite the entire compiler and existing keyword code
+ */
+function SymbolizeStatement(statement: TScriptUnit, idx?: number): TSymbolData {
+  const kwArgs = DecodeStatement(statement);
+  let kw = kwArgs[0];
+  if (kw === '') return {}; // blank lines emit no symbol info
+  if (!is_Keyword(kw)) return { error: `bad keyword: '${kw}'` };
+  const kwProcessor = GetKeyword(kw);
+  if (!kwProcessor) return { error: `missing kwProcessor for: '${kw}'` };
+  // may return empty object, but that just means there are no symbols produced
+  return { ...kwProcessor.symbolize(kwArgs, idx) };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Compile ScriptUnits into a TSMCProgram (TOpcode[]). It ignores
  *  directives. Use CompileBlueprint() to handle directives.
  */
@@ -191,7 +218,7 @@ function CompileScript(script: TScriptUnit[]): TSMCProgram {
   script.forEach((statement, ii) => {
     if (statement[0] === '_pragma') return; // ignore directives
     objcode = CompileStatement(statement, ii);
-    objcode = m_CheckForError(objcode, statement);
+    objcode = m_StripErrors(objcode, statement);
     program.push(...objcode);
   });
   // return TSMCProgram (TOpcode functions)
@@ -226,14 +253,18 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
 
     // normal processing of statement
     objcode = CompileStatement(stm, ii);
-    objcode = m_CheckForError(objcode, stm);
+    objcode = m_StripErrors(objcode, stm);
     // save objcode to current bundle section, which can be changed
     // through pragma PROGRAM
     BundleOut(bdl, objcode);
+    // add symbol data
+    const symbols = SymbolizeStatement(stm, ii);
+    AddSymbol(bdl, symbols);
   }); // script forEach
 
   if (bdl.name === undefined) throw Error(`${fn}: missing BLUEPRINT directive`);
   bdl.setType(EBundleType.BLUEPRINT);
+  console.log(bdl.name, bdl.symbols);
   return bdl;
 }
 

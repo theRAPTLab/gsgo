@@ -32,7 +32,7 @@ export class featCall extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TScriptUnit, idx: number): TOpcode[] {
     const [kw, refArg, methodName, ...args] = unit;
     // ref is an array of strings that are fields in dot addressing
     // like agent.x

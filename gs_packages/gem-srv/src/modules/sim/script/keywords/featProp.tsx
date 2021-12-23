@@ -30,15 +30,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import DeleteIcon from '@material-ui/icons/VisibilityOff';
-import UR from '@gemstep/ursys/client';
-import Keyword, {
-  K_DerefFeatureProp,
-  K_JSXFieldsFromUnit,
-  K_TextifyScriptUnitValues,
-  K_ScriptifyText
-} from 'lib/class-keyword';
-import GAgent from 'lib/class-gagent';
+import Keyword from 'lib/class-keyword';
 import {
   IAgent,
   IState,
@@ -47,13 +39,7 @@ import {
   TArguments,
   IToken
 } from 'lib/t-script';
-import { RegisterKeyword, GetFeature } from 'modules/datacore';
-import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from 'app/pages/helpers/page-xui-styles';
-import { TextToScript } from 'modules/sim/script/tools/text-to-script';
-import InputElement from '../components/InputElement';
-import SelectElement from '../components/SelectElement';
-import GVarElement from '../components/GVarElement';
+import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

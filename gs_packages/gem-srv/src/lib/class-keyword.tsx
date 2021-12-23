@@ -17,33 +17,21 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import {
   IKeyword,
   TOpcode,
+  TSymbolData,
   TScriptUnit,
   IAgent,
   DerefMethod,
-  IScopeable
+  IScopeable,
+  TOpcodeErr
 } from 'lib/t-script';
 import GScriptTokenizer from '../modules/sim/script/tools/class-gscript-tokenizer-v2';
 import { Evaluate } from '../modules/sim/script/tools/class-expr-evaluator-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const scriptifier = new GScriptTokenizer();
-const styleIndex = {
-  fontWeight: 'bold' as 'bold', // this dumb typescriptery css workaround
-  backgroundColor: 'black',
-  color: 'white',
-  padding: '2px 4px',
-  marginTop: '-1px',
-  minWidth: '1.25em',
-  float: 'left' as 'left',
-  textAlign: 'right' as 'right' // this dumb typescriptery css workaround
-};
-const styleLine = { borderTop: '1px dotted gray' };
-const styleContent = { padding: '0.5em', overflow: 'hidden' };
 const DBG = false;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -59,25 +47,17 @@ class Keyword implements IKeyword {
     this.keyword = keyword;
     this.args = [];
   }
+
   /** override in subclass */
-  compile(unit: TScriptUnit, idx?: number): TOpcode[] {
+  compile(unit: TScriptUnit, idx?: number): (TOpcode | TOpcodeErr)[] {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
 
-  /** override in subclass */
-  jsx(index: number, unit: TScriptUnit, children?: any): any {
-    // note that styleIndex below has to have weird typescript
-    // stuff for originally hyphenated CSS properties so it doesn't
-    // get marked by the linter as invalid CSS
-    return (
-      // old method generated a key instead of using index
-      // but this disconnects the instance from the script
-      // <div key={m_GenerateKey()} style={styleLine}>
-      <div key={index} style={styleLine}>
-        <div style={styleIndex}>{index}</div>
-        <div style={styleContent}>{children}</div>
-      </div>
-    );
+  /** override in subclass to provide actual symbol data. not all keywords
+   *  generate symbol data
+   */
+  symbolize(unit: TScriptUnit): TSymbolData {
+    return {};
   }
 
   /// UTILITY METHODS /////////////////////////////////////////////////////////
@@ -300,54 +280,12 @@ function K_EvalRuntimeUnitArgs(unit: TScriptUnit, context: {}): any {
   // the TOpcode. We need to return a copy through map()
   return unit.map(arg => _evalRuntimeArg(arg, context));
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** called by keyword jsx generator to return data that can be used by JSX
- *
- */
-function K_JSXFieldsFromUnit(unit: TScriptUnit): any {
-  const jsxArray = unit.map(arg => _jsxifyArg(arg));
-  return jsxArray;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Given an array of untokenized script unit strings, produce a source text
- *  This is used by keyword serializers to convert their data into a line
- *  of script text.
- *    e.g. ['prop', 'x', 'setTo', '5'] => 'prop x setTo 5'
- *  The challenge is dealing with empty args,  So we can't simply use joins.
- *    e.g. with a join, ['prop', 'x', 'setTo', ''] => 'prop x setTo '
- *    but instead we want ['prop', 'x', 'setTo', ''] => 'prop x setTo ""'
- */
-function K_TextifyScriptUnitValues(unit: string[]): string {
-  const scriptText: string = unit.reduce((acc: string, curr: string) => {
-    if (curr === '') return `${acc} ""`;
-    return `${acc} ${curr}`;
-  });
-  return scriptText.trim();
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Given a text with multiline blocks, emit an array of strings corresponding
- *  to regular strings and [[ ]] demarked lines. The output nodes are processed
- *  back into a single line with m_StitchifyBlocks(). Returns an array of
- *  string arrays.
- */
-// REVIEW: This is duplicated in transpiler.
-//         It's here so that keywords (like props) can K_ScriptifyText directly
-//         avoiding a dependency cycle with transpiloer.
-function K_ScriptifyText(text: string): TScriptUnit[] {
-  if (text === undefined) return [];
-  const sourceStrings = text.split('\n');
-  const script = scriptifier.tokenize(sourceStrings);
-  return script;
-}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default Keyword; // default export: import Keyword
 export {
   K_EvalRuntimeUnitArgs, // convert all args in unit to runtime values
-  K_JSXFieldsFromUnit, // convert arg to JSX-renderable item
   K_DerefProp, // return function to access agent prop at runtime
-  K_DerefFeatureProp, // return function to access agent prop at runtime
-  K_TextifyScriptUnitValues,
-  K_ScriptifyText
+  K_DerefFeatureProp // return function to access agent prop at runtime
 };

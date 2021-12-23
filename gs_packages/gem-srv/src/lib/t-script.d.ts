@@ -165,20 +165,34 @@ export interface ISMCPrograms {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** exported from GVars and GFeatures attached to */
-export type TSymbolArgType = string; // 'name:argtype'
+export enum TSymbolArgType {
+  // primitive types
+  'boolean',
+  'string',
+  'number',
+  // special gemscript types
+  'expr',
+  'objref',
+  // composite value type
+  'any',
+  // global tables
+  'test', // named test for when
+  'program', // named program to execute
+  'event' // named system event
+}
+export type TSymbolMethodType =  { args?: TSymbolArgType[]; returns?: TSymbolArgType }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** data description of symbols for features, props */
 export type TSymbolData = {
-  methods?: {
-    [methodName: string]: { args?: TSymbolArgType[]; returns?: TSymbolArgType };
-  };
-  props?: { [propName: string]: TSymbolArgType };
+  props?: { [propName: string]: IScopeableCtor };
+  features?: { [featureName:string]: IFeature };
+  error?: string; // debugging if error
+  info?:string; // debugging status
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** blueprint symbol data format */
 export type TSymbolMap = {
-  props?: Map<string, IScopeable>;
-  methods?: Map<string, any[]>; // map method name to array of arguments
+  props?: Map<string, IScopeableCtor>;
   features?: Map<string, IFeature>; // mape to feature
 };
 /** An ISMCBundle is a dictionary of TSCMPrograms. See also dc-script-bundle for
@@ -220,8 +234,8 @@ export type TObjectCode = {
 export interface IKeyword {
   keyword: string;
   args: string[];
-  compile(unit: TScriptUnit): TOpcode[];
-  jsx(index: number, state: object, children?: any[]): any;
+  compile(unit: TScriptUnit, lineIdx?:number): (TOpcode|TOpcodeErr)[];
+  symbolize(unit: TScriptUnit,lineIdx?:number): TSymbolData;
   getName(): string;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -318,6 +332,7 @@ export type TOpcode = (
   agent?: IAgent, // memory context (an agent instance)
   sm_state?: IState // machine state
 ) => TOpWait;
+export type TOpcodeErr = [error:string,line:number];
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Stackmachine operations return a Promise if it is operating asynchronously
