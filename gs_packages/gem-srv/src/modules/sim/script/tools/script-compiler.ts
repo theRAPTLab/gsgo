@@ -89,7 +89,7 @@ function DecodeTokenNew(tok: IToken): any {
   if (type === undefined)
     throw Error(`DecodeToken invalid token ${JSON.stringify(tok)}`);
   if (type === 'identifier') return value;
-  if (type === 'objref') return value;
+  if (type === 'objref') return { objref: value };
   if (type === 'string') return value;
   if (type === 'value') return value;
   if (type === 'line') return value;
@@ -147,7 +147,10 @@ function DecodeStatement(toks: TScriptUnit): any[] {
  */
 function is_Keyword(tok: any): boolean {
   // don't compile comment lines, but compile everything else
-  if (typeof tok === 'string') return !tok.startsWith('//');
+  if (typeof tok === 'string') {
+    if (tok.length > 0) return !tok.startsWith('//');
+    return false; // the case for blank lines, now allowed
+  }
   // this shouldn't happen, but just ruling it out
   if (Array.isArray(tok)) return false;
   // if it's an object, do a bit more digging
