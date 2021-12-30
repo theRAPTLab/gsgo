@@ -11,10 +11,10 @@ const IS_MOBILE =
   /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
     navigator.userAgent
   );
-if (IS_MOBILE) {
-  console.log('PROMPTS: DETECTED MOBILE BROWSER');
-} else if (!IS_NODE) console.log('PROMPTS: DETECTED DESKTOP BROWSER');
-else console.log('PROMPTS       DETECTED NODE');
+// if (IS_MOBILE) {
+//   console.log('PROMPTS: DETECTED MOBILE BROWSER');
+// } else if (!IS_NODE) console.log('PROMPTS: DETECTED DESKTOP BROWSER');
+// else console.log('PROMPTS       DETECTED NODE');
 
 const DEFAULT_PADDING = IS_NODE
   ? 10 // nodejs

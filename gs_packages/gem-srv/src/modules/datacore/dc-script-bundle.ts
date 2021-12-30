@@ -97,11 +97,14 @@ export function CompilerState() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** add properties to symbol table where TSymbolMap contains
  *  { props, methods, features } that point to a Map<string,gvar> or
- *  Map<string,any[]> respectively
- *
+ *  Map<string,any[]> respectively:
  *  { features: { [featName]: featModule } }
  *  { props: { [propName]: propType } }
  *  { methods: { [methodName]: methodArgs } }
+ *  @param {ISMCBundle} bdl - the bundle to manipulate
+ *  @param {TSymbolData} symdata - an object to write into bundle.symbols
+ *  @returns void
+ *
  */
 export function AddSymbol(bdl: ISMCBundle, symdata: TSymbolData) {
   if (bdl.symbols === undefined) bdl.symbols = {};

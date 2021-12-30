@@ -231,7 +231,8 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
   let objcode;
   const bdl = new SM_Bundle();
   //
-  if (!Array.isArray(script)) throw Error(`${fn}: bad script`);
+  if (!Array.isArray(script))
+    throw Error(`${fn}: script should be array, not ${typeof script}`);
   if (script.length === 0) return bdl;
   script.forEach((stm, ii) => {
     // special case 1: first line must be # BLUEPRINT directive
@@ -264,7 +265,7 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
 
   if (bdl.name === undefined) throw Error(`${fn}: missing BLUEPRINT directive`);
   bdl.setType(EBundleType.BLUEPRINT);
-  console.log(bdl.name, bdl.symbols);
+  if (DBG) console.log(...PR(bdl.name, 'symbols:', bdl.symbols));
   return bdl;
 }
 
