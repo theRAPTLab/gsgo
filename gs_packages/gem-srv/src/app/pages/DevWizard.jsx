@@ -30,8 +30,9 @@
 
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import * as WIZCORE from '../../modules/appcore/ac-wizcore';
-// import * as TESTS from '../../modules/appcore/ac-wizcore-tests';
+import * as SIM from 'modules/sim/api-sim'; // load features
+import * as WIZCORE from '../../modules/appcore/ac-wizcore-tests';
+// import * as WIZCORE from '../../modules/appcore/ac-wizcore';
 // import { StyledTokenTest } from './elements/StyledExample';
 import { ScriptText } from './elements/WizardDevText';
 import { ScriptView } from './elements/WizardScriptView';

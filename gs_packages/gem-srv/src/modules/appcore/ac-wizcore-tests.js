@@ -14,6 +14,8 @@ import {
 } from '../../../config/gem-settings';
 import { State, SendState } from './ac-wizcore';
 
+export * from './ac-wizcore';
+
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DEFAULT_PROJECT_ID = 'decomposition';
@@ -78,27 +80,27 @@ export async function DBG_LoadProjectBlueprint(prjId, bpId) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.AddConsoleTool({
-  'loadAssets': () => {
+  'init_assets': () => {
     DBG_LoadAssets();
     if (PROJECTS === undefined) return 'loading assets...';
   },
-  'loadProjectBPs': (projId = DEFAULT_PROJECT_ID) => {
+  'load_blueprints': (projId = DEFAULT_PROJECT_ID) => {
     DBG_LoadAllBlueprints(projId);
     if (PROJECTS === undefined) return 'loading assets...';
   },
-  'loadProjectBP': (projId, bpId) => {
+  'load_blueprint': (projId, bpId) => {
     DBG_LoadProjectBlueprint(projId, bpId);
     if (PROJECTS === undefined) return 'loading assets...';
   },
-  'listProjects': () => {
+  'ls_projects': () => {
     DBG_ListProjectsIds();
     if (PROJECTS === undefined) return 'loading assets...';
   },
-  'listBPs': prjId => {
+  'ls_blueprints': prjId => {
     DBG_ListBPIds(prjId);
     if (PROJECTS === undefined) return 'loading assets...';
   },
-  'dumpToken': (row, col) => {
+  'dump_token_atpos': (row, col) => {
     if (typeof row !== 'number') return 'arg1 is row number';
     if (typeof col !== 'number') return 'arg2 is col number';
     return State('line_tokmap').get(`${row},${col}`);

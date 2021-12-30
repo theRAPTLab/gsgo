@@ -163,28 +163,22 @@ export interface ISMCPrograms {
   conseq?: TSMCProgram; // program to run on true
   alter?: TSMCProgram; // program to run otherwise
 }
+
+/// SYMBOL DATA AND TYPES /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** exported from GVars and GFeatures attached to */
-export enum TSymbolArgType {
-  // primitive types
-  'boolean',
-  'string',
-  'number',
-  // special gemscript types
-  'expr',
-  'objref',
-  // composite value type
-  'any',
-  // global tables
-  'test', // named test for when
-  'program', // named program to execute
-  'event' // named system event
-}
-export type TSymbolMethodType =  { args?: TSymbolArgType[]; returns?: TSymbolArgType }
+/// see https://michalzalecki.com/typescript-template-literal-types/
+type ArgTypeLiterals = `${'boolean'|'string'|'number'}`
+type ArgTypeSpecial = `${'expr'|'objref'|'any'}`;
+type ArgTypeGlobal = `${'test'|'program'|'event'}`
+// this type matches <anystring>:ArgTypeLiteral|ArgTypeSpecial|ArgTypeGlobal
+// e.g. 'propname:string', 'frequency:number'
+export type TSymbolArgType = `${string}:${ArgTypeLiterals | ArgTypeSpecial |ArgTypeGlobal}`;
+export type TSymbolMethodArgs =  { args?: TSymbolArgType[]; returns?: TSymbolArgType }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** data description of symbols for features, props */
 export type TSymbolData = {
   props?: { [propName: string]: IScopeableCtor };
+  methods?: { [methodName:string]:TSymbolMethodArgs};
   features?: { [featureName:string]: IFeature };
   error?: string; // debugging if error
   info?:string; // debugging status
@@ -195,6 +189,9 @@ export type TSymbolMap = {
   props?: Map<string, IScopeableCtor>;
   features?: Map<string, IFeature>; // mape to feature
 };
+
+/// PROGRAM BUNDLES ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** An ISMCBundle is a dictionary of TSCMPrograms. See also dc-script-bundle for
  *  the BUNDLE_OUTS definition, which maps the bundle props to a particular
  *  runtime context (e.g. BLUEPRINT) A TSMCProgram is just TOpcode[] A
@@ -221,12 +218,6 @@ export enum EBundleType {
   G_COND = 'gcondition', // named global state based on condition
   G_TEST = 'gtest' // named global test returning true or false
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** new compile() function output spec */
-export type TObjectCode = {
-  objcode?: TOpcode[];
-  symbols?: TSymbolData;
-};
 
 /// SCRIPT UNIT TRANSPILER ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -373,7 +364,7 @@ export enum ControlMode {
   puppet, // someone (not system) is controlling it
   auto // AI
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export interface IActable {
   isSelected: boolean;
   isHovered: boolean;

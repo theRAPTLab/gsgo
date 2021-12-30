@@ -51,6 +51,7 @@ export const sFoot = {
   padding: PAD,
   backgroundColor: BG_COL
 };
+
 /// GRID LAYOUT CSS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export const sButtonGrid = {
@@ -61,6 +62,7 @@ export const sButtonGrid = {
 export const sButtonBreak = {
   gridColumnStart: 1
 };
+
 /// BOX STYLING CSS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export const sError = {

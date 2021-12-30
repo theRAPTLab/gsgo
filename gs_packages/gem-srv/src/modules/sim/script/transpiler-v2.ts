@@ -33,10 +33,10 @@ import {
   DecodeTokenPrimitive
 } from './tools/script-compiler';
 import { ScriptToLines, LINE_START_NUM } from './tools/script-utilities';
-import { TestObjref } from './tools/symbol-utilities';
+import { RuntimeTest } from './tools/symbol-utilities';
 
 // dummy to import symbol-utilities otherwise it gets treeshaken out
-TestObjref({});
+RuntimeTest();
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

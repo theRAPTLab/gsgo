@@ -132,7 +132,7 @@ export function SaveBlueprint(bp: ISMCBundle) {
 export function GetBlueprint(name: string): ISMCBundle {
   name = name || 'default';
   const bdl = BLUEPRINTS.get(name);
-  if (!bdl) console.warn(`blueprint '${name}' does not exist`);
+  // if (!bdl) console.warn(`blueprint '${name}' does not exist`);
   return bdl;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

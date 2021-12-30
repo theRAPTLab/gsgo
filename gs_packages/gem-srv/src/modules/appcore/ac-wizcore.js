@@ -300,7 +300,7 @@ function IsTokenInMaster(tok) {
 /// DEBUGGING METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.AddConsoleTool({
-  script: () => {
+  wizcore_script_test: () => {
     console.log(JSON.stringify(State().script_tokens, null, 2));
   }
 });

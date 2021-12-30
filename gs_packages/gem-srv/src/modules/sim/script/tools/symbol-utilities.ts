@@ -10,8 +10,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+
 import { GetFeature, GetProgram, GetTest, GetBlueprint } from 'modules/datacore';
-import { TabProps } from '@material-ui/core';
 import { IToken, TSymbolArgType } from 'lib/t-script.d';
 import { StringToParts } from 'lib/util-path';
 
@@ -29,7 +29,8 @@ function isAgentLiteral(parts: string[], index: number = 0) {
 /** return feature module if part matches, undefined otherwise */
 function isFeatureName(parts: string[], index: number) {
   const featName = parts[index];
-  return GetFeature(featName);
+  const feat = GetFeature(featName);
+  return feat;
 }
 /** return prop if propName matches, undefined otherwise */
 function isPropName(parts: string[], index: number) {
@@ -57,6 +58,25 @@ function reportError(parts: string[], index: number) {
 
 /// FILTERS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function TestObjref(tok: IToken = { objref: ['Agent', 'x'] }) {
-  const { objref } = tok;
+export function RuntimeTest() {
+  UR.AddConsoleTool({
+    objref_decode_string: (objref: string) => {
+      const parts = objref.split('.');
+      for (let i = 0; i < parts.length; i++) {
+        let out = '';
+        const testResults = {
+          agentLiteral: isAgentLiteral(parts, i),
+          featureName: isFeatureName(parts, i),
+          propName: isPropName(parts, i),
+          blueprintName: isBlueprintName(parts, i),
+          featurePropName: isFeaturePropName(parts, i),
+          terminal: isTerminal(parts, i)
+        };
+        for (const [key, value] of Object.entries(testResults)) {
+          if (value) out += `${key} `;
+        }
+        console.log(`[${i}] '${parts[i]}' is ${out || '<not matched>'}`);
+      }
+    }
+  });
 }

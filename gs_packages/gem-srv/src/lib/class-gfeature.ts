@@ -66,7 +66,7 @@ class Feature implements IFeature {
   meta: { feature: string };
   method: IKeyObject;
   //
-  static Symbols: TSymbolData; // symbol data
+  static Symbols?: TSymbolData; // symbol data
   //
   constructor(name: string) {
     this.meta = {

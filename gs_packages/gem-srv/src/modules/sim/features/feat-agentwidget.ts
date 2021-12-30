@@ -317,15 +317,15 @@ class WidgetPack extends GFeature {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 WidgetPack.Symbols = {
   props: {
-    text: 'string',
-    meter: 'number',
-    meterColor: 'number',
-    isLargeGraphic: 'boolean',
-    graphValue: 'number',
-    barGraphProp: 'string',
-    barGraphPropFeature: 'string',
-    textProp: 'string',
-    meterProp: 'string'
+    text: GVarString,
+    meter: GVarNumber,
+    meterColor: GVarNumber,
+    isLargeGraphic: GVarBoolean,
+    graphValue: GVarNumber,
+    barGraphProp: GVarString,
+    barGraphPropFeature: GVarString,
+    textProp: GVarString,
+    meterProp: GVarString
   },
   methods: {
     showMessage: { args: ['propname:string'] },
