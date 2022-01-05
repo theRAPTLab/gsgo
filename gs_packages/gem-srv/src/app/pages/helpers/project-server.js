@@ -52,21 +52,21 @@ const MONITORED_INSTANCES = [];
 
 /// UTILITY FUNCTIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-function getLocaleIdFromLocalStorage() {
+function u_GetLocaleIdFromLocalStorage() {
   const localeId = localStorage.getItem('localeId');
   return Number(localeId !== null ? localeId : 4);
 }
-function saveLocaleIdToLocalStorage(id) {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function u_SaveLocaleIdToLocalStorage(id) {
   localStorage.setItem('localeId', id);
 }
 
 /// STATE UPDATE HANDLERS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+/// subscriber to state group 'locales' changes
 function urLocaleStateUpdated(stateObj, cb) {
   // if update was to localeID, save localeID to localStorage
-  if (stateObj.localeId) saveLocaleIdToLocalStorage(stateObj.localeId);
+  if (stateObj.localeId) u_SaveLocaleIdToLocalStorage(stateObj.localeId);
 
   // Read the current transforms
   const state = UR.ReadFlatStateGroups('locales');
@@ -94,7 +94,7 @@ function urLocaleStateUpdated(stateObj, cb) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+/// subscriber to state group 'project' changes
 function urProjectStateUpdated(stateObj, cb) {
   if (DBG) console.log(...PR('urProjectStateUpdated', stateObj));
   const { project } = stateObj;
@@ -104,12 +104,12 @@ function urProjectStateUpdated(stateObj, cb) {
 
 /// INSPECTOR UTILS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * On every system loop, we broadcast instance updates
- * for any instances that have registered for modeling.
- * We keep this list small to keep from flooding the net with data.
+/** API:
+ *  On every system loop, we broadcast instance updates
+ *  for any instances that have registered for modeling.
+ *  We keep this list small to keep from flooding the net with data.
  */
-export function SendInspectorUpdate(frametime) {
+function SendInspectorUpdate(frametime) {
   if (frametime % 30 !== 0) return;
   // walk down agents and broadcast results for monitored agents
   const agents = DCAgents.GetAllAgents();
@@ -126,21 +126,25 @@ export function SendInspectorUpdate(frametime) {
   // Broadcast data
   UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: inspectorAgents });
 }
-/**
- * PanelSimulation keeps track of any instances that have been requested
- * for inspector monitoring.
- * We allow duplicate registrations so that when one device unregisters,
- * the instance is still considered monitored.
- * @param {Object} data { name: <string> } where name is the agent name.
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API:
+ *  PanelSimulation keeps track of any instances that have been requested
+ *  for inspector monitoring.
+ *  We allow duplicate registrations so that when one device unregisters,
+ *  the instance is still considered monitored.
+ *  @param {Object} data { name: <string> } where name is the agent name.
  */
-export function DoRegisterInspector(data) {
+function DoRegisterInspector(data) {
   const id = data.id;
   MONITORED_INSTANCES.push(id);
   // force inspector update immediately so that the inspector
   // will open up.  otherwise there is a 1 second delay
   SendInspectorUpdate(30);
 }
-export function DoUnRegisterInspector(data) {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: ?
+ */
+function DoUnRegisterInspector(data) {
   const id = data.id;
   const i = MONITORED_INSTANCES.indexOf(id);
   if (i > -1) MONITORED_INSTANCES.splice(i, 1);
@@ -148,10 +152,10 @@ export function DoUnRegisterInspector(data) {
 
 /// PROJECT DATA PRE INIT /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// Called by Main
-/// Load application-specific settings (current locale, projId as defined by URL)
-export function ProjectDataPreInit(parent, projId) {
+/** API:
+ *  Load application-specific settings (current locale, projId as defined by URL)
+ */
+function ProjectDataPreInit(parent, projId) {
   PARENT_COMPONENT = parent;
   CURRENT_PROJECT_ID = projId; // Save slug to load after urStateUpdated
 
@@ -159,14 +163,13 @@ export function ProjectDataPreInit(parent, projId) {
   UR.SubscribeState('project', urProjectStateUpdated);
 
   // Load currently saved locale
-  const localeId = getLocaleIdFromLocalStorage();
+  const localeId = u_GetLocaleIdFromLocalStorage();
   UR.WriteState('locales', 'localeId', localeId);
 }
 
 /// MAIN INITIALIZATION ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// Hooked to APP_START
+/// Also hooked to APP_START
 async function Initialize() {
   // 1. Check for other 'Sim' devices.
   const devices = UR.GetDeviceDirectory();
@@ -216,8 +219,11 @@ async function Initialize() {
   });
 }
 
-/// Called by Main.LoadModel after a SIM RESET
-export async function ReloadProject() {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API:
+ *  Called by Main.LoadModel after a SIM RESET
+ */
+async function ReloadProject() {
   CURRENT_PROJECT = ACProject.GetProject(CURRENT_PROJECT_ID);
   await ACProject.TriggerProjectStateUpdate();
   SIMCTRL.SimPlaces(CURRENT_PROJECT);
@@ -235,14 +241,18 @@ function DownloadToFile(content, filename, contentType) {
   a.click();
   URL.revokeObjectURL(a.href);
 }
-
-export function ExportProject(id) {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Export .gemproj file through browser save dialog (?)
+ *  @param {string} id - usually projId (e.g. 'aquatic')
+ */
+function ExportProject(id) {
   const jsonString = JSON.stringify(ACProject.GetProject());
   DownloadToFile(jsonString, `${id}.gemprj`, 'application/json');
 }
-
-/// Handle ScriptEditor's request for current project data
-/// Used by REQ_PROJ_DATA
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Handle ScriptEditor's request for current project data
+ *  Used by REQ_PROJ_DATA
+ */
 function RequestProject(projId = CURRENT_PROJECT_ID) {
   if (projId === undefined)
     throw new Error(
@@ -250,18 +260,23 @@ function RequestProject(projId = CURRENT_PROJECT_ID) {
     );
   return ACProject.GetProject();
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// Used by REQ_PROJ_DATA and Main
-export function GetBoundary() {
+/** API: Used by REQ_PROJ_DATA and Main
+ */
+function GetBoundary() {
   return ACMetadata.GetBoundary();
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// Used to inject the Cursor blueprint
-export function InjectBlueprint(data) {
+/** API: Used to inject the Cursor blueprint
+ *
+ *  @BEN too terse a comment, expanding after talking to you...
+ *
+ *  In addition to project-defined blueprints, features like Cursor may add their
+ *  own blueprints to extend their utility. These are "injected" after the
+ *  student's blueprints have been compiled
+ *
+ */
+function InjectBlueprint(data) {
   const { blueprint } = data;
   // Skip if already defined
   if (ACBlueprints.GetBlueprint(blueprint.id)) {
@@ -286,16 +301,14 @@ function HandleTransformReq() {
 }
 /// MODEL UPDATE BROADCASTERS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Raised by project-server at:
- *   *  InstanceAdd
- *   *  ScriptUpdate
- * Broadcasts changes to
- *   *  Main: Calls SimPlaces
- *   *  ScriptEditor: Updates script
- *   *  PanelScript: Update highlight
- * @param {*} projId
+/** Raised by project-server at:
+ *  *  InstanceAdd
+ *  *  ScriptUpdate
+ *  Broadcasts changes to
+ *  *  Main: Calls SimPlaces
+ *  *  ScriptEditor: Updates script
+ *  *  PanelScript: Update highlight
+ *  @param {*} projId
  */
 function RaiseModelUpdate(projId = CURRENT_PROJECT_ID) {
   const project = ACProject.GetProject(projId);
@@ -325,21 +338,25 @@ function RaiseInstancesListUpdate(projId = CURRENT_PROJECT_ID) {
 
 /// API CALLS: BLUEPRINT DATA REQUESTS ////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Returns array of blueprint names that are controllable by user input.
- * Used to set sim-inputs and CharControl.
- * CharControl requests this list directly via REQ:PROJ_DATA
- * @return {string[]} [ ...bpid ]
+/** URSYS API through FN_LOOKUP
+ *  Returns array of blueprint names that are controllable by user input.
+ *  Used to set sim-inputs and CharControl.
+ *  CharControl requests this list directly via REQ:PROJ_DATA
+ *  @return {string[]} [ ...bpid ]
  */
 function GetCharControlBpidList() {
   return ACBlueprints.GetCharControlBpidList();
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API:
+ */
 function GetPozyxBPNames() {
   return ACBlueprints.GetPozyxControlBpidList();
 }
-/**
- * Removes the script from the project and any instances using the blueprint
- * @param {string} blueprintName
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API:
+ *  Removes the script from the project and any instances using the blueprint
+ *  @param {string} blueprintName
  */
 function BlueprintDelete(blueprintName) {
   // Delete any insmtances using the blueprint
@@ -355,6 +372,7 @@ function BlueprintDelete(blueprintName) {
   RaiseBpidListUpdate();
   RaiseInstancesListUpdate();
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function HandleBlueprintDelete(data) {
   BlueprintDelete(data.blueprintName, data.modelId);
 }
@@ -363,13 +381,13 @@ function HandleBlueprintDelete(data) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// This handles the editing of the <project>.js file's `instances` object
 /// specification.  It does not create actual agent instances.
-/**
- * Used by InstanceUpdatePosition to find and replace existing
- * prop setting lines.
- * @param {string} propName -- Name of the prop to change, e.g. x/y
- * @param {string} propMethd -- Prop method to change, e.g. setTo
- * @param {string} params -- Parameter for the prop method, e.g. 200
- * @param {string[]} scriptTextLines -- Full ScriptText as an array of strings
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Used by InstanceUpdatePosition to find and replace existing
+ *  prop setting lines.
+ *  @param {string} propName -- Name of the prop to change, e.g. x/y
+ *  @param {string} propMethd -- Prop method to change, e.g. setTo
+ *  @param {string} params -- Parameter for the prop method, e.g. 200
+ *  @param {string[]} scriptTextLines -- Full ScriptText as an array of strings
  */
 function ReplacePropLine(propName, propMethod, params, scriptTextLines) {
   const lineNumber = scriptTextLines.findIndex(line => {
@@ -387,11 +405,11 @@ function ReplacePropLine(propName, propMethod, params, scriptTextLines) {
     scriptTextLines[lineNumber] = newLine;
   }
 }
-/**
- * User is adding a new instance via MapEditor
- * @param {Object} data -- { modelId, blueprintName, initScript }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: User is adding a new instance via MapEditor
+ *  @param {Object} data -- { modelId, blueprintName, initScript }
  */
-export function InstanceAdd(data, sendUpdate = true) {
+function InstanceAdd(data, sendUpdate = true) {
   const id = ACInstances.GetInstanceUID();
   const instance = {
     id,
@@ -417,23 +435,22 @@ prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
     RaiseInstancesListUpdate();
   }
 }
-/**
- * Removes instance from the stage
- * @param {bpid, id} data
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Removes instance from the stage
+ *  @param {bpid, id} data
  */
-export function InstanceDelete(data) {
+function InstanceDelete(data) {
   // Remove from Sim
   DCAgents.DeleteInstance(data);
   DCAgents.DeleteAgent(data);
   // RaiseModelUpdate(data.modelId); // not needed?  shouldn't state cause this?
 }
-
-/**
- * HACK: Manually change the init script when updating position.
- * This is mostly used to support drag and drop
- * @param {Object} data -- { projId, instanceId, updatedData: {x, y} }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: (HACK) Manually change the init script when updating position.
+ *  This is mostly used to support drag and drop
+ *  @param {Object} data -- { projId, instanceId, updatedData: {x, y} }
  */
-export function InstanceUpdatePosition(data) {
+function InstanceUpdatePosition(data) {
   const instance = ACInstances.GetInstance(data.instanceId);
   if (!instance) return; // Pozyx/PTrack instances are not in model.instances, so ignore
   let scriptTextLines = instance.initScript
@@ -445,16 +462,16 @@ export function InstanceUpdatePosition(data) {
   instance.initScript = scriptText;
   ACInstances.WriteInstance(instance);
 }
-/**
- * User is requesting to edit an instance
- * Can be triggered by:
- *   * Simulation View: Clicking on an instance in simulation
- *   * Map Instances View: Clicking on an instance in list
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: User is requesting to edit an instance
+ *  Can be triggered by:
+ *  * Simulation View: Clicking on an instance in simulation
+ *  * Map Instances View: Clicking on an instance in list
  *     (This is handled directly in InstanceEditor.OnInstanceClick,
- *      passed via SIM_INSTANCE_CLICK and Main.HanldeSimInstanceClick)
- * @param {object} data -- {projId, agentId}
+ *     passed via SIM_INSTANCE_CLICK and Main.HanldeSimInstanceClick)
+ *  @param {object} data -- {projId, agentId}
  */
-export function InstanceRequestEdit(data) {
+function InstanceRequestEdit(data) {
   // 0. Check for Locking
   //    TODO: Prevent others from editing?
   //          May not be necessary if we only allow one map editor
@@ -474,15 +491,14 @@ export function InstanceRequestEdit(data) {
   }
 }
 
-/// API CALLS: SCRIPT DATA REQUESTS ////////////////////////////////////////
+/// API CALLS: SCRIPT DATA REQUESTS ///////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Scrubs the init script and removes any invalid props
- * Used by ScriptUpdate in case edit removed props that are no longer valid
- * Should ignore featProps and other calls
- * @param {object} instance instanceDef from models.instances
- * @param {string[]} validPropNames e.g. ['x', 'y']
- * @return {object} InstanceDef with init scrubbed
+/** Scrubs the init script and removes any invalid props
+ *  Used by ScriptUpdate in case edit removed props that are no longer valid
+ *  Should ignore featProps and other calls
+ *  @param {object} instance instanceDef from models.instances
+ *  @param {string[]} validPropNames e.g. ['x', 'y']
+ *  @return {object} InstanceDef with init scrubbed
  */
 function m_RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
   const scriptUnits = TRANSPILER.TextToScript(instance.initScript);
@@ -495,13 +511,12 @@ function m_RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
   instance.initScript = TRANSPILER.ScriptToText(scrubbedScriptUnits);
   return instance;
 }
-
-/**
- * Update the script for a single blueprint (not all blueprints in the model)
- * This should just update the `model.scripts` and `model.instances` data.
- * Any sim instance/agent data updates should be handled by sim-agents.
- * ASSUMES: Updating the current model
- * @param {Object} data -- { projId, script, origBlueprintName }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Update the script for a single blueprint (not all blueprints in the model)
+ *  This should just update the `model.scripts` and `model.instances` data.
+ *  Any sim instance/agent data updates should be handled by sim-agents.
+ *  ASSUMES: Updating the current model
+ *  @param {Object} data -- { projId, script, origBlueprintName }
  */
 function ScriptUpdate(data) {
   const source = TRANSPILER.TextToScript(data.script);
@@ -559,45 +574,43 @@ function ScriptUpdate(data) {
   RaiseBpidListUpdate();
   RaiseInstancesListUpdate();
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// INSTANCE SELECTION HANDLERS ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Toggles the selection state of the agent
- * @param {object} data -- {projId, agentId}
+/** API: Toggles the selection state of the agent
+ *  @param {object} data -- {projId, agentId}
  */
-export function InstanceSelect(data) {
+function InstanceSelect(data) {
   const agent = DCAgents.GetAgentById(data.agentId);
   agent.setSelected(true);
 }
-/**
- * Deselects the selection state of the agent
- * @param {object} data -- {projId, agentId}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Deselects the selection state of the agent
+ *  @param {object} data -- {projId, agentId}
  */
-export function InstanceDeselect(data) {
+function InstanceDeselect(data) {
   const agent = DCAgents.GetAgentById(data.agentId);
   if (agent) {
     // agent may have been deleted, so make sure it still exists
     agent.setSelected(false);
   }
 }
-/**
- * Turns hover on
- * @param {object} data -- {projId, agentId}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Turns hover on
+ *  @param {object} data -- {projId, agentId}
  */
-export function InstanceHoverOver(data) {
+function InstanceHoverOver(data) {
   const agent = DCAgents.GetAgentById(data.agentId);
   if (agent) {
     // agent may have been deleted, so make sure it still exists
     agent.setHovered(true);
   }
 }
-/**
- * Turns hover off
- * @param {object} data -- {projId, agentId}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Turns hover off
+ *  @param {object} data -- {projId, agentId}
  */
-export function InstanceHoverOut(data) {
+function InstanceHoverOut(data) {
   const agent = DCAgents.GetAgentById(data.agentId);
   if (agent) {
     // agent may have been deleted, so make sure it still exists
@@ -605,37 +618,41 @@ export function InstanceHoverOut(data) {
   }
 }
 
-/// URSYS MODEL DATA REQUESTS//////////////////////////////////////////////////
+/// URSYS MODEL DATA REQUESTS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Flexible Project Data Requester
- * 1. Checks if the passed request is a valid function
- * 2. If so, execute it.
- * @param {*} data
- * @returns
+/** Flexible Project Data Requester
+ *  1. Checks if the passed request is a valid function
+ *  2. If so, execute it.
+ *  @param {object} data - incoming URSYS data packet
+ *  @param {string} data.fnName - function to call
+ *  @param {Array} data.parms - array of parameters for function
+ *  @returns {object} - datapacket for URSYS return packet
  */
-/// Map mod.<functionName> so they can be called by HandleRequestProjData
-const mod = {};
-mod.RequestProject = RequestProject;
-mod.GetProjectBoundary = GetBoundary; // Mapping clarifies target
-mod.GetCharControlBpidList = GetCharControlBpidList;
-mod.GetBlueprintProperties = ACBlueprints.GetBlueprintProperties;
-mod.GetBpidList = GetBpidList;
-mod.GetInstanceidList = GetInstanceidList;
-/// Call Handler
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// @BEN I rewrote this to look less confusing, and documented your missing
+/// parameters above as I think they are supposed to be
+const FN_LOOKUP = {
+  RequestProject,
+  GetBoundary,
+  GetCharControlBpidList,
+  GetBlueprintProperties: ACBlueprints.GetBlueprintProperties,
+  GetBpidList,
+  GetInstanceidList
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function HandleRequestProjData(data) {
   if (DBG) console.log('NET:REQ_PROJDATA got request', data);
   if (!data.fnName) {
     console.error(...PR('NET:REQ_PROJDATA got bad function name', data.fnName));
     return { result: undefined };
   }
-  if (!mod[data.fnName]) {
+  if (!FN_LOOKUP[data.fnName]) {
     console.error(
       ...PR(`NET:REQ_PROJDATA Calling unknown function: ${data.fnName}!`)
     );
     return { result: undefined };
   }
-  const fn = mod[data.fnName]; // convert call data into a function
+  const fn = FN_LOOKUP[data.fnName]; // convert call data into a function
   if (typeof fn === 'function') {
     let res;
     if (data.parms && Array.isArray(data.parms)) res = fn(...data.parms);
@@ -650,19 +667,22 @@ async function HandleRequestProjData(data) {
 
 /// UR HANDLERS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// SRI NOTE @BEN - is the intention here is to provide BOTH a direct call and
+/// message-based API to project-server?
 
 /// TRANSFORM UTILS -----------------------------------------------------------
 UR.HandleMessage('NET:TRANSFORM_REQ', HandleTransformReq);
 /// PROJECT DATA UTILS ----------------------------------------------------
 UR.HandleMessage('REQ_PROJDATA', HandleRequestProjData);
 UR.HandleMessage('NET:REQ_PROJDATA', HandleRequestProjData);
+///
 UR.HandleMessage('NET:SCRIPT_UPDATE', ScriptUpdate);
 UR.HandleMessage('NET:BLUEPRINT_DELETE', HandleBlueprintDelete);
 UR.HandleMessage('INJECT_BLUEPRINT', InjectBlueprint);
 /// INSTANCE EDITING UTILS ----------------------------------------------------
-UR.HandleMessage('LOCAL:INSTANCE_ADD', InstanceAdd);
+UR.HandleMessage('INSTANCE_ADD', InstanceAdd);
+UR.HandleMessage('INSTANCE_DELETE', InstanceDelete);
 UR.HandleMessage('NET:INSTANCE_UPDATE_POSITION', InstanceUpdatePosition);
-UR.HandleMessage('LOCAL:INSTANCE_DELETE', InstanceDelete);
 // INSPECTOR UTILS --------------------------------------------------------
 UR.HandleMessage('NET:INSPECTOR_REGISTER', DoRegisterInspector);
 UR.HandleMessage('NET:INSPECTOR_UNREGISTER', DoUnRegisterInspector);
@@ -678,6 +698,30 @@ UR.HookPhase('UR/APP_START', Initialize);
 
 /// EXPORT MODULE API /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// see above for exports
-
-export { GetPozyxBPNames, BlueprintDelete };
+export {
+  ProjectDataPreInit,
+  //
+  ReloadProject,
+  ExportProject,
+  //
+  GetPozyxBPNames,
+  GetBoundary,
+  //
+  SendInspectorUpdate, // -> NET:INSPECTOR_UPDATE { agents: inspectorAgents }
+  DoRegisterInspector, // <- NET:INSPECTOR_REGISTER { id }
+  DoUnRegisterInspector, // <- NET:INSPECTOR_UNREGISTER { id }
+  //
+  InjectBlueprint, // <- INJECT_BLUEPRINT
+  //
+  BlueprintDelete, // <- NET:BLUEPRINT_DELETE { blueprintId, modelName }
+  //
+  InstanceUpdatePosition, // <- NET:INSTANCE_UPDATE_POSITION
+  InstanceRequestEdit, // <- NET:INSTANCE_SELECT
+  InstanceSelect, // <- NET:INSTANCE_SELECT
+  InstanceDeselect, // <- NET:INSTANCE_DESELECT
+  //
+  InstanceAdd, // <- INSTANCE_ADD
+  InstanceDelete, // <- INSTANCE_DELETE
+  InstanceHoverOver, // <- INSTANCE_HOVEROVER
+  InstanceHoverOut // <- INSTANCE_HOVEROUT
+};
