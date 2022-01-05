@@ -5,13 +5,13 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import * as Prism from '../../../lib/vendor/prism';
-import { CodeJar } from '../../../lib/vendor/codejar';
-import '../../../lib/vendor/prism.css';
-import '../../../lib/vendor/prism_extended.css';
-import '../../../lib/css/prism_linehighlight.css'; // override TomorrowNight
-import { ScriptToText } from '../../../modules/sim/script/transpiler-v2';
-import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
+import 'lib/vendor/prism.css';
+import 'lib/vendor/prism_extended.css';
+import 'lib/css/prism_linehighlight.css'; // override TomorrowNight
+import * as Prism from 'lib/vendor/prism';
+import { CodeJar } from 'lib/vendor/codejar';
+import * as WIZCORE from 'modules/appcore/ac-wizcore-tests';
+import { ScriptToText } from 'modules/sim/script/transpiler-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

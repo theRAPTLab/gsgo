@@ -29,7 +29,7 @@ import DialogConfirm from './components/DialogConfirm';
 
 import PanelTracker from './components/PanelTracker';
 import FormTransform from './components/FormTransform';
-import '../../lib/css/tracker.css';
+import 'lib/css/tracker.css';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation

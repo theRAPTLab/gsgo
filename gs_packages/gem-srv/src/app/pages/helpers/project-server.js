@@ -16,31 +16,27 @@
 
   NOTE: This should NOT be used directly by ScriptEditor or PanelScript!!!
 
+  @BEN Code Review: We should comment functions and note W HO calls it from
+  WHAT module. If it's from a UR message, what message it's expecting. This
+  is especially important for UR handlers, when the name of the called
+  function is NOT THE SAME as the message name, and when message names
+  have no implication of where in the control logic scheme they sit.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import RNG from '../../../modules/sim/sequencer';
-import * as TRANSPILER from '../../../modules/sim/script/transpiler-v2';
-import '../../../modules/datacore/dc-project'; // must import to load db
-import {
-  GetAllAgents,
-  GetAgentById,
-  DeleteAgent,
-  DeleteInstance,
-  GetInstancesType
-} from '../../../modules/datacore/dc-agents';
-import {
-  PTRACK_TRANSFORM,
-  POZYX_TRANSFORM,
-  InputsReset
-} from '../../../modules/datacore/dc-inputs';
-import * as ACProject from '../../../modules/appcore/ac-project';
-import * as ACMetadata from '../../../modules/appcore/ac-metadata';
-import * as ACBlueprints from '../../../modules/appcore/ac-blueprints';
-import * as ACInstances from '../../../modules/appcore/ac-instances';
+import RNG from 'modules/sim/sequencer';
+import * as TRANSPILER from 'script/transpiler-v2';
+import 'modules/datacore/dc-project'; // must import to load db
+import * as DCAgents from 'modules/datacore/dc-agents';
+import * as DCInputs from 'modules/datacore/dc-inputs';
+import * as ACProject from 'modules/appcore/ac-project';
+import * as ACMetadata from 'modules/appcore/ac-metadata';
+import * as ACBlueprints from 'modules/appcore/ac-blueprints';
+import * as ACInstances from 'modules/appcore/ac-instances';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ReportMemory } from '../../../modules/render/api-render';
-import { IsRunning, RoundHasBeenStarted } from '../../../modules/sim/api-sim';
+import { ReportMemory } from 'modules/render/api-render';
+import { IsRunning, RoundHasBeenStarted } from 'modules/sim/api-sim';
 import SIMCTRL from './mod-sim-control';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -76,6 +72,7 @@ function urLocaleStateUpdated(stateObj, cb) {
   const state = UR.ReadFlatStateGroups('locales');
 
   // Copy to PTRACK_TRANSFORM
+  const { PTRACK_TRANSFORM } = DCInputs;
   const ptrack = state.ptrack;
   PTRACK_TRANSFORM.scaleX = ptrack.xScale;
   PTRACK_TRANSFORM.scaleY = ptrack.yScale;
@@ -84,6 +81,7 @@ function urLocaleStateUpdated(stateObj, cb) {
   PTRACK_TRANSFORM.rotation = ptrack.zRot;
 
   // Copy to POZYX_TRANSFORM
+  const { POZYX_TRANSFORM } = DCInputs;
   const pozyx = state.pozyx;
   POZYX_TRANSFORM.scaleX = pozyx.xScale;
   POZYX_TRANSFORM.scaleY = pozyx.yScale;
@@ -114,7 +112,7 @@ function urProjectStateUpdated(stateObj, cb) {
 export function SendInspectorUpdate(frametime) {
   if (frametime % 30 !== 0) return;
   // walk down agents and broadcast results for monitored agents
-  const agents = GetAllAgents();
+  const agents = DCAgents.GetAllAgents();
   // Send all instances, but minmize non-monitored
   const inspectorAgents = agents.map(a =>
     MONITORED_INSTANCES.includes(a.id)
@@ -227,7 +225,6 @@ export async function ReloadProject() {
 
 /// API CALLS: MODEL DATA REQUESTS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /// HACKY DOWNLOAD FILE
 /// Used to export project
 function DownloadToFile(content, filename, contentType) {
@@ -283,8 +280,8 @@ export function InjectBlueprint(data) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function HandleTransformReq() {
   return {
-    ptrack: PTRACK_TRANSFORM,
-    pozyx: POZYX_TRANSFORM
+    ptrack: DCInputs.PTRACK_TRANSFORM,
+    pozyx: DCInputs.POZYX_TRANSFORM
   };
 }
 /// MODEL UPDATE BROADCASTERS /////////////////////////////////////////////////
@@ -426,8 +423,8 @@ prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
  */
 export function InstanceDelete(data) {
   // Remove from Sim
-  DeleteInstance(data);
-  DeleteAgent(data);
+  DCAgents.DeleteInstance(data);
+  DCAgents.DeleteAgent(data);
   // RaiseModelUpdate(data.modelId); // not needed?  shouldn't state cause this?
 }
 
@@ -462,7 +459,7 @@ export function InstanceRequestEdit(data) {
   //    TODO: Prevent others from editing?
   //          May not be necessary if we only allow one map editor
   // 1. Set Agent Data
-  const agent = GetAgentById(data.agentId);
+  const agent = DCAgents.GetAgentById(data.agentId);
   // 2. If already selected, deselect it.
   if (agent.isSelected) {
     // 2a. Deselect it
@@ -552,9 +549,9 @@ function ScriptUpdate(data) {
   //    Also skip reset if we're in the middle of multiple rounds of
   //    running.  (RoundHasBeenStarted)
   if (!IsRunning() && !RoundHasBeenStarted()) {
-    GetInstancesType(bpid).forEach(a => DeleteAgent(a));
+    DCAgents.GetInstancesType(bpid).forEach(a => DCAgents.DeleteAgent(a));
     // Also delete input agents
-    InputsReset();
+    DCInputs.InputsReset();
   }
 
   // 5. Inform network devices
@@ -571,7 +568,7 @@ function ScriptUpdate(data) {
  * @param {object} data -- {projId, agentId}
  */
 export function InstanceSelect(data) {
-  const agent = GetAgentById(data.agentId);
+  const agent = DCAgents.GetAgentById(data.agentId);
   agent.setSelected(true);
 }
 /**
@@ -579,7 +576,7 @@ export function InstanceSelect(data) {
  * @param {object} data -- {projId, agentId}
  */
 export function InstanceDeselect(data) {
-  const agent = GetAgentById(data.agentId);
+  const agent = DCAgents.GetAgentById(data.agentId);
   if (agent) {
     // agent may have been deleted, so make sure it still exists
     agent.setSelected(false);
@@ -590,7 +587,7 @@ export function InstanceDeselect(data) {
  * @param {object} data -- {projId, agentId}
  */
 export function InstanceHoverOver(data) {
-  const agent = GetAgentById(data.agentId);
+  const agent = DCAgents.GetAgentById(data.agentId);
   if (agent) {
     // agent may have been deleted, so make sure it still exists
     agent.setHovered(true);
@@ -601,7 +598,7 @@ export function InstanceHoverOver(data) {
  * @param {object} data -- {projId, agentId}
  */
 export function InstanceHoverOut(data) {
-  const agent = GetAgentById(data.agentId);
+  const agent = DCAgents.GetAgentById(data.agentId);
   if (agent) {
     // agent may have been deleted, so make sure it still exists
     agent.setHovered(false);

@@ -7,12 +7,11 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import { CompileBlueprint, TextToScript } from 'modules/sim/script/transpiler-v2';
+import { GS_ASSETS_PROJECT_ROOT, GS_ASSETS_PATH } from 'config/gem-settings';
 import { PromiseLoadAssets } from '../asset_core/asset-mgr';
-import {
-  GS_ASSETS_PROJECT_ROOT,
-  GS_ASSETS_PATH
-} from '../../../config/gem-settings';
 import { State, SendState } from './ac-wizcore';
+import * as WIZCORE from './ac-wizcore';
 
 export * from './ac-wizcore';
 

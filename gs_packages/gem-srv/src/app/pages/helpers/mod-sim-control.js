@@ -9,6 +9,9 @@
 
   NOTE: This should NOT be used directly by ScriptEditor or PanelScript!!!
 
+  @BEN: All the stuff in here probably should be directly in api-sim, which
+  IS the sim controller.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
@@ -21,7 +24,7 @@ import { SetInputStageBounds } from 'modules/datacore/dc-inputs';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
 import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import * as ACInstances from 'modules/appcore/ac-instances';
-import { ClearGlobalAgent } from '../../../lib/class-gagent';
+import * as GAgent from 'lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -127,7 +130,7 @@ class SimControl {
   DoSimReset() {
     DATACORE.DeleteAllTests();
     // DATACORE.DeleteAllGlobalConditions(); // removed in script-xp branch
-    ClearGlobalAgent();
+    GAgent.ClearGlobalAgent();
     DATACORE.DeleteAllScriptEvents();
     DATACORE.DeleteAllBlueprints();
     DATACORE.DeleteAllAgents();

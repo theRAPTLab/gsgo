@@ -21,6 +21,7 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a text, return the parsed ScriptUnit[] representation */
 function TextToScript(text: string = ''): TScriptUnit[] {
+  // this will throw an error string of '{err} @row:col'
   return gstDBG.tokenize(text);
 }
 

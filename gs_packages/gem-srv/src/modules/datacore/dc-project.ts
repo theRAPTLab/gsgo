@@ -22,9 +22,7 @@ const DBG = false;
 
 /// MULTIPLE PROJECTS DATABASE QUERIES ////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Loads the list of project names and ids from graphQL
- */
+/** Loads the list of project names and ids from graphQL */
 async function m_LoadProjectNames() {
   const response = await UR.Query(`
     query {
@@ -42,8 +40,6 @@ async function m_LoadProjectNames() {
 }
 
 /// SINGLE PROJECT DATABASE QUERIES ///////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// PROJECT
 
@@ -428,7 +424,6 @@ async function HandleWriteInstances(data: { projId: string; instances: any[] }) 
 
 /// URSYS API /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /// Handle both LOCAL and NET requests.  ('*' is deprecated)
 UR.HandleMessage('LOCAL:DC_LOAD_PROJECT', HandleLoadProject);
 UR.HandleMessage('LOCAL:DC_WRITE_PROJECT', HandleWriteProject);

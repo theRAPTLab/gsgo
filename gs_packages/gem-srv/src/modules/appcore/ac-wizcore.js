@@ -21,13 +21,7 @@
 
 import UR from '@gemstep/ursys/client';
 import StateMgr from '@gemstep/ursys/src/class-state-mgr';
-import {
-  TextToScript,
-  ScriptToText,
-  ScriptToLines,
-  StatementToText,
-  LINE_START_NUM
-} from '../sim/script/transpiler-v2';
+import * as TRANSPILER from 'script/transpiler-v2';
 
 /// EXPORTED STATE METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
