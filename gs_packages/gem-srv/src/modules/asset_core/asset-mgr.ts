@@ -16,15 +16,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import {
-  TAssetDef,
-  TAssetType,
-  TAssetLoader,
-  TManifest
-} from '../../lib/t-assets';
+import { TAssetDef, TAssetType, TAssetLoader, TManifest } from 'lib/t-assets';
+import { GS_ASSETS_ROUTE, GS_ASSETS_PATH } from 'config/gem-settings';
 import SpriteLoader from './as-load-sprites';
 import ProjectLoader from './as-load-projects';
-import { GS_ASSETS_ROUTE, GS_ASSETS_PATH } from '../../../config/gem-settings';
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -90,7 +85,7 @@ async function m_LoadManifest(route) {
  *  local directory in gs_assets.
  *  @param {string} subdir if set, relative to assets/
  */
-export async function PromiseLoadAssets(subdir: string = '') {
+async function PromiseLoadAssets(subdir: string = '') {
   const route = !subdir ? GS_ASSETS_ROUTE : `${GS_ASSETS_ROUTE}/${subdir}`;
   const json = await m_LoadManifest(route);
   if (json === undefined) {
@@ -128,7 +123,7 @@ export async function PromiseLoadAssets(subdir: string = '') {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return the loader class for the given asset type */
-export function GetLoader(asType: TAssetType): any {
+function GetLoader(asType: TAssetType): any {
   return LOADER_DICT.get(asType);
 }
 
@@ -138,5 +133,9 @@ export function GetLoader(asType: TAssetType): any {
 m_RegisterLoader(new SpriteLoader('sprites'));
 m_RegisterLoader(new ProjectLoader('projects'));
 
-/// TEST INTERFACE ////////////////////////////////////////////////////////////
+/// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export {
+  GetLoader, // return loader instance by assettype (eg 'sprites')
+  PromiseLoadAssets // loads all assets in directory from manifest
+};

@@ -17,6 +17,8 @@ const DBG = false;
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* @BEN are you inadvertently loading assets twice? The asset load should
+   have been handled by the asset manager automatically */
 UR.HookPhase(
   'UR/LOAD_ASSETS',
   () =>

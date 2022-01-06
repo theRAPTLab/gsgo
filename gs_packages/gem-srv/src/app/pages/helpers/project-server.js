@@ -9,6 +9,7 @@
   * rounds
 
   It works hand in hand with Main to manage all data requests.
+  @BEN this way this module seems to be designed is
 
   How it's started:
   * 'projId' is set by Main reading the url parameter 'project'
@@ -16,11 +17,13 @@
 
   NOTE: This should NOT be used directly by ScriptEditor or PanelScript!!!
 
-  @BEN Code Review: We should comment functions and note W HO calls it from
+  @BEN Code Review: We should comment functions and note WHO calls it from
   WHAT module. If it's from a UR message, what message it's expecting. This
   is especially important for UR handlers, when the name of the called
   function is NOT THE SAME as the message name, and when message names
-  have no implication of where in the control logic scheme they sit.
+  have no implication of where in the control logic scheme they sit. I
+  rewrote it so I could get a clean map of what this module does at the
+  bottom.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
