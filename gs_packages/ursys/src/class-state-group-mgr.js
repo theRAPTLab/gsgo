@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+  NOTE: This class is likely superceded by class-state-mgr, which has
+  cleaner usage rules. You can continue to use this one though.
+
   CONCEPT
 
   An application relies on internal variables to indicate what "state" it is
@@ -101,7 +104,7 @@ function u_SetStateKeys(stateObj) {
   if (DBG) console.log(...PR(`Writing ${initKeys.length} groups into GSTATE`));
   initKeys.forEach(key => {
     const ng = stateObj[key];
-    if (GSTATE[key]) {
+    if (GSTATE[key] !== undefined) {
       const og = GSTATE[key];
       console.error(...PR(`GSTATE[${key}] collision`));
       console.log(...PR('existing state:', og));
@@ -150,9 +153,6 @@ class StateGroupMgr {
    *  method.
    *  @param {string|object} qsORobj - a GraphQL SDL query string or a state
    *  object
-   *  @param {object} options - options
-   *  @param {boolean} options.publish - whether or not to also publish the
-   *  state change to subscribers
    */
   async initializeState(qs_or_obj) {
     let response;

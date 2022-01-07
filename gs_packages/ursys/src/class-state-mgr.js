@@ -88,7 +88,11 @@ class StateMgr {
       // queue the action for processing
       const action = { vmStateEvent: clonedEvent, callback };
       this._enqueue(action);
-    } else throw Error('invalid vmState update received', vmStateEvent);
+    } else
+      throw Error(
+        'SendState: invalid vmState update received, got:',
+        vmStateEvent
+      );
   }
 
   /** Subscribe to state. The subscriber function looks like:
@@ -115,11 +119,18 @@ class StateMgr {
    */
   _initializeState(stateObj) {
     // only allow this once per instance
-    if (this.init) throw Error(`attempt to reinitialize ${this.name}`);
-    // make sure stateObj has only lower_case keys
+    if (this.init)
+      throw Error(`_initializeState: store '${this.name}' already initialized`);
+    // validate stateObj
     Object.keys(stateObj).forEach(k => {
+      // must be all lowercase
       if (k.toLowerCase() !== k)
-        throw Error(`${k} _initState props must be lowercase`);
+        throw Error(`_initializeState: props must be lowercase, not '${k}'`);
+      // must not contain undefined keys
+      if (stateObj[k] === undefined)
+        throw Error(
+          `_initializeState: prop '${k}' value can't be undefined (use null instead)`
+        );
     });
     // check that VM_STATE entry is valid (should be created by constructor)
     if (VM_STATE[this.name]) {
@@ -174,7 +185,9 @@ class StateMgr {
     const curState = VM_STATE[this.name];
     let keysOk = true;
     Object.keys(vmState).forEach(k => {
-      keysOk = keysOk && curState[k] !== undefined;
+      const keyTest = keysOk && curState[k] !== undefined;
+      if (keyTest === false) console.warn(`isValidState: '${k}' not a valid key`);
+      keysOk = keysOk && keyTest;
     });
     return keysOk;
   }
