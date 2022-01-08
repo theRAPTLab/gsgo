@@ -21,77 +21,24 @@
 
 import UR from '@gemstep/ursys/client';
 import StateMgr from '@gemstep/ursys/src/class-state-mgr';
+import * as ASSETS from 'modules/asset_core/asset-mgr';
 import * as TRANSPILER from 'script/transpiler-v2';
-
-/// EXPORTED STATE METHODS ////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { State, SendState, SubscribeState, UnsubscribeState };
-
-/// EXPORTED EVENT DISPATCHERS ////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { DispatchClick, WizardTextChanged, DispatchEditorClick };
-
-/// EXPORTED VIEWMODEL INFO UTILS //////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { IsTokenInMaster, GetAllTokenObjects };
-export { SelectedTokenId, SelectedLineNum, SelectedTokenInfo, GetLineScriptText };
+import { SymbolHelper } from 'script/tools/symbol-utilities';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('AC-MVVM', 'TagCyan');
+const PR = UR.PrefixUtil('WIZCORE', 'TagCyan');
 const DBG = true;
+const symDecoder = new SymbolHelper();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DO_FAKE_EDIT = false;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let DEFAULT_TEXT = `
-# BLUEPRINT TestAgent
-# PROGRAM DEFINE
-addFeature Costume
-addFeature Movement
-addFeature AgentWidgets
-addProp vulnerable number 0
-
-# PROGRAM INIT
-// no first time initialization
-
-# PROGRAM UPDATE
-// no every simtick update
-
-# PROGRAM EVENT
-onEvent Start [[
-  prop Costume.colorScaleIndex setTo colorIndx
-  call Movement.wanderUntilInside TreeTrunk
-  prop vulnerable setTo 1
-  prop AgentWidgets.text setTo ""
-]]
-onEvent Tick [[
-  prop x setTo {{ x + direction * speed }}
-  if {{ direction === 1 && x > 400 || direction === -1 && x< -400 }} [[
-    prop x setTo {{ 400 * direction * -1 }}
-  ]]
-]]
-
-# PROGRAM CONDITION
-// new syntax
-when Moth lastTouches TreeTrunk [[
-  call Moth.Movement.wanderUntilInside TreeTrunk
-  prop Moth.vulnerable setTo 1
-  prop Moth.alpha setMin 1
-  prop Moth.alpha setTo 1
-  call Moth.Costume.setPose 0
-  prop Moth.moving setTo 1
-  call Moth.Movement.wanderUntilInside TreeTrunk
-  prop Moth.vulnerable setTo 1
-  prop Moth.alpha setMin 1
-  prop Moth.alpha setTo 1
-  call Moth.Costume.setPose 0
-  prop Moth.moving setTo 1
-]]
-`.trim();
+let PROJECTS; // current project class-asset-loader
+const DEF_PRJID = 'aquatic';
+const DEF_BPID = 'Fish';
+const DEF_ASSETS = 'art-assets';
 
 /// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// create the new instance, and extract the methods we plan to use
+/// First create the new instance, and extract the methods we plan to use
 const STORE = new StateMgr('WIZARDVIEW');
 /// extract methods we want to use interrnally or export
 const {
@@ -103,30 +50,54 @@ const {
   SubscribeState, // provide listener for { type, ...data } on change
   UnsubscribeState // remove listener
 } = STORE;
-
-/// declare the allowed state keys for 'WIZARDVIEW'
-const scriptToks = TextToScript(DEFAULT_TEXT);
-const [scriptPage, lineMap] = ScriptToLines(scriptToks);
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// initial values of state have to be defined for constructors of components
+/// that are relying on it, but these are not yet loaded
 _initializeState({
-  script_text: DEFAULT_TEXT, // the source text (WizardText)
-  script_tokens: scriptToks, // source tokens (from text)
-  script_page: scriptPage, // source tokens 'printed' as lines
-  line_tokmap: lineMap, // lookup map from tokenLine+Pos to original token
+  script_text: '', // the source text (WizardText)
+  script_tokens: [], // source tokens (from text)
+  script_page: [], // source tokens 'printed' as lines
+  line_tokmap: new Map(), // lookup map from tokenLine+Pos to original token
   sel_line_num: -1, // selected line of wizard. If < 0 it is not set
   sel_line_pos: -1, // select index into line. If < 0 it is not set
-  error: '' // used fo error messages
+  error: '', // used fo error messages
+  proj_list: [], // project list
+  cur_prjid: null, // current project id
+  cur_bpid: null, // current blueprint
+  cur_bdl: null // current blueprint bundle
 });
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// DEFERRED CALL: LOAD_ASSETS will fire after module loaded (and above code)
+UR.HookPhase('UR/LOAD_ASSETS', async () => {
+  [PROJECTS] = await ASSETS.PromiseLoadAssets(DEF_ASSETS);
+  console.log(...PR(`loaded assets from '${DEF_ASSETS}'`));
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// DEFERRED CALL: APP_CONFIGURE fires after LOAD_ASSETS (above) completes
+UR.HookPhase('UR/APP_CONFIGURE', () => {
+  const cur_prjid = DEF_PRJID;
+  const cur_bpid = DEF_BPID;
+  const bp = GetProjectBlueprint(cur_prjid, cur_bpid);
+  const { scriptText } = bp;
+  const script_text = scriptText;
+  const vmState = { cur_prjid, cur_bpid, script_text };
+  SendState(vmState);
+  console.log(...PR(`loaded state from blueprint ${DEF_PRJID}:${DEF_BPID}`));
+});
+
+/// DERIVED STATE LOGIC ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// spy on incoming SendState events and modify/add events as needed
 _interceptState(state => {
   const { script_text, script_tokens } = state;
-
   // if script_text is changing, we also want to emit new script_token
   if (!script_tokens && script_text) {
     try {
-      const toks = TextToScript(script_text);
+      const toks = TRANSPILER.TextToScript(script_text);
       state.script_tokens = toks;
-      const [vmPage, tokMap] = ScriptToLines(toks);
+      state.cur_bdl = TRANSPILER.CompileBlueprint(toks);
+      const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
       state.script_page = vmPage;
       state.line_tokmap = tokMap;
     } catch (e) {
@@ -136,9 +107,9 @@ _interceptState(state => {
   // if script_tokens is changing, we also want to emit new script_text
   if (!script_text && script_tokens) {
     try {
-      const text = ScriptToText(state.script_tokens);
+      const text = TRANSPILER.ScriptToText(state.script_tokens);
       state.script_text = text;
-      const [vmPage, tokMap] = ScriptToLines(script_tokens);
+      const [vmPage, tokMap] = TRANSPILER.ScriptToLines(script_tokens);
       state.script_page = vmPage;
       state.line_tokmap = tokMap;
     } catch (e) {
@@ -161,27 +132,23 @@ function DispatchClick(event) {
   const tokenKey = event.target.getAttribute('data-key');
   if (tokenKey !== null) {
     if (DBG) console.log(`WIZCORE: click on token ${JSON.stringify(tokenKey)}`);
-    const [line, pos] = tokenKey.split(',');
 
+    // notify subscribers of new current line and token index
+    const [line, pos] = tokenKey.split(',');
     newState.sel_line_num = Number(line); // STATE UPDATE: selected line
     newState.sel_line_pos = Number(pos); // STATE UPDATE: selected pos
-
-    if (DBG) {
-      // const token = State('line_tokmap').get(tokenKey);
-      // token.identifier = 'Edited'; // INDIRECT STATE UPDATE: modified token
-
-      // force all tokens to update after editing the token
-      const script_tokens = State('script_tokens');
-      const script_text = ScriptToText(script_tokens);
-      newState.script_text = script_text; // STATE UPDATE: new script text
-    }
-
-    // notify subscribers of dependent state changes
     SendState(newState);
+
+    // decode symbol type test
+    const token = GetTokenById(tokenKey);
+    const symbols = State().cur_bdl.symbols;
+    const context = {};
+    const params = { token, symbols, context };
+    symDecoder.setParameters(params);
+    symDecoder.decode();
     return;
   }
   // if nothing processed, then unset selection
-  if (DBG) console.log('unhandled click. deselecting');
   SendState({ sel_line_num: -1, sel_line_pos: -1 });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -202,15 +169,20 @@ function DispatchEditorClick(event) {
  */
 function WizardTextChanged(text) {
   let script_tokens;
+  let cur_bdl;
   try {
-    script_tokens = TextToScript(text);
-    const [script_page] = ScriptToLines(script_tokens);
+    script_tokens = TRANSPILER.TextToScript(text); // can throw error
+    cur_bdl = TRANSPILER.CompileBlueprint(script_tokens); // can throw error
+    const [script_page] = TRANSPILER.ScriptToLines(script_tokens);
     SendState({ script_page });
-    _setState({ script_text: text, script_tokens });
+    _setState({ script_text: text, script_tokens, cur_bdl });
   } catch (e) {
     SendState({ error: e.toString() });
+    // eslint-disable-next-line no-useless-return
     return;
   }
+  // if there was no error above, then everything was ok
+  // so erase the error state!
   SendState({ error: '' });
 }
 
@@ -247,13 +219,20 @@ function SelectedLineNum() {
   return Number(sel_line_num);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return the token by tokenKey 'line,pos'
+ */
+function GetTokenById(key) {
+  const scriptToken = State('line_tokmap').get(key);
+  return scriptToken;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return selection information, used for interactive lookup */
 function SelectedTokenInfo() {
-  const scriptToken = State('line_tokmap').get(SelectedTokenId());
+  const scriptToken = GetTokenById(SelectedTokenId());
   const context = {}; // TODO: look up scope from symbol-utilities
   const { sel_line_num: lineNum, sel_line_pos: linePos, script_page } = State();
   if (lineNum > 0 && linePos > 0) {
-    const vmTokens = script_page[lineNum - LINE_START_NUM];
+    const vmTokens = script_page[lineNum - TRANSPILER.LINE_START_NUM];
     return {
       scriptToken, // the actual scriptunit token
       context, // the memory context for this token
@@ -267,8 +246,7 @@ function SelectedTokenInfo() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return a string version of a ScriptUnit */
 function GetLineScriptText(lineStatement) {
-  console.log(JSON.stringify(lineStatement));
-  return StatementToText(lineStatement);
+  return TRANSPILER.StatementToText(lineStatement);
 }
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
@@ -291,6 +269,54 @@ function IsTokenInMaster(tok) {
   return found;
 }
 
+/// ASSET UTILITIES ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: return array of string project ids (.gemprj files) using the
+ *  current PROJECTS asset loader instance
+ */
+function GetProjectList() {
+  if (PROJECTS === undefined) throw Error('GetProjectList: no projects loaded');
+  return PROJECTS.getProjectsList(); // Array{ id, label }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: return { id, metadata, blueprints, instances, rounds, label }
+ *  for the given project id (.gemprj files)
+ */
+function GetProject(prjId = DEF_PRJID) {
+  if (PROJECTS === undefined) throw Error('GetProject: no projects loaded');
+  const project = PROJECTS.getProjectByProjId(prjId);
+  return project;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: return the blueprint object { id, label, scriptText } for the
+ *  given projectId and blueprintId
+ */
+function GetProjectBlueprint(prjId = DEF_PRJID, bpId = DEF_BPID) {
+  const project = GetProject(prjId);
+  if (project === undefined) throw Error(`no asset project with id ${prjId}`);
+  const { blueprints } = project;
+  const match = blueprints.find(bp => bp.id === bpId);
+  if (match === undefined)
+    throw Error(`no blueprint ${bpId} in project ${prjId}`);
+  return match;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: return the blueprint of the given project,
+ *  { id, label, scriptText, ... }
+ *  object or undefined if no exist
+ */
+function LoadProjectBlueprint(prjId, bpId) {
+  const { blueprints } = PROJECTS.getProjectByProjId(prjId);
+  if (!blueprints) return `no projectId '${prjId}'`;
+  const found = blueprints.find(bp => bp.id === bpId);
+  if (!found) return `no blueprint '${bpId}' found in '${bpId}'`;
+  const { scriptText } = found;
+  const scriptToks = TRANSPILER.TextToScript(scriptText);
+  let cur_bdl = TRANSPILER.CompileBlueprint(scriptToks);
+  SendState({ script_text: scriptText, cur_bdl }, () => {});
+}
+
 /// DEBUGGING METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.AddConsoleTool({
@@ -298,3 +324,39 @@ UR.AddConsoleTool({
     console.log(JSON.stringify(State().script_tokens, null, 2));
   }
 });
+
+/// EXPORTED BLUEPRINT UTILS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export {
+  GetProjectList, // return projectIds in current assets (.gemprj)
+  GetProject, // return project data by projectId or undefined
+  GetProjectBlueprint // return prjId's bpId or undefined
+};
+export {
+  LoadProjectBlueprint // load scriptText, trigger Wizard redraw
+};
+
+/// EXPORTED STATE METHODS ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export { State, SendState, SubscribeState, UnsubscribeState };
+
+/// EXPORTED EVENT DISPATCHERS ////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export {
+  DispatchClick, // handles clicks on Wizard document
+  WizardTextChanged, // handle incoming change of text
+  DispatchEditorClick // handle clicks on editing box
+};
+
+/// EXPORTED VIEWMODEL INFO UTILS //////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export {
+  IsTokenInMaster, // does tok exist inside the script_page? (for ref debug)
+  GetAllTokenObjects // return a flat array of all tokens (for ref debugging)
+};
+export {
+  SelectedTokenId, // return current selected token identifier
+  SelectedLineNum, // return line number of current selected token
+  SelectedTokenInfo, // return contextual info about current selected token
+  GetLineScriptText // return string version of a scriptUnit
+};

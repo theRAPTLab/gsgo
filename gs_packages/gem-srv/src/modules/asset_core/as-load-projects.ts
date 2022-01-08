@@ -14,7 +14,10 @@
 import UR from '@gemstep/ursys/client';
 import AssetLoader from './class-asset-loader';
 import { TAssetDef, TAssetType } from '../../lib/t-assets';
-import { GS_ASSETS_ROUTE } from '../../../config/gem-settings';
+import {
+  GS_ASSETS_ROUTE,
+  GS_ASSETS_PROJECT_ROOT
+} from '../../../config/gem-settings';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -169,13 +172,29 @@ class ProjectLoader extends AssetLoader {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Returns array of projects [{id, label}] */
-  getProjectsList() {
+  getProjectsList(): any {
     const ids = [...this._assetDict.keys()];
     const projectsList = ids.map(id => {
       const asset = this.getAssetById(id);
       return { id: asset.rsrc.id, label: asset.rsrc.label }; // why is assetId undefined?
     });
     return projectsList;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** given a project id, return its list of blueprintnames */
+  getProjectBlueprints(prjId): any {
+    const project = this.getProjectByProjId(prjId);
+    if (!project || project.id === undefined)
+      return `no projectId '${prjId}' in ${GS_ASSETS_PROJECT_ROOT}`;
+    const { blueprints } = project;
+    if (!Array.isArray(blueprints)) return 'bad project.blueprints object';
+    // gpt this far, valid blueprint list
+    return blueprints;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  getProjectBlueprintsList(prjId): string[] {
+    const blueprints = this.getProjectBlueprints(prjId);
+    return blueprints.map(bp => bp.id);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Returns project matching projId (not assetId) */
@@ -185,16 +204,6 @@ class ProjectLoader extends AssetLoader {
     return projasset.rsrc;
   }
 } // end class
-
-/// STATIC METHODS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// INITIALIZATION ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// subscribe to system messages here to maintain asset dictionary
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

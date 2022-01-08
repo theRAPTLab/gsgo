@@ -17,6 +17,7 @@ export function Keyword(props) {
   const { scriptToken: tok, lineNum, linePos, vmTokens } = selection;
   const { lineStatement } = vmTokens;
   const text = WIZCORE.GetLineScriptText(lineStatement);
+  const args = tok._args.join(', ');
   const sDel = { ...sButtonBreak, minWidth: '25%', maxWidth: '25%' };
   const sRTL = { ...sButtonGrid, direction: 'rtl' };
   return (
@@ -24,6 +25,7 @@ export function Keyword(props) {
       <form>
         <label>
           selected: <code>{text}</code> <br />
+          args: <code>{args}</code>
         </label>
         <div style={sButtonGrid}>
           <button type="button" value="move">

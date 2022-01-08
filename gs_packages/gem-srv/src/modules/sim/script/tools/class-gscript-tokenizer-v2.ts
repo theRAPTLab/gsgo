@@ -95,7 +95,7 @@ const literalRemapper = {
   'null': { value: null }
 };
 // keys are valid token types, values are validation functions
-const validTokenMap = {
+const validTokenTypes = {
   directive: arg => typeof arg === 'string' && arg !== '',
   comment: arg => typeof arg === 'string',
   line: arg => typeof arg === 'string',
@@ -719,16 +719,26 @@ function Tokenize(text: string): IToken[] {
   return scriptifier.tokenize(text);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Utility to validate token types
-/// returns [ token_type, token_value ] if it is a valid token,
-/// [undefined, undefined] otherwise
+/** Utility to validate token types
+ *  returns [ token_type, token_value ] if it is a valid token,
+ *  [undefined, undefined] otherwise
+ */
 function UnpackToken(tok: IToken): [string, any] {
+  // count number of valid types in the token
+  // we allow only one of these, but ignore other
+  // properties
   const types = Object.keys(tok);
+  const f_counter = (count, type) => {
+    if (validTokenTypes[type] !== undefined) return count + 1;
+    return count;
+  };
+  const found_types = Object.keys(types).reduce(f_counter, 0);
   // an IToken can only contain one property
-  if (types.length > 1) return [undefined, undefined];
-  // test if valid type key
+  if (found_types > 1) return [undefined, undefined];
+
+  // if we get this far, then valid single type
   const [type] = types; // extract the type
-  const test = validTokenMap[type];
+  const test = validTokenTypes[type];
   // test if type key value is expected type
   if (typeof test !== 'function') return [undefined, undefined];
   if (!test(tok[type])) return [undefined, undefined];
@@ -736,8 +746,15 @@ function UnpackToken(tok: IToken): [string, any] {
   // as [ tokenType, tokenValue ]
   return [type, tok[type]];
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Utility to validate token, returning true/false only
+ */
+function IsValidToken(tok: IToken): boolean {
+  const [valid] = UnpackToken(tok);
+  return typeof valid === 'string';
+}
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default ScriptTokenizer;
-export { Tokenize, UnpackToken };
+export { Tokenize, UnpackToken, IsValidToken };

@@ -26,7 +26,7 @@
      selection as well as different method and value selection.
 
         prop [ energyLevel ] [ setTo ] [ 5 ]
-
+z
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
@@ -46,7 +46,7 @@ export class prop extends Keyword {
 
   constructor() {
     super('prop');
-    this.args = ['refArg:object', 'methodName:string', '...optArgs:any'];
+    this.args = ['refArg:object', 'methodName:string', 'arg:value'];
     this.type = '';
   }
 

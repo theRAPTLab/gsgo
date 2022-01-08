@@ -27,7 +27,6 @@ import {
   IScopeable,
   TOpcodeErr
 } from 'lib/t-script';
-import GScriptTokenizer from '../modules/sim/script/tools/class-gscript-tokenizer-v2';
 import { Evaluate } from '../modules/sim/script/tools/class-expr-evaluator-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -52,12 +51,27 @@ class Keyword implements IKeyword {
   compile(unit: TScriptUnit, idx?: number): (TOpcode | TOpcodeErr)[] {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** override in subclass to provide actual symbol data. not all keywords
    *  generate symbol data
    */
   symbolize(unit: TScriptUnit): TSymbolData {
-    return {};
+    return {}; // change to throw Error when ready to update all keywords
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** override in subclass to annotate scriptUnits if needed */
+  annotate(unit: TScriptUnit): TScriptUnit {
+    // assign type array to first unit
+    unit[0]._args = this.args;
+    // assign the rest of individual argument types
+    for (let i = 1; i < unit.length; i++) {
+      const arg_count = this.args.length;
+      // repeat the last argument type if there are more arguments than
+      // what is defined in this.args
+      if (i < arg_count) unit[i]._argtype = this.args[i];
+      else unit[i]._argtype = this.args[arg_count - 1];
+    }
+    return unit;
   }
 
   /// UTILITY METHODS /////////////////////////////////////////////////////////

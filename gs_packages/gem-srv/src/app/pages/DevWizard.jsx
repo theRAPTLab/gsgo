@@ -48,8 +48,8 @@ import {
 } from './elements/wizard-style';
 
 // import CSS straight into module, will appear as inline style
-import '../../lib/vendor/pico.min.css';
-import '../../lib/css/gem-ui.css';
+import 'lib/vendor/pico.min.css';
+import 'lib/css/gem-ui.css';
 
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

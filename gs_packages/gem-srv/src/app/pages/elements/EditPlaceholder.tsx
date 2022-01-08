@@ -13,10 +13,16 @@ import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function Placeholder(props) {
   const { selection } = props;
-  const { token: tok, lineNum, linePos, vmTokens } = selection;
+
+  const { scriptToken: tok, lineNum, linePos, vmTokens } = selection;
+  const argtype = tok._argtype || 'argtype?';
   return (
     <form>
-      <label>Unimplemented Edit Box</label>
+      <label>
+        Unimplemented Edit Box
+        <br />
+        argType: <code>{argtype}</code>
+      </label>
       <span style={{ fontFamily: 'monospace' }}>{JSON.stringify(tok)}</span>
     </form>
   );

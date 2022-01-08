@@ -138,6 +138,9 @@ export interface IToken {
   directive?: string; // gobbleDirective()
   comment?: string; // gobbleComment()
   line?: string; // as-is line insertion
+  // non-type metadata
+  _argtype?: TSymbolArgType; // of form name:type
+  _args?: TSymbolArgType[]; // for keywords only, array of arg types
 }
 export type TScriptUnit = IToken[]; // tokens from script-parser
 export type TArg = number | string | IToken;
@@ -227,6 +230,7 @@ export interface IKeyword {
   args: string[];
   compile(unit: TScriptUnit, lineIdx?:number): (TOpcode|TOpcodeErr)[];
   symbolize(unit: TScriptUnit,lineIdx?:number): TSymbolData;
+  annotate(unit:TScriptUnit,lineIdx?:number): TScriptUnit;
   getName(): string;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

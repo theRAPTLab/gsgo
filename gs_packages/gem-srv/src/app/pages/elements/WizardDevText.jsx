@@ -23,6 +23,7 @@ export class ScriptText extends React.Component {
     super();
     this.state = WIZCORE.State();
     this.jarRef = React.createRef();
+    this.lastSelectedLine = -1;
     //
     this.handleWizUpdate = this.handleWizUpdate.bind(this);
     this.updateWizText = this.updateWizText.bind(this);
@@ -60,6 +61,7 @@ export class ScriptText extends React.Component {
     if (script_tokens) {
       const text = ScriptToText(script_tokens);
       this.setState({ script_text: text });
+      this.jar.updateCode(text);
     }
     //
     if (sel_line_num !== undefined) {
@@ -67,22 +69,30 @@ export class ScriptText extends React.Component {
         if (sel_line_num > 0) {
           Prism.highlightElement(this.jarRef.current);
         } else {
-          // style the line highlight div because plugin doesn't
-          // seem to provide a way to turn it off
-          const matches = document.getElementsByClassName('line-highlight');
-          if (matches.length === 1) {
-            matches[0].style = 'none';
-          }
+          this.hideLineSelector();
         }
       });
     }
 
-    //
+    // when there is an error, extract the error line from
+    // the error status string
     if (error && error !== '') {
       console.log('error', error);
       const re = /@(\d+).*/;
       const errLine = Number(re.exec(error)[1]);
-      WIZCORE.SendState({ sel_line_num: errLine });
+      if (errLine !== this.lastSelectedLine) {
+        WIZCORE.SendState({ sel_line_num: errLine });
+        this.lastSelectedLine = errLine;
+      }
+    }
+  };
+
+  hideLineSelector = () => {
+    // style the line highlight div because plugin doesn't
+    // seem to provide a way to turn it off
+    const matches = document.getElementsByClassName('line-highlight');
+    if (matches.length === 1) {
+      matches[0].style = 'none';
     }
   };
 
@@ -91,6 +101,8 @@ export class ScriptText extends React.Component {
     WIZCORE.WizardTextChanged(text);
   };
 
+  // this render function is being called twice for some reason, maybe because
+  // CodeJar has its own change handler that is causing rerender
   render() {
     const { script_text, sel_line_num } = this.state;
     return (

@@ -27,6 +27,7 @@ import ProjectLoader from './as-load-projects';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('ASSETM', 'TagGreen');
+let ASSET_LOAD_COUNT = 0; // used to detect multiple loads
 const DBG = false;
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
@@ -86,6 +87,10 @@ async function m_LoadManifest(route) {
  *  @param {string} subdir if set, relative to assets/
  */
 async function PromiseLoadAssets(subdir: string = '') {
+  if (ASSET_LOAD_COUNT > 0) {
+    console.warn('PromiseLoadAssets() was called more than once, so aborting');
+    return Promise.reject(new Error('asset loads > 0'));
+  }
   const route = !subdir ? GS_ASSETS_ROUTE : `${GS_ASSETS_ROUTE}/${subdir}`;
   const json = await m_LoadManifest(route);
   if (json === undefined) {
@@ -119,6 +124,7 @@ async function PromiseLoadAssets(subdir: string = '') {
     }
   }
   if (DBG) console.groupEnd();
+  ASSET_LOAD_COUNT++;
   return Promise.all(promises);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

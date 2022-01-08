@@ -4,6 +4,25 @@
   Convert text to Script Units Tokens. It does not test the validity of then
   produced tokens.
 
+  BASIC SCRIPT PROCESSING
+
+  do_script
+  - script is array of statements
+  - call do_statement on each statement in script
+  - save results of do_statement
+
+  do_statement
+  - statement is array of tokens
+  - use first token to load a keyword processor
+  - call do_token on each token in array
+  - send decoded tokens through keyword processor
+  - return results of processor
+
+  do_token
+  - token may be converted to values or strings with UnpackToken
+  - token may be further processed depending on type
+  - critically, block tokens have to recursively call do_script
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
@@ -194,7 +213,8 @@ function CompileStatement(statement: TScriptUnit, idx?: number): TSMCProgram {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a mirror of CompileStatement, extracts the symbol data as a separate pass
- *  so we don't have to rewrite the entire compiler and existing keyword code
+ *  so we don't have to rewrite the entire compiler and existing keyword code.
+ *  Note that this does not recursively symbolize statements, as it
  */
 function SymbolizeStatement(statement: TScriptUnit, idx?: number): TSymbolData {
   const kwArgs = DecodeStatement(statement);
