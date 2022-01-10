@@ -46,6 +46,8 @@ function AnnotateStatement(statement: TScriptUnit): TScriptUnit {
   if (type !== 'identifier') return statement;
   // process
   const kwProcessor = GetKeyword(keyword);
+  if (kwProcessor === undefined)
+    throw Error(`AnnotateStatement: no keyword ${keyword}`);
   return kwProcessor.annotate(statement);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

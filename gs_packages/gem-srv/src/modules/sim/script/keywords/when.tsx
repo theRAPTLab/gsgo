@@ -2,18 +2,20 @@
 
   implementation of keyword "when" command object
 
+  Discuss with @BEN: the way that arguments are added to tests means that
+  we have to be more careful about determining the form of the when clause,
+
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword from 'lib/class-keyword';
-import { TOpcode, TScriptUnit } from 'lib/t-script';
+import { TOpcode, TScriptUnit, TSymbolData } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore/dc-script-engine';
 import {
   RegisterSingleInteraction,
   RegisterPairInteraction,
   GetInteractionResults
 } from 'modules/datacore/dc-interactions';
-import { ScriptToJSX } from 'modules/sim/script/tools/script-to-jsx';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -23,12 +25,13 @@ export class when extends Keyword {
   constructor() {
     super('when');
     this.args = [
-      ['Agent:string', 'testName:string', 'consequent:TSMCProgram'],
+      ['Agent:string', 'testName:string', 'arg:args', 'consequent:block'],
       [
         'AgentA:string',
         'AgentB:string',
         'testName:string',
-        'consequent:TSMCProgram'
+        'arg:args',
+        'consequent:block'
       ]
     ];
   }
@@ -79,14 +82,23 @@ export class when extends Keyword {
     return prog;
   }
 
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, options: any, children?: any[]): any {
-    const [keyword] = unit;
-    return (
-      <>
-        {keyword} {unit.length}
-      </>
-    );
+  symbolize(unit: TScriptUnit, line?: number): TSymbolData {
+    if (line === undefined) throw Error('when.symbolize() requires arg2 line');
+
+    // when A test [block]
+    if (unit.length === 4) {
+      const [, a] = unit;
+      return { context: { [line]: [a as string] } };
+    }
+    // when A test B ..[block]
+    if (unit.length === 5) {
+      const [, a, , b, ...args] = unit;
+      args.pop(); // last arg is consequent
+      return { context: { [line]: [a as string, b as string] } };
+    }
+    // failed match (note that the length test sucks for detecting
+    // case where there are argument parameters
+    return {};
   }
 } // end of keyword definition
 

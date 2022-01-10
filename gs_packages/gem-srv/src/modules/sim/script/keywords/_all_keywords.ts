@@ -8,25 +8,29 @@
 
 /// STABLE KEYWORDS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// PROGRAM DEFINE
-export * from './addProp'; // use during DEFINE
-export * from './useFeature'; // deprecated
-export * from './addFeature'; // replace useFeature
+/// USE DURING PROGRAM DEFINE
+export * from './addProp'; // use during DEFINE to name a prop
+export * from './addFeature'; // use during DEFINE to import a feature
+/*DEPRECATED*/ export * from './useFeature'; // import a feature
 // export * from './addTest'; // add a named test
-/// PROGRAM UPDATE
-export * from './prop'; // objref method args
-export * from './featProp'; // objref method args
-export * from './featCall'; // objref method argss
+
+/// USE DURING PROGRAM UPDATE
+export * from './prop'; // prop_objref method args
+export * from './call'; // prop_objref method args (same as prop?)
+/*DEPRECATED*/ export * from './featProp'; // objref method args
+/*DEPRECATED*/ export * from './featCall'; // objref method args
 
 // utility keywords
-export * from './propPush'; // push prop value onto data stack
-export * from './propPop'; // pop prop value onto data stack
-export * from './featPropPush'; // objref method args
-export * from './featPropPop'; // objref method args
+/*DEPRECATED*/ export * from './propPush'; // push prop value onto data stack
+/*DEPRECATED*/ export * from './propPop'; // pop prop value onto data stack
+/*DEPRECATED*/ export * from './featPropPush'; // objref method args
+/*DEPRECATED*/ export * from './featPropPop'; // objref method args
 
 // conditional keywords
+export * from './if'; // run code conditionally
 export * from './when'; // filtering global condition
 export * from './onEvent'; // script event processing
+export * from './every'; // script event processing
 
 // system keywords being with _
 export * from './_comment'; // embed comment data
@@ -39,13 +43,12 @@ export * from './_blueprint'; // set the name of a blueprint bundle
 
 // utility keywords
 export * from './randomPos'; // randomizes position
-export * from './exprPush'; // push expr onto data stack
+/*DEPRECATED*/ export * from './exprPush'; // push expr onto data stack
 
 // conditional keywords
-export * from './ifExpr'; // run an expression test
+/*DEPRECATED*/ export * from './ifExpr'; // run code conditionally
 // export * from './ifTest'; // run a named test during agent runtime
 // export * from './ifProg'; // experimental placeholder
-export * from './every'; // script event processing
 
 // subprogram keywords
 export * from './exec'; // execute an smc program (?)

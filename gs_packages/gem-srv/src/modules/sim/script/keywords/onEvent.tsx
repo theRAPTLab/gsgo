@@ -4,7 +4,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword from 'lib/class-keyword';
 import { TSMCProgram, TOpcode, TScriptUnit } from 'lib/t-script';
 import { CompilerState } from 'modules/datacore/dc-script-bundle';
@@ -31,12 +30,6 @@ export class onEvent extends Keyword {
     SubscribeToScriptEvent(String(eventName), bundleName, consq as TSMCProgram);
     // this runs in global context inside sim-conditions
     return []; // subscriptions don't need to return any compiled code
-  }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, options: any, children?: any[]): any {
-    const [keyword, event, consq] = unit;
-    return <>{keyword}</>;
   }
 } // end of keyword definition
 

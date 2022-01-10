@@ -52,8 +52,10 @@ class Keyword implements IKeyword {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** override in subclass to provide actual symbol data. not all keywords
-   *  generate symbol data
+  /** override in subclass to provide actual symbol data. Note that not every
+   *  keyword contributes symbols. addProp and addFeature may be the only
+   *  ones because they name properties and features that are used to lookup
+   *  the available props and methods on them.
    */
   symbolize(unit: TScriptUnit): TSymbolData {
     return {}; // change to throw Error when ready to update all keywords
@@ -88,48 +90,6 @@ class Keyword implements IKeyword {
   errLine(err: string, idx?: number) {
     if (idx !== undefined) return [err, idx];
     return [err];
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  getMethodsMap() {
-    const map = new Map();
-    map.set('boolean', [
-      'setTo',
-      'true',
-      'false',
-      'invert',
-      'and',
-      'or',
-      'eq',
-      'slightlyTrue',
-      'mostlyTrue',
-      'slightlyFalse',
-      'mostlyFalse'
-    ]);
-    map.set('number', [
-      'setWrap',
-      'setMin',
-      'setMax',
-      'setTo',
-      'setToRnd',
-      'add',
-      'addRnd',
-      'addRndInt',
-      'sub',
-      'subFloat2',
-      'subRnd',
-      'subRndInt',
-      'div',
-      'mul',
-      'eq',
-      'gt',
-      'lt',
-      'gte',
-      'lte',
-      'clear'
-    ]);
-    map.set('string', ['setTo', 'eq', 'clear']);
-    map.set('dictionary', ['addItem', 'updateItem', 'getItem', 'has', 'getKeys']);
-    return map;
   }
 } // end of Keyword Class
 

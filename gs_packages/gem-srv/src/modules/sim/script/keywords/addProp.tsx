@@ -1,7 +1,9 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "AddProp" command object
+  implementation of "addProp" keyword command object
+
+  addProp propertyName propertyType initialValue
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -16,7 +18,7 @@ export class AddProp extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('addProp');
-    this.args = ['propName:string', 'propType:string', 'initValue:any'];
+    this.args = ['propName:string', 'propType:string', 'initValue:anyval'];
   }
 
   /** create smc blueprint code objects */
@@ -28,6 +30,7 @@ export class AddProp extends Keyword {
     return progout;
   }
 
+  /** return symbol structure for this keyword */
   symbolize(unit: TScriptUnit): TSymbolData {
     const [, propName, propType] = unit;
     const propCtor = GetVarCtor(propType as string);

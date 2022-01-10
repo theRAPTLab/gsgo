@@ -15,12 +15,10 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import UR from '@gemstep/ursys/client';
 import Keyword from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore/dc-script-engine';
-import { ScriptToJSX } from 'modules/sim/script/tools/script-to-jsx';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -104,12 +102,6 @@ export class every extends Keyword {
       this.COUNTERS.set(key, counter + 1);
     });
     return prog;
-  }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, options: any, children?: any[]): any {
-    const [keyword, period, ...args] = unit;
-    return <>{keyword}</>;
   }
 } // end of keyword definition
 

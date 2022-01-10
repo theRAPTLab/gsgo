@@ -23,10 +23,18 @@ export function Keyword(props) {
   return (
     <>
       <form>
-        <label>
-          selected: <code>{text}</code> <br />
-          args: <code>{args}</code>
-        </label>
+        <table>
+          <tbody>
+            <tr>
+              <td>selected</td>
+              <td>{text}</td>
+            </tr>
+            <tr>
+              <td>args</td>
+              <td>{args}</td>
+            </tr>
+          </tbody>
+        </table>
         <div style={sButtonGrid}>
           <button type="button" value="move">
             MOVE UP

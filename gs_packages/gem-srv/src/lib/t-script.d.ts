@@ -170,8 +170,8 @@ export interface ISMCPrograms {
 /// SYMBOL DATA AND TYPES /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see https://michalzalecki.com/typescript-template-literal-types/
-type ArgTypeLiterals = `${'boolean'|'string'|'number'}`
-type ArgTypeSpecial = `${'expr'|'objref'|'any'}`;
+type ArgTypeLiterals = `${'boolean'|'string'|'number'}`;
+type ArgTypeSpecial = `${'expr'|'objref'|'anyref' | 'anyval' | 'block' | 'args'}`;
 type ArgTypeGlobal = `${'test'|'program'|'event'}`
 // this type matches <anystring>:ArgTypeLiteral|ArgTypeSpecial|ArgTypeGlobal
 // e.g. 'propname:string', 'frequency:number'
@@ -183,6 +183,7 @@ export type TSymbolData = {
   props?: { [propName: string]: IScopeableCtor };
   methods?: { [methodName:string]:TSymbolMethodArgs};
   features?: { [featureName:string]: IFeature };
+  context?: { [line:number]:string[] }; // line number for a root statement
   error?: string; // debugging if error
   info?:string; // debugging status
 };

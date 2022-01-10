@@ -216,15 +216,21 @@ function CompileStatement(statement: TScriptUnit, idx?: number): TSMCProgram {
  *  so we don't have to rewrite the entire compiler and existing keyword code.
  *  Note that this does not recursively symbolize statements, as it
  */
-function SymbolizeStatement(statement: TScriptUnit, idx?: number): TSymbolData {
+function SymbolizeStatement(statement: TScriptUnit, line: number): TSymbolData {
   const kwArgs = DecodeStatement(statement);
   let kw = kwArgs[0];
   if (kw === '') return {}; // blank lines emit no symbol info
-  if (!is_Keyword(kw)) return { error: `bad keyword: '${kw}'` };
+  if (!is_Keyword(kw)) {
+    console.warn(`keyword ${kw} bad`);
+    return { error: `bad keyword: '${kw}'` };
+  }
   const kwProcessor = GetKeyword(kw);
-  if (!kwProcessor) return { error: `missing kwProcessor for: '${kw}'` };
+  if (!kwProcessor) {
+    console.warn(`keyword processor ${kw} bad`);
+    return { error: `missing kwProcessor for: '${kw}'` };
+  }
   // may return empty object, but that just means there are no symbols produced
-  return { ...kwProcessor.symbolize(kwArgs, idx) };
+  return { ...kwProcessor.symbolize(kwArgs, line) };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Compile ScriptUnits into a TSMCProgram (TOpcode[]). It ignores
@@ -247,22 +253,23 @@ function CompileScript(script: TScriptUnit[]): TSMCProgram {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** CompileBlueprint parses # DIRECTIVES to set up a program bundle */
 function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
-  const fn = 'CompileBlueprint';
+  const ERR = 'CompileBlueprint';
   let objcode;
   const bdl = new SM_Bundle();
   //
   if (!Array.isArray(script))
-    throw Error(`${fn}: script should be array, not ${typeof script}`);
+    throw Error(`${ERR}: script should be array, not ${typeof script}`);
   if (script.length === 0) return bdl;
   script.forEach((stm, ii) => {
     // special case 1: first line must be # BLUEPRINT directive
     if (ii === 0) {
       const [lead, kw, bpName, bpParent] = DecodeStatement(stm);
       if (lead === '_pragma' && kw.toUpperCase() === 'BLUEPRINT') {
+        console.log(...PR('compiling', bpName));
         SetBundleName(bdl, bpName, bpParent);
         return;
       }
-      throw Error(`${fn}: # BLUEPRINT must be first line in script`);
+      throw Error(`${ERR}: # BLUEPRINT must be first line in script`);
     }
 
     // special case 2: tag processing
@@ -283,7 +290,7 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
     AddSymbol(bdl, symbols);
   }); // script forEach
 
-  if (bdl.name === undefined) throw Error(`${fn}: missing BLUEPRINT directive`);
+  if (bdl.name === undefined) throw Error(`${ERR}: missing BLUEPRINT directive`);
   bdl.setType(EBundleType.BLUEPRINT);
   if (DBG) console.log(...PR(bdl.name, 'symbols:', bdl.symbols));
   return bdl;

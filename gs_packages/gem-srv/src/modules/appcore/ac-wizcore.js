@@ -54,7 +54,7 @@ const {
 /// initial values of state have to be defined for constructors of components
 /// that are relying on it, but these are not yet loaded
 _initializeState({
-  script_text: '', // the source text (WizardText)
+  script_text: '# BLUEPRINT AWAIT LOAD', // the source text (WizardText)
   script_tokens: [], // source tokens (from text)
   script_page: [], // source tokens 'printed' as lines
   line_tokmap: new Map(), // lookup map from tokenLine+Pos to original token
@@ -79,8 +79,7 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
   const cur_prjid = DEF_PRJID;
   const cur_bpid = DEF_BPID;
   const bp = GetProjectBlueprint(cur_prjid, cur_bpid);
-  const { scriptText } = bp;
-  const script_text = scriptText;
+  const { scriptText: script_text } = bp;
   const vmState = { cur_prjid, cur_bpid, script_text };
   SendState(vmState);
   console.log(...PR(`loaded state from blueprint ${DEF_PRJID}:${DEF_BPID}`));
@@ -102,6 +101,7 @@ _interceptState(state => {
       state.line_tokmap = tokMap;
     } catch (e) {
       // ignore TextToScript compiler errors during live typing
+      console.error(`wizcore_interceptState text: ${e.toString()}`);
     }
   }
   // if script_tokens is changing, we also want to emit new script_text
@@ -114,6 +114,7 @@ _interceptState(state => {
       state.line_tokmap = tokMap;
     } catch (e) {
       // ignore TextTpScript compiler errors during live typing
+      console.error(`wizcore_interceptState tokens: ${e.toString()}`);
     }
   }
 });

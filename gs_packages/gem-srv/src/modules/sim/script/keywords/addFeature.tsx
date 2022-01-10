@@ -1,7 +1,9 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "useFeature" command object
+  implementation of keyword "addFeature" command object
+
+  addFeature featureName
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 

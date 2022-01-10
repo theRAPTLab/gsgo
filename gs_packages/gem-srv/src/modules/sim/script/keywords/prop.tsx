@@ -7,32 +7,32 @@
   in either short format or context format. Both forms invoke a named
   method followed by variable arguments.
 
-  FORM 1: prop x methodName args
-  FORM 2: prop agent.x methodName args
-          prop Bee.x methodName args
+  prop [objref] [method] ...args
 
-  In addition, it renders three views:
+  * args is a variable number of arguments, which depends on the method
+    being called which is defined by the type of property it is.
 
-  1. Static Minimized View -- Just text.
+  * an objref has several forms
+      propName
+      agent.propName
+      Blueprint.propName
+      Feature.propName
+      agent.Feature.propName
+      Blueprint.propName
+      Blueprint.Feature.propName
 
-        energyLevel: 5
-
-  2. Instance Editor View -- A simplified view that only allows setting a
-     parameter value via an input field.
-
-        energyLevel [ 5 ] [ delete ]
-
-  3. Script Wizard View -- A full edit view that allows different property
-     selection as well as different method and value selection.
-
-        prop [ energyLevel ] [ setTo ] [ 5 ]
-z
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword, { K_DerefProp } from 'lib/class-keyword';
-import { IAgent, IState, TOpcode, TSymbolData, TArguments } from 'lib/t-script';
-import { RegisterKeyword } from 'modules/datacore';
+import {
+  IAgent,
+  IState,
+  TOpcode,
+  TSymbolData,
+  TScriptUnit,
+  TArguments
+} from 'lib/t-script';
+import { RegisterKeyword, GetVarCtor } from 'modules/datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,7 +46,7 @@ export class prop extends Keyword {
 
   constructor() {
     super('prop');
-    this.args = ['refArg:object', 'methodName:string', 'arg:value'];
+    this.args = ['prop:objref', 'method:string', 'any:args'];
     this.type = '';
   }
 

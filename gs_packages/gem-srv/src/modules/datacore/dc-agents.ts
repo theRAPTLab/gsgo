@@ -2,6 +2,9 @@
 
   AGENTS
 
+  Handles Blueprints for Agents
+  Handles instancing of Blueprints
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
@@ -9,13 +12,12 @@ import { IAgent, TInstanceMap, TInstance } from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 const PR = UR.PrefixUtil('DCAGNT');
 const DBG = false;
 
-export const AGENTS: Map<string, Map<any, IAgent>> = new Map(); // blueprint => Map<id,Agent>
-export const AGENT_DICT: Map<any, IAgent> = new Map(); // id => Agent
-export const INSTANCES: TInstanceMap = new Map();
+const AGENTS: Map<string, Map<any, IAgent>> = new Map(); // blueprint => Map<id,Agent>
+const AGENT_DICT: Map<any, IAgent> = new Map(); // id => Agent
+const INSTANCES: TInstanceMap = new Map(); // @BEN is this similar to AGENT_DICT, probably should be a DEF
 //
 const INSTANCE_COUNTER_START_VAL = 9000; // reserve ids < 9000 for User Defined instances?
 let INSTANCE_COUNTER = INSTANCE_COUNTER_START_VAL;
@@ -24,7 +26,7 @@ let INSTANCE_COUNTER = INSTANCE_COUNTER_START_VAL;
 /** Given the creation parameters, make a new instance. The init program sets
  *  the default values (and any other startup code if needed).
  */
-export function DefineInstance(instanceDef: TInstance) {
+function DefineInstance(instanceDef: TInstance) {
   const { bpid, id, initScript } = instanceDef;
   // console.log(...PR(`saving '${name}' blueprint '${blueprint}' with init`, init));
   if (!INSTANCES.has(bpid)) INSTANCES.set(bpid, []);
@@ -37,7 +39,7 @@ export function DefineInstance(instanceDef: TInstance) {
   bpi.push(instanceDef);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function UpdateInstance(instanceDef: TInstance) {
+function UpdateInstance(instanceDef: TInstance) {
   const { bpid, id } = instanceDef;
   const bpi = INSTANCES.get(bpid);
   const index = bpi.findIndex(i => i.id === id);
@@ -46,7 +48,7 @@ export function UpdateInstance(instanceDef: TInstance) {
   bpi[index] = instanceDef;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function DeleteInstance(instanceDef: TInstance) {
+function DeleteInstance(instanceDef: TInstance) {
   const { bpid, id } = instanceDef;
   const bpi = INSTANCES.get(bpid);
   if (!bpi) return; // already deleted
@@ -59,14 +61,14 @@ export function DeleteInstance(instanceDef: TInstance) {
   bpi.splice(index, 1);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetAllInstances() {
+function GetAllInstances() {
   const instances = [];
   const map = [...INSTANCES.values()];
   map.forEach(i => instances.push(...i));
   return instances;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetInstance(instanceDef: TInstance) {
+function GetInstance(instanceDef: TInstance) {
   const { bpid, id } = instanceDef;
   const bpi = INSTANCES.get(bpid);
   if (bpi === undefined) return undefined;
@@ -76,19 +78,19 @@ export function GetInstance(instanceDef: TInstance) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return the instance definitions that are blueprint */
-export function GetInstancesType(blueprint: string) {
+function GetInstancesType(blueprint: string) {
   if (typeof blueprint !== 'string')
     throw Error(`bad blueprint typeof ${typeof blueprint}`);
   if (!INSTANCES.has(blueprint)) INSTANCES.set(blueprint, []);
   return INSTANCES.get(blueprint);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function DeleteAllInstances() {
+function DeleteAllInstances() {
   INSTANCES.clear();
   INSTANCE_COUNTER = INSTANCE_COUNTER_START_VAL;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function DeleteInstancesByBlueprint(blueprint) {
+function DeleteInstancesByBlueprint(blueprint) {
   INSTANCES.set(blueprint, []);
 }
 
@@ -129,7 +131,7 @@ function m_CopyFeatProps(origFeatProps: any[], targetAgentFeatProps: any) {
  * @param origAgent
  * @param targetAgent a freshly minted agent with no settings
  */
-export function CopyAgentProps(origAgent: IAgent, targetAgent: IAgent) {
+function CopyAgentProps(origAgent: IAgent, targetAgent: IAgent) {
   // blueprint is already copied by MakeAgent
   // flags are temporary states that should not be copied?
 
@@ -151,7 +153,7 @@ export function CopyAgentProps(origAgent: IAgent, targetAgent: IAgent) {
  *  AGENTS has instances by blueprint name, which is a Map of agents
  *  AGENT_DICT has instances by id
  */
-export function SaveAgent(agent) {
+function SaveAgent(agent) {
   const { id, blueprint } = agent;
   const blueprintName = blueprint.name;
   //
@@ -175,7 +177,7 @@ export function SaveAgent(agent) {
  *  2. AGENT_DICT values are also a map of `agents`
  *     with the same GAgent.id as the key.
  */
-export function DeleteAgent(instancedef) {
+function DeleteAgent(instancedef) {
   const { bpid, id } = instancedef;
   if (!AGENTS.has(bpid)) {
     console.error(...PR(`blueprint ${instancedef} not found`));
@@ -187,14 +189,14 @@ export function DeleteAgent(instancedef) {
   AGENT_DICT.delete(id);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function DeleteAgentByBlueprint(blueprintName) {
+function DeleteAgentByBlueprint(blueprintName) {
   const agents = AGENTS.get(blueprintName);
   AGENTS.delete(blueprintName);
   if (agents) agents.forEach(a => AGENT_DICT.delete(a.id));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return GAgent array by type */
-export function GetAgentsByType(bpName) {
+function GetAgentsByType(bpName) {
   const agentSet = AGENTS.get(bpName);
   if (!agentSet) {
     // console.warn(...PR(`agents of '${bpName}' don't exist...yet?`));
@@ -203,13 +205,13 @@ export function GetAgentsByType(bpName) {
   return [...agentSet.values()];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetAgentById(id): IAgent {
+function GetAgentById(id): IAgent {
   const agent = AGENT_DICT.get(id);
   if (agent) return agent;
   return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetAllAgents() {
+function GetAllAgents() {
   const arr = [];
   const maps = [...AGENTS.values()];
   maps.forEach(map => {
@@ -218,14 +220,38 @@ export function GetAllAgents() {
   return arr;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetAgentByName(name): IAgent {
+function GetAgentByName(name): IAgent {
   const agents = GetAllAgents();
   const agent = agents.find(a => a.meta.name === name);
   if (agent) return agent;
   return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function DeleteAllAgents() {
+function DeleteAllAgents() {
   AGENTS.clear();
   AGENT_DICT.clear();
 }
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export {
+  DefineInstance,
+  UpdateInstance,
+  DeleteInstance,
+  GetAllInstances,
+  GetInstance,
+  GetInstancesType,
+  DeleteAllInstances,
+  DeleteInstancesByBlueprint,
+  CopyAgentProps,
+  //
+  SaveAgent,
+  DeleteAgent,
+  DeleteAgentByBlueprint,
+  //
+  GetAgentsByType,
+  GetAgentById,
+  GetAllAgents,
+  GetAgentByName,
+  DeleteAllAgents
+};
