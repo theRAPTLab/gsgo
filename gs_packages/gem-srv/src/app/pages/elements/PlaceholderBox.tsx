@@ -11,11 +11,11 @@ import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
 
 /// COMPONENT HELPERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function Placeholder(props) {
+export function PlaceholderBox(props) {
   const { selection } = props;
 
   const { scriptToken: tok, lineNum, linePos, vmTokens } = selection;
-  const argtype = tok._argtype || 'argtype?';
+  const argtype = tok._argtype || '<unknown argType>';
   return (
     <form>
       <label>

@@ -9,8 +9,8 @@
 
 import React from 'react';
 import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
-import { Keyword } from './EditKeyword';
-import { Placeholder } from './EditPlaceholder';
+import { KeywordBox } from './KeywordBox';
+import { PlaceholderBox } from './PlaceholderBox';
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,11 +27,11 @@ export function EditBox(/* props */) {
     const { scriptToken: tok, lineNum, linePos, vmTokens } = sel;
     // (1) is this a keyword?
     if (linePos === 1 && tok.identifier !== undefined)
-      content = <Keyword selection={sel} />;
+      content = <KeywordBox selection={sel} />;
     else {
       // (2) it is a token, so figure out arguments
 
-      content = <Placeholder selection={sel} />;
+      content = <PlaceholderBox selection={sel} />;
     }
   }
 

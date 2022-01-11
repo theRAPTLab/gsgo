@@ -12,7 +12,7 @@ import { sButtonGrid, sButtonBreak } from './wizard-style';
 
 /// COMPONENT HELPERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function Keyword(props) {
+export function KeywordBox(props) {
   const { selection } = props;
   const { scriptToken: tok, lineNum, linePos, vmTokens } = selection;
   const { lineStatement } = vmTokens;
