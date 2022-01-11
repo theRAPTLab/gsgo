@@ -5,7 +5,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import UR from '@gemstep/ursys/client';
 import Keyword, { K_EvalRuntimeUnitArgs } from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
@@ -31,7 +30,7 @@ export class dbgOut extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('dbgOut');
-    this.args = ['...args'];
+    this.args = ['arg:args'];
   }
 
   /** create smc blueprint code objects */
@@ -47,12 +46,6 @@ export class dbgOut extends Keyword {
       if (COUNTER === 0) console.log('dbgOut limiter at', MAX_OUT, 'statements');
     });
     return progout;
-  }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [keyword, ...args] = unit;
-    return <>{keyword}</>;
   }
 } // end of keyword definition
 

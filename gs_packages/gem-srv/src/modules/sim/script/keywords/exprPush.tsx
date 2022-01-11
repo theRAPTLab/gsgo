@@ -5,10 +5,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword, UtilFirstValue } from 'modules/datacore';
+import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -16,7 +15,7 @@ export class exprPush extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('exprPush');
-    this.args = ['expr:TMethod'];
+    this.args = ['expression:expr'];
   }
 
   /** create smc blueprint code objects
@@ -31,12 +30,6 @@ export class exprPush extends Keyword {
       state.push(vals);
     });
     return code;
-  }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any): any {
-    const [keyword, expr] = unit;
-    return <>{keyword}</>;
   }
 } // end of keyword definiition
 

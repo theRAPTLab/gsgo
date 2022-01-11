@@ -5,7 +5,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword, { K_DerefFeatureProp } from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
@@ -16,7 +15,7 @@ export class featPropPop extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('featPropPop');
-    this.args = ['objref', 'optionalMethod', 'optionalArgs'];
+    this.args = ['featProp:objref'];
   }
 
   /** create smc blueprint code objects */
@@ -56,12 +55,6 @@ export class featPropPop extends Keyword {
         return callRef(agent, state.ctx, featPropName, state.pop());
       }
     ];
-  }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [keyword, objref, optMethod, ...optArgs] = unit;
-    return <>{keyword}</>;
   }
 } // end of keyword definition
 

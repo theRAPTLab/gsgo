@@ -20,7 +20,7 @@ export class callKeyword extends Keyword {
 
   constructor() {
     super('call');
-    this.args = ['refArg:object', 'methodName:string', '...args'];
+    this.args = ['prop:objref', 'methodName:string', 'arg:args'];
   }
 
   /** create smc blueprint code objects */

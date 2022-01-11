@@ -5,7 +5,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword, { K_DerefProp } from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
@@ -16,7 +15,7 @@ export class propPop extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('propPop');
-    this.args = ['objRef:object', 'optMethod:string', '...optArgs:any'];
+    this.args = ['prop:objref'];
   }
 
   /** create smc blueprint code objects */
@@ -36,12 +35,6 @@ export class propPop extends Keyword {
       else p[optMethod as string](...state.stack);
     });
     return progout;
-  }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [keyword, objref, optMethod, ...optArgs] = unit;
-    return <>{keyword}</>;
   }
 } // end of keyword definition
 

@@ -20,7 +20,7 @@ export class onEvent extends Keyword {
 
   constructor() {
     super('onEvent');
-    this.args = ['eventName:string', 'consq:smcprogram'];
+    this.args = ['eventName:string', 'consq:block'];
   }
 
   compile(unit: TScriptUnit, idx?: number): TOpcode[] {

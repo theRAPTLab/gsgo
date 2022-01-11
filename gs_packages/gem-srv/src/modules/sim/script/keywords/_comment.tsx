@@ -9,9 +9,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword from 'lib/class-keyword';
-import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
+import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
@@ -20,7 +19,7 @@ export class _comment extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('_comment');
-    this.args = ['...args:any'];
+    this.args = ['arg:args'];
   }
 
   /** create smc blueprint code objects */

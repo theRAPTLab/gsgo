@@ -50,9 +50,6 @@ export * from './randomPos'; // randomizes position
 // export * from './ifTest'; // run a named test during agent runtime
 // export * from './ifProg'; // experimental placeholder
 
-// subprogram keywords
-export * from './exec'; // execute an smc program (?)
-
 // debug keywords (very slow performance)
 export * from './dbgOut';
 export * from './dbgStack';

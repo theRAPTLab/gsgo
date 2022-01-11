@@ -25,9 +25,10 @@ import {
   IAgent,
   DerefMethod,
   IScopeable,
-  TOpcodeErr
+  TOpcodeErr,
+  TSymbolArgType
 } from 'lib/t-script';
-import { Evaluate } from '../modules/sim/script/tools/class-expr-evaluator-v2';
+import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,7 +38,7 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Keyword implements IKeyword {
   keyword: string;
-  args: any[]; // document only. can have array[][] for alt signatures
+  args: TSymbolArgType[]; // document only. can have array[][] for alt signatures
   //
   constructor(keyword: string) {
     if (typeof keyword !== 'string')

@@ -11,10 +11,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import UR from '@gemstep/ursys/client';
-import React from 'react';
 import Keyword from 'lib/class-keyword';
-import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
+import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
 /// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
@@ -24,9 +22,8 @@ export class _blueprint extends Keyword {
   constructor() {
     super('_blueprint');
     // _blueprint 'HoneyBee' 'Bee'
-    this.args = ['blueprintName string', 'baseBlueprint string'];
+    this.args = ['blueprintName:string', 'baseBlueprint:string'];
     this.compile = this.compile.bind(this);
-    this.jsx = this.jsx.bind(this);
   }
 
   /** create smc blueprint code objects for this unit
@@ -45,12 +42,6 @@ export class _blueprint extends Keyword {
     // to assemble a blueprint by concatenating these arrays
     // into the master blueprint
     return progout;
-  }
-
-  /** return rendered component representation */
-  // TScriptUnit is [ 'keyword', parm1, parm2, ... ]
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    return super.jsx(index, unit, <div>blueprint</div>);
   }
 } // end of _blueprint
 

@@ -35,7 +35,7 @@ export class every extends Keyword {
 
   constructor() {
     super('every');
-    this.args = ['period:number', ',,,args'];
+    this.args = ['period:number', 'arg:args'];
 
     this.EVERY_STATEMENT_ID = 0;
     this.COUNTERS = new Map();

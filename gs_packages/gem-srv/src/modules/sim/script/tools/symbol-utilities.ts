@@ -216,7 +216,7 @@ function reportError(
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function RuntimeTest(bdl?: ISMCBundle) {
-  console.log('runtime test is null');
+  console.log('RuntimeTest: has not been defined');
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

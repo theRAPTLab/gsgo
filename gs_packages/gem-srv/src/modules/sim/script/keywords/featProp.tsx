@@ -29,16 +29,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword from 'lib/class-keyword';
-import {
-  IAgent,
-  IState,
-  TOpcode,
-  TScriptUnit,
-  TArguments,
-  IToken
-} from 'lib/t-script';
+import { IAgent, IState, TOpcode, TArguments, IToken } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -52,7 +44,7 @@ export class featProp extends Keyword {
 
   constructor() {
     super('featProp');
-    this.args = ['refArg:object', 'methodName:string', '...args'];
+    this.args = ['featPropName:objref', 'methodName:string', 'arg:args'];
   }
 
   /** create smc blueprint code objects */
@@ -102,13 +94,6 @@ export class featProp extends Keyword {
         return callRef(agent, state.ctx, featPropName, methodName, ...args);
       }
     ];
-  }
-
-  /** return rendered component representation */
-
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [keyword, refArg, featPropName, methodName, ...args] = unit;
-    return <>{keyword}</>;
   }
 } // end of keyword definition
 

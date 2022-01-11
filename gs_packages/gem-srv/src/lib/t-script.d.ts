@@ -172,10 +172,10 @@ export interface ISMCPrograms {
 /// see https://michalzalecki.com/typescript-template-literal-types/
 type ArgTypeLiterals = `${'boolean'|'string'|'number'}`;
 type ArgTypeSpecial = `${'expr'|'objref'|'anyref' | 'anyval' | 'block' | 'args'}`;
-type ArgTypeGlobal = `${'test'|'program'|'event'}`
+type ArgTypeGlobal = `${'test'|'program'|'event'|'feature'}`
 // this type matches <anystring>:ArgTypeLiteral|ArgTypeSpecial|ArgTypeGlobal
 // e.g. 'propname:string', 'frequency:number'
-export type TSymbolArgType = `${string}:${ArgTypeLiterals | ArgTypeSpecial |ArgTypeGlobal}`;
+export type TSymbolArgType = `${string}:${ArgTypeLiterals | ArgTypeSpecial |ArgTypeGlobal}` | TSymbolArgType[];
 export type TSymbolMethodArgs =  { args?: TSymbolArgType[]; returns?: TSymbolArgType }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** data description of symbols for features, props */
@@ -228,7 +228,7 @@ export enum EBundleType {
 /** related keyword interface  */
 export interface IKeyword {
   keyword: string;
-  args: string[];
+  args: TSymbolArgType[];
   compile(unit: TScriptUnit, lineIdx?:number): (TOpcode|TOpcodeErr)[];
   symbolize(unit: TScriptUnit,lineIdx?:number): TSymbolData;
   annotate(unit:TScriptUnit,lineIdx?:number): TScriptUnit;

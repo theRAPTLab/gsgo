@@ -10,33 +10,82 @@ import {
   TScriptUnit,
   ISMCBundle,
   IKeyword,
-  IKeywordCtor
+  IKeywordCtor,
+  TSymbolArgType
 } from 'lib/t-script.d';
 import { GetFunction } from './dc-named-methods';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('DCSCRP');
-
-export const BLUEPRINTS: Map<string, ISMCBundle> = new Map();
-export const KEYWORDS: Map<string, IKeyword> = new Map();
-export const SCRIPTS: Map<string, TScriptUnit[]> = new Map();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export const SCRIPT_EVENTS: Map<string, Map<string, TSMCProgram>> = new Map();
+const BLUEPRINTS: Map<string, ISMCBundle> = new Map();
+const KEYWORDS: Map<string, IKeyword> = new Map();
+const SCRIPTS: Map<string, TScriptUnit[]> = new Map();
+const SCRIPT_EVENTS: Map<string, Map<string, TSMCProgram>> = new Map();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const VALID_ARGTYPES = [
+  // see t-script.d TSymbolArgType
+  'boolean',
+  'string',
+  'number',
+  'expr',
+  'objref',
+  'anyref',
+  'anyval',
+  'args',
+  'block',
+  'test',
+  'program',
+  'event',
+  'feature'
+];
 
 /// KEYWORD UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function RegisterKeyword(Ctor: IKeywordCtor) {
+/** given an array of TSymbolArgType  (or array of arrays TSymbolArgType)
+ *  iterate through all the argument definitions and make sure they are
+ *  valid syntax
+ */
+function ValidateArgTypes(args: TSymbolArgType[]): boolean {
+  const err = 'ValidateArgTypes';
+  if (!Array.isArray(args)) {
+    console.warn(`${err}: invalid argtype array`);
+    return false;
+  }
+  for (const arg of args) {
+    if (Array.isArray(arg)) return ValidateArgTypes(arg);
+    if (typeof arg !== 'string') {
+      console.warn(`${err}: invalid argDef ${typeof arg}`);
+      return false;
+    }
+    console.log('checking arg', arg);
+    const [argName, argType] = arg.split(':');
+    if (argName.length === 0) {
+      console.warn(`${err}: missing argName in '${arg}'`);
+      return false;
+    }
+    if (!VALID_ARGTYPES.includes(argType)) {
+      console.warn(`${err}: '${arg}' has invalid argtype`);
+      return false;
+    }
+  }
+  return true;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function RegisterKeyword(Ctor: IKeywordCtor) {
+  const err = 'RegisterKeyword';
   const kobj = new Ctor();
+  if (!ValidateArgTypes(kobj.args as TSymbolArgType[]))
+    throw Error(`${err}: invalid argDef in keyword '${kobj.keyword}'`);
   KEYWORDS.set(kobj.keyword, kobj);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetKeyword(name: string): IKeyword {
+function GetKeyword(name: string): IKeyword {
   return KEYWORDS.get(name);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetAllKeywords() {
+function GetAllKeywords() {
   const arr = [];
   KEYWORDS.forEach((value, key) => {
     arr.push(key);
@@ -53,7 +102,7 @@ export function GetAllKeywords() {
  *                eventName->Map(blueprintName)->TSMCProgram[]
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function SubscribeToScriptEvent(
+function SubscribeToScriptEvent(
   evtName: string,
   bpName: string,
   consq: TSMCProgram
@@ -67,7 +116,7 @@ export function SubscribeToScriptEvent(
   else codearr.push(...consq);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetScriptEventHandlers(evtName: string) {
+function GetScriptEventHandlers(evtName: string) {
   if (!SCRIPT_EVENTS.has(evtName)) SCRIPT_EVENTS.set(evtName, new Map());
   const subbedBPs = SCRIPT_EVENTS.get(evtName); // event->blueprint codearr
   const handlers = [];
@@ -77,14 +126,14 @@ export function GetScriptEventHandlers(evtName: string) {
   return handlers;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function DeleteAllScriptEvents() {
+function DeleteAllScriptEvents() {
   SCRIPT_EVENTS.clear();
 }
 
 /// SCRIPT UNITS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** WIP centralized source manager */
-export function SaveScript(name: string, source: TScriptUnit[]): boolean {
+function SaveScript(name: string, source: TScriptUnit[]): boolean {
   if (SCRIPTS.has(name)) console.warn(...PR(`overwriting source '${name}'`));
   if (!Array.isArray(source)) {
     console.warn(...PR(`SaveScript: '${name}' source must be array`));
@@ -108,10 +157,9 @@ function UpdateScriptIndex(name: string, i: number, u: TScriptUnit): boolean {
   source[i] = u;
   return true;
 }
-export { UpdateScriptIndex };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** WIP centralized source deleter */
-export function DeleteScript(name: string): boolean {
+function DeleteScript(name: string): boolean {
   if (SCRIPTS.has(name)) {
     SCRIPTS.delete(name);
     return true;
@@ -122,21 +170,21 @@ export function DeleteScript(name: string): boolean {
 
 /// BLUEPRINT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function SaveBlueprint(bp: ISMCBundle) {
+function SaveBlueprint(bp: ISMCBundle) {
   const { name } = bp;
   // just overwrite it
   BLUEPRINTS.set(name, bp);
   return bp;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetBlueprint(name: string): ISMCBundle {
+function GetBlueprint(name: string): ISMCBundle {
   name = name || 'default';
   const bdl = BLUEPRINTS.get(name);
   // if (!bdl) console.warn(`blueprint '${name}' does not exist`);
   return bdl;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetAllBlueprints() {
+function GetAllBlueprints() {
   const arr = [];
   const maps = [...BLUEPRINTS.values()];
   maps.forEach(map => {
@@ -145,7 +193,7 @@ export function GetAllBlueprints() {
   return arr;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function DeleteBlueprint(name: string) {
+function DeleteBlueprint(name: string) {
   if (!BLUEPRINTS.has(name)) {
     console.warn(`trying to delete non-existent blueprint '${name}'`);
     return;
@@ -153,14 +201,14 @@ export function DeleteBlueprint(name: string) {
   BLUEPRINTS.delete(name);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function DeleteAllBlueprints() {
+function DeleteAllBlueprints() {
   BLUEPRINTS.clear();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a program name [[progname]] might be passed, which needs to be dereferenced
  *  into a TSMCProgram stored in the FUNCTIONS table
  */
-export function UtilDerefArg(arg: any) {
+function UtilDerefArg(arg: any) {
   const type = typeof arg;
   if (type === 'number') return arg;
   if (type !== 'string') return arg;
@@ -172,7 +220,34 @@ export function UtilDerefArg(arg: any) {
   throw Error(`could not deference "${arg}" to named program "${progName}"`);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function UtilFirstValue(thing: any): any {
+function UtilFirstValue(thing: any): any {
   if (Array.isArray(thing)) return thing.shift();
   return thing;
 }
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export { BLUEPRINTS, KEYWORDS, SCRIPTS, SCRIPT_EVENTS };
+export {
+  RegisterKeyword,
+  GetKeyword,
+  GetAllKeywords,
+  //
+  SubscribeToScriptEvent,
+  GetScriptEventHandlers,
+  DeleteAllScriptEvents,
+  //
+  SaveScript,
+  DeleteScript,
+  UpdateScriptIndex,
+  //
+  SaveBlueprint,
+  GetBlueprint,
+  GetAllBlueprints,
+  DeleteBlueprint,
+  DeleteAllBlueprints,
+  //
+  ValidateArgTypes,
+  UtilDerefArg,
+  UtilFirstValue
+};

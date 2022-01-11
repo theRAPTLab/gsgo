@@ -5,11 +5,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword, UtilFirstValue } from 'modules/datacore';
-import { ScriptToJSX } from 'modules/sim/script/tools/script-to-jsx';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -17,7 +15,7 @@ export class ifExpr extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('ifExpr');
-    this.args = ['test:TMethod', 'consequent:TMethod', 'alternate:TMethod'];
+    this.args = ['test:anyval', 'consequent:block', 'alternate:block'];
   }
 
   /** create smc blueprint code objects
@@ -34,12 +32,6 @@ export class ifExpr extends Keyword {
       if (!result && alter) agent.exec(alter, state.ctx);
     });
     return code;
-  }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, options: any, children?: any): any {
-    const [keyword, testName, consequent, alternate] = unit;
-    return <>{keyword}</>;
   }
 } // end of keyword definition
 

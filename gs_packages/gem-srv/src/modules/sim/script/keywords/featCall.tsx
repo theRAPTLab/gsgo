@@ -11,11 +11,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
-import { ScriptToJSX } from 'modules/sim/script/tools/script-to-jsx';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -28,7 +26,7 @@ export class featCall extends Keyword {
 
   constructor() {
     super('featCall');
-    this.args = ['refArg:object', 'methodName:string', '...args'];
+    this.args = ['featName:feature', 'methodName:string', 'arg:args'];
   }
 
   /** create smc blueprint code objects */
@@ -66,12 +64,6 @@ export class featCall extends Keyword {
         return callRef(agent, state.ctx, methodName, ...args);
       }
     ];
-  }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, options: any, children?: any[]): any {
-    const [keyword, refArg, methodName, ...arg] = unit;
-    return <>{keyword}</>;
   }
 } // end of keyword definition
 

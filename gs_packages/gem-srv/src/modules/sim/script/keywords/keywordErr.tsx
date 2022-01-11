@@ -5,7 +5,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import UR from '@gemstep/ursys/client';
 import Keyword from 'lib/class-keyword';
 
@@ -20,19 +19,13 @@ export class keywordErr extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('keywordErr');
-    this.args = ['...args'];
+    this.args = ['arg:args'];
   }
 
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
     console.log(...PR(`'${unit[0]}' is not a valid keyword`));
     return [];
-  }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [keyword] = unit;
-    return <>{keyword}</>;
   }
 } // end of keyword definition
 
