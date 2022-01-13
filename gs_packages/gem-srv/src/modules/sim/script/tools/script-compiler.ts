@@ -220,10 +220,7 @@ function SymbolizeStatement(statement: TScriptUnit, line: number): TSymbolData {
   const kwArgs = DecodeStatement(statement);
   let kw = kwArgs[0];
   if (kw === '') return {}; // blank lines emit no symbol info
-  if (!is_Keyword(kw)) {
-    console.warn(`keyword ${kw} bad`);
-    return { error: `bad keyword: '${kw}'` };
-  }
+  if (!is_Keyword(kw)) return {}; // if !keyword return no symbol
   const kwProcessor = GetKeyword(kw);
   if (!kwProcessor) {
     console.warn(`keyword processor ${kw} bad`);

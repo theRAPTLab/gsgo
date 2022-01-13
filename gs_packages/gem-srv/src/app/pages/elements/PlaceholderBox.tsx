@@ -16,14 +16,23 @@ export function PlaceholderBox(props) {
 
   const { scriptToken: tok, lineNum, linePos, vmTokens } = selection;
   const argtype = tok._argtype || '<unknown argType>';
+  console.log(JSON.stringify(tok, null, 2));
   return (
     <form>
-      <label>
-        Unimplemented Edit Box
-        <br />
-        argType: <code>{argtype}</code>
-      </label>
-      <span style={{ fontFamily: 'monospace' }}>{JSON.stringify(tok)}</span>
+      Unimplemented Edit Box
+      <br />
+      <table>
+        <tbody>
+          <tr>
+            <td>argtype</td>
+            <td>{argtype}</td>
+          </tr>
+          <tr>
+            <td>tok</td>
+            <td>{JSON.stringify(tok)}</td>
+          </tr>
+        </tbody>
+      </table>
     </form>
   );
 }

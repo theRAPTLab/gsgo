@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   The ScriptTokenizer class takes a text input, breaks it into lines, and
@@ -36,7 +37,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////xa///////////////////*/
 
-import { IToken } from 'lib/t-script.d';
+import { IToken, TScriptUnit, TArguments } from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -747,6 +748,48 @@ function UnpackToken(tok: IToken): [string, any] {
   return [type, tok[type]];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Is the token whitespace or not? Line or Comment tokens return true
+ */
+function IsNonCodeToken(tok: IToken): boolean {
+  const [type, value] = UnpackToken(tok);
+  if (type === 'line') return true;
+  if (type === 'comment') return true;
+  return false;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Similar to the script compiler's DecodeStatement() utility, this function
+ *  does a similar unpacking except it doesn't compile blocks, instead
+ *  recursively unpacking them. Skips line and comment tokens.
+ */
+function UnpackStatement(unit: TScriptUnit): TArguments {
+  const ustatement = [];
+  unit.forEach(tok => {
+    const [type, value] = UnpackToken(tok);
+    if (type === 'block') {
+      ustatement.push(UnpackScript(value));
+      return;
+    }
+    if (type === 'comment' || type === 'line') return;
+    ustatement.push(value);
+  });
+  return ustatement;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Similar to the script compiler's CompileScript() utility, this fnction
+ *  uses UnpackStatement to fully unpack nested blocks. It removes all comments
+ *  and blank lines.
+ */
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function UnpackScript(script: TScriptUnit[]): TArguments[] {
+  const uscript = [];
+  script.forEach(stm => {
+    const ustm = UnpackStatement(stm);
+    if (ustm !== undefined && ustm.length > 0) uscript.push(ustm);
+  });
+  return uscript;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to validate token, returning true/false only
  */
 function IsValidToken(tok: IToken): boolean {
@@ -757,4 +800,11 @@ function IsValidToken(tok: IToken): boolean {
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default ScriptTokenizer;
-export { Tokenize, UnpackToken, IsValidToken };
+export {
+  Tokenize,
+  UnpackScript,
+  UnpackStatement,
+  UnpackToken,
+  IsNonCodeToken,
+  IsValidToken
+};

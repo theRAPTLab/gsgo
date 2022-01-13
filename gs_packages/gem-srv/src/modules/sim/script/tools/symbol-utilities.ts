@@ -48,7 +48,7 @@ function AnnotateStatement(statement: TScriptUnit): TScriptUnit {
   const kwProcessor = GetKeyword(keyword);
   if (kwProcessor === undefined)
     throw Error(`AnnotateStatement: no keyword ${keyword}`);
-  return kwProcessor.annotate(statement);
+  kwProcessor.annotate(statement);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Add symbol information to a script (statements comprised of tokens) */

@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 /*///////////////////////////////// CLASS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   The Keyword class is the base class for all GEMscript keywords.
@@ -29,10 +30,15 @@ import {
   TSymbolArgType
 } from 'lib/t-script';
 import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
+import {
+  UnpackToken,
+  IsNonCodeToken
+} from 'script/tools/class-gscript-tokenizer-v2';
+import { GetKeyword } from 'modules/datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
+const DBG = true;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -62,19 +68,43 @@ class Keyword implements IKeyword {
     return {}; // change to throw Error when ready to update all keywords
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** override in subclass to annotate scriptUnits if needed */
-  annotate(unit: TScriptUnit): TScriptUnit {
-    // assign type array to first unit
-    unit[0]._args = this.args;
+  /** override in subclass to annotate scriptUnits if needed.
+   *
+   *  NOTE: MUTATES the unit array. There are two forms of data: the unit is the
+   *  token array, and argArray are the 'decoded' tokens of unit that can be
+   *  expressed as literal values. If a token is not expressable as a literal
+   *  value (e.g. objref is an array of strings) it will remain in token form
+   *  e.g. { objref: ['a','b'] } with the exception of blocks which are
+   *  an array of TScriptUnit
+   */
+  annotate(unit: TScriptUnit): void {
+    // first token is keyword: assign entire type array to it
+    const { identifier } = unit[0];
+    const kwp = GetKeyword(identifier as string);
+    unit[0]._args = kwp.args; // keyword argument type
+
+    // remaining tokens are arguments, so assign them from
     // assign the rest of individual argument types
     for (let i = 1; i < unit.length; i++) {
-      const arg_count = this.args.length;
-      // repeat the last argument type if there are more arguments than
-      // what is defined in this.args
-      if (i < arg_count) unit[i]._argtype = this.args[i];
-      else unit[i]._argtype = this.args[arg_count - 1];
+      const [type, value] = UnpackToken(unit[i]);
+      // is the argument a block of statements? recurse
+      if (type === 'line' || type === 'comment') continue;
+      // if not a block, just run through it
+      if (type !== 'block') {
+        unit[i]._argtype = this.args[i - 1];
+        continue;
+      }
+
+      // iterate over statements in block
+      const block = value;
+      for (const stm of block) {
+        const [stype, sident] = UnpackToken(stm[0]);
+        if (stype === 'line' || stype === 'comment') continue;
+        const skwp = GetKeyword(sident);
+        skwp.annotate(stm);
+      }
+      // otherwise just copy the argtype from keyword
     }
-    return unit;
   }
 
   /// UTILITY METHODS /////////////////////////////////////////////////////////
@@ -145,30 +175,6 @@ function _evalRuntimeArg(arg: any, context): any {
   return undefined;
 }
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** checks a given argument, and if it's an object we'll assume it's an
- *  UnitToken return a JSX element to stuff into the GUI
- */
-function _jsxifyArg(arg: any) {
-  // Return JSX GUI element for specific types
-  if (typeof arg !== 'object') return arg; // placeholder
-  // if Array.isArray(arg)
-  // if typeof arg==='number'
-  // if typeof arg==='string'
-  // if typeof arg==='boolean'
-  // handle special object cases
-  if (arg.program) return ['program block'];
-
-  // ORIG CODE
-  // if (arg.objref) return arg.objref.join('.');
-
-  // Ben's NEW CODE: objrefs should not be joined!  We want the raw array!
-  if (arg.objref) return arg;
-
-  if (arg.expr) return `{{ ${arg.expr} }}`;
-  console.error('_jsxifyArg: unknown arg type', arg);
-  return undefined;
-}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** used by keyword compile-time to retreve a prop object dereferencing function
  *  that will be executed at runtime */

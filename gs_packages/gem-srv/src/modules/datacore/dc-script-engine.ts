@@ -18,6 +18,7 @@ import { GetFunction } from './dc-named-methods';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('DCSCRP');
+const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BLUEPRINTS: Map<string, ISMCBundle> = new Map();
 const KEYWORDS: Map<string, IKeyword> = new Map();
@@ -59,7 +60,12 @@ function ValidateArgTypes(args: TSymbolArgType[]): boolean {
       console.warn(`${err}: invalid argDef ${typeof arg}`);
       return false;
     }
-    console.log('checking arg', arg);
+    if (DBG)
+      console.log(
+        `%c${arg}%c passes arg check`,
+        'font-weight:bold',
+        'font-weight:normal'
+      );
     const [argName, argType] = arg.split(':');
     if (argName.length === 0) {
       console.warn(`${err}: missing argName in '${arg}'`);

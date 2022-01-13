@@ -231,7 +231,7 @@ export interface IKeyword {
   args: TSymbolArgType[];
   compile(unit: TScriptUnit, lineIdx?:number): (TOpcode|TOpcodeErr)[];
   symbolize(unit: TScriptUnit,lineIdx?:number): TSymbolData;
-  annotate(unit:TScriptUnit,lineIdx?:number): TScriptUnit;
+  annotate(unit:TScriptUnit,lineIdx?:number): void;
   getName(): string;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
