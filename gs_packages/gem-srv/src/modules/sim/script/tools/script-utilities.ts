@@ -10,7 +10,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { TScriptUnit, IToken } from 'lib/t-script.d';
-import { VMToken, VMTokenLine } from 'lib/t-ui.d';
+import { VMToken, VMPageLine } from 'lib/t-ui.d';
 
 /// CONSTANT & DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,8 +87,8 @@ function m_TokenOut(tok: IToken): void {
 
   const tokInfo: VMToken = {
     scriptToken: tok,
-    lineNum,
     level,
+    lineNum,
     linePos,
     tokenKey
   };
@@ -111,13 +111,13 @@ function m_LineOut(): void {
 
   // otherwise do the thing
   const { level, lineNum } = m_Info();
-  const lineStatement = LINE_BUF.map(t => {
+  const lineScript = LINE_BUF.map(t => {
     return t.scriptToken;
   });
   const vmTokens = [...LINE_BUF];
-  const line: VMTokenLine = {
-    lineStatement,
-    vmTokens,
+  const line: VMPageLine = {
+    lineScript,
+    vmTokens, // an array of vmToken
     level,
     lineNum
   };
@@ -129,7 +129,7 @@ function m_LineOut(): void {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a page of lines of tokens, create the reverse lookup map */
-function m_MapLinesToTokens(vmPage: VMTokenLine[]) {
+function m_MapLinesToTokens(vmPage: VMPageLine[]) {
   MAP.clear();
   vmPage.forEach(vmTokLine => {
     const { vmTokens } = vmTokLine;
@@ -174,12 +174,12 @@ function m_ProgramToLines(program) {
 
 /// EXPORTED API METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a script of ScriptUnit statements, return a PAGE of VMTokenLine and
+/** given a script of ScriptUnit statements, return a PAGE of VMPageLine and
  *  VMToken
  */
 export function ScriptToLines(
   program: TScriptUnit[]
-): [VMTokenLine[], Map<string, IToken>] {
+): [VMPageLine[], Map<string, IToken>] {
   m_Clear();
   m_ProgramToLines(program); // updates PAGE
   m_MapLinesToTokens(PAGE); // updates MAP

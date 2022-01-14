@@ -18,8 +18,8 @@ import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
 export function EditObject(props) {
   const { selection } = props;
   const { token: tok, lineNum, linePos, vmTokens } = selection;
-  const { lineStatement } = vmTokens;
-  const text = WIZCORE.GetLineScriptText(lineStatement);
+  const { lineScript } = vmTokens;
+  const text = WIZCORE.GetLineScriptText(lineScript);
   return (
     <form>
       <label>

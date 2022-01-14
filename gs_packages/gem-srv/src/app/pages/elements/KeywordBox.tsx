@@ -14,9 +14,9 @@ import { sButtonGrid, sButtonBreak } from './wizard-style';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function KeywordBox(props) {
   const { selection } = props;
-  const { scriptToken: tok, lineNum, linePos, vmTokens } = selection;
-  const { lineStatement } = vmTokens;
-  const text = WIZCORE.GetLineScriptText(lineStatement);
+  const { scriptToken: tok, lineNum, linePos, pageLine } = selection;
+  const { lineScript } = pageLine;
+  const text = WIZCORE.GetLineScriptText(lineScript);
   const args = tok._args.join(', ');
   const sDel = { ...sButtonBreak, minWidth: '25%', maxWidth: '25%' };
   const sRTL = { ...sButtonGrid, direction: 'rtl' };

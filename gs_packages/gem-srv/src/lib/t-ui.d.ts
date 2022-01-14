@@ -21,11 +21,11 @@ export interface IinspectorListItem {}
 /// for view-specific data
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a line of VMToken, with additional UI-relevant data */
-export type VMTokenLine = {
+export type VMPageLine = {
   vmTokens: VMToken[]; // the VMTokens in this VMLine
   lineNum: number; // the line number
   level: number; // the nesting level of this line
-  lineStatement?: TScriptUnit; // parent statement
+  lineScript?: TScriptUnit; // parent statement
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a data packet representing a line of tokens that are a partial statement,

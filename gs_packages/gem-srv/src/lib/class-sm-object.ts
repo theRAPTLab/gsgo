@@ -12,14 +12,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  IKeyObject,
-  IAgent,
-  IScopeable,
-  TSymbolMap,
-  TSymbolDef,
-  TMethod
-} from './t-script';
+import { IKeyObject, IAgent, IScopeable, TSymbolData, TMethod } from './t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -58,7 +51,7 @@ class SM_Object implements IScopeable {
   prop: IKeyObject;
   method: IKeyObject;
   //
-  static Symbols: TSymbolDef; // symbol data
+  static Symbols: TSymbolData; // symbol data
   //
   constructor(initValue?: any) {
     // init is a literal value

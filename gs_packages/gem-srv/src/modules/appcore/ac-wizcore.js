@@ -141,13 +141,17 @@ function DispatchClick(event) {
     SendState(newState);
 
     // decode symbol type test
-    const token = GetTokenById(tokenKey);
-    const symbols = State().cur_bdl.symbols;
-    const context = {};
-    const params = { token, symbols, context };
-    symDecoder.setParameters(params);
-    symDecoder.decode();
-    return;
+    const token = GetTokenById(tokenKey); // this is the current
+    const { cur_bdl, sel_line_num, sel_line_pos, script_page } = State();
+    if (sel_line_num > 0 && sel_line_pos > 0) {
+      const viewModel = script_page[sel_line_num - TRANSPILER.LINE_START_NUM];
+      const { symbols } = cur_bdl;
+      const context = {};
+      const params = { token, symbols, context };
+      symDecoder.setParameters(params);
+      symDecoder.decode(viewModel);
+      return;
+    }
   }
   // if nothing processed, then unset selection
   SendState({ sel_line_num: -1, sel_line_pos: -1 });
@@ -233,21 +237,21 @@ function SelectedTokenInfo() {
   const context = {}; // TODO: look up scope from symbol-utilities
   const { sel_line_num: lineNum, sel_line_pos: linePos, script_page } = State();
   if (lineNum > 0 && linePos > 0) {
-    const vmTokens = script_page[lineNum - TRANSPILER.LINE_START_NUM];
+    const pageLine = script_page[lineNum - TRANSPILER.LINE_START_NUM];
     return {
-      scriptToken, // the actual scriptunit token
-      context, // the memory context for this token
+      scriptToken, // the actual script token (not vmToken)
       lineNum, // line number in VMPage
       linePos, // line position in VMPage[lineNum]
-      vmTokens // all the VMTokens in this line
+      context, // the memory context for this token
+      pageLine // all the VMTokens in this line
     };
   }
   return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return a string version of a ScriptUnit */
-function GetLineScriptText(lineStatement) {
-  return TRANSPILER.StatementToText(lineStatement);
+function GetLineScriptText(lineScript) {
+  return TRANSPILER.StatementToText(lineScript);
 }
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////

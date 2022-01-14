@@ -178,7 +178,10 @@ type ArgTypeGlobal = `${'test'|'program'|'event'|'feature'}`
 export type TSymbolArgType = `${string}:${ArgTypeLiterals | ArgTypeSpecial |ArgTypeGlobal}` | TSymbolArgType[];
 export type TSymbolMethodArgs =  { args?: TSymbolArgType[]; returns?: TSymbolArgType }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** data description of symbols for features, props */
+/** data description of symbols for features, props. returned from anything
+ *  that produces Symbol data: keywords with .symbolize(unit), gvars and feat
+ *  modules that implement a static .Symbols definition
+ */
 export type TSymbolData = {
   props?: { [propName: string]: IScopeableCtor };
   methods?: { [methodName:string]:TSymbolMethodArgs};
