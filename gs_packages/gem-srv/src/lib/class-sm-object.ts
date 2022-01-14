@@ -108,6 +108,11 @@ class SM_Object implements IScopeable {
     return this.method[key];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Return symbol data, override in subclassers */
+  symbolize(): TSymbolData {
+    return {};
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Return a serializer array */
   serialize(): any {
     return ['value', this._value];

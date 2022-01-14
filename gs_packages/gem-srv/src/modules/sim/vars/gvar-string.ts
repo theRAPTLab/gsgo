@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import SM_Object from 'lib/class-sm-object';
-import { IScopeable } from 'lib/t-script';
+import { IScopeable, TSymbolData } from 'lib/t-script';
 import { RegisterVarCTor } from 'modules/datacore';
 import { GVarBoolean } from './gvar-boolean';
 
@@ -27,11 +27,15 @@ export class GVarString extends SM_Object implements IScopeable {
   clear() {
     this.value = '';
   }
+  symbolize(): TSymbolData {
+    return GVarString.Symbols;
+  }
 }
 
 /// SYMBOLS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 GVarString.Symbols = {
+  ctor: GVarString,
   methods: {
     setTo: { args: ['value:string'] },
     eq: { args: ['str:string'], returns: 'isEqual:boolean' },

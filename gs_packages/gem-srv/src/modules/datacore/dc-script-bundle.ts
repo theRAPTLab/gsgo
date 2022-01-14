@@ -114,19 +114,20 @@ export function AddSymbol(bdl: ISMCBundle, symdata: TSymbolData) {
 
   if (symdata.features) {
     // featureName --> featureModule
-    if (_bdlsym.features === undefined) _bdlsym.features = new Map();
-    for (const [key, feat] of Object.entries(symdata.features)) {
-      if (_bdlsym.features.has(key)) console.warn('feature', key, 'exists');
-      _bdlsym.features.set(key, feat);
+    if (_bdlsym.features === undefined) _bdlsym.features = {};
+    for (const [featName, feat] of Object.entries(symdata.features)) {
+      if (_bdlsym.features[featName]) console.warn('feature', featName, 'exists');
+      console.log(`feat-${feat.meta.name}`, feat.symbolize());
+      _bdlsym.features[featName] = feat.symbolize();
       // if (DBG) console.log(bdl.name, 'addFeature', key);
     }
   }
   if (symdata.props) {
     // propName --->
-    if (_bdlsym.props === undefined) _bdlsym.props = new Map();
-    for (const [key, argType] of Object.entries(symdata.props)) {
-      if (_bdlsym.props.has(key)) console.warn('prop', key, 'exists');
-      _bdlsym.props.set(key, argType);
+    if (_bdlsym.props === undefined) _bdlsym.props = {};
+    for (const [propName, symbolData] of Object.entries(symdata.props)) {
+      if (_bdlsym.props[propName]) console.warn('prop', propName, 'exists');
+      _bdlsym.props[propName] = symbolData;
       // if (DBG) console.log(bdl.name, 'addProp', key, argType);
     }
   }

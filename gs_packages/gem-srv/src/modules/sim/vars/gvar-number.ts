@@ -9,7 +9,7 @@
 
 import RNG from 'modules/sim/sequencer';
 import SM_Object from 'lib/class-sm-object';
-import { IScopeable } from 'lib/t-script';
+import { IScopeable, TSymbolData } from 'lib/t-script';
 import { RegisterVarCTor } from 'modules/datacore';
 import { GVarBoolean } from './gvar-boolean';
 
@@ -183,11 +183,15 @@ export class GVarNumber extends SM_Object implements IScopeable {
   clear() {
     this.value = null;
   }
+  symbolize(): TSymbolData {
+    return GVarNumber.Symbols;
+  }
 }
 
 /// SYMBOLS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 GVarNumber.Symbols = {
+  ctor: GVarNumber,
   methods: {
     value: { returns: 'value:number' },
     setWrap: { args: ['nvalue:number'] },

@@ -34,7 +34,7 @@ export class AddProp extends Keyword {
   symbolize(unit: TScriptUnit): TSymbolData {
     const [, propName, propType] = unit;
     const propCtor = GetVarCtor(propType as string);
-    return { props: { [propName as string]: propCtor } };
+    return { props: { [propName as string]: propCtor.Symbols } };
   }
 } // end of keyword definition
 

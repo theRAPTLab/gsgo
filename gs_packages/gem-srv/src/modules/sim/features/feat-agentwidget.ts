@@ -19,7 +19,7 @@
 import UR from '@gemstep/ursys/client';
 import { GVarNumber, GVarString, GVarBoolean } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
-import { IAgent } from 'lib/t-script';
+import { IAgent, TSymbolData } from 'lib/t-script';
 import { GetAgentById } from 'modules/datacore/dc-agents';
 import { Register } from 'modules/datacore/dc-features';
 import { GetGlobalAgent } from 'lib/class-gagent';
@@ -250,7 +250,33 @@ class WidgetPack extends GFeature {
     // REGISTER the Agent for updates
     WIDGET_AGENTS.set(agent.id, agent.id);
   }
-
+  symbolize(): TSymbolData {
+    return {
+      ctor: WidgetPack,
+      props: {
+        text: GVarString.Symbols,
+        meter: GVarNumber.Symbols,
+        meterColor: GVarNumber.Symbols,
+        isLargeGraphic: GVarBoolean.Symbols,
+        graphValue: GVarNumber.Symbols,
+        barGraphProp: GVarString.Symbols,
+        barGraphPropFeature: GVarString.Symbols,
+        textProp: GVarString.Symbols,
+        meterProp: GVarString.Symbols
+      },
+      methods: {
+        showMessage: { args: ['propname:string'] },
+        bindTextTo: { args: ['propname:string'] },
+        bindMeterTo: { args: ['propname:string'] },
+        setMeterPosition: { args: ['position:string'] },
+        bindGraphTo: { args: ['propname:string', 'frequency:number'] },
+        bindGraphToGlobalProp: { args: ['propname:string', 'frequency:number'] },
+        bindLineGraphHistogramToFeatProp: {
+          args: ['feature:string', 'propname:string']
+        }
+      }
+    };
+  }
   /// WIDGET METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Invoked through featureCall script command. To invoke via script:
@@ -312,33 +338,6 @@ class WidgetPack extends GFeature {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 }
-
-/// SYMBOLS ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-WidgetPack.Symbols = {
-  props: {
-    text: GVarString,
-    meter: GVarNumber,
-    meterColor: GVarNumber,
-    isLargeGraphic: GVarBoolean,
-    graphValue: GVarNumber,
-    barGraphProp: GVarString,
-    barGraphPropFeature: GVarString,
-    textProp: GVarString,
-    meterProp: GVarString
-  },
-  methods: {
-    showMessage: { args: ['propname:string'] },
-    bindTextTo: { args: ['propname:string'] },
-    bindMeterTo: { args: ['propname:string'] },
-    setMeterPosition: { args: ['position:string'] },
-    bindGraphTo: { args: ['propname:string', 'frequency:number'] },
-    bindGraphToGlobalProp: { args: ['propname:string', 'frequency:number'] },
-    bindLineGraphHistogramToFeatProp: {
-      args: ['feature:string', 'propname:string']
-    }
-  }
-};
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

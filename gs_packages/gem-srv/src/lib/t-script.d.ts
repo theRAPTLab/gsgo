@@ -22,6 +22,7 @@ export interface IScopeable {
   addMethod: (name: String, callable: TMethod) => void;
   getMethod: (name: string) => TMethod;
   serialize?: () => any[];
+  symbolize?: () => TSymbolData;
   //  get value(): any; // works with typescript 3.6+
   //  set value(val:any); // works with typescript 3.6+
   value: any;
@@ -79,14 +80,14 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
 /** Features are very similar to IScopeable interface in method
  */
 export interface IFeature {
-  meta: { feature: string };
+  meta: { name: string };
   method: IKeyObject;
   initialize(pm: any): void;
   decorate(agent: IAgent): void;
   featAddProp(agent: IAgent, key: string, prop: IScopeable): void;
   featAddMethod(mName: string, smc_or_f: FeatureMethod): void;
   featGetMethod(mName: string): FeatureMethod;
-  Symbols?: TSymbolData;
+  symbolize():TSymbolData;
 }
 export type FeatureMethod = (agent: IAgent, ...any) => any;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -183,7 +184,8 @@ export type TSymbolMethodArgs =  { args?: TSymbolArgType[]; returns?: TSymbolArg
  *  modules that implement a static .Symbols definition
  */
 export type TSymbolData = {
-  props?: { [propName: string]: IScopeableCtor };
+  ctor?: Function, // constructor object if needed (used by var- props)
+  props?: { [propName: string]: TSymbolData };
   methods?: { [methodName:string]:TSymbolMethodArgs};
   features?: { [featureName:string]: IFeature };
   context?: { [line:number]:string[] }; // line number for a root statement
@@ -193,8 +195,8 @@ export type TSymbolData = {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** blueprint symbol data format */
 export type TSymbolMap = {
-  props?: Map<string, IScopeableCtor>;
-  features?: Map<string, IFeature>; // mape to feature
+  props?: { [propName:string] : TSymbolData }; // map to varctor.symbols
+  features?: { [featName:string] : TSymbolData };  // map to feature.Symbols
 };
 
 /// PROGRAM BUNDLES ///////////////////////////////////////////////////////////
