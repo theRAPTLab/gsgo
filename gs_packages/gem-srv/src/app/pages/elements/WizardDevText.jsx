@@ -107,6 +107,7 @@ export class ScriptText extends React.Component {
     const { script_text, sel_line_num } = this.state;
     return (
       <pre
+        id="leftText"
         className="language-gemscript line-numbers match-braces"
         data-line={sel_line_num}
         style={{
