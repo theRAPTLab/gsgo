@@ -636,8 +636,9 @@ function InstanceHoverOut(data) {
 /// parameters above as I think they are supposed to be
 const FN_LOOKUP = {
   RequestProject,
-  GetBoundary,
+  GetProjectBoundary: GetBoundary,
   GetCharControlBpidList,
+
   GetBlueprintProperties: ACBlueprints.GetBlueprintProperties,
   GetBpidList,
   GetInstanceidList
