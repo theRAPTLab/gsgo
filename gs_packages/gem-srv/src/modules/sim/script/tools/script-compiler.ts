@@ -53,7 +53,7 @@ import { ScriptTest, BlueprintTest } from './test-data/td-compiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
+const DBG = true;
 const PR = UR.PrefixUtil('COMPILE', 'TagDebug');
 const Scriptifier = new GScriptTokenizer();
 
@@ -212,12 +212,14 @@ function CompileStatement(statement: TScriptUnit, idx?: number): TSMCProgram {
   return compiledStatement;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** a mirror of CompileStatement, extracts the symbol data as a separate pass
+/** A mirror of CompileStatement, extracts the symbol data as a separate pass
  *  so we don't have to rewrite the entire compiler and existing keyword code.
- *  Note that this does not recursively symbolize statements, as it
+ *  Note that this does not recurse into statement blocks, because the only
+ *  keywords in a statement that add symbol data are `addProp` and `when`
+ *  which are always level 0 (not nested)
  */
 function SymbolizeStatement(statement: TScriptUnit, line: number): TSymbolData {
-  const kwArgs = DecodeStatement(statement);
+  const kwArgs = DecodeStatement(statement); // replace with UnpackStatement
   let kw = kwArgs[0];
   if (kw === '') return {}; // blank lines emit no symbol info
   if (!is_Keyword(kw)) return {}; // if !keyword return no symbol
@@ -253,6 +255,8 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
   const ERR = 'CompileBlueprint';
   let objcode;
   const bdl = new SM_Bundle();
+  // always add GAgent.Symbols, which are the default built-in props
+  AddSymbol(bdl, GAgent.Symbols);
   //
   if (!Array.isArray(script))
     throw Error(`${ERR}: script should be array, not ${typeof script}`);

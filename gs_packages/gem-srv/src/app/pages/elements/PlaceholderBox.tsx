@@ -16,7 +16,7 @@ export function PlaceholderBox(props) {
 
   const { scriptToken: tok, lineNum, linePos, pageLine } = selection;
   const argtype = tok._argtype || '<unknown argType>';
-  console.log(JSON.stringify(tok, null, 2));
+  // console.log('PlaceholderBox rendering:', tok);
   return (
     <form>
       Unimplemented Edit Box

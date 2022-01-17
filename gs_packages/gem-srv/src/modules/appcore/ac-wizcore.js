@@ -132,7 +132,10 @@ function DispatchClick(event) {
   // (1) GToken was clicked?
   const tokenKey = event.target.getAttribute('data-key');
   if (tokenKey !== null) {
-    if (DBG) console.log(`WIZCORE: click on token ${JSON.stringify(tokenKey)}`);
+    if (DBG)
+      console.log(
+        ...PR(`DispatchClick: click on token ${JSON.stringify(tokenKey)}`)
+      );
 
     // notify subscribers of new current line and token index
     const [line, pos] = tokenKey.split(',');
@@ -144,12 +147,12 @@ function DispatchClick(event) {
     const token = GetTokenById(tokenKey); // this is the current
     const { cur_bdl, sel_line_num, sel_line_pos, script_page } = State();
     if (sel_line_num > 0 && sel_line_pos > 0) {
-      const viewModel = script_page[sel_line_num - TRANSPILER.LINE_START_NUM];
-      const { symbols } = cur_bdl;
-      const context = {};
-      const params = { token, symbols, context };
+      const lineVM = script_page[sel_line_num - TRANSPILER.LINE_START_NUM];
+      const context = { [cur_bdl.name]: cur_bdl };
+      const bundle = cur_bdl;
+      const params = { token, bundle, context };
       symDecoder.setParameters(params);
-      symDecoder.decode(viewModel);
+      console.log(...PR('symbol', symDecoder.getSymbols()));
       return;
     }
   }

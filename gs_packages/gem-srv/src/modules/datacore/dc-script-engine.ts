@@ -49,15 +49,15 @@ const VALID_ARGTYPES = [
  *  valid syntax
  */
 function ValidateArgTypes(args: TSymbolArgType[]): boolean {
-  const err = 'ValidateArgTypes';
+  const P = 'ValidateArgTypes';
   if (!Array.isArray(args)) {
-    console.warn(`${err}: invalid argtype array`);
+    console.warn(`${P}: invalid argtype array`);
     return false;
   }
   for (const arg of args) {
     if (Array.isArray(arg)) return ValidateArgTypes(arg);
     if (typeof arg !== 'string') {
-      console.warn(`${err}: invalid argDef ${typeof arg}`);
+      console.warn(`${P}: invalid argDef ${typeof arg}`);
       return false;
     }
     if (DBG)
@@ -68,15 +68,29 @@ function ValidateArgTypes(args: TSymbolArgType[]): boolean {
       );
     const [argName, argType] = arg.split(':');
     if (argName.length === 0) {
-      console.warn(`${err}: missing argName in '${arg}'`);
+      console.warn(`${P}: missing argName in '${arg}'`);
       return false;
     }
     if (!VALID_ARGTYPES.includes(argType)) {
-      console.warn(`${err}: '${arg}' has invalid argtype`);
+      console.warn(`${P}: '${arg}' has invalid argtype`);
       return false;
     }
   }
   return true;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return the argName, argType in array if they are valid */
+function DecodeArgType(arg: TSymbolArgType) {
+  const P = 'ValidateArgType';
+  if (typeof arg !== 'string')
+    throw Error(`${P}: arg must be string, not ${typeof arg}`);
+  const abits = (arg as string).split(':');
+  if (abits.length > 2) throw Error(`${P}: too many : separators`);
+  const [argName, argType] = abits;
+  if (argName.length === 0) throw Error(`${P}: no argname`);
+  if (!VALID_ARGTYPES.includes(argType)) throw Error(`${P}: bad type ${argType}`);
+  // passed, so return the argument
+  return [argName, argType];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RegisterKeyword(Ctor: IKeywordCtor) {
@@ -253,6 +267,7 @@ export {
   DeleteBlueprint,
   DeleteAllBlueprints,
   //
+  DecodeArgType,
   ValidateArgTypes,
   UtilDerefArg,
   UtilFirstValue

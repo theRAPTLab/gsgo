@@ -115,10 +115,10 @@ export function AddSymbol(bdl: ISMCBundle, symdata: TSymbolData) {
   if (symdata.features) {
     // featureName --> featureModule
     if (_bdlsym.features === undefined) _bdlsym.features = {};
-    for (const [featName, feat] of Object.entries(symdata.features)) {
+    for (const [featName, featSymbols] of Object.entries(symdata.features)) {
       if (_bdlsym.features[featName]) console.warn('feature', featName, 'exists');
-      console.log(`feat-${feat.meta.name}`, feat.symbolize());
-      _bdlsym.features[featName] = feat.symbolize();
+      console.log(`feat-${featName}`, featSymbols);
+      _bdlsym.features[featName] = featSymbols;
       // if (DBG) console.log(bdl.name, 'addFeature', key);
     }
   }

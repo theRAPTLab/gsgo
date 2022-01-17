@@ -187,8 +187,8 @@ export type TSymbolData = {
   ctor?: Function, // constructor object if needed (used by var- props)
   props?: { [propName: string]: TSymbolData };
   methods?: { [methodName:string]:TSymbolMethodArgs};
-  features?: { [featureName:string]: IFeature };
-  context?: { [line:number]:string[] }; // line number for a root statement
+  features?: { [featureName:string]: TSymbolData };
+  context?: { [line:number]:any }; // line number for a root statement
   error?: string; // debugging if error
   info?:string; // debugging status
 };

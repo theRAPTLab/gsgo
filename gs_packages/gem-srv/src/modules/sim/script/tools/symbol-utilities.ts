@@ -13,6 +13,8 @@ import UR from '@gemstep/ursys/client';
 import {
   GetKeyword,
   GetFeature,
+  ValidateArgTypes,
+  DecodeArgType,
   GetProgram,
   GetTest,
   GetBlueprint
@@ -23,11 +25,14 @@ import {
 } from 'script/tools/class-gscript-tokenizer-v2';
 import {
   TScriptUnit,
+  ISMCBundle,
   IToken,
   TSymbolMap,
-  TSymbolArgType,
-  ISMCBundle
+  TSymbolData,
+  TSymbolArgType
 } from 'lib/t-script.d';
+import { VMToken, VMPageLine } from 'lib/t-ui.d';
+
 import { StringToParts } from 'lib/util-path';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -64,16 +69,20 @@ function AnnotateScript(script: TScriptUnit[]): TScriptUnit[] {
  */
 class SymbolHelper {
   token: IToken; // the token being operated on
-  sym_map: TSymbolMap;
-  ctx_obj: object;
+  bundle: ISMCBundle; // current blueprint symbol
+  ctx_obj: object; // additional context objects (other blueprints)
+  sym_scope: TSymbolData; // current scope as drilling down into objref
   //
   constructor() {
-    this.token = {};
+    this.token = null;
+    this.bundle = null;
+    this.ctx_obj = null;
+    this.sym_scope = null;
   }
 
-  setParameters({ token, symbols, context }) {
+  setParameters({ token, bundle, context }) {
     this._setToken(token);
-    this._setSymbolMap(symbols);
+    this._setBundle(bundle);
     this._setContext(context); // add prototype
   }
 
@@ -84,13 +93,16 @@ class SymbolHelper {
       throw Error('setToken: invalid token');
     }
   }
-  _setSymbolMap(symbols: TSymbolMap) {
+  _setBundle(bundle: ISMCBundle) {
+    const { symbols, name } = bundle;
     const { props, features } = symbols;
-    const isSymbols = props instanceof Map && features instanceof Map;
-    if (isSymbols) this.sym_map = symbols as TSymbolMap;
-    else {
-      console.warn(...PR('setSymbolMap: not a map', symbols));
-      throw Error('setSymbolMap: invalid parameter not map');
+    const hasSymbols =
+      typeof props !== 'undefined' || typeof features !== 'undefined';
+    if (hasSymbols) {
+      this.bundle = bundle;
+    } else {
+      console.warn(...PR('setBundle: not a bundle', bundle));
+      throw Error('setBundle: invalid parameter not bundle');
     }
   }
   /** clear the context root and add */
@@ -113,87 +125,104 @@ class SymbolHelper {
   }
 
   /** starting from the start of an objref, return the appropriate symbols */
-  decode() {
-    const { objref, expr, identifier } = this.token;
-    if (objref !== undefined) {
-      const parts = objref; // an array of strings
+  getSymbols() {
+    // sym_map is from cur_bdl.symbols for the blueprint
+    // ctx_obj is used for evaluating expressions
+    const P = 'getSymbols()';
+    const { _argtype, _args } = this.token;
+    if (Array.isArray(_args)) {
+      console.log(...PR('clicked keyword', this.token.identifier, 'args'), _args);
       return;
     }
-    if (expr !== undefined) {
-      console.log(...PR('decode() expression unimplemened'));
+    const [argName, argType] = DecodeArgType(_argtype);
+    let scanArray;
+    if (argType === 'objref') {
+      const { identifier, objref } = this.token; // we know this is valid because of argtype
+      if (Array.isArray(objref)) {
+        console.log(`process ${argName} as objref ${objref.join('.')}`);
+        scanArray = [...objref];
+      } else if (typeof identifier === 'string') {
+        console.log(`process ${argName} as objref ${identifier}`);
+        scanArray = [identifier];
+      }
+
+      // this.sym_scope will be reset in first pass
+      this.sym_scope = null;
+      for (let ii = 0; ii < scanArray.length; ii++) {
+        const part = scanArray[ii];
+        const terminal = ii >= scanArray.length - 1;
+        if (ii === 0) {
+          const agent = this.agentLiteral(part);
+          const feature = this.featureName(part);
+          const prop = this.propName(part);
+          const blueprint = this.blueprintName(part);
+          if (agent) {
+            this.sym_scope = agent;
+            console.log(ii, 'found agent', part, agent);
+          } else if (feature) {
+            this.sym_scope = feature;
+            console.log(ii, 'found feature', part, feature);
+          } else if (prop) {
+            this.sym_scope = prop;
+            console.log(ii, 'found prop', part, prop);
+            if (terminal) {
+              console.log('exiting loop', ii);
+              return this.sym_scope;
+            }
+          } else if (blueprint) {
+            this.sym_scope = blueprint;
+            console.log(ii, 'found blueprint', part, blueprint);
+          } else {
+            console.log(`${P}: unrecognized part 0`);
+            break;
+          }
+        }
+        // iteration > 0
+        const prop = this.propName(part);
+        const feature = this.featureName(part);
+        const blueprint = this.blueprintName(part);
+        if (prop) {
+          this.sym_scope = prop;
+          console.log('found prop', ii);
+          if (terminal) break; // prop is usually the terminal
+        } else if (feature) {
+          this.sym_scope = feature;
+          if (terminal) break;
+        } else if (blueprint) {
+          this.sym_scope = blueprint;
+        }
+        console.log(`${P}: no matching pattern for pass`, ii);
+        this.sym_scope = null;
+      }
+    }
+    if (this.sym_scope === null) {
+      console.log(...PR('decode() unhandled argtype', _argtype, this.token));
       return;
     }
-    if (identifier !== undefined) {
-      console.log(...PR('decode() identifier unimplemened'));
-      return;
-    }
-    console.log(...PR('decode() unhandled token', this.token));
+    return this.sym_scope;
   }
 
-  isAgentLiteral(part: number) {}
-  isFeatureName(part: number) {}
-  isPropName(part: number) {}
-  isBlueprintName(part: number) {}
-  isFeaturePropName(part: number) {}
-  isTerminal(part: number) {}
-}
-
-/// HELPERS ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return 'agent' if part is 'agent', undefined otherwise */
-function isAgentLiteral(
-  parts: string[],
-  index: number = 0,
-  symbols = {},
-  context = {}
-) {
-  const part = parts[index];
-  return part === 'agent' ? 'agent' : undefined;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return feature module if part matches, undefined otherwise */
-function isFeatureName(
-  parts: string[],
-  index: number = 0,
-  symbols = {},
-  context = {}
-) {
-  const featName = parts[index];
-  const feat = GetFeature(featName);
-  return feat;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return prop if propName matches, undefined otherwise */
-function isPropName(
-  parts: string[],
-  index: number = 0,
-  symbols = {},
-  context = {}
-) {
-  const propName = parts[index];
-  // propName has to check current blueprint. Maybe part of bundle class.
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return Blueprint is bpName maptches, undefined otherwise */
-function isBlueprintName(
-  parts: string[],
-  index: number = 0,
-  symbols = {},
-  context = {}
-) {
-  const bpName = parts[index];
-  return GetBlueprint(bpName);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function isFeaturePropName(
-  parts: string[],
-  index: number = 0,
-  symbols = {},
-  context = {}
-) {
-  // Feature propName has to be in FeatureMap somewhere
-  const featPropName = parts[index];
-}
+  // level 0 checks
+  agentLiteral(part: string) {
+    if (part !== 'agent') return undefined;
+    return this.bundle.symbols;
+  }
+  featureName(part: string) {
+    const sym = this.sym_scope || this.bundle.symbols;
+    const featctx = sym.features || {};
+    return featctx[part];
+  }
+  blueprintName(part: string) {
+    const ctx = this.ctx_obj || {};
+    return ctx[part];
+  }
+  propName(part: string) {
+    const sym = this.sym_scope || this.bundle.symbols;
+    const propctx = sym.props || {};
+    console.log('***', part, propctx);
+    return propctx[part];
+  }
+} // end of SymbolHelper class
 
 /** if an out-of-bounds part index requested, then 'terminal' */
 function isTerminal(

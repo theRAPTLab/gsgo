@@ -17,6 +17,7 @@ import {
   IAgent,
   TMethod,
   TSMCProgram,
+  TSymbolData,
   IScopeable,
   IActable,
   ISMCBundle,
@@ -57,6 +58,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   lastTouched: any;
   isTouching: any;
   statusObject: StatusObject;
+  static Symbols: TSymbolData;
   //
   constructor(agentName = '<anon>', id?: string | number) {
     super(agentName); // sets value to agentName, which is only for debugging
@@ -105,10 +107,10 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.statusValueIsLarge = new GVarBoolean(false); // script accessible
     // feature data -- only accessible via features, not directly
     this.statusObject = new StatusObject(this);
-
-    this.prop.name = () => {
-      throw Error('use agent.name, not agent.prop.name');
-    };
+    // this.prop.name = () =>
+    //   throw Error('use agent.name, not agent.prop.name');
+    // };
+    this.symbolize(); // will make symbols from default prop contents
   }
 
   /// BUILT-IN PROPERTY ACCESSORS /////////////////////////////////////////////
@@ -207,6 +209,23 @@ class GAgent extends SM_Object implements IAgent, IActable {
   }
   set statusValueIsLarge(mode: boolean) {
     this.prop.statusValueIsLarge.setTo(mode);
+  }
+
+  /** called right after constructor creates default props for all agents. The symbol
+   *  data is stored as a static class variable.
+   */
+  symbolize() {
+    if (GAgent.Symbols) return GAgent.Symbols;
+    // create the symbol data for props since they don't exist yet
+    const P = 'makeDefaultSymbols()';
+    const sym = {};
+    for (const [propName, prop] of Object.entries(this.prop)) {
+      if (sym[propName] !== undefined)
+        throw Error(`${P}: ${propName} already exists`);
+      sym[propName] = prop.symbolize();
+    }
+    GAgent.Symbols = { props: sym };
+    return sym;
   }
 
   /// MOVEMENT MODES //////////////////////////////////////////////////////////
@@ -532,9 +551,12 @@ class GAgent extends SM_Object implements IAgent, IActable {
         this.featureMap.keys()
       ]);
   }
-
   // end of Agent class
 }
+
+/// STATIC VARIABLES //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+GAgent.Symbols = undefined; // set by GAgent.makeDefaultSymbols()
 
 /// GLOBAL INSTANCES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -90,7 +90,7 @@ class Feature implements IFeature {
 
   /** override to provide feature symbols */
   symbolize(): TSymbolData {
-    return {};
+    return { ctor: Feature };
   }
   /** called during blueprint instantiation of an agent.
    *  used to add properties specific to the feature.
