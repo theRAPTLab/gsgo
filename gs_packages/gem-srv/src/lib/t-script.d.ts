@@ -171,12 +171,13 @@ export interface ISMCPrograms {
 /// SYMBOL DATA AND TYPES /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see https://michalzalecki.com/typescript-template-literal-types/
-type ArgTypeLiterals = `${'boolean'|'string'|'number'}`;
-type ArgTypeSpecial = `${'expr'|'objref'|'anyref' | 'anyval' | 'block' | 'args'}`;
+type ArgTypeLiterals = `${'boolean'|'string'|'number'|'object'}`;
+type ArgTypeSpecial = `${'expr'|'objref'|'anyref'|'anyval'|'block'|'args'}`;
+type ArgTypeEnum = { [name:string]: string[] };
 type ArgTypeGlobal = `${'test'|'program'|'event'|'feature'}`
 // this type matches <anystring>:ArgTypeLiteral|ArgTypeSpecial|ArgTypeGlobal
 // e.g. 'propname:string', 'frequency:number'
-export type TSymbolArgType = `${string}:${ArgTypeLiterals | ArgTypeSpecial |ArgTypeGlobal}` | TSymbolArgType[];
+export type TSymbolArgType = `${string}:${ArgTypeLiterals | ArgTypeSpecial |ArgTypeGlobal}` | ArgTypeEnum;
 export type TSymbolMethodArgs =  { args?: TSymbolArgType[]; returns?: TSymbolArgType }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** data description of symbols for features, props. returned from anything

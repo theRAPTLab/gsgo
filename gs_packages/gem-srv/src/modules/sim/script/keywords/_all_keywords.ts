@@ -11,7 +11,7 @@
 /// USE DURING PROGRAM DEFINE
 export * from './addProp'; // use during DEFINE to name a prop
 export * from './addFeature'; // use during DEFINE to import a feature
-/*DEPRECATED*/ export * from './useFeature'; // import a feature
+// /*DEPRECATED*/ export * from './useFeature'; // import a feature
 // export * from './addTest'; // add a named test
 
 /// USE DURING PROGRAM UPDATE

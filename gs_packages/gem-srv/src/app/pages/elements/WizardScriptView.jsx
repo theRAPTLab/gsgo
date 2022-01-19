@@ -13,11 +13,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import {
-  TokenToString,
-  DecodeTokenPrimitive
-} from '../../../modules/sim/script/transpiler-v2';
-import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
+import { TokenToString, DecodeTokenPrimitive } from 'script/transpiler-v2';
+import * as WIZCORE from 'modules/appcore/ac-wizcore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

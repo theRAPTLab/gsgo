@@ -127,6 +127,7 @@ export function AddSymbol(bdl: ISMCBundle, symdata: TSymbolData) {
     if (_bdlsym.props === undefined) _bdlsym.props = {};
     for (const [propName, symbolData] of Object.entries(symdata.props)) {
       if (_bdlsym.props[propName]) console.warn('prop', propName, 'exists');
+      // console.log(`prop-${propName}`, symbolData);
       _bdlsym.props[propName] = symbolData;
       // if (DBG) console.log(bdl.name, 'addProp', key, argType);
     }

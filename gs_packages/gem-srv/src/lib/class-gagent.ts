@@ -214,7 +214,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   /** called right after constructor creates default props for all agents. The symbol
    *  data is stored as a static class variable.
    */
-  symbolize() {
+  symbolize(): TSymbolData {
     if (GAgent.Symbols) return GAgent.Symbols;
     // create the symbol data for props since they don't exist yet
     const P = 'makeDefaultSymbols()';

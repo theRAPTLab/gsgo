@@ -136,8 +136,10 @@ class SymbolHelper {
     }
     const [argName, argType] = DecodeArgType(_argtype);
     let scanArray;
+
+    /** IS OBJECT REFERENCE **************************************************/
     if (argType === 'objref') {
-      const { identifier, objref } = this.token; // we know this is valid because of argtype
+      const { identifier, objref } = this.token; // could be either
       if (Array.isArray(objref)) {
         console.log(`process ${argName} as objref ${objref.join('.')}`);
         scanArray = [...objref];

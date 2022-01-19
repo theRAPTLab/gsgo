@@ -54,6 +54,7 @@ class Keyword implements IKeyword {
     this.args = [];
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** override in subclass */
   compile(unit: TScriptUnit, idx?: number): (TOpcode | TOpcodeErr)[] {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);

@@ -21,7 +21,7 @@
 import UR from '@gemstep/ursys/client';
 import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
-import { IAgent } from 'lib/t-script';
+import { IAgent, TSymbolData } from 'lib/t-script';
 import { GetAgentById } from 'modules/datacore/dc-agents';
 import { Register } from 'modules/datacore/dc-features';
 
@@ -208,6 +208,32 @@ class PhysicsPack extends GFeature {
       this.setSize(agent, dim.width, dim.height); // default to sprite size
     }
     this.setShape(agent, RECTANGLE);
+  }
+
+  symbolize(): TSymbolData {
+    return {
+      ctor: PhysicsPack,
+      props: {
+        'radius': GVarNumber.Symbols,
+        'width': GVarNumber.Symbols,
+        'height': GVarNumber.Symbols,
+        'costumeWidth': GVarNumber.Symbols,
+        'costumeHeight': GVarNumber.Symbols,
+        'bodyRadius': GVarNumber.Symbols,
+        'bodyWidth': GVarNumber.Symbols,
+        'bodyHeight': GVarNumber.Symbols,
+        'scale': GVarNumber.Symbols,
+        'scaleY': GVarNumber.Symbols
+      },
+      methods: {
+        'setShape': { args: ['shape:string'] },
+        'setSize': { args: ['width:number', 'height:number'] },
+        'setRadius': { args: ['radius:number'] },
+        'getWidth': { returns: 'width:number' },
+        'getHeight': { returns: 'height:number' },
+        'getBounds': { returns: 'bounds:object' }
+      }
+    };
   }
 
   /// PHYSICS HELPERS /////////////////////////////////////////////////////////

@@ -32,9 +32,9 @@ const DBG = true;
 const symDecoder = new SymbolHelper();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let PROJECTS; // current project class-asset-loader
-const DEF_PRJID = 'aquatic';
-const DEF_BPID = 'Fish';
-const DEF_ASSETS = 'art-assets';
+const DEF_ASSETS = 'test-assets'; // gs_assets is root
+const DEF_PRJID = 'test-ui';
+const DEF_BPID = 'TestAgent';
 
 /// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -82,7 +82,7 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
   const { scriptText: script_text } = bp;
   const vmState = { cur_prjid, cur_bpid, script_text };
   SendState(vmState);
-  console.log(...PR(`loaded state from blueprint ${DEF_PRJID}:${DEF_BPID}`));
+  console.log(...PR(`loaded blueprint '${DEF_BPID}' from '${DEF_PRJID}'`));
 });
 
 /// DERIVED STATE LOGIC ///////////////////////////////////////////////////////
@@ -129,7 +129,7 @@ _interceptState(state => {
 function DispatchClick(event) {
   const newState = {};
 
-  // (1) GToken was clicked?
+  /** (1) GToken was clicked? ************************************************/
   const tokenKey = event.target.getAttribute('data-key');
   if (tokenKey !== null) {
     if (DBG)
@@ -152,10 +152,12 @@ function DispatchClick(event) {
       const bundle = cur_bdl;
       const params = { token, bundle, context };
       symDecoder.setParameters(params);
-      console.log(...PR('symbol', symDecoder.getSymbols()));
+      console.log(...PR('symDecoder says:', symDecoder.getSymbols()));
       return;
     }
   }
+
+  /** (N) DESELECT IF NO SPECIFIC CLICK **************************************/
   // if nothing processed, then unset selection
   SendState({ sel_line_num: -1, sel_line_pos: -1 });
 }

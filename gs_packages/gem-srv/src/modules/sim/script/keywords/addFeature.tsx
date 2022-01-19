@@ -35,8 +35,11 @@ export class AddFeature extends Keyword {
   symbolize(unit: TScriptUnit): TSymbolData {
     const [, featureName] = unit;
     const feat = GetFeature(featureName);
-    if (feat === undefined) return { error: `no feature named ${featureName}` };
-    return { features: { [featureName as string]: feat } };
+    if (feat === undefined) {
+      console.warn(`no feature named ${featureName}`);
+      return undefined;
+    }
+    return { features: { [featureName as string]: feat.symbolize() } };
   }
 } // end of keyword definition
 
@@ -44,3 +47,4 @@ export class AddFeature extends Keyword {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
 RegisterKeyword(AddFeature);
+RegisterKeyword(AddFeature, 'useFeature'); // compatibility

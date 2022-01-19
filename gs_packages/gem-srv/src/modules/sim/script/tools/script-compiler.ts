@@ -228,8 +228,11 @@ function SymbolizeStatement(statement: TScriptUnit, line: number): TSymbolData {
     console.warn(`keyword processor ${kw} bad`);
     return { error: `missing kwProcessor for: '${kw}'` };
   }
-  // may return empty object, but that just means there are no symbols produced
-  return { ...kwProcessor.symbolize(kwArgs, line) };
+  // ***NOTE***
+  // May return empty object, but that just means there are no symbols produced.
+  // keywords don't return symbols unless they are adding props or features.
+  const symbols = kwProcessor.symbolize(kwArgs, line); // these are new objects
+  return symbols;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Compile ScriptUnits into a TSMCProgram (TOpcode[]). It ignores

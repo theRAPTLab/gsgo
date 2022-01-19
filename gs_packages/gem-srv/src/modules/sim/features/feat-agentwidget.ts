@@ -250,6 +250,7 @@ class WidgetPack extends GFeature {
     // REGISTER the Agent for updates
     WIDGET_AGENTS.set(agent.id, agent.id);
   }
+
   symbolize(): TSymbolData {
     return {
       ctor: WidgetPack,
@@ -277,6 +278,7 @@ class WidgetPack extends GFeature {
       }
     };
   }
+
   /// WIDGET METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Invoked through featureCall script command. To invoke via script:
