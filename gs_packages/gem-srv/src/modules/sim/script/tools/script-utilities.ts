@@ -87,10 +87,10 @@ function m_TokenOut(tok: IToken): void {
 
   const tokInfo: VMToken = {
     scriptToken: tok,
-    level,
     lineNum,
     linePos,
     tokenKey
+    // symbols, error are added by keyword validators
   };
   LINE_BUF.push(tokInfo);
   m_NextPos();

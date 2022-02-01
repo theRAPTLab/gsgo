@@ -6,6 +6,12 @@
 
   A collection of symbol utilities
 
+  The intent of SymbolHelper is to lookup symbol data from a token.
+  Your provide a bundle and context
+  It knows how to lookup features, programs, and blueprints.
+  It knows how to dig into props.
+
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
@@ -17,7 +23,8 @@ import {
   DecodeArgType,
   GetProgram,
   GetTest,
-  GetBlueprint
+  GetBlueprint,
+  IsValidBundle
 } from 'modules/datacore';
 import {
   IsValidToken,
@@ -29,6 +36,7 @@ import {
   IToken,
   TSymbolMap,
   TSymbolData,
+  TSymbolRefs,
   TSymbolArgType
 } from 'lib/t-script.d';
 import { VMToken, VMPageLine } from 'lib/t-ui.d';
@@ -37,7 +45,7 @@ import { StringToParts } from 'lib/util-path';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
+const DBG = false;
 const PR = UR.PrefixUtil('SYMUTIL', 'TagTest');
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -68,181 +76,136 @@ function AnnotateScript(script: TScriptUnit[]): TScriptUnit[] {
  *  create an instance, setParameters(), then call decode method
  */
 class SymbolHelper {
-  token: IToken; // the token being operated on
-  bundle: ISMCBundle; // current blueprint symbol
-  ctx_obj: object; // additional context objects (other blueprints)
+  refs: TSymbolRefs; // replaces token, bundle, xtx_obj, symscope
   sym_scope: TSymbolData; // current scope as drilling down into objref
   //
-  constructor() {
-    this.token = null;
-    this.bundle = null;
-    this.ctx_obj = null;
-    this.sym_scope = null;
+  constructor(lookupRefs?: TSymbolRefs) {
+    this.refs = {
+      bundle: null,
+      global: null,
+      symbols: null
+    };
+    this.setReferences(lookupRefs);
   }
 
-  setParameters({ token, bundle, context }) {
-    this._setToken(token);
-    this._setBundle(bundle);
-    this._setContext(context); // add prototype
-  }
-
-  _setToken(tok: IToken) {
-    if (IsValidToken(tok)) this.token = tok;
-    else {
-      console.warn(...PR('invalid token', tok));
-      throw Error('setToken: invalid token');
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** reference are the default lookup dictionaries */
+  setReferences(refs: any) {
+    const err = 'setReferences:';
+    const { bundle, global } = refs || {};
+    if (bundle) {
+      if (IsValidBundle(bundle)) this.refs.bundle = bundle;
+      else throw Error(`${err} invalid bundle`);
+    }
+    if (global) {
+      if (typeof global === 'object') this._attachGlobal(global);
+      else throw Error(`${err} invalid context`);
     }
   }
-  _setBundle(bundle: ISMCBundle) {
-    const { symbols, name } = bundle;
-    const { props, features } = symbols;
-    const hasSymbols =
-      typeof props !== 'undefined' || typeof features !== 'undefined';
-    if (hasSymbols) {
-      this.bundle = bundle;
-    } else {
-      console.warn(...PR('setBundle: not a bundle', bundle));
-      throw Error('setBundle: invalid parameter not bundle');
-    }
-  }
-  /** clear the context root and add */
-  _setContext(ctx: object) {
-    this.ctx_obj = {};
-    this._linkContext(ctx);
-  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** add to prototype chain for context object */
-  _linkContext(ctx: object) {
+  _attachGlobal(ctx: object) {
     // TODO: use prototype chains
-    if (typeof ctx === 'object') this.ctx_obj = ctx;
-    else {
-      console.warn(...PR('setContext: not an object', ctx));
-      throw Error('setContext: invalid parameter not object');
-    }
+    this.refs.global = ctx;
   }
-  /** remove from prototype chain and return copy */
-  _unlinkContext(): any {
-    // do somethign
-  }
-
-  /** starting from the start of an objref, return the appropriate symbols */
-  getSymbols() {
-    // sym_map is from cur_bdl.symbols for the blueprint
-    // ctx_obj is used for evaluating expressions
-    const P = 'getSymbols()';
-    const { _argtype, _args } = this.token;
-    if (Array.isArray(_args)) {
-      console.log(...PR('clicked keyword', this.token.identifier, 'args'), _args);
-      return;
-    }
-    const [argName, argType] = DecodeArgType(_argtype);
-    let scanArray;
-
-    /** IS OBJECT REFERENCE **************************************************/
-    if (argType === 'objref') {
-      const { identifier, objref } = this.token; // could be either
-      if (Array.isArray(objref)) {
-        console.log(`process ${argName} as objref ${objref.join('.')}`);
-        scanArray = [...objref];
-      } else if (typeof identifier === 'string') {
-        console.log(`process ${argName} as objref ${identifier}`);
-        scanArray = [identifier];
-      }
-
-      // this.sym_scope will be reset in first pass
-      this.sym_scope = null;
-      for (let ii = 0; ii < scanArray.length; ii++) {
-        const part = scanArray[ii];
-        const terminal = ii >= scanArray.length - 1;
-        if (ii === 0) {
-          const agent = this.agentLiteral(part);
-          const feature = this.featureName(part);
-          const prop = this.propName(part);
-          const blueprint = this.blueprintName(part);
-          if (agent) {
-            this.sym_scope = agent;
-            console.log(ii, 'found agent', part, agent);
-          } else if (feature) {
-            this.sym_scope = feature;
-            console.log(ii, 'found feature', part, feature);
-          } else if (prop) {
-            this.sym_scope = prop;
-            console.log(ii, 'found prop', part, prop);
-            if (terminal) {
-              console.log('exiting loop', ii);
-              return this.sym_scope;
-            }
-          } else if (blueprint) {
-            this.sym_scope = blueprint;
-            console.log(ii, 'found blueprint', part, blueprint);
-          } else {
-            console.log(`${P}: unrecognized part 0`);
-            break;
-          }
-        }
-        // iteration > 0
-        const prop = this.propName(part);
-        const feature = this.featureName(part);
-        const blueprint = this.blueprintName(part);
-        if (prop) {
-          this.sym_scope = prop;
-          console.log('found prop', ii);
-          if (terminal) break; // prop is usually the terminal
-        } else if (feature) {
-          this.sym_scope = feature;
-          if (terminal) break;
-        } else if (blueprint) {
-          this.sym_scope = blueprint;
-        }
-        console.log(`${P}: no matching pattern for pass`, ii);
-        this.sym_scope = null;
-      }
-    }
-    if (this.sym_scope === null) {
-      console.log(...PR('decode() unhandled argtype', _argtype, this.token));
-      return;
-    }
-    return this.sym_scope;
-  }
-
-  // level 0 checks
+  /// LOOKUP UTILITY METHODS //////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** if part is 'agent', return symboldata for the bundle or undefined */
   agentLiteral(part: string) {
     if (part !== 'agent') return undefined;
-    return this.bundle.symbols;
+    return this.refs.bundle.symbols;
   }
+  /** check the current sm_scope or bundle for featureName matches or undefined */
   featureName(part: string) {
-    const sym = this.sym_scope || this.bundle.symbols;
+    const sym = this.sym_scope || this.refs.bundle.symbols;
     const featctx = sym.features || {};
     return featctx[part];
   }
+  /** check the global reference object for an sym_scope */
   blueprintName(part: string) {
-    const ctx = this.ctx_obj || {};
+    const ctx = this.refs.global || {};
     return ctx[part];
   }
+  /** check the current sm_cope or bundle for propName matches or undefined */
   propName(part: string) {
-    const sym = this.sym_scope || this.bundle.symbols;
+    const sym = this.sym_scope || this.refs.bundle.symbols;
     const propctx = sym.props || {};
-    console.log('***', part, propctx);
     return propctx[part];
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** an object reference is always an array of string parts, but an
+   *  identifier can also be an objref
+   */
+  parseAsObjRef(token: IToken): string[] {
+    const { identifier, objref } = token; // could be either
+    if (Array.isArray(objref)) return [...objref];
+    if (typeof identifier === 'string') return [identifier];
+    return undefined;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** given a token that is an smobject reference, return the actual symbol
+   *  data for it
+   */
+  objRefSymbols(token: IToken): TSymbolData {
+    const P = 'objRefScope()';
+    const scanArray = this.parseAsObjRef(token);
+    this.sym_scope = null;
+    // this.sym_scope will be reset in first pass
+    // scanArray is the array of identifier parts separated by .
+    for (let ii = 0; ii < scanArray.length; ii++) {
+      const part = scanArray[ii];
+      const terminal = ii >= scanArray.length - 1;
+      // (1) special case first part
+      if (ii === 0) {
+        const agent = this.agentLiteral(part);
+        const feature = this.featureName(part);
+        const prop = this.propName(part);
+        const blueprint = this.blueprintName(part);
+        if (agent) {
+          this.sym_scope = agent;
+          if (DBG) console.log(ii, 'found agent', part, agent);
+          continue;
+        } else if (feature) {
+          this.sym_scope = feature;
+          if (DBG) console.log(ii, 'found feature', part, feature);
+          continue;
+        } else if (prop) {
+          this.sym_scope = prop;
+          if (DBG) console.log(ii, 'found prop', part, prop);
+          if (terminal) return this.sym_scope; // prop, exit!
+          continue;
+        } else if (blueprint) {
+          this.sym_scope = blueprint;
+          if (DBG) console.log(ii, 'found blueprint', part, blueprint);
+        } else {
+          console.log(`${P}: unrecognized part 0`);
+          break;
+        }
+      }
+      // (2) Scan subsequent parts, updating value of scope
+      const prop = this.propName(part);
+      const feature = this.featureName(part);
+      const blueprint = this.blueprintName(part);
+      if (prop) {
+        this.sym_scope = prop;
+        if (DBG) console.log('found prop', ii);
+        if (terminal) return this.sym_scope; // prop is usually the terminal
+        continue;
+      } else if (feature) {
+        this.sym_scope = feature;
+        if (terminal) return this.sym_scope;
+        continue;
+      } else if (blueprint) {
+        this.sym_scope = blueprint;
+        continue;
+      }
+      console.error(`${P}: no matching pattern for pass`, ii);
+      this.sym_scope = null;
+    }
+    // return symbol data
+    return this.sym_scope;
+  }
 } // end of SymbolHelper class
-
-/** if an out-of-bounds part index requested, then 'terminal' */
-function isTerminal(
-  parts: string[],
-  index: number = 0,
-  symbols = {},
-  context = {}
-) {
-  return index > parts.length - 1;
-}
-function reportError(
-  parts: string[],
-  index: number = 0,
-  symbols = {},
-  context = {}
-) {
-  console.warn('unhandled objref condition', parts.join('.'));
-}
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

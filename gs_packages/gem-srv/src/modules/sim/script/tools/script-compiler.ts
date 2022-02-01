@@ -77,7 +77,11 @@ function m_StripErrors(code: TSMCProgram, unit: TScriptUnit, ...args: any[]) {
   return out;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** utility to return the 'decoded' value of a token */
+/** utility to return the 'decoded' value of a token
+ *  note: gscript-tokenizer now has an improved version of this called
+ *  UnpackToken, which returns [ type, value ] instead of the primitive
+ *  value or token. TODO: review whether it should replace DecodeToken
+ */
 function DecodeTokenPrimitiveNew(arg) {
   const [type, value] = UnpackToken(arg);
   if (type === undefined) {

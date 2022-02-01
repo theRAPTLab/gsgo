@@ -14,7 +14,7 @@ import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
 export function PlaceholderBox(props) {
   const { selection } = props;
 
-  const { scriptToken: tok, lineNum, linePos, pageLine } = selection;
+  const { scriptToken: tok, lineNum, linePos, vmPageLine } = selection;
   const argtype = tok._argtype || '<unknown argType>';
   // console.log('PlaceholderBox rendering:', tok);
   return (

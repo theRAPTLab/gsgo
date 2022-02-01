@@ -20,16 +20,20 @@
 
 import {
   IKeyword,
-  TOpcode,
-  TSymbolData,
-  TScriptUnit,
-  IAgent,
-  DerefMethod,
   IScopeable,
+  IAgent,
+  TOpcode,
   TOpcodeErr,
-  TSymbolArgType
+  IToken,
+  TScriptUnit,
+  TSymbolData,
+  TSymbolRefs,
+  TSymbolArgType,
+  TValidationToken,
+  DerefMethod
 } from 'lib/t-script';
 import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
+import { SymbolHelper } from 'script/tools/symbol-utilities';
 import {
   UnpackToken,
   IsNonCodeToken
@@ -45,6 +49,7 @@ const DBG = false;
 class Keyword implements IKeyword {
   keyword: string;
   args: TSymbolArgType[]; // document only. can have array[][] for alt signatures
+  shelper: SymbolHelper; // helper for extracting line data
   //
   constructor(keyword: string) {
     if (typeof keyword !== 'string')
@@ -52,6 +57,7 @@ class Keyword implements IKeyword {
     else if (DBG) console.log('Keyword constructing:', keyword);
     this.keyword = keyword;
     this.args = [];
+    this.shelper = new SymbolHelper();
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -108,9 +114,20 @@ class Keyword implements IKeyword {
     }
   }
 
-  /// UTILITY METHODS /////////////////////////////////////////////////////////
-  /** return the name of this keyword */
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** override in subclass to validate scriptUnits against symbol
+   *  validate returns 'pass:true' or 'error:{text}', with 'symbols' undefined.
+   *  call super() from subclasser for basic validation.
+   *  NOTE that setReferences() has to be called to set the
+   *  context for validate(), otherwise the lookup will fail
+   */
+  validate(unit: TScriptUnit): TValidationToken[] | void {
+    // OPTIONAL: put some basic conforming stuff here if necessary
+  }
+
+  /// UTILITY METHODS /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** return the name of this keyword */
   getName() {
     return this.keyword;
   }
@@ -122,6 +139,26 @@ class Keyword implements IKeyword {
   errLine(err: string, idx?: number) {
     if (idx !== undefined) return [err, idx];
     return [err];
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** utility to check if an index into a script unit is within bounds
+   */
+  indexInRange(unit: TScriptUnit, index): boolean {
+    const check = index === 0 || index > unit.length - 1;
+    if (!check) console.warn(`${unit[0]} index ${index} out of range`);
+    return check;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** utility to unpack the script unit tokens into a more inspectable form */
+  getUnpackedToken(token: IToken): [string, any] {
+    return UnpackToken(token);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** initialize parameters for SymbolHelper instance, which must be done
+   *  each time before validate() is called to ensure correct refs are set
+   */
+  setReferences(refs: TSymbolRefs) {
+    this.shelper.setReferences(refs);
   }
 } // end of Keyword Class
 

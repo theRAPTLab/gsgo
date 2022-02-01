@@ -4,7 +4,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { TScriptUnit, IToken } from './t-script';
+import { TScriptUnit, IToken, TSymbolData, TSymbolError } from './t-script';
 
 /// PROJECT LIST OBJECTS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,7 +22,7 @@ export interface IinspectorListItem {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a line of VMToken, with additional UI-relevant data */
 export type VMPageLine = {
-  vmTokens: VMToken[]; // the VMTokens in this VMLine
+  vmTokens: VMToken[]; // the VMTokens in this VMLine (see below)
   lineNum: number; // the line number
   level: number; // the nesting level of this line
   lineScript?: TScriptUnit; // parent statement
@@ -36,6 +36,7 @@ export type VMToken = {
   scriptToken: IToken; // the actual token object e.g. { string:'foo' }
   lineNum: number; // the line that this token is appearing in
   linePos: number; // the position of this token in the line
-  level: number; // the nesting level of this lineNum
   tokenKey: string; // hash key '{lineNum},{linePos}'
+  symbols?: TSymbolData; // added by keyword validator
+  error?: TSymbolError; // if not present, no error
 };

@@ -28,10 +28,13 @@ import {
   IAgent,
   IState,
   TOpcode,
-  TSymbolData,
   TScriptUnit,
-  TArguments
+  TSymbolData,
+  TSymbolRefs,
+  TArguments,
+  TValidationToken
 } from 'lib/t-script';
+import { VMToken } from 'lib/t-ui';
 import { RegisterKeyword, GetVarCtor } from 'modules/datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -41,17 +44,13 @@ const DBG = true;
 /// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export class prop extends Keyword {
-  // base properties defined in KeywordDef
-  type: string;
-
   constructor() {
     super('prop');
     this.args = ['prop:objref', 'method:string', 'any:args'];
-    this.type = '';
   }
 
   /** create smc blueprint code objects */
-  compile(dtoks: TArguments): TOpcode[] {
+  compile(dtoks: TScriptUnit): TOpcode[] {
     const [kw, refArg, methodName, ...args] = dtoks;
     // create a function that will be used to dereferences the objref
     // into an actual call
@@ -62,6 +61,20 @@ export class prop extends Keyword {
         p[methodName as string](...args);
       }
     ];
+  }
+
+  /** validate prop! note: the script tokens have been annotated through
+   *  keyword.annotate() which does not need overiding in subclassers.
+   *  returns array of { error?:{code,info}, symbols:TSymbolData }
+   *
+   *  IMPORTANT: make sure keyword.setReferences({bundle,global}) was
+   *  called before validate()
+   */
+  validate(dtoks: TScriptUnit): TValidationToken[] | void {
+    super.validate(dtoks);
+    const [kw, arg_objref, arg_method, ...args] = dtoks; // get arg pattern
+    const arg_objref_symbols = this.shelper.objRefSymbols(arg_objref);
+    return [];
   }
 } // end of keyword definition
 

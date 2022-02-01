@@ -79,7 +79,9 @@ function ValidateArgTypes(args: TSymbolArgType[]): boolean {
   return true;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return the argName, argType in array if they are valid */
+/** An argtype is of the form 'name:type', and is used for symbol definitions
+ *  Returns the argName, argType in array if they are valid
+ */
 function DecodeArgType(arg: TSymbolArgType) {
   const P = 'ValidateArgType';
   if (typeof arg !== 'string')

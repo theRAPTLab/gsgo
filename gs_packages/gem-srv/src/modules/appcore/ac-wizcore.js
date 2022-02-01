@@ -24,6 +24,7 @@ import StateMgr from '@gemstep/ursys/src/class-state-mgr';
 import * as ASSETS from 'modules/asset_core/asset-mgr';
 import * as TRANSPILER from 'script/transpiler-v2';
 import { SymbolHelper } from 'script/tools/symbol-utilities';
+import * as SENGINE from 'modules/datacore/dc-script-engine';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -127,15 +128,13 @@ _interceptState(state => {
  *  List of mouse events: https://www.w3.org/TR/DOM-Level-3-Events/#events-mouseevents
  */
 function DispatchClick(event) {
+  const err = 'DispatchClick:';
   const newState = {};
 
   /** (1) GToken was clicked? ************************************************/
   const tokenKey = event.target.getAttribute('data-key');
   if (tokenKey !== null) {
-    if (DBG)
-      console.log(
-        ...PR(`DispatchClick: click on token ${JSON.stringify(tokenKey)}`)
-      );
+    // if (DBG) console.log(...PR(`${err} clicked ${JSON.stringify(tokenKey)}`));
 
     // notify subscribers of new current line and token index
     const [line, pos] = tokenKey.split(',');
@@ -143,16 +142,30 @@ function DispatchClick(event) {
     newState.sel_line_pos = Number(pos); // STATE UPDATE: selected pos
     SendState(newState);
 
+    // AD HOC TESTS
     // decode symbol type test
     const token = GetTokenById(tokenKey); // this is the current
     const { cur_bdl, sel_line_num, sel_line_pos, script_page } = State();
+
     if (sel_line_num > 0 && sel_line_pos > 0) {
-      const lineVM = script_page[sel_line_num - TRANSPILER.LINE_START_NUM];
-      const context = { [cur_bdl.name]: cur_bdl };
+      /** TEST STUFF HAPPENS HERE ***/
+      /** TEST STUFF HAPPENS HERE ***/
+      /** TEST STUFF HAPPENS HERE ***/
+      // construct references for this line for symbol lookup
+      const global = { [cur_bdl.name]: cur_bdl, agent: cur_bdl }; // default include ourself and 'agent
       const bundle = cur_bdl;
-      const params = { token, bundle, context };
-      symDecoder.setParameters(params);
-      console.log(...PR('symDecoder says:', symDecoder.getSymbols()));
+      const refs = { bundle, global };
+      symDecoder.setReferences(refs);
+      console.log(
+        ...PR('Test 1: objRefSymbols says:', symDecoder.objRefSymbols(token))
+      );
+      /** MORE TEST STUFF HAPPENS HERE ***/
+      /** MORE TEST STUFF HAPPENS HERE ***/
+      /** MORE TEST STUFF HAPPENS HERE ***/
+
+      const vmPageLine = script_page[sel_line_num - TRANSPILER.LINE_START_NUM];
+      const retvals = ValidateLine(vmPageLine, refs);
+      console.log(...PR('Test 2: ValidateLine returns', retvals));
       return;
     }
   }
@@ -242,17 +255,39 @@ function SelectedTokenInfo() {
   const context = {}; // TODO: look up scope from symbol-utilities
   const { sel_line_num: lineNum, sel_line_pos: linePos, script_page } = State();
   if (lineNum > 0 && linePos > 0) {
-    const pageLine = script_page[lineNum - TRANSPILER.LINE_START_NUM];
+    const vmPageLine = script_page[lineNum - TRANSPILER.LINE_START_NUM];
     return {
       scriptToken, // the actual script token (not vmToken)
       lineNum, // line number in VMPage
       linePos, // line position in VMPage[lineNum]
       context, // the memory context for this token
-      pageLine // all the VMTokens in this line
+      vmPageLine // all the VMTokens in this line
     };
   }
   return undefined;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given a lineVM, ensure that the scriptUnit is (1) valid and (2) return
+ *  TValidationToken objects
+ */
+function ValidateLine(vmPageLine, refs = {}) {
+  const err = 'ValidateLine:';
+  const { lineScript, vmTokens } = vmPageLine;
+  console.group();
+  console.log('vmPageLine', vmPageLine);
+  console.log('refs', refs);
+  console.groupEnd();
+  if (!Array.isArray(lineScript)) throw Error(`${err} not a lineScript`);
+  const [kw] = TRANSPILER.DecodeStatement(lineScript);
+  const kwp = SENGINE.GetKeyword(kw);
+  if (kwp === undefined) throw Error(`${err} ${kw} not a keyword`);
+  // tell keyword process what symbol references to use
+  kwp.setReferences(refs);
+  // now validate
+  return kwp.validate(lineScript);
+}
+
+///
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return a string version of a ScriptUnit */
 function GetLineScriptText(lineScript) {
@@ -368,5 +403,6 @@ export {
   SelectedTokenId, // return current selected token identifier
   SelectedLineNum, // return line number of current selected token
   SelectedTokenInfo, // return contextual info about current selected token
-  GetLineScriptText // return string version of a scriptUnit
+  GetLineScriptText, // return string version of a scriptUnit
+  ValidateLine // return TValidationToken[]
 };

@@ -8,9 +8,14 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import UR from '@gemstep/ursys/client';
 import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
 import { KeywordBox } from './KeywordBox';
 import { PlaceholderBox } from './PlaceholderBox';
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.PrefixUtil('EditBox', 'TagRed');
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -24,13 +29,12 @@ export function EditBox(/* props */) {
   // SETUP ////////////////////////////////////////////////////////////////////
   const sel = WIZCORE.SelectedTokenInfo();
   if (sel) {
-    const { scriptToken: tok, lineNum, linePos, pageLine } = sel;
+    const { scriptToken, lineNum, linePos, vmPageLine } = sel;
     // (1) is this a keyword?
-    if (linePos === 1 && tok.identifier !== undefined)
+    if (linePos === 1 && scriptToken.identifier !== undefined)
       content = <KeywordBox selection={sel} />;
     else {
       // (2) it is a token, so figure out arguments
-
       content = <PlaceholderBox selection={sel} />;
     }
   }

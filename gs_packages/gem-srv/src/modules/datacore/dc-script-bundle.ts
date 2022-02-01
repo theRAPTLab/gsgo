@@ -167,3 +167,15 @@ export function BundleOut(bdl: ISMCBundle, prog: TOpcode[]) {
   // console.log(`writing ${prog.length} opcode(s) to [${BUNDLE_OUT}]`);
   bdl[BUNDLE_OUT].push(...prog);
 }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** HELPER: returns bundle if it is a bundle, throw error otherwise */
+export function IsValidBundle(bundle: ISMCBundle) {
+  const { symbols, name } = bundle;
+  const { props, features } = symbols;
+  const hasSymbols =
+    typeof props !== 'undefined' || typeof features !== 'undefined';
+  if (hasSymbols) return bundle;
+  console.warn('IsValidBundle: not a bundle', bundle);
+  throw Error('IsValidBundle: invalid parameter not bundle');
+}

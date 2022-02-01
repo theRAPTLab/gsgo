@@ -199,6 +199,28 @@ export type TSymbolMap = {
   props?: { [propName:string] : TSymbolData }; // map to varctor.symbols
   features?: { [featName:string] : TSymbolData };  // map to feature.Symbols
 };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** a data structure used to iterate through a scriptunit token.
+ *  it is updated and modified as a particular token is evaluated
+ *  in dtoks from left-to-right up to the index
+ */
+ export type TSymbolRefs = {
+  bundle: ISMCBundle; // bundle to use
+  global: object; // default global context
+  symbols?: TSymbolData; // current scope
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** used by keyword validator function */
+export type TSymbolError = {
+  code: 'noscope' | 'badselect' | 'parse' | 'over' | 'under';
+  info: string;
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** keyword.validate() returns an array of these to glom onto vmTokens */
+export type TValidationToken = {
+  error: TSymbolError; // if not present,
+  symbols?: TSymbolData; // expected symbols for index
+};
 
 /// PROGRAM BUNDLES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -238,6 +260,7 @@ export interface IKeyword {
   compile(unit: TScriptUnit, lineIdx?:number): (TOpcode|TOpcodeErr)[];
   symbolize(unit: TScriptUnit,lineIdx?:number): TSymbolData;
   annotate(unit:TScriptUnit,lineIdx?:number): void;
+  validate(unit:TScriptUnit):TValidationToken[]|void;
   getName(): string;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
