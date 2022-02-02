@@ -185,10 +185,10 @@ class PopulationPack extends GFeature {
    * @param initScript
    */
   createAgent(agent: IAgent, blueprintName: string, initScript: string) {
-    const name = `${blueprintName}${COUNT++}`;
+    const label = `${blueprintName}${COUNT++}`;
     // Queue Instance Defs
     const def = {
-      name,
+      label,
       bpid: blueprintName,
       initScript,
       doClone: false,
@@ -206,10 +206,10 @@ class PopulationPack extends GFeature {
    */
   spawnChild(agent: IAgent, spawnScript: string, def: any = {}) {
     const bpname = agent.blueprint.name;
-    const name = `${bpname}${COUNT++}`;
+    const label = `${bpname}${COUNT++}`;
     // Queue Instance Defs
     const thisDef: any = merge.all([def]); // clone since other children share the same def
-    thisDef.name = name;
+    thisDef.label = label;
     thisDef.bpid = bpname;
     thisDef.initScript = spawnScript;
     thisDef.doClone = true;
