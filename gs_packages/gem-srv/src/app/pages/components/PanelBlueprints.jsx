@@ -86,8 +86,13 @@ class PanelBlueprints extends React.Component {
       // To be implemented
       console.log('Show instance');
     };
+
+    // Hide special blueprints
+    const hide = ['Cursor'];
+    const filteredBpidList = bpidList.filter(bp => !hide.includes(bp.label));
+
     // sort alphabetically
-    const sortedBlueprints = bpidList.sort((a, b) => {
+    const sortedBlueprints = filteredBpidList.sort((a, b) => {
       if (a.label < b.label) return -1;
       if (a.label > b.label) return 1;
       return 0;

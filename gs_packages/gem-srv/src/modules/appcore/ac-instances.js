@@ -29,13 +29,17 @@ STATE.initializeState({
     }
   ],
   instanceidList: [],
-  currentInstance: {
-    // currently being edited
-    id: '0',
-    label: 'empty',
-    bpid: 'bp',
-    initScript: '// init'
-  }
+  currentInstance: undefined
+  // currentInstance is the instance currently being edited
+  // it should be undefined by default
+  //
+  // Uncomment to debug
+  // currentInstance: {
+  //   id: '0',
+  //   label: 'empty',
+  //   bpid: 'bp',
+  //   initScript: '// init'
+  // }
 });
 /// These are the primary methods you'll need to use to read and write
 /// state on the behalf of code using APPCORE.
@@ -89,7 +93,7 @@ export function GetInstanceidList(currentInstances) {
 /** Returns a unique instance ID by finding the highest id and adding 1 */
 export function GetInstanceUID() {
   const instances = _getKey('instances');
-  if (instances.length < 1) return 0;
+  if (instances.length < 1) return String(0);
   const max = instances.reduce((prev, b) => {
     const a = typeof prev === 'object' ? prev.id : prev;
     return Math.max(a, Number(b.id));
