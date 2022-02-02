@@ -61,6 +61,7 @@ function m_Delete(frame) {
   }
 }
 function m_Create(frame) {
+  const global = GetGlobalAgent();
   while (AGENTS_TO_CREATE.length > 0) {
     const def = AGENTS_TO_CREATE.pop();
 
@@ -93,7 +94,7 @@ function m_Create(frame) {
     }
 
     const initScript = def.initScript; // spawnscript
-    agent.exec(initScript, { agent }); // run spawnscript
+    agent.exec(initScript, { agent, global }); // run spawnscript
   }
 }
 
@@ -404,9 +405,9 @@ class PopulationPack extends GFeature {
    */
   agentsForEachActive(agent: IAgent, bpname: string, program: TSMCProgram) {
     const agents = GetAgentsByType(bpname);
-    const GLOBAL_AGENT = GetGlobalAgent();
+    const global = GetGlobalAgent();
     agents.forEach(a => {
-      if (!a.isInert) a.exec(program, { agent: a, global: GLOBAL_AGENT });
+      if (!a.isInert) a.exec(program, { agent: a, global });
     });
   }
   /**
@@ -414,8 +415,8 @@ class PopulationPack extends GFeature {
    */
   agentsForEach(agent: IAgent, bpname: string, program: TSMCProgram) {
     const agents = GetAgentsByType(bpname);
-    const GLOBAL_AGENT = GetGlobalAgent();
-    agents.forEach(a => a.exec(program, { agent: a, global: GLOBAL_AGENT }));
+    const global = GetGlobalAgent();
+    agents.forEach(a => a.exec(program, { agent: a, global }));
   }
 
   /// STATISTICS METHODS /////////////////////////////////////////////////////////
