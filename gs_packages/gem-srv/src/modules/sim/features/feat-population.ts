@@ -8,6 +8,7 @@
 import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
+import { GetGlobalAgent } from 'lib/class-gagent';
 import { Register } from 'modules/datacore/dc-features';
 import { IAgent, TSMCProgram } from 'lib/t-script';
 import {
@@ -403,8 +404,9 @@ class PopulationPack extends GFeature {
    */
   agentsForEachActive(agent: IAgent, bpname: string, program: TSMCProgram) {
     const agents = GetAgentsByType(bpname);
+    const GLOBAL_AGENT = GetGlobalAgent();
     agents.forEach(a => {
-      if (!a.isInert) a.exec(program, { agent: a });
+      if (!a.isInert) a.exec(program, { agent: a, global: GLOBAL_AGENT });
     });
   }
   /**
@@ -412,7 +414,8 @@ class PopulationPack extends GFeature {
    */
   agentsForEach(agent: IAgent, bpname: string, program: TSMCProgram) {
     const agents = GetAgentsByType(bpname);
-    agents.forEach(a => a.exec(program, { agent: a }));
+    const GLOBAL_AGENT = GetGlobalAgent();
+    agents.forEach(a => a.exec(program, { agent: a, global: GLOBAL_AGENT }));
   }
 
   /// STATISTICS METHODS /////////////////////////////////////////////////////////
