@@ -59,7 +59,8 @@ const MONITORED_INSTANCES = [];
 
 function getLocaleIdFromLocalStorage() {
   const localeId = localStorage.getItem('localeId');
-  return Number(localeId !== null ? localeId : 4);
+  // locales are defined in dbinit.loki
+  return Number(localeId !== null ? localeId : 0); // default to id=0, default locale
 }
 function saveLocaleIdToLocalStorage(id) {
   localStorage.setItem('localeId', id);
