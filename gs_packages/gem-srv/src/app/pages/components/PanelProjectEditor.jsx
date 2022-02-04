@@ -63,7 +63,7 @@ class ProjectEditor extends React.Component {
     } else if (e.target.id === 'label') {
       project.label = val;
     } else if (e.target.id === 'wrap') {
-      project.metadata.wrap = val.split(',');
+      project.metadata.wrap = val.split(',').map(w => w === 'true');
     } else {
       project.metadata[e.target.id] = val;
     }
