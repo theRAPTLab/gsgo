@@ -22,7 +22,7 @@ STATE.initializeState({
   locales: [],
   localeNames: [],
   localeId: 0,
-  selectedTrack: 'ptrack',
+  selectedTrack: 'pozyx',
   ptrack: {
     xRange: -99,
     yRange: -99,
