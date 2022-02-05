@@ -57,13 +57,17 @@ class ProjectEditor extends React.Component {
     else if (e.target.type === 'checkbox') val = Boolean(e.target.checked);
     else val = e.target.value;
 
+    function cleanBoolString(boolstr) {
+      return String(boolstr.toLowerCase().trim() === 'true');
+    }
+
     const { project } = this.state;
     if (e.target.id === 'id') {
       project.id = val;
     } else if (e.target.id === 'label') {
       project.label = val;
     } else if (e.target.id === 'wrap') {
-      project.metadata.wrap = val.split(',').map(w => w === 'true');
+      project.metadata.wrap = val.split(',').map(w => cleanBoolString(w));
     } else {
       project.metadata[e.target.id] = val;
     }
