@@ -128,27 +128,44 @@ export function GetBoundary() {
 /**
  * Test function used by feat-movement to determine whether a wall
  * is set to wrap or prevent passing
+ *
+ * `wrap` is saved as a string in by both the project settings editor
+ * and in the `.gemprj` file.
  * @param {string} wall
  * @returns
  */
 export function Wraps(wall = 'any') {
   const BOUNDS = _getKey('metadata');
+
+  function toBoolean(val) {
+    return val.toLowerCase().trim() === 'true';
+  }
+
+  // convert string ("true", "true") to boolean array
   const wrap = BOUNDS ? BOUNDS.wrap : undefined;
   let wallWrap;
   if (!wrap) {
     // default if wrap is not set
     wallWrap = [false, false, false, false];
   } else if (!Array.isArray(wrap)) {
-    const w = Boolean(wrap);
+    // wrap is a single value -- this shouldn't happen
+    const w = toBoolean(wrap);
     wallWrap = [w, w, w, w];
   } else if (wrap.length === 4) {
-    wallWrap = Boolean(wrap);
+    wallWrap = wrap.map(w => toBoolean(w));
   } else if (wrap.length === 2) {
     wallWrap = [
-      Boolean(wrap[0]),
-      Boolean(wrap[1]),
-      Boolean(wrap[0]),
-      Boolean(wrap[1])
+      toBoolean(wrap[0]), // top
+      toBoolean(wrap[1]), // right
+      toBoolean(wrap[0]), // bottom
+      toBoolean(wrap[1]) // left
+    ];
+  } else if (wrap.length === 1) {
+    wallWrap = [
+      toBoolean(wrap[0]), // top
+      toBoolean(wrap[0]), // right
+      toBoolean(wrap[0]), // bottom
+      toBoolean(wrap[0]) // left
     ];
   }
   switch (wall) {
