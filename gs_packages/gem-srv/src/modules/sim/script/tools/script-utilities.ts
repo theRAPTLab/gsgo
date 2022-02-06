@@ -117,7 +117,7 @@ function m_LineOut(): void {
   const vmTokens = [...LINE_BUF];
   const line: VMPageLine = {
     lineScript,
-    vmTokens, // an array of vmToken
+    vmTokens, // a new array of vmToken refs
     level,
     lineNum
   };

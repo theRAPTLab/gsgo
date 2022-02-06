@@ -96,10 +96,10 @@ function DecodeArgType(arg: TSymbolArgType) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RegisterKeyword(Ctor: IKeywordCtor, key?: string) {
-  const err = 'RegisterKeyword';
+  const fn = 'RegisterKeyword:';
   const kobj = new Ctor();
   if (!ValidateArgTypes(kobj.args as TSymbolArgType[]))
-    throw Error(`${err}: invalid argDef in keyword '${kobj.keyword}'`);
+    throw Error(`${fn} invalid argDef in keyword '${kobj.keyword}'`);
   KEYWORDS.set(key || kobj.keyword, kobj);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

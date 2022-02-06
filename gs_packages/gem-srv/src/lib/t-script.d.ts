@@ -180,17 +180,27 @@ type ArgTypeGlobal = `${'test'|'program'|'event'|'feature'}`
 export type TSymbolArgType = `${string}:${ArgTypeLiterals | ArgTypeSpecial |ArgTypeGlobal}` | ArgTypeEnum;
 export type TSymbolMethodArgs =  { args?: TSymbolArgType[]; returns?: TSymbolArgType }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Used for TSymbolData and TSymbolError
+ *  noparse = bad or unexpected token format
+ *  noscope = valid scope could not be found or inferred
+ *  noexist = reference doesn't exist in available scope
+ *  over    = more arguments than required by keyword
+ *  under   = less arguments than required by keyword
+ */
+type TSymbolErrorCodes = 'noparse' | 'noscope' | 'noexist' | 'over' | 'under';
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** data description of symbols for features, props. returned from anything
  *  that produces Symbol data: keywords with .symbolize(unit), gvars and feat
  *  modules that implement a static .Symbols definition
  */
 export type TSymbolData = {
+  keywords?: string[]; // a list of valid keywords for position 0
   ctor?: Function, // constructor object if needed (used by var- props)
   props?: { [propName: string]: TSymbolData };
   methods?: { [methodName:string]:TSymbolMethodArgs};
   features?: { [featureName:string]: TSymbolData };
   context?: { [line:number]:any }; // line number for a root statement
-  error?: string; // debugging if error
+  error?: TSymbolError; // debugging if error
   info?:string; // debugging status
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -210,16 +220,22 @@ export type TSymbolMap = {
   symbols?: TSymbolData; // current scope
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** used by keyword validator function */
+/** used by keyword validator function , used for individual token validation
+ *  by symbol utilities!
+*/
 export type TSymbolError = {
-  code: 'noscope' | 'badselect' | 'parse' | 'over' | 'under';
+  code:TSymbolErrorCodes;
   info: string;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** keyword.validate() returns an array of these to glom onto vmTokens */
+/** keyword.validate() returns an array of these to glom onto vmTokens.
+ *  the error state returns code and desc if a parse issue is detected
+ *  if symbol information can be inferred despite an error, it will be
+ *  returned otherwise it is void.
+ */
 export type TValidationToken = {
-  error: TSymbolError; // if not present,
-  symbols?: TSymbolData; // expected symbols for index
+  error?: TSymbolError; // if not present, no error
+  symbols?: TSymbolData; // symbols the are valid, undefined otherwise
 };
 
 /// PROGRAM BUNDLES ///////////////////////////////////////////////////////////

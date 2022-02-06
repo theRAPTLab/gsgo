@@ -57,7 +57,7 @@ class Keyword implements IKeyword {
     else if (DBG) console.log('Keyword constructing:', keyword);
     this.keyword = keyword;
     this.args = [];
-    this.shelper = new SymbolHelper();
+    this.shelper = new SymbolHelper(keyword);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -115,11 +115,10 @@ class Keyword implements IKeyword {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** override in subclass to validate scriptUnits against symbol
-   *  validate returns 'pass:true' or 'error:{text}', with 'symbols' undefined.
-   *  call super() from subclasser for basic validation.
-   *  NOTE that setReferences() has to be called to set the
-   *  context for validate(), otherwise the lookup will fail
+  /** Override in subclass to validate scriptUnits against symbol
+   *  The error state returns code and desc if a parse issue is detected.
+   *  If symbol information can be inferred despite an error, it will be
+   *  returned. Otherwise it is void/undefined.
    */
   validate(unit: TScriptUnit): TValidationToken[] | void {
     // OPTIONAL: put some basic conforming stuff here if necessary
@@ -217,8 +216,11 @@ function _evalRuntimeArg(arg: any, context): any {
 /** used by keyword compile-time to retreve a prop object dereferencing function
  *  that will be executed at runtime */
 function K_DerefProp(refArg): DerefMethod {
+  const fn = 'K_DerefProp:';
   // ref is an array of strings that are fields in dot addressing
   // like agent.x
+  if (refArg === undefined)
+    throw Error(`${fn} objref arg is undefined (bad scriptText?)`);
   const ref = refArg.objref || [refArg];
   const len = ref.length;
   // create a function that will be used to dereferences the objref

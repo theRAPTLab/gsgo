@@ -93,17 +93,12 @@ _interceptState(state => {
   const { script_text, script_tokens } = state;
   // if script_text is changing, we also want to emit new script_token
   if (!script_tokens && script_text) {
-    try {
-      const toks = TRANSPILER.TextToScript(script_text);
-      state.script_tokens = toks;
-      state.cur_bdl = TRANSPILER.CompileBlueprint(toks);
-      const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
-      state.script_page = vmPage;
-      state.line_tokmap = tokMap;
-    } catch (e) {
-      // ignore TextToScript compiler errors during live typing
-      console.error(`wizcore_interceptState text: ${e.toString()}`);
-    }
+    const toks = TRANSPILER.TextToScript(script_text);
+    state.script_tokens = toks;
+    state.cur_bdl = TRANSPILER.CompileBlueprint(toks);
+    const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
+    state.script_page = vmPage;
+    state.line_tokmap = tokMap;
   }
   // if script_tokens is changing, we also want to emit new script_text
   if (!script_text && script_tokens) {
@@ -128,13 +123,13 @@ _interceptState(state => {
  *  List of mouse events: https://www.w3.org/TR/DOM-Level-3-Events/#events-mouseevents
  */
 function DispatchClick(event) {
-  const err = 'DispatchClick:';
+  const fn = 'DispatchClick:';
   const newState = {};
 
   /** (1) GToken was clicked? ************************************************/
   const tokenKey = event.target.getAttribute('data-key');
   if (tokenKey !== null) {
-    // if (DBG) console.log(...PR(`${err} clicked ${JSON.stringify(tokenKey)}`));
+    // if (DBG) console.log(...PR(`${fn} clicked ${JSON.stringify(tokenKey)}`));
 
     // notify subscribers of new current line and token index
     const [line, pos] = tokenKey.split(',');
@@ -148,24 +143,17 @@ function DispatchClick(event) {
     const { cur_bdl, sel_line_num, sel_line_pos, script_page } = State();
 
     if (sel_line_num > 0 && sel_line_pos > 0) {
-      /** TEST STUFF HAPPENS HERE ***/
-      /** TEST STUFF HAPPENS HERE ***/
-      /** TEST STUFF HAPPENS HERE ***/
-      // construct references for this line for symbol lookup
       const global = { [cur_bdl.name]: cur_bdl, agent: cur_bdl }; // default include ourself and 'agent
       const bundle = cur_bdl;
       const refs = { bundle, global };
-      symDecoder.setReferences(refs);
-      console.log(
-        ...PR('Test 1: objRefSymbols says:', symDecoder.objRefSymbols(token))
-      );
-      /** MORE TEST STUFF HAPPENS HERE ***/
-      /** MORE TEST STUFF HAPPENS HERE ***/
-      /** MORE TEST STUFF HAPPENS HERE ***/
-
       const vmPageLine = script_page[sel_line_num - TRANSPILER.LINE_START_NUM];
       const retvals = ValidateLine(vmPageLine, refs);
-      console.log(...PR('Test 2: ValidateLine returns', retvals));
+      console.log(
+        ...PR(
+          `ValidateLine tok[${sel_line_pos}] returns`,
+          retvals[sel_line_pos - 1]
+        )
+      );
       return;
     }
   }
@@ -271,16 +259,24 @@ function SelectedTokenInfo() {
  *  TValidationToken objects
  */
 function ValidateLine(vmPageLine, refs = {}) {
-  const err = 'ValidateLine:';
+  const fn = 'ValidateLine:';
   const { lineScript, vmTokens } = vmPageLine;
-  console.group();
-  console.log('vmPageLine', vmPageLine);
-  console.log('refs', refs);
-  console.groupEnd();
-  if (!Array.isArray(lineScript)) throw Error(`${err} not a lineScript`);
+  const DBG_LOCAL = false;
+  if (DBG_LOCAL) {
+    console.group(...PR('validate() context refs'));
+    console.log('this is being passed to validate()');
+    console.log('vmPageLine:');
+    console.log('.. lineScript', lineScript);
+    console.log('.. vmTokens', vmTokens);
+    console.log('refs:');
+    console.log(`.. bundle ${refs.bundle.name}`);
+    console.log('.. global', refs.global);
+    console.groupEnd();
+  }
+  if (!Array.isArray(lineScript)) throw Error(`${fn} not a lineScript`);
   const [kw] = TRANSPILER.DecodeStatement(lineScript);
   const kwp = SENGINE.GetKeyword(kw);
-  if (kwp === undefined) throw Error(`${err} ${kw} not a keyword`);
+  if (kwp === undefined) throw Error(`${fn} ${kw} not a keyword`);
   // tell keyword process what symbol references to use
   kwp.setReferences(refs);
   // now validate
@@ -337,12 +333,13 @@ function GetProject(prjId = DEF_PRJID) {
  *  given projectId and blueprintId
  */
 function GetProjectBlueprint(prjId = DEF_PRJID, bpId = DEF_BPID) {
+  const fn = 'GetProjectBlueprint:';
   const project = GetProject(prjId);
   if (project === undefined) throw Error(`no asset project with id ${prjId}`);
   const { blueprints } = project;
   const match = blueprints.find(bp => bp.id === bpId);
   if (match === undefined)
-    throw Error(`no blueprint ${bpId} in project ${prjId}`);
+    throw Error(`${fn} no blueprint ${bpId} in project ${prjId}`);
   return match;
 }
 

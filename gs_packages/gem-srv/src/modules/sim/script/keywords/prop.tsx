@@ -71,10 +71,17 @@ export class prop extends Keyword {
    *  called before validate()
    */
   validate(dtoks: TScriptUnit): TValidationToken[] | void {
-    super.validate(dtoks);
+    super.validate(dtoks); // do basic sanity checks
+    const vtoks = []; // validation token array
     const [kw, arg_objref, arg_method, ...args] = dtoks; // get arg pattern
-    const arg_objref_symbols = this.shelper.objRefSymbols(arg_objref);
-    return [];
+    // returns symbols for each dtok position excepting the keyword
+    vtoks.push(this.shelper.WIP_scopeKeywords());
+    vtoks.push(this.shelper.scopeBundle());
+    vtoks.push(this.shelper.scopeObjRef(arg_objref));
+    vtoks.push(this.shelper.scopeMethod(arg_method));
+    vtoks.push(...this.shelper.scopeArgs(args));
+
+    return vtoks;
   }
 } // end of keyword definition
 

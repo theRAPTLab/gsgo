@@ -67,11 +67,11 @@ function m_StripErrors(code: TSMCProgram, unit: TScriptUnit, ...args: any[]) {
       // didn't get a function return, so it must be an error code
       const [err, line] = f as any[];
       const where = line !== undefined ? `line ${line}` : '';
-      console.log(...PR(`ERR: ${err} ${where}`), unit);
+      console.log(...PR(`fn: ${err} ${where}`), unit);
     }
     // got a single string, so is error
     if (typeof f === 'string')
-      console.log(...PR(`ERR: '${f}' ${args.join(' ')}`), unit);
+      console.log(...PR(`fn: '${f}' ${args.join(' ')}`), unit);
     return false;
   });
   return out;
@@ -82,43 +82,23 @@ function m_StripErrors(code: TSMCProgram, unit: TScriptUnit, ...args: any[]) {
  *  UnpackToken, which returns [ type, value ] instead of the primitive
  *  value or token. TODO: review whether it should replace DecodeToken
  */
-function DecodeTokenPrimitiveNew(arg) {
+function DecodeTokenPrimitive(arg) {
   const [type, value] = UnpackToken(arg);
   if (type === undefined) {
     console.warn('unknown argument type:', arg);
-    throw Error('unknown argument type');
+    throw Error('DecodeTokenPrimitive: unknown argument type');
   }
   if (type === 'comment') return `// ${value}`;
   return value;
-}
-/** old version of DecodeTokenPrimitive does not use gscript-tokenizer UnpackToken */
-function DecodeTokenPrimitiveOld(arg) {
-  const { directive, comment, line } = arg; // meta information
-  const { identifier, value, string } = arg; // primitive values
-  const { objref, program, block, expr } = arg; // req runtime eval
-  if (directive) return arg; // directive = _pragma, cmd
-  if (comment !== undefined) return `// ${comment}`;
-  if (line !== undefined) return arg; // blank lines
-  if (identifier !== undefined) return identifier;
-  if (value !== undefined) return value;
-  if (string !== undefined) return string;
-  if (program === '') return arg; // happens during live typing
-  if (program) return arg; // { program = string name of stored program }
-  if (Array.isArray(block)) return arg; // { block = array of arrays of tok }
-  if (objref) return arg; // { objref = array of string parts }
-  if (expr === '') return arg; // happens during live typing
-  if (expr) return arg; // { expr = string }
-  console.warn('unknown argument type:', arg);
-  throw Error('unknown argument type');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return 'expanded' version of argument, suitable for passing to a keyword
  *  compiler
  */
-function DecodeTokenNew(tok: IToken): any {
+function DecodeToken(tok: IToken): any {
   const [type, value] = UnpackToken(tok);
   if (type === undefined)
-    throw Error(`DecodeToken invalid token ${JSON.stringify(tok)}`);
+    throw Error(`DecodeToken: invalid token ${JSON.stringify(tok)}`);
   if (type === 'identifier') return value;
   if (type === 'objref') return { objref: value };
   if (type === 'string') return value;
@@ -131,33 +111,6 @@ function DecodeTokenNew(tok: IToken): any {
   if (type === 'program') return GetProgram(value);
   throw Error(`DecodeToken unhandled type ${type}`);
 }
-/** old version of DecodeToken does not use gscript-tokenizer UnpackToken */
-function DecodeTokenOld(tok: IToken): any {
-  if (tok.comment !== undefined) return `// ${tok.comment}`; // compile will skip
-  const arg = DecodeTokenPrimitiveOld(tok); // convert
-  // check special types
-  if (arg.directive) return '_pragma'; // { directive, cmd } for compile-time processing
-  if (typeof arg.expr === 'string') {
-    const ast = ParseExpression(arg.expr);
-    return { expr: ast }; // runtime processing through Evaluate() required
-  }
-  if (Array.isArray(arg.objref)) return arg; // runtime processing required
-  if (typeof arg.program === 'string') return GetProgram(arg.program); // runtime processing required
-  if (arg.line !== undefined) return arg; // blank line, preserve token for compiler
-  if (arg.block) return CompileScript(arg.block); // recursive compile
-
-  // 6. otherwise this is a plain argument
-  return arg;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given an TSMCProgram, agent, and state information (stack, ctx, flags)
- *  run all the instructions in the program. Agent and State objects are
- *  mutated by each instruction, and the mutated state stack will contain
- *  the output of the program, if any
- */
-function r_Execute(smcode: TSMCProgram, agent: GAgent, state: SM_State): void {
-  smcode.forEach(op => op(agent, state));
-}
 
 /// SUPPORT API ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -167,11 +120,11 @@ function r_Execute(smcode: TSMCProgram, agent: GAgent, state: SM_State): void {
 function DecodeStatement(toks: TScriptUnit): any[] {
   const dUnit: TScriptUnit = toks.map((tok, ii) => {
     if (ii === 0) {
-      const arg = DecodeTokenNew(tok);
+      const arg = DecodeToken(tok);
       if (typeof arg === 'object' && arg.comment) return '_comment';
       return arg;
     }
-    return DecodeTokenNew(tok);
+    return DecodeToken(tok);
   });
   return dUnit;
 }
@@ -259,14 +212,14 @@ function CompileScript(script: TScriptUnit[]): TSMCProgram {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** CompileBlueprint parses # DIRECTIVES to set up a program bundle */
 function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
-  const ERR = 'CompileBlueprint';
+  const fn = 'CompileBlueprint:';
   let objcode;
   const bdl = new SM_Bundle();
   // always add GAgent.Symbols, which are the default built-in props
   AddSymbol(bdl, GAgent.Symbols);
   //
   if (!Array.isArray(script))
-    throw Error(`${ERR}: script should be array, not ${typeof script}`);
+    throw Error(`${fn} script should be array, not ${typeof script}`);
   if (script.length === 0) return bdl;
   script.forEach((stm, ii) => {
     // special case 1: first line must be # BLUEPRINT directive
@@ -277,7 +230,7 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
         SetBundleName(bdl, bpName, bpParent);
         return;
       }
-      throw Error(`${ERR}: # BLUEPRINT must be first line in script`);
+      throw Error(`${fn} # BLUEPRINT must be first line in script`);
     }
 
     // special case 2: tag processing
@@ -298,7 +251,7 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
     AddSymbol(bdl, symbols);
   }); // script forEach
 
-  if (bdl.name === undefined) throw Error(`${ERR}: missing BLUEPRINT directive`);
+  if (bdl.name === undefined) throw Error(`${fn} missing BLUEPRINT directive`);
   bdl.setType(EBundleType.BLUEPRINT);
   if (DBG) console.log(...PR(bdl.name, 'symbols:', bdl.symbols));
   return bdl;
@@ -387,8 +340,4 @@ if (DBG)
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export { CompileScript, CompileBlueprint };
-export {
-  DecodeTokenNew as DecodeToken,
-  DecodeTokenPrimitiveNew as DecodeTokenPrimitive,
-  DecodeStatement
-};
+export { DecodeToken, DecodeTokenPrimitive, DecodeStatement };
