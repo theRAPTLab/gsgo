@@ -92,7 +92,7 @@ module.exports = {
     const coll = DB.getCollection('projects');
     let project = coll.findOne({ id: projectId });
     project = { ...project, ...input };
-    TERM(`!!!!updated project data is ${JSON.stringify(project)}`);
+    if (DBG) TERM(`updated project data: ${JSON.stringify(project)}`);
     coll.update(project);
     return project;
   },
