@@ -184,7 +184,7 @@ type ProjectMeta {
   right: Float
   bottom: Float
   left: Float
-  wrap: [String]
+  wrap: [Boolean]
   bounce: Boolean
   bgcolor: Float
   roundsCanLoop: Boolean
@@ -226,7 +226,7 @@ input ProjectMetaInput {
   right: Float
   bottom: Float
   left: Float
-  wrap: [String]
+  wrap: [Boolean]
   bounce: Boolean
   bgcolor: Float
   roundsCanLoop: Boolean
