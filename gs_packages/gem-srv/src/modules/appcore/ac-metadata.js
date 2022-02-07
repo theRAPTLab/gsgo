@@ -129,16 +129,23 @@ export function GetBoundary() {
  * Test function used by feat-movement to determine whether a wall
  * is set to wrap or prevent passing
  *
- * `wrap` is saved as a string in by both the project settings editor
- * and in the `.gemprj` file.
- * @param {string} wall
+ * `wrap` was previously saved as an array of strings by both the
+ * project settings editor and the `.gemprj` file.  It has since
+ * been fixed so wraps are saved as an array of booleans.
+ * @param {string} wall - 'top', 'right', 'bottom', 'left', or 'any'
  * @returns
  */
 export function Wraps(wall = 'any') {
   const BOUNDS = _getKey('metadata');
 
+  /**
+   * Converts the stored value to a boolean
+   * for backward compatibility with older string wraps
+   * @param {any} val - Could be boolean or string
+   * @returns boolean
+   */
   function toBoolean(val) {
-    return val.toLowerCase().trim() === 'true';
+    return String(val).toLowerCase().trim() === 'true';
   }
 
   // convert string ("true", "true") to boolean array
