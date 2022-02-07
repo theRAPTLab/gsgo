@@ -57,8 +57,14 @@ class ProjectEditor extends React.Component {
     else if (e.target.type === 'checkbox') val = Boolean(e.target.checked);
     else val = e.target.value;
 
+    /**
+     * This cleans the form data so " TRuE  " becomes "true"
+     * before saving as an array of booleans
+     * @param {string} boolstr - e.g. " True"
+     * @returns boolean
+     */
     function cleanBoolString(boolstr) {
-      return String(boolstr.toLowerCase().trim() === 'true');
+      return boolstr.toLowerCase().trim() === 'true';
     }
 
     const { project } = this.state;
