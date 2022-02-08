@@ -83,22 +83,46 @@ class Keyword implements IKeyword {
    *  value (e.g. objref is an array of strings) it will remain in token form
    *  e.g. { objref: ['a','b'] } with the exception of blocks which are
    *  an array of TScriptUnit
+   *
+   *  NOTE: this code will check for a trailing ...args, but not an embeded
+   *  'args...' as in 'a:string', '?:args...', 'consq:block (used for when)
+   *  TODO: A separate kwp.args counter needs to be implemented to make that work
+   *
    */
   annotate(unit: TScriptUnit): void {
     // first token is keyword: assign entire type array to it
     const { identifier } = unit[0];
     const kwp = GetKeyword(identifier as string);
     unit[0].kw_args = kwp.args; // keyword argument type
+    let argsRun = false; // if '?:args...' was seen, repeat until whenever
 
     // remaining tokens are arguments, so assign them from
     // assign the rest of individual argument types
-    for (let i = 1; i < unit.length; i++) {
+    let i = 1;
+    while (i < unit.length) {
       const [type, value] = UnpackToken(unit[i]);
       // is the argument a block of statements? recurse
       if (type === 'line' || type === 'comment') continue;
       // if not a block, just run through it
       if (type !== 'block') {
-        unit[i].kw_argtype = this.args[i - 1];
+        let argType;
+        // check for underflow of kwp.args
+        if (kwp.args.length < i) {
+          if (argsRun) argType = '?:arg';
+          // set if a ?:args... was seen last
+          else {
+            i++;
+            continue;
+          } // otherwise it's an underflow so no assignable type
+        } else argType = kwp.args[i - 1] as string; // otherwise not underflow
+
+        // if got this far, no underflow has occured
+        if (argType.includes(':args...')) {
+          argsRun = true;
+          argType = '?:arg';
+        }
+        unit[i].kw_argtype = argType as TSymKeywordArg;
+        i++;
         continue;
       }
 
@@ -106,12 +130,16 @@ class Keyword implements IKeyword {
       const block = value;
       for (const stm of block) {
         const [stype, sident] = UnpackToken(stm[0]);
-        if (stype === 'line' || stype === 'comment') continue;
+        if (stype === 'line' || stype === 'comment') {
+          i++;
+          continue;
+        }
         const skwp = GetKeyword(sident);
         skwp.annotate(stm);
       }
       // otherwise just copy the argtype from keyword
-    }
+      i++;
+    } // end while
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

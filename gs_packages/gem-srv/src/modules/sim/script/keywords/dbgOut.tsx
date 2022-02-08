@@ -30,7 +30,7 @@ export class dbgOut extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('dbgOut');
-    this.args = ['arg:args'];
+    this.args = ['?:args...'];
   }
 
   /** create smc blueprint code objects */

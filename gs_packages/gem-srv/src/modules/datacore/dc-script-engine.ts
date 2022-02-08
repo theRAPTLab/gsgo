@@ -27,17 +27,19 @@ const SCRIPT_EVENTS: Map<string, Map<string, TSMCProgram>> = new Map();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const VALID_ARGTYPES = [
   // see t-script.d TSymbolArgType
+  // these are used both for keyword args and method signature args
   'boolean',
   'string',
   'number',
-  'expr',
-  'objref',
-  'args',
+  'expr', // an expression that can be coerced to any type
+  'objref', // value of anobject ref
+  '{value}', // composite: literal, objref or expression
   'block',
   'test',
   'program',
   'event',
   'feature',
+  // placeholder keyword args for use in scriptunits
   'arg',
   'args...'
 ];

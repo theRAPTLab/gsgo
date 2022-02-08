@@ -26,7 +26,7 @@ export class featCall extends Keyword {
 
   constructor() {
     super('featCall');
-    this.args = ['featName:feature', 'methodName:string', 'arg:args'];
+    this.args = ['featName:feature', 'methodName:string', '?:args...'];
   }
 
   /** create smc blueprint code objects */

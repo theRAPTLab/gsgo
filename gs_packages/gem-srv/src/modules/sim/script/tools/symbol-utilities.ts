@@ -200,7 +200,7 @@ class SymbolHelper {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** WIP the idea is to return a symbol data structure that shows all the
    *  allowable argument types groups. For types of 'test' it should be the
-   *  list of tests in the system, for 'anyval' it coul be  literal, expr,
+   *  list of tests in the system, for 'value' it coul be  literal, expr,
    *  objref, etc
    */
   scopeArgSymbols(token: IToken): TSymbolData {}

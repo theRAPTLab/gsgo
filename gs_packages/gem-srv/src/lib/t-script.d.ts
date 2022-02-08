@@ -172,7 +172,7 @@ export interface ISMCPrograms {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // symbol type declarations
 type TSymLiterals = `${'boolean'|'string'|'number'|'object'}`;
-type TSymDeferred = `${'expr'|'objref'|'block'}`;
+type TSymDeferred = `${'expr'|'objref'|'block'|'{value}'}`;
 type TSymGlobal = `${'test'|'program'|'event'|'feature'}`
 type TSymEnum = { [name:string]: string[] };
 type TSymArg = `${'arg'|'args...'}`; // use only in Keyword.args array
