@@ -15,7 +15,7 @@ export class ifExpr extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('ifExpr');
-    this.args = ['test:anyval', 'consequent:block', 'alternate:block'];
+    this.args = ['text:expr', 'consequent:block', 'alternate:block'];
   }
 
   /** create smc blueprint code objects

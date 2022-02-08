@@ -183,7 +183,9 @@ function SymbolizeStatement(statement: TScriptUnit, line: number): TSymbolData {
   const kwProcessor = GetKeyword(kw);
   if (!kwProcessor) {
     console.warn(`keyword processor ${kw} bad`);
-    return { error: `missing kwProcessor for: '${kw}'` };
+    return {
+      error: { code: 'noexist', info: `missing kwProcessor for: '${kw}'` }
+    };
   }
   // ***NOTE***
   // May return empty object, but that just means there are no symbols produced.

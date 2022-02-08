@@ -11,7 +11,7 @@ import {
   ISMCBundle,
   IKeyword,
   IKeywordCtor,
-  TSymbolArgType
+  TSymKeywordArg
 } from 'lib/t-script.d';
 import { GetFunction } from './dc-named-methods';
 
@@ -32,14 +32,14 @@ const VALID_ARGTYPES = [
   'number',
   'expr',
   'objref',
-  'anyref',
-  'anyval',
   'args',
   'block',
   'test',
   'program',
   'event',
-  'feature'
+  'feature',
+  'arg',
+  'args...'
 ];
 
 /// KEYWORD UTILITIES /////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ const VALID_ARGTYPES = [
  *  iterate through all the argument definitions and make sure they are
  *  valid syntax
  */
-function ValidateArgTypes(args: TSymbolArgType[]): boolean {
+function ValidateArgTypes(args: TSymKeywordArg[]): boolean {
   const P = 'ValidateArgTypes';
   if (!Array.isArray(args)) {
     console.warn(`${P}: invalid argtype array`);
@@ -82,7 +82,7 @@ function ValidateArgTypes(args: TSymbolArgType[]): boolean {
 /** An argtype is of the form 'name:type', and is used for symbol definitions
  *  Returns the argName, argType in array if they are valid
  */
-function DecodeArgType(arg: TSymbolArgType) {
+function DecodeArgType(arg: TSymKeywordArg) {
   const P = 'ValidateArgType';
   if (typeof arg !== 'string')
     throw Error(`${P}: arg must be string, not ${typeof arg}`);
@@ -98,7 +98,7 @@ function DecodeArgType(arg: TSymbolArgType) {
 function RegisterKeyword(Ctor: IKeywordCtor, key?: string) {
   const fn = 'RegisterKeyword:';
   const kobj = new Ctor();
-  if (!ValidateArgTypes(kobj.args as TSymbolArgType[]))
+  if (!ValidateArgTypes(kobj.args as TSymKeywordArg[]))
     throw Error(`${fn} invalid argDef in keyword '${kobj.keyword}'`);
   KEYWORDS.set(key || kobj.keyword, kobj);
 }

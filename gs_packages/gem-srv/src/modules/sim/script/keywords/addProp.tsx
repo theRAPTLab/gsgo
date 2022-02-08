@@ -8,7 +8,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Keyword from 'lib/class-keyword';
-import { TOpcode, TScriptUnit, TSymbolData, TSymbolArgType } from 'lib/t-script';
+import { TOpcode, TScriptUnit, TSymbolData, TSymKeywordArg } from 'lib/t-script';
 import { addProp } from 'script/ops/agent-ops';
 import { RegisterKeyword, GetVarCtor } from 'modules/datacore';
 
@@ -18,7 +18,7 @@ export class AddProp extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('addProp');
-    this.args = ['propName:string', 'propType:string', 'initValue:anyval'];
+    this.args = ['propName:string', 'propType:string', '?:arg'];
   }
 
   /** create smc blueprint code objects */

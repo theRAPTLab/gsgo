@@ -17,7 +17,7 @@ export function KeywordBox(props) {
   const { scriptToken: tok, lineNum, linePos, vmPageLine } = selection;
   const { lineScript } = vmPageLine;
   const text = WIZCORE.GetLineScriptText(lineScript);
-  const args = tok._args.join(', ');
+  const args = tok.kw_args.join(', ');
   const sDel = { ...sButtonBreak, minWidth: '25%', maxWidth: '25%' };
   const sRTL = { ...sButtonGrid, direction: 'rtl' };
   return (

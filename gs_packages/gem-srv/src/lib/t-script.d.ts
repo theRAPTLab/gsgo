@@ -140,8 +140,8 @@ export interface IToken {
   comment?: string; // gobbleComment()
   line?: string; // as-is line insertion
   // non-type metadata
-  _argtype?: TSymbolArgType; // of form name:type
-  _args?: TSymbolArgType[]; // for keywords only, array of arg types
+  kw_argtype?: TSymKeywordArg; // of form name:type
+  kw_args?: TSymKeywordArg[]; // for keywords only, array of arg types
 }
 export type TScriptUnit = IToken[]; // tokens from script-parser
 export type TArg = number | string | IToken;
@@ -170,15 +170,14 @@ export interface ISMCPrograms {
 
 /// SYMBOL DATA AND TYPES /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// see https://michalzalecki.com/typescript-template-literal-types/
-type ArgTypeLiterals = `${'boolean'|'string'|'number'|'object'}`;
-type ArgTypeSpecial = `${'expr'|'objref'|'anyref'|'anyval'|'block'|'args'}`;
-type ArgTypeEnum = { [name:string]: string[] };
-type ArgTypeGlobal = `${'test'|'program'|'event'|'feature'}`
-// this type matches <anystring>:ArgTypeLiteral|ArgTypeSpecial|ArgTypeGlobal
-// e.g. 'propname:string', 'frequency:number'
-export type TSymbolArgType = `${string}:${ArgTypeLiterals | ArgTypeSpecial |ArgTypeGlobal}` | ArgTypeEnum;
-export type TSymbolMethodArgs =  { args?: TSymbolArgType[]; returns?: TSymbolArgType }
+// symbol type declarations
+type TSymLiterals = `${'boolean'|'string'|'number'|'object'}`;
+type TSymDeferred = `${'expr'|'objref'|'block'}`;
+type TSymGlobal = `${'test'|'program'|'event'|'feature'}`
+type TSymEnum = { [name:string]: string[] };
+type TSymArg = `${'arg'|'args...'}`; // use only in Keyword.args array
+export type TSymKeywordArg = `${string}:${TSymLiterals | TSymDeferred | TSymGlobal | TSymArg}` | TSymEnum;
+export type TSymMethodArg =  { args?: TSymKeywordArg[]; returns?: TSymKeywordArg }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Used for TSymbolData and TSymbolError
  *  noparse = bad or unexpected token format
@@ -188,18 +187,21 @@ export type TSymbolMethodArgs =  { args?: TSymbolArgType[]; returns?: TSymbolArg
  *  under   = less arguments than required by keyword
  */
 type TSymbolErrorCodes = 'noparse' | 'noscope' | 'noexist' | 'over' | 'under';
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/// MAIN SYMBOL DATA DECLARATION //////////////////////////////////////////////
 /** data description of symbols for features, props. returned from anything
  *  that produces Symbol data: keywords with .symbolize(unit), gvars and feat
  *  modules that implement a static .Symbols definition
  */
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export type TSymbolData = {
   keywords?: string[]; // a list of valid keywords for position 0
   ctor?: Function, // constructor object if needed (used by var- props)
   props?: { [propName: string]: TSymbolData };
-  methods?: { [methodName:string]:TSymbolMethodArgs};
+  methods?: { [methodName:string]:TSymMethodArg};
   features?: { [featureName:string]: TSymbolData };
   context?: { [line:number]:any }; // line number for a root statement
+  args?: { [argTypeGroup:string]: { [arg:string]:TSymKeywordArg } }; // arg choices
   error?: TSymbolError; // debugging if error
   info?:string; // debugging status
 };
@@ -272,7 +274,7 @@ export enum EBundleType {
 /** related keyword interface  */
 export interface IKeyword {
   keyword: string;
-  args: TSymbolArgType[];
+  args: TSymKeywordArg[];
   compile(unit: TScriptUnit, lineIdx?:number): (TOpcode|TOpcodeErr)[];
   symbolize(unit: TScriptUnit,lineIdx?:number): TSymbolData;
   annotate(unit:TScriptUnit,lineIdx?:number): void;

@@ -28,7 +28,7 @@ import {
   TScriptUnit,
   TSymbolData,
   TSymbolRefs,
-  TSymbolArgType,
+  TSymKeywordArg,
   TValidationToken,
   DerefMethod
 } from 'lib/t-script';
@@ -48,7 +48,7 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Keyword implements IKeyword {
   keyword: string;
-  args: TSymbolArgType[]; // document only. can have array[][] for alt signatures
+  args: TSymKeywordArg[]; // document only. can have array[][] for alt signatures
   shelper: SymbolHelper; // helper for extracting line data
   //
   constructor(keyword: string) {
@@ -88,7 +88,7 @@ class Keyword implements IKeyword {
     // first token is keyword: assign entire type array to it
     const { identifier } = unit[0];
     const kwp = GetKeyword(identifier as string);
-    unit[0]._args = kwp.args; // keyword argument type
+    unit[0].kw_args = kwp.args; // keyword argument type
 
     // remaining tokens are arguments, so assign them from
     // assign the rest of individual argument types
@@ -98,7 +98,7 @@ class Keyword implements IKeyword {
       if (type === 'line' || type === 'comment') continue;
       // if not a block, just run through it
       if (type !== 'block') {
-        unit[i]._argtype = this.args[i - 1];
+        unit[i].kw_argtype = this.args[i - 1];
         continue;
       }
 

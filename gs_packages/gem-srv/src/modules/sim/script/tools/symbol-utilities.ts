@@ -37,7 +37,7 @@ import {
   TSymbolMap,
   TSymbolData,
   TSymbolRefs,
-  TSymbolArgType
+  TSymKeywordArg
 } from 'lib/t-script.d';
 import { VMToken, VMPageLine } from 'lib/t-ui.d';
 
@@ -197,6 +197,14 @@ class SymbolHelper {
     return identifier;
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** WIP the idea is to return a symbol data structure that shows all the
+   *  allowable argument types groups. For types of 'test' it should be the
+   *  list of tests in the system, for 'anyval' it coul be  literal, expr,
+   *  objref, etc
+   */
+  scopeArgSymbols(token: IToken): TSymbolData {}
+
   /// SCOPE DRILLING //////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Given a token that is an smobject reference, return the actual symboldata
@@ -290,18 +298,76 @@ class SymbolHelper {
       return { error: { code: 'noscope', info: 'identifier is not string' } };
     const { methods } = this.sym_scope;
     if (methods === undefined)
-      return { error: { code: 'noexist', info: `no such method ${methodName}` } };
-    this.sym_scope = methods;
-    return this.sym_scope;
+      return {
+        error: {
+          code: 'noexist',
+          info: 'no method symbols are defined in current symscope'
+        }
+      };
+    const methodArgs = methods[methodName];
+    if (methodArgs) {
+      // is { args?: TSymKeywordArg[]; returns?: TSymKeywordArg }
+      // scope is set to current method
+      this.sym_scope = { [methodName]: methodArgs };
+      // but return the list of methods
+      return methods;
+    }
+    return undefined;
   }
 
   /** the incoming tokens are a variable-length array that are method
-   *  arguments that are allowed per token. These are TSymbolArgType
+   *  arguments that are allowed per token. These are TSymKeywordArg
    *  which include enums and special values for tests, programs, etc
+   *
+   *  assumes that symscope is set to { [methodName:string]:TSymMethodArg}
    */
-  scopeArgs(tokens: IToken[]): TSymbolArgType[] {
-    console.log('scopeArgs toks', tokens);
-    return [];
+  scopeArgs(tokens: IToken[]): TSymbolData[] {
+    const fn = 'scopeArgs:';
+    const methodNames = [...Object.keys(this.sym_scope)];
+    if (methodNames.length !== 1)
+      throw Error(`${fn} expects one method with TSymMethodArg payload`);
+    const methodName = methodNames[0];
+    const methodSignature = this.sym_scope[methodName];
+    const { args, returns } = methodSignature;
+    const vargs = [];
+
+    // note that tokens array is just the argument tokens, which are
+    // any tokens after the methodName token
+    if (tokens.length > args.length) console.warn('token overflow');
+    if (tokens.length < args.length) console.warn('token underflow');
+
+    let ii = 0;
+    for (ii; ii < tokens.length; ii++) {
+      // check for overflow
+      if (ii > args.length - 1) {
+        vargs.push({
+          error: {
+            code: 'over',
+            info: 'more tokens than method signature symbols'
+          }
+        });
+        continue;
+      }
+      // normal push
+      const tok = tokens[ii];
+      const argType = args[ii];
+      /** MAGIC EXPAND **/
+      const symbols = this.scopeArgSymbols(argType);
+      /** RESULT IS RENDERABLE LIST **/
+      vargs.push({ symbols });
+    }
+    // check for underflow
+    if (ii < args.length - 1)
+      for (ii; ii < args.length; ii++) {
+        vargs.push({
+          error: {
+            code: 'under',
+            info: 'fewer tokens than method signature symbols'
+          }
+        });
+      }
+
+    return vargs;
   }
 } // end of SymbolHelper class
 
