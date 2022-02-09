@@ -75,8 +75,8 @@ export class prop extends Keyword {
     const vtoks = []; // validation token array
     const [kw, arg_objref, arg_method, ...args] = dtoks; // get arg pattern
     // returns symbols for each dtok position excepting the keyword
+    this.shelper.WIP_scopeBundle(); // initialize shelper scope
     vtoks.push(this.shelper.WIP_scopeKeywords());
-    vtoks.push(this.shelper.scopeBundle());
     vtoks.push(this.shelper.scopeObjRef(arg_objref));
     vtoks.push(this.shelper.scopeMethod(arg_method));
     vtoks.push(...this.shelper.scopeArgs(args));

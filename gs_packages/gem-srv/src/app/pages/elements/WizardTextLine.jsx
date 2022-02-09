@@ -31,9 +31,8 @@ export function TextLineTester(/* props */) {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   function processInput(e) {
-    const fn = 'processInput:';
     const { validTokens, vmTokens, lineScript } = WIZCORE.WizardTestLine(input);
-    LOG(...PR(`${fn}`, validTokens));
+    LOG(...PR(`validation:`, validTokens));
   }
   /// RENDER //////////////////////////////////////////////////////////////////
   const iStyle = { backgroundColor: 'white' };

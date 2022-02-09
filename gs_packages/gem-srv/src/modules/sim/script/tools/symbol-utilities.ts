@@ -105,7 +105,7 @@ class SymbolHelper {
       else throw Error(`${fn} invalid context`);
     }
     // reset symbol scope pointer to top of bundle
-    this.scopeBundle();
+    this.WIP_scopeBundle();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** returns a list of valid keywords for this line
@@ -119,8 +119,8 @@ class SymbolHelper {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** reset the symbol scope pointer to the top of the bundle */
-  scopeBundle() {
-    const fn = 'scopeBundle:';
+  WIP_scopeBundle() {
+    const fn = 'WIP_scopeBundle:';
     if (this.refs.bundle === null) {
       console.warn(
         `${fn} ${this.keyword} missing refs.bundle (keyword needs update)`
@@ -152,7 +152,7 @@ class SymbolHelper {
   }
   /** check the current sm_scope or bundle for featureName matches or undefined */
   featureName(part: string) {
-    const features = this.scopeBundle().features;
+    const features = this.WIP_scopeBundle().features;
     if (features === undefined) return undefined;
     return features[part];
   }
@@ -258,8 +258,13 @@ class SymbolHelper {
           this.sym_scope = blueprint;
           if (DBG) console.log(ii, 'found blueprint', part, blueprint);
         } else {
-          console.log(`${mn}: unrecognized part 0`);
-          break;
+          if (DBG) console.error(`can't find objref part ${part}`);
+          return {
+            error: {
+              code: 'noscope',
+              info: `invalid objref '${part}'`
+            }
+          };
         }
       }
       // (2) Scan subsequent parts, updating value of scope
@@ -279,8 +284,13 @@ class SymbolHelper {
         this.sym_scope = blueprint;
         continue;
       }
-      console.error(`${mn}: no matching pattern for pass`, ii);
-      this.sym_scope = null;
+      if (DBG) console.error(`can't find objref part ${part}`);
+      return {
+        error: {
+          code: 'noscope',
+          info: `invalid objref '${part}'`
+        }
+      };
     }
     // return symbol data
     return this.sym_scope;
@@ -305,7 +315,7 @@ class SymbolHelper {
       return {
         error: {
           code: 'noexist',
-          info: 'no method symbols are defined in current symscope'
+          info: 'no methods found in symscope'
         }
       };
     const methodArgs = methods[methodName];
@@ -316,7 +326,12 @@ class SymbolHelper {
       // but return the list of methods
       return methods;
     }
-    return undefined;
+    return {
+      error: {
+        code: 'noexist',
+        info: `'${methodName}' is not a valid method name`
+      }
+    };
   }
 
   /** the incoming tokens are a variable-length array that are method
@@ -327,13 +342,24 @@ class SymbolHelper {
    */
   scopeArgs(tokens: IToken[]): TSymbolData[] {
     const fn = 'scopeArgs:';
+    const vargs = [];
+    // we're expecting a single key indicating that there was a valid
+    // method selected before scopeArgs was called
     const methodNames = [...Object.keys(this.sym_scope)];
-    if (methodNames.length !== 1)
-      throw Error(`${fn} expects one method with TSymMethodArg payload`);
+    if (methodNames.length !== 1) {
+      for (let i = 0; i < tokens.length; i++)
+        vargs.push({
+          error: {
+            code: 'noexist',
+            info: 'no methodArgs found in symscope'
+          }
+        });
+      return vargs;
+    }
+
     const methodName = methodNames[0];
     const methodSignature = this.sym_scope[methodName];
     const { args, returns } = methodSignature;
-    const vargs = [];
 
     // note that tokens array is just the argument tokens, which are
     // any tokens after the methodName token

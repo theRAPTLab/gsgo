@@ -209,13 +209,16 @@ function WizardTestLine(text) {
   } catch (e) {
     const error = e.toString();
     const re = /(.*)@(\d+):(\d+).*/;
-    const [, errMsg, line, pos] = re.exec(error);
-    const col = Number(pos);
-    const errLine = `${text.slice(0, col)}***ERROR***`;
-    // eslint-disable-next-line no-alert
-    alert(
-      `LineTester Error in position ${col}:\n\n${errLine}\n${text}\n\n${errMsg}`
-    );
+    let matches = re.exec(error);
+    if (matches) {
+      const [, errMsg, line, pos] = matches;
+      const col = Number(pos);
+      const errLine = `${text.slice(0, col)}***ERROR***`;
+      // eslint-disable-next-line no-alert
+      alert(
+        `LineTester Error in position ${col}:\n\n${errLine}\n${text}\n\n${errMsg}`
+      );
+    } else console.log(error);
   }
 }
 
