@@ -87,7 +87,7 @@ export interface IFeature {
   featAddProp(agent: IAgent, key: string, prop: IScopeable): void;
   featAddMethod(mName: string, smc_or_f: FeatureMethod): void;
   featGetMethod(mName: string): FeatureMethod;
-  symbolize():TSymbolData;
+  symbolize(): TSymbolData;
 }
 export type FeatureMethod = (agent: IAgent, ...any) => any;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -171,22 +171,23 @@ export interface ISMCPrograms {
 /// SYMBOL DATA AND TYPES /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // symbol type declarations
-type TSymLiterals = `${'boolean'|'string'|'number'|'object'}`;
-type TSymDeferred = `${'expr'|'objref'|'block'|'{value}'}`;
-type TSymGlobal = `${'test'|'program'|'event'|'feature'}`
-type TSymEnum = { [name:string]: string[] };
-type TSymArg = `${'arg'|'args...'}`; // use only in Keyword.args array
-export type TSymKeywordArg = `${string}:${TSymLiterals | TSymDeferred | TSymGlobal | TSymArg}` | TSymEnum;
-export type TSymMethodArg =  { args?: TSymKeywordArg[]; returns?: TSymKeywordArg }
+type TSymLiterals = `${'boolean' | 'string' | 'number' | 'enum'}`;
+type TSymDeferred = `${'expr' | 'objref' | 'block' | '{value}'}`;
+type TSymGlobal = `${'test' | 'program' | 'event' | 'feature'}`;
+type TSymEnum = { [name: string]: string[] };
+type TSymArg = `${'arg' | 'args...'}`; // use only in Keyword.args array
+export type TSymKeywordArg =
+  | `${string}:${TSymLiterals | TSymDeferred | TSymGlobal | TSymArg}`
+  | TSymEnum;
+export type TSymMethodArg = { args?: TSymKeywordArg[]; returns?: TSymKeywordArg };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Used for TSymbolData and TSymbolError
- *  noparse = bad or unexpected token format
- *  noscope = valid scope could not be found or inferred
- *  noexist = reference doesn't exist in available scope
- *  over    = more arguments than required by keyword
- *  under   = less arguments than required by keyword
- */
-type TSymbolErrorCodes = 'noparse' | 'noscope' | 'noexist' | 'over' | 'under';
+type TSymbolErrorCodes =
+  | 'noparse' // bad or unexpected token format
+  | 'noscope' // valid scope could not be found or inferred
+  | 'noexist' // reference doesn't exist in available scope
+  | 'over' // more arguments than required by keyword
+  | 'under' // less arguments than required by keyword
+  | 'outside'; // argument out of range
 
 /// MAIN SYMBOL DATA DECLARATION //////////////////////////////////////////////
 /** data description of symbols for features, props. returned from anything
@@ -196,27 +197,27 @@ type TSymbolErrorCodes = 'noparse' | 'noscope' | 'noexist' | 'over' | 'under';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export type TSymbolData = {
   keywords?: string[]; // a list of valid keywords for position 0
-  ctor?: Function, // constructor object if needed (used by var- props)
+  ctor?: Function; // constructor object if needed (used by var- props)
   props?: { [propName: string]: TSymbolData };
-  methods?: { [methodName:string]:TSymMethodArg};
-  features?: { [featureName:string]: TSymbolData };
-  context?: { [line:number]:any }; // line number for a root statement
-  args?: { [argTypeGroup:string]: { [arg:string]:TSymKeywordArg } }; // arg choices
+  methods?: { [methodName: string]: TSymMethodArg };
+  features?: { [featureName: string]: TSymbolData };
+  context?: { [line: number]: any }; // line number for a root statement
+  args?: { [argTypeGroup: string]: { [arg: string]: TSymKeywordArg } }; // arg choices
   error?: TSymbolError; // debugging if error
-  info?:string; // debugging status
+  info?: string; // debugging status
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** blueprint symbol data format */
 export type TSymbolMap = {
-  props?: { [propName:string] : TSymbolData }; // map to varctor.symbols
-  features?: { [featName:string] : TSymbolData };  // map to feature.Symbols
+  props?: { [propName: string]: TSymbolData }; // map to varctor.symbols
+  features?: { [featName: string]: TSymbolData }; // map to feature.Symbols
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a data structure used to iterate through a scriptunit token.
  *  it is updated and modified as a particular token is evaluated
  *  in dtoks from left-to-right up to the index
  */
- export type TSymbolRefs = {
+export type TSymbolRefs = {
   bundle: ISMCBundle; // bundle to use
   global: object; // default global context
   symbols?: TSymbolData; // current scope
@@ -224,9 +225,9 @@ export type TSymbolMap = {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** used by keyword validator function , used for individual token validation
  *  by symbol utilities!
-*/
+ */
 export type TSymbolError = {
-  code:TSymbolErrorCodes;
+  code: TSymbolErrorCodes;
   info: string;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -275,10 +276,10 @@ export enum EBundleType {
 export interface IKeyword {
   keyword: string;
   args: TSymKeywordArg[];
-  compile(unit: TScriptUnit, lineIdx?:number): (TOpcode|TOpcodeErr)[];
-  symbolize(unit: TScriptUnit,lineIdx?:number): TSymbolData;
-  annotate(unit:TScriptUnit,lineIdx?:number): void;
-  validate(unit:TScriptUnit):TValidationToken[]|void;
+  compile(unit: TScriptUnit, lineIdx?: number): (TOpcode | TOpcodeErr)[];
+  symbolize(unit: TScriptUnit, lineIdx?: number): TSymbolData;
+  annotate(unit: TScriptUnit, lineIdx?: number): void;
+  validate(unit: TScriptUnit): TValidationToken[] | void;
   getName(): string;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -375,7 +376,7 @@ export type TOpcode = (
   agent?: IAgent, // memory context (an agent instance)
   sm_state?: IState // machine state
 ) => TOpWait;
-export type TOpcodeErr = [error:string,line:number];
+export type TOpcodeErr = [error: string, line: number];
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Stackmachine operations return a Promise if it is operating asynchronously
