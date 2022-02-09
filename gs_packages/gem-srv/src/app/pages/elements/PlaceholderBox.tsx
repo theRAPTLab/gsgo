@@ -13,7 +13,6 @@ import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function PlaceholderBox(props) {
   const { selection } = props;
-
   const { scriptToken: tok, lineNum, linePos, vmPageLine } = selection;
   const argtype = tok.kw_argtype || '<unknown argType>';
   // console.log('PlaceholderBox rendering:', tok);

@@ -30,6 +30,7 @@ export function EditBox(/* props */) {
   const sel = WIZCORE.SelectedTokenInfo();
   if (sel) {
     const { scriptToken, lineNum, linePos, vmPageLine } = sel;
+
     // (1) is this a keyword?
     if (linePos === 1 && scriptToken.identifier !== undefined)
       content = <KeywordBox selection={sel} />;

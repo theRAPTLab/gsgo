@@ -24,6 +24,7 @@ import StateMgr from '@gemstep/ursys/src/class-state-mgr';
 import * as ASSETS from 'modules/asset_core/asset-mgr';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as SENGINE from 'modules/datacore/dc-script-engine';
+import { ScriptHelper } from 'script/tools/script-utilities';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -194,12 +195,15 @@ function WizardTextChanged(text) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a scriptText consiting of a single line, return the validation
- *  data for testing
+ *  data for testing. Note that this will nuke the PAGE and MAP structures
+ *  for the rest of the script because script-utilities doesn't handle multiple
+ *  instances
  */
 function WizardTestLine(text) {
+  const SHELPER = new ScriptHelper();
   try {
     const script = TRANSPILER.TextToScript(text);
-    const [vmPage] = TRANSPILER.ScriptToLines(script);
+    const [vmPage] = SHELPER.scriptToLines(script); // note: use different instance
     const [vmPageLine] = vmPage;
     const { cur_bdl } = State();
     const refs = { bundle: cur_bdl, global: {} }; // TODO: global should be bundle
@@ -220,6 +224,34 @@ function WizardTestLine(text) {
       );
     } else console.log(error);
   }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given a lineVM, ensure that the scriptUnit is (1) valid and (2) return
+ *  TValidationToken objects
+ */
+function ValidateLine(vmPageLine, refs = {}) {
+  const fn = 'ValidateLine:';
+  const { lineScript, vmTokens } = vmPageLine;
+  const DBG_LOCAL = false;
+  if (DBG_LOCAL) {
+    console.group(...PR('validate() context refs'));
+    console.log('this is being passed to validate()');
+    console.log('vmPageLine:');
+    console.log('.. lineScript', lineScript);
+    console.log('.. vmTokens', vmTokens);
+    console.log('refs:');
+    console.log(`.. bundle ${refs.bundle.name}`);
+    console.log('.. global', refs.global);
+    console.groupEnd();
+  }
+  if (!Array.isArray(lineScript)) throw Error(`${fn} not a lineScript`);
+  const [kw] = TRANSPILER.DecodeStatement(lineScript);
+  const kwp = SENGINE.GetKeyword(kw);
+  if (kwp === undefined) throw Error(`${fn} ${kw} not a keyword`);
+  // tell keyword process what symbol references to use
+  kwp.setReferences(refs);
+  // now validate
+  return kwp.validate(lineScript);
 }
 
 /// WIZCORE HELPER METHODS ////////////////////////////////////////////////////
@@ -259,6 +291,8 @@ function SelectedLineNum() {
  */
 function GetTokenById(key) {
   const scriptToken = State('line_tokmap').get(key);
+  // this can happen if script-utilities ScriptToLines() is called on another body
+  // of text that isn't what you're clicking on
   return scriptToken;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -278,34 +312,6 @@ function SelectedTokenInfo() {
     };
   }
   return undefined;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a lineVM, ensure that the scriptUnit is (1) valid and (2) return
- *  TValidationToken objects
- */
-function ValidateLine(vmPageLine, refs = {}) {
-  const fn = 'ValidateLine:';
-  const { lineScript, vmTokens } = vmPageLine;
-  const DBG_LOCAL = false;
-  if (DBG_LOCAL) {
-    console.group(...PR('validate() context refs'));
-    console.log('this is being passed to validate()');
-    console.log('vmPageLine:');
-    console.log('.. lineScript', lineScript);
-    console.log('.. vmTokens', vmTokens);
-    console.log('refs:');
-    console.log(`.. bundle ${refs.bundle.name}`);
-    console.log('.. global', refs.global);
-    console.groupEnd();
-  }
-  if (!Array.isArray(lineScript)) throw Error(`${fn} not a lineScript`);
-  const [kw] = TRANSPILER.DecodeStatement(lineScript);
-  const kwp = SENGINE.GetKeyword(kw);
-  if (kwp === undefined) throw Error(`${fn} ${kw} not a keyword`);
-  // tell keyword process what symbol references to use
-  kwp.setReferences(refs);
-  // now validate
-  return kwp.validate(lineScript);
 }
 
 ///
