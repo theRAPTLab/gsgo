@@ -203,7 +203,9 @@ class SymbolHelper {
    *  list of tests in the system, for 'value' it coul be  literal, expr,
    *  objref, etc
    */
-  scopeArgSymbols(token: IToken): TSymbolData {}
+  scopeArgSymbols(token: IToken): TSymbolData {
+    return {};
+  }
 
   /// SCOPE DRILLING //////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -228,12 +230,14 @@ class SymbolHelper {
         /** test output **/
         /** test output **/
         /** test output **/
-        console.group('part', ii, part);
-        console.log('agent', agent);
-        console.log('feature', feature);
-        console.log('prop', prop);
-        console.log('blueprint', blueprint);
-        console.groupEnd();
+        if (DBG) {
+          console.group('part', ii, part);
+          console.log('agent', agent);
+          console.log('feature', feature);
+          console.log('prop', prop);
+          console.log('blueprint', blueprint);
+          console.groupEnd();
+        }
         /** test output **/
         /** test output **/
         /** test output **/

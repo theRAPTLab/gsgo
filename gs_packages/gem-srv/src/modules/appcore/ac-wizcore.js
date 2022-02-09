@@ -23,14 +23,12 @@ import UR from '@gemstep/ursys/client';
 import StateMgr from '@gemstep/ursys/src/class-state-mgr';
 import * as ASSETS from 'modules/asset_core/asset-mgr';
 import * as TRANSPILER from 'script/transpiler-v2';
-import { SymbolHelper } from 'script/tools/symbol-utilities';
 import * as SENGINE from 'modules/datacore/dc-script-engine';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('WIZCORE', 'TagCyan');
 const DBG = true;
-const symDecoder = new SymbolHelper();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let PROJECTS; // current project class-asset-loader
 const DEF_ASSETS = 'test-assets'; // gs_assets is root
@@ -141,7 +139,6 @@ function DispatchClick(event) {
     // decode symbol type test
     const token = GetTokenById(tokenKey); // this is the current
     const { cur_bdl, sel_line_num, sel_line_pos, script_page } = State();
-
     if (sel_line_num > 0 && sel_line_pos > 0) {
       const global = { [cur_bdl.name]: cur_bdl, agent: cur_bdl }; // default include ourself and 'agent
       const bundle = cur_bdl;
@@ -171,7 +168,6 @@ function DispatchEditorClick(event) {
   event.stopPropagation();
   console.log('form click', event);
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Called after text editing in CodeJar has stopped and there has been no
  *  input for a few hundred milliseconds. Updates the script_page (token)
@@ -195,6 +191,32 @@ function WizardTextChanged(text) {
   // if there was no error above, then everything was ok
   // so erase the error state!
   SendState({ error: '' });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given a scriptText consiting of a single line, return the validation
+ *  data for testing
+ */
+function WizardTestLine(text) {
+  try {
+    const script = TRANSPILER.TextToScript(text);
+    const [vmPage] = TRANSPILER.ScriptToLines(script);
+    const [vmPageLine] = vmPage;
+    const { cur_bdl } = State();
+    const refs = { bundle: cur_bdl, global: {} }; // TODO: global should be bundle
+    const validTokens = ValidateLine(vmPageLine, refs);
+    const { vmTokens, lineScript } = vmPageLine;
+    return { validTokens, vmTokens, lineScript };
+  } catch (e) {
+    const error = e.toString();
+    const re = /(.*)@(\d+):(\d+).*/;
+    const [, errMsg, line, pos] = re.exec(error);
+    const col = Number(pos);
+    const errLine = `${text.slice(0, col)}***ERROR***`;
+    // eslint-disable-next-line no-alert
+    alert(
+      `LineTester Error in position ${col}:\n\n${errLine}\n${text}\n\n${errMsg}`
+    );
+  }
 }
 
 /// WIZCORE HELPER METHODS ////////////////////////////////////////////////////
@@ -387,6 +409,7 @@ export { State, SendState, SubscribeState, UnsubscribeState };
 export {
   DispatchClick, // handles clicks on Wizard document
   WizardTextChanged, // handle incoming change of text
+  WizardTestLine, // handle test line for WizardTextLine tester
   DispatchEditorClick // handle clicks on editing box
 };
 

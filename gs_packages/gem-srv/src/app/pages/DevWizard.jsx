@@ -36,6 +36,7 @@ import * as WIZCORE from 'modules/appcore/ac-wizcore-tests';
 // import { StyledTokenTest } from './elements/StyledExample';
 import { ScriptText } from './elements/WizardDevText';
 import { ScriptView } from './elements/WizardScriptView';
+import { TextLineTester } from './elements/WizardTextLine';
 import { EditBox } from './elements/WizardEditBox';
 import {
   sGrid,
@@ -116,6 +117,7 @@ class DevWizard extends React.Component {
           </div>
         </div>
         <footer style={sFoot}>
+          <TextLineTester />
           <div>selection: {selText}</div>
           <div style={sError}>{error}</div>
         </footer>

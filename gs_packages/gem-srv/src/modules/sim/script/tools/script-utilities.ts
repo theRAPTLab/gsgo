@@ -177,7 +177,7 @@ function m_ProgramToLines(program) {
 /** given a script of ScriptUnit statements, return a PAGE of VMPageLine and
  *  VMToken
  */
-export function ScriptToLines(
+function ScriptToLines(
   program: TScriptUnit[]
 ): [VMPageLine[], Map<string, IToken>] {
   m_Clear();
@@ -191,3 +191,4 @@ export function ScriptToLines(
  *  line and script maps (see ac-wizcore)
  */
 export { LINE_START_NUM };
+export { ScriptToLines };
