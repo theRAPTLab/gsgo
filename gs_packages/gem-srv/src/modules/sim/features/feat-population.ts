@@ -107,6 +107,7 @@ class PopulationPack extends GFeature {
     this.featAddMethod('removeAgent', this.removeAgent);
     this.featAddMethod('getRandomActiveAgent', this.getRandomActiveAgent);
     // Global Population Management
+    this.featAddMethod('releaseAllAgents', this.releaseAllAgents);
     this.featAddMethod('releaseInertAgents', this.releaseInertAgents);
     this.featAddMethod('hideInertAgents', this.hideInertAgents);
     this.featAddMethod('removeInertAgents', this.removeInertAgents);
