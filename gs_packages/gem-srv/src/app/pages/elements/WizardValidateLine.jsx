@@ -21,7 +21,7 @@ const TESTLINE = 'prop agent.energyLevel setMin 0';
 /** Returns placeholder text line editor to do script processing of a line
  *  for testing purposes
  */
-export function TextLineTester(/* props */) {
+export function ValidateLine(/* props */) {
   /// DEFINE STATE ////////////////////////////////////////////////////////////
   const [input, setInput] = React.useState(TESTLINE);
   /// UI STATE MAINTENANCE ////////////////////////////////////////////////////
@@ -35,13 +35,22 @@ export function TextLineTester(/* props */) {
     LOG(...PR(`validation:`, validTokens));
   }
   /// RENDER //////////////////////////////////////////////////////////////////
-  const iStyle = { backgroundColor: 'white' };
-  const bStyle = { width: '10%' };
+  const iStyle = { backgroundColor: 'white', margin: 0 };
+  const bStyle = { margin: 0 };
   return (
-    <div style={{ display: 'flex', gap: '10px' }}>
+    <div
+      style={{
+        width: '100%',
+        display: 'inline-grid',
+        gridTemplateColumns: '150px 1fr 150px',
+        columnGap: '10px',
+        rowGap: 0
+      }}
+    >
+      <tt style={{ color: 'gray' }}>SINGLE LINE TEST</tt>
       <input type="text" value={input} onChange={uiUpdateLine} style={iStyle} />
       <button type="submit" onClick={processInput} style={bStyle}>
-        TEST
+        VALIDATE
       </button>
     </div>
   );

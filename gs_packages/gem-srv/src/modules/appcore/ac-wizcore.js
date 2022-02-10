@@ -145,13 +145,20 @@ function DispatchClick(event) {
       const bundle = cur_bdl;
       const refs = { bundle, global };
       const vmPageLine = script_page[sel_line_num - TRANSPILER.LINE_START_NUM];
+      const { vmTokens } = vmPageLine;
+      const kw = vmTokens[0].scriptToken.identifier;
       const retvals = ValidateLine(vmPageLine, refs);
-      console.log(
-        ...PR(
-          `ValidateLine tok[${sel_line_pos}] returns`,
-          retvals[sel_line_pos - 1]
-        )
-      );
+      if (retvals) {
+        console.log(
+          ...PR(`${tokenKey}: contextual symbolData:`, retvals[sel_line_pos - 1])
+        );
+      } else {
+        console.log(
+          ...PR(
+            `${tokenKey}: ERROR keyword '${kw}' does not generate symbolData yet`
+          )
+        );
+      }
       return;
     }
   }
