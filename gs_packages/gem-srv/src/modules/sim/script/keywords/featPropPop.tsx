@@ -15,7 +15,7 @@ export class featPropPop extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('featPropPop');
-    this.args = ['featProp:objref'];
+    this.args = ['featureName:feature', 'featureProp:prop'];
   }
 
   /** create smc blueprint code objects */

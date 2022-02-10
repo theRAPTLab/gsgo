@@ -19,7 +19,7 @@ export class AddFeature extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('addFeature');
-    this.args = ['featureName:string'];
+    this.args = ['featureName:feature'];
   }
 
   /** create smc blueprint code objects */

@@ -171,14 +171,16 @@ export interface ISMCPrograms {
 /// SYMBOL DATA AND TYPES /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // symbol type declarations
-type TSymLiterals = `${'boolean' | 'string' | 'number' | 'enum'}`;
-type TSymDeferred = `${'expr' | 'objref' | 'block' | '{value}'}`;
-type TSymGlobal = `${'test' | 'program' | 'event' | 'feature'}`;
-type TSymEnum = { [name: string]: string[] };
-type TSymArg = `${'arg' | 'args...'}`; // use only in Keyword.args array
+type TSLit = `${'boolean' | 'string' | 'number' | 'enum'}`;
+type TSSMObj = `${'prop' | 'method' | 'gvar' | 'block'}`;
+type TSDeferred = `${'objref' | 'expr' | '{value}'}`;
+type TSGlobal = `${'pragma' | 'test' | 'program' | 'event'}`;
+type TSAgent = `${'blueprint' | 'feature'}`;
+type TSEnum = { [name: string]: string[] }; // special format for enums
+type TSArg = `${'arg' | 'args...'}`; // use only in Keyword.args array
 export type TSymKeywordArg =
-  | `${string}:${TSymLiterals | TSymDeferred | TSymGlobal | TSymArg}`
-  | TSymEnum;
+  | `${string}:${TSLit | TSSMObj | TSDeferred | TSGlobal | TSAgent | TSArg}`
+  | TSEnum;
 export type TSymMethodArg = { args?: TSymKeywordArg[]; returns?: TSymKeywordArg };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 type TSymbolErrorCodes =

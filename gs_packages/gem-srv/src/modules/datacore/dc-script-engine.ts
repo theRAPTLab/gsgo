@@ -26,19 +26,28 @@ const SCRIPTS: Map<string, TScriptUnit[]> = new Map();
 const SCRIPT_EVENTS: Map<string, Map<string, TSMCProgram>> = new Map();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const VALID_ARGTYPES = [
-  // see t-script.d TSymbolArgType
+  // see t-script.d "SYMBOL DATA AND TYPES"
   // these are used both for keyword args and method signature args
   'boolean',
   'string',
   'number',
-  'expr', // an expression that can be coerced to any type
-  'objref', // value of anobject ref
-  '{value}', // composite: literal, objref or expression
+  'enum',
+  //
+  'prop', // same as objref in some keywords
+  'method',
+  'gvar',
   'block',
+  //
+  'objref', // value of anobject ref
+  'expr', // an expression that can be coerced to any type
+  '{value}', // composite: literal, objref or expression
+  //
+  'pragma',
   'test',
   'program',
   'event',
   'feature',
+  'blueprint',
   // placeholder keyword args for use in scriptunits
   'arg',
   'args...'

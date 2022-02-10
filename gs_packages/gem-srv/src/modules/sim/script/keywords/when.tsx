@@ -25,11 +25,11 @@ export class when extends Keyword {
   constructor() {
     super('when');
     this.args = [
-      ['Agent:string', 'testName:string', '?:args...', 'consequent:block'],
+      ['Agent:blueprint', 'testName:test', '?:args...', 'consequent:block'],
       [
-        'AgentA:string',
-        'AgentB:string',
-        'testName:string',
+        'AgentA:blueprint',
+        'AgentB:blueprint',
+        'testName:test',
         '?:args...',
         'consequent:block'
       ]

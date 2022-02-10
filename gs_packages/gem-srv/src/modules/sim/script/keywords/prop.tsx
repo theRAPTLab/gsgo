@@ -46,7 +46,7 @@ const DBG = true;
 export class prop extends Keyword {
   constructor() {
     super('prop');
-    this.args = ['prop:objref', 'method:string', '?:args...'];
+    this.args = ['prop:objref', 'method:method', '?:args...'];
   }
 
   /** create smc blueprint code objects */
