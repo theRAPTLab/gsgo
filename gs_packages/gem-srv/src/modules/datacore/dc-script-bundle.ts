@@ -4,6 +4,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
 import {
   TOpcode,
   ISMCBundle,
@@ -30,7 +31,8 @@ const BUNDLE_CONTEXTS = [
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// const PR = UR.PrefixUtil('DCBDL');
-const DBG = true;
+const DBG = false;
+const PR = UR.PrefixUtil('SYMBOL', 'TagPurple');
 
 /// GLOBAL DATACORE STATE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -117,7 +119,11 @@ export function AddSymbol(bdl: ISMCBundle, symdata: TSymbolData) {
     if (_bdlsym.features === undefined) _bdlsym.features = {};
     for (const [featName, featSymbols] of Object.entries(symdata.features)) {
       if (_bdlsym.features[featName]) console.warn('feature', featName, 'exists');
-      console.log(`feat-${featName}`, featSymbols);
+      if (DBG) {
+        console.groupCollapsed(...PR(`AddSymbol: ${featName}`));
+        console.log(featSymbols);
+        console.groupEnd();
+      }
       _bdlsym.features[featName] = featSymbols;
       // if (DBG) console.log(bdl.name, 'addFeature', key);
     }
@@ -127,7 +133,11 @@ export function AddSymbol(bdl: ISMCBundle, symdata: TSymbolData) {
     if (_bdlsym.props === undefined) _bdlsym.props = {};
     for (const [propName, symbolData] of Object.entries(symdata.props)) {
       if (_bdlsym.props[propName]) console.warn('prop', propName, 'exists');
-      // console.log(`prop-${propName}`, symbolData);
+      if (DBG) {
+        console.groupCollapsed(...PR(`AddSymbol: ${propName}`));
+        console.log(symbolData);
+        console.groupEnd();
+      }
       _bdlsym.props[propName] = symbolData;
       // if (DBG) console.log(bdl.name, 'addProp', key, argType);
     }
