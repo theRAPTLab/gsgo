@@ -5,6 +5,8 @@
   ScriptView - Given a script_page array of renderable state, emit
   a clickable wizard GUI.
 
+  THIS MODULE IS A PLACEHOLDER
+
   COMPONENT USAGE
 
     <ScriptView vmPage={this.state.script_page} />
@@ -13,7 +15,11 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { TokenToString, DecodeTokenPrimitive } from 'script/transpiler-v2';
+import {
+  TokenToString,
+  UnpackToken,
+  DecodeTokenPrimitive
+} from 'script/transpiler-v2';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -43,10 +49,14 @@ function u_Key(prefix = '') {
 
 /// META ELEMENTS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** PLACEHOLDER: A line token is a blank line, so insert a blank div */
 function GLineSpace() {
   return <div className="gwiz gtoken">&nbsp;</div>;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** PLACEHOLDER: script line numbers on the left, also provide the level
+ *  padding for nested lines
+ */
 function GLineNum(props) {
   const { lineNum, level } = props;
   const indent = level * 2;
@@ -59,7 +69,7 @@ function GLineNum(props) {
 
 /// COMPONENTS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** wrapper for a GToken */
+/** PLACEHOLDER: Wrapper for a GToken */
 function GLine(props) {
   const { lineNum, level, children, selected } = props;
   const classes = selected ? 'gwiz gline selected' : 'gwiz gline';
@@ -75,15 +85,30 @@ function GLine(props) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** representation of a script unit i.e. token */
+/** PLACEHOLDER: Representation of a script unit i.e. token. */
 function GToken(props) {
   const { tokenKey, token, selected, position } = props;
-  const dtok = DecodeTokenPrimitive(token); // simple values or object
+  const [type, value] = UnpackToken(token); // simple values or object
   let label;
-
-  if (typeof dtok !== 'object') label = dtok.toString();
-  else if (Array.isArray(dtok)) label = dtok.join('.');
-  else label = TokenToString(dtok);
+  switch (type) {
+    case 'identifier':
+      label = value;
+      break;
+    case 'objref':
+      label = value.join('.');
+      break;
+    case 'string':
+      label = `"${value}"`;
+      break;
+    case 'value':
+      label = typeof value === 'boolean' ? `<${value}>` : Number(value);
+      break;
+    case 'boolean':
+      label = `<${value}>`;
+      break;
+    default:
+      label = TokenToString(token);
+  }
   // blank line? Just emit a line space
   if (label === '') {
     return <GLineSpace />;
@@ -91,7 +116,8 @@ function GToken(props) {
   let classes = selected
     ? 'gwiz gtoken styleOpen selected'
     : 'gwiz gtoken styleOpen';
-  if (token.identifier && position === 0) classes += ' styleKey';
+  if (type === 'identifier' && position === 0) classes += ' styleKey';
+  classes += ` ${type}Type`;
 
   // if not, emit the token element
   return (

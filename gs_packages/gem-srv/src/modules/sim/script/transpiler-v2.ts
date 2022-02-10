@@ -234,7 +234,8 @@ export {
   CompileBlueprint,
   DecodeTokenPrimitive, // for decoding the value of a token, returns token otherwise
   DecodeToken, // Working with DecodeTokenPrimitive, converts a token into runtime entity
-  DecodeStatement // Works with DecodeToken to create runtime enties
+  DecodeStatement, // Works with DecodeToken to create runtime enties
+  UnpackToken // more useful version of DecodeToken
 } from 'script/tools/script-compiler';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// these are routines that extract these values using brute force techniques

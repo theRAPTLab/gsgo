@@ -342,4 +342,4 @@ if (DBG)
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export { CompileScript, CompileBlueprint };
-export { DecodeToken, DecodeTokenPrimitive, DecodeStatement };
+export { UnpackToken, DecodeToken, DecodeTokenPrimitive, DecodeStatement };
