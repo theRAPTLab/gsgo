@@ -9,7 +9,6 @@
 import UR from '@gemstep/ursys/client';
 import { TScriptUnit } from 'lib/t-script.d';
 import GScriptTokenizer from 'script/tools/class-gscript-tokenizer-v2';
-import { AnnotateScript } from 'script/tools/symbol-utilities';
 import { Blocks } from './test-data/td-tokenizer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -24,7 +23,6 @@ const DBG = false;
 function TextToScript(text: string = ''): TScriptUnit[] {
   // this will throw an error string of '{err} @row:col'
   const script = gstDBG.tokenize(text.trim());
-  AnnotateScript(script);
   return script;
 }
 

@@ -49,28 +49,6 @@ const DBG = false;
 const PR = UR.PrefixUtil('SYMUTIL', 'TagTest');
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** support: use keyword processor to annotate script tokens with argument
- *  type
- */
-function AnnotateStatement(statement: TScriptUnit): TScriptUnit {
-  const keywordUnit = statement[0];
-  const [type, keyword] = UnpackToken(keywordUnit); // should be an identifier token
-  // skip lines, comments, directives
-  if (type !== 'identifier') return statement;
-  // process
-  const kwProcessor = GetKeyword(keyword);
-  if (kwProcessor === undefined)
-    throw Error(`AnnotateStatement: no keyword ${keyword}`);
-  kwProcessor.annotate(statement);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Add symbol information to a script (statements comprised of tokens) */
-function AnnotateScript(script: TScriptUnit[]): TScriptUnit[] {
-  for (const stm of script) AnnotateStatement(stm);
-  return script;
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** this class helps extract contextual information from an IToken
  *  suitable for creating viewmodel data lists for dropdowns/selectors.
  *  create an instance, setParameters(), then call decode method
@@ -112,9 +90,15 @@ class SymbolHelper {
    *  I'm not sure how this will really work, but stuffing it in here for now as
    *  a placeholder
    */
-  WIP_scopeKeywords(): TSymbolData {
+  WIP_scopeKeywords(token: IToken): TSymbolData {
+    if (token === undefined)
+      return {
+        error: { code: 'noparse', info: 'no keyword token' },
+        keywords: ['prop', 'addProp', 'call', 'if', 'when', 'onEvent', 'every']
+      };
+    const kw = this.parseAsIdentifier(token);
     return {
-      keywords: ['prop', 'addProp', 'call', 'if', 'when', 'onEvent', 'every']
+      keywords: [kw]
     };
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -193,8 +177,10 @@ class SymbolHelper {
    *  quoted string
    */
   parseAsIdentifier(token: IToken): string {
-    const { identifier } = token;
-    return identifier;
+    if (token !== undefined) {
+      const { identifier } = token;
+      return identifier;
+    }
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -204,6 +190,8 @@ class SymbolHelper {
    *  objref, etc
    */
   scopeArgSymbols(token: IToken): TSymbolData {
+    const fn = 'scopeArgSymbols:';
+    console.log(...PR(`${fn}`));
     return {};
   }
 
@@ -215,6 +203,18 @@ class SymbolHelper {
    */
   scopeObjRef(token: IToken): TSymbolData {
     const mn = 'objRefScope()';
+    if (this.sym_scope === null)
+      return {
+        error: {
+          code: 'noparse',
+          info: 'scopeObjRef needs sym_scope!==null'
+        }
+      };
+    if (token === undefined) {
+      const abort = { ...this.sym_scope };
+      this.sym_scope = null;
+      return abort;
+    }
     const scanArray = this.parseAsObjRef(token);
     // this.sym_scope will be reset in first pass
     // scanArray is the array of identifier parts separated by .
@@ -305,6 +305,19 @@ class SymbolHelper {
           info: 'scopeMethod needs sym_scope!==null'
         }
       };
+    // if there is no token, just return the methods available to pick from
+    if (token === undefined) {
+      const { methods } = this.sym_scope;
+      if (methods)
+        return {
+          methods,
+          error: { code: 'noparse', info: 'no token for methodName' }
+        };
+      return {
+        error: { code: 'noparse', info: 'no symscope with methods' }
+      };
+    }
+    // if there isn't a token available, the valid simscope would be any methods
     const methodName = this.parseAsIdentifier(token);
     if (methodName === undefined)
       return { error: { code: 'noparse', info: 'expected identifier token' } };
@@ -342,9 +355,11 @@ class SymbolHelper {
    */
   scopeArgs(tokens: IToken[]): TSymbolData[] {
     const fn = 'scopeArgs:';
-    const vargs = [];
+    if (tokens.length === 0)
+      return [{ error: { code: 'noparse', info: 'no tokens to parse' } }];
     // we're expecting a single key indicating that there was a valid
     // method selected before scopeArgs was called
+    const vargs = [];
     const methodNames = [...Object.keys(this.sym_scope)];
     if (methodNames.length !== 1) {
       for (let i = 0; i < tokens.length; i++)
@@ -410,9 +425,6 @@ export function RuntimeTest(bdl?: ISMCBundle) {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** imported by DevWizard */
-export {
-  AnnotateScript // adds symbol information to tokens
-};
 export {
   SymbolHelper // symbol decoder
 };

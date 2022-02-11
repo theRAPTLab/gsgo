@@ -63,10 +63,7 @@ export class prop extends Keyword {
     ];
   }
 
-  /** validate prop! note: the script tokens have been annotated through
-   *  keyword.annotate() which does not need overiding in subclassers.
-   *  returns array of { error?:{code,info}, symbols:TSymbolData }
-   *
+  /** validate prop!
    *  IMPORTANT: make sure keyword.setReferences({bundle,global}) was
    *  called before validate()
    */
