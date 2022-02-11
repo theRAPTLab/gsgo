@@ -119,6 +119,9 @@ function m_UpdateInhabitAgent(frametime) {
       // if target is missing then it was probably removed even though it's still touching
       if (!target) return false;
 
+      // if target is a cursor, ignore -- don't pick up other cursors
+      if (target.blueprint.name === 'Cursor') return false;
+
       // if target already has cursor, it's already inhabited, so skip it
       if (target.cursor) return false;
 
