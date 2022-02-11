@@ -100,7 +100,12 @@ function m_UpdateInhabitAgent(frametime) {
   // Handle the inhabiting programmatically
   const cursors = GetAgentsByType('Cursor');
   cursors.find(c => {
-    if (c.prop.isInhabitingTarget.value) return false; // cursor already mapped
+    // Make sure the target still exists, if it doesn't allow pickup
+    if (
+      c.prop.isInhabitingTarget.value &&
+      GetAgentById(c.prop.Cursor.cursorTargetId.value)
+    )
+      return false; // cursor already mapped
 
     // isTouching is not set yet
     if (!c.isTouching) return false;
@@ -140,12 +145,11 @@ function m_UpdateInhabitAgent(frametime) {
 
     target.cursor = c;
     c.prop.isInhabitingTarget.setTo(true);
-    // clear label
-    c.prop.AgentWidgets.text.setTo('');
-    // clear meter
-    c.prop.statusValue.setTo(undefined);
+    c.prop.AgentWidgets.text.setTo(''); // clear label
+    c.prop.statusValue.setTo(undefined); // clear meter
     c.prop.AgentWidgets.meter.setTo(undefined);
     c.prop.AgentWidgets.meterProp.setTo(undefined);
+    c.prop.Cursor.cursorTargetId.setTo(targetId);
     return true;
   });
 }
@@ -183,6 +187,11 @@ class CursorPack extends GFeature {
     }
   }
 
+  // DEPRECATED!!!
+  // This was only used by the old approach of inserting a `when` script
+  // into the Cursor blueprint.
+  // ----------------
+  //
   // `agent` in this case is usually the `Cursor` agent.
   //
   // This method is generally only used by the Cursor Feature class itself.
@@ -192,14 +201,16 @@ class CursorPack extends GFeature {
   //    We need to do it this way because we can't pass an agent or agent.id
   //    as parameter values.
   // 2. Then call `bindCursor`
-  bindCursor(agent: IAgent) {
-    const targetAgent = GetAgentById(agent.prop.Cursor.cursorTargetId.value);
-    targetAgent.cursor = agent;
-  }
+  // bindCursor(agent: IAgent) {
+  //   const targetAgent = GetAgentById(agent.prop.Cursor.cursorTargetId.value);
+  //   targetAgent.cursor = agent;
+  // }
 
   // `agent` in this case is the character being bound to, rather than
   // the Cursor agent. e.g. to release a Moth, you would call
-  // `featCall Moth.Cursor releaseCursor`
+  //   `featCall Moth.Cursor releaseCursor`
+  // NOTE: dc-agents.DeleteAgent will explicitly release the cursor when
+  // an agent is deleted.
   releaseCursor(agent: IAgent) {
     // clear the cursor state
     if (agent.cursor) {
