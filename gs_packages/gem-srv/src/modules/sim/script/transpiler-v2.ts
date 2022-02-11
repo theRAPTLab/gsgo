@@ -23,7 +23,7 @@ import * as ScriptCompiler from 'script/tools/script-compiler';
 import * as SymbolUtils from 'script/tools/symbol-utilities';
 
 // dummy to import symbol-utilities otherwise it gets treeshaken out
-SymbolUtils.RuntimeTest();
+SymbolUtils.HACK_ForceImport();
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

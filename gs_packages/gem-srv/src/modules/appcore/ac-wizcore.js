@@ -25,6 +25,7 @@ import * as ASSETS from 'modules/asset_core/asset-mgr';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as SENGINE from 'modules/datacore/dc-script-engine';
 import { ScriptHelper } from 'script/tools/script-utilities';
+import { SymbolError } from 'script/tools/symbol-utilities';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -208,29 +209,29 @@ function WizardTextChanged(text) {
  */
 function WizardTestLine(text) {
   const SHELPER = new ScriptHelper();
-  try {
-    const script = TRANSPILER.TextToScript(text);
-    const [vmPage] = SHELPER.scriptToLines(script); // note: use different instance
-    const [vmPageLine] = vmPage;
-    const { cur_bdl } = State();
-    const refs = { bundle: cur_bdl, global: {} }; // TODO: global should be bundle
-    const validTokens = ValidateLine(vmPageLine, refs);
-    const { vmTokens, lineScript } = vmPageLine;
-    return { validTokens, vmTokens, lineScript };
-  } catch (e) {
-    const error = e.toString();
-    const re = /(.*)@(\d+):(\d+).*/;
-    let matches = re.exec(error);
-    if (matches) {
-      const [, errMsg, line, pos] = matches;
-      const col = Number(pos);
-      const errLine = `${text.slice(0, col)}***ERROR***`;
-      // eslint-disable-next-line no-alert
-      alert(
-        `LineTester Error in position ${col}:\n\n${errLine}\n${text}\n\n${errMsg}`
-      );
-    } else console.log(error);
-  }
+  //  try {
+  const script = TRANSPILER.TextToScript(text);
+  const [vmPage] = SHELPER.scriptToLines(script); // note: use different instance
+  const [vmPageLine] = vmPage;
+  const { cur_bdl } = State();
+  const refs = { bundle: cur_bdl, global: {} }; // TODO: global should be bundle
+  const validTokens = ValidateLine(vmPageLine, refs);
+  const { vmTokens, lineScript } = vmPageLine;
+  return { validTokens, vmTokens, lineScript };
+  //  } catch (e) {
+  // const error = e.toString();
+  // const re = /(.*)@(\d+):(\d+).*/;
+  // let matches = re.exec(error);
+  // if (matches) {
+  //   const [, errMsg, line, pos] = matches;
+  //   const col = Number(pos);
+  //   const errLine = `${text.slice(0, col)}***ERROR***`;
+  //   // eslint-disable-next-line no-alert
+  //   alert(
+  //     `LineTester Error in position ${col}:\n\n${errLine}\n${text}\n\n${errMsg}`
+  //   );
+  // } else console.log(error);
+  // } // try-catch
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a lineVM, ensure that the scriptUnit is (1) valid and (2) return
@@ -254,10 +255,10 @@ function ValidateLine(vmPageLine, refs = {}) {
   if (!Array.isArray(lineScript)) throw Error(`${fn} not a lineScript`);
   const [kw] = TRANSPILER.DecodeStatement(lineScript);
   const kwp = SENGINE.GetKeyword(kw);
-  if (kwp === undefined) throw Error(`${fn} ${kw} not a keyword`);
-  // tell keyword process what symbol references to use
-  kwp.setReferences(refs);
+  if (kwp === undefined)
+    return [new SymbolError('noexist', `invalid keyword '${kw}'`)];
   // now validate
+  kwp.validateInit(refs);
   return kwp.validate(lineScript);
 }
 

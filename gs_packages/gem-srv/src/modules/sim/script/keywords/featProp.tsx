@@ -44,7 +44,7 @@ export class featProp extends Keyword {
 
   constructor() {
     super('featProp');
-    this.args = ['featPropName:objref', 'methodName:string', '?:args...'];
+    this.args = ['featPropName:objref', 'methodName:method', 'methodArgs:{args}'];
   }
 
   /** create smc blueprint code objects */

@@ -3,6 +3,9 @@
 
   StackMachine Type Declarations
 
+  look for CODE REVIEW: tags here to see what needs to be cleaned up
+  for a second revision of the script engine
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// BASE SIMULATION OBJECTS ///////////////////////////////////////////////////
@@ -140,6 +143,8 @@ export interface IToken {
   comment?: string; // gobbleComment()
   line?: string; // as-is line insertion
 }
+// CODE REVIEW: 'decoded' script tokens like TArg should be rewritten to work as
+// 'unpacked' tokens, which always return [type, value]
 export type TScriptUnit = IToken[]; // tokens from script-parser
 export type TArg = number | string | IToken;
 export type TArguments = TArg[]; // decoded tokens provided to compile functions
@@ -173,14 +178,21 @@ type TSSMObj = `${'prop' | 'method' | 'gvar' | 'block'}`;
 type TSDeferred = `${'objref' | 'expr' | '{value}'}`;
 type TSGlobal = `${'pragma' | 'test' | 'program' | 'event'}`;
 type TSAgent = `${'blueprint' | 'feature'}`;
-type TSEnum = { [name: string]: string[] }; // special format for enums
-type TSArg = `${'arg' | 'args...'}`; // use only in Keyword.args array
-export type TSymKeywordArg =
-  | `${string}:${TSLit | TSSMObj | TSDeferred | TSGlobal | TSAgent | TSArg}`
-  | TSEnum;
+type TSEnum = { enum: string[] }; // special format for enums
+type TSArg = `${'{arg}' | '{args}'}`; // use only in Keyword.args array
+export type TSValidType = `${
+  | TSLit
+  | TSSMObj
+  | TSDeferred
+  | TSGlobal
+  | TSAgent
+  | TSArg}`;
+export type TSymKeywordArg = `${string}:${TSValidType}` | TSEnum;
 export type TSymMethodArg = { args?: TSymKeywordArg[]; returns?: TSymKeywordArg };
+export type TSUnpackedArg = [name: string, type: TSValidType];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-type TSymbolErrorCodes =
+export type TSymbolErrorCodes =
+  | 'debug' // a debug message
   | 'noparse' // bad or unexpected token format
   | 'noscope' // valid scope could not be found or inferred
   | 'noexist' // reference doesn't exist in available scope
@@ -274,9 +286,10 @@ export enum EBundleType {
 /** related keyword interface  */
 export interface IKeyword {
   keyword: string;
-  args: TSymKeywordArg[];
+  args: TSymKeywordArg[] | TSymKeywordArg[][]; // multiple signatures
   compile(unit: TScriptUnit, lineIdx?: number): (TOpcode | TOpcodeErr)[];
   symbolize(unit: TScriptUnit, lineIdx?: number): TSymbolData;
+  validateInit(refs: TSymbolRefs): void;
   validate(unit: TScriptUnit): TValidationToken[] | void;
   getName(): string;
 }

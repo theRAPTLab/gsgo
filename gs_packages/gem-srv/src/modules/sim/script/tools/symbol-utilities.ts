@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable consistent-return */
 /* eslint-disable no-cond-assign */
@@ -18,36 +19,54 @@ import UR from '@gemstep/ursys/client';
 
 import {
   GetKeyword,
+  GetAllKeywords,
   GetFeature,
-  ValidateArgTypes,
-  DecodeArgType,
   GetProgram,
   GetTest,
   GetBlueprint,
+  UnpackArg,
+  UnpackToken,
   IsValidBundle
 } from 'modules/datacore';
 import {
-  IsValidToken,
-  UnpackToken
-} from 'script/tools/class-gscript-tokenizer-v2';
-import {
-  TScriptUnit,
-  ISMCBundle,
   IToken,
-  TSymbolMap,
   TSymbolData,
   TSymbolRefs,
-  TSymKeywordArg
+  TSymbolErrorCodes
 } from 'lib/t-script.d';
-import { VMToken, VMPageLine } from 'lib/t-ui.d';
-
-import { StringToParts } from 'lib/util-path';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const PR = UR.PrefixUtil('SYMUTIL', 'TagTest');
 
+/// TSYMBOLDATA ERROR UTILITY CLASS ///////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** use as
+ *  return new SymbolError('xxx','xxx');
+ */
+class SymbolError {
+  error: { code: TSymbolErrorCodes; info: string };
+  symbols?: TSymbolData;
+  constructor(
+    code: TSymbolErrorCodes = 'debug',
+    info: string = '<none provided>',
+    symbols?: TSymbolData
+  ) {
+    // always deliver error
+    this.error = {
+      code,
+      info
+    };
+    // optionally tack-on symbol data
+    if (symbols) this.symbols = symbols;
+  }
+}
+
+/// TSYMBOLDATA UTILITY METHODS ///////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/// SYMBOL HELPER CLASS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** this class helps extract contextual information from an IToken
  *  suitable for creating viewmodel data lists for dropdowns/selectors.
@@ -55,18 +74,18 @@ const PR = UR.PrefixUtil('SYMUTIL', 'TagTest');
  */
 class SymbolHelper {
   refs: TSymbolRefs; // replaces token, bundle, xtx_obj, symscope
-  sym_scope: TSymbolData; // current scope as drilling down into objref
+  cur_scope: TSymbolData; // current scope as drilling down into objref
+  bdl_scope: TSymbolData; // pointer to the top scope (blueprint bundle)
   keyword: string;
   //
   constructor(keyword: string = '?') {
     this.refs = {
       bundle: null,
       global: null
-      // TSymbolRefs symbols is stored in this.sym_scope for ease of access
+      // TSymbolRefs symbols is stored in this.cur_scope for ease of access
     };
     this.keyword = keyword;
   }
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** reference are the default lookup dictionaries. This is more than
    *  just the global context, including the entire
@@ -78,41 +97,36 @@ class SymbolHelper {
       if (IsValidBundle(bundle)) this.refs.bundle = bundle;
       else throw Error(`${fn} invalid bundle`);
     }
+    if (!bundle.symbols)
+      throw Error(`${fn} bundle ${bundle.name} has no symbol data`);
     if (global) {
       if (typeof global === 'object') this._attachGlobal(global);
       else throw Error(`${fn} invalid context`);
     }
-    // reset symbol scope pointer to top of bundle
-    this.WIP_scopeBundle();
+    this.bdl_scope = this.refs.bundle.symbols;
+    this.cur_scope = this.bdl_scope;
+  }
+  /// SCOPE ACCESSORS /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  resetCurrentScope() {
+    this.cur_scope = this.bdl_scope;
+  }
+  getInitialScope(): TSymbolData {
+    return this.bdl_scope;
+  }
+  getCurrentScope(): TSymbolData {
+    return this.cur_scope;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** returns a list of valid keywords for this line
-   *  I'm not sure how this will really work, but stuffing it in here for now as
-   *  a placeholder
-   */
-  WIP_scopeKeywords(token: IToken): TSymbolData {
-    if (token === undefined)
-      return {
-        error: { code: 'noparse', info: 'no keyword token' },
-        keywords: ['prop', 'addProp', 'call', 'if', 'when', 'onEvent', 'every']
-      };
-    const kw = this.parseAsIdentifier(token);
-    return {
-      keywords: [kw]
-    };
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** reset the symbol scope pointer to the top of the bundle */
-  WIP_scopeBundle() {
-    const fn = 'WIP_scopeBundle:';
-    if (this.refs.bundle === null) {
-      console.warn(
-        `${fn} ${this.keyword} missing refs.bundle (keyword needs update)`
-      );
-      return {};
+  /** returns a list of valid keywords for the script engine */
+  allKeywords(token: IToken): TSymbolData {
+    const keywords = GetAllKeywords();
+    if (token === undefined) {
+      return new SymbolError('noparse', 'no keyword token', {
+        keywords
+      });
     }
-    this.sym_scope = this.refs.bundle.symbols || {};
-    return this.sym_scope;
+    return { keywords };
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** add to prototype chain for context object */
@@ -120,233 +134,173 @@ class SymbolHelper {
     // TODO: use prototype chains
     this.refs.global = ctx;
   }
-  /// LOOKUP UTILITY METHODS //////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** if part is 'agent', return the bundle symbols or undefined */
-  agentLiteral(part: string) {
-    if (part !== 'agent') return undefined;
-    if (this.sym_scope === null) {
-      console.warn(
-        'agentLiteral: sym_scope must be defined by scopeInit() first'
-      );
-      return undefined;
-    }
-    if (this.sym_scope !== this.refs.bundle.symbols) return undefined;
-    return this.refs.bundle.symbols; // current symbol data
-  }
-  /** check the current sm_scope or bundle for featureName matches or undefined */
-  featureName(part: string) {
-    const features = this.WIP_scopeBundle().features;
-    if (features === undefined) return undefined;
-    return features[part];
-  }
-  /** check the global reference object for an sym_scope. Blueprint names
-   *  are always valid because they are stored in refs, not bundle.symbols.
-   *  returns undefined if blueprint doesn't exist, which is the case if
-   *  the global object doesn't contain all the blueprints that were defined
-   *  in the overall .gemprj file. This is set by the call to setReferences.
+  /** If part is 'agent', return the bundle symbols or undefined.
+   *  This lookup is valid only if the scope is pointing the bundle's
+   *  symbol entry at the start
    */
-  blueprintName(part: string) {
-    if (part === 'agent') return undefined;
+  agentLiteral(part: string, scope?: TSymbolData) {
+    const fn = 'agentLiteral:';
+    if (scope)
+      throw Error(`${fn} works only on bdl_scope, so don't try to override`);
+    if (part !== 'agent') return undefined;
+    this.cur_scope = this.bdl_scope;
+    return this.bdl_scope; // valid scope is parent of cur_scope
+  }
+  /** search the current scope for a matching featureName
+   */
+  featureName(part: string, scope?: TSymbolData) {
+    scope = scope || this.cur_scope;
+    const features = scope.features;
+    if (features === undefined) return undefined; // no match
+    const feature = features[part];
+    if (!feature) return undefined;
+    this.cur_scope = feature; // advance scope
+    return features; // valid scope is parent of cur_scope
+  }
+  /** search the refs.global expression context object to see if
+   *  there is a defined blueprint module in it; use the blueprint
+   *  symbols to set the current scope and return symbols
+   */
+  blueprintName(part: string, scope?: TSymbolData) {
+    const fn = 'blueprintName:';
+    if (scope)
+      throw Error(`${fn} works on context, so don't provide scope override`);
+    if (part === 'agent') return undefined; // skip agent prop in refs.global
     const ctx = this.refs.global || {};
     const bp = ctx[part];
-    if (bp) return bp.symbols;
-    return undefined;
+    if (!bp) return undefined; // no match
+    if (!bp.symbols) throw Error(`missing bundle symbles ${bp.name}`);
+    this.cur_scope = bp.symbols; // advance scope pointer
+    return bp; // valid scope is parent of cur_scope
   }
   /** check the current sm_cope or bundle for propName matches or undefined */
-  propName(part: string) {
-    const ctx = this.sym_scope || {};
-    const propctx = ctx.props;
-    if (propctx) return propctx[part];
-    return undefined;
-  }
-
-  /// TOKEN PARSERS ///////////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** an object reference is always an array of string parts, but an
-   *  identifier can also be an objref
-   */
-  parseAsObjRef(token: IToken): string[] {
-    const { identifier, objref } = token; // could be either
-    if (Array.isArray(objref)) return [...objref];
-    if (typeof identifier === 'string') return [identifier];
-    return undefined;
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** a method or property name is always an identifier, never an objref or
-   *  quoted string
-   */
-  parseAsIdentifier(token: IToken): string {
-    if (token !== undefined) {
-      const { identifier } = token;
-      return identifier;
-    }
-  }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** WIP the idea is to return a symbol data structure that shows all the
-   *  allowable argument types groups. For types of 'test' it should be the
-   *  list of tests in the system, for 'value' it coul be  literal, expr,
-   *  objref, etc
-   */
-  scopeArgSymbols(token: IToken): TSymbolData {
-    const fn = 'scopeArgSymbols:';
-    console.log(...PR(`${fn}`));
-    return {};
+  propName(part: string, scope?: TSymbolData) {
+    scope = scope || this.cur_scope;
+    const ctx = scope || {};
+    const propDict = ctx.props;
+    if (!propDict) return undefined; // no props found
+    const prop = propDict[part];
+    if (!prop) return undefined; // no matching prop
+    this.cur_scope = prop; // advance scope pointer
+    return ctx.props; // valid scope is parent of cur_scope
   }
 
   /// SCOPE DRILLING //////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Given a token that is an smobject reference, return the actual symboldata
-   *  for it and then sets it as the current scope context.
-   *  NOTE: expects that scopeInit() was called first.it resets the sym_scope
+  /** scans the current scope for a terminal property or feature, after
+   *  which a methodName would be expected in the next tokens
    */
   scopeObjRef(token: IToken): TSymbolData {
-    const mn = 'objRefScope()';
-    if (this.sym_scope === null)
-      return {
-        error: {
-          code: 'noparse',
-          info: 'scopeObjRef needs sym_scope!==null'
-        }
-      };
-    if (token === undefined) {
-      const abort = { ...this.sym_scope };
-      this.sym_scope = null;
-      return abort;
+    const fn = 'scopeObjRef:';
+    // error checks
+    if (this.cur_scope === null)
+      return new SymbolError('noparse', 'scopeObjRef needs cur_scope!==null');
+    if (token === undefined) return new SymbolError('noparse', 'undefined token');
+    // expect either an identifier or an objref, make parts into a string[] regardless
+    let [tokType, parts] = UnpackToken(token);
+    if (tokType === 'identifier') parts = [parts];
+    if (tokType !== 'objref') {
+      const symbols = this.cur_scope;
+      return new SymbolError(
+        'noparse',
+        `token is '${tokType}', not objref`,
+        symbols
+      );
     }
-    const scanArray = this.parseAsObjRef(token);
-    // this.sym_scope will be reset in first pass
-    // scanArray is the array of identifier parts separated by .
-    for (let ii = 0; ii < scanArray.length; ii++) {
-      const part = scanArray[ii];
-      const terminal = ii >= scanArray.length - 1;
-      // (1) special case first part
-      if (ii === 0) {
-        const agent = this.agentLiteral(part);
-        const feature = this.featureName(part);
-        const prop = this.propName(part);
-        const blueprint = this.blueprintName(part);
-        /** test output **/
-        /** test output **/
-        /** test output **/
-        if (DBG) {
-          console.group('part', ii, part);
-          console.log('agent', agent);
-          console.log('feature', feature);
-          console.log('prop', prop);
-          console.log('blueprint', blueprint);
-          console.groupEnd();
-        }
-        /** test output **/
-        /** test output **/
-        /** test output **/
-        if (agent) {
-          this.sym_scope = agent;
-          if (DBG) console.log(ii, 'found agent', part, agent);
-          continue;
-        } else if (feature) {
-          this.sym_scope = feature;
-          if (DBG) console.log(ii, 'found feature', part, feature);
-          continue;
-        } else if (prop) {
-          this.sym_scope = prop;
-          if (DBG) console.log(ii, 'found prop', part, prop);
-          if (terminal) return this.sym_scope; // prop, exit!
-          continue;
-        } else if (blueprint) {
-          this.sym_scope = blueprint;
-          if (DBG) console.log(ii, 'found blueprint', part, blueprint);
-        } else {
-          if (DBG) console.error(`can't find objref part ${part}`);
-          return {
-            error: {
-              code: 'noscope',
-              info: `invalid objref '${part}'`
-            }
-          };
-        }
+    // (1) scan the first part and updat the scapee
+    let terminal = parts.length === 1;
+    let part = parts[0];
+    let agent = this.agentLiteral(part);
+    let feature = this.featureName(part);
+    let prop = this.propName(part);
+    let blueprint = this.blueprintName(part);
+    if (agent) {
+      if (DBG) console.log('agent', agent);
+    } else if (feature) {
+      if (DBG) console.log('feature', feature);
+    } else if (prop) {
+      if (DBG) console.log('prop', prop);
+      if (terminal) {
+        if (DBG) console.log('successful objref resolution');
+        return prop; // prop symbols, exit!
       }
-      // (2) Scan subsequent parts, updating value of scope
-      const prop = this.propName(part);
-      const feature = this.featureName(part);
-      const blueprint = this.blueprintName(part);
+    } else if (blueprint) {
+      if (DBG) console.log('blueprint', blueprint);
+    } else {
+      return new SymbolError('noscope', `invalid objref '${part}`);
+    }
+
+    // (2) scan remaining parts of objref which updates cur_scope
+    for (let ii = 1; ii < parts.length; ii++) {
+      part = parts[ii];
+      terminal = ii >= parts.length - 1;
+      //
+      if (DBG) console.log('scanning', ii, 'for', part, 'in', this.cur_scope);
+      prop = this.propName(part);
+      feature = this.featureName(part);
+      blueprint = this.blueprintName(part);
       if (prop) {
-        this.sym_scope = prop;
-        if (DBG) console.log('found prop', ii);
-        if (terminal) return this.sym_scope; // prop is usually the terminal
+        if (terminal) return prop; // prop symbols, exit!
         continue;
       } else if (feature) {
-        this.sym_scope = feature;
-        if (terminal) return this.sym_scope;
+        if (terminal) return feature; // feature symbols, exit
         continue;
       } else if (blueprint) {
-        this.sym_scope = blueprint;
         continue;
       }
-      if (DBG) console.error(`can't find objref part ${part}`);
-      return {
-        error: {
-          code: 'noscope',
-          info: `invalid objref '${part}'`
-        }
-      };
+      if (DBG) console.error(`${fn} can't find objref part ${part}`);
+      return new SymbolError('noscope', `invalid objref '${part}'`);
     }
-    // return symbol data
-    return this.sym_scope;
+    // (3) if got this far, objref didn't resolve
+    const err = `${fn} objref didn't resolve '${parts.join('.')}'`;
+    if (DBG) console.error(err);
+    return new SymbolError('noparse', err);
   }
-
-  /** given an existing symboldata scope set in this.sym_scope, looks for a method */
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** given an existing symboldata scope set in this.cur_scope, looks for a method */
   scopeMethod(token: IToken): TSymbolData {
-    if (this.sym_scope === null)
-      return {
-        error: {
-          code: 'noparse',
-          info: 'scopeMethod needs sym_scope!==null'
-        }
-      };
-    // if there is no token, just return the methods available to pick from
+    // error checks
+    if (this.cur_scope === null)
+      return new SymbolError('noparse', 'scopeMethod needs cur_scope!==null');
     if (token === undefined) {
-      const { methods } = this.sym_scope;
+      const { methods } = this.cur_scope;
       if (methods)
-        return {
-          methods,
-          error: { code: 'noparse', info: 'no token for methodName' }
-        };
-      return {
-        error: { code: 'noparse', info: 'no symscope with methods' }
-      };
+        return new SymbolError('noparse', 'no token for methodName', { methods });
+      return new SymbolError('noparse', 'no symscope with method dict');
     }
-    // if there isn't a token available, the valid simscope would be any methods
-    const methodName = this.parseAsIdentifier(token);
+    // expect  an identifier
+    let [tokType, methodName] = UnpackToken(token);
+    if (tokType !== 'identifier') {
+      const symbols = this.cur_scope;
+      return new SymbolError(
+        'noparse',
+        `token is '${tokType}', not identifier`,
+        symbols
+      );
+    }
+    // more error checks
     if (methodName === undefined)
-      return { error: { code: 'noparse', info: 'expected identifier token' } };
+      return new SymbolError('noparse', 'expected identifier token');
     if (typeof methodName !== 'string')
-      return { error: { code: 'noscope', info: 'identifier is not string' } };
-    const { methods } = this.sym_scope;
-    if (methods === undefined)
-      return {
-        error: {
-          code: 'noexist',
-          info: 'no methods found in symscope'
-        }
-      };
-    const methodArgs = methods[methodName];
-    if (methodArgs) {
-      // is { args?: TSymKeywordArg[]; returns?: TSymKeywordArg }
-      // scope is set to current method
-      this.sym_scope = { [methodName]: methodArgs };
-      // but return the list of methods
-      return methods;
-    }
-    return {
-      error: {
-        code: 'noexist',
-        info: `'${methodName}' is not a valid method name`
-      }
-    };
-  }
+      return new SymbolError('noscope', 'identifier is not string');
 
+    // (1) does current scope have methods symbols?
+    const { methods } = this.cur_scope;
+    if (methods === undefined)
+      return new SymbolError('noexist', 'no method dict found in symscope');
+
+    const methodArgs = methods[methodName];
+    // does the methodName exist in the method symbols?
+    if (methodArgs === undefined)
+      return new SymbolError(
+        'noexist',
+        `'${methodName}' is not a valid method name`
+      );
+    this.cur_scope = { [methodName]: methodArgs }; // advance scope pointer
+    return methods; // valid scope is parent of cur_scope
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** the incoming tokens are a variable-length array that are method
    *  arguments that are allowed per token. These are TSymKeywordArg
    *  which include enums and special values for tests, programs, etc
@@ -354,26 +308,20 @@ class SymbolHelper {
    *  assumes that symscope is set to { [methodName:string]:TSymMethodArg}
    */
   scopeArgs(tokens: IToken[]): TSymbolData[] {
-    const fn = 'scopeArgs:';
     if (tokens.length === 0)
       return [{ error: { code: 'noparse', info: 'no tokens to parse' } }];
-    // we're expecting a single key indicating that there was a valid
-    // method selected before scopeArgs was called
     const vargs = [];
-    const methodNames = [...Object.keys(this.sym_scope)];
+    // (1) we're expecting a SINGLE key indicating that there was a valid
+    // method selected before scopeArgs was called
+    const methodNames = [...Object.keys(this.cur_scope)];
     if (methodNames.length !== 1) {
       for (let i = 0; i < tokens.length; i++)
-        vargs.push({
-          error: {
-            code: 'noexist',
-            info: 'no methodArgs found in symscope'
-          }
-        });
+        vargs.push(new SymbolError('noexist', 'no methodArgs found in symscope'));
       return vargs;
     }
 
     const methodName = methodNames[0];
-    const methodSignature = this.sym_scope[methodName];
+    const methodSignature = this.cur_scope[methodName];
     const { args, returns } = methodSignature;
 
     // note that tokens array is just the argument tokens, which are
@@ -384,13 +332,9 @@ class SymbolHelper {
     let ii = 0;
     for (ii; ii < tokens.length; ii++) {
       // check for overflow
+
       if (ii > args.length - 1) {
-        vargs.push({
-          error: {
-            code: 'over',
-            info: 'more tokens than method signature symbols'
-          }
-        });
+        vargs.push(new SymbolError('over', 'more tokens than expected'));
         continue;
       }
       // normal push
@@ -404,27 +348,19 @@ class SymbolHelper {
     // check for underflow
     if (ii < args.length - 1)
       for (ii; ii < args.length; ii++) {
-        vargs.push({
-          error: {
-            code: 'under',
-            info: 'fewer tokens than method signature symbols'
-          }
-        });
+        vargs.push(new SymbolError('under', 'fewer tokens than expecteds'));
       }
-
     return vargs;
   }
 } // end of SymbolHelper class
 
-/// TESTS /////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function RuntimeTest(bdl?: ISMCBundle) {
-  console.log('RuntimeTest: has not been defined');
-}
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** imported by DevWizard */
 export {
-  SymbolHelper // symbol decoder
+  SymbolHelper, // symbol decoder
+  SymbolError // create a TSymbolData error object
 };
+export function HACK_ForceImport() {
+  // force import of this module in Transpiler, otherwise webpack treeshaking
+  // seems to cause it not to load
+}

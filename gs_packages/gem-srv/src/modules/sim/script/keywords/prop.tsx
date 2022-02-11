@@ -29,13 +29,16 @@ import {
   IState,
   TOpcode,
   TScriptUnit,
-  TSymbolData,
-  TSymbolRefs,
-  TArguments,
+  TSymKeywordArg,
   TValidationToken
 } from 'lib/t-script';
 import { VMToken } from 'lib/t-ui';
-import { RegisterKeyword, GetVarCtor } from 'modules/datacore';
+import {
+  RegisterKeyword,
+  GetVarCtor,
+  UnpackArg,
+  UnpackToken
+} from 'modules/datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,7 +49,7 @@ const DBG = true;
 export class prop extends Keyword {
   constructor() {
     super('prop');
-    this.args = ['prop:objref', 'method:method', '?:args...'];
+    this.args = ['prop:objref', 'method:method', 'methodArgs:{args}'];
   }
 
   /** create smc blueprint code objects */
@@ -67,17 +70,15 @@ export class prop extends Keyword {
    *  IMPORTANT: make sure keyword.setReferences({bundle,global}) was
    *  called before validate()
    */
-  validate(dtoks: TScriptUnit): TValidationToken[] | void {
-    super.validate(dtoks); // do basic sanity checks
+  validateDemo(unit: TScriptUnit): TValidationToken[] {
+    super.validate(unit); // do basic sanity checks
     const vtoks = []; // validation token array
-    const [kw, arg_objref, arg_method, ...args] = dtoks; // get arg pattern
+    const [kwTok, objrefTok, methodTok, ...args] = unit; // get arg pattern
     // returns symbols for each dtok position excepting the keyword
-    this.shelper.WIP_scopeBundle(); // initialize shelper scope
-    vtoks.push(this.shelper.WIP_scopeKeywords());
-    vtoks.push(this.shelper.scopeObjRef(arg_objref));
-    vtoks.push(this.shelper.scopeMethod(arg_method));
+    vtoks.push(this.shelper.getKeywordSymbols(kwTok));
+    vtoks.push(this.shelper.scopeObjRef(objrefTok));
+    vtoks.push(this.shelper.scopeMethod(methodTok));
     vtoks.push(...this.shelper.scopeArgs(args));
-
     return vtoks;
   }
 } // end of keyword definition

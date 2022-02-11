@@ -53,7 +53,7 @@ import { ScriptTest, BlueprintTest } from './test-data/td-compiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
+const DBG = false;
 const PR = UR.PrefixUtil('COMPILE', 'TagDebug');
 const Scriptifier = new GScriptTokenizer();
 

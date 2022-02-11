@@ -15,7 +15,7 @@ export class dbgError extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('dbgError');
-    this.args = ['?:args...'];
+    this.args = ['*:{args}'];
   }
 
   /** create smc blueprint code objects */

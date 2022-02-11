@@ -38,7 +38,7 @@ export class _pragma extends Keyword {
 
   constructor() {
     super('_pragma');
-    this.args = ['pragmaName:pragma', '?:args...'];
+    this.args = ['pragmaName:pragma', '*:{args}'];
   }
 
   /** create smc blueprint code objects */

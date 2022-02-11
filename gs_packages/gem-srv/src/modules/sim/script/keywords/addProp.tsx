@@ -18,7 +18,7 @@ export class AddProp extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('addProp');
-    this.args = ['propName:prop', 'propType:gvar', '?:arg'];
+    this.args = ['propName:prop', 'propType:gvar', 'initValue:{value}'];
   }
 
   /** create smc blueprint code objects */

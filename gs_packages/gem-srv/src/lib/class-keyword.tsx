@@ -33,12 +33,8 @@ import {
   DerefMethod
 } from 'lib/t-script';
 import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
-import { SymbolHelper } from 'script/tools/symbol-utilities';
-import {
-  UnpackToken,
-  IsNonCodeToken
-} from 'script/tools/class-gscript-tokenizer-v2';
-import { GetKeyword } from 'modules/datacore';
+import { SymbolHelper, SymbolError } from 'script/tools/symbol-utilities';
+import { UnpackToken, UnpackArg } from 'modules/datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -48,7 +44,7 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Keyword implements IKeyword {
   keyword: string;
-  args: TSymKeywordArg[]; // document only. can have array[][] for alt signatures
+  args: TSymKeywordArg[] | TSymKeywordArg[][]; // for symbol validation
   shelper: SymbolHelper; // helper for extracting line data
   //
   constructor(keyword: string) {
@@ -73,15 +69,6 @@ class Keyword implements IKeyword {
    */
   symbolize(unit: TScriptUnit): TSymbolData {
     return {}; // change to throw Error when ready to update all keywords
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Override in subclass to validate scriptUnits against symbol
-   *  The error state returns code and desc if a parse issue is detected.
-   *  If symbol information can be inferred despite an error, it will be
-   *  returned. Otherwise it is void/undefined.
-   */
-  validate(unit: TScriptUnit): TValidationToken[] | void {
-    // OPTIONAL: put some basic conforming stuff here if necessary
   }
 
   /// UTILITY METHODS /////////////////////////////////////////////////////////
@@ -112,12 +99,95 @@ class Keyword implements IKeyword {
   getUnpackedToken(token: IToken): [string, any] {
     return UnpackToken(token);
   }
+
+  /// SYMBOL OPERATIONS ///////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** initialize parameters for SymbolHelper instance, which must be done
-   *  each time before validate() is called to ensure correct refs are set
+  /** IKeyword API utility to initialize parameters for SymbolHelper instance, which
+   *  must be done each time before validate() is called to ensure correct refs
+   *  symbol data and global objects are set
    */
-  setReferences(refs: TSymbolRefs) {
+  validateInit(refs: TSymbolRefs) {
     this.shelper.setReferences(refs);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** IKeyword API method to Validate scriptUnits against symbolData. The error state
+   *  returns code and desc if a parse issue is detected. If symbol information
+   *  can be inferred despite an error, it will be returned. Otherwise it is
+   *  void/undefined.
+   */
+  validate(unit: TScriptUnit): TValidationToken[] {
+    //
+    let tok; // hold reference to current dtoken for each pass through arglist
+    let vtok; // hold vtok reference for each pass through arglist
+    const vtoks: TValidationToken[] = [];
+
+    // (1) first token is keyword
+    vtoks.push(this.shelper.allKeywords(unit[0]));
+
+    // (2) loop through keyword argument signature in this.args
+    let argIndex = 1; // start dtok[1] after keyword
+    for (const arg of this.args as TSymKeywordArg[]) {
+      tok = unit[argIndex];
+      // (2A) process each token against each argdef in loop
+      if (argIndex < unit.length) {
+        vtok = this.updateScopeFromToken(arg, tok);
+      } else {
+        // (2B) error if there are more arguments than dtoks
+        vtok = this.newSymbolError(
+          'underflow',
+          `missing token for ${argIndex}:${arg}`
+        );
+      }
+      vtoks.push(vtok); // save the vtok and do the next token
+      argIndex++;
+    }
+    // (3) error if there are more tokens than keyword args
+    if (unit.length > argIndex) {
+      for (let tokIndex = argIndex - 1; tokIndex < unit.length; tokIndex++) {
+        const tokInfo = UnpackToken(unit[tokIndex]).join(':');
+        vtoks.push(this.newSymbolError('over', `unexpected token {${tokInfo}}`));
+      }
+    }
+    // return the validation data array
+    return vtoks;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** utility to create a TSymbolData object with errors, with option to
+   *  add valid symbols
+   */
+  newSymbolError(code, info, symbols?) {
+    return new SymbolError(code, info, symbols);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** utility to manage the current scope through keyword's SymbolHelper
+   *  instance
+   */
+  updateScopeFromToken(arg: TSymKeywordArg, token: IToken): TSymbolData {
+    let vtok;
+    const [tokType, value] = UnpackToken(token);
+    const [argName, argType] = UnpackArg(arg);
+    // error checking
+    if (argType === undefined)
+      vtok = this.newSymbolError('noparse', `bad arg def ${arg}`);
+
+    // handle argType conversion
+    switch (argType) {
+      case 'objref': // value is string[] of parts
+        vtok = this.shelper.scopeObjRef(token);
+        break;
+      case 'method': // value is an identifier string
+        vtok = this.shelper.scopeMethod(token);
+        break;
+      case '{args}':
+        break;
+      default:
+        vtok = this.newSymbolError(
+          'debug',
+          `convert ${tokType}:${value} to  ${argName}:${argType} symbols`
+        );
+    }
+    //
+    return vtok;
   }
 } // end of Keyword Class
 

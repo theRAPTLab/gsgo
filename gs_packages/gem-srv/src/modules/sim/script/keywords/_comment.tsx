@@ -19,7 +19,7 @@ export class _comment extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('_comment');
-    this.args = ['?:args...'];
+    this.args = ['?:{args}'];
   }
 
   /** create smc blueprint code objects */

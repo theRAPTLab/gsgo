@@ -14,7 +14,7 @@ import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TestLine', 'TagPurple');
 const LOG = console.log;
-const TESTLINE = 'prop agent.energyLevel setMin 0';
+const TESTLINE = 'prop agent.energyLevel setTo 0';
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,7 +32,10 @@ export function ValidateLine(/* props */) {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   function processInput(e) {
     const { validTokens, vmTokens, lineScript } = WIZCORE.WizardTestLine(input);
-    LOG(...PR(`validation:`, validTokens));
+    console.group(...PR('validation result'));
+    LOG(`%c${input}`, 'font-weight:600;font-size:larger');
+    validTokens.forEach(t => LOG(t));
+    console.groupEnd();
   }
   /// RENDER //////////////////////////////////////////////////////////////////
   const iStyle = { backgroundColor: 'white', margin: 0 };
@@ -44,10 +47,11 @@ export function ValidateLine(/* props */) {
         display: 'inline-grid',
         gridTemplateColumns: '150px 1fr 150px',
         columnGap: '10px',
-        rowGap: 0
+        rowGap: 0,
+        alignItems: 'center'
       }}
     >
-      <tt style={{ color: 'gray' }}>SINGLE LINE TEST</tt>
+      <tt style={{ color: 'gray' }}>SINGLE LINE DEBUG</tt>
       <input type="text" value={input} onChange={uiUpdateLine} style={iStyle} />
       <button type="submit" onClick={processInput} style={bStyle}>
         VALIDATE
