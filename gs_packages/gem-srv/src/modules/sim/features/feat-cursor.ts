@@ -37,7 +37,6 @@ const CURSOR_BLUEPRINTS = new Map(); // key = agent id, value = agent id
 /// so we know which blueprints have registered to use cursors
 function m_CompileCursors() {
   let touchscripts = '';
-  let whenscripts = '';
   const bpNames = Array.from(CURSOR_BLUEPRINTS.keys());
   bpNames.forEach(bpName => {
     touchscripts += `featCall Touches monitor ${bpName} c2c\n`;
