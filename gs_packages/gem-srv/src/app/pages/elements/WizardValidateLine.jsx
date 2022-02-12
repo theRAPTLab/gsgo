@@ -31,10 +31,9 @@ export function ValidateLine(/* props */) {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   function processInput(e) {
+    console.group(...PR('validating...'));
+    LOG(`%c${input}`, 'font-size:1.1rem');
     const { validTokens, vmTokens, lineScript } = WIZCORE.WizardTestLine(input);
-    console.group(...PR('validation result'));
-    LOG(`%c${input}`, 'font-weight:600;font-size:larger');
-    validTokens.forEach(t => LOG(t));
     console.groupEnd();
   }
   /// RENDER //////////////////////////////////////////////////////////////////

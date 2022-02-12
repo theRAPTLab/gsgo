@@ -255,8 +255,10 @@ function ValidateLine(vmPageLine, refs = {}) {
   if (!Array.isArray(lineScript)) throw Error(`${fn} not a lineScript`);
   const [kw] = TRANSPILER.DecodeStatement(lineScript);
   const kwp = SENGINE.GetKeyword(kw);
-  if (kwp === undefined)
-    return [new SymbolError('noexist', `invalid keyword '${kw}'`)];
+  if (kwp === undefined) {
+    const keywords = SENGINE.GetAllKeywords();
+    return [new SymbolError('noexist', `invalid keyword '${kw}'`, { keywords })];
+  }
   // now validate
   kwp.validateInit(refs);
   return kwp.validate(lineScript);

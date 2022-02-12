@@ -204,9 +204,13 @@ export type TSymbolErrorCodes =
 /** data description of symbols for features, props. returned from anything
  *  that produces Symbol data: keywords with .symbolize(unit), gvars and feat
  *  modules that implement a static .Symbols definition
+ *
+ *  WARNING: this is a reference data structure in dictionaries, so modifying
+ *  a read  TSymbolData object property will corrupt the dictionary.
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export type TSymbolData = {
+  // read-only dictionaries
   keywords?: string[]; // a list of valid keywords for position 0
   ctor?: Function; // constructor object if needed (used by var- props)
   props?: { [propName: string]: TSymbolData };
@@ -214,8 +218,9 @@ export type TSymbolData = {
   features?: { [featureName: string]: TSymbolData };
   context?: { [line: number]: any }; // line number for a root statement
   args?: { [argTypeGroup: string]: { [arg: string]: TSymKeywordArg } }; // arg choices
+  // ok to change or add, as these are not defined in the reference dictionaries
   error?: TSymbolError; // debugging if error
-  info?: string; // debugging status
+  info?: string; // available for adding info about the error context, or whatever
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** blueprint symbol data format */

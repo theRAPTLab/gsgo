@@ -67,6 +67,7 @@ export class prop extends Keyword {
   }
 
   /** validate prop!
+   *  DEPRECATED AND REPLACED BY Keyword.validate() in base class
    *  IMPORTANT: make sure keyword.setReferences({bundle,global}) was
    *  called before validate()
    */
@@ -76,7 +77,7 @@ export class prop extends Keyword {
     const [kwTok, objrefTok, methodTok, ...args] = unit; // get arg pattern
     // returns symbols for each dtok position excepting the keyword
     vtoks.push(this.shelper.getKeywordSymbols(kwTok));
-    vtoks.push(this.shelper.scopeObjRef(objrefTok));
+    vtoks.push(this.shelper.objRef(objrefTok));
     vtoks.push(this.shelper.scopeMethod(methodTok));
     vtoks.push(...this.shelper.scopeArgs(args));
     return vtoks;

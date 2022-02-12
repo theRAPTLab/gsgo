@@ -725,6 +725,8 @@ function Tokenize(text: string): IToken[] {
  *  [undefined, undefined] otherwise
  */
 function UnpackToken(tok: IToken): [type: string, value: any] {
+  // null tokens return error
+  if (typeof tok !== 'object') return ['<undefined>', undefined];
   // count number of valid types in the token
   // we allow only one of these, but ignore other
   // properties

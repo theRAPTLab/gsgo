@@ -38,7 +38,7 @@ import { UnpackToken, UnpackArg } from 'modules/datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
+const DBG = true;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -50,7 +50,6 @@ class Keyword implements IKeyword {
   constructor(keyword: string) {
     if (typeof keyword !== 'string')
       throw Error('Keyword requires string, not undefined');
-    else if (DBG) console.log('Keyword constructing:', keyword);
     this.keyword = keyword;
     this.args = [];
     this.shelper = new SymbolHelper(keyword);
@@ -122,34 +121,77 @@ class Keyword implements IKeyword {
     const vtoks: TValidationToken[] = [];
 
     // (1) first token is keyword
-    vtoks.push(this.shelper.allKeywords(unit[0]));
+    tok = unit[0];
+    vtoks.push(this.shelper.allKeywords(tok));
 
     // (2) loop through keyword argument signature in this.args
     let argIndex = 1; // start dtok[1] after keyword
     for (const arg of this.args as TSymKeywordArg[]) {
       tok = unit[argIndex];
       // (2A) process each token against each argdef in loop
-      if (argIndex < unit.length) {
-        vtok = this.updateScopeFromToken(arg, tok);
-      } else {
-        // (2B) error if there are more arguments than dtoks
-        vtok = this.newSymbolError(
-          'underflow',
-          `missing token for ${argIndex}:${arg}`
-        );
-      }
+      vtok = this.updateScope(arg, tok);
+      // if (argIndex < unit.length) {
+      //   vtok = this.updateScope(arg, tok);
+      // } else {
+      //   // (2B) error if there are more arguments than dtoks
+      //   vtok = this.newSymbolError(
+      //     'under',
+      //     `missing token for ${argIndex}:${arg}`,
+      //     this.currentScope()
+      //   );
+      // }
       vtoks.push(vtok); // save the vtok and do the next token
       argIndex++;
     }
     // (3) error if there are more tokens than keyword args
     if (unit.length > argIndex) {
       for (let tokIndex = argIndex - 1; tokIndex < unit.length; tokIndex++) {
-        const tokInfo = UnpackToken(unit[tokIndex]).join(':');
+        tok = unit[tokIndex];
+        const tokInfo = UnpackToken(tok).join(':');
         vtoks.push(this.newSymbolError('over', `unexpected token {${tokInfo}}`));
       }
     }
+
+    // dump vtoken status fo debugging
+    if (DBG) {
+      console.log('%cVALIDATION SUMMARY', 'color:blue');
+      let max = 0;
+      const lines = [];
+      vtoks.forEach((symbolData, i) => {
+        const { error, ...keys } = symbolData;
+        let err = error ? error.info : '';
+        let dicts = [...Object.keys(keys)];
+        let symbols = dicts.length ? dicts.join(', ') : '';
+        const spc = ''.padStart(i.toString().length);
+        let out = '';
+        if (symbols) {
+          out = `SDICT ${symbols}`;
+          if (out.length > max) max = out.length;
+        }
+        if (err) {
+          let el = '';
+          if (symbols) el = `\n${spc} - `;
+          el += `ERROR ${err}`;
+          if (el.length > max) max = el.length;
+          out += el;
+        }
+        lines.push(`${i} - ${out}`);
+      });
+      lines.forEach((line, i) => {
+        const bg = i % 2 === 0 ? '#eee' : '#fff';
+        console.log(`%c${line}`, `background-color:${bg}`);
+      });
+      console.log('%cVALIDATION TOKEN ARRAY', 'color:blue');
+      console.log(vtoks);
+    }
+
     // return the validation data array
     return vtoks;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** helper to return the current symbolData for underflow error reporting */
+  currentScope() {
+    return this.shelper.cur_scope || {};
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** utility to create a TSymbolData object with errors, with option to
@@ -160,12 +202,15 @@ class Keyword implements IKeyword {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** utility to manage the current scope through keyword's SymbolHelper
-   *  instance
+   *  instance. If token is not provided because it's missing, then
+   *  the returned error will include expected symbols if there had
+   *  been a valid token for the UI to have a list of possibilities.
    */
-  updateScopeFromToken(arg: TSymKeywordArg, token: IToken): TSymbolData {
+  updateScope(arg: TSymKeywordArg, token?: IToken): TSymbolData {
+    const fn = 'updateScope:';
     let vtok;
-    const [tokType, value] = UnpackToken(token);
     const [argName, argType] = UnpackArg(arg);
+    const [tokType, value] = UnpackToken(token);
     // error checking
     if (argType === undefined)
       vtok = this.newSymbolError('noparse', `bad arg def ${arg}`);
@@ -173,20 +218,18 @@ class Keyword implements IKeyword {
     // handle argType conversion
     switch (argType) {
       case 'objref': // value is string[] of parts
-        vtok = this.shelper.scopeObjRef(token);
+        vtok = this.shelper.objRef(token);
         break;
       case 'method': // value is an identifier string
         vtok = this.shelper.scopeMethod(token);
         break;
-      case '{args}':
-        break;
       default:
         vtok = this.newSymbolError(
           'debug',
-          `convert ${tokType}:${value} to  ${argName}:${argType} symbols`
+          `${fn} unhandled tokType[${tokType}] as argType[${argType}]`
         );
     }
-    //
+    // validation token symbols
     return vtok;
   }
 } // end of Keyword Class
