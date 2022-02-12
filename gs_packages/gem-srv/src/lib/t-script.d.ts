@@ -220,7 +220,7 @@ export type TSymbolData = {
   args?: { [argTypeGroup: string]: { [arg: string]: TSymKeywordArg } }; // arg choices
   // ok to change or add, as these are not defined in the reference dictionaries
   error?: TSymbolError; // debugging if error
-  info?: string; // available for adding info about the error context, or whatever
+  unitText?: string; // the scriptText word associated with symbol
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** blueprint symbol data format */

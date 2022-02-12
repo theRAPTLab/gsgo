@@ -25,7 +25,7 @@ import * as ASSETS from 'modules/asset_core/asset-mgr';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as SENGINE from 'modules/datacore/dc-script-engine';
 import { ScriptHelper } from 'script/tools/script-utilities';
-import { SymbolError } from 'script/tools/symbol-utilities';
+import { VSymError } from 'script/tools/symbol-utilities';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -257,7 +257,7 @@ function ValidateLine(vmPageLine, refs = {}) {
   const kwp = SENGINE.GetKeyword(kw);
   if (kwp === undefined) {
     const keywords = SENGINE.GetAllKeywords();
-    return [new SymbolError('noexist', `invalid keyword '${kw}'`, { keywords })];
+    return [new VSymError('noexist', `invalid keyword '${kw}'`, { keywords })];
   }
   // now validate
   kwp.validateInit(refs);

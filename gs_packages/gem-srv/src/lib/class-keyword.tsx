@@ -33,7 +33,7 @@ import {
   DerefMethod
 } from 'lib/t-script';
 import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
-import { SymbolHelper, SymbolError } from 'script/tools/symbol-utilities';
+import { SymbolHelper, VSymError } from 'script/tools/symbol-utilities';
 import { UnpackToken, UnpackArg } from 'modules/datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -198,7 +198,7 @@ class Keyword implements IKeyword {
    *  add valid symbols
    */
   newSymbolError(code, info, symbols?) {
-    return new SymbolError(code, info, symbols);
+    return new VSymError(code, info, symbols);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** utility to manage the current scope through keyword's SymbolHelper

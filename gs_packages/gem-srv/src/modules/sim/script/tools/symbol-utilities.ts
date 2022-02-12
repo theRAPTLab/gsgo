@@ -1,3 +1,4 @@
+/* eslint-disable react/static-property-placement */
 /* eslint-disable max-classes-per-file */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable consistent-return */
@@ -33,7 +34,8 @@ import {
   TSymbolData,
   TSymbolRefs,
   TSymbolErrorCodes,
-  TSymMethodArg
+  TSymMethodArg,
+  TSymKeywordArg
 } from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -41,40 +43,46 @@ import {
 const DBG = false;
 const PR = UR.PrefixUtil('SYMUTIL', 'TagTest');
 
-/// TSYMBOLDATA ERROR UTILITY CLASS ///////////////////////////////////////////
+/// TSYMBOLDATA UTILITY CLASSES ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** error constructor */
-class SymbolError implements TSymbolData {
+class VSymToken implements TSymbolData {
+  // implement a subset of TSymbolData fields
+  /** @constructor
+   *  @param {TSymbolData} symbols optional set of symbols that were available
+   *  @param {string} info optional tag, useful for adding context for errors
+   */
+  constructor(symbols?: TSymbolData, unitText?: string) {
+    // if we want to remember the original scriptText word
+    if (unitText !== undefined) (this as any).unitText = unitText;
+    // add symbol data
+    if (symbols) {
+      const symbolKeys = [...Object.keys(symbols)];
+      symbolKeys.forEach(key => {
+        this[key] = symbols[key];
+      });
+    }
+  }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+class VSymError extends VSymToken {
+  // add error-related TSymbolData fields
   error: { code: TSymbolErrorCodes; info: string };
   /** @constructor
    *  @param {TSymbolData} err_code specific code type
    *  @param {string} err_info description of what causes the error
-   *  @param {TSymbolData} symbols optional set of symbols that were available
-   *  @param {string} info optional tag, useful for adding context for errors
    */
   constructor(
     err_code: TSymbolErrorCodes = 'debug',
     err_info: string = '<none provided>',
     symbols?: TSymbolData,
-    info?: string
+    unitText?: string
   ) {
+    super(symbols, unitText);
     // always deliver error
     this.error = {
       code: err_code,
       info: err_info
     };
-    if (info !== undefined) (this as any).info = info;
-    // optionally tack-on symbol data
-    if (symbols) {
-      const symbolKeys = [...Object.keys(symbols)];
-      symbolKeys.forEach(key => {
-        (this as any)[key] = symbols[key];
-      });
-    }
-  }
-  /** decorate with additional context info */
-  setInfo(info: string) {
-    (this as any).info = info;
   }
 }
 
@@ -159,14 +167,15 @@ class SymbolHelper {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** returns a list of valid keywords for the script engine */
   allKeywords(token: IToken): TSymbolData {
+    const [type, value] = UnpackToken(token);
     const keywords = GetAllKeywords();
-    if (token === undefined) {
+    if (type !== 'identifier') {
       this.scan_error = true;
-      return new SymbolError('noparse', 'no keyword token', {
+      return new VSymError('noparse', 'no keyword token', {
         keywords
       });
     }
-    return { keywords };
+    return new VSymToken({ keywords }, value);
   }
 
   /// MULTIPLE CHOICE CHECKS //////////////////////////////////////////////////
@@ -240,12 +249,12 @@ class SymbolHelper {
     if (DBG) console.log(...PR(`${fn}: ${tokType}:${parts}`));
     // was there a previous scope-breaking error?
     if (this.scanError())
-      return new SymbolError('noscope', `${fn} error in previous token(s)`);
+      return new VSymError('noscope', `${fn} error in previous token(s)`);
     // is the token a valid identifier or objref token?
     if (tokType === 'identifier') parts = [parts];
     else if (tokType !== 'objref') {
       this.scanError(true);
-      return new SymbolError(
+      return new VSymError(
         'noparse',
         `${fn} improper or missing token`,
         this.getBundleScope()
@@ -262,13 +271,13 @@ class SymbolHelper {
     let terminal = parts.length === 1;
     // does the objref terminate in a method-bearing reference?
     if (terminal) {
-      if (prop) return prop; // return agent scope {props}
-      if (feature) return feature; // return feature scope {features,props}
+      if (prop) return new VSymToken(prop, part); // return agent scope {props}
+      if (feature) return new VSymToken(feature, part); // return feature scope {features,props}
     }
     // did any agent, feature, prop, or blueprint resolve?
     if (!(agent || feature || prop || blueprint)) {
       this.scanError(true);
-      return new SymbolError('noscope', `${fn} invalid objref '${part}`);
+      return new VSymError('noscope', `${fn} invalid objref '${part}`);
     }
 
     // OBJREF PART 2: are the remaining parts valid?
@@ -285,8 +294,9 @@ class SymbolHelper {
       // is this part of the objref the last part?
       terminal = ii >= parts.length - 1;
       if (terminal) {
-        if (prop) return prop; // return agent scope {props}
-        if (feature) return feature; // return feature scope {features,props}
+        const unitText = parts.join('.');
+        if (prop) return new VSymToken(prop, unitText); // return agent scope {props}
+        if (feature) return new VSymToken(feature, unitText); // return feature scope {features,props}
       }
     } /** END OF LOOP **/
 
@@ -295,7 +305,7 @@ class SymbolHelper {
     // example: 'prop agent'
     this.scanError(true);
     const orStr = parts.join('.');
-    return new SymbolError(
+    return new VSymError(
       'noparse',
       `${fn} '${orStr}' not found or invalid`,
       this.getBundleScope()
@@ -312,21 +322,21 @@ class SymbolHelper {
 
     // was there a previous scope-breaking error?
     if (this.scanError())
-      return new SymbolError('noscope', `${fn} error in previous token(s)`);
+      return new VSymError('noscope', `${fn} error in previous token(s)`);
     // is scope set?
     if (this.cur_scope === null)
-      return new SymbolError('noscope', `${fn} unexpected invalid scope`);
+      return new VSymError('noscope', `${fn} unexpected invalid scope`);
     // is there a token?
     if (token === undefined) {
       this.scanError(true);
       const { methods } = this.cur_scope;
-      return new SymbolError('noparse', `${fn} missing token`, { methods });
+      return new VSymError('noparse', `${fn} missing token`, { methods });
     }
     // is the token an identifier?
     if (tokType !== 'identifier') {
       this.scanError(true);
       const symbols = this.cur_scope;
-      return new SymbolError(
+      return new VSymError(
         'noparse',
         `${fn} expects identifier, not ${tokType}`,
         symbols
@@ -335,19 +345,19 @@ class SymbolHelper {
     // is the indentifier defined?
     if (typeof methodName !== 'string') {
       this.scanError(true);
-      return new SymbolError('noparse', `${fn} bad identifier`);
+      return new VSymError('noparse', `${fn} bad identifier`);
     }
     // is there a methods dictionary in scope
     const { methods } = this.cur_scope;
     if (methods === undefined) {
       this.scanError(true);
-      return new SymbolError('noexist', `${fn} scope has no method dict`);
+      return new VSymError('noexist', `${fn} scope has no method dict`);
     }
     // does methodName exist in the methods dict?
     const methodArgs = methods[methodName];
     if (methodArgs === undefined) {
       this.scanError(true);
-      return new SymbolError(
+      return new VSymError(
         'noexist',
         `${fn} '${methodName}' is not in method dict`,
         { methods }
@@ -355,7 +365,7 @@ class SymbolHelper {
     }
     // all good!
     this.cur_scope = { [methodName]: methodArgs }; // advance scope pointer
-    return { methods }; // valid scope is parent of cur_scope
+    return new VSymToken({ methods }, methodName); // valid scope is parent of cur_scope
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** process the argument list that follows a methodName in GEMSCRIPT
@@ -368,7 +378,7 @@ class SymbolHelper {
     const methodNames = [...Object.keys(this.cur_scope)];
     if (methodNames.length !== 1) {
       for (let i = 0; i < tokens.length; i++)
-        vargs.push(new SymbolError('noscope', `${fn} invalid methodArgs dict`));
+        vargs.push(new VSymError('noscope', `${fn} invalid methodArgs dict`));
       return vargs;
     }
 
@@ -389,7 +399,7 @@ class SymbolHelper {
     for (tokenIndex; tokenIndex < tokens.length; tokenIndex++) {
       // is the tokenIndex greater than the number of argument definitions?
       if (tokenIndex > args.length - 1) {
-        vargs.push(new SymbolError('over', `${fn} no argType for extra tokens`));
+        vargs.push(new VSymError('over', `${fn} no argType for extra tokens`));
         continue;
       }
       // SCOPE ARGS 3: validate current token against matching  argument definition
@@ -403,7 +413,7 @@ class SymbolHelper {
     // check for underflow
     if (ii < args.length - 1)
       for (ii; ii < args.length; ii++) {
-        vargs.push(new SymbolError('under', 'fewer tokens than expecteds'));
+        vargs.push(new VSymError('under', 'fewer tokens than expecteds'));
       }
     return vargs;
   }
@@ -413,7 +423,7 @@ class SymbolHelper {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
   SymbolHelper, // symbol decoder
-  SymbolError // create a TSymbolData error object
+  VSymError // create a TSymbolData error object
 };
 export function HACK_ForceImport() {
   // force import of this module in Transpiler, otherwise webpack treeshaking
