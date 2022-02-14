@@ -11,9 +11,9 @@ import {
   ISMCBundle,
   IKeyword,
   IKeywordCtor,
-  TSymKeywordArg,
+  TSymArg,
   TSValidType,
-  TSUnpackedArg
+  TSymUnpackedArg
 } from 'lib/t-script.d';
 import { GetFunction } from './dc-named-methods';
 
@@ -52,8 +52,7 @@ const VALID_ARGTYPES: TSValidType[] = [
   'feature',
   'blueprint',
   // placeholder keyword args for use in scriptunits
-  '{arg}',
-  '{args}'
+  '{...}'
 ];
 
 /// KEYWORD UTILITIES /////////////////////////////////////////////////////////
@@ -62,7 +61,7 @@ const VALID_ARGTYPES: TSValidType[] = [
  *  iterate through all the argument definitions and make sure they are
  *  valid syntax
  */
-function ValidateArgs(args: TSymKeywordArg[]): boolean {
+function ValidateArgs(args: TSymArg[]): boolean {
   const fn = 'ValidateArgs';
   if (!Array.isArray(args)) {
     console.warn(`${fn}: invalid argtype array`);
@@ -96,17 +95,16 @@ function ValidateArgs(args: TSymKeywordArg[]): boolean {
 /** given a string 'arg' of form 'name:argType', return [name, argType] if the
  *  string meets type requirements, [undefined, undefined] otherwise
  */
-function UnpackArg(arg: TSymKeywordArg): TSUnpackedArg {
+function UnpackArg(arg: TSymArg): TSymUnpackedArg {
   if (typeof arg !== 'string') return [undefined, undefined];
-  let [name, type, ...xtra] = arg.split(':') as TSUnpackedArg;
+  let [name, type, ...xtra] = arg.split(':') as TSymUnpackedArg;
   // if there are multiple :, then that is an error
   if (xtra.length > 0) return [undefined, undefined];
   if (!VALID_ARGTYPES.includes(type)) return [undefined, undefined];
   // a zero-length name is an error except for the
-  // {arg} and {args} types
+  // multi-argument {args} glob type
   if (name.length === 0) {
-    if (type === '{arg}') name = '?';
-    else if (type === '{args}') name = '*';
+    if (type === '{...}') name = '**';
     else return [undefined, undefined];
   }
   // name and type are good, so return valid unpacked arg
@@ -116,7 +114,7 @@ function UnpackArg(arg: TSymKeywordArg): TSUnpackedArg {
 function RegisterKeyword(Ctor: IKeywordCtor, key?: string) {
   const fn = 'RegisterKeyword:';
   const kobj = new Ctor();
-  if (!ValidateArgs(kobj.args as TSymKeywordArg[]))
+  if (!ValidateArgs(kobj.args as TSymArg[]))
     throw Error(`${fn} invalid argDef in keyword '${kobj.keyword}'`);
   KEYWORDS.set(key || kobj.keyword, kobj);
 }
@@ -247,7 +245,7 @@ function DeleteAllBlueprints() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a program name [[progname]] might be passed, which needs to be dereferenced
  *  into a TSMCProgram stored in the FUNCTIONS table
- *  CODE REVIEW: this predates the formal argtype system in t-script.d.ts, so
+ *  CODE REVIEW: @Sri this predates the formal argtype system in t-script.d.ts, so
  *  it should be updated or removed
  */
 function UtilDerefArg(arg: any) {
@@ -294,4 +292,9 @@ export {
   UtilDerefArg,
   UtilFirstValue
 };
-export { UnpackToken } from 'script/tools/class-gscript-tokenizer-v2';
+export {
+  UnpackToken,
+  IsValidToken,
+  IsValidTokenType,
+  TokenValue
+} from 'script/tools/class-gscript-tokenizer-v2';

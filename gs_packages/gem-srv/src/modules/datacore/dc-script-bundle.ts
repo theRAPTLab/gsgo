@@ -112,8 +112,6 @@ export function AddSymbol(bdl: ISMCBundle, symdata: TSymbolData) {
   if (bdl.symbols === undefined) bdl.symbols = {};
   const _bdlsym = bdl.symbols;
 
-  if (symdata.info) console.log('info:', symdata.info);
-
   if (symdata.features) {
     // featureName --> featureModule
     if (_bdlsym.features === undefined) _bdlsym.features = {};

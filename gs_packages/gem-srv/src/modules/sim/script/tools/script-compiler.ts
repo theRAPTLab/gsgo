@@ -48,7 +48,10 @@ import {
 import GAgent from 'lib/class-gagent';
 
 import { ParseExpression } from './class-expr-parser-v2';
-import GScriptTokenizer, { UnpackToken } from './class-gscript-tokenizer-v2';
+import GScriptTokenizer, {
+  IsValidToken,
+  UnpackToken
+} from './class-gscript-tokenizer-v2';
 import { ScriptTest, BlueprintTest } from './test-data/td-compiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -342,4 +345,10 @@ if (DBG)
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export { CompileScript, CompileBlueprint };
-export { UnpackToken, DecodeToken, DecodeTokenPrimitive, DecodeStatement };
+export {
+  IsValidToken,
+  UnpackToken,
+  DecodeToken,
+  DecodeTokenPrimitive,
+  DecodeStatement
+};

@@ -191,7 +191,7 @@ export class GVarNumber extends SM_Object implements IScopeable {
 /// SYMBOLS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 GVarNumber.Symbols = {
-  ctor: GVarNumber,
+  ctors: { Number: GVarNumber.Symbols },
   methods: {
     value: { returns: 'value:number' },
     setWrap: { args: ['nvalue:number'] },

@@ -64,7 +64,7 @@ export class GVarBoolean extends SM_Object implements IScopeable {
 /// SYMBOLS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 GVarBoolean.Symbols = {
-  ctor: GVarBoolean,
+  ctors: { Boolean: GVarBoolean.Symbols },
   methods: {
     setTo: { args: ['value:boolean'] },
     true: { returns: 'value:boolean' },

@@ -35,3 +35,8 @@ export function SymbolDefFor(name: string) {
   const def = VAR_DICT.get(name);
   if (def) return def.Symbols;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return all var constructors */
+export function GetAllVarCtors() {
+  return VAR_DICT;
+}

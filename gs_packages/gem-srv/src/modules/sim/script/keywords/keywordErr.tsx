@@ -19,7 +19,7 @@ export class keywordErr extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('keywordErr');
-    this.args = ['*:{args}'];
+    this.args = ['*:{...}'];
   }
 
   /** create smc blueprint code objects */

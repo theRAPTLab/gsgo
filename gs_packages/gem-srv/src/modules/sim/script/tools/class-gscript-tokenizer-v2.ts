@@ -798,6 +798,19 @@ function IsValidToken(tok: IToken): boolean {
   const [valid] = UnpackToken(tok);
   return typeof valid === 'string';
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Utility to check string is a known token type */
+function IsValidTokenType(tokType: string): boolean {
+  return validTokenTypes[tokType] !== undefined;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Utility to return tokenValue if it optionally matches expected type */
+function TokenValue(tok, matchType?: string) {
+  if (matchType && !IsValidTokenType(matchType)) return undefined;
+  const [type, tokenValue] = UnpackToken(tok); // note: only unpacks valid tokens
+  if (matchType && matchType !== type) return undefined;
+  return tokenValue;
+}
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -808,5 +821,7 @@ export {
   UnpackStatement,
   UnpackToken,
   IsNonCodeToken,
-  IsValidToken
+  IsValidToken,
+  IsValidTokenType,
+  TokenValue
 };

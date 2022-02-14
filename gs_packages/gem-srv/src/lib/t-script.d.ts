@@ -53,8 +53,23 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   getFeatMethod: (fname: string, mName: string) => [IFeature, TMethod];
   callFeatMethod: (fName: string, mName: string, ...args) => any;
   getFeatProp: (fName: string, pName: string) => IScopeable;
+  // these are the ONLY built-in agent properties
+  skin: string; // logical 'appearance' descriptor
+  x: number; // x location in simulator world
+  y: number; // y location in simulator world
+
+  // CODE REVIEW: @Ben hacking in these values into base agent, which is a
+  // *SIMULATION-ONLY OBJECT*, make it difficult to keep the simulation module
+  // independent from the world renderer. They are also a jumble of
+  // instrumentation, display modifiers, and interactive concepts. There are
+  // system concepts already defined in the "INTERACTION TYPE DECLARATIONS"
+  // below. The general idea is that logical properties are converted into the
+  // observable versions in the IVisual interface (see t-visual.d.ts) For
+  // example: a 'selected' logical property might turn on SEVERAL visual
+  // properties like "outline", "tint", and so on. This approach helps prevent
+  // issues with effects overiding each other with fragile display hacks
+
   // shortcut properties
-  skin: string;
   scale: number;
   scaleY: number;
   alpha: number;
@@ -63,8 +78,11 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   isLargeGraphic: boolean;
   statusText: string;
   statusValue: number;
-  x: number;
-  y: number;
+
+  // CODE REVIEW: @Ben these should be not hacked into the base agent. You can
+  // instead the features themselves, using a private property within the
+  // agent.props[featurename] dictionary
+
   // feature helpers
   canSeeCone: any; // used by Vision
   canSeeColor: any; // used by Vision
@@ -73,7 +91,6 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   touchTable: Map<any, any>; // used by feat-touches to keep track of other agents
   lastTouched: any; // used by Touches
   isTouching: any; // used by Touches
-  // name, value are defined in IScopeable
   statusObject: any;
   debug?: any; // used by Vision to pass polygon path of cone to class-visual
 }
@@ -84,6 +101,7 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
  */
 export interface IFeature {
   meta: { name: string };
+  get name(): string;
   method: IKeyObject;
   initialize(pm: any): void;
   decorate(agent: IAgent): void;
@@ -143,7 +161,7 @@ export interface IToken {
   comment?: string; // gobbleComment()
   line?: string; // as-is line insertion
 }
-// CODE REVIEW: 'decoded' script tokens like TArg should be rewritten to work as
+// CODE REVIEW: @Sri 'decoded' script tokens like TArg should be rewritten to work as
 // 'unpacked' tokens, which always return [type, value]
 export type TScriptUnit = IToken[]; // tokens from script-parser
 export type TArg = number | string | IToken;
@@ -179,7 +197,7 @@ type TSDeferred = `${'objref' | 'expr' | '{value}'}`;
 type TSGlobal = `${'pragma' | 'test' | 'program' | 'event'}`;
 type TSAgent = `${'blueprint' | 'feature'}`;
 type TSEnum = { enum: string[] }; // special format for enums
-type TSArg = `${'{arg}' | '{args}'}`; // use only in Keyword.args array
+type TSArg = `${'{...}'}`; // multiple arg token marker
 export type TSValidType = `${
   | TSLit
   | TSSMObj
@@ -187,15 +205,16 @@ export type TSValidType = `${
   | TSGlobal
   | TSAgent
   | TSArg}`;
-export type TSymKeywordArg = `${string}:${TSValidType}` | TSEnum;
-export type TSymMethodArg = { args?: TSymKeywordArg[]; returns?: TSymKeywordArg };
-export type TSUnpackedArg = [name: string, type: TSValidType];
+export type TSymUnpackedArg = [name: string, type: TSValidType];
+export type TSymArg = `${string}:${TSValidType}` | TSEnum;
+export type TSymMethodSig = { args?: TSymArg[]; returns?: TSymArg };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export type TSymbolErrorCodes =
   | 'debug' // a debug message
   | 'noparse' // bad or unexpected token format
   | 'noscope' // valid scope could not be found or inferred
   | 'noexist' // reference doesn't exist in available scope
+  | 'badtype' // invalid type received
   | 'over' // more arguments than required by keyword
   | 'under' // less arguments than required by keyword
   | 'outside'; // argument out of range
@@ -205,19 +224,22 @@ export type TSymbolErrorCodes =
  *  that produces Symbol data: keywords with .symbolize(unit), gvars and feat
  *  modules that implement a static .Symbols definition
  *
- *  WARNING: this is a reference data structure in dictionaries, so modifying
- *  a read  TSymbolData object property will corrupt the dictionary.
+ *  WARNING: this is a 'by reference' dictionary of dictionaries, so modifying
+ *  a TSymbolData object property could corrupt multiple dictionaries! Consider
+ *  them read-only.
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export type TSymbolData = {
   // read-only dictionaries
   keywords?: string[]; // a list of valid keywords for position 0
-  ctor?: Function; // constructor object if needed (used by var- props)
+  ctors?: { [ctorName: string]: TSymbolData }; // constructor object if needed (used by var- props)
+  blueprints?: { [bpName: string]: TSymbolData }; // blueprints
   props?: { [propName: string]: TSymbolData };
-  methods?: { [methodName: string]: TSymMethodArg };
+  methods?: { [methodName: string]: TSymMethodSig };
   features?: { [featureName: string]: TSymbolData };
   context?: { [line: number]: any }; // line number for a root statement
-  args?: { [argTypeGroup: string]: { [arg: string]: TSymKeywordArg } }; // arg choices
+  methodSig?: TSymMethodSig; // arg choices
+  arg?: TSymArg; // arg definition string 'name:type'
   // ok to change or add, as these are not defined in the reference dictionaries
   error?: TSymbolError; // debugging if error
   unitText?: string; // the scriptText word associated with symbol
@@ -291,7 +313,7 @@ export enum EBundleType {
 /** related keyword interface  */
 export interface IKeyword {
   keyword: string;
-  args: TSymKeywordArg[] | TSymKeywordArg[][]; // multiple signatures
+  args: TSymArg[] | TSymArg[][]; // multiple signatures
   compile(unit: TScriptUnit, lineIdx?: number): (TOpcode | TOpcodeErr)[];
   symbolize(unit: TScriptUnit, lineIdx?: number): TSymbolData;
   validateInit(refs: TSymbolRefs): void;

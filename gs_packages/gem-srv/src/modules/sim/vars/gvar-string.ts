@@ -35,7 +35,7 @@ export class GVarString extends SM_Object implements IScopeable {
 /// SYMBOLS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 GVarString.Symbols = {
-  ctor: GVarString,
+  ctors: { String: GVarString.Symbols },
   methods: {
     setTo: { args: ['value:string'] },
     eq: { args: ['str:string'], returns: 'isEqual:boolean' },
