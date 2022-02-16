@@ -33,7 +33,7 @@ import {
   DerefMethod
 } from 'lib/t-script';
 import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
-import { SymbolHelper, VSymError } from 'script/tools/symbol-utilities';
+import { SymbolHelper, VSymError } from 'script/tools/symbol-helpers';
 import { UnpackToken, UnpackArg } from 'modules/datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

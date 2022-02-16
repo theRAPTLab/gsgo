@@ -28,7 +28,7 @@ const DBG = false;
 // whether to render blank lines that come from a ]] block, which has
 // no visual equivalent. This will cause line numbers to be discontinuous, but
 // will match the script_text line numbers
-const RENDER_BLOCK_CLOSE = false; // also see script-utilities COUNT_ALL_LINES
+const RENDER_BLOCK_CLOSE = false; // also see script-helpers COUNT_ALL_LINES
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

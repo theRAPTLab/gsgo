@@ -20,7 +20,7 @@ import 'script/keywords/_all_keywords';
 // tooling imports
 import * as TextScriptTools from 'script/tools/text-to-script';
 import * as ScriptCompiler from 'script/tools/script-compiler';
-import * as SymbolClasses from 'script/tools/symbol-utilities';
+import * as SymbolClasses from 'script/tools/symbol-helpers';
 
 // dummy to import symbol-utilities otherwise it gets treeshaken out
 SymbolClasses.BindModule();
@@ -228,7 +228,7 @@ export {
 export {
   ScriptToLines, // converts script into a viewmodel suitable for rendering as lines
   LINE_START_NUM // either 0 or 1, read to modify index
-} from 'script/tools/script-utilities';
+} from 'script/tools/script-helpers';
 export {
   CompileScript, // combine scriptunits through m_CompileBundle
   CompileBlueprint,

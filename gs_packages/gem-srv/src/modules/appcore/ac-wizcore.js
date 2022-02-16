@@ -24,8 +24,8 @@ import StateMgr from '@gemstep/ursys/src/class-state-mgr';
 import * as ASSETS from 'modules/asset_core/asset-mgr';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as SENGINE from 'modules/datacore/dc-script-engine';
-import { ScriptHelper } from 'script/tools/script-utilities';
-import { VSymError } from 'script/tools/symbol-utilities';
+import { ScriptHelper } from 'script/tools/script-helpers';
+import { VSymError } from 'script/tools/symbol-helpers';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -204,7 +204,7 @@ function WizardTextChanged(text) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a scriptText consiting of a single line, return the validation
  *  data for testing. Note that this will nuke the PAGE and MAP structures
- *  for the rest of the script because script-utilities doesn't handle multiple
+ *  for the rest of the script because script-helpers doesn't handle multiple
  *  instances
  */
 function WizardTestLine(text) {
@@ -286,7 +286,7 @@ function GetAllTokenObjects(statements) {
  */
 function SelectedTokenId() {
   const { sel_line_num, sel_line_pos } = State();
-  if (sel_line_num < 1) return undefined; // START_COUNT=1 in script-utilities
+  if (sel_line_num < 1) return undefined; // START_COUNT=1 in script-helpers
   if (sel_line_pos < 1) return `${sel_line_num}`;
   return `${sel_line_num},${sel_line_pos}`;
 }
@@ -301,7 +301,7 @@ function SelectedLineNum() {
  */
 function GetTokenById(key) {
   const scriptToken = State('line_tokmap').get(key);
-  // this can happen if script-utilities ScriptToLines() is called on another body
+  // this can happen if script-helpers ScriptToLines() is called on another body
   // of text that isn't what you're clicking on
   return scriptToken;
 }
