@@ -214,7 +214,7 @@ function WizardTestLine(text) {
   const [vmPage] = SHELPER.scriptToLines(script); // note: use different instance
   const [vmPageLine] = vmPage;
   const { cur_bdl } = State();
-  const refs = { bundle: cur_bdl, global: {} }; // TODO: global should be bundle
+  const refs = { bundle: cur_bdl, globals: {} }; // TODO: global should be bundle
   const validTokens = ValidateLine(vmPageLine, refs);
   const { vmTokens, lineScript } = vmPageLine;
   return { validTokens, vmTokens, lineScript };

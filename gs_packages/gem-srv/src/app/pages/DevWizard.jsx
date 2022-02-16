@@ -45,8 +45,7 @@ import {
   sLeft,
   sRight,
   sRightGrid,
-  sFoot,
-  sError
+  sFoot
 } from './elements/wizard-style';
 
 // import CSS straight into module, will appear as inline style
@@ -91,22 +90,16 @@ class DevWizard extends React.Component {
   }
 
   /** INCOMING: handle WIZCORE event updates */
-  handleWizUpdate = vmStateEvent => {
+  handleWizUpdate(vmStateEvent) {
     // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
     this.setState(vmStateEvent);
     // CAREFUL VERSION
     // const { script_page } = vmStateEvent;
     // if (script_page) this.setState({ script_page });
-  };
+  }
 
   render() {
-    const {
-      script_page,
-      sel_line_num: num,
-      sel_line_pos: pos,
-      error
-    } = this.state;
-    const selText = num < 0 ? 'no selection' : `${num},${pos}`;
+    const { script_page } = this.state;
     return (
       <div id="gui-wizard" style={sGrid}>
         <DevHeader label="DEV/WIZARD" />

@@ -14,7 +14,7 @@ import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TestLine', 'TagPurple');
 const LOG = console.log;
-const TESTLINE = 'prop agent.energyLevel setTo 0';
+const TESTLINE = 'prop';
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -24,19 +24,21 @@ const TESTLINE = 'prop agent.energyLevel setTo 0';
 export function ValidateLine(/* props */) {
   /// DEFINE STATE ////////////////////////////////////////////////////////////
   const [input, setInput] = React.useState(TESTLINE);
+
   /// UI STATE MAINTENANCE ////////////////////////////////////////////////////
   function uiUpdateLine(e) {
     const line = e.target.value;
     setInput(line);
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  function processInput(e) {
+  /// COMPONENT EVENT HANDLERS ////////////////////////////////////////////////
+  const processInput = e => {
     console.group(...PR('validating...'));
     LOG(`%c${input}`, 'font-size:1.1rem');
     const { validTokens, vmTokens, lineScript } = WIZCORE.WizardTestLine(input);
     console.groupEnd();
-  }
-  /// RENDER //////////////////////////////////////////////////////////////////
+  };
+
+  /// RENDER COMPONENTS ///////////////////////////////////////////////////////
   const iStyle = { backgroundColor: 'white', margin: 0 };
   const bStyle = { margin: 0 };
   return (

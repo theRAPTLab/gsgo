@@ -20,10 +20,10 @@ import 'script/keywords/_all_keywords';
 // tooling imports
 import * as TextScriptTools from 'script/tools/text-to-script';
 import * as ScriptCompiler from 'script/tools/script-compiler';
-import * as SymbolUtils from 'script/tools/symbol-utilities';
+import * as SymbolClasses from 'script/tools/symbol-utilities';
 
 // dummy to import symbol-utilities otherwise it gets treeshaken out
-SymbolUtils.HACK_ForceImport();
+SymbolClasses.BindModule();
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

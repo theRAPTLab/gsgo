@@ -110,7 +110,8 @@ class Keyword implements IKeyword {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API default method for validating scriptUnits against scriptData.
-   *  Uses rules in updateScope(). Override for custom processing.
+   *  Many keywords can use this as-is, but you may want to override
+   *  this for peculiar token orderings.
    */
   validate(unit: TScriptUnit): TValidationToken[] {
     //
@@ -137,9 +138,9 @@ class Keyword implements IKeyword {
         tokIndex++;
         continue;
       }
-      // otherwise, it's an argument list of all remaining tokens
+      // otherwise, it's an argument LIST of all remaining tokens
       const toks = unit.slice(tokIndex);
-      vtoks.push(...this.validateArgsList(toks));
+      vtoks.push(...this.shelper.argsList(toks));
       tokIndex += toks.length;
     }
     // (3) error if there are more tokens than keyword args
@@ -183,15 +184,14 @@ class Keyword implements IKeyword {
       case 'method': // value is an identifier string
         vtok = this.shelper.methodName(token);
         break;
+      //
+      // TODO: handle other argTypes
+      //
       default:
         vtok = this.newSymbolError('debug', `${fn} missing '${argType}' handler`);
     }
     // validation token symbols
     return vtok;
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  validateArgsList(argToks: IToken[]): TSymbolData[] {
-    return this.shelper.argsList(argToks);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

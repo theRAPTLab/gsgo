@@ -15,7 +15,6 @@ import { PlaceholderBox } from './PlaceholderBox';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('EditBox', 'TagRed');
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -24,17 +23,15 @@ const PR = UR.PrefixUtil('EditBox', 'TagRed');
  *  is used by DevWizard.
  */
 export function EditBox(/* props */) {
+  // render a special keyword editor or token editor?
   let content = null;
-
-  // SETUP ////////////////////////////////////////////////////////////////////
   const sel = WIZCORE.SelectedTokenInfo();
   if (sel) {
     const { scriptToken, lineNum, linePos, vmPageLine } = sel;
-
     // (1) is this a keyword?
-    if (linePos === 1 && scriptToken.identifier !== undefined)
+    if (linePos === 1 && scriptToken.identifier !== undefined) {
       content = <KeywordBox selection={sel} />;
-    else {
+    } else {
       // (2) it is a token, so figure out arguments
       content = <PlaceholderBox selection={sel} />;
     }

@@ -19,19 +19,14 @@
 import UR from '@gemstep/ursys/client';
 
 import {
-  GetKeyword,
   GetAllKeywords,
   GetFeature,
   GetAllFeatures,
-  GetProgram,
-  GetTest,
-  GetBlueprint,
   GetAllBlueprints,
   UnpackArg,
   UnpackToken,
   TokenValue,
   IsValidBundle,
-  IsValidTokenType,
   GetAllVarCtors
 } from 'modules/datacore';
 import {
@@ -39,8 +34,7 @@ import {
   TSymbolData,
   TSymbolRefs,
   TSymbolErrorCodes,
-  TSymMethodSig,
-  TSymArg
+  TSymMethodSig
 } from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -93,9 +87,20 @@ class VSymError extends VSymToken {
 
 /// SYMBOL HELPER CLASS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** this class helps extract contextual information from an IToken
- *  suitable for creating viewmodel data lists for dropdowns/selectors.
- *  create an instance, setParameters(), then call decode method
+/** This class helps maintain a "current context" of symbols depending on
+ *  a series of tokens that affect what is "current". The use case is for
+ *  a scriptUnit of keyword tokens that establishes an initial context
+ *  like a property that is 'drilled into' to retrieve props, methods,
+ *  and method arguments.
+ *
+ *  It is used by the Keyword.validate() base method and its subclassers.
+ *  First, set the parent contexts { bundle, globals }
+ *
+ *  USAGE:
+ *    const shelper = new SymbolHelper('label')
+ *    shelper.setRefs({ bundle, globals })
+ *    // tokens is a single scriptUnit for a statement
+ *    const symbols = shelper.getKeywords(tokens[0]);
  */
 class SymbolHelper {
   refs: TSymbolRefs; // replaces token, bundle, xtx_obj, symscope
@@ -108,7 +113,7 @@ class SymbolHelper {
   constructor(keyword: string = '?') {
     this.refs = {
       bundle: null,
-      global: null
+      globals: null
       // TSymbolRefs symbols is stored in this.cur_scope for ease of access
     };
     this.keyword = keyword;
@@ -117,19 +122,19 @@ class SymbolHelper {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** reference are the default lookup dictionaries. This is more than
-   *  just the global context, including the entire
+   *  just the globals context, including the entire
    */
   setReferences(refs: any) {
     const fn = 'setReferences:';
-    const { bundle, global } = refs || {};
+    const { bundle, globals } = refs || {};
     if (bundle) {
       if (IsValidBundle(bundle)) this.refs.bundle = bundle;
       else throw Error(`${fn} invalid bundle`);
     }
     if (!bundle.symbols)
       throw Error(`${fn} bundle ${bundle.name} has no symbol data`);
-    if (global) {
-      if (typeof global === 'object') this.setGlobal(global);
+    if (globals) {
+      if (typeof globals === 'object') this.setGlobal(globals);
       else throw Error(`${fn} invalid context`);
     }
     this.bdl_scope = this.refs.bundle.symbols;
@@ -161,7 +166,7 @@ class SymbolHelper {
     return this.scan_error;
   }
   setGlobal(ctx: object) {
-    this.refs.global = ctx;
+    this.refs.globals = ctx;
   }
   extendGlobal(ctxChild: object) {
     // TODO: use prototype chains
@@ -177,7 +182,7 @@ class SymbolHelper {
   allKeywords(token: IToken): TSymbolData {
     const [type, value] = UnpackToken(token);
     const keywords = GetAllKeywords();
-    if (type !== 'identifier') {
+    if (type !== 'identifier' && type !== 'directive') {
       this.scan_error = true;
       return new VSymError('noparse', 'no keyword token', {
         keywords
@@ -198,11 +203,11 @@ class SymbolHelper {
   }
 
   /// CONTEXT-DEPENDENT ACCESSORS /////////////////////////////////////////////
-  /// These accessors use the refs.global object which contains foreign
+  /// These accessors use the refs.globals object which contains foreign
   /// blueprints to the current bundle. The when keyword for example has to add
   /// the blueprint name
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** search the refs.global context object to see if there is a defined
+  /** search the refs.globals context object to see if there is a defined
    *  blueprint module in it; use the blueprint symbols to set the current scope
    *  and return symbols
    */
@@ -210,8 +215,8 @@ class SymbolHelper {
     const fn = 'blueprintName:';
     if (scope)
       throw Error(`${fn} works on context, so don't provide scope override`);
-    if (part === 'agent') return undefined; // skip agent prop in refs.global
-    const ctx = this.refs.global || {};
+    if (part === 'agent') return undefined; // skip agent prop in refs.globals
+    const ctx = this.refs.globals || {};
     const bp = ctx[part];
     if (!bp) return undefined; // no match
     if (!bp.symbols) throw Error(`missing bundle symbles ${bp.name}`);
@@ -501,19 +506,19 @@ class SymbolHelper {
       symData = new VSymToken({ blueprints }, argName);
     }
 
-    if (argType === 'test') {
-    }
-    if (argType === 'program') {
-    }
-    if (argType === 'event') {
-    }
+    // if (argType === 'test') {
+    // }
+    // if (argType === 'program') {
+    // }
+    // if (argType === 'event') {
+    // }
 
-    if (argType === 'expr') {
-    }
-    if (argType === 'block') {
-    }
-    if (argType === '{value}') {
-    }
+    // if (argType === 'expr') {
+    // }
+    // if (argType === 'block') {
+    // }
+    // if (argType === '{value}') {
+    // }
 
     if (symData === undefined) {
       console.group(...PR('UNHANDLED ARGTYPE'));
@@ -532,7 +537,7 @@ export {
   SymbolHelper, // symbol decoder
   VSymError // create a TSymbolData error object
 };
-export function HACK_ForceImport() {
-  // force import of this module in Transpiler, otherwise webpack treeshaking
+export function BindModule() {
+  // HACK to force import of this module in Transpiler, otherwise webpack treeshaking
   // seems to cause it not to load
 }

@@ -256,8 +256,8 @@ export type TSymbolMap = {
  *  in dtoks from left-to-right up to the index
  */
 export type TSymbolRefs = {
-  bundle: ISMCBundle; // bundle to use
-  global: object; // default global context
+  bundle: ISMCBundle; // blueprint bundle to use
+  globals: object; // global object context for expressions, blocks
   symbols?: TSymbolData; // current scope
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
