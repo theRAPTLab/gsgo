@@ -4,16 +4,13 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { TScriptUnit, IToken, TSymbolData, TSymbolError } from './t-script';
-
-/// PROJECT LIST OBJECTS //////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export interface IbpidListItem {
-  id: any;
-  label: string;
-}
-
-export interface IinspectorListItem {}
+import {
+  TScriptUnit,
+  IToken,
+  TSymbolData,
+  TSymbolError,
+  TNameSet
+} from './t-script';
 
 /// GUI WIZARD TOKENS AND LINES ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,6 +23,7 @@ export type VMPageLine = {
   lineNum: number; // the line number
   level: number; // the nesting level of this line
   lineScript?: TScriptUnit; // parent statement
+  globalRefs?: { bundles?: TNameSet }; // set of globals to look-up (currently just blueprints)
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a data packet representing a line of tokens that are a partial statement,

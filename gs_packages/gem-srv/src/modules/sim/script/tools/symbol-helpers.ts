@@ -71,7 +71,7 @@ class VSymError extends VSymToken {
    *  @param {string} err_info description of what causes the error
    */
   constructor(
-    err_code: TSymbolErrorCodes = 'debug',
+    err_code: TSymbolErrorCodes = 'TODO',
     err_info: string = '<none provided>',
     symbols?: TSymbolData,
     unitText?: string
@@ -230,7 +230,7 @@ class SymbolHelper {
   /** search the current scope for a matching featureName
    */
   featureName(part: string) {
-    const features = this.cur_scope;
+    const features = this.cur_scope.features;
     if (features === undefined) return undefined; // no match
     const feature = features[part];
     if (!feature) return undefined;
@@ -321,7 +321,7 @@ class SymbolHelper {
     return new VSymError(
       'noparse',
       `${fn} '${orStr}' not found or invalid`,
-      this.getBundleScope()
+      this.cur_scope
     );
   }
   /** given an existing symboldata scope set in this.cur_scope, looks for a method.
@@ -401,18 +401,14 @@ class SymbolHelper {
     // TODO: some keywords (e.g. 'when') may have multiple arrays
     const { args } = methodSignature;
 
-    // expect the number of argument tokens to match the symbol data
-    if (tokens.length > args.length) console.warn('token overflow');
-    if (tokens.length < args.length) console.warn('token underflow');
-
     // SCOPE ARGS 2: general validation tokens for each argument
     // this loop structure is weird because we have to handle overflow
     // and underflow conditionss
     let tokenIndex = 0;
     for (tokenIndex; tokenIndex < tokens.length; tokenIndex++) {
       // is the tokenIndex greater than the number of argument definitions?
-      if (tokenIndex > args.length - 1) {
-        vtoks.push(new VSymError('over', `${fn} no argType for extra tokens`));
+      if (tokenIndex >= args.length) {
+        vtoks.push(new VSymError('over', `${fn} method ignores extra arg`));
         continue;
       }
       // SCOPE ARGS 3: validate current token against matching  argument definition
@@ -421,9 +417,11 @@ class SymbolHelper {
       vtoks.push(this.argSymbol(arg, tok));
     }
     // check for underflow
-    if (tokenIndex < args.length - 1)
+    if (tokenIndex < args.length)
       for (let ii = tokenIndex; ii < args.length; ii++) {
-        vtoks.push(new VSymError('under', 'fewer tokens than expected'));
+        vtoks.push(
+          new VSymError('under', `${fn} method requires ${args.length} arg(s)`)
+        );
       }
     return vtoks;
   }
@@ -437,13 +435,15 @@ class SymbolHelper {
 
     // a literal boolean value from token.value
     if (argType === 'boolean') {
-      if (typeof TokenValue(tok, 'value') === 'boolean')
-        symData = new VSymToken({ arg }, argName);
+      let value = TokenValue(tok, 'value');
+      if (typeof value === 'boolean')
+        symData = new VSymToken({ arg }, value.toString());
     }
     // a literal number value from token.value
     if (argType === 'number') {
-      if (typeof TokenValue(tok, 'value') === 'number')
-        symData = new VSymToken({ arg }, argName);
+      let value = TokenValue(tok, 'value');
+      if (typeof value === 'number')
+        symData = new VSymToken({ arg }, value.toString());
     }
 
     // a literal string from token.string
@@ -523,7 +523,7 @@ class SymbolHelper {
     if (symData === undefined) {
       console.group(...PR('UNHANDLED ARGTYPE'));
       console.groupEnd();
-      return new VSymError('badtype', `${fn} ${argType} has no token mapper`, {
+      return new VSymError('TODO', `${fn} ${argType} has no token mapper`, {
         arg
       });
     }

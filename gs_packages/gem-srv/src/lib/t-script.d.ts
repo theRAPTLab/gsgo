@@ -194,7 +194,7 @@ export interface ISMCPrograms {
 type TSLit = `${'boolean' | 'string' | 'number' | 'enum'}`;
 type TSSMObj = `${'prop' | 'method' | 'gvar' | 'block'}`;
 type TSDeferred = `${'objref' | 'expr' | '{value}'}`;
-type TSGlobal = `${'pragma' | 'test' | 'program' | 'event'}`;
+type TSDict = `${'pragma' | 'test' | 'program' | 'event'}`;
 type TSAgent = `${'blueprint' | 'feature'}`;
 type TSEnum = { enum: string[] }; // special format for enums
 type TSArg = `${'{...}'}`; // multiple arg token marker
@@ -202,15 +202,17 @@ export type TSValidType = `${
   | TSLit
   | TSSMObj
   | TSDeferred
-  | TSGlobal
+  | TSDict
   | TSAgent
   | TSArg}`;
 export type TSymUnpackedArg = [name: string, type: TSValidType];
 export type TSymArg = `${string}:${TSValidType}` | TSEnum;
 export type TSymMethodSig = { args?: TSymArg[]; returns?: TSymArg };
+export type TNameSet = Set<string>;
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export type TSymbolErrorCodes =
-  | 'debug' // a debug message
+  | 'TODO' // a debug message
   | 'noparse' // bad or unexpected token format
   | 'noscope' // valid scope could not be found or inferred
   | 'noexist' // reference doesn't exist in available scope

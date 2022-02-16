@@ -9,7 +9,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { TScriptUnit, IToken } from 'lib/t-script.d';
+import { TScriptUnit, IToken, TNameSet } from 'lib/t-script.d';
 import { VMToken, VMPageLine } from 'lib/t-ui.d';
 
 /// CONSTANT & DECLARATIONS ///////////////////////////////////////////////////
@@ -37,12 +37,14 @@ class ScriptLiner {
   INDENT;
   STM_STACK;
   DBGTEXT: string;
+  REFS: { bundles: TNameSet };
   constructor() {
     this.LINE_BUF = [];
     this.PAGE = [];
     this.MAP = new Map<string, IToken>(); // reverse lookup from tokenIdstring to token
     this.LINE_NUM = LINE_START_NUM;
     this.LINE_POS = LINE_START_NUM;
+    this.REFS = { bundles: new Set() };
     this.INDENT = 0;
     this.DBGTEXT = '';
   }
@@ -52,8 +54,13 @@ class ScriptLiner {
   outdent() {
     --this.INDENT;
   }
-  info() {
-    return { lineNum: this.LINE_NUM, linePos: this.LINE_POS, level: this.INDENT };
+  currentContext(): any {
+    return {
+      lineNum: this.LINE_NUM,
+      linePos: this.LINE_POS,
+      level: this.INDENT,
+      globalRefs: this.REFS // set of globals to look-up (currently just blueprints)
+    };
   }
   clearData() {
     this.LINE_BUF = [];
@@ -89,7 +96,7 @@ class ScriptLiner {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   tokenOut(tok: IToken): void {
-    const { lineNum, linePos, level } = this.info();
+    const { lineNum, linePos, level } = this.currentContext();
     const tokenKey = `${lineNum},${linePos}`;
 
     const tokInfo: VMToken = {
@@ -116,7 +123,7 @@ class ScriptLiner {
     if (this.LINE_BUF.length === 0 && !COUNT_ALL_LINES) return;
 
     // otherwise do the thing
-    const { level, lineNum } = this.info();
+    const { level, lineNum, globalRefs } = this.currentContext();
     const lineScript = this.LINE_BUF.map(t => {
       return t.scriptToken;
     });
@@ -124,6 +131,7 @@ class ScriptLiner {
     const line: VMPageLine = {
       lineScript,
       vmTokens, // a new array of vmToken refs
+      globalRefs, // an object of referenced global
       level,
       lineNum
     };

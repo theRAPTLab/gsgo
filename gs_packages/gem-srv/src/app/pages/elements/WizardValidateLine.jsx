@@ -2,7 +2,7 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  WizardTestLine
+  WizardValidateLineBox
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -14,7 +14,7 @@ import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TestLine', 'TagPurple');
 const LOG = console.log;
-const TESTLINE = 'prop';
+const TESTLINE = 'prop energyLevel setTo 0';
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -24,6 +24,7 @@ const TESTLINE = 'prop';
 export function ValidateLineBox(/* props */) {
   /// DEFINE STATE ////////////////////////////////////////////////////////////
   const [input, setInput] = React.useState(TESTLINE);
+  const [status, setStatus] = React.useState();
 
   /// UI STATE MAINTENANCE ////////////////////////////////////////////////////
   function uiUpdateLine(e) {
@@ -32,31 +33,53 @@ export function ValidateLineBox(/* props */) {
   }
   /// COMPONENT EVENT HANDLERS ////////////////////////////////////////////////
   const processInput = e => {
+    e.preventDefault();
     console.group(...PR('validating...'));
     LOG(`%c${input}`, 'font-size:1.1rem');
-    const { validTokens, vmTokens, lineScript } = WIZCORE.WizardTestLine(input);
+    const { validTokens } = WIZCORE.WizardTestLine(input);
+    let errorIndex = validTokens.findIndex(vt => vt.error !== undefined);
+    if (errorIndex < 0) setStatus('');
+    else {
+      const { code, info } = validTokens[errorIndex].error;
+      setStatus(`${code} error in tok ${errorIndex} - ${info}`);
+    }
     console.groupEnd();
+  };
+  const handleKeypress = e => {
+    if (e.key === 'Enter') {
+      processInput(e);
+      e.target.select();
+    }
   };
 
   /// RENDER COMPONENTS ///////////////////////////////////////////////////////
   const iStyle = { backgroundColor: 'white', margin: 0 };
   const bStyle = { margin: 0 };
   return (
-    <div
-      style={{
-        width: '100%',
-        display: 'inline-grid',
-        gridTemplateColumns: '150px 1fr 150px',
-        columnGap: '10px',
-        rowGap: 0,
-        alignItems: 'center'
-      }}
-    >
-      <tt style={{ color: 'gray' }}>SINGLE LINE DEBUG</tt>
-      <input type="text" value={input} onChange={uiUpdateLine} style={iStyle} />
-      <button type="submit" onClick={processInput} style={bStyle}>
-        VALIDATE
-      </button>
-    </div>
+    <>
+      <div
+        style={{
+          width: '100%',
+          display: 'inline-grid',
+          gridTemplateColumns: '150px 1fr 150px',
+          columnGap: '10px',
+          rowGap: 0,
+          alignItems: 'center'
+        }}
+      >
+        <tt style={{ color: 'gray' }}>SINGLE LINE DEBUG</tt>
+        <input
+          type="text"
+          value={input}
+          onChange={uiUpdateLine}
+          onKeyPress={handleKeypress}
+          style={iStyle}
+        />
+        <button type="submit" onClick={processInput} style={bStyle}>
+          VALIDATE
+        </button>
+      </div>
+      <div style={{ marginLeft: '160px', color: 'red' }}>{status}</div>
+    </>
   );
 }

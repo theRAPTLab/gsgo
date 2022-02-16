@@ -188,7 +188,10 @@ class Keyword implements IKeyword {
       // TODO: handle other argTypes
       //
       default:
-        vtok = this.newSymbolError('debug', `${fn} missing '${argType}' handler`);
+        vtok = this.newSymbolError(
+          'TODO',
+          `${fn} '${argType}' handler not implemented`
+        );
     }
     // validation token symbols
     return vtok;

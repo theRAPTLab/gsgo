@@ -22,9 +22,10 @@ const PR = UR.PrefixUtil('EditBox', 'TagRed');
  */
 export function PlaceholderBox(props) {
   const { selection } = props;
-  const { scriptToken: tok, lineNum, linePos, vmPageLine } = selection;
-  console.log();
-  const argtype = tok.kw_argtype || '<unknown argType>';
+  const { scriptToken, vmPageLine } = selection;
+  const { lineScript } = vmPageLine;
+
+  const argtype = scriptToken.kw_argtype || '<unknown argType>';
   // console.log('PlaceholderBox rendering:', tok);
   return (
     <form>
@@ -38,7 +39,7 @@ export function PlaceholderBox(props) {
           </tr>
           <tr>
             <td>tok</td>
-            <td>{JSON.stringify(tok)}</td>
+            <td>{JSON.stringify(scriptToken)}</td>
           </tr>
         </tbody>
       </table>

@@ -142,25 +142,21 @@ function DispatchClick(event) {
 
     // AD HOC TESTS
     // decode symbol type test
-    const token = GetTokenById(tokenKey); // this is the current
-    const { cur_bdl, sel_line_num, sel_line_pos, script_page } = State();
+    const { sel_line_num, sel_line_pos, script_page } = State();
     if (sel_line_num > 0 && sel_line_pos > 0) {
-      const globals = { [cur_bdl.name]: cur_bdl, agent: cur_bdl }; // default include ourself and 'agent
-      const bundle = cur_bdl;
-      const refs = { bundle, globals };
       const vmPageLine = script_page[sel_line_num - TRANSPILER.LINE_START_NUM];
       const { vmTokens } = vmPageLine;
       const kw = vmTokens[0].scriptToken.identifier;
-      const retvals = ValidateLine(vmPageLine, refs);
+      const retvals = ValidateLine(vmPageLine) as any;
       if (retvals) {
-        console.log(
-          ...PR(`${tokenKey}: contextual symbolData:`, retvals[sel_line_pos - 1])
-        );
+        const { unitText, error } = retvals[sel_line_pos - 1];
+        if (unitText !== undefined)
+          console.log(...PR(`${tokenKey} scriptElement:'${unitText}' is OK`));
+        if (error)
+          console.log(...PR(`${tokenKey} error:${error.code} - ${error.info}`));
       } else {
         console.log(
-          ...PR(
-            `${tokenKey}: ERROR keyword '${kw}' does not generate symbolData yet`
-          )
+          ...PR(`${tokenKey}: ERROR keyword '${kw}' did not generate symbolData`)
         );
       }
       return;
@@ -216,9 +212,7 @@ function WizardTestLine(text) {
   const script = TRANSPILER.TextToScript(text);
   const [vmPage] = SPRINTER.scriptToLines(script); // note: use different instance
   const [vmPageLine] = vmPage;
-  const { cur_bdl } = State();
-  const refs = { bundle: cur_bdl, globals: {} }; // TODO: global should be bundle
-  const validTokens = ValidateLine(vmPageLine, refs);
+  const validTokens = ValidateLine(vmPageLine);
   const { vmTokens, lineScript } = vmPageLine;
   return { validTokens, vmTokens, lineScript };
   //  } catch (e) {
@@ -240,30 +234,22 @@ function WizardTestLine(text) {
 /** given a lineVM, ensure that the scriptUnit is (1) valid and (2) return
  *  TValidationToken objects
  */
-function ValidateLine(vmPageLine, refs: TSymbolRefs) {
+function ValidateLine(vmPageLine) {
+  // ERRORS AND DEBUG STUFF
   const fn = 'ValidateLine:';
-  const { lineScript, vmTokens } = vmPageLine;
-  const DBG_LOCAL = false;
-  if (DBG_LOCAL) {
-    console.group(...PR('validate() context refs'));
-    console.log('this is being passed to validate()');
-    console.log('vmPageLine:');
-    console.log('.. lineScript', lineScript);
-    console.log('.. vmTokens', vmTokens);
-    console.log('refs:');
-    console.log(`.. bundle ${refs.bundle.name}`);
-    console.log('.. global', refs.globals);
-    console.groupEnd();
-  }
+  const { lineScript, globalRefs } = vmPageLine;
+  const { cur_bdl } = State();
   if (!Array.isArray(lineScript)) throw Error(`${fn} not a lineScript`);
+
+  // DO THE RIGHT THING: lookup the keyword processor for this line
   const [kw] = TRANSPILER.DecodeStatement(lineScript);
   const kwp = SENGINE.GetKeyword(kw);
   if (kwp === undefined) {
     const keywords = SENGINE.GetAllKeywords();
     return [new VSymError('noexist', `invalid keyword '${kw}'`, { keywords })];
   }
-  // now validate
-  kwp.validateInit(refs);
+  // DO THE RIGHT THING II: return the Validation Tokens
+  kwp.validateInit({ bundle: cur_bdl, globals: globalRefs });
   return kwp.validate(lineScript);
 }
 
