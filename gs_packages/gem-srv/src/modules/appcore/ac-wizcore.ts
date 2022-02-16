@@ -24,7 +24,7 @@ import { TStateObject } from '@gemstep/ursys/types';
 import * as ASSETS from 'modules/asset_core/asset-mgr';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as SENGINE from 'modules/datacore/dc-script-engine';
-import { ScriptHelper } from 'script/tools/script-helpers';
+import { ScriptLiner } from 'script/tools/script-helpers';
 import { VSymError } from 'script/tools/symbol-helpers';
 import { TSymbolRefs } from 'lib/t-script';
 // load state
@@ -211,10 +211,10 @@ function WizardTextChanged(text) {
  *  instances
  */
 function WizardTestLine(text) {
-  const SHELPER = new ScriptHelper();
+  const SPRINTER = new ScriptLiner();
   //  try {
   const script = TRANSPILER.TextToScript(text);
-  const [vmPage] = SHELPER.scriptToLines(script); // note: use different instance
+  const [vmPage] = SPRINTER.scriptToLines(script); // note: use different instance
   const [vmPageLine] = vmPage;
   const { cur_bdl } = State();
   const refs = { bundle: cur_bdl, globals: {} }; // TODO: global should be bundle

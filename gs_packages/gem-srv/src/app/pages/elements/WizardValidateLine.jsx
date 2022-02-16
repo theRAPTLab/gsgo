@@ -21,7 +21,7 @@ const TESTLINE = 'prop';
 /** Returns placeholder text line editor to do script processing of a line
  *  for testing purposes
  */
-export function ValidateLine(/* props */) {
+export function ValidateLineBox(/* props */) {
   /// DEFINE STATE ////////////////////////////////////////////////////////////
   const [input, setInput] = React.useState(TESTLINE);
 

@@ -36,7 +36,7 @@ import * as WIZCORE from 'modules/appcore/ac-wizcore-tests';
 // import { StyledTokenTest } from './elements/StyledExample';
 import { ScriptText } from './elements/WizardDevText';
 import { ScriptView } from './elements/WizardScriptView';
-import { ValidateLine } from './elements/WizardValidateLine';
+import { ValidateLineBox } from './elements/WizardValidateLine';
 import { StatusLine } from './elements/WizardStatusLine';
 import { EditBox } from './elements/WizardEditBox';
 import {
@@ -112,7 +112,7 @@ class DevWizard extends React.Component {
         </div>
         <footer style={sFoot}>
           <StatusLine />
-          <ValidateLine />
+          <ValidateLineBox />
         </footer>
       </div>
     );

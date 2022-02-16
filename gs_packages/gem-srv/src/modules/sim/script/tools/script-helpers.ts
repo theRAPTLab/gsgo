@@ -28,7 +28,7 @@ const LINE_START_NUM = 1; // set to 1 for no 0 indexes
 /// equivalent
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-class ScriptHelper {
+class ScriptLiner {
   LINE_BUF;
   PAGE;
   MAP;
@@ -97,7 +97,6 @@ class ScriptHelper {
       lineNum,
       linePos,
       tokenKey
-      // symbols, error are added by keyword validators
     };
     this.LINE_BUF.push(tokInfo);
     this.nextPos();
@@ -191,14 +190,14 @@ class ScriptHelper {
     if (DBG) console.log(this.DBGTEXT);
     return [this.PAGE, this.MAP];
   }
-} // end of ScriptHelper
+} // end of ScriptLiner
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** this has to be taken into account by modules indexing into State()
  *  line and script maps (see ac-wizcore)
  */
-const SHELP = new ScriptHelper();
+const scriptLiner = new ScriptLiner();
 function ScriptToLines(program: TScriptUnit[]) {
-  return SHELP.scriptToLines(program);
+  return scriptLiner.scriptToLines(program);
 }
-export { LINE_START_NUM, ScriptHelper, ScriptToLines };
+export { LINE_START_NUM, ScriptLiner, ScriptToLines };
