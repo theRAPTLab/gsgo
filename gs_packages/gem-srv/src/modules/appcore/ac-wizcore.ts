@@ -20,12 +20,15 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import StateMgr from '@gemstep/ursys/src/class-state-mgr';
+import { TStateObject } from '@gemstep/ursys/types';
 import * as ASSETS from 'modules/asset_core/asset-mgr';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as SENGINE from 'modules/datacore/dc-script-engine';
 import { ScriptHelper } from 'script/tools/script-helpers';
 import { VSymError } from 'script/tools/symbol-helpers';
+import { TSymbolRefs } from 'lib/t-script';
+// load state
+const { StateMgr } = UR.class;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -124,7 +127,7 @@ _interceptState(state => {
  */
 function DispatchClick(event) {
   const fn = 'DispatchClick:';
-  const newState = {};
+  const newState: TStateObject = {};
 
   /** (1) GToken was clicked? ************************************************/
   const tokenKey = event.target.getAttribute('data-key');
@@ -142,9 +145,9 @@ function DispatchClick(event) {
     const token = GetTokenById(tokenKey); // this is the current
     const { cur_bdl, sel_line_num, sel_line_pos, script_page } = State();
     if (sel_line_num > 0 && sel_line_pos > 0) {
-      const global = { [cur_bdl.name]: cur_bdl, agent: cur_bdl }; // default include ourself and 'agent
+      const globals = { [cur_bdl.name]: cur_bdl, agent: cur_bdl }; // default include ourself and 'agent
       const bundle = cur_bdl;
-      const refs = { bundle, global };
+      const refs = { bundle, globals };
       const vmPageLine = script_page[sel_line_num - TRANSPILER.LINE_START_NUM];
       const { vmTokens } = vmPageLine;
       const kw = vmTokens[0].scriptToken.identifier;
@@ -237,7 +240,7 @@ function WizardTestLine(text) {
 /** given a lineVM, ensure that the scriptUnit is (1) valid and (2) return
  *  TValidationToken objects
  */
-function ValidateLine(vmPageLine, refs = {}) {
+function ValidateLine(vmPageLine, refs: TSymbolRefs) {
   const fn = 'ValidateLine:';
   const { lineScript, vmTokens } = vmPageLine;
   const DBG_LOCAL = false;
@@ -249,7 +252,7 @@ function ValidateLine(vmPageLine, refs = {}) {
     console.log('.. vmTokens', vmTokens);
     console.log('refs:');
     console.log(`.. bundle ${refs.bundle.name}`);
-    console.log('.. global', refs.global);
+    console.log('.. global', refs.globals);
     console.groupEnd();
   }
   if (!Array.isArray(lineScript)) throw Error(`${fn} not a lineScript`);

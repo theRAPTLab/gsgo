@@ -52,7 +52,7 @@ function TokenToString(tok: IToken, indent: number) {
 /** Given a single statement, extract text representation. Since statements can
  *  include blocks, it may return more than one line.
  */
-function StatementToText(statement: TScriptUnit, indent: number): string {
+function StatementToText(statement: TScriptUnit, indent: number = 0): string {
   // process tokens from left to right, concat to make a line
   let line = ''.padStart(indent, ' ');
   if (!Array.isArray(statement)) {

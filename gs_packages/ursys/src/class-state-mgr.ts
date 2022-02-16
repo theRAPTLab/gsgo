@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   URSYS State Manager
@@ -20,6 +21,12 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+/// TYPE IMPORTS //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+import { TStateObject } from '../types';
+
+/// LIBRARY IMPORTS ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // const { expect } = require('@hapi/code');
 const PROMPT = require('./util/prompts');
 
@@ -31,9 +38,15 @@ const VM_STATE = {}; // global viewstate
 const GROUPS = new Map();
 const PROPMAP = new Map();
 
-/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class StateMgr {
+  name: string;
+  init: boolean;
+  subs: Set<any>;
+  queue: any[];
+  taps: any[];
+
   /// CONSTRUCTOR /////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   constructor(groupName) {
@@ -68,7 +81,7 @@ class StateMgr {
   /// MAIN CLASS METHODS //////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Return a COPY of the current clonedEvent */
-  State(key) {
+  State(key: string) {
     // const state = { ...VM_STATE[this.name] };
     const state = this._derefProps({ ...VM_STATE[this.name] });
     if (typeof key === 'string' && key.length > 0) return state[key];
@@ -81,18 +94,14 @@ class StateMgr {
    *  the incoming state event.
    *  @param {object} vmStateEvent - object with group-specific props
    */
-  SendState(vmStateEvent, callback) {
+  SendState(vmStateEvent: TStateObject, callback: Function) {
     if (this._isValidState(vmStateEvent)) {
       const clonedEvent = this._cloneStateObject(vmStateEvent);
       this.taps.forEach(tap => tap(clonedEvent));
       // queue the action for processing
       const action = { vmStateEvent: clonedEvent, callback };
       this._enqueue(action);
-    } else
-      throw Error(
-        'SendState: invalid vmState update received, got:',
-        vmStateEvent
-      );
+    } else throw Error('SendState: invalid vmState update received, got:');
   }
 
   /** Subscribe to state. The subscriber function looks like:
@@ -277,31 +286,34 @@ class StateMgr {
     // issues callbacks after ALL actions have completed
     callbacks.forEach(f => f());
   }
+
+  /// STATIC METHODS //////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static RO_GetStateGroupByName(groupName) {
+    if (typeof groupName !== 'string')
+      throw Error(`${groupName} is not a string`);
+    const bucket = groupName.trim().toUpperCase();
+    if (bucket !== groupName)
+      throw Error(`groupNames should be all uppercase, not ${bucket}`);
+    const state = VM_STATE[bucket];
+    if (!state) throw Error(`stateGroup ${bucket} is not defined`);
+
+    // create a read-only copy of state and set all its properties to
+    // unwriteable
+    const readOnlyState = { ...state };
+    for (const prop of Object.keys(readOnlyState)) {
+      Object.defineProperty(readOnlyState, prop, {
+        writable: false
+      });
+    }
+    return readOnlyState;
+  }
 }
 
 /// STATIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return a READ-ONLY object containing state for a particular group */
-function RO_GetStateGroupByName(groupName) {
-  if (typeof groupName !== 'string') throw Error(`${groupName} is not a string`);
-  const bucket = groupName.trim().toUpperCase();
-  if (bucket !== groupName)
-    throw Error(`groupNames should be all uppercase, not ${bucket}`);
-  const state = VM_STATE[bucket];
-  if (!state) throw Error(`stateGroup ${bucket} is not defined`);
-
-  // create a read-only copy of state and set all its properties to
-  // unwriteable
-  const readOnlyState = { ...state };
-  for (const prop of Object.keys(readOnlyState)) {
-    Object.defineProperty(readOnlyState, prop, {
-      writable: false
-    });
-  }
-  return readOnlyState;
-}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-StateMgr.RO_GetStateGroupByName = RO_GetStateGroupByName;
 module.exports = StateMgr;

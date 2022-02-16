@@ -23,13 +23,8 @@ const PhaseMachine = require('./class-phase-machine');
 const StateGroupMgr = require('./class-state-group-mgr');
 const StateMgr = require('./class-state-mgr');
 //
-const {
-  IsBrowser,
-  IsNode,
-  IsElectron,
-  IsElectronMain,
-  IsElectronRenderer
-} = DTECT;
+const { IsBrowser, IsNode, IsElectron, IsElectronMain, IsElectronRenderer } =
+  DTECT;
 
 /// CONST /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
