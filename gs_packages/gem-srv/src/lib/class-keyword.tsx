@@ -328,7 +328,11 @@ function K_DerefProp(refArg): DerefMethod {
     /// e.g. 'agent.x' or 'Bee.x'
     deref = (agent: IAgent, context: any) => {
       const c = ref[0] === 'agent' ? agent : context[ref[0]];
-      if (c === undefined) throw Error(`context missing '${ref[0]}' key`);
+      if (c === undefined) throw Error(
+        `context missing '${ref[0]}' key. Agent is ${JSON.stringify(
+          agent
+        )} Context is ${JSON.stringify(context)}`
+      );
       const p: IScopeable = c.getProp(ref[1]);
       if (p === undefined) throw Error(`missing prop '${ref[1]}'`);
       return p;
