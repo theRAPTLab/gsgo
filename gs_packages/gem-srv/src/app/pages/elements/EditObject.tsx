@@ -11,7 +11,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
+import * as WIZCORE from 'modules/appcore/ac-wizcore';
 
 /// COMPONENT HELPERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

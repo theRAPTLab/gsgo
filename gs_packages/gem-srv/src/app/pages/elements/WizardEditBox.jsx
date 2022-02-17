@@ -9,7 +9,7 @@
 
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
+import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import { KeywordBox } from './KeywordBox';
 import { PlaceholderBox } from './PlaceholderBox';
 

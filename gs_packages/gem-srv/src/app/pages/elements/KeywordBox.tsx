@@ -7,7 +7,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
+import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import { sButtonGrid, sButtonBreak } from './wizard-style';
 
 /// COMPONENT HELPERS /////////////////////////////////////////////////////////

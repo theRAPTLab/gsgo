@@ -8,7 +8,7 @@
 
 import UR from '@gemstep/ursys';
 import React from 'react';
-import * as WIZCORE from '../../../modules/appcore/ac-wizcore';
+import * as WIZCORE from 'modules/appcore/ac-wizcore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
