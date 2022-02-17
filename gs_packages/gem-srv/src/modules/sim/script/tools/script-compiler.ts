@@ -231,7 +231,7 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
     if (ii === 0) {
       const [lead, kw, bpName, bpParent] = DecodeStatement(stm);
       if (lead === '_pragma' && kw.toUpperCase() === 'BLUEPRINT') {
-        console.log(...PR('compiling', bpName));
+        if (DBG) console.log(...PR('compiling', bpName));
         SetBundleName(bdl, bpName, bpParent);
         return;
       }
