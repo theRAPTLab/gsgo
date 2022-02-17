@@ -25,10 +25,19 @@ import * as WIZCORE from 'modules/appcore/ac-wizcore';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-// whether to render blank lines that come from a ]] block, which has
+// Whether to render blank lines that come from a ]] block, which has
 // no visual equivalent. This will cause line numbers to be discontinuous, but
 // will match the script_text line numbers
-const RENDER_BLOCK_CLOSE = false; // also see script-helpers COUNT_ALL_LINES
+// See also COUNT_ALL_LINES for related behaviors
+const DRAW_CLOSING_LINES = false;
+
+// view styling
+const sScriptView = {
+  display: 'inline-list-item',
+  whiteSpace: 'nowrap',
+  overflowY: 'scroll',
+  overflowX: 'none'
+};
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -73,7 +82,6 @@ function GLineNum(props) {
 function GLine(props) {
   const { lineNum, level, children, selected } = props;
   const classes = selected ? 'gwiz gline selected' : 'gwiz gline';
-
   return (
     <>
       <div className={classes}>
@@ -137,13 +145,19 @@ function GToken(props) {
 let DBGTEXT = '';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ScriptView(props) {
+  // collect resources for rendering
   DBGTEXT = '';
   const { script_page } = props;
   const pageBuffer = [];
   const selTokId = WIZCORE.SelectedTokenId();
   const selLineNum = WIZCORE.SelectedLineNum();
+
+  // a page is an array of line viewmodel data
+  // the line has token viewmodel data plus line metdata
   script_page.forEach(line => {
     const { lineNum, level, vmTokens } = line;
+    // console.log('DRAWING LINE', lineNum, script_page[lineNum - LINE_START_NUM]);
+
     const lineBuffer = [];
     const hasTokens = vmTokens.length > 0;
     // iterate over vmTokens if it exists
@@ -169,18 +183,20 @@ export function ScriptView(props) {
     } else {
       // insert a blank line into the liner buffer
       // eslint-disable-next-line no-lonely-if
-      if (RENDER_BLOCK_CLOSE) lineBuffer.push(<GLineSpace />);
+      if (DRAW_CLOSING_LINES) lineBuffer.push(<GLineSpace />);
     }
     //
     const num = String(lineNum).padStart(3, '0');
     //
-    if (hasTokens || RENDER_BLOCK_CLOSE) {
+    if (hasTokens || DRAW_CLOSING_LINES) {
       const selected = selLineNum === lineNum;
+
       pageBuffer.push(
         <GLine key={u_Key()} selected={selected} lineNum={num} level={level}>
           {lineBuffer}
         </GLine>
       );
+
       DBGTEXT += '\n';
     }
     //
@@ -189,16 +205,9 @@ export function ScriptView(props) {
     console.groupCollapsed('Wizard DBG');
     console.log(DBGTEXT);
   }
+
   return (
-    <div
-      className="wizardView"
-      style={{
-        display: 'inline-list-item',
-        whiteSpace: 'nowrap',
-        overflowY: 'scroll',
-        overflowX: 'none'
-      }}
-    >
+    <div id="wizardView" className="wizardView" style={sScriptView}>
       {pageBuffer}
     </div>
   );

@@ -71,7 +71,7 @@ class VSymError extends VSymToken {
    *  @param {string} err_info description of what causes the error
    */
   constructor(
-    err_code: TSymbolErrorCodes = 'TODO',
+    err_code: TSymbolErrorCodes = 'errOops',
     err_info: string = '<none provided>',
     symbols?: TSymbolData,
     unitText?: string
@@ -184,7 +184,7 @@ class SymbolHelper {
     const keywords = GetAllKeywords();
     if (type !== 'identifier' && type !== 'directive') {
       this.scan_error = true;
-      return new VSymError('noparse', 'no keyword token', {
+      return new VSymError('errParse', 'no keyword token', {
         keywords
       });
     }
@@ -262,13 +262,13 @@ class SymbolHelper {
     if (DBG) console.log(...PR(`${fn}: ${matchType}:${parts}`));
     // was there a previous scope-breaking error?
     if (this.scanError())
-      return new VSymError('noscope', `${fn} error in previous token(s)`);
+      return new VSymError('errScope', `${fn} error in previous token(s)`);
     // is the token a valid identifier or objref token?
     if (matchType === 'identifier') parts = [parts];
     else if (matchType !== 'objref') {
       this.scanError(true);
       return new VSymError(
-        'noparse',
+        'errParse',
         `${fn} improper or missing token`,
         this.getBundleScope()
       );
@@ -290,7 +290,7 @@ class SymbolHelper {
     // did any agent, feature, prop, or blueprint resolve?
     if (!(agent || feature || prop || blueprint)) {
       this.scanError(true);
-      return new VSymError('noscope', `${fn} invalid objref '${part}`);
+      return new VSymError('errScope', `${fn} invalid objref '${part}`);
     }
 
     // OBJREF PART 2: are the remaining parts valid?
@@ -319,7 +319,7 @@ class SymbolHelper {
     this.scanError(true);
     const orStr = parts.join('.');
     return new VSymError(
-      'noparse',
+      'errParse',
       `${fn} '${orStr}' not found or invalid`,
       this.cur_scope
     );
@@ -333,22 +333,22 @@ class SymbolHelper {
 
     // was there a previous scope-breaking error?
     if (this.scanError())
-      return new VSymError('noscope', `${fn} error in previous token(s)`);
+      return new VSymError('errScope', `${fn} error in previous token(s)`);
     // is scope set?
     if (this.cur_scope === null)
-      return new VSymError('noscope', `${fn} unexpected invalid scope`);
+      return new VSymError('errScope', `${fn} unexpected invalid scope`);
     // is there a token?
     if (token === undefined) {
       this.scanError(true);
       const { methods } = this.cur_scope;
-      return new VSymError('noparse', `${fn} missing token`, { methods });
+      return new VSymError('errParse', `${fn} missing token`, { methods });
     }
     // is the token an identifier?
     if (matchType !== 'identifier') {
       this.scanError(true);
       const symbols = this.cur_scope;
       return new VSymError(
-        'noparse',
+        'errParse',
         `${fn} expects identifier, not ${matchType}`,
         symbols
       );
@@ -356,20 +356,20 @@ class SymbolHelper {
     // is the indentifier defined?
     if (typeof methodName !== 'string') {
       this.scanError(true);
-      return new VSymError('noparse', `${fn} bad identifier`);
+      return new VSymError('errParse', `${fn} bad identifier`);
     }
     // is there a methods dictionary in scope
     const { methods } = this.cur_scope;
     if (methods === undefined) {
       this.scanError(true);
-      return new VSymError('noexist', `${fn} scope has no method dict`);
+      return new VSymError('errExist', `${fn} scope has no method dict`);
     }
     // does methodName exist in the methods dict?
     const methodSig = methods[methodName]; //
     if (methodSig === undefined) {
       this.scanError(true);
       return new VSymError(
-        'noexist',
+        'errExist',
         `${fn} '${methodName}' is not in method dict`,
         { methods }
       );
@@ -391,7 +391,7 @@ class SymbolHelper {
     const methodNames = [...Object.keys(this.cur_scope)];
     if (methodNames.length !== 1) {
       for (let i = 0; i < tokens.length; i++)
-        vtoks.push(new VSymError('noscope', `${fn} invalid methodArgs dict`));
+        vtoks.push(new VSymError('errScope', `${fn} invalid methodArgs dict`));
       return vtoks;
     }
 
@@ -408,7 +408,7 @@ class SymbolHelper {
     for (tokenIndex; tokenIndex < tokens.length; tokenIndex++) {
       // is the tokenIndex greater than the number of argument definitions?
       if (tokenIndex >= args.length) {
-        vtoks.push(new VSymError('over', `${fn} method ignores extra arg`));
+        vtoks.push(new VSymError('errOver', `${fn} method ignores extra arg`));
         continue;
       }
       // SCOPE ARGS 3: validate current token against matching  argument definition
@@ -420,7 +420,7 @@ class SymbolHelper {
     if (tokenIndex < args.length)
       for (let ii = tokenIndex; ii < args.length; ii++) {
         vtoks.push(
-          new VSymError('under', `${fn} method requires ${args.length} arg(s)`)
+          new VSymError('errUnder', `${fn} method requires ${args.length} arg(s)`)
         );
       }
     return vtoks;
@@ -431,6 +431,7 @@ class SymbolHelper {
   argSymbol(arg, tok): TSymbolData {
     const fn = 'argSymbol:';
     const [argName, argType] = UnpackArg(arg);
+    const [tokType, tokVal] = UnpackToken(tok);
     let symData;
 
     // a literal boolean value from token.value
@@ -438,12 +439,16 @@ class SymbolHelper {
       let value = TokenValue(tok, 'value');
       if (typeof value === 'boolean')
         symData = new VSymToken({ arg }, value.toString());
+      else
+        symData = new VSymError('errType', `${tokType}:${tokVal} not a boolean`);
     }
     // a literal number value from token.value
     if (argType === 'number') {
       let value = TokenValue(tok, 'value');
       if (typeof value === 'number')
         symData = new VSymToken({ arg }, value.toString());
+      else
+        symData = new VSymError('errType', `${tokType}:${tokVal} not a number`);
     }
 
     // a literal string from token.string
@@ -454,7 +459,7 @@ class SymbolHelper {
     // an enumeration list match token???
     // NOT IMPLEMENTED
     if (argType === 'enum') {
-      symData = new VSymError('noparse', `${fn} enum is unimplemented`);
+      symData = new VSymError('errParse', `${fn} enum is unimplemented`);
     }
 
     // all symbols available in current bundle match token.objref
@@ -523,7 +528,7 @@ class SymbolHelper {
     if (symData === undefined) {
       console.group(...PR('UNHANDLED ARGTYPE'));
       console.groupEnd();
-      return new VSymError('TODO', `${fn} ${argType} has no token mapper`, {
+      return new VSymError('errOops', `${fn} ${argType} has no token mapper`, {
         arg
       });
     }

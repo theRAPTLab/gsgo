@@ -67,7 +67,8 @@ _initializeState({
   proj_list: [], // project list
   cur_prjid: null, // current project id
   cur_bpid: null, // current blueprint
-  cur_bdl: null // current blueprint bundle
+  cur_bdl: null, // current blueprint bundle
+  sel_unit_text: '' // current unit_text of edited token
 });
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -139,7 +140,7 @@ function DispatchClick(event) {
     newState.sel_line_pos = Number(pos); // STATE UPDATE: selected pos
     SendState(newState);
 
-    const { sel_line_num, sel_line_pos, script_page } = State();
+    const { sel_line_num, sel_line_pos } = State();
     if (sel_line_num > 0 && sel_line_pos > 0) {
       return;
     }
@@ -154,9 +155,10 @@ function DispatchClick(event) {
  *  a click before DispatchClick() guesses no token was clicked
  */
 function DispatchEditorClick(event) {
+  const fn = 'DispatchEditorClick';
   event.preventDefault();
   event.stopPropagation();
-  console.log('form click', event);
+  console.log(`${fn}`, event);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Called after text editing in CodeJar has stopped and there has been no
@@ -228,25 +230,79 @@ function ValidateLine(vmPageLine) {
   const kwp = SENGINE.GetKeyword(kw);
   if (kwp === undefined) {
     const keywords = SENGINE.GetAllKeywords();
-    return [new VSymError('noexist', `invalid keyword '${kw}'`, { keywords })];
+    return [new VSymError('errExist', `invalid keyword '${kw}'`, { keywords })];
   }
   // DO THE RIGHT THING II: return the Validation Tokens
   kwp.validateInit({ bundle: cur_bdl, globals: globalRefs });
   return kwp.validate(lineScript);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** WORK IN PROGRESS
+ *  return a structure with all choices available to render as some kind of
+ *  selection interface (e.g. a dropdown or clickable selection grid)
+ */
 function GetTokenGUIData(validationToken) {
+  let gData: any = {};
+
+  // check to see what
   const { error, unitText, keywords, features, props, methods, arg } =
     validationToken;
-  let names: any = {};
-  if (unitText) names.unitText = unitText;
-  if (error) names.error = `${error.code} - ${error.info}`;
-  if (keywords) names.keywords = keywords.join(', ');
-  if (features) names.features = [...Object.keys(features)].join(', ');
-  if (props) names.props = [...Object.keys(props)].join(', ');
-  if (methods) names.methods = [...Object.keys(methods)].join(', ');
-  if (arg) names.arg = arg;
-  return names;
+
+  if (unitText) gData.unitText = unitText;
+  if (error)
+    gData.error = {
+      text: `${error.code} - ${error.info}`
+    };
+  if (keywords)
+    gData.keywords = {
+      text: keywords.join(', '),
+      items: keywords
+    };
+  if (features)
+    gData.features = {
+      text: [...Object.keys(features)].join(', '),
+      items: features
+    };
+  if (props)
+    gData.props = {
+      text: [...Object.keys(props)].join(', '),
+      items: props
+    };
+  if (methods)
+    gData.methods = {
+      text: [...Object.keys(methods)].join(', '),
+      items: methods
+    };
+  if (arg) gData.arg = { text: arg, arg };
+  return gData;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** WORK IN PROGRESS - BROKEN
+ *  intention: given a line number, scroll that line into view. to be used
+ *  when clicking an element that is covered-up by the edit box
+ */
+function ScrollLineIntoView(lineNum: number) {
+  const view = document.getElementById('wizardView');
+  console.log('scroll line', lineNum, 'range', view.children.length);
+  // problem: the number of child elements does not match the lineNum
+  // because of skipped lines
+  const element = view.children[lineNum - TRANSPILER.LINE_START_NUM];
+  if (element) {
+    const vRect = view.getBoundingClientRect();
+    const eRect = element.getBoundingClientRect();
+    console.log(`view:(${vRect.x}, ${vRect.y}) element:(${eRect.x}, ${eRect.y})`);
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'end',
+      inline: 'nearest'
+    });
+  } else {
+    view.scroll({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
 }
 
 /// WIZCORE HELPER METHODS ////////////////////////////////////////////////////
@@ -412,15 +468,16 @@ export {
   DispatchClick, // handles clicks on Wizard document
   WizardTextChanged, // handle incoming change of text
   WizardTestLine, // handle test line for WizardTextLine tester
-  DispatchEditorClick, // handle clicks on editing box
-  GetTokenGUIData
+  DispatchEditorClick // handle clicks on editing box
 };
 
 /// EXPORTED VIEWMODEL INFO UTILS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
   IsTokenInMaster, // does tok exist inside the script_page? (for ref debug)
-  GetAllTokenObjects // return a flat array of all tokens (for ref debugging)
+  GetAllTokenObjects, // return a flat array of all tokens (for ref debugging)
+  GetTokenGUIData, // return structured symbol data for a given VToken
+  ScrollLineIntoView
 };
 export {
   SelectedTokenId, // return current selected token identifier

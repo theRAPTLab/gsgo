@@ -212,14 +212,14 @@ export type TNameSet = Set<string>;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export type TSymbolErrorCodes =
-  | 'TODO' // a debug message
-  | 'noparse' // bad or unexpected token format
-  | 'noscope' // valid scope could not be found or inferred
-  | 'noexist' // reference doesn't exist in available scope
-  | 'badtype' // invalid type received
-  | 'over' // more arguments than required by keyword
-  | 'under' // less arguments than required by keyword
-  | 'outside'; // argument out of range
+  | 'errOops' // a debug message
+  | 'errParse' // bad or unexpected token format
+  | 'errScope' // valid scope could not be found or inferred
+  | 'errExist' // reference doesn't exist in available scope
+  | 'errType' // invalid type received
+  | 'errOver' // more arguments than required by keyword
+  | 'errUnder' // less arguments than required by keyword
+  | 'errRange'; // argument out of range
 
 /// MAIN SYMBOL DATA DECLARATION //////////////////////////////////////////////
 /** data description of symbols for features, props. returned from anything

@@ -187,7 +187,7 @@ function SymbolizeStatement(statement: TScriptUnit, line: number): TSymbolData {
   if (!kwProcessor) {
     console.warn(`keyword processor ${kw} bad`);
     return {
-      error: { code: 'noexist', info: `missing kwProcessor for: '${kw}'` }
+      error: { code: 'errExist', info: `missing kwProcessor for: '${kw}'` }
     };
   }
   // ***NOTE***

@@ -30,6 +30,7 @@ import {
   TSymbolRefs,
   TSymArg,
   TValidationToken,
+  TSymbolErrorCodes,
   DerefMethod
 } from 'lib/t-script';
 import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
@@ -148,7 +149,9 @@ class Keyword implements IKeyword {
       for (tokIndex; tokIndex < unit.length; tokIndex++) {
         tok = unit[tokIndex];
         const tokInfo = UnpackToken(tok).join(':');
-        vtoks.push(this.newSymbolError('over', `unexpected token {${tokInfo}}`));
+        vtoks.push(
+          this.newSymbolError('errOver', `unexpected token {${tokInfo}}`)
+        );
       }
     }
     // optionall dump vtoken status to console
@@ -174,7 +177,7 @@ class Keyword implements IKeyword {
     const [tokType, value] = UnpackToken(token);
     // error checking
     if (argType === undefined)
-      vtok = this.newSymbolError('noparse', `bad arg def ${arg}`);
+      vtok = this.newSymbolError('errParse', `bad arg def ${arg}`);
     // handle argType conversion
     switch (argType) {
       case 'objref': // value is string[] of parts
@@ -188,8 +191,8 @@ class Keyword implements IKeyword {
       //
       default:
         vtok = this.newSymbolError(
-          'TODO',
-          `${fn} '${argType}' handler not implemented`
+          'errOops',
+          `Keyword.${fn} '${argType}' handler not implemented`
         );
     }
     // validation token symbols
@@ -239,7 +242,7 @@ class Keyword implements IKeyword {
   /** utility to create a TSymbolData object with errors, with option to
    *  add valid symbols
    */
-  newSymbolError(code, info, symbols?) {
+  newSymbolError(code: TSymbolErrorCodes, info, symbols?) {
     return new VSymError(code, info, symbols);
   }
 } // end of Keyword Class

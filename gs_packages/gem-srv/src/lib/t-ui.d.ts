@@ -24,6 +24,7 @@ export type VMPageLine = {
   level: number; // the nesting level of this line
   lineScript?: TScriptUnit; // parent statement
   globalRefs?: { bundles?: TNameSet }; // set of globals to look-up (currently just blueprints)
+  domRef?: { current: any }; // React DOM reference in current
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a data packet representing a line of tokens that are a partial statement,
