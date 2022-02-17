@@ -24,7 +24,7 @@ import {
   TAssetURL,
   TAssetLoader,
   TResource
-} from '../../lib/t-assets.d';
+} from 'lib/t-assets.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
