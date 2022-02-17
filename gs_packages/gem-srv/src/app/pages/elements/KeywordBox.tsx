@@ -8,61 +8,49 @@
 
 import React from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
-import { sButtonGrid, sButtonBreak } from './wizard-style';
+// styles for rendering a row of wrapping buttons
+// import { sButtonGrid, sButtonBreak } from './wizard-style';
+// const sDel = { ...sButtonBreak, minWidth: '25%', maxWidth: '25%' };
+// const sRTL = { ...sButtonGrid, direction: 'rtl' };
 
 /// COMPONENT HELPERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function KeywordBox(props) {
-  const { selection } = props;
-  const { scriptToken: tok, lineNum, linePos, vmPageLine } = selection;
+export function KeywordBox(parentProps) {
+  const { selection } = parentProps;
+  const { scriptToken, linePos, lineNum, vmPageLine } = selection;
+  const vTokens = WIZCORE.ValidateLine(vmPageLine);
+  const vtok = vTokens[linePos - 1];
+  const list = WIZCORE.GetTokenGUIData(vtok);
+
   const { lineScript } = vmPageLine;
   const text = WIZCORE.GetLineScriptText(lineScript);
-  const sDel = { ...sButtonBreak, minWidth: '25%', maxWidth: '25%' };
-  const sRTL = { ...sButtonGrid, direction: 'rtl' };
+
+  const sTopAlign = { verticalAlign: 'top' };
+  const rows = [];
+  Object.keys(list).forEach(name => {
+    const str = list[name];
+    rows.push(
+      <tr style={sTopAlign} key={name}>
+        <td>{name}</td>
+        <td>{str}</td>
+      </tr>
+    );
+  });
+  if (rows.length === 0)
+    rows.push(
+      <tr style={sTopAlign} key="status">
+        <td>{text}</td>
+      </tr>
+    );
+  const status = list.unitText ? 'PARSE OK' : 'PARSE ERROR';
   return (
     <>
-      <form>
+      TEST KEYWORD BOX - {status}
+      <form style={{ marginTop: '10px' }}>
         <table>
-          <tbody>
-            <tr>
-              <td>selected</td>
-              <td>{text}</td>
-            </tr>
-          </tbody>
+          <tbody>{rows}</tbody>
         </table>
-        <div style={sButtonGrid}>
-          <button type="button" value="move">
-            MOVE UP
-          </button>
-          <button type="button" value="move">
-            MOVE DOWN
-          </button>
-          <button type="button" value="ins_before">
-            INS ABOVE
-          </button>
-          <button type="button" value="ins_after">
-            INS BELOW
-          </button>
-        </div>
-        <button
-          type="button"
-          value="del"
-          style={{
-            flexDirection: 'column-reverse',
-            marginLeft: 'auto',
-            width: '100px',
-            backgroundColor: 'red'
-          }}
-        >
-          DELETE
-        </button>
       </form>
-      <p>
-        Note: you can not change a keyword once it is set, because that could
-        invalidate entire nested blocks of code. Instead, we will allow either
-        moving a keyword + its statements/nested statements by dragging it, or
-        deleting it, or inserting a line.
-      </p>
     </>
   );
 }

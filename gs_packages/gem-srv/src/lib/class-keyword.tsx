@@ -175,7 +175,6 @@ class Keyword implements IKeyword {
     // error checking
     if (argType === undefined)
       vtok = this.newSymbolError('noparse', `bad arg def ${arg}`);
-    console.log('validating', arg, token);
     // handle argType conversion
     switch (argType) {
       case 'objref': // value is string[] of parts
@@ -200,39 +199,36 @@ class Keyword implements IKeyword {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** helper to print a summary of a validation token array */
   _dbgValidation(vtoks: TValidationToken[]) {
-    if (DBG) {
-      console.log('');
-      console.log('%cVALIDATION SUMMARY', 'color:blue');
-      let max = 0;
-      const lines = [];
-      vtoks.forEach((symbolData, i) => {
-        const { error, ...keys } = symbolData;
-        let err = error ? error.info : '';
-        let dicts = [...Object.keys(keys)];
-        let symbols = dicts.length ? dicts.join(', ') : '';
-        const spc = ''.padStart(i.toString().length);
-        let out = '';
-        if (symbols) {
-          out = `SDICT ${symbols}`;
-          if (out.length > max) max = out.length;
-        }
-        if (err) {
-          let el = '';
-          if (symbols) el = `\n${spc} - `;
-          el += `ERROR ${err}`;
-          if (el.length > max) max = el.length;
-          out += el;
-        }
-        lines.push(`${i} - ${out}`);
-      });
-      lines.forEach((line, i) => {
-        const bg = i % 2 === 0 ? '#eee' : '#fff';
-        console.log(`%c${line}`, `background-color:${bg}`);
-      });
-      console.log('%cVALIDATION TOKEN ARRAY', 'color:blue');
-      console.log(vtoks);
-      console.log('');
-    }
+    if (DBG) console.group('%cVALIDATION SUMMARY', 'color:blue');
+    else console.groupCollapsed('%cVALIDATION SUMMARY');
+    let max = 0;
+    const lines = [];
+    console.log(vtoks);
+    vtoks.forEach((symbolData, i) => {
+      const { error, ...keys } = symbolData;
+      let err = error ? error.info : '';
+      let dicts = [...Object.keys(keys)];
+      let symbols = dicts.length ? dicts.join(', ') : '';
+      const spc = ''.padStart(i.toString().length);
+      let out = '';
+      if (symbols) {
+        out = `SDICT ${symbols}`;
+        if (out.length > max) max = out.length;
+      }
+      if (err) {
+        let el = '';
+        if (symbols) el = `\n${spc} - `;
+        el += `ERROR ${err}`;
+        if (el.length > max) max = el.length;
+        out += el;
+      }
+      lines.push(`${i} - ${out}`);
+    });
+    lines.forEach((line, i) => {
+      const bg = i % 2 === 0 ? '#eee' : '#fff';
+      console.log(`%c${line}`, `background-color:${bg}`);
+    });
+    console.groupEnd();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** helper to return the current symbolData for underflow error reporting */

@@ -20,29 +20,39 @@ const PR = UR.PrefixUtil('EditBox', 'TagRed');
  *  so it will rerender based on what it receives, rather than what it
  *  retrieves
  */
-export function PlaceholderBox(props) {
-  const { selection } = props;
-  const { scriptToken, vmPageLine } = selection;
-  const { lineScript } = vmPageLine;
+export function PlaceholderBox(parentProps) {
+  const { selection } = parentProps;
+  const { scriptToken, linePos, lineNum, vmPageLine } = selection;
+  const vTokens = WIZCORE.ValidateLine(vmPageLine);
+  const vtok = vTokens[linePos - 1];
+  const list = WIZCORE.GetTokenGUIData(vtok);
+  const rows = [];
 
-  const argtype = scriptToken.kw_argtype || '<unknown argType>';
-  // console.log('PlaceholderBox rendering:', tok);
+  const sTopAlign = { verticalAlign: 'top' };
+  Object.keys(list).forEach(name => {
+    const str = list[name];
+    rows.push(
+      <tr style={sTopAlign} key={name}>
+        <td>{name}</td>
+        <td>{str}</td>
+      </tr>
+    );
+  });
+  if (rows.length === 0)
+    rows.push(
+      <tr style={sTopAlign} key="meh">
+        <td>Unimplemented Edit Box</td>
+      </tr>
+    );
+  const status = list.unitText ? 'PARSE OK' : 'PARSE ERROR';
   return (
-    <form>
-      Unimplemented Edit Box
-      <br />
-      <table>
-        <tbody>
-          <tr>
-            <td>argtype</td>
-            <td>{argtype}</td>
-          </tr>
-          <tr>
-            <td>tok</td>
-            <td>{JSON.stringify(scriptToken)}</td>
-          </tr>
-        </tbody>
-      </table>
-    </form>
+    <>
+      TEST EDIT BOX - {status}
+      <form style={{ marginTop: '10px' }}>
+        <table>
+          <tbody>{rows}</tbody>
+        </table>
+      </form>
+    </>
   );
 }

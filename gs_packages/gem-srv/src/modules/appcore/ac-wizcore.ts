@@ -26,7 +26,6 @@ import * as TRANSPILER from 'script/transpiler-v2';
 import * as SENGINE from 'modules/datacore/dc-script-engine';
 import { ScriptLiner } from 'script/tools/script-helpers';
 import { VSymError } from 'script/tools/symbol-helpers';
-import { TSymbolRefs } from 'lib/t-script';
 // load state
 const { StateMgr } = UR.class;
 
@@ -140,25 +139,8 @@ function DispatchClick(event) {
     newState.sel_line_pos = Number(pos); // STATE UPDATE: selected pos
     SendState(newState);
 
-    // AD HOC TESTS
-    // decode symbol type test
     const { sel_line_num, sel_line_pos, script_page } = State();
     if (sel_line_num > 0 && sel_line_pos > 0) {
-      const vmPageLine = script_page[sel_line_num - TRANSPILER.LINE_START_NUM];
-      const { vmTokens } = vmPageLine;
-      const kw = vmTokens[0].scriptToken.identifier;
-      const retvals = ValidateLine(vmPageLine) as any;
-      if (retvals) {
-        const { unitText, error } = retvals[sel_line_pos - 1];
-        if (unitText !== undefined)
-          console.log(...PR(`${tokenKey} scriptElement:'${unitText}' is OK`));
-        if (error)
-          console.log(...PR(`${tokenKey} error:${error.code} - ${error.info}`));
-      } else {
-        console.log(
-          ...PR(`${tokenKey}: ERROR keyword '${kw}' did not generate symbolData`)
-        );
-      }
       return;
     }
   }
@@ -252,6 +234,20 @@ function ValidateLine(vmPageLine) {
   kwp.validateInit({ bundle: cur_bdl, globals: globalRefs });
   return kwp.validate(lineScript);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetTokenGUIData(validationToken) {
+  const { error, unitText, keywords, features, props, methods, arg } =
+    validationToken;
+  let names: any = {};
+  if (unitText) names.unitText = unitText;
+  if (error) names.error = `${error.code} - ${error.info}`;
+  if (keywords) names.keywords = keywords.join(', ');
+  if (features) names.features = [...Object.keys(features)].join(', ');
+  if (props) names.props = [...Object.keys(props)].join(', ');
+  if (methods) names.methods = [...Object.keys(methods)].join(', ');
+  if (arg) names.arg = arg;
+  return names;
+}
 
 /// WIZCORE HELPER METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -312,8 +308,6 @@ function SelectedTokenInfo() {
   }
   return undefined;
 }
-
-///
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return a string version of a ScriptUnit */
 function GetLineScriptText(lineScript) {
@@ -418,7 +412,8 @@ export {
   DispatchClick, // handles clicks on Wizard document
   WizardTextChanged, // handle incoming change of text
   WizardTestLine, // handle test line for WizardTextLine tester
-  DispatchEditorClick // handle clicks on editing box
+  DispatchEditorClick, // handle clicks on editing box
+  GetTokenGUIData
 };
 
 /// EXPORTED VIEWMODEL INFO UTILS //////////////////////////////////////////////
