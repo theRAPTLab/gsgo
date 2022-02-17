@@ -184,6 +184,12 @@ function DeleteAgent(instancedef) {
     return;
   }
   const agents = AGENTS.get(bpid);
+  // Release cursors before deleting
+  agents.forEach((a, key) => {
+    if (a.hasFeature('Cursor') && a.blueprint.name !== 'Cursor' && a.cursor) {
+      a.callFeatMethod('Cursor', 'releaseCursor');
+    }
+  });
   agents.delete(id);
   AGENTS.set(bpid, agents);
   AGENT_DICT.delete(id);

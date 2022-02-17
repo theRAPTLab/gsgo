@@ -315,12 +315,13 @@ class WidgetPack extends GFeature {
    * @param agent
    * @param propname
    * @param frequency Number of frames between plotting another point
+   *                  Defaults to 30, or once per second
    */
-  bindGraphTo(agent: IAgent, propname: string, frequency: number) {
+  bindGraphTo(agent: IAgent, propname: string, frequency: number = 30) {
     agent.prop.AgentWidgets._graphProp = propname;
     agent.prop.AgentWidgets._graphFreq = frequency;
   }
-  bindGraphToGlobalProp(agent: IAgent, propname: string, frequency: number) {
+  bindGraphToGlobalProp(agent: IAgent, propname: string, frequency: number = 30) {
     agent.prop.AgentWidgets._graphGlobalProp = propname;
     agent.prop.AgentWidgets._graphFreq = frequency;
   }

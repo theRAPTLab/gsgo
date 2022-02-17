@@ -57,3 +57,9 @@ export * from './dbgContext';
 export * from './dbgError';
 export * from './keywordErr';
 // export * from './unknownKeyword';
+
+// placedholder stack keywords
+export * from './stackAdd';
+export * from './stackSub';
+export * from './stackMul';
+export * from './stackDiv';

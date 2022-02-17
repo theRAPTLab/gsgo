@@ -14,7 +14,7 @@ export default class FormTransform extends React.Component {
     this.state = state; // read from ACLocales
 
     // add UI states
-    this.state.selectedTrack = 'ptrack'; // show ptrack by default
+    this.state.selectedTrack = 'pozyx'; // show pozyx by default
 
     this.handleInputChange = this.handleInputChange.bind(this);
     this.handleTrackChange = this.handleTrackChange.bind(this);
@@ -109,8 +109,8 @@ export default class FormTransform extends React.Component {
     const { title = 'Set Transforms' } = this.props;
     const localeList = this.state.localeNames || [];
     const trackOptions = [
-      { id: 'ptrack', name: 'PTrack' },
-      { id: 'pozyx', name: 'Pozyx' }
+      { id: 'pozyx', name: 'Pozyx' },
+      { id: 'ptrack', name: 'PTrack' }
     ];
 
     const { xScale, yScale, zRot, xOff, yOff, xRange, yRange, memo } = this.state[

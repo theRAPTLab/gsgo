@@ -22,7 +22,7 @@ STATE.initializeState({
   locales: [],
   localeNames: [],
   localeId: 0,
-  selectedTrack: 'ptrack',
+  selectedTrack: 'pozyx',
   ptrack: {
     xRange: -99,
     yRange: -99,
@@ -74,10 +74,20 @@ export const Locales = () => stateObj('locales');
 export const CurrentLocaleId = () => flatStateValue('localeId');
 export const GetLocale = id => {
   // stateobj always returns entities as { [group]:{[ keys]:value } }
+  // locales are defined in dbinit-loki.json
   const locales = _getKey('locales'); // group:locales, key:locales
-  const locale = locales.find(l => l.id === id);
+  let locale = locales.find(l => l.id === id);
   if (locale) return locale;
-  return { error: `localeId ${id} not found` };
+  // else fall back to default id=0 as defined in dbinit-loki.json
+  locale = locales.find(l => l.id === 0);
+  if (locale) return locale;
+  // else fall back to init defaults
+  return {
+    id: 0,
+    name: 'Unknown Locale',
+    pozyx: _getKey('pozyx'), // use STATE defaults so at least pozyx is not undefined
+    ptrack: _getKey('ptrack') // use STATE defaults so at least ptrack is not undefined
+  };
 };
 /// update
 export const SetLocaleID = id => {

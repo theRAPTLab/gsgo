@@ -7,6 +7,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
 import { Register } from 'modules/datacore/dc-features';
 import { IAgent } from 'lib/t-script';
@@ -15,6 +16,9 @@ import { GetGlobalAgent } from 'lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+const PR = UR.PrefixUtil('GLOBALPROP');
+const DBG = true;
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -41,20 +45,19 @@ class GlobalPack extends GFeature {
 
   addGlobalProp(agent: IAgent, pName: string, type: string, value: any) {
     const global = GetGlobalAgent();
-    console.log('global', global);
     let gvar;
     if (type === 'String') gvar = new GVarString();
     if (type === 'Number') gvar = new GVarNumber();
     if (type === 'Boolean') gvar = new GVarBoolean();
     global.addProp(pName, gvar);
     global.prop[pName].setTo(value);
-    // console.error('global', global.prop[pName].value);
   }
 
   globalProp(agent: IAgent, pName: string, method: string, value: any) {
     const global = GetGlobalAgent();
     global.prop[pName][method](value);
-    // console.error('global', pName, method, global.prop[pName].value);
+    if (DBG)
+      console.log(...PR('globalProp', pName, method, global.prop[pName].value));
   }
 
   getGlobalProp(agent: IAgent, pName: string) {
