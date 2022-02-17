@@ -128,6 +128,15 @@ async function PromiseLoadAssets(subdir: string = '') {
   return Promise.all(promises);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function DBG_ForceLoadAsset(subdir) {
+  ASSET_LOAD_COUNT = 0;
+  LOADER_DICT.forEach((loader, name) => {
+    loader.reset();
+    console.log('resetting', name, 'assets');
+  });
+  return PromiseLoadAssets(subdir);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return the loader class for the given asset type */
 function GetLoader(asType: TAssetType): any {
   return LOADER_DICT.get(asType);
@@ -143,5 +152,6 @@ m_RegisterLoader(new ProjectLoader('projects'));
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
   GetLoader, // return loader instance by assettype (eg 'sprites')
-  PromiseLoadAssets // loads all assets in directory from manifest
+  PromiseLoadAssets, // loads all assets in directory from manifest
+  DBG_ForceLoadAsset // don't use this!!! unstable
 };

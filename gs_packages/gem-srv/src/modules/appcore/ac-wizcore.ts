@@ -26,6 +26,8 @@ import * as TRANSPILER from 'script/transpiler-v2';
 import * as SENGINE from 'modules/datacore/dc-script-engine';
 import { ScriptLiner } from 'script/tools/script-helpers';
 import { VSymError } from 'script/tools/symbol-helpers';
+import { GS_ASSETS_PROJECT_ROOT } from 'config/gem-settings';
+
 // load state
 const { StateMgr } = UR.class;
 
@@ -35,9 +37,9 @@ const PR = UR.PrefixUtil('WIZCORE', 'TagCyan');
 const DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let PROJECTS; // current project class-asset-loader
-const DEF_ASSETS = 'test-assets'; // gs_assets is root
-const DEF_PRJID = 'test-ui';
-const DEF_BPID = 'TestAgent';
+const DEF_ASSETS = GS_ASSETS_PROJECT_ROOT; // gs_assets is root
+const DEF_PRJID = 'aquatic';
+const DEF_BPID = 'Fish';
 
 /// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -392,6 +394,11 @@ function IsTokenInMaster(tok) {
 
 /// ASSET UTILITIES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+async function LoadAssetDirectory(dir = GS_ASSETS_PROJECT_ROOT) {
+  [PROJECTS] = await ASSETS.DBG_ForceLoadAsset(dir);
+  console.log(...PR(`loaded assets from '${dir}'`));
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return array of string project ids (.gemprj files) using the
  *  current PROJECTS asset loader instance
  */
@@ -422,7 +429,6 @@ function GetProjectBlueprint(prjId = DEF_PRJID, bpId = DEF_BPID) {
     throw Error(`${fn} no blueprint ${bpId} in project ${prjId}`);
   return match;
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return the blueprint of the given project,
  *  { id, label, scriptText, ... }
@@ -442,14 +448,58 @@ function LoadProjectBlueprint(prjId, bpId) {
 /// DEBUGGING METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.AddConsoleTool({
-  wizcore_script_test: () => {
-    console.log(JSON.stringify(State().script_tokens, null, 2));
+  load_proj: dir => LoadAssetDirectory(dir),
+  list_proj: () => {
+    const list = PROJECTS.getProjectsList();
+    let out = '';
+    list.forEach(project => {
+      const { id, label } = project;
+      if (!id.startsWith('_template_')) out += `  '${id}'\n`;
+    });
+    console.log(out);
+  },
+  list_proj_bps: projId => {
+    if (typeof projId !== 'string') {
+      console.log('ERROR: you must provide a projId string from this list:');
+      (window as any).list_proj();
+      return;
+    }
+    try {
+      const project = GetProject(projId);
+      const { blueprints } = project;
+      let out = '';
+      blueprints.forEach(bp => {
+        const { id, label } = bp;
+        out += `  '${id}'\n`;
+      });
+      console.log(out);
+      console.log('to load new blueprint, use:');
+      console.log(`    load_proj_bp('${projId}', 'Blueprint')`);
+      console.log(' and the editor will refresh');
+    } catch (e) {
+      console.log(`error loading blueprint '${projId}' does it exist?`);
+      (window as any).list_proj_bps();
+    }
+  },
+  load_proj_bp: (projId, bpId) => {
+    if (typeof projId !== 'string') {
+      console.log('must provide a projId string from this list:');
+      (window as any).list_projects();
+      return;
+    }
+    if (typeof bpId !== 'string') {
+      console.log('must provide a blueprint string from this list:');
+      (window as any).list_bps(projId);
+    }
+    LoadProjectBlueprint(projId, bpId);
+    console.log('*** RELOADING STATE');
   }
 });
 
 /// EXPORTED BLUEPRINT UTILS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
+  LoadAssetDirectory, // force load asset directory (for debugging)
   GetProjectList, // return projectIds in current assets (.gemprj)
   GetProject, // return project data by projectId or undefined
   GetProjectBlueprint // return prjId's bpId or undefined

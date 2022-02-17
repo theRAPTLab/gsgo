@@ -61,7 +61,7 @@ export function ValidateLineBox(/* props */) {
         style={{
           width: '100%',
           display: 'inline-grid',
-          gridTemplateColumns: '150px 1fr 150px',
+          gridTemplateColumns: '150px 1fr 175px',
           columnGap: '10px',
           rowGap: 0,
           alignItems: 'center'
@@ -76,7 +76,7 @@ export function ValidateLineBox(/* props */) {
           style={iStyle}
         />
         <button type="submit" onClick={processInput} style={bStyle}>
-          VALIDATE
+          CHECK CONSOLE
         </button>
       </div>
       <div style={{ marginLeft: '160px', color: 'red' }}>{status}</div>

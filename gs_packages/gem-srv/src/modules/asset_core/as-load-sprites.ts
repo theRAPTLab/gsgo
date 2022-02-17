@@ -226,6 +226,12 @@ class SpriteLoader extends AssetLoader {
       };
     }
   }
+  /** erase everything */
+  reset() {
+    super.reset();
+    this._loader = new PIXI.Loader();
+    this._loadCount = 0;
+  }
 } // end class
 
 /// STATIC METHODS ////////////////////////////////////////////////////////////

@@ -179,6 +179,11 @@ class AssetLoader extends TAssetLoader {
     const id = this.lookupAssetId(name);
     return this.getAssetById(id);
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API: release all assets to reuse instance */
+  reset() {
+    this._unloadAll();
+  }
 
   /// LOADER-SPECIFIC OVERRIDES ///////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
