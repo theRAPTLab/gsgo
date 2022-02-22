@@ -2,7 +2,7 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  WizardEdit is the edit box that appears when there is a valid selection
+  ScriptUnitEditor is the edit box that appears when there is a valid selection
   of line and position in WIZCORE
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
@@ -19,10 +19,10 @@ import { PlaceholderBox } from './PlaceholderBox';
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Returns a token editing box based on the currently selected token
- *  as defined in WIZCORE. The EditBox appears when a token is clicked, and
+ *  as defined in WIZCORE. The ScriptUnitEditor appears when a token is clicked, and
  *  is used by DevWizard.
  */
-export function EditBox(/* props */) {
+export function ScriptUnitEditor(/* props */) {
   // render a special keyword editor or token editor?
   let content = null;
   const sel = WIZCORE.SelectedTokenInfo();
@@ -41,7 +41,7 @@ export function EditBox(/* props */) {
   if (!content) return null;
   return (
     <div
-      className="WizardEdit"
+      className="ScriptUnitEditor"
       onClick={event => WIZCORE.DispatchEditorClick(event)}
       style={{ backgroundColor: 'rgba(255, 166, 0, 0.10)', padding: '10px' }}
     >

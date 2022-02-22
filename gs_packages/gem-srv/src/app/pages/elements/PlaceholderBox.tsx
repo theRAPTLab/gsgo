@@ -11,7 +11,7 @@ import SymbolDebugTable from './SymbolDebugTable';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('EditBox', 'TagRed');
+const PR = UR.PrefixUtil('ScriptElementEditor', 'TagRed');
 
 /// COMPONENT HELPERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

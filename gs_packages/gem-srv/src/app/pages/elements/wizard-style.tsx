@@ -27,18 +27,18 @@ export const sHead = {
 export const sLeft = {
   gridColumn: '1 / 2',
   // extra styling
+  padding: PAD,
+  overflowY: 'scroll',
+  overflowX: 'none'
+};
+export const sRight = {
+  gridColumn: '2 / 3',
+  // extra styling
   boxSizing: 'border-box',
   whiteSpace: 'pre',
   overflowY: 'scroll',
   overflowX: 'none',
   backgroundColor: '#2d2d2d'
-};
-export const sRight = {
-  gridColumn: '2 / 3',
-  // extra styling
-  padding: PAD,
-  overflowY: 'scroll',
-  overflowX: 'none'
 };
 export const sRightGrid = {
   display: 'grid',

@@ -34,11 +34,16 @@ import * as SIM from 'modules/sim/api-sim'; // load features
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 // import * as WIZCORE from 'modules/appcore/ac-wizcore';
 // import { StyledTokenTest } from './elements/StyledExample';
-import { ScriptText } from './elements/WizardDevText';
-import { ScriptView } from './elements/WizardScriptView';
-import { ValidateLineBox } from './elements/WizardValidateLine';
-import { StatusLine } from './elements/WizardStatusLine';
-import { EditBox } from './elements/WizardEditBox';
+import { ScriptText } from './elements/WizScriptText';
+import { ScriptView } from './elements/WizScriptView';
+import { ScriptContextor } from './elements/WizScriptContextor';
+import { DevValidateLine } from './elements/DevValidateLine';
+import { StatusLine } from './elements/WizStatusLine';
+import { ScriptUnitEditor } from './elements/WizScriptUnitEditor';
+import { RuntimeScriptView } from './elements/WizRuntimeScriptView';
+import { RuntimeSimView } from './elements/WizRuntimeSimView';
+import { RuntimeSimTarget } from './elements/WizRuntimeSimTarget'; //
+
 import {
   sGrid,
   sHead,
@@ -103,16 +108,16 @@ class DevWizard extends React.Component {
     return (
       <div id="gui-wizard" style={sGrid}>
         <DevHeader label="DEV/WIZARD" />
-        <ScriptText style={sLeft} />
-        <div style={sRight}>
+        <div style={sLeft}>
           <div style={sRightGrid}>
             <ScriptView script_page={script_page} />
-            <EditBox />
+            <ScriptUnitEditor />
           </div>
         </div>
+        <ScriptText style={sRight} />
         <footer style={sFoot}>
           <StatusLine />
-          <ValidateLineBox />
+          <DevValidateLine />
         </footer>
       </div>
     );

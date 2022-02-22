@@ -153,7 +153,7 @@ function DispatchClick(event) {
   SendState({ sel_line_num: -1, sel_line_pos: -1 });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Called by the EditBox component, or anything that wants to intercept
+/** Called by the ScriptElementEditor component, or anything that wants to intercept
  *  a click before DispatchClick() guesses no token was clicked
  */
 function DispatchEditorClick(event) {

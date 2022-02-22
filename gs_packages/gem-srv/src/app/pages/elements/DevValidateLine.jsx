@@ -21,7 +21,7 @@ const TESTLINE = 'prop energyLevel setTo 0';
 /** Returns placeholder text line editor to do script processing of a line
  *  for testing purposes
  */
-export function ValidateLineBox(/* props */) {
+export function DevValidateLine(/* props */) {
   /// DEFINE STATE ////////////////////////////////////////////////////////////
   const [input, setInput] = React.useState(TESTLINE);
   const [status, setStatus] = React.useState();
