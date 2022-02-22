@@ -148,10 +148,6 @@ class MissionControl extends React.Component {
     PROJSERVER.ProjectDataPreInit(this, projId);
   }
 
-  componentDidCatch(e) {
-    console.log(e);
-  }
-
   componentWillUnmount() {
     UR.UnsubscribeState('project', this.urStateUpdated);
     UR.UnhandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);

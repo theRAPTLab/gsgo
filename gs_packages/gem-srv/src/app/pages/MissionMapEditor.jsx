@@ -40,10 +40,6 @@ class MapEditor extends React.Component {
 
   componentDidMount() {}
 
-  componentDidCatch(e) {
-    console.log(e);
-  }
-
   componentWillUnmount() {}
 
   OnPanelClick(id) {
