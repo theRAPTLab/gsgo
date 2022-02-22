@@ -317,6 +317,7 @@ export interface IKeyword {
   keyword: string;
   args: TSymArg[] | TSymArg[][]; // multiple signatures
   compile(unit: TScriptUnit, lineIdx?: number): (TOpcode | TOpcodeErr)[];
+  jsx(index: number, unit: TScriptUnit, jsxOpt?: {}): any[] /* deprecated */;
   symbolize(unit: TScriptUnit, lineIdx?: number): TSymbolData;
   validateInit(refs: TSymbolRefs): void;
   validate(unit: TScriptUnit): TValidationToken[] | void;
