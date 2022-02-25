@@ -285,26 +285,16 @@ function GetTokenGUIData(validationToken) {
  *  when clicking an element that is covered-up by the edit box
  */
 function ScrollLineIntoView(lineNum: number) {
-  const view = document.getElementById('wizardView');
-  console.log('scroll line', lineNum, 'range', view.children.length);
-  // problem: the number of child elements does not match the lineNum
-  // because of skipped lines
-  const element = view.children[lineNum - TRANSPILER.LINE_START_NUM];
-  if (element) {
-    const vRect = view.getBoundingClientRect();
-    const eRect = element.getBoundingClientRect();
-    console.log(`view:(${vRect.x}, ${vRect.y}) element:(${eRect.x}, ${eRect.y})`);
+  let tokenKey;
+  if (typeof lineNum === 'number') tokenKey = `${lineNum},1`;
+  else tokenKey = `${SelectedLineNum()},1`;
+  console.log('tokenKey', tokenKey);
+  const element = document.querySelector(`div[data-key="${tokenKey}"]`);
+  if (element)
     element.scrollIntoView({
       behavior: 'smooth',
-      block: 'end',
-      inline: 'nearest'
+      block: 'nearest'
     });
-  } else {
-    view.scroll({
-      top: 0,
-      behavior: 'smooth'
-    });
-  }
 }
 
 /// WIZCORE HELPER METHODS ////////////////////////////////////////////////////

@@ -23,9 +23,9 @@ import { PlaceholderBox } from './PlaceholderBox';
  *  is used by DevWizard.
  */
 export function ScriptUnitEditor(/* props */) {
-  // render a special keyword editor or token editor?
   let content = null;
   const sel = WIZCORE.SelectedTokenInfo();
+  // render a special keyword editor or token editor?
   if (sel) {
     const { scriptToken, lineNum, linePos, vmPageLine } = sel;
     // (1) is this a keyword?
@@ -35,6 +35,9 @@ export function ScriptUnitEditor(/* props */) {
       // (2) it is a token, so figure out arguments
       content = <PlaceholderBox selection={sel} />;
     }
+    React.useEffect(() => {
+      WIZCORE.ScrollLineIntoView();
+    });
   }
 
   // RENDER ///////////////////////////////////////////////////////////////////
