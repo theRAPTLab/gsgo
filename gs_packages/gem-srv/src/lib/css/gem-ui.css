@@ -92,6 +92,23 @@
 .gwiz.styleKey {
   font-weight: bold;
 }
+.gwiz.styleComment {
+  color: dimgrey;
+  background-color: white;
+  font-family: monospace;
+}
+.gwiz.stylePragma {
+  color: white;
+  background-color: teal;
+}
+.gwiz.styleDefine {
+  color: white;
+  background-color: darkslategrey;
+}
+.gwiz.styleCond {
+  background-color: hotpink;
+}
+
 .gwiz.valueType {
   color: blue;
 }

@@ -30,7 +30,17 @@ const DBG = false;
 // will match the script_text line numbers
 // See also COUNT_ALL_LINES for related behaviors
 const DRAW_CLOSING_LINES = false;
-
+const SPECIAL_IDENTS = [
+  'BLUEPRINT',
+  'TAG',
+  'PROGRAM',
+  'INIT',
+  'DEFINE',
+  'UPDATE',
+  'CONDITION'
+];
+const SPECIAL_KEYWORDS = ['useFeature', 'addFeature', 'addProp'];
+const CONDITION_KEYWORDS = ['every', 'when'];
 // view styling
 const sScriptView = {
   display: 'inline-list-item',
@@ -125,6 +135,11 @@ function GToken(props) {
     ? 'gwiz gtoken styleOpen selected'
     : 'gwiz gtoken styleOpen';
   if (type === 'identifier' && position === 0) classes += ' styleKey';
+  if (type === 'comment') classes += ' styleComment';
+  if (type === 'directive') classes += ' stylePragma';
+  if (SPECIAL_IDENTS.includes(label)) classes += ' stylePragma';
+  if (SPECIAL_KEYWORDS.includes(label)) classes += ' styleDefine';
+  if (CONDITION_KEYWORDS.includes(label)) classes += ' styleCond';
   classes += ` ${type}Type`;
 
   // if not, emit the token element
