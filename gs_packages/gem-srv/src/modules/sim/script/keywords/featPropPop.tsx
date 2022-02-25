@@ -42,7 +42,7 @@ export class featPropPop extends Keyword {
         } else {
           prop = agent.getFeatProp(ref[0] as string, pName);
         }
-        return prop['setTo'](arg);
+        return prop.setTo(arg);
       };
     } else if (len === 2) {
       /** EXPLICIT REF *******************************************************/
