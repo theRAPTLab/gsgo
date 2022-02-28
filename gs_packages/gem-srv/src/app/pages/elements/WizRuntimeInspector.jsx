@@ -2,9 +2,8 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  RuntimeScriptView - A version of the ScriptView that serves as the interface
-  for inspecting property values of the currently selected instance
-  of the running character types
+  RuntimeInspector - Instrument to observe the inner workings of a
+  script variables for a selected SimTarget
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -14,15 +13,15 @@ import * as WIZCORE from 'modules/appcore/ac-wizcore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('RuntimeScriptView');
+const PR = UR.PrefixUtil('RuntimeInspector');
 const LOG = console.log;
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function RuntimeScriptView(/* props */) {
+export function RuntimeInspector(/* props */) {
   /// DEFINE STATE ////////////////////////////////////////////////////////////
   const { sel_linenum: num, sel_linepos: pos, error } = WIZCORE.State();
   const selText = num < 0 ? 'no selection' : `selected ${num},${pos}`;
   /// RENDER //////////////////////////////////////////////////////////////////
-  return <div>RuntimeScriptView</div>;
+  return <div>RuntimeInspector</div>;
 }

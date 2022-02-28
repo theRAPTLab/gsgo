@@ -56,7 +56,7 @@ export class ScriptText extends React.Component {
     // this.setState(vmStateEvent);
 
     /// CAREFUL UPDATE ///
-    const { script_tokens, sel_line_num, error } = vmStateEvent;
+    const { script_tokens, sel_linenum, error } = vmStateEvent;
     //
     if (script_tokens) {
       const text = ScriptToText(script_tokens);
@@ -64,9 +64,9 @@ export class ScriptText extends React.Component {
       this.jar.updateCode(text);
     }
     //
-    if (sel_line_num !== undefined) {
-      this.setState({ sel_line_num }, () => {
-        if (sel_line_num > 0) {
+    if (sel_linenum !== undefined) {
+      this.setState({ sel_linenum }, () => {
+        if (sel_linenum > 0) {
           Prism.highlightElement(this.jarRef.current);
         } else {
           this.hideLineSelector();
@@ -81,7 +81,7 @@ export class ScriptText extends React.Component {
       const re = /@(\d+).*/;
       const errLine = Number(re.exec(error)[1]);
       if (errLine !== this.lastSelectedLine) {
-        WIZCORE.SendState({ sel_line_num: errLine });
+        WIZCORE.SendState({ sel_linenum: errLine });
         this.lastSelectedLine = errLine;
       }
     }
@@ -104,12 +104,12 @@ export class ScriptText extends React.Component {
   // this render function is being called twice for some reason, maybe because
   // CodeJar has its own change handler that is causing rerender
   render() {
-    const { script_text, sel_line_num } = this.state;
+    const { script_text, sel_linenum } = this.state;
     return (
       <pre
         id="leftText"
         className="language-gemscript line-numbers match-braces"
-        data-line={sel_line_num}
+        data-line={sel_linenum}
         style={{
           fontSize: '12px',
           lineHeight: 1,

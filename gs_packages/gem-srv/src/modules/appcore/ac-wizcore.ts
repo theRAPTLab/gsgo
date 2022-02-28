@@ -38,13 +38,13 @@ const DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let PROJECTS; // current project class-asset-loader
 const DEF_ASSETS = GS_ASSETS_PROJECT_ROOT; // gs_assets is root
-const DEF_PRJID = 'aquatic';
+const DEF_PRJID = 'AEP2';
 const DEF_BPID = 'Fish';
 
 /// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// First create the new instance, and extract the methods we plan to use
-const STORE = new StateMgr('WIZARDVIEW');
+const STORE = new StateMgr('ScriptWizard');
 /// extract methods we want to use interrnally or export
 const {
   _initializeState, // special state initializer method
@@ -59,18 +59,28 @@ const {
 /// initial values of state have to be defined for constructors of components
 /// that are relying on it, but these are not yet loaded
 _initializeState({
+  // script UI interaction
   script_text: '# BLUEPRINT AWAIT LOAD', // the source text (WizardText)
   script_tokens: [], // source tokens (from text)
   script_page: [], // source tokens 'printed' as lines
   line_tokmap: new Map(), // lookup map from tokenLine+Pos to original token
-  sel_line_num: -1, // selected line of wizard. If < 0 it is not set
-  sel_line_pos: -1, // select index into line. If < 0 it is not set
-  error: '', // used fo error messages
+  sel_linenum: -1, // selected line of wizard. If < 0 it is not set
+  sel_linepos: -1, // select index into line. If < 0 it is not set
+  error: '', // used for displaying error messages
+  // project context
   proj_list: [], // project list
   cur_prjid: null, // current project id
   cur_bpid: null, // current blueprint
   cur_bdl: null, // current blueprint bundle
-  sel_unit_text: '' // current unit_text of edited token
+  // selection-driven data
+  sel_symbol: null, // selection-dependent symbol data
+  sel_context: null, // selection-dependent context
+  sel_unittext: '', // selection-dependent unit_text
+  // runtime filters to limit what to show
+  rt_bpfilter: null,
+  rt_propfilter: null,
+  rt_instancefilter: null,
+  rt_testfilter: null
 });
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -138,19 +148,19 @@ function DispatchClick(event) {
 
     // notify subscribers of new current line and token index
     const [line, pos] = tokenKey.split(',');
-    newState.sel_line_num = Number(line); // STATE UPDATE: selected line
-    newState.sel_line_pos = Number(pos); // STATE UPDATE: selected pos
+    newState.sel_linenum = Number(line); // STATE UPDATE: selected line
+    newState.sel_linepos = Number(pos); // STATE UPDATE: selected pos
     SendState(newState);
 
-    const { sel_line_num, sel_line_pos } = State();
-    if (sel_line_num > 0 && sel_line_pos > 0) {
+    const { sel_linenum, sel_linepos } = State();
+    if (sel_linenum > 0 && sel_linepos > 0) {
       return;
     }
   }
 
   /** (N) DESELECT IF NO SPECIFIC CLICK **************************************/
   // if nothing processed, then unset selection
-  SendState({ sel_line_num: -1, sel_line_pos: -1 });
+  SendState({ sel_linenum: -1, sel_linepos: -1 });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Called by the ScriptElementEditor component, or anything that wants to intercept
@@ -172,11 +182,16 @@ function WizardTextChanged(text) {
   let script_tokens;
   let cur_bdl;
   try {
+    // compile the next text from the scriptText editor
+    // and update the state WITHOUT broadcasting the changes
+    // to avoid retriggering the scriptText editor
     script_tokens = TRANSPILER.TextToScript(text); // can throw error
     cur_bdl = TRANSPILER.CompileBlueprint(script_tokens); // can throw error
-    const [script_page] = TRANSPILER.ScriptToLines(script_tokens);
-    SendState({ script_page });
     _setState({ script_text: text, script_tokens, cur_bdl });
+    // since the script tokens have changed, need to redo the viewmodels for
+    // the scriptWizard and tell it to update
+    const [script_page, line_tokmap] = TRANSPILER.ScriptToLines(script_tokens);
+    SendState({ script_page, line_tokmap });
   } catch (e) {
     SendState({ error: e.toString() });
     // eslint-disable-next-line no-useless-return
@@ -318,16 +333,16 @@ function GetAllTokenObjects(statements) {
  *  with 1 being the first element. This string is used as a hash.
  */
 function SelectedTokenId() {
-  const { sel_line_num, sel_line_pos } = State();
-  if (sel_line_num < 1) return undefined; // START_COUNT=1 in script-helpers
-  if (sel_line_pos < 1) return `${sel_line_num}`;
-  return `${sel_line_num},${sel_line_pos}`;
+  const { sel_linenum, sel_linepos } = State();
+  if (sel_linenum < 1) return undefined; // START_COUNT=1 in script-helpers
+  if (sel_linepos < 1) return `${sel_linenum}`;
+  return `${sel_linenum},${sel_linepos}`;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return the current line number */
 function SelectedLineNum() {
-  const { sel_line_num } = State();
-  return Number(sel_line_num);
+  const { sel_linenum } = State();
+  return Number(sel_linenum);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return the token by tokenKey 'line,pos'
@@ -343,7 +358,7 @@ function GetTokenById(key) {
 function SelectedTokenInfo() {
   const scriptToken = GetTokenById(SelectedTokenId());
   const context = {}; // TODO: look up scope from symbol-utilities
-  const { sel_line_num: lineNum, sel_line_pos: linePos, script_page } = State();
+  const { sel_linenum: lineNum, sel_linepos: linePos, script_page } = State();
   if (lineNum > 0 && linePos > 0) {
     const vmPageLine = script_page[lineNum - TRANSPILER.LINE_START_NUM];
     return {

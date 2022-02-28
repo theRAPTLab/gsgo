@@ -20,7 +20,7 @@ const LOG = console.log;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function RuntimeSimTarget(/* props */) {
   /// DEFINE STATE ////////////////////////////////////////////////////////////
-  const { sel_line_num: num, sel_line_pos: pos, error } = WIZCORE.State();
+  const { sel_linenum: num, sel_linepos: pos, error } = WIZCORE.State();
   const selText = num < 0 ? 'no selection' : `selected ${num},${pos}`;
   /// RENDER //////////////////////////////////////////////////////////////////
   return <div>RuntimeSimTarget</div>;
