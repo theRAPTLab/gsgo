@@ -12,6 +12,7 @@ import * as Prism from 'lib/vendor/prism';
 import { CodeJar } from 'lib/vendor/codejar';
 import * as WIZCORE from 'modules/appcore/ac-wizcore-tests';
 import { ScriptToText } from 'modules/sim/script/transpiler-v2';
+import { sScriptText } from './wizard-style';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -110,11 +111,7 @@ export class ScriptText extends React.Component {
         id="leftText"
         className="language-gemscript line-numbers match-braces"
         data-line={sel_linenum}
-        style={{
-          fontSize: '12px',
-          lineHeight: 1,
-          whiteSpace: 'pre-line'
-        }}
+        style={sScriptText}
       >
         <code
           id="codejar"

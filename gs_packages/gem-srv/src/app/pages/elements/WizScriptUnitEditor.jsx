@@ -12,6 +12,7 @@ import UR from '@gemstep/ursys/client';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import { KeywordBox } from './KeywordBox';
 import { PlaceholderBox } from './PlaceholderBox';
+import { sScriptUnitEditor } from './wizard-style';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,7 +47,7 @@ export function ScriptUnitEditor(/* props */) {
     <div
       className="ScriptUnitEditor"
       onClick={event => WIZCORE.DispatchEditorClick(event)}
-      style={{ backgroundColor: 'rgba(255, 166, 0, 0.10)', padding: '10px' }}
+      style={sScriptUnitEditor}
     >
       {content}
     </div>

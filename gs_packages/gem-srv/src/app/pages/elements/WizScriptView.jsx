@@ -21,6 +21,7 @@ import {
   DecodeTokenPrimitive
 } from 'script/transpiler-v2';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import { sScriptView } from './wizard-style';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,12 +43,6 @@ const SPECIAL_IDENTS = [
 const SPECIAL_KEYWORDS = ['useFeature', 'addFeature', 'addProp'];
 const CONDITION_KEYWORDS = ['every', 'when'];
 // view styling
-const sScriptView = {
-  display: 'inline-list-item',
-  whiteSpace: 'nowrap',
-  overflowY: 'scroll',
-  overflowX: 'none'
-};
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -222,7 +217,7 @@ export function ScriptView(props) {
   }
 
   return (
-    <div id="wizardView" className="wizardView" style={sScriptView}>
+    <div id="ScriptWizardView" style={sScriptView}>
       {pageBuffer}
     </div>
   );

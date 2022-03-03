@@ -5,21 +5,21 @@
 
   This is the root component for Wizard GUI Development
 
-  It relies heavily on the appcore module WIZCORE to manage clicks and
-  state. The goal is not to have any logic in the root component at all.
+  It relies heavily on the appcore module WIZCORE to manage clicks and state.
+  The goal is not to have any logic in the root component at all.
 
-  The design of the GUI components are such that they all rely on WIZCORE
-  to manage viewmodel state, which is React-friendly shallow objects.
+  The design of the GUI components are such that they all rely on WIZCORE to
+  manage viewmodel state, which is React-friendly shallow objects.
 
-  The component reads initial state from WIZCORE in the constructor,
-  and also subscribes to WIZCORE state changes. Upon receiving a state
-  change, the component calls its own setState() to cause rerendering.
+  The component reads initial state from WIZCORE in the constructor, and also
+  subscribes to WIZCORE state changes. Upon receiving a state change, the
+  component calls its own setState() to cause rerendering.
 
-  Likewise, when an event occurs on the document level it is 'dispatched'
-  to the Dispatch Click Handler in WIZCORE, which can inspect the event to
-  determine what action should be taken. Since WIZCORE holds both viewmodel
-  state for the entire UI and has direct access to DATACORE modules, it can
-  make the appropriate changes to data and then synchronize viewmodel state.
+  Likewise, when an event occurs on the document level it is 'dispatched' to the
+  Dispatch Click Handler in WIZCORE, which can inspect the event to determine
+  what action should be taken. Since WIZCORE holds both viewmodel state for the
+  entire UI and has direct access to DATACORE modules, it can make the
+  appropriate changes to data and then synchronize viewmodel state.
 
   Since all Wizard GUI components can subscribe to WIZCORE, they all update
   without props passing or other convoluted message handling. The trick is
@@ -49,7 +49,7 @@ import {
   sHead,
   sLeft,
   sRight,
-  sRightGrid,
+  sLeftGrid,
   sFoot
 } from './elements/wizard-style';
 
@@ -109,12 +109,13 @@ class DevWizard extends React.Component {
       <div id="gui-wizard" style={sGrid}>
         <DevHeader label="DEV/WIZARD" />
         <div style={sLeft}>
-          <div style={sRightGrid}>
-            <ScriptView script_page={script_page} />
-            <ScriptUnitEditor />
-          </div>
+          <ScriptView script_page={script_page} />
+          <ScriptUnitEditor />
         </div>
-        <ScriptText style={sRight} />
+        <div style={sRight}>
+          {/* <ScriptContextor /> */}
+          <ScriptText />
+        </div>
         <footer style={sFoot}>
           <StatusLine />
           <DevValidateLine />
