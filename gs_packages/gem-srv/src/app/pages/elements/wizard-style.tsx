@@ -86,10 +86,28 @@ export const sScriptText = {
   backgroundColor: '#2d2d2d'
 };
 
-/// BOX STYLING CSS ///////////////////////////////////////////////////////////
+/// ERROR BOX STYLING CSS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export const sError = {
   textAlign: 'right',
   backgroundColor: 'red',
   color: 'white'
+};
+
+/// UPPER RIGHT BUTTON CONSOLE STYLING CSS ////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const sButtonConsole = {
+  position: 'absolute',
+  right: '8px',
+  top: '8px',
+  height: '50px',
+  display: 'inline-flex',
+  flexDirection: 'row',
+  gap: '8px'
+};
+/// INPUT ELEMENT STYLING /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const buttonStyle = {
+  whiteSpace: 'nowrap',
+  margin: 0
 };

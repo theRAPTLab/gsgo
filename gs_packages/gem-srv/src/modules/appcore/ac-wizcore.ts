@@ -80,7 +80,8 @@ _initializeState({
   rt_bpfilter: null,
   rt_propfilter: null,
   rt_instancefilter: null,
-  rt_testfilter: null
+  rt_testfilter: null,
+  dev_or_user: 0
 });
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -448,6 +449,12 @@ function LoadProjectBlueprint(prjId, bpId) {
   const scriptToks = TRANSPILER.TextToScript(scriptText);
   let cur_bdl = TRANSPILER.CompileBlueprint(scriptToks);
   SendState({ script_text: scriptText, cur_bdl }, () => {});
+}
+
+/// UI-to-APP STATE AND MODES /////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function UIToggleRunEditMode() {
+  SendState({ dev_or_user: 1 - State().dev_or_user });
 }
 
 /// DEBUGGING METHODS /////////////////////////////////////////////////////////

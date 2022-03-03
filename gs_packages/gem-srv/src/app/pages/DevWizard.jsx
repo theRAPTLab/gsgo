@@ -43,15 +43,9 @@ import { ScriptUnitEditor } from './elements/WizScriptUnitEditor';
 import { RuntimeScriptView } from './elements/WizRuntimeScriptView';
 import { RuntimeSimView } from './elements/WizRuntimeSimView';
 import { RuntimeSimTarget } from './elements/WizRuntimeSimTarget'; //
+import { ButtonConsole } from './elements/WizButtonConsole';
 
-import {
-  sGrid,
-  sHead,
-  sLeft,
-  sRight,
-  sLeftGrid,
-  sFoot
-} from './elements/wizard-style';
+import { sGrid, sHead, sLeft, sRight, sFoot } from './elements/wizard-style';
 
 // import CSS straight into module, will appear as inline style
 import 'lib/vendor/pico.min.css';
@@ -104,7 +98,8 @@ class DevWizard extends React.Component {
   }
 
   render() {
-    const { script_page } = this.state;
+    const { script_page, dev_or_user } = this.state;
+    const RightSide = dev_or_user === 0 ? <ScriptContextor /> : <ScriptText />;
     return (
       <div id="gui-wizard" style={sGrid}>
         <DevHeader label="DEV/WIZARD" />
@@ -112,14 +107,12 @@ class DevWizard extends React.Component {
           <ScriptView script_page={script_page} />
           <ScriptUnitEditor />
         </div>
-        <div style={sRight}>
-          {/* <ScriptContextor /> */}
-          <ScriptText />
-        </div>
+        <div style={sRight}>{RightSide}</div>
         <footer style={sFoot}>
           <StatusLine />
           <DevValidateLine />
         </footer>
+        <ButtonConsole />
       </div>
     );
   }

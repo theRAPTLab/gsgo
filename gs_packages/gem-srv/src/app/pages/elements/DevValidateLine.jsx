@@ -9,6 +9,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import { buttonStyle } from './wizard-style';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -54,7 +55,7 @@ export function DevValidateLine(/* props */) {
 
   /// RENDER COMPONENTS ///////////////////////////////////////////////////////
   const iStyle = { backgroundColor: 'white', margin: 0 };
-  const bStyle = { margin: 0 };
+
   return (
     <>
       <div
@@ -75,7 +76,7 @@ export function DevValidateLine(/* props */) {
           onKeyPress={handleKeypress}
           style={iStyle}
         />
-        <button type="submit" onClick={processInput} style={bStyle}>
+        <button type="submit" onClick={processInput} style={buttonStyle}>
           CHECK CONSOLE
         </button>
       </div>

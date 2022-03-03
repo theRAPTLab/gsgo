@@ -46,9 +46,13 @@ export class ScriptText extends React.Component {
         this.wizTimer = undefined;
       }, 500);
     });
-
     // add a subscriber
     WIZCORE.SubscribeState(this.handleWizUpdate);
+  }
+
+  /** unsubscribe **/
+  componentWillUnmount() {
+    WIZCORE.UnsubscribeState(this.handleWizUpdate);
   }
 
   /** INCOMING: handle WIZCORE event updates */
