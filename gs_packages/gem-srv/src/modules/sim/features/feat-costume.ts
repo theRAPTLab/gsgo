@@ -240,6 +240,10 @@ class CostumePack extends GFeature {
    *  featureCall Costume setCostume value
    */
   setCostume(agent: IAgent, costumeName: string, poseName?: string | Number) {
+    // Clear animated costume if previously set so animated costume will not
+    // replace the `setCostume` with the next animation update.
+    agent.prop.Costume._animationBaseSkin = undefined;
+
     agent.getFeatProp(this.name, 'costumeName').value = costumeName;
     const { frameCount } = SPRITE.getTextureInfo(costumeName);
     if (poseName !== undefined) {
