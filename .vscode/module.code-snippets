@@ -105,6 +105,7 @@
       "/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
       "/** jsdoc comment",
       " *  indent",
+      " */",
       "class MyClass {",
       "  /* for declaring classes, one per file */",
       "  /* remove if you're making a module (see below) */",
