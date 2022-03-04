@@ -685,7 +685,7 @@ UR.HandleMessage('NET:SCRIPT_UPDATE', ScriptUpdate);
 UR.HandleMessage('NET:BLUEPRINT_DELETE', HandleBlueprintDelete);
 UR.HandleMessage('INJECT_BLUEPRINT', InjectBlueprint);
 /// INSTANCE EDITING UTILS ----------------------------------------------------
-UR.HandleMessage('INSTANCE_ADD', InstanceAdd);
+UR.HandleMessage('LOCAL:INSTANCE_ADD', InstanceAdd);
 UR.HandleMessage('INSTANCE_DELETE', InstanceDelete);
 UR.HandleMessage('NET:INSTANCE_UPDATE_POSITION', InstanceUpdatePosition);
 // INSPECTOR UTILS --------------------------------------------------------
