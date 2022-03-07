@@ -31,7 +31,8 @@ import {
   TSymArg,
   TValidationToken,
   TSymbolErrorCodes,
-  DerefMethod
+  DerefMethod,
+  TValidationResult
 } from 'lib/t-script';
 import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
 import { SymbolHelper, VSymError } from 'script/tools/symbol-helpers';
@@ -39,7 +40,7 @@ import { UnpackToken, UnpackArg } from 'modules/datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
+const DBG = false;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -114,7 +115,7 @@ class Keyword implements IKeyword {
    *  Many keywords can use this as-is, but you may want to override
    *  this for peculiar token orderings.
    */
-  validate(unit: TScriptUnit): TValidationToken[] {
+  validate(unit: TScriptUnit): TValidationResult {
     //
     let tok: IToken; // hold reference to current dtoken for each pass through arglist
     let vtok: TValidationToken; // hold vtok reference for each pass through arglist
@@ -154,11 +155,9 @@ class Keyword implements IKeyword {
         );
       }
     }
-    // optionall dump vtoken status to console
-    if (DBG) this._dbgValidation(vtoks);
 
     // return the validation data array
-    return vtoks;
+    return this._dbgValidation(vtoks);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Helper for automatic validation using inferred keyword token order
@@ -200,13 +199,9 @@ class Keyword implements IKeyword {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** helper to print a summary of a validation token array */
-  _dbgValidation(vtoks: TValidationToken[]) {
-    if (DBG) console.group('%cVALIDATION SUMMARY', 'color:blue');
-    else console.groupCollapsed('%cVALIDATION SUMMARY');
+  _dbgValidation(vtoks: TValidationToken[]): TValidationResult {
     let max = 0;
     const lines = [];
-    console.log(vtoks);
     vtoks.forEach((symbolData, i) => {
       const { error, ...keys } = symbolData;
       let err = error ? error.info : '';
@@ -227,11 +222,7 @@ class Keyword implements IKeyword {
       }
       lines.push(`${i} - ${out}`);
     });
-    lines.forEach((line, i) => {
-      const bg = i % 2 === 0 ? '#eee' : '#fff';
-      console.log(`%c${line}`, `background-color:${bg}`);
-    });
-    console.groupEnd();
+    return { vtoks, summary: lines }; // for use by console
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** helper to return the current symbolData for underflow error reporting */

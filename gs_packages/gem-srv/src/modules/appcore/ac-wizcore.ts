@@ -27,6 +27,8 @@ import * as SENGINE from 'modules/datacore/dc-script-engine';
 import { ScriptLiner } from 'script/tools/script-helpers';
 import { VSymError } from 'script/tools/symbol-helpers';
 import { GS_ASSETS_PROJECT_ROOT } from 'config/gem-settings';
+import { TValidationResult } from 'lib/t-script';
+import { GetTextBuffer } from 'lib/class-textbuffer';
 
 // load state
 const { StateMgr } = UR.class;
@@ -81,7 +83,9 @@ _initializeState({
   rt_propfilter: null,
   rt_instancefilter: null,
   rt_testfilter: null,
-  dev_or_user: 0
+  dev_or_user: 0,
+  // console
+  dbg_console: 'ScriptContextor'
 });
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -214,9 +218,9 @@ function WizardTestLine(text) {
   const script = TRANSPILER.TextToScript(text);
   const [vmPage] = SPRINTER.scriptToLines(script); // note: use different instance
   const [vmPageLine] = vmPage;
-  const validTokens = ValidateLine(vmPageLine);
+  const { vtoks, summary } = ValidateLine(vmPageLine);
   const { vmTokens, lineScript } = vmPageLine;
-  return { validTokens, vmTokens, lineScript };
+  return { validTokens: vtoks, vmTokens, lineScript };
   //  } catch (e) {
   // const error = e.toString();
   // const re = /(.*)@(\d+):(\d+).*/;
@@ -232,11 +236,17 @@ function WizardTestLine(text) {
   // } else console.log(error);
   // } // try-catch
 }
+
+export function UpdateDBGConsole(summary: string[]) {
+  const buf = GetTextBuffer(State().dbg_console);
+  buf.set(summary);
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a lineVM, ensure that the scriptUnit is (1) valid and (2) return
  *  TValidationToken objects
  */
-function ValidateLine(vmPageLine) {
+function ValidateLine(vmPageLine): TValidationResult {
   // ERRORS AND DEBUG STUFF
   const fn = 'ValidateLine:';
   const { lineScript, globalRefs } = vmPageLine;
@@ -248,7 +258,9 @@ function ValidateLine(vmPageLine) {
   const kwp = SENGINE.GetKeyword(kw);
   if (kwp === undefined) {
     const keywords = SENGINE.GetAllKeywords();
-    return [new VSymError('errExist', `invalid keyword '${kw}'`, { keywords })];
+    return {
+      vtoks: [new VSymError('errExist', `invalid keyword '${kw}'`, { keywords })]
+    };
   }
   // DO THE RIGHT THING II: return the Validation Tokens
   kwp.validateInit({ bundle: cur_bdl, globals: globalRefs });

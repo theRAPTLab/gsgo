@@ -30,7 +30,8 @@ import {
   TOpcode,
   TScriptUnit,
   TSymArg,
-  TValidationToken
+  TValidationToken,
+  TValidationResult
 } from 'lib/t-script';
 import { VMToken } from 'lib/t-ui';
 import {
@@ -69,7 +70,7 @@ export class prop extends Keyword {
   /** custom validation, overriding the generic validation() method of the
    *  base Keyword class.
    */
-  validate(unit: TScriptUnit): TValidationToken[] {
+  validate(unit: TScriptUnit): TValidationResult {
     // super.validate(unit); // do basic sanity checks
     const vtoks = []; // validation token array
     const [kwTok, objrefTok, methodTok, ...argToks] = unit; // get arg pattern
@@ -79,7 +80,7 @@ export class prop extends Keyword {
     vtoks.push(this.shelper.methodName(methodTok));
     vtoks.push(...this.shelper.argsList(argToks));
     if (DBG) this._dbgValidation(vtoks);
-    return vtoks;
+    return this._dbgValidation(vtoks);
   }
 } // end of keyword definition
 

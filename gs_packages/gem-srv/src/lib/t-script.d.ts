@@ -280,6 +280,10 @@ export type TValidationToken = {
   error?: TSymbolError; // if not present, no error
   symbols?: TSymbolData; // symbols the are valid, undefined otherwise
 };
+export type TValidationResult = {
+  vtoks: TValidationToken[];
+  summary?: string[];
+};
 
 /// PROGRAM BUNDLES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -320,7 +324,7 @@ export interface IKeyword {
   jsx(index: number, unit: TScriptUnit, jsxOpt?: {}): any[] /* deprecated */;
   symbolize(unit: TScriptUnit, lineIdx?: number): TSymbolData;
   validateInit(refs: TSymbolRefs): void;
-  validate(unit: TScriptUnit): TValidationToken[] | void;
+  validate(unit: TScriptUnit): TValidationResult;
   getName(): string;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -15,18 +15,17 @@ import { Console } from './Console';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('ScriptContextor');
-const LOG = console.log;
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ScriptContextor(/* props */) {
   /// DEFINE STATE ////////////////////////////////////////////////////////////
-  const { sel_linenum: num, sel_linepos: pos, error } = WIZCORE.State();
+  const { dbg_console } = WIZCORE.State();
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <div>
-      <Console name="ConsoleTextor" />
+      <Console name={dbg_console} rows={10} />
     </div>
   );
 }

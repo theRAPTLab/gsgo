@@ -11,13 +11,13 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import TextBuffer, { GetTextBuffer } from 'lib/class-textbuffer';
-import * as WIZCORE from 'modules/appcore/ac-wizcore';
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 type MyProps = {
   name: string; // name of the console instance
   buffer: TextBuffer;
+  rows: number;
 };
 type MyState = {
   consoleText: string; // text to show in textarea
@@ -28,9 +28,13 @@ class Console extends React.Component<MyProps, MyState> {
   buffer: TextBuffer;
   constructor(props) {
     super(props);
-    const { name, value } = props;
+    let { name, rows, value } = props;
     this.name = name;
     this.buffer = GetTextBuffer(name);
+    if (typeof value === 'string') value = [value];
+    else if (value === undefined) value = [];
+    if (!Array.isArray(value)) throw Error('prop value must be array');
+    this.buffer.set(value);
     this.state = {
       consoleText: this.buffer.text(),
       showInput: true
@@ -85,11 +89,12 @@ class Console extends React.Component<MyProps, MyState> {
   }
   render() {
     const { consoleText, showInput } = this.state;
+    const { rows } = this.props;
     const console = (
       <textarea
         name="console"
         style={{ padding: '0 6px', fontFamily: 'monospace', width: '100%' }}
-        rows={4}
+        rows={rows}
         value={consoleText}
         readOnly
       />
