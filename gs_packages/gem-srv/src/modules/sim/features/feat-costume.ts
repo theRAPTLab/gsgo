@@ -236,7 +236,6 @@ class CostumePack extends GFeature {
 
   symbolize(): TSymbolData {
     return {
-      ctor: CostumePack,
       props: {
         counter: GVarNumber.Symbols,
         costumeName: GVarString.Symbols,
@@ -255,7 +254,7 @@ class CostumePack extends GFeature {
       },
       methods: {
         setCostume: { args: ['costumeName:string', 'poseName:string'] },
-        setPose: { args: [{ 'poseName': ['a', 'b'] }] },
+        setPose: { args: ['poseName:string'] },
         setAnimatedCostume: { args: ['costumeName:string', 'frameRate:number'] },
         setScale: { args: ['scale:number'] },
         setGlow: { args: ['seconds:number'] },
