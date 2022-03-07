@@ -10,69 +10,77 @@
 
 import React from 'react';
 import UR from '@gemstep/ursys/client';
+import TextBuffer, { GetTextBuffer } from 'lib/class-textbuffer';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
-
-/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const CONSOLES: Map<string, Console> = new Map();
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 type MyProps = {
   name: string; // name of the console instance
+  buffer: TextBuffer;
 };
 type MyState = {
   consoleText: string; // text to show in textarea
   showInput: boolean; // whether to show the input box
 };
 class Console extends React.Component<MyProps, MyState> {
-  buffer: string[];
+  name: string;
+  buffer: TextBuffer;
   constructor(props) {
     super(props);
-    const { name } = props;
-    if (CONSOLES.has(name)) throw Error(`console ${name} already exists`);
-    CONSOLES.set(name, this);
-    this.buffer = ['command output'];
+    const { name, value } = props;
+    this.name = name;
+    this.buffer = GetTextBuffer(name);
     this.state = {
-      consoleText: this.buffer[0],
+      consoleText: this.buffer.text(),
       showInput: true
     };
+
+    this.updateConsole = this.updateConsole.bind(this);
   }
 
+  componentDidMount() {
+    this.buffer.subscribe(this.updateConsole);
+  }
+  componentWillUnmount() {
+    this.buffer.unsubscribe(this.updateConsole);
+  }
   getBuffer() {
-    return [...this.buffer];
+    return this.buffer;
+  }
+  getText() {
+    return this.buffer.text();
   }
   setBuffer(buf: string[]) {
-    this.buffer = [...buf];
+    this.buffer.set(buf);
     this.updateConsole();
   }
-  updateConsole() {
-    const ctext = this.buffer.join('\n');
-    this.setState({ consoleText: ctext });
+  updateConsole(text?: string) {
+    if (text === undefined) text = this.buffer.text();
+    this.setState({ consoleText: text });
   }
   handleKey(e) {
     const { key } = e;
     if (key === 'Enter') {
       const { value } = e.target;
       if (value.trim() === '') return;
-      this.buffer.push(value);
+      this.printLine(value);
       this.updateConsole();
       e.target.value = '';
     }
   }
   clearBuffer() {
-    this.setBuffer([]);
+    this.buffer.clear();
     this.updateConsole();
   }
   printString(str: string) {
     if (typeof str !== 'string') return;
-    const lastLine = this.buffer.length - 1;
-    this.buffer[lastLine] += str;
+    this.buffer.printString(str);
     this.updateConsole();
   }
   printLine(line: string) {
     if (typeof line !== 'string') return;
-    this.buffer.push(line);
+    this.buffer.printLine(line);
     this.updateConsole();
   }
   render() {
@@ -103,21 +111,12 @@ class Console extends React.Component<MyProps, MyState> {
   }
 }
 
-/// HELPERS ///////////////////////////////////////////////////////////////////
+/// DEBUGGERS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a name, return a console instance. if the console doesn't already
- *  exist, then return a new instance
- */
-function GetConsole(name: string) {
-  if (typeof name !== 'string') throw Error('bad name');
-  if (name === '') throw Error('name must not be empty string');
-  if (CONSOLES.has(name)) return CONSOLES.get(name);
-}
-
 UR.AddConsoleTool({
-  get_console: name => CONSOLES.get(name)
+  get_buffer: name => GetTextBuffer(name)
 });
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { Console, GetConsole };
+export { Console };
