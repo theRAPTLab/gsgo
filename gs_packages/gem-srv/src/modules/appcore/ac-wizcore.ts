@@ -27,11 +27,7 @@ import * as TRANSPILER from 'script/transpiler-v2';
 import * as SENGINE from 'modules/datacore/dc-script-engine';
 import { ScriptLiner } from 'script/tools/script-helpers';
 import { VSymError } from 'script/tools/symbol-helpers';
-import {
-  GS_ASSETS_PROJECT_ROOT,
-  GS_ASSETS_PATH,
-  GS_DIRPATH
-} from 'config/gem-settings';
+import { GS_ASSETS_PROJECT_ROOT } from 'config/gem-settings';
 import { TValidationResult } from 'lib/t-script';
 import { GetTextBuffer } from 'lib/class-textbuffer';
 
@@ -104,6 +100,14 @@ UR.HookPhase('UR/LOAD_ASSETS', async () => {
 UR.HookPhase('UR/APP_CONFIGURE', () => {
   const cur_prjid = DEF_PRJID;
   const cur_bpid = DEF_BPID;
+  console.log(
+    `%cFORCE LOADING ${DEF_PRJID}:${DEF_BPID} into GUI TESTBED`,
+    'background-color:red;color:white;padding:2px 4px'
+  );
+  console.log(
+    '%cvalues are hardcoded as DEF_PRJID and DEF_BPID in ac-wizcore',
+    'color:gray'
+  );
   const bp = GetProjectBlueprint(cur_prjid, cur_bpid);
   const { scriptText: script_text } = bp;
   const vmState = { cur_prjid, cur_bpid, script_text };
