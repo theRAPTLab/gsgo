@@ -1,3 +1,4 @@
+/* eslint-disable no-alert */
 /* eslint-disable consistent-return */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
@@ -26,7 +27,11 @@ import * as TRANSPILER from 'script/transpiler-v2';
 import * as SENGINE from 'modules/datacore/dc-script-engine';
 import { ScriptLiner } from 'script/tools/script-helpers';
 import { VSymError } from 'script/tools/symbol-helpers';
-import { GS_ASSETS_PROJECT_ROOT } from 'config/gem-settings';
+import {
+  GS_ASSETS_PROJECT_ROOT,
+  GS_ASSETS_PATH,
+  GS_DIRPATH
+} from 'config/gem-settings';
 import { TValidationResult } from 'lib/t-script';
 import { GetTextBuffer } from 'lib/class-textbuffer';
 
@@ -430,8 +435,26 @@ function GetProjectList() {
  */
 function GetProject(prjId = DEF_PRJID) {
   if (PROJECTS === undefined) throw Error('GetProject: no projects loaded');
-  const project = PROJECTS.getProjectByProjId(prjId);
-  return project;
+  try {
+    const project = PROJECTS.getProjectByProjId(prjId);
+    return project;
+  } catch (e) {
+    const root = GS_ASSETS_PROJECT_ROOT;
+    const assetUrl = `http://localhost/assets`;
+    const isDefault = prjId === DEF_PRJID;
+    let out = `
+ASSET ERROR: Project "${prjId}" not found!
+
+1. Browse to '${assetUrl}' in Chrome.
+    Does '${prjId}' appear in folder listing?
+2. Check the gsgo/gs_assets/${root} drive directory.
+    Does the ${prjId} dir exist?`;
+    if (isDefault)
+      out += `
+3. You are loading the default project path.
+    is GS_ASSETS_PROJECT_ROOT set in local-settings.json?`;
+    alert(out);
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return the blueprint object { id, label, scriptText } for the
