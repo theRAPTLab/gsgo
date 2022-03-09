@@ -375,11 +375,14 @@ class StateGroupMgr {
       }
     }
     const subs = [...this.subs.values()];
+
     subs.forEach(sub =>
       sub(stateObj, () => {
         /* unused callback */
       })
     );
+    // consider this alternative for the above
+    // setTimeout(() => subs.forEach(sub => sub(stateObj)));
   }
 
   /// GSTATE REWRITING ///////////////////////////////////////////////////////////

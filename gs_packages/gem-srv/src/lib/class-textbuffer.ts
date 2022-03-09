@@ -43,9 +43,9 @@ class TextBuffer {
     this.subs.delete(handler);
   }
   notify() {
-    this.subs.forEach(h => {
-      h(this.text());
-    });
+    // fire in the next event tick, not this one, to prevent
+    // react errors
+    setTimeout(() => this.subs.forEach(h => h(this.text())));
   }
 }
 

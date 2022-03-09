@@ -245,7 +245,8 @@ class StateMgr {
     vmStateEvent.stateGroup = this.name; // mixed-case names reserved by system
     // also include the total state
     const currentState = this._derefProps({ ...VM_STATE[this.name] });
-    subs.forEach(sub => sub(vmStateEvent, currentState));
+    // fire notification in the next event cycle
+    setTimeout(() => subs.forEach(sub => sub(vmStateEvent, currentState)));
   }
 
   /** Placeholder queueing system that doesn't do much now.

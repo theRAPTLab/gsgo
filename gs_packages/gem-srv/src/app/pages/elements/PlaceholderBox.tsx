@@ -23,10 +23,7 @@ export function PlaceholderBox(parentProps) {
   const { selection } = parentProps;
   const { linePos, vmPageLine } = selection;
   const { vtoks, summary } = WIZCORE.ValidateLine(vmPageLine);
-  // this is a deferred setState that works
-  setTimeout(() => WIZCORE.UpdateDBGConsole(summary));
-  // this causes "Cannot update during an existing state transition"
-  // WIZCORE.UpdateDBGConsole(summary);
+  WIZCORE.UpdateDBGConsole(summary);
   const vtok = vtoks[linePos - 1];
   const gData = WIZCORE.GetTokenGUIData(vtok);
   const status = gData.unitText ? 'PARSE OK' : 'PARSE ERROR';
