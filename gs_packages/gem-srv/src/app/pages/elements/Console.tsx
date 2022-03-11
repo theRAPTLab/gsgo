@@ -18,10 +18,10 @@ type MyProps = {
   name: string; // name of the console instance
   buffer: TextBuffer;
   rows: number;
+  showCLI: boolean;
 };
 type MyState = {
   consoleText: string; // text to show in textarea
-  showInput: boolean; // whether to show the input box
 };
 class Console extends React.Component<MyProps, MyState> {
   name: string;
@@ -36,8 +36,7 @@ class Console extends React.Component<MyProps, MyState> {
     if (!Array.isArray(value)) throw Error('prop value must be array');
     this.buffer.set(value);
     this.state = {
-      consoleText: this.buffer.text(),
-      showInput: true
+      consoleText: this.buffer.text()
     };
 
     this.updateConsole = this.updateConsole.bind(this);
@@ -88,7 +87,8 @@ class Console extends React.Component<MyProps, MyState> {
     this.updateConsole();
   }
   render() {
-    const { consoleText, showInput } = this.state;
+    const { consoleText } = this.state;
+    const { showCLI } = this.props;
     const { rows } = this.props;
     const console = (
       <textarea
@@ -99,7 +99,7 @@ class Console extends React.Component<MyProps, MyState> {
         readOnly
       />
     );
-    const input = showInput ? (
+    const input = showCLI ? (
       <input
         type="text"
         name="console_in"
@@ -124,4 +124,4 @@ UR.AddConsoleTool({
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { Console };
+export default Console;

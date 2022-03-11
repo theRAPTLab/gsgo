@@ -247,6 +247,19 @@ export type TSymbolData = {
   unitText?: string; // the scriptText word associated with symbol
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** TSymbolViewData is the "GUI-friendly" data structure derived from
+ *  a TSymbolData ditionary. This is what's used to draw a GUI
+ */
+export type TSymbolViewData = {
+  unitText?: string; // the scriptText word associated with symbol
+  keywords?: { text: string; items: string[] };
+  features?: { text: string; items: string[] };
+  props?: { text: string; items: string[] };
+  methods?: { text: string; items: string[] };
+  arg?: { text: string; arg: { name: string; type: string } };
+  error?: { text: string };
+};
+
 /** blueprint symbol data format */
 export type TSymbolMap = {
   props?: { [propName: string]: TSymbolData }; // map to varctor.symbols

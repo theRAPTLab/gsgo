@@ -34,7 +34,8 @@ import {
   TSymbolData,
   TSymbolRefs,
   TSymbolErrorCodes,
-  TSymMethodSig
+  TSymMethodSig,
+  TSymbolViewData
 } from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -536,11 +537,80 @@ class SymbolHelper {
   }
 } // end of SymbolHelper class
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** convert symbol data into lists suitable for gui rendering */
+function SymbolToViewData(symbolData: TSymbolData): TSymbolViewData {
+  let viewData: any = {};
+
+  // check to see what
+  const { error, unitText, keywords, features, props, methods, arg } = symbolData;
+  if (unitText) viewData.unitText = unitText;
+  if (error)
+    viewData.error = {
+      text: `${error.code} - ${error.info}`
+    };
+  if (keywords)
+    viewData.keywords = {
+      text: keywords.join(', '),
+      items: keywords
+    };
+  if (features) {
+    const items = [...Object.keys(features)];
+    viewData.features = {
+      text: items.join(', '),
+      items
+    };
+  }
+  if (props) {
+    const items = [...Object.keys(props)];
+    viewData.props = {
+      text: items.join(', '),
+      items
+    };
+  }
+  if (methods) {
+    const items = [...Object.keys(methods)];
+    viewData.methods = {
+      text: items.join(', '),
+      items
+    };
+  }
+  if (arg) {
+    const [name, type] = UnpackArg(arg);
+    viewData.arg = { text: arg, arg: { name, type } };
+  }
+  return viewData;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** returns an array of [ unitText, [ symbolType, { items | arg }
+ *  it purposefully omits text, which is just the text rep of items or arg
+ *  the types are
+ */
+function UnpackViewData(svm_data: TSymbolViewData): any[] {
+  const list = [];
+  Object.keys(svm_data).forEach(key => {
+    let value = svm_data[key];
+    if (key === 'unitText') {
+      list.unshift(value);
+      return;
+    }
+    if (key === 'error') {
+      list.push([key, value.text]);
+      return;
+    }
+    const { items, arg } = value;
+    if (items || arg) list.push([key, items || arg]);
+  });
+  return list;
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
   SymbolHelper, // symbol decoder
-  VSymError // create a TSymbolData error object
+  VSymError, // create a TSymbolData error object
+  SymbolToViewData,
+  UnpackViewData
 };
 export function BindModule() {
   // HACK to force import of this module in Transpiler, otherwise webpack treeshaking

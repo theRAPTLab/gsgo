@@ -26,7 +26,11 @@ import * as ASSETS from 'modules/asset_core/asset-mgr';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as SENGINE from 'modules/datacore/dc-script-engine';
 import { ScriptLiner } from 'script/tools/script-helpers';
-import { VSymError } from 'script/tools/symbol-helpers';
+import {
+  VSymError,
+  SymbolToViewData,
+  UnpackViewData
+} from 'script/tools/symbol-helpers';
 import { GS_ASSETS_PROJECT_ROOT } from 'config/gem-settings';
 import { TValidationResult } from 'lib/t-script';
 import { GetTextBuffer } from 'lib/class-textbuffer';
@@ -77,6 +81,7 @@ _initializeState({
   cur_bdl: null, // current blueprint bundle
   // selection-driven data
   sel_symbol: null, // selection-dependent symbol data
+  sel_validation: null, // TValidationResult
   sel_context: null, // selection-dependent context
   sel_unittext: '', // selection-dependent unit_text
   // runtime filters to limit what to show
@@ -119,7 +124,7 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// spy on incoming SendState events and modify/add events as needed
 _interceptState(state => {
-  const { script_text, script_tokens } = state;
+  const { script_text, script_tokens, sel_linenum } = state;
   // if script_text is changing, we also want to emit new script_token
   if (!script_tokens && script_text) {
     const toks = TRANSPILER.TextToScript(script_text);
@@ -140,6 +145,17 @@ _interceptState(state => {
     } catch (e) {
       // ignore TextTpScript compiler errors during live typing
       console.error(`wizcore_interceptState tokens: ${e.toString()}`);
+    }
+  }
+
+  // run validation and save result if new selected token
+  if (sel_linenum) {
+    if (sel_linenum > 0) {
+      const { script_page } = State();
+      const vmPageLine = script_page[sel_linenum - TRANSPILER.LINE_START_NUM];
+      state.sel_validation = ValidateLine(vmPageLine);
+    } else {
+      state.sel_validation = null;
     }
   }
 });
@@ -276,49 +292,7 @@ function ValidateLine(vmPageLine): TValidationResult {
   return kwp.validate(lineScript);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** WORK IN PROGRESS
- *  return a structure with all choices available to render as some kind of
- *  selection interface (e.g. a dropdown or clickable selection grid)
- */
-function GetTokenGUIData(validationToken) {
-  let gData: any = {};
-
-  // check to see what
-  const { error, unitText, keywords, features, props, methods, arg } =
-    validationToken;
-
-  if (unitText) gData.unitText = unitText;
-  if (error)
-    gData.error = {
-      text: `${error.code} - ${error.info}`
-    };
-  if (keywords)
-    gData.keywords = {
-      text: keywords.join(', '),
-      items: keywords
-    };
-  if (features)
-    gData.features = {
-      text: [...Object.keys(features)].join(', '),
-      items: features
-    };
-  if (props)
-    gData.props = {
-      text: [...Object.keys(props)].join(', '),
-      items: props
-    };
-  if (methods)
-    gData.methods = {
-      text: [...Object.keys(methods)].join(', '),
-      items: methods
-    };
-  if (arg) gData.arg = { text: arg, arg };
-  return gData;
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** WORK IN PROGRESS - BROKEN
- *  intention: given a line number, scroll that line into view. to be used
+/** given a line number, scroll that line into view. to be used
  *  when clicking an element that is covered-up by the edit box
  */
 function ScrollLineIntoView(lineNum: number) {
@@ -380,7 +354,12 @@ function GetTokenById(key) {
 function SelectedTokenInfo() {
   const scriptToken = GetTokenById(SelectedTokenId());
   const context = {}; // TODO: look up scope from symbol-utilities
-  const { sel_linenum: lineNum, sel_linepos: linePos, script_page } = State();
+  const {
+    sel_linenum: lineNum,
+    sel_linepos: linePos,
+    script_page,
+    sel_validation: validation
+  } = State();
   if (lineNum > 0 && linePos > 0) {
     const vmPageLine = script_page[lineNum - TRANSPILER.LINE_START_NUM];
     return {
@@ -388,6 +367,7 @@ function SelectedTokenInfo() {
       lineNum, // line number in VMPage
       linePos, // line position in VMPage[lineNum]
       context, // the memory context for this token
+      validation,
       vmPageLine // all the VMTokens in this line
     };
   }
@@ -577,7 +557,6 @@ export {
 export {
   IsTokenInMaster, // does tok exist inside the script_page? (for ref debug)
   GetAllTokenObjects, // return a flat array of all tokens (for ref debugging)
-  GetTokenGUIData, // return structured symbol data for a given VToken
   ScrollLineIntoView
 };
 export {
@@ -586,4 +565,9 @@ export {
   SelectedTokenInfo, // return contextual info about current selected token
   GetLineScriptText, // return string version of a scriptUnit
   ValidateLine // return TValidationToken[]
+};
+
+export {
+  SymbolToViewData, // forwrd utilities from symbol-helpers
+  UnpackViewData // conver ViewData to an array format
 };

@@ -98,8 +98,13 @@ class DevWizard extends React.Component {
   }
 
   render() {
-    const { script_page, dev_or_user } = this.state;
-    const RightSide = dev_or_user === 0 ? <ScriptContextor /> : <ScriptText />;
+    const { sel_linenum, sel_linepos, script_page, dev_or_user } = this.state;
+    const RightSide =
+      dev_or_user === 0 ? (
+        <ScriptContextor selected={{ sel_linenum, sel_linepos }} />
+      ) : (
+        <ScriptText />
+      );
     return (
       <div id="gui-wizard" style={sGrid}>
         <DevHeader label="DEV/WIZARD" />

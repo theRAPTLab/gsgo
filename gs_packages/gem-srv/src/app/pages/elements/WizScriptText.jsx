@@ -20,8 +20,8 @@ const DBG = false;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export class ScriptText extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = WIZCORE.State();
     this.jarRef = React.createRef();
     this.lastSelectedLine = -1;

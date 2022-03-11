@@ -17,9 +17,9 @@ const sTopAlign = { verticalAlign: 'top' };
  *  do not use this directly as a model for implementing your own components
  *  or you will deeply regret it in the future :-)
  */
-function SymbolDebugTable(gData) {
+function SymbolDebugTable(svm_data) {
   const rows = [];
-  const unitText = gData.unitText;
+  const unitText = svm_data.unitText;
   // go through all the keys and make a row for each
 
   // GetTokenGUIData parses a validationToken and passes it to SymbolDebugTable
@@ -27,32 +27,27 @@ function SymbolDebugTable(gData) {
   // is an array of strings for keywords and TSymbolData for everything else
   // except for method arguments, which only returns arg: 'argName:argType'
   // Also unitText returns a string.
-  Object.keys(gData).forEach(name => {
-    let str = '';
-    const gList = gData[name]; // { text, items|arg } || string unitText
+  Object.keys(svm_data).forEach(name => {
+    let strb = [];
+    const gList = svm_data[name]; // { text, items|arg } || string unitText
+    const gArray = WIZCORE.UnpackViewData(svm_data);
+    console.log(gArray);
     const { text, items, arg } = gList;
     if (name === 'unitText') {
-      str = unitText;
+      strb.push(unitText);
     } else if (items !== undefined) {
-      // keywords array?
-      if (Array.isArray(items))
-        items.forEach(item => {
-          if (item === unitText) str += `***${item}***, `;
-          else str += `${item}, `;
-        });
-      // TSymbolData object?
-      else if (typeof items === 'object')
-        Object.keys(items).forEach(item => {
-          if (item === unitText) str += `***${item}***, `;
-          else str += `${item}, `;
-        });
+      items.forEach(item => {
+        // keywords array?
+        if (item === unitText) strb.push(`***${item}***`);
+        else strb.push(item);
+      });
     } else if (arg) {
-      str = arg;
-    } else str = text || 'unexpected gdata decode error';
+      strb.push(`${arg.name}:${arg.type}`);
+    } else strb.push(text || 'unexpected gdata decode error');
     rows.push(
       <tr style={sTopAlign} key={name}>
         <td>{name}</td>
-        <td>{str}</td>
+        <td>{strb.join(', ')}</td>
       </tr>
     );
   });

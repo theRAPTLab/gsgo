@@ -13,10 +13,10 @@ import SymbolOptionList from './SymbolOptionList';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function KeywordBox(parentProps) {
   const { selection } = parentProps;
-  const { linePos, vmPageLine } = selection;
-  const { vtoks, summary } = WIZCORE.ValidateLine(vmPageLine);
+  const { linePos, validation } = selection;
+  const { vtoks, summary } = validation;
   const vtok = vtoks[linePos - 1];
-  const gData = WIZCORE.GetTokenGUIData(vtok);
+  const gData = WIZCORE.SymbolToViewData(vtok);
 
   const { keywords, unitText } = gData;
   const status = unitText ? 'PARSE OK' : 'PARSE ERROR';
