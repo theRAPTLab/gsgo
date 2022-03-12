@@ -23,8 +23,8 @@ const PR = UR.PrefixUtil('ScriptElementEditor', 'TagRed');
 export function PlaceholderBox(parentProps) {
   const { selection } = parentProps;
   const { linePos, validation } = selection;
-  const { vtoks, summary } = validation;
-  WIZCORE.UpdateDBGConsole(summary);
+  const { validationTokens: vtoks, validationLog } = validation;
+  WIZCORE.UpdateDBGConsole(validationLog);
   const vtok = vtoks[linePos - 1];
   const gData = WIZCORE.SymbolToViewData(vtok);
   const status = gData.unitText ? 'PARSE OK' : 'PARSE ERROR';

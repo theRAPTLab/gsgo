@@ -23,6 +23,8 @@ function SelectionList(props) {
   const { sel_linenum: line, sel_linepos: pos } = selected;
   /*** here we do things ***/
 
+  // can get get the current GToken?
+  const { sel_validation } = WIZCORE.State();
   /** now we output stuff ***/
   if (line < 0) return <p>no selection</p>;
   return (
@@ -48,7 +50,7 @@ export function ScriptContextor(props) {
   return (
     <div>
       <SelectionList label={label} selected={selected} />
-      <Console name={dbg_console} rows={3} />
+      <Console name={dbg_console} rows={5} />
     </div>
   );
 }

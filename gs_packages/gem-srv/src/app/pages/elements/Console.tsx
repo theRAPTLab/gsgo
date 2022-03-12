@@ -93,7 +93,12 @@ class Console extends React.Component<MyProps, MyState> {
     const console = (
       <textarea
         name="console"
-        style={{ padding: '0 6px', fontFamily: 'monospace', width: '100%' }}
+        style={{
+          padding: '0 6px',
+          fontSize: '12px',
+          fontFamily: 'monospace',
+          width: '100%'
+        }}
         rows={rows}
         value={consoleText}
         readOnly

@@ -32,7 +32,7 @@ import {
   UnpackViewData
 } from 'script/tools/symbol-helpers';
 import { GS_ASSETS_PROJECT_ROOT } from 'config/gem-settings';
-import { TValidationResult } from 'lib/t-script';
+import { TValidatedScriptUnit } from 'lib/t-script';
 import { GetTextBuffer } from 'lib/class-textbuffer';
 
 // load state
@@ -81,7 +81,7 @@ _initializeState({
   cur_bdl: null, // current blueprint bundle
   // selection-driven data
   sel_symbol: null, // selection-dependent symbol data
-  sel_validation: null, // TValidationResult
+  sel_validation: null, // TValidatedScriptUnit
   sel_context: null, // selection-dependent context
   sel_unittext: '', // selection-dependent unit_text
   // runtime filters to limit what to show
@@ -243,7 +243,7 @@ function WizardTestLine(text) {
   const script = TRANSPILER.TextToScript(text);
   const [vmPage] = SPRINTER.scriptToLines(script); // note: use different instance
   const [vmPageLine] = vmPage;
-  const { vtoks, summary } = ValidateLine(vmPageLine);
+  const { validationTokens: vtoks, validationLog } = ValidateLine(vmPageLine);
   const { vmTokens, lineScript } = vmPageLine;
   return { validTokens: vtoks, vmTokens, lineScript };
   //  } catch (e) {
@@ -262,16 +262,16 @@ function WizardTestLine(text) {
   // } // try-catch
 }
 
-export function UpdateDBGConsole(summary: string[]) {
+export function UpdateDBGConsole(validationLog: string[]) {
   const buf = GetTextBuffer(State().dbg_console);
-  buf.set(summary);
+  buf.set(validationLog);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a lineVM, ensure that the scriptUnit is (1) valid and (2) return
  *  TValidationToken objects
  */
-function ValidateLine(vmPageLine): TValidationResult {
+function ValidateLine(vmPageLine): TValidatedScriptUnit {
   // ERRORS AND DEBUG STUFF
   const fn = 'ValidateLine:';
   const { lineScript, globalRefs } = vmPageLine;
@@ -284,7 +284,9 @@ function ValidateLine(vmPageLine): TValidationResult {
   if (kwp === undefined) {
     const keywords = SENGINE.GetAllKeywords();
     return {
-      vtoks: [new VSymError('errExist', `invalid keyword '${kw}'`, { keywords })]
+      validationTokens: [
+        new VSymError('errExist', `invalid keyword '${kw}'`, { keywords })
+      ]
     };
   }
   // DO THE RIGHT THING II: return the Validation Tokens
@@ -424,7 +426,7 @@ function GetProject(prjId = DEF_PRJID) {
     return project;
   } catch (e) {
     const root = GS_ASSETS_PROJECT_ROOT;
-    const assetUrl = `http://localhost/assets`;
+    const assetUrl = 'http://localhost/assets';
     const isDefault = prjId === DEF_PRJID;
     let out = `
 ASSET ERROR: Project "${prjId}" not found!

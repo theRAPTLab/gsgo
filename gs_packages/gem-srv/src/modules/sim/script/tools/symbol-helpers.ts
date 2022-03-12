@@ -540,49 +540,49 @@ class SymbolHelper {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** convert symbol data into lists suitable for gui rendering */
 function SymbolToViewData(symbolData: TSymbolData): TSymbolViewData {
-  let viewData: any = {};
+  let sv_data: any = {};
 
   // check to see what
   const { error, unitText, keywords, features, props, methods, arg } = symbolData;
-  if (unitText) viewData.unitText = unitText;
+  if (unitText) sv_data.unitText = unitText;
   if (error)
-    viewData.error = {
-      text: `${error.code} - ${error.info}`
+    sv_data.error = {
+      info: `${error.code} - ${error.info}`
     };
   if (keywords)
-    viewData.keywords = {
-      text: keywords.join(', '),
+    sv_data.keywords = {
+      info: keywords.join(', '),
       items: keywords
     };
   if (features) {
     const items = [...Object.keys(features)];
-    viewData.features = {
-      text: items.join(', '),
+    sv_data.features = {
+      info: items.join(', '),
       items
     };
   }
   if (props) {
     const items = [...Object.keys(props)];
-    viewData.props = {
-      text: items.join(', '),
+    sv_data.props = {
+      info: items.join(', '),
       items
     };
   }
   if (methods) {
     const items = [...Object.keys(methods)];
-    viewData.methods = {
-      text: items.join(', '),
+    sv_data.methods = {
+      info: items.join(', '),
       items
     };
   }
   if (arg) {
     const [name, type] = UnpackArg(arg);
-    viewData.arg = { text: arg, arg: { name, type } };
+    sv_data.arg = { info: arg, arg: { name, type } };
   }
-  return viewData;
+  return sv_data;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** returns an array of [ unitText, [ symbolType, { items | arg }
+/** returns an array of [ unitText, [ symbolType, { items | arg } ]
  *  it purposefully omits text, which is just the text rep of items or arg
  *  the types are
  */
@@ -598,8 +598,11 @@ function UnpackViewData(svm_data: TSymbolViewData): any[] {
       list.push([key, value.text]);
       return;
     }
-    const { items, arg } = value;
-    if (items || arg) list.push([key, items || arg]);
+    if (key === 'arg') {
+      //
+    }
+    const { items } = value;
+    if (items) list.push([key, items]);
   });
   return list;
 }

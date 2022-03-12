@@ -251,17 +251,18 @@ export type TSymbolData = {
  *  a TSymbolData ditionary. This is what's used to draw a GUI
  */
 export type TSymbolViewData = {
+  keywords?: { items: string[]; info: string };
+  features?: { items: string[]; info: string };
+  props?: { items: string[]; info: string };
+  methods?: { items: string[]; info: string };
+  arg?: { items: [name: string, type: string]; info: string };
+  //
   unitText?: string; // the scriptText word associated with symbol
-  keywords?: { text: string; items: string[] };
-  features?: { text: string; items: string[] };
-  props?: { text: string; items: string[] };
-  methods?: { text: string; items: string[] };
-  arg?: { text: string; arg: { name: string; type: string } };
-  error?: { text: string };
+  error?: { info: string };
 };
 
 /** blueprint symbol data format */
-export type TSymbolMap = {
+export type TBundleSymbols = {
   props?: { [propName: string]: TSymbolData }; // map to varctor.symbols
   features?: { [featName: string]: TSymbolData }; // map to feature.Symbols
 };
@@ -284,18 +285,14 @@ export type TSymbolError = {
   info: string;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** keyword.validate() returns an array of these to glom onto vmTokens.
+/** keyword.validate() returns an array of TSymbolData that
  *  the error state returns code and desc if a parse issue is detected
  *  if symbol information can be inferred despite an error, it will be
  *  returned otherwise it is void.
  */
-export type TValidationToken = {
-  error?: TSymbolError; // if not present, no error
-  symbols?: TSymbolData; // symbols the are valid, undefined otherwise
-};
-export type TValidationResult = {
-  vtoks: TValidationToken[];
-  summary?: string[];
+export type TValidatedScriptUnit = {
+  validationTokens: TSymbolData[];
+  validationLog?: string[];
 };
 
 /// PROGRAM BUNDLES ///////////////////////////////////////////////////////////
@@ -309,9 +306,9 @@ export interface ISMCBundle extends ISMCPrograms {
   name?: string; // the blueprint name of the bundle, if any
   parent?: string; // the parent bundle, if any
   type?: EBundleType; // enum type (see below)
-  symbols?: TSymbolMap;
+  symbols?: TBundleSymbols;
   tags: Map<string, any>; // ben's hack for 'character controlable' blueprints
-  setTag(tagName: string, value: any);
+  setTag(tagName: string, value: any): void;
   getTag(tagName: string): any;
 }
 
@@ -337,7 +334,7 @@ export interface IKeyword {
   jsx(index: number, unit: TScriptUnit, jsxOpt?: {}): any[] /* deprecated */;
   symbolize(unit: TScriptUnit, lineIdx?: number): TSymbolData;
   validateInit(refs: TSymbolRefs): void;
-  validate(unit: TScriptUnit): TValidationResult;
+  validate(unit: TScriptUnit): TValidatedScriptUnit;
   getName(): string;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

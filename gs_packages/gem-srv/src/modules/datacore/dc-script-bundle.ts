@@ -9,7 +9,7 @@ import {
   TOpcode,
   ISMCBundle,
   EBundleType,
-  TSymbolMap,
+  TBundleSymbols,
   TSymbolData
 } from 'lib/t-script.d';
 
@@ -97,7 +97,7 @@ export function CompilerState() {
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** add properties to symbol table where TSymbolMap contains
+/** add properties to symbol table where TBundleSymbols contains
  *  { props, methods, features } that point to a Map<string,gvar> or
  *  Map<string,any[]> respectively:
  *  { features: { [featName]: featModule } }

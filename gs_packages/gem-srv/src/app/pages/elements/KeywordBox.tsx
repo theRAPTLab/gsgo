@@ -14,7 +14,7 @@ import SymbolOptionList from './SymbolOptionList';
 export function KeywordBox(parentProps) {
   const { selection } = parentProps;
   const { linePos, validation } = selection;
-  const { vtoks, summary } = validation;
+  const { validationTokens: vtoks, validationLog } = validation;
   const vtok = vtoks[linePos - 1];
   const gData = WIZCORE.SymbolToViewData(vtok);
 

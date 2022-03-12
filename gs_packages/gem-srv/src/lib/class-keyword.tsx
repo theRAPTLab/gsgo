@@ -29,10 +29,9 @@ import {
   TSymbolData,
   TSymbolRefs,
   TSymArg,
-  TValidationToken,
   TSymbolErrorCodes,
   DerefMethod,
-  TValidationResult
+  TValidatedScriptUnit
 } from 'lib/t-script';
 import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
 import { SymbolHelper, VSymError } from 'script/tools/symbol-helpers';
@@ -115,12 +114,12 @@ class Keyword implements IKeyword {
    *  Many keywords can use this as-is, but you may want to override
    *  this for peculiar token orderings.
    */
-  validate(unit: TScriptUnit): TValidationResult {
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
     //
     let tok: IToken; // hold reference to current dtoken for each pass through arglist
-    let vtok: TValidationToken; // hold vtok reference for each pass through arglist
+    let vtok: TSymbolData; // hold vtok reference for each pass through arglist
     let arg: TSymArg; // hold current argument
-    const vtoks: TValidationToken[] = [];
+    const vtoks: TSymbolData[] = [];
 
     // (1) first token is keyword
     tok = unit[0];
@@ -157,7 +156,8 @@ class Keyword implements IKeyword {
     }
 
     // return the validation data array
-    return this._dbgValidation(vtoks);
+    const log = this._dbgValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: log };
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Helper for automatic validation using inferred keyword token order
@@ -199,30 +199,37 @@ class Keyword implements IKeyword {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  _dbgValidation(vtoks: TValidationToken[]): TValidationResult {
+  /** provide annotated log of validationTokens
+   *  the log tries to produce well-formatted output
+   */
+  _dbgValidationLog(vtoks: TSymbolData[]): string[] {
     let max = 0;
-    const lines = [];
-    vtoks.forEach((symbolData, i) => {
-      const { error, ...keys } = symbolData;
-      let err = error ? error.info : '';
-      let dicts = [...Object.keys(keys)];
-      let symbols = dicts.length ? dicts.join(', ') : '';
-      const spc = ''.padStart(i.toString().length);
-      let out = '';
-      if (symbols) {
-        out = `SDICT ${symbols}`;
-        if (out.length > max) max = out.length;
-      }
-      if (err) {
-        let el = '';
-        if (symbols) el = `\n${spc} - `;
-        el += `ERROR ${err}`;
-        if (el.length > max) max = el.length;
-        out += el;
-      }
-      lines.push(`${i} - ${out}`);
+    const BAD_UNIT = 'NO_TOK';
+    const log = [];
+    // find max unitTextLength
+    vtoks.forEach(vtok => {
+      const { unitText = BAD_UNIT } = vtok;
+      if (unitText.length > max) max = unitText.length;
     });
-    return { vtoks, summary: lines }; // for use by console
+    // create log
+    vtoks.forEach((vtok, ii) => {
+      const { error, unitText = BAD_UNIT, ...symbols } = vtok;
+      let err = error ? error.info : '';
+      let dicts = [...Object.keys(symbols)];
+      let dictList = dicts.length ? dicts.join(', ') : '';
+      const spc = ''.padStart(ii.toString().length);
+      let out = '';
+
+      if (dictList) out = `SDICT ${dictList}`;
+
+      if (err) {
+        if (dictList) out += `\n${spc} - `; // indent below valid dictList
+        out += `ERROR ${err}`;
+      }
+
+      log.push(`${ii} ${unitText.padEnd(max)} - ${out}`);
+    });
+    return log; // for use by console
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** helper to return the current symbolData for underflow error reporting */
