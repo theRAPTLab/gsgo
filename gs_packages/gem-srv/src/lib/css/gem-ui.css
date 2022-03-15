@@ -76,6 +76,10 @@
   margin: 1px 1px;
   user-select: none;
 }
+.gwiz.clickable {
+  background-color: rgba(221, 221, 221, 1);
+}
+
 .gwiz.gtoken.first {
   color: gray;
   user-select: none;

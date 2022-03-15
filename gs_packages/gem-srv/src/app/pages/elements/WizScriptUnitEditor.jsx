@@ -28,9 +28,9 @@ export function ScriptUnitEditor(/* props */) {
   const sel = WIZCORE.SelectedTokenInfo();
   // render a special keyword editor or token editor?
   if (sel) {
-    const { scriptToken, lineNum, linePos, vmPageLine } = sel;
+    const { scriptToken, selected_linenum, selected_linepos, vmPageLine } = sel;
     // (1) is this a keyword?
-    if (linePos === 1 && scriptToken.identifier !== undefined) {
+    if (selected_linepos === 1 && scriptToken.identifier !== undefined) {
       content = <KeywordBox selection={sel} />;
     } else {
       // (2) it is a token, so figure out arguments

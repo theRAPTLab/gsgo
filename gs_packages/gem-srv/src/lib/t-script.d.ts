@@ -273,7 +273,7 @@ export type TBundleSymbols = {
  */
 export type TSymbolRefs = {
   bundle: ISMCBundle; // blueprint bundle to use
-  globals: object; // global object context for expressions, blocks
+  globals: { [any: string]: any }; // global object context for expressions, blocks
   symbols?: TSymbolData; // current scope
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

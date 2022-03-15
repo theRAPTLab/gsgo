@@ -13,9 +13,9 @@ import SymbolOptionList from './SymbolOptionList';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function KeywordBox(parentProps) {
   const { selection } = parentProps;
-  const { linePos, validation } = selection;
+  const { sel_linepos, validation } = selection;
   const { validationTokens: vtoks, validationLog } = validation;
-  const vtok = vtoks[linePos - 1];
+  const vtok = vtoks[sel_linepos - 1];
   const gData = WIZCORE.SymbolToViewData(vtok);
 
   const { keywords, unitText } = gData;

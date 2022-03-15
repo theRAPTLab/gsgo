@@ -17,7 +17,7 @@ import * as WIZCORE from 'modules/appcore/ac-wizcore';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function EditObject(props) {
   const { selection } = props;
-  const { token: tok, lineNum, linePos, vmTokens } = selection;
+  const { token: tok, vmTokens } = selection;
   const { lineScript } = vmTokens;
   const text = WIZCORE.GetLineScriptText(lineScript);
   return (

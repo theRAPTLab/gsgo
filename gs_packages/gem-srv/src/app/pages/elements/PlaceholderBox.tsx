@@ -22,7 +22,7 @@ const PR = UR.PrefixUtil('ScriptElementEditor', 'TagRed');
  */
 export function PlaceholderBox(parentProps) {
   const { selection } = parentProps;
-  const { linePos, validation } = selection;
+  const { sel_linepos: linePos, validation } = selection;
   const { validationTokens: vtoks, validationLog } = validation;
   WIZCORE.UpdateDBGConsole(validationLog);
   const vtok = vtoks[linePos - 1];

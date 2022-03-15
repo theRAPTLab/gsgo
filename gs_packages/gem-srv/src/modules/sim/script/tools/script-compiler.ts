@@ -32,12 +32,14 @@ import {
   TSMCProgram,
   IToken,
   TSymbolData,
-  EBundleType
+  EBundleType,
+  TSymbolRefs,
+  TValidatedScriptUnit
 } from 'lib/t-script.d';
 import SM_State from 'lib/class-sm-state';
 import SM_Bundle from 'lib/class-sm-bundle';
 
-import { GetKeyword } from 'modules/datacore/dc-script-engine';
+import { GetKeyword, GetAllKeywords } from 'modules/datacore/dc-script-engine';
 import { GetProgram } from 'modules/datacore/dc-named-methods';
 import {
   BundleOut,
@@ -46,6 +48,7 @@ import {
   BundleTag
 } from 'modules/datacore/dc-script-bundle';
 import GAgent from 'lib/class-gagent';
+import { VSymError } from './symbol-helpers';
 
 import { ParseExpression } from './class-expr-parser-v2';
 import GScriptTokenizer, {
@@ -172,10 +175,10 @@ function CompileStatement(statement: TScriptUnit, idx?: number): TSMCProgram {
   return compiledStatement;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** A mirror of CompileStatement, extracts the symbol data as a separate pass
- *  so we don't have to rewrite the entire compiler and existing keyword code.
- *  Note that this does not recurse into statement blocks, because the only
- *  keywords in a statement that add symbol data are `addProp` and `when`
+/** API: A mirror of CompileStatement, extracts the symbol data as a separate
+ *  pass so we don't have to rewrite the entire compiler and existing keyword
+ *  code. Note that this does not recurse into statement blocks, because the
+ *  only keywords in a statement that add symbol data are `addProp` and `when`
  *  which are always level 0 (not nested)
  */
 function SymbolizeStatement(statement: TScriptUnit, line: number): TSymbolData {
@@ -197,6 +200,30 @@ function SymbolizeStatement(statement: TScriptUnit, line: number): TSymbolData {
   return symbols;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Given statement, return the associated validation data structure
+ *  consisting of an array of ValidationTokens and a validationLog with
+ *  debug information for each token in the array.
+ */
+function ValidateStatement(
+  statement: TScriptUnit,
+  refs: TSymbolRefs
+): TValidatedScriptUnit {
+  const { bundle, globals } = refs || {};
+  const [kw] = DecodeStatement(statement);
+  const kwp = GetKeyword(kw);
+  if (kwp === undefined) {
+    const keywords = GetAllKeywords();
+    return {
+      validationTokens: [
+        new VSymError('errExist', `invalid keyword '${kw}'`, { keywords })
+      ]
+    };
+  }
+  // DO THE RIGHT THING II: return the Validation Tokens
+  kwp.validateInit({ bundle, globals });
+  return kwp.validate(statement);
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Compile ScriptUnits into a TSMCProgram (TOpcode[]). It ignores
  *  directives. Use CompileBlueprint() to handle directives.
  */
@@ -350,5 +377,6 @@ export {
   UnpackToken,
   DecodeToken,
   DecodeTokenPrimitive,
-  DecodeStatement
+  DecodeStatement,
+  ValidateStatement
 };

@@ -26,11 +26,7 @@ import * as ASSETS from 'modules/asset_core/asset-mgr';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as SENGINE from 'modules/datacore/dc-script-engine';
 import { ScriptLiner } from 'script/tools/script-helpers';
-import {
-  VSymError,
-  SymbolToViewData,
-  UnpackViewData
-} from 'script/tools/symbol-helpers';
+import { SymbolToViewData, UnpackViewData } from 'script/tools/symbol-helpers';
 import { GS_ASSETS_PROJECT_ROOT } from 'config/gem-settings';
 import { TValidatedScriptUnit } from 'lib/t-script';
 import { GetTextBuffer } from 'lib/class-textbuffer';
@@ -81,7 +77,7 @@ _initializeState({
   cur_bdl: null, // current blueprint bundle
   // selection-driven data
   sel_symbol: null, // selection-dependent symbol data
-  sel_validation: null, // TValidatedScriptUnit
+  sel_validation: null, // { validationTokens, validationLog }
   sel_context: null, // selection-dependent context
   sel_unittext: '', // selection-dependent unit_text
   // runtime filters to limit what to show
@@ -151,9 +147,7 @@ _interceptState(state => {
   // run validation and save result if new selected token
   if (sel_linenum) {
     if (sel_linenum > 0) {
-      const { script_page } = State();
-      const vmPageLine = script_page[sel_linenum - TRANSPILER.LINE_START_NUM];
-      state.sel_validation = ValidateLine(vmPageLine);
+      state.sel_validation = ValidateLine(sel_linenum);
     } else {
       state.sel_validation = null;
     }
@@ -243,7 +237,7 @@ function WizardTestLine(text) {
   const script = TRANSPILER.TextToScript(text);
   const [vmPage] = SPRINTER.scriptToLines(script); // note: use different instance
   const [vmPageLine] = vmPage;
-  const { validationTokens: vtoks, validationLog } = ValidateLine(vmPageLine);
+  const { validationTokens: vtoks, validationLog } = ValidatePageLine(vmPageLine);
   const { vmTokens, lineScript } = vmPageLine;
   return { validTokens: vtoks, vmTokens, lineScript };
   //  } catch (e) {
@@ -266,33 +260,6 @@ export function UpdateDBGConsole(validationLog: string[]) {
   const buf = GetTextBuffer(State().dbg_console);
   buf.set(validationLog);
 }
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a lineVM, ensure that the scriptUnit is (1) valid and (2) return
- *  TValidationToken objects
- */
-function ValidateLine(vmPageLine): TValidatedScriptUnit {
-  // ERRORS AND DEBUG STUFF
-  const fn = 'ValidateLine:';
-  const { lineScript, globalRefs } = vmPageLine;
-  const { cur_bdl } = State();
-  if (!Array.isArray(lineScript)) throw Error(`${fn} not a lineScript`);
-
-  // DO THE RIGHT THING: lookup the keyword processor for this line
-  const [kw] = TRANSPILER.DecodeStatement(lineScript);
-  const kwp = SENGINE.GetKeyword(kw);
-  if (kwp === undefined) {
-    const keywords = SENGINE.GetAllKeywords();
-    return {
-      validationTokens: [
-        new VSymError('errExist', `invalid keyword '${kw}'`, { keywords })
-      ]
-    };
-  }
-  // DO THE RIGHT THING II: return the Validation Tokens
-  kwp.validateInit({ bundle: cur_bdl, globals: globalRefs });
-  return kwp.validate(lineScript);
-}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a line number, scroll that line into view. to be used
  *  when clicking an element that is covered-up by the edit box
@@ -301,7 +268,6 @@ function ScrollLineIntoView(lineNum: number) {
   let tokenKey;
   if (typeof lineNum === 'number') tokenKey = `${lineNum},1`;
   else tokenKey = `${SelectedLineNum()},1`;
-  console.log('tokenKey', tokenKey);
   const element = document.querySelector(`div[data-key="${tokenKey}"]`);
   if (element)
     element.scrollIntoView({
@@ -357,17 +323,17 @@ function SelectedTokenInfo() {
   const scriptToken = GetTokenById(SelectedTokenId());
   const context = {}; // TODO: look up scope from symbol-utilities
   const {
-    sel_linenum: lineNum,
-    sel_linepos: linePos,
+    sel_linenum,
+    sel_linepos,
     script_page,
     sel_validation: validation
   } = State();
-  if (lineNum > 0 && linePos > 0) {
-    const vmPageLine = script_page[lineNum - TRANSPILER.LINE_START_NUM];
+  if (sel_linenum > 0 && sel_linepos > 0) {
+    const vmPageLine = script_page[sel_linenum - TRANSPILER.LINE_START_NUM];
     return {
       scriptToken, // the actual script token (not vmToken)
-      lineNum, // line number in VMPage
-      linePos, // line position in VMPage[lineNum]
+      sel_linenum, // line number in VMPage
+      sel_linepos, // line position in VMPage[lineNum]
       context, // the memory context for this token
       validation,
       vmPageLine // all the VMTokens in this line
@@ -379,6 +345,44 @@ function SelectedTokenInfo() {
 /** Return a string version of a ScriptUnit */
 function GetLineScriptText(lineScript) {
   return TRANSPILER.StatementToText(lineScript);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given a lineVM, ensure that the scriptUnit is (1) valid and (2) return
+ *  TValidationToken objects
+ *  @param {VMPageLine} vmPageLine - entry from VMPage[linenum]
+ */
+function ValidateLine(lineNum: number): TValidatedScriptUnit {
+  // ERRORS AND DEBUG STUFF
+  const fn = 'ValidateLine:';
+  const { script_page } = State();
+  const vmPageLine = script_page[lineNum - TRANSPILER.LINE_START_NUM];
+  const { lineScript, globalRefs } = vmPageLine;
+  const { cur_bdl } = State();
+  return TRANSPILER.ValidateStatement(lineScript, {
+    bundle: cur_bdl,
+    globals: globalRefs
+  });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** if you don't want to rely on sel_validation, use this call, but you probably
+ *  don't need to worry as it's updated everytime something is clicked
+ */
+function ValidateSelectedLine(): TValidatedScriptUnit {
+  const { sel_linepos } = State();
+  return ValidateLine(sel_linepos);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** if you have a stand-alone vmPageLine structure that isn't related to the
+ *  current script or selected line, use this! It will validate it in context
+ *  of the current bundle
+ */
+function ValidatePageLine(pageLine): TValidatedScriptUnit {
+  const { lineScript, globalRefs } = pageLine;
+  const { cur_bdl } = State();
+  return TRANSPILER.ValidateStatement(lineScript, {
+    bundle: cur_bdl,
+    globals: globalRefs
+  });
 }
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
@@ -566,9 +570,10 @@ export {
   SelectedLineNum, // return line number of current selected token
   SelectedTokenInfo, // return contextual info about current selected token
   GetLineScriptText, // return string version of a scriptUnit
-  ValidateLine // return TValidationToken[]
+  ValidateLine, // return TValidationResult for passed linenum
+  ValidateSelectedLine, // return TValidationResult for current select line
+  ValidatePageLine // test compile line relative to current blueprint
 };
-
 export {
   SymbolToViewData, // forwrd utilities from symbol-helpers
   UnpackViewData // conver ViewData to an array format

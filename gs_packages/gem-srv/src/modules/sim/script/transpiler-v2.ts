@@ -235,6 +235,7 @@ export {
   DecodeTokenPrimitive, // for decoding the value of a token, returns token otherwise
   DecodeToken, // Working with DecodeTokenPrimitive, converts a token into runtime entity
   DecodeStatement, // Works with DecodeToken to create runtime enties
+  ValidateStatement, // tests the statement for correct syntax and typing
   UnpackToken // more useful version of DecodeToken
 } from 'script/tools/script-compiler';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
