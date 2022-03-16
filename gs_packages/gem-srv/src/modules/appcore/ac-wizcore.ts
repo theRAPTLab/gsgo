@@ -182,9 +182,34 @@ function DispatchClick(event) {
       return;
     }
   }
+
+  /** (2) ChoiceToken was clicked? ******************************************/
   const choiceKey = event.target.getAttribute('data-choice');
   if (choiceKey !== null) {
     PrintDBGConsole(`${fn} clicked ${JSON.stringify(choiceKey)}`);
+    const {
+      scriptToken, // the actual script token (not vmToken)
+      sel_linenum, // line number in VMPage
+      sel_linepos, // line position in VMPage[lineNum]
+      context, // the memory context for this token
+      validation,
+      vmPageLine // all the VMTokens in this line
+    } = SelectedTokenInfo();
+    // here we want to map the selected symbolType/symbolValue to the
+    // scriptToken which has its own type. We also need to know the
+    // This is that TYPE MATCHING challenge again...
+    const [symbolType, symbolValue] = choiceKey.split('-');
+    /** hack test **/
+    if (scriptToken.identifier) {
+      scriptToken.identifier = symbolValue;
+      const script_tokens = State('script_tokens');
+      const script_text = TRANSPILER.ScriptToText(script_tokens);
+      SendState({ script_text });
+      QueueEffect(() => {
+        SendState({ sel_linenum, sel_linepos });
+      });
+    }
+    PrintDBGConsole(`${fn} scriptToken ${JSON.stringify(scriptToken)}`);
     return;
   }
 

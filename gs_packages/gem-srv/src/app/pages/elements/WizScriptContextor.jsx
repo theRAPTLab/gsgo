@@ -39,6 +39,23 @@ function SelectionList(props) {
   );
 }
 
+function GLabel(props) {
+  const { name, color = 'white', bg = 'black' } = props;
+  return (
+    <div
+      className="gwiz gtoken"
+      style={{
+        backgroundColor: bg,
+        color: color,
+        fontWeight: 'bold',
+        minWidth: '100px'
+      }}
+    >
+      {name}
+    </div>
+  );
+}
+
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ScriptContextor(props) {
@@ -53,10 +70,35 @@ export function ScriptContextor(props) {
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
-    <>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
       <SymbolSelector selected={selected} />
-      <SelectionList label={label} selected={selected} />
-      <Console name={dbg_console} rows={5} />
-    </>
+      <Console title="AVAILABLE SYMBOL INFO" name={dbg_console} rows={5} />
+      <details
+        open
+        style={{
+          whiteSpace: 'normal',
+          backgroundColor: 'rgba(0,0,0,0.05)',
+          padding: '10px 0 5px 10px'
+        }}
+      >
+        <summary>NOTES</summary>
+        <b>queue: rudimentary selections for prop keyword</b> - (1){' '}
+        <strike>write value back to update script</strike> (2) add value editor
+        (3) add string editor (4) add objref editor (5) generalize.
+        <br />
+        <br />
+        note: all colors are for determining extents of functional component
+        areas, and do not represent final look and feel.
+        <br />
+        <br />
+        note: the styling is provided by{' '}
+        <a href="https://picocss.com/docs/">pico</a>
+      </details>
+    </div>
   );
 }

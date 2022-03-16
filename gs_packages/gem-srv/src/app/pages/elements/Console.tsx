@@ -12,6 +12,22 @@ import React from 'react';
 import UR from '@gemstep/ursys/client';
 import TextBuffer, { GetTextBuffer } from 'lib/class-textbuffer';
 
+function GLabel(props) {
+  const { name, color = 'white', bg = 'black' } = props;
+  return (
+    <div
+      className="gwiz gtoken"
+      style={{
+        backgroundColor: bg,
+        color: color,
+        fontWeight: 'bold',
+        minWidth: '100px'
+      }}
+    >
+      {name}
+    </div>
+  );
+}
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 type MyProps = {
@@ -19,18 +35,17 @@ type MyProps = {
   buffer: TextBuffer;
   rows: number;
   showCLI: boolean;
+  title: string;
 };
 type MyState = {
   consoleText: string; // text to show in textarea
 };
 class Console extends React.Component<MyProps, MyState> {
-  name: string;
   buffer: TextBuffer;
   textRef = React.createRef<HTMLTextAreaElement>();
   constructor(props) {
     super(props);
-    let { name, rows, value } = props;
-    this.name = name;
+    let { name, rows, title, value } = props;
     this.buffer = GetTextBuffer(name);
     if (typeof value === 'string') value = [value];
     else if (value === undefined) value = [];
@@ -92,17 +107,24 @@ class Console extends React.Component<MyProps, MyState> {
   }
   render() {
     const { consoleText } = this.state;
-    const { showCLI } = this.props;
+    const { showCLI, title } = this.props;
     const { rows } = this.props;
+
+    const gWiz = {
+      boxSizing: 'border-box',
+      display: 'inline-block',
+      padding: '4px 12px',
+      margin: '1px 1px',
+      userSelect: 'none'
+    };
+
     const console = (
       <textarea
         name="console"
         ref={this.textRef}
         style={{
-          padding: '0 6px',
           fontSize: '12px',
-          fontFamily: 'monospace',
-          width: '100%'
+          fontFamily: 'monospace'
         }}
         rows={rows}
         value={consoleText}
@@ -118,10 +140,17 @@ class Console extends React.Component<MyProps, MyState> {
       />
     ) : undefined;
     return (
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <details
+        open
+        style={{
+          backgroundColor: 'rgba(200,128,0,0.08)',
+          padding: '10px 0 5px 10px'
+        }}
+      >
+        <summary>{title}</summary>
         {console}
         {input}
-      </div>
+      </details>
     );
   }
 }

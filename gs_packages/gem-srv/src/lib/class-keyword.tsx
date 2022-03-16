@@ -217,13 +217,13 @@ class Keyword implements IKeyword {
       let err = error ? error.info : '';
       let dicts = [...Object.keys(symbols)];
       let dictList = dicts.length ? dicts.join(', ') : '';
-      const spc = ''.padStart(ii.toString().length);
+      const spc = ' '.padStart(ii.toString().length);
       let out = '';
 
       if (dictList) out = `SDICT ${dictList}`;
 
       if (err) {
-        if (dictList) out += `\n${spc} - `; // indent below valid dictList
+        if (dictList) out += `\n${spc} ${' '.padStart(max)} ! `; // indent below valid dictList
         out += `ERROR ${err}`;
       }
 

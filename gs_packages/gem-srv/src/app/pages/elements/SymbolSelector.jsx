@@ -23,7 +23,7 @@ function GLabel(props) {
     <div
       className="gwiz gtoken"
       style={{
-        backgroundColor: 'black',
+        backgroundColor: '#003b76e0',
         color: 'white',
         fontWeight: 'bold',
         minWidth: '100px'
@@ -62,7 +62,7 @@ export function SymbolSelector(props) {
   // this is a managed TextBuffer with name "ScriptContextor"
   const allDicts = [];
 
-  const { dbg_console, sel_validation } = WIZCORE.State();
+  const { sel_validation } = WIZCORE.State();
   // test clause
   if (sel_linenum > 0 && sel_linepos > 0) {
     // const vdata = WIZCORE.ValidateSelectedLine();
@@ -101,21 +101,36 @@ export function SymbolSelector(props) {
       );
     });
   }
+  const prompt =
+    allDicts.length > 0
+      ? `SELECTED TOKEN ${sel_linenum},${sel_linepos - 1}`
+      : 'SELECT TOKEN TO EDIT (prop keyword only)';
   // render
-  return allDicts.map((row, i) => {
-    const key = `${sel_linenum}${i}`;
-    return (
-      <div
-        className="gline"
-        key={key}
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '100px 1fr',
-          gap: '1px'
-        }}
-      >
-        {row}
-      </div>
-    );
-  });
+  return (
+    <details
+      open
+      style={{
+        backgroundColor: 'rgba(0,128,255,0.05)',
+        padding: '10px 0 5px 10px'
+      }}
+    >
+      <summary>{prompt}</summary>
+      {allDicts.map((row, i) => {
+        const key = `${sel_linenum}${i}`;
+        return (
+          <div
+            className="gline"
+            key={key}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '100px 1fr',
+              gap: '1px'
+            }}
+          >
+            {row}
+          </div>
+        );
+      })}
+    </details>
+  );
 }
