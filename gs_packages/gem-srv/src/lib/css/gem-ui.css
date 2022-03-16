@@ -132,7 +132,8 @@
 .gwiz.newline {
   display: block;
 }
-.gtoken.selected {
+.gtoken.selected,
+.gtoken.chosen {
   background-color: rgba(255, 166, 0, 1) !important; /* orange */
 }
 .gtoken:hover {

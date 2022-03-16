@@ -46,6 +46,7 @@ class StateMgr {
   subs: Set<any>;
   queue: any[];
   taps: any[];
+  effects: any[];
 
   /// CONSTRUCTOR /////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -56,6 +57,7 @@ class StateMgr {
     this.subs = new Set();
     this.queue = [];
     this.taps = [];
+    this.effects = [];
     VM_STATE[this.name] = {};
     GROUPS.set(this.name, this);
     // bind 'this' for use with async code
@@ -64,6 +66,7 @@ class StateMgr {
     this.SendState = this.SendState.bind(this);
     this.SubscribeState = this.SubscribeState.bind(this);
     this.UnsubscribeState = this.UnsubscribeState.bind(this);
+    this.QueueEffect = this.QueueEffect.bind(this);
     this._initializeState = this._initializeState.bind(this);
     this._setState = this._setState.bind(this);
     this._insertStateEvent = this._insertStateEvent.bind(this);
@@ -73,6 +76,7 @@ class StateMgr {
     this._notifySubs = this._notifySubs.bind(this);
     this._enqueue = this._enqueue.bind(this);
     this._dequeue = this._dequeue.bind(this);
+    this._doEffect = this._doEffect.bind(this);
   }
 
   /// DEBUG UTILITIES /////////////////////////////////////////////////////////
@@ -102,6 +106,17 @@ class StateMgr {
       const action = { vmStateEvent: clonedEvent, callback };
       this._enqueue(action);
     } else throw Error('SendState: invalid vmState update received, got:');
+  }
+
+  /** When executing a side effect from a component, use this method to
+   *  hold it until after all state updates have completed, so the DOM
+   *  is stable
+   */
+  QueueEffect(effectFunc) {
+    if (typeof effectFunc !== 'function')
+      throw Error('effect must be a function');
+    this.effects.push(effectFunc);
+    this._doEffect();
   }
 
   /** Subscribe to state. The subscriber function looks like:
@@ -286,6 +301,21 @@ class StateMgr {
     }
     // issues callbacks after ALL actions have completed
     callbacks.forEach(f => f());
+    this._doEffect();
+  }
+
+  /** execute effect functions that have been queued, generally if there
+   *  are no pending state changes
+   */
+  _doEffect() {
+    if (this.queue.length > 0) return;
+    setTimeout(() => {
+      let effect = this.effects.shift();
+      while (effect !== undefined) {
+        effect();
+        effect = this.effects.shift();
+      }
+    });
   }
 
   /// STATIC METHODS //////////////////////////////////////////////////////////

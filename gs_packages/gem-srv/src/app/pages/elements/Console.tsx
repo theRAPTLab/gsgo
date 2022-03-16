@@ -26,6 +26,7 @@ type MyState = {
 class Console extends React.Component<MyProps, MyState> {
   name: string;
   buffer: TextBuffer;
+  textRef = React.createRef<HTMLTextAreaElement>();
   constructor(props) {
     super(props);
     let { name, rows, value } = props;
@@ -44,6 +45,9 @@ class Console extends React.Component<MyProps, MyState> {
 
   componentDidMount() {
     this.buffer.subscribe(this.updateConsole);
+  }
+  componentDidUpdate() {
+    this.textRef.current.scrollTop = this.textRef.current.scrollHeight;
   }
   componentWillUnmount() {
     this.buffer.unsubscribe(this.updateConsole);
@@ -93,6 +97,7 @@ class Console extends React.Component<MyProps, MyState> {
     const console = (
       <textarea
         name="console"
+        ref={this.textRef}
         style={{
           padding: '0 6px',
           fontSize: '12px',

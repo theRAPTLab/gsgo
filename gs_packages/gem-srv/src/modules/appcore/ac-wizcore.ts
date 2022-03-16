@@ -56,7 +56,8 @@ const {
   State, // return state
   SendState, // send { type, ...data } action to save
   SubscribeState, // provide listener for { type, ...data } on change
-  UnsubscribeState // remove listener
+  UnsubscribeState, // remove listener
+  QueueEffect // defer fx until after all state updates have run
 } = STORE;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// initial values of state have to be defined for constructors of components
@@ -168,7 +169,7 @@ function DispatchClick(event) {
   /** (1) GToken was clicked? ************************************************/
   const tokenKey = event.target.getAttribute('data-key');
   if (tokenKey !== null) {
-    // if (DBG) console.log(...PR(`${fn} clicked ${JSON.stringify(tokenKey)}`));
+    if (DBG) console.log(...PR(`${fn} clicked ${JSON.stringify(tokenKey)}`));
 
     // notify subscribers of new current line and token index
     const [line, pos] = tokenKey.split(',');
@@ -180,6 +181,11 @@ function DispatchClick(event) {
     if (sel_linenum > 0 && sel_linepos > 0) {
       return;
     }
+  }
+  const choiceKey = event.target.getAttribute('data-choice');
+  if (choiceKey !== null) {
+    PrintDBGConsole(`${fn} clicked ${JSON.stringify(choiceKey)}`);
+    return;
   }
 
   /** (N) DESELECT IF NO SPECIFIC CLICK **************************************/
@@ -255,7 +261,12 @@ function WizardTestLine(text) {
   // } else console.log(error);
   // } // try-catch
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function PrintDBGConsole(str: string) {
+  const buf = GetTextBuffer(State().dbg_console);
+  buf.printLine(str);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function UpdateDBGConsole(validationLog: string[]) {
   const buf = GetTextBuffer(State().dbg_console);
   buf.set(validationLog);
@@ -269,11 +280,19 @@ function ScrollLineIntoView(lineNum: number) {
   if (typeof lineNum === 'number') tokenKey = `${lineNum},1`;
   else tokenKey = `${SelectedLineNum()},1`;
   const element = document.querySelector(`div[data-key="${tokenKey}"]`);
-  if (element)
-    element.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest'
-    });
+  if (element) {
+    // When ScrollLineIntoView is called from a Component update
+    // the occurred do to a change in our state manager, any
+    // side effects also have to be queued by the state manager
+    // to stay in sync, otherwise it may fire before the state change
+    // has updated the DOM
+    QueueEffect(() =>
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest'
+      })
+    );
+  }
 }
 
 /// WIZCORE HELPER METHODS ////////////////////////////////////////////////////

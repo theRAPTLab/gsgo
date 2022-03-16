@@ -11,6 +11,7 @@ import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import Console from './Console';
+import { SymbolSelector } from './SymbolSelector';
 import { sButtonConsole, buttonStyle } from './wizard-style';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -46,40 +47,14 @@ export function ScriptContextor(props) {
   const { sel_linenum, sel_linepos } = selected;
   const label = `options for token ${sel_linenum}:${sel_linepos}`;
   // this is a managed TextBuffer with name "ScriptContextor"
-  const { dbg_console, sel_validation } = WIZCORE.State();
-  // test clause
-  if (sel_linenum > 0 && sel_linepos > 0) {
-    // const vdata = WIZCORE.ValidateSelectedLine();
-    // console.log(vdata);
-    const vIndex = sel_linepos - 1;
-    const { validationTokens } = sel_validation;
-    const symbolData = validationTokens[vIndex];
-    // symbolData has the current symbol data to convert into viewdata
-    const viewData = WIZCORE.SymbolToViewData(symbolData);
-    console.log(vIndex, viewData);
-    /*/
-    it would be nice to make unitText indicate it's the current value
-    /*/
-  }
-  // output
-  const bstyle = { ...buttonStyle, width: '100px' };
-  const buttons = ['prop', 'aardvak', 'lemon', 'cancan'].map(name => (
-    <div
-      className="gwiz gtoken clickable"
-      data-select={`choose-${name}`}
-      key={`btn-${name}`}
-    >
-      {name}
-    </div>
-  ));
+  const allDicts = [];
+
+  const { dbg_console } = WIZCORE.State();
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <>
-      <div className="gline" style={{ display: 'flex', gap: '4px' }}>
-        <div className="gwiz gtoken">methodnames</div>
-        {buttons}
-      </div>
+      <SymbolSelector selected={selected} />
       <SelectionList label={label} selected={selected} />
       <Console name={dbg_console} rows={5} />
     </>

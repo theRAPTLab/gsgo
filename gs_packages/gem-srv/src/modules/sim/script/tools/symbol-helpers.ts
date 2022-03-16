@@ -577,7 +577,7 @@ function SymbolToViewData(symbolData: TSymbolData): TSymbolViewData {
   }
   if (arg) {
     const [name, type] = UnpackArg(arg);
-    sv_data.arg = { info: arg, arg: { name, type } };
+    sv_data.arg = { info: arg, items: [name, type] };
   }
   return sv_data;
 }
