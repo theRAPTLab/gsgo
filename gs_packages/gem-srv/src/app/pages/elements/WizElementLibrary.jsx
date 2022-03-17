@@ -58,10 +58,27 @@ function GridStack(props) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a collapsable element for a Stack */
 function StackUnit(props) {
-  const { label = 'label', className, style, open = true, children } = props;
+  const {
+    label = 'label',
+    className,
+    style,
+    open = true,
+    sticky = false,
+    children
+  } = props;
   const s = { padding: '10px 10px 5px 10px', margin: 0, ...style };
+  const classes = [];
+  if (sticky) classes.push('sticky');
+  if (className) classes.push('className');
   return (
-    <details className={className} style={s} open={open}>
+    <details
+      className={classes.join(' ')}
+      style={s}
+      open={open}
+      onClick={e => {
+        if (sticky) e.preventDefault();
+      }}
+    >
       <summary>{label}</summary>
       {children}
     </details>

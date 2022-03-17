@@ -56,6 +56,7 @@ export function ScriptContextor(props) {
           <ul style={{ lineHeight: '1em', fontSize: '10px' }}>
             <li>addProp: changing existing name should rename everything</li>
             <li>scriptText: bad script ref does not generate symbols</li>
+            <li>tokenEdit: click a feature throws error</li>
           </ul>
         </div>
       </StackUnit>

@@ -74,6 +74,7 @@ export function SymbolSelector(props) {
     <StackUnit
       label={prompt}
       open
+      sticky
       style={{
         backgroundColor: 'rgba(0,128,255,0.05)'
       }}
