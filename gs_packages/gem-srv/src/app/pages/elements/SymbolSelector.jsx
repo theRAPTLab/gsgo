@@ -65,7 +65,7 @@ export function SymbolSelector(props) {
       );
     });
     if (error) {
-      allDicts.push(<p>{error.info}</p>);
+      allDicts.push(<p style={{ color: 'red' }}>{error.info}</p>);
     }
   }
   const prompt = 'SCRIPT LINE EDITOR';
