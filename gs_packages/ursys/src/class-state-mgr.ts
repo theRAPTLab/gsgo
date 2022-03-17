@@ -131,6 +131,7 @@ class StateMgr {
 
   /** Unsubscribe state */
   UnsubscribeState(subFunc) {
+    console.log('unsubscribing');
     if (!this.subs.delete(subFunc))
       console.warn(...PR('function not subscribed for', this.name));
   }
@@ -256,12 +257,15 @@ class StateMgr {
    *  that tells you who sent it. Sends a read-only copy.
    */
   _notifySubs(vmStateEvent) {
-    const subs = [...this.subs.values()];
-    vmStateEvent.stateGroup = this.name; // mixed-case names reserved by system
-    // also include the total state
-    const currentState = this._derefProps({ ...VM_STATE[this.name] });
-    // fire notification in the next event cycle
-    setTimeout(() => subs.forEach(sub => sub(vmStateEvent, currentState)));
+    // fire notification in the next event cycle to make sure
+    // that prior unsubscribes took effect
+    setTimeout(() => {
+      const subs = [...this.subs.values()];
+      vmStateEvent.stateGroup = this.name; // mixed-case names reserved by system
+      // also include the total state
+      const currentState = this._derefProps({ ...VM_STATE[this.name] });
+      subs.forEach(sub => sub(vmStateEvent, currentState));
+    });
   }
 
   /** Placeholder queueing system that doesn't do much now.
