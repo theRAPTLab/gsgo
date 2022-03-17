@@ -87,18 +87,26 @@ export function ScriptContextor(props) {
         }}
       >
         <summary>NOTES</summary>
-        <b>queue: rudimentary selections for prop keyword</b> - (1){' '}
+        <b>queue: prototype script building</b> - (1){' '}
         <strike>write value back to update script</strike> (2) add value editor
         (3) add string editor (4) add objref editor (5) generalize.
         <br />
         <br />
-        note: all colors are for determining extents of functional component
-        areas, and do not represent final look and feel.
-        <br />
-        <br />
-        note: the styling is provided by{' '}
-        <a href="https://picocss.com/docs/">pico</a>
+        <div style={{ lineHeight: '1em', fontSize: '10px' }}>
+          EDGE CASES TO RESOLVE
+          <br />
+          <br />
+          <ul style={{ lineHeight: '1em', fontSize: '10px' }}>
+            <li>addProp: changing existing name should rename everything</li>
+            <li>scriptText: bad script ref does not generate symbols</li>
+          </ul>
+        </div>
       </details>
+      <div style={{ whiteSpace: 'normal' }}>
+        note: all colors are for determining extents of functional component
+        areas, and do not represent final look and feel. styling is provided by{' '}
+        <a href="https://picocss.com/docs/">pico</a>
+      </div>
     </div>
   );
 }
