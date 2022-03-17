@@ -10,47 +10,11 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import { GLabelToken, GSymbolToken, StackUnit } from './WizElementLibrary';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SymbolSelector');
-
-/// COMPONENT PLAYGROUND //////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GLabel(props) {
-  const { name } = props;
-  return (
-    <div
-      className="gwiz gtoken"
-      style={{
-        backgroundColor: '#003b76e0',
-        color: 'white',
-        fontWeight: 'bold',
-        minWidth: '100px'
-      }}
-      onClick={e => {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log(e.target.name);
-      }}
-    >
-      {name}
-    </div>
-  );
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GChoiceToken(props) {
-  const { symbolType, choice, unitText } = props;
-  const cnames = ['gwiz', 'gtoken', 'clickable'];
-  if (choice === unitText) cnames.push('chosen');
-
-  const token = `${symbolType}-${choice}`;
-  return (
-    <div className={cnames.join(' ')} data-choice={token}>
-      {choice}
-    </div>
-  );
-}
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -85,7 +49,7 @@ export function SymbolSelector(props) {
       items.forEach(choice => {
         const choiceKey = `${key}:${choice}`;
         inner.push(
-          <GChoiceToken
+          <GSymbolToken
             key={choiceKey}
             symbolType={key}
             unitText={unitText}
@@ -95,7 +59,7 @@ export function SymbolSelector(props) {
       });
       allDicts.push(
         <>
-          <GLabel key={rowKey} name={key} />
+          <GLabelToken key={rowKey} name={key} />
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>{[...inner]}</div>
         </>
       );
@@ -107,14 +71,13 @@ export function SymbolSelector(props) {
       : 'SELECT TOKEN TO EDIT (prop keyword only)';
   // render
   return (
-    <details
+    <StackUnit
+      label={prompt}
       open
       style={{
-        backgroundColor: 'rgba(0,128,255,0.05)',
-        padding: '10px 0 5px 10px'
+        backgroundColor: 'rgba(0,128,255,0.05)'
       }}
     >
-      <summary>{prompt}</summary>
       {allDicts.map((row, i) => {
         const key = `${sel_linenum}${i}`;
         return (
@@ -131,6 +94,6 @@ export function SymbolSelector(props) {
           </div>
         );
       })}
-    </details>
+    </StackUnit>
   );
 }

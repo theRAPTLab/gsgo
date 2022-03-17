@@ -44,6 +44,15 @@ const DEF_ASSETS = GS_ASSETS_PROJECT_ROOT; // gs_assets is root
 const DEF_PRJID = 'AEP2';
 const DEF_BPID = 'Fish';
 
+/// HELPERS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// http://jsfiddle.net/C76xb/
+function m_ChildOf(child, parent) {
+  // eslint-disable-next-line no-cond-assign
+  while ((child = child.parentNode) && child !== parent);
+  return !!child;
+}
+
 /// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// First create the new instance, and extract the methods we plan to use
@@ -213,9 +222,23 @@ function DispatchClick(event) {
     return;
   }
 
-  /** (N) DESELECT IF NO SPECIFIC CLICK **************************************/
-  // if nothing processed, then unset selection
-  SendState({ sel_linenum: -1, sel_linepos: -1 });
+  /** (3) ScriptContextor clicks ********************************************/
+  const sc = document.getElementById('ScriptContextor');
+  if (m_ChildOf(event.target, sc)) {
+    console.log('click inside ScriptContextor', event.target);
+    return;
+  }
+
+  /** (4) DESELECT IF NON-TOKEN *********************************************/
+  const sv = document.getElementById('ScriptWizardView');
+  if (m_ChildOf(event.target, sv)) {
+    // if nothing processed, then unset selection
+    SendState({ sel_linenum: -1, sel_linepos: -1 });
+    return;
+  }
+
+  /** (N) unhandled click oops **********************************************/
+  console.log('unhandled click in', event.target);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Called by the ScriptElementEditor component, or anything that wants to intercept
@@ -591,7 +614,7 @@ export {
 
 /// EXPORTED STATE METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { State, SendState, SubscribeState, UnsubscribeState };
+export { State, SendState, SubscribeState, UnsubscribeState, QueueEffect };
 
 /// EXPORTED EVENT DISPATCHERS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

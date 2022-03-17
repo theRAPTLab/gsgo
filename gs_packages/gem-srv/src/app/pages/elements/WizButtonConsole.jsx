@@ -24,7 +24,7 @@ export function ButtonConsole(/* props */) {
   const [modeD, setModeD] = React.useState(0);
   const [status, setStatus] = React.useState('UI STATE');
   const { dev_or_user } = WIZCORE.State();
-  const modeLabelC = dev_or_user ? 'Mode C1' : 'Mode C0';
+  const modeLabelC = dev_or_user ? 'ScriptText' : 'ScriptView';
   const modeLabelD = modeD ? 'Mode D1' : 'Mode D0';
 
   // define local event handlers
@@ -37,12 +37,12 @@ export function ButtonConsole(/* props */) {
   // derive styles
   const sModeButtonC = {
     ...buttonStyle,
-    width: '100px',
+    minWidth: '120px',
     backgroundColor: dev_or_user ? 'red' : ''
   };
   const sModeButtonD = {
     ...buttonStyle,
-    width: '100px',
+    minWidth: '100px',
     backgroundColor: modeD ? 'red' : ''
   };
   // render

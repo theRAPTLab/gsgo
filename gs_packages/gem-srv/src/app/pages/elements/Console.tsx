@@ -11,23 +11,8 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import TextBuffer, { GetTextBuffer } from 'lib/class-textbuffer';
+import { StackUnit } from './WizElementLibrary';
 
-function GLabel(props) {
-  const { name, color = 'white', bg = 'black' } = props;
-  return (
-    <div
-      className="gwiz gtoken"
-      style={{
-        backgroundColor: bg,
-        color: color,
-        fontWeight: 'bold',
-        minWidth: '100px'
-      }}
-    >
-      {name}
-    </div>
-  );
-}
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 type MyProps = {
@@ -140,17 +125,16 @@ class Console extends React.Component<MyProps, MyState> {
       />
     ) : undefined;
     return (
-      <details
+      <StackUnit
+        label={title}
         open
         style={{
-          backgroundColor: 'rgba(200,128,0,0.08)',
-          padding: '10px 0 5px 10px'
+          backgroundColor: 'rgba(200,128,0,0.08)'
         }}
       >
-        <summary>{title}</summary>
         {console}
         {input}
-      </details>
+      </StackUnit>
     );
   }
 }

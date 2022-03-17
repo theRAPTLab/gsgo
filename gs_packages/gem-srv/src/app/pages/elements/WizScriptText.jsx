@@ -31,6 +31,8 @@ export class ScriptText extends React.Component {
   }
 
   componentDidMount() {
+    console.log('WizScriptText: did mount');
+
     const highlight = editor => {
       Prism.highlightElement(editor);
     };
@@ -40,11 +42,9 @@ export class ScriptText extends React.Component {
 
     this.jar.onUpdate(text => {
       // do a delayed update
-      if (this.wizTimer) clearInterval(this.wizTimer);
-      this.wizTimer = setTimeout(() => {
+      WIZCORE.QueueEffect(() => {
         this.updateWizText(null, text);
-        this.wizTimer = undefined;
-      }, 500);
+      });
     });
     // add a subscriber
     WIZCORE.SubscribeState(this.handleWizUpdate);
@@ -52,7 +52,9 @@ export class ScriptText extends React.Component {
 
   /** unsubscribe **/
   componentWillUnmount() {
+    console.log('WizScriptText: will unmount');
     WIZCORE.UnsubscribeState(this.handleWizUpdate);
+    this.jar.destroy();
   }
 
   /** INCOMING: handle WIZCORE event updates */

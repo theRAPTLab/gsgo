@@ -5,8 +5,6 @@
   ScriptView - Given a script_page array of renderable state, emit
   a clickable wizard GUI.
 
-  THIS MODULE IS A PLACEHOLDER
-
   COMPONENT USAGE
 
     <ScriptView vmPage={this.state.script_page} />
@@ -14,13 +12,14 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   TokenToString,
   UnpackToken,
   DecodeTokenPrimitive
 } from 'script/transpiler-v2';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import { GLine, GBlankLine, GToken } from './WizElementLibrary';
 import { sScriptView } from './wizard-style';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -31,18 +30,6 @@ const DBG = false;
 // will match the script_text line numbers
 // See also COUNT_ALL_LINES for related behaviors
 const DRAW_CLOSING_LINES = false;
-const SPECIAL_IDENTS = [
-  'BLUEPRINT',
-  'TAG',
-  'PROGRAM',
-  'INIT',
-  'DEFINE',
-  'UPDATE',
-  'CONDITION'
-];
-const SPECIAL_KEYWORDS = ['useFeature', 'addFeature', 'addProp'];
-const CONDITION_KEYWORDS = ['every', 'when'];
-// view styling
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,95 +46,6 @@ function u_Key(prefix = '') {
   const hex = KEY_COUNTER.toString(16).padStart(4, '0');
   if (++KEY_COUNTER > KEY_BITS) KEY_COUNTER = 0;
   return `${prefix}${hex}`;
-}
-
-/// META ELEMENTS /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** PLACEHOLDER: A line token is a blank line, so insert a blank div */
-function GLineSpace() {
-  return <div className="gwiz gtoken">&nbsp;</div>;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** PLACEHOLDER: script line numbers on the left, also provide the level
- *  padding for nested lines
- */
-function GLineNum(props) {
-  const { lineNum, level } = props;
-  const tokenKey = `${Number(lineNum)},0`;
-  const indent = level * 2;
-  return (
-    <div
-      className="gwiz gtoken first"
-      data-key={tokenKey}
-      style={{ marginRight: `${indent}rem` }}
-    >
-      {lineNum}
-    </div>
-  );
-}
-
-/// COMPONENTS ////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** PLACEHOLDER: Wrapper for a GToken */
-function GLine(props) {
-  const { lineNum, level, children, selected } = props;
-  const classes = selected ? 'gwiz gline selected' : 'gwiz gline';
-  return (
-    <>
-      <div className={classes}>
-        <GLineNum lineNum={lineNum} level={level} />
-        {children}
-      </div>
-    </>
-  );
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** PLACEHOLDER: Representation of a script unit i.e. token. */
-function GToken(props) {
-  const { tokenKey, token, selected, position } = props;
-  const [type, value] = UnpackToken(token); // simple values or object
-  let label;
-  switch (type) {
-    case 'identifier':
-      label = value;
-      break;
-    case 'objref':
-      label = value.join('.');
-      break;
-    case 'string':
-      label = `"${value}"`;
-      break;
-    case 'value':
-      label = typeof value === 'boolean' ? `<${value}>` : Number(value);
-      break;
-    case 'boolean':
-      label = `<${value}>`;
-      break;
-    default:
-      label = TokenToString(token);
-  }
-  // blank line? Just emit a line space
-  if (label === '') {
-    return <GLineSpace />;
-  }
-  let classes = selected
-    ? 'gwiz gtoken styleOpen selected'
-    : 'gwiz gtoken styleOpen';
-  if (type === 'identifier' && position === 0) classes += ' styleKey';
-  if (type === 'comment') classes += ' styleComment';
-  if (type === 'directive') classes += ' stylePragma';
-  if (SPECIAL_IDENTS.includes(label)) classes += ' stylePragma';
-  if (SPECIAL_KEYWORDS.includes(label)) classes += ' styleDefine';
-  if (CONDITION_KEYWORDS.includes(label)) classes += ' styleCond';
-  classes += ` ${type}Type`;
-
-  // if not, emit the token element
-  return (
-    <div className={classes} data-key={tokenKey}>
-      {label}
-    </div>
-  );
 }
 
 /// COMPONENT EXPORTS /////////////////////////////////////////////////////////
@@ -198,7 +96,7 @@ export function ScriptView(props) {
     } else {
       // insert a blank line into the liner buffer
       // eslint-disable-next-line no-lonely-if
-      if (DRAW_CLOSING_LINES) lineBuffer.push(<GLineSpace />);
+      if (DRAW_CLOSING_LINES) lineBuffer.push(<GBlankLine />);
     }
     //
     const num = String(lineNum).padStart(3, '0');
@@ -220,7 +118,6 @@ export function ScriptView(props) {
     console.groupCollapsed('Wizard DBG');
     console.log(DBGTEXT);
   }
-
   return (
     <div id="ScriptWizardView" style={sScriptView}>
       {pageBuffer}
