@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Common Small Components for rendering the Wizard GUI
@@ -26,13 +28,20 @@ const SPECIAL_IDENTS = [
 ];
 const SPECIAL_KEYWORDS = ['useFeature', 'addFeature', 'addProp'];
 const CONDITION_KEYWORDS = ['every', 'when'];
+const INFO_TYPES = {
+  blueprint: { style: {} },
+  symbol: { style: {} },
+  dev: { style: {} },
+  note: { style: {} }
+};
 
 /// COMPONENT MANAGEMENT //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** contains full-width Stackables */
 function FlexStack(props) {
-  const { children, className, style, id } = props;
+  const { children, className, style, id, color } = props;
   const s = { ...style, display: 'flex', flexDirection: 'column', flexGap: 0 };
+  if (typeof color === 'string') s.backgroundColor = color;
   return (
     <div id={id} className={className} style={s}>
       {children}
@@ -42,13 +51,16 @@ function FlexStack(props) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** contains full-width Stackables */
 function GridStack(props) {
-  const { children, className, style } = props;
+  const { children, className, style, color } = props;
+  const colorStyle = INFO_TYPES[color];
   const s = {
-    ...style,
     display: 'grid',
     gridTemplateRows: 'repeat(auto-fit, minmax(100px, 1fr))',
-    gap: 0
+    gap: 0,
+    ...colorStyle,
+    ...style
   };
+  if (typeof color === 'string') s.backgroundColor = color;
   return (
     <div className={className} style={s}>
       {children}
@@ -62,11 +74,15 @@ function StackUnit(props) {
     label = 'label',
     className,
     style,
-    open = true,
+    color,
+    open = false,
     sticky = false,
+    wrap = false,
     children
   } = props;
-  const s = { padding: '10px 10px 5px 10px', margin: 0, ...style };
+  const colorStyle = INFO_TYPES[color];
+  const s = { padding: '10px 10px 5px 10px', margin: 0, ...colorStyle, ...style };
+  if (wrap) s.whiteSpace = 'normal';
   const classes = [];
   if (sticky) classes.push('sticky');
   if (className) classes.push('className');
@@ -85,6 +101,18 @@ function StackUnit(props) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function StackText(props) {
+  const { children, className, style, color } = props;
+  const colorStyle = INFO_TYPES[color];
+  const s = {
+    padding: '10px 10px 5px 10px',
+    margin: 0,
+    whiteSpace: 'normal',
+    ...colorStyle,
+    ...style
+  };
+  return <div style={s}>{children}</div>;
+}
 
 /// TOKEN LINES ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -213,4 +241,4 @@ function GSymbolToken(props) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export { GLine, GBlankLine };
 export { GToken, GLabelToken, GSymbolToken };
-export { GridStack, FlexStack, StackUnit };
+export { GridStack, FlexStack, StackUnit, StackText };

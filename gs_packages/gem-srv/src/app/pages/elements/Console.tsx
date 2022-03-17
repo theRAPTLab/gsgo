@@ -19,6 +19,7 @@ type MyProps = {
   name: string; // name of the console instance
   buffer: TextBuffer;
   rows: number;
+  open: boolean;
   showCLI: boolean;
   title: string;
 };
@@ -92,16 +93,8 @@ class Console extends React.Component<MyProps, MyState> {
   }
   render() {
     const { consoleText } = this.state;
-    const { showCLI, title } = this.props;
+    const { showCLI, title, open } = this.props;
     const { rows } = this.props;
-
-    const gWiz = {
-      boxSizing: 'border-box',
-      display: 'inline-block',
-      padding: '4px 12px',
-      margin: '1px 1px',
-      userSelect: 'none'
-    };
 
     const console = (
       <textarea
@@ -124,10 +117,11 @@ class Console extends React.Component<MyProps, MyState> {
         onKeyDown={e => this.handleKey(e)}
       />
     ) : undefined;
+    /// RENDER ////////////////////////////////////////////////////////////////
     return (
       <StackUnit
         label={title}
-        open
+        open={open}
         style={{
           backgroundColor: 'rgba(200,128,0,0.08)'
         }}

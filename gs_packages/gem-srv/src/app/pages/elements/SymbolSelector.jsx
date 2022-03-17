@@ -20,8 +20,8 @@ const PR = UR.PrefixUtil('SymbolSelector');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function SymbolSelector(props) {
   // we need the current selection
-  const { selected } = props;
-  const { sel_linenum, sel_linepos } = selected;
+  const { selection = {} } = props;
+  const { sel_linenum, sel_linepos } = selection;
   const label = `options for token ${sel_linenum}:${sel_linepos}`;
   // this is a managed TextBuffer with name "ScriptContextor"
   const allDicts = [];
@@ -64,12 +64,13 @@ export function SymbolSelector(props) {
         </>
       );
     });
+    if (error) {
+      allDicts.push(<p>{error.info}</p>);
+    }
   }
-  const prompt =
-    allDicts.length > 0
-      ? `SELECTED TOKEN ${sel_linenum},${sel_linepos - 1}`
-      : 'SELECT TOKEN TO EDIT (prop keyword only)';
-  // render
+  const prompt = 'SCRIPT LINE EDITOR';
+
+  /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <StackUnit
       label={prompt}

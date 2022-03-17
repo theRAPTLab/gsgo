@@ -12,7 +12,7 @@ import UR from '@gemstep/ursys/client';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import Console from './Console';
 import { SymbolSelector } from './SymbolSelector';
-import { GridStack, FlexStack, StackUnit } from './WizElementLibrary';
+import { GridStack, FlexStack, StackUnit, StackText } from './WizElementLibrary';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -21,27 +21,58 @@ const PR = UR.PrefixUtil('ScriptContextor');
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ScriptContextor(props) {
-  // we need the current selection
-  const { selected } = props;
-  const { sel_linenum, sel_linepos } = selected;
-  const label = `options for token ${sel_linenum}:${sel_linepos}`;
-  // this is a managed TextBuffer with name "ScriptContextor"
-  const allDicts = [];
-
+  // we need the current selection if there is one
+  let selection = WIZCORE.SelectedTokenInfo();
+  if (selection !== undefined) {
+    const { sel_linepos: linePos, validation } = selection;
+    const { validationTokens: vtoks, validationLog } = validation;
+    WIZCORE.UpdateDBGConsole(validationLog);
+    const vtok = vtoks[linePos - 1];
+  }
   const { dbg_console } = WIZCORE.State();
+  const features = WIZCORE.GetBundleSymbolNames('features');
+  const properties = WIZCORE.GetBundleSymbolNames('props');
+  const keywords = WIZCORE.GetBundleSymbolNames('keywords');
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <FlexStack id="ScriptContextor">
-      <SymbolSelector selected={selected} />
-      <Console title="AVAILABLE SYMBOL INFO" name={dbg_console} rows={5} />
+      <StackUnit label="BUILDING PIECES">
+        This is the palette of things you can build or access. Maybe also help.
+        <FlexStack>
+          <StackUnit label="available keywords" wrap>
+            {keywords.join(', ')}
+          </StackUnit>
+          <StackUnit label="available features" wrap>
+            {features.join(', ')}
+          </StackUnit>
+          <StackUnit label="available properties" wrap>
+            {properties.join(', ')}
+          </StackUnit>
+          <StackUnit label="device tags" wrap>
+            things like TAG isCharControllable
+          </StackUnit>
+        </FlexStack>
+      </StackUnit>
+      <StackUnit label="EDIT CONDITIONS">
+        <StackText>WHEN clause?</StackText>
+      </StackUnit>
+      <StackUnit label="EDIT EVENTS">
+        <StackText>ON systemEvent list</StackText>
+      </StackUnit>
+      <SymbolSelector selection={selection} />
+      <Console
+        title="DEV: AVAILABLE SYMBOL INFO"
+        open
+        name={dbg_console}
+        rows={5}
+      />
       <StackUnit
-        label="NOTES"
+        label="DEV: NOTES"
         open
         style={{
           whiteSpace: 'normal',
-          backgroundColor: 'rgba(0,0,0,0.05)',
-          padding: '10px 10px 5px 10px'
+          backgroundColor: 'rgba(0,0,0,0.05)'
         }}
       >
         <b>queue: prototype script building</b> - (1){' '}
@@ -60,11 +91,13 @@ export function ScriptContextor(props) {
           </ul>
         </div>
       </StackUnit>
-      <div style={{ whiteSpace: 'normal' }}>
+      <StackText>
         note: all colors are for determining extents of functional component
         areas, and do not represent final look and feel. styling is provided by{' '}
-        <a href="https://picocss.com/docs/">pico</a>
-      </div>
+        <a href="https://picocss.com/docs/" rel="noreferrer" target="_blank">
+          pico
+        </a>
+      </StackText>
     </FlexStack>
   );
 }

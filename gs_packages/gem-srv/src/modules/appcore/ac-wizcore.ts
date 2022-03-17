@@ -28,7 +28,7 @@ import * as SENGINE from 'modules/datacore/dc-script-engine';
 import { ScriptLiner } from 'script/tools/script-helpers';
 import { SymbolToViewData, UnpackViewData } from 'script/tools/symbol-helpers';
 import { GS_ASSETS_PROJECT_ROOT } from 'config/gem-settings';
-import { TValidatedScriptUnit } from 'lib/t-script';
+import { TValidatedScriptUnit, TSymbolData, ISMCBundle } from 'lib/t-script';
 import { GetTextBuffer } from 'lib/class-textbuffer';
 
 // load state
@@ -178,7 +178,7 @@ function DispatchClick(event) {
   /** (1) GToken was clicked? ************************************************/
   const tokenKey = event.target.getAttribute('data-key');
   if (tokenKey !== null) {
-    if (DBG) console.log(...PR(`${fn} clicked ${JSON.stringify(tokenKey)}`));
+    // if (DBG) console.log(...PR(`${fn} clicked ${JSON.stringify(tokenKey)}`));
 
     // notify subscribers of new current line and token index
     const [line, pos] = tokenKey.split(',');
@@ -451,6 +451,27 @@ function ValidatePageLine(pageLine): TValidatedScriptUnit {
     globals: globalRefs
   });
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** PLACEHOLDER: retrieve bundle information. prob should be in dc-bundle */
+function GetBundleSymbol(symbolType: keyof TSymbolData) {
+  if (symbolType === 'keywords') {
+    return SENGINE.GetAllKeywords() || {};
+  }
+  const bdl: ISMCBundle = State().cur_bdl; // returns null
+  if (!bdl) return {};
+  if (!bdl.symbols === undefined) return {};
+  return bdl.symbols[symbolType];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** PLACEHOLDER: retrieve bundle information. prob should be in dc-bundle */
+function GetBundleSymbolNames(symbolType: keyof TSymbolData): string[] {
+  const symbols = GetBundleSymbol(symbolType);
+  if (Array.isArray(symbols)) return symbols;
+  if (typeof symbols !== 'object') return [`error retrieving ${symbolType}`];
+  const keys = [...Object.keys(symbols)];
+  if (keys.length === 0) return [];
+  return keys;
+}
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -642,6 +663,8 @@ export {
   ValidatePageLine // test compile line relative to current blueprint
 };
 export {
-  SymbolToViewData, // forwrd utilities from symbol-helpers
-  UnpackViewData // conver ViewData to an array format
+  GetBundleSymbol, // return symbolType from bundle
+  GetBundleSymbolNames, // return the names
+  SymbolToViewData, // forward utilities from symbol-helpers
+  UnpackViewData // forward conver ViewData to an array format
 };
