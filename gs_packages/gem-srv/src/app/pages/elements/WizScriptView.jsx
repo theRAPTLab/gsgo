@@ -73,9 +73,14 @@ function GLineSpace() {
  */
 function GLineNum(props) {
   const { lineNum, level } = props;
+  const tokenKey = `${Number(lineNum)},0`;
   const indent = level * 2;
   return (
-    <div className="gwiz gtoken first" style={{ marginRight: `${indent}rem` }}>
+    <div
+      className="gwiz gtoken first"
+      data-key={tokenKey}
+      style={{ marginRight: `${indent}rem` }}
+    >
       {lineNum}
     </div>
   );

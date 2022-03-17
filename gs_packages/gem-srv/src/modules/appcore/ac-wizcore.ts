@@ -303,7 +303,7 @@ export function UpdateDBGConsole(validationLog: string[]) {
 function ScrollLineIntoView(lineNum: number) {
   let tokenKey;
   if (typeof lineNum === 'number') tokenKey = `${lineNum},1`;
-  else tokenKey = `${SelectedLineNum()},1`;
+  else tokenKey = `${SelectedLineNum()},0`;
   const element = document.querySelector(`div[data-key="${tokenKey}"]`);
   if (element) {
     // When ScrollLineIntoView is called from a Component update
