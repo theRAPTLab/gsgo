@@ -10,7 +10,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
-import { GLabelToken, GSymbolToken, StackUnit } from './StructuralElements';
+import { GLabelToken, GSymbolToken, StackUnit } from '../SharedElements';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -18,7 +18,7 @@ const PR = UR.PrefixUtil('SymbolSelector');
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function SymbolSelector(props) {
+export function EditSymbol(props) {
   // we need the current selection
   const { selection = {} } = props;
   const { sel_linenum, sel_linepos } = selection;
@@ -35,7 +35,7 @@ export function SymbolSelector(props) {
     const { validationTokens } = sel_validation;
     const symbolData = validationTokens[vIndex];
     // symbolData has the current symbol data to convert into viewdata
-    const viewData = WIZCORE.SymbolToViewData(symbolData);
+    const viewData = WIZCORE.DecodeSymbolViewData(symbolData);
     /* TODO: it would be nice to make unitText indicate it's the current value */
     const { unitText, error, ...dicts } = viewData;
     // VALIDATION TOKENS are stored by key in the dicts

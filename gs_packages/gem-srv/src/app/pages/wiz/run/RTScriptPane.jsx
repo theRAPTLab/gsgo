@@ -19,7 +19,7 @@ const LOG = console.log;
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function RuntimeScriptView(/* props */) {
+export function RTScriptPane(/* props */) {
   /// DEFINE STATE ////////////////////////////////////////////////////////////
   const { sel_linenum: num, sel_linepos: pos, error } = WIZCORE.State();
   const selText = num < 0 ? 'no selection' : `selected ${num},${pos}`;

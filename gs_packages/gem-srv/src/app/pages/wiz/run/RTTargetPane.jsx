@@ -2,8 +2,8 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  RuntimeInspector - Instrument to observe the inner workings of a
-  script variables for a selected SimTarget
+  RuntimeSimTarget - Instrument to observe instances matching a particular
+  Blueprint aka character type
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -13,15 +13,15 @@ import * as WIZCORE from 'modules/appcore/ac-wizcore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('RuntimeInspector');
+const PR = UR.PrefixUtil('RuntimeSimTarget');
 const LOG = console.log;
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function RuntimeInspector(/* props */) {
+export function RTTargetPane(/* props */) {
   /// DEFINE STATE ////////////////////////////////////////////////////////////
   const { sel_linenum: num, sel_linepos: pos, error } = WIZCORE.State();
   const selText = num < 0 ? 'no selection' : `selected ${num},${pos}`;
   /// RENDER //////////////////////////////////////////////////////////////////
-  return <div>RuntimeInspector</div>;
+  return <div>RuntimeSimTarget</div>;
 }

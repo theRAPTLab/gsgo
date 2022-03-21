@@ -9,7 +9,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
-import { buttonStyle } from '../wizard-style';
+import { buttonStyle } from '../SharedElements';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,7 +22,7 @@ const TESTLINE = 'prop energyLevel setTo 0';
 /** Returns placeholder text line editor to do script processing of a line
  *  for testing purposes
  */
-export function DevValidateLine(/* props */) {
+export function DBGValidateLine(/* props */) {
   /// DEFINE STATE ////////////////////////////////////////////////////////////
   const [input, setInput] = React.useState(TESTLINE);
   const [status, setStatus] = React.useState();

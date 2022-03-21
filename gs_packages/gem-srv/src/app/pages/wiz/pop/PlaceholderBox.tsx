@@ -26,7 +26,7 @@ export function PlaceholderBox(parentProps) {
   const { validationTokens: vtoks, validationLog } = validation;
   WIZCORE.UpdateDBGConsole(validationLog);
   const vtok = vtoks[linePos - 1];
-  const gData = WIZCORE.SymbolToViewData(vtok);
+  const gData = WIZCORE.DecodeSymbolViewData(vtok);
   const status = gData.unitText ? 'PARSE OK' : 'PARSE ERROR';
   return (
     <>

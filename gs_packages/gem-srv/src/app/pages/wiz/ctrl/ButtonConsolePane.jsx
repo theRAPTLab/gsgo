@@ -10,7 +10,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
-import { sButtonConsole, buttonStyle } from './wizard-style';
+import { sButtonConsole, buttonStyle } from '../SharedElements';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -11,7 +11,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import TextBuffer, { GetTextBuffer } from 'lib/class-textbuffer';
-import { StackUnit } from './StructuralElements';
+import { StackUnit } from '../SharedElements';
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

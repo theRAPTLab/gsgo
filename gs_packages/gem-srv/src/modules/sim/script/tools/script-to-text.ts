@@ -19,7 +19,7 @@ const PR = UR.PrefixUtil('TEXTIFY', 'TagDebug');
 /** given a token, return the text representation of it. If it encounters an
  *  array of nested tokens in a 'block' token, it converts those recursively
  */
-function TokenToString(tok: IToken, indent: number) {
+function TokenToString(tok: IToken, indent: number = 0) {
   const { directive, comment, line } = tok; // meta information
   const { identifier, value, string } = tok; // primitive values
   const { objref, program, block, expr } = tok; // req runtime eval

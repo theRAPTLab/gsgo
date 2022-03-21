@@ -10,14 +10,9 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
-import Console from './elements/Console';
-import { SymbolSelector } from './elements/SymbolSelector';
-import {
-  GridStack,
-  FlexStack,
-  StackUnit,
-  StackText
-} from './elements/StructuralElements';
+import Console from '../stat/Console';
+import { EditSymbol } from './EditSymbol';
+import { GridStack, FlexStack, StackUnit, StackText } from '../SharedElements';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -101,7 +96,7 @@ function DevNotice(props) {
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function ScriptContextor(props) {
+export function ScriptEditPane(props) {
   // we need the current selection if there is one
   let selection = WIZCORE.SelectedTokenInfo();
   if (selection !== undefined) {
@@ -116,7 +111,7 @@ export function ScriptContextor(props) {
   return (
     <FlexStack id="ScriptContextor">
       <DevStuffToAdd />
-      <SymbolSelector selection={selection} />
+      <EditSymbol selection={selection} />
       <Console title="DEV: AVAILABLE SYMBOL INFO" name={dbg_console} rows={5} />
       <DevNotes />
       <DevNotice />

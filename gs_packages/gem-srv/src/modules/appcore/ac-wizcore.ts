@@ -26,7 +26,11 @@ import * as ASSETS from 'modules/asset_core/asset-mgr';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as SENGINE from 'modules/datacore/dc-script-engine';
 import { ScriptLiner } from 'script/tools/script-helpers';
-import { SymbolToViewData, UnpackViewData } from 'script/tools/symbol-helpers';
+import {
+  DecodeSymbolViewData,
+  UnpackViewData,
+  UnpackSymbolType
+} from 'script/tools/symbol-helpers';
 import { GS_ASSETS_PROJECT_ROOT } from 'config/gem-settings';
 import { TValidatedScriptUnit, TSymbolData, ISMCBundle } from 'lib/t-script';
 import { GetTextBuffer } from 'lib/class-textbuffer';
@@ -172,7 +176,7 @@ _interceptState(state => {
  *  List of mouse events: https://www.w3.org/TR/DOM-Level-3-Events/#events-mouseevents
  */
 function DispatchClick(event) {
-  const fn = 'DispatchClick:';
+  const fn = 'DC:';
   const newState: TStateObject = {};
 
   /** (1) GToken was clicked? ************************************************/
@@ -195,7 +199,6 @@ function DispatchClick(event) {
   /** (2) ChoiceToken was clicked? ******************************************/
   const choiceKey = event.target.getAttribute('data-choice');
   if (choiceKey !== null) {
-    PrintDBGConsole(`${fn} clicked ${JSON.stringify(choiceKey)}`);
     const {
       scriptToken, // the actual script token (not vmToken)
       sel_linenum, // line number in VMPage
@@ -208,17 +211,22 @@ function DispatchClick(event) {
     // scriptToken which has its own type. We also need to know the
     // This is that TYPE MATCHING challenge again...
     const [symbolType, symbolValue] = choiceKey.split('-');
+
     /** hack test **/
+    // just change identifier tokens
     if (scriptToken.identifier) {
       scriptToken.identifier = symbolValue;
       const script_tokens = State('script_tokens');
       const script_text = TRANSPILER.ScriptToText(script_tokens);
       SendState({ script_text });
-      QueueEffect(() => {
-        SendState({ sel_linenum, sel_linepos });
-      });
     }
-    PrintDBGConsole(`${fn} scriptToken ${JSON.stringify(scriptToken)}`);
+    PrintDBGConsole(
+      `${fn} clicked ${JSON.stringify(choiceKey)}\nscriptToken ${JSON.stringify(
+        scriptToken
+      )}`
+    );
+    /** end hack test **/
+
     return;
   }
 
@@ -313,6 +321,7 @@ function WizardTestLine(text) {
 export function PrintDBGConsole(str: string) {
   const buf = GetTextBuffer(State().dbg_console);
   buf.printLine(str);
+  console.log(str);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function UpdateDBGConsole(validationLog: string[]) {
@@ -397,14 +406,15 @@ function SelectedTokenInfo() {
   } = State();
   if (sel_linenum > 0 && sel_linepos > 0) {
     const vmPageLine = script_page[sel_linenum - TRANSPILER.LINE_START_NUM];
-    return {
+    const selInfo = {
       scriptToken, // the actual script token (not vmToken)
       sel_linenum, // line number in VMPage
       sel_linepos, // line position in VMPage[lineNum]
       context, // the memory context for this token
-      validation,
+      validation, // validation tokens in this line
       vmPageLine // all the VMTokens in this line
     };
+    return selInfo;
   }
   return undefined;
 }
@@ -665,6 +675,7 @@ export {
 export {
   GetBundleSymbol, // return symbolType from bundle
   GetBundleSymbolNames, // return the names
-  SymbolToViewData, // forward utilities from symbol-helpers
-  UnpackViewData // forward conver ViewData to an array format
+  DecodeSymbolViewData, // forward utilities from symbol-helpers
+  UnpackViewData, // forward convert ViewData to an hybrid format
+  UnpackSymbolType // forward unpack symbol into [unit,type, ...param]
 };

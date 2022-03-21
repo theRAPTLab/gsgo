@@ -2,9 +2,12 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Common Small Components for rendering the Wizard GUI
+  Global Style Objects for all Wizard React Elements
+  Includes both style objects and building-block components
 
-  the css classe names are defined in lib/gem-ui.css
+  note that the component styling in DevWizard uses PICO CSS as a base,
+  so review that library as you adjust styles. Our master PICO CSS file
+  is a copy of the official one and is located in src/lib/vendor
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -17,6 +20,8 @@ import {
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const BG_COL = '#ddd';
+const PAD = '10px';
 const SPECIAL_IDENTS = [
   'BLUEPRINT',
   'TAG',
@@ -43,10 +48,113 @@ const INFO_TYPES = {
   note: {}
 };
 
+/// LAYOUT CSS ////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const sGrid = {
+  display: 'grid',
+  width: '100vw',
+  height: '100vh',
+  gridTemplateRows: 'auto 1fr auto',
+  gridTemplateColumns: '50% auto' // force
+};
+export const sHead = {
+  gridColumn: '1 / 3',
+  // extra styling
+  padding: PAD,
+  backgroundColor: BG_COL
+};
+export const sLeft = {
+  gridColumn: '1 / 2',
+  // extra styling
+  boxSizing: 'border-box',
+  overflowY: 'hidden',
+  overflowX: 'none',
+  // grid
+  display: 'grid',
+  gridTemplateRows: '1fr auto' // view+editor stack
+};
+export const sRight = {
+  gridColumn: '2 / 3',
+  // extra styling
+  whiteSpace: 'pre',
+  overflowY: 'scroll',
+  overflowX: 'none'
+};
+export const sFoot = {
+  gridColumn: '1 / 3',
+  // extra styling
+  padding: PAD,
+  backgroundColor: BG_COL
+};
+
+/// GRID LAYOUT CSS ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const sButtonGrid = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+  gap: '10px'
+};
+export const sButtonBreak = {
+  gridColumnStart: 1
+};
+
+/// LEFT: SCRIPT VIEW /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const sScriptView = {
+  overflowY: 'scroll',
+  overflowX: 'none',
+  whiteSpace: 'nowrap'
+};
+
+/// LEFT: SCRIPT UNIT EDITOR //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const sScriptUnitEditor = {
+  backgroundColor: 'rgba(255, 166, 0, 0.10)',
+  padding: '10px'
+};
+
+/// RIGHT: SCRIPT TEXT EDITOR /////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const sScriptText = {
+  fontSize: '12px',
+  lineHeight: 1,
+  whiteSpace: 'pre-line',
+  // background appearance
+  margin: 0,
+  borderRadius: 0,
+  backgroundColor: '#2d2d2d'
+};
+
+/// ERROR BOX STYLING CSS /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const sError = {
+  textAlign: 'right',
+  backgroundColor: 'red',
+  color: 'white'
+};
+
+/// UPPER RIGHT BUTTON CONSOLE STYLING CSS ////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const sButtonConsole = {
+  position: 'absolute',
+  right: '8px',
+  top: '8px',
+  height: '50px',
+  display: 'inline-flex',
+  flexDirection: 'row',
+  gap: '8px'
+};
+/// INPUT ELEMENT STYLING /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const buttonStyle = {
+  whiteSpace: 'nowrap',
+  margin: 0
+};
+
 /// COMPONENT MANAGEMENT //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** contains full-width Stackables */
-function FlexStack(props) {
+export function FlexStack(props) {
   const { children, className, style, id, color } = props;
   const s = { ...style, display: 'flex', flexDirection: 'column', flexGap: 0 };
   if (typeof color === 'string') s.backgroundColor = color;
@@ -58,7 +166,7 @@ function FlexStack(props) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** contains full-width Stackables */
-function GridStack(props) {
+export function GridStack(props) {
   const { children, className, style, color } = props;
   const colorStyle = INFO_TYPES[color];
   const s = {
@@ -77,7 +185,7 @@ function GridStack(props) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a collapsable element for a Stack */
-function StackUnit(props) {
+export function StackUnit(props) {
   const {
     label = 'label',
     className,
@@ -109,7 +217,7 @@ function StackUnit(props) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function StackText(props) {
+export function StackText(props) {
   const { children, className, style, color } = props;
   const colorStyle = INFO_TYPES[color];
   const s = {
@@ -124,11 +232,11 @@ function StackText(props) {
 
 /// TOKEN LINES ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GBlankLine() {
+export function GBlankLine() {
   return <div className="gwiz gtoken">&nbsp;</div>;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GLineNum(props) {
+export function GLineNum(props) {
   const { lineNum, level } = props;
   const tokenKey = `${Number(lineNum)},0`;
   const indent = level * 2;
@@ -142,7 +250,7 @@ function GLineNum(props) {
     </div>
   );
 } /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GLine(props) {
+export function GLine(props) {
   const { lineNum, level, children, selected } = props;
   const classes = selected ? 'gwiz gline selected' : 'gwiz gline';
   return (
@@ -161,7 +269,7 @@ function GLine(props) {
  *  the same as the keyword argment types. We can use the keyword symbol
  *  table information to render tokens in the future.
  */
-function GToken(props) {
+export function GToken(props) {
   const { tokenKey, token, selected, position } = props;
   const [type, value] = UnpackToken(token); // simple values or object
   let label;
@@ -209,7 +317,7 @@ function GToken(props) {
 
 /// LABEL TOKEN ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GLabelToken(props) {
+export function GLabelToken(props) {
   const { name } = props;
   return (
     <div
@@ -224,7 +332,7 @@ function GLabelToken(props) {
       onClick={e => {
         e.preventDefault();
         e.stopPropagation();
-        console.log(e.target.name);
+        console.log(e.target['data-key']);
       }}
     >
       {name}
@@ -232,7 +340,7 @@ function GLabelToken(props) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GSymbolToken(props) {
+export function GSymbolToken(props) {
   const { symbolType, choice, unitText } = props;
   const cnames = ['gwiz', 'gtoken', 'clickable'];
   if (choice === unitText) cnames.push('chosen');
@@ -244,9 +352,3 @@ function GSymbolToken(props) {
     </div>
   );
 }
-
-/// EXPORTS ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { GLine, GBlankLine };
-export { GToken, GLabelToken, GSymbolToken };
-export { GridStack, FlexStack, StackUnit, StackText };

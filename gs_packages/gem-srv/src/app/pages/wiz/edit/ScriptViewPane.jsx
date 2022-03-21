@@ -19,8 +19,7 @@ import {
   DecodeTokenPrimitive
 } from 'script/transpiler-v2';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
-import { GLine, GBlankLine, GToken } from './elements/StructuralElements';
-import { sScriptView } from './wizard-style';
+import { GLine, GBlankLine, GToken, sScriptView } from '../SharedElements';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,7 +56,7 @@ function u_Key(prefix = '') {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let DBGTEXT = '';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function ScriptView(props) {
+export function ScriptViewPane(props) {
   // collect resources for rendering
   DBGTEXT = '';
   const { script_page } = props;

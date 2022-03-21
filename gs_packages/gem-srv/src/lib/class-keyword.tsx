@@ -128,21 +128,21 @@ class Keyword implements IKeyword {
     let tokIndex = 1; // start dtok[1] after keyword
     while (tokIndex < unit.length) {
       // (2A) is this arg a special {args} marker?
-      // (2B) otherwise, process normally
       tok = unit[tokIndex];
       arg = this.args[tokIndex - 1] as TSymArg; // this.args also be TSymArg[]
       const [, argType] = UnpackArg(arg);
-      // is this a regular argument type?
+      // (2B) is this a regular argument type?
       if (argType !== '{...}') {
         vtok = this.validateToken(arg, tok);
         vtoks.push(vtok); // save the vtok and do the next token
         tokIndex++;
         continue;
       }
-      // otherwise, it's an argument LIST of all remaining tokens
+      // (2C) otherwise, it's an argument LIST of all remaining tokens
+      // now WE ARE HANDLING multiple tokens, so validate
       const toks = unit.slice(tokIndex);
       vtoks.push(...this.shelper.argsList(toks));
-      tokIndex += toks.length;
+      tokIndex += toks.length; // this ends the while loop
     }
     // (3) error if there are more tokens than keyword args
     if (unit.length > tokIndex) {
@@ -174,6 +174,7 @@ class Keyword implements IKeyword {
     let vtok;
     const [argName, argType] = UnpackArg(arg);
     const [tokType, value] = UnpackToken(token);
+
     // error checking
     if (argType === undefined)
       vtok = this.newSymbolError('errParse', `bad arg def ${arg}`);

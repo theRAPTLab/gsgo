@@ -12,14 +12,14 @@ import * as Prism from 'lib/vendor/prism';
 import { CodeJar } from 'lib/vendor/codejar';
 import * as WIZCORE from 'modules/appcore/ac-wizcore-tests';
 import { ScriptToText } from 'modules/sim/script/transpiler-v2';
-import { sScriptText } from './wizard-style';
+import { sScriptText } from '../SharedElements';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class ScriptText extends React.Component {
+export class ScriptTextPane extends React.Component {
   constructor(props) {
     super(props);
     this.state = WIZCORE.State();

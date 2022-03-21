@@ -32,27 +32,22 @@ import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as SIM from 'modules/sim/api-sim'; // load features
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
-// import * as WIZCORE from 'modules/appcore/ac-wizcore';
-// import { StyledTokenTest } from './elements/StyledExample';
-import { ScriptText } from './wiz-components/WizScriptText';
-import { ScriptView } from './wiz-components/WizScriptView';
-import { ScriptContextor } from './wiz-components/WizScriptContextor';
-import { DevValidateLine } from './wiz-components/elements/DevValidateLine';
-import { StatusLine } from './wiz-components/WizStatusLine';
-import { ScriptUnitEditor } from './wiz-components/WizScriptUnitEditor';
-import { RuntimeScriptView } from './wiz-components/WizRuntimeScriptView';
-import { RuntimeSimView } from './wiz-components/WizRuntimeSimView';
-import { RuntimeSimTarget } from './wiz-components/WizRuntimeSimTarget'; //
-import { ButtonConsole } from './wiz-components/WizButtonConsole';
-import {
-  sGrid,
-  sHead,
-  sLeft,
-  sRight,
-  sFoot
-} from './wiz-components/wizard-style';
-
-// import CSS straight into module, will appear as inline style
+// edit mode components
+import { ScriptTextPane } from './wiz/edit/ScriptTextPane';
+import { ScriptViewPane } from './wiz/edit/ScriptViewPane';
+import { ScriptEditPane } from './wiz/edit/ScriptEditPane';
+import { ScriptUnitEditor } from './wiz/pop/ScriptUnitEditorPane';
+// runtime mode components
+import { RTScriptPane } from './wiz/run/RTScriptPane';
+import { RTSimPane } from './wiz/run/RTSimPane';
+import { RTTargetPane } from './wiz/run/RTTargetPane'; //
+// always-there components
+import { ButtonConsole } from './wiz/ctrl/ButtonConsolePane';
+import { StatusFooter } from './wiz/stat/StatusFooter';
+import { DBGValidateLine } from './wiz/dbg/ValidateScriptLine';
+// style objects
+import { sGrid, sHead, sLeft, sRight, sFoot } from './wiz/SharedElements';
+// css
 import 'lib/vendor/pico.min.css';
 import 'lib/css/gem-ui.css';
 
@@ -61,6 +56,7 @@ import 'lib/css/gem-ui.css';
 const DBG = false;
 const PR = UR.PrefixUtil('DEWIZ', 'TagApp');
 
+/// LOCAL COMPONENTS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** duplicate the old style from material-ui home.jsx */
 function DevHeader(props) {
@@ -72,7 +68,7 @@ function DevHeader(props) {
   );
 }
 
-/// CLASS DECLARATION /////////////////////////////////////////////////////////
+/// ROOT APPLICATION COMPONENT ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class DevWizard extends React.Component {
   constructor() {
@@ -106,21 +102,21 @@ class DevWizard extends React.Component {
     const { sel_linenum, sel_linepos, script_page, dev_or_user } = this.state;
     const RightSide =
       dev_or_user === 0 ? (
-        <ScriptContextor selection={{ sel_linenum, sel_linepos }} />
+        <ScriptEditPane selection={{ sel_linenum, sel_linepos }} />
       ) : (
-        <ScriptText />
+        <ScriptTextPane />
       );
     return (
       <div id="gui-wizard" style={sGrid}>
         <DevHeader label="DEV/WIZARD" />
         <div style={sLeft}>
-          <ScriptView script_page={script_page} />
+          <ScriptViewPane script_page={script_page} />
           {/* <ScriptUnitEditor /> */}
         </div>
         <div style={sRight}>{RightSide}</div>
         <footer style={sFoot}>
-          <StatusLine />
-          <DevValidateLine />
+          <StatusFooter />
+          <DBGValidateLine />
         </footer>
         <ButtonConsole />
       </div>

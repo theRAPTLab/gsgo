@@ -16,7 +16,7 @@ export function KeywordBox(parentProps) {
   const { sel_linepos, validation } = selection;
   const { validationTokens: vtoks, validationLog } = validation;
   const vtok = vtoks[sel_linepos - 1];
-  const gData = WIZCORE.SymbolToViewData(vtok);
+  const gData = WIZCORE.DecodeSymbolViewData(vtok);
 
   const { keywords, unitText } = gData;
   const status = unitText ? 'PARSE OK' : 'PARSE ERROR';
