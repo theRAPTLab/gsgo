@@ -34,18 +34,23 @@ import * as SIM from 'modules/sim/api-sim'; // load features
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 // import * as WIZCORE from 'modules/appcore/ac-wizcore';
 // import { StyledTokenTest } from './elements/StyledExample';
-import { ScriptText } from './elements/WizScriptText';
-import { ScriptView } from './elements/WizScriptView';
-import { ScriptContextor } from './elements/WizScriptContextor';
-import { DevValidateLine } from './elements/DevValidateLine';
-import { StatusLine } from './elements/WizStatusLine';
-import { ScriptUnitEditor } from './elements/WizScriptUnitEditor';
-import { RuntimeScriptView } from './elements/WizRuntimeScriptView';
-import { RuntimeSimView } from './elements/WizRuntimeSimView';
-import { RuntimeSimTarget } from './elements/WizRuntimeSimTarget'; //
-import { ButtonConsole } from './elements/WizButtonConsole';
-
-import { sGrid, sHead, sLeft, sRight, sFoot } from './elements/wizard-style';
+import { ScriptText } from './wiz-components/WizScriptText';
+import { ScriptView } from './wiz-components/WizScriptView';
+import { ScriptContextor } from './wiz-components/WizScriptContextor';
+import { DevValidateLine } from './wiz-components/elements/DevValidateLine';
+import { StatusLine } from './wiz-components/WizStatusLine';
+import { ScriptUnitEditor } from './wiz-components/WizScriptUnitEditor';
+import { RuntimeScriptView } from './wiz-components/WizRuntimeScriptView';
+import { RuntimeSimView } from './wiz-components/WizRuntimeSimView';
+import { RuntimeSimTarget } from './wiz-components/WizRuntimeSimTarget'; //
+import { ButtonConsole } from './wiz-components/WizButtonConsole';
+import {
+  sGrid,
+  sHead,
+  sLeft,
+  sRight,
+  sFoot
+} from './wiz-components/wizard-style';
 
 // import CSS straight into module, will appear as inline style
 import 'lib/vendor/pico.min.css';
@@ -99,7 +104,12 @@ class DevWizard extends React.Component {
 
   render() {
     const { sel_linenum, sel_linepos, script_page, dev_or_user } = this.state;
-    const RightSide = dev_or_user === 0 ? <ScriptContextor /> : <ScriptText />;
+    const RightSide =
+      dev_or_user === 0 ? (
+        <ScriptContextor selection={{ sel_linenum, sel_linepos }} />
+      ) : (
+        <ScriptText />
+      );
     return (
       <div id="gui-wizard" style={sGrid}>
         <DevHeader label="DEV/WIZARD" />

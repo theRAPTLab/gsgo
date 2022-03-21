@@ -19,7 +19,7 @@ import {
   DecodeTokenPrimitive
 } from 'script/transpiler-v2';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
-import { GLine, GBlankLine, GToken } from './WizElementLibrary';
+import { GLine, GBlankLine, GToken } from './elements/StructuralElements';
 import { sScriptView } from './wizard-style';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

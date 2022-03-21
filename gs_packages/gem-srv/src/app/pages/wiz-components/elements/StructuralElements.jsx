@@ -29,10 +29,18 @@ const SPECIAL_IDENTS = [
 const SPECIAL_KEYWORDS = ['useFeature', 'addFeature', 'addProp'];
 const CONDITION_KEYWORDS = ['every', 'when'];
 const INFO_TYPES = {
-  blueprint: { style: {} },
-  symbol: { style: {} },
-  dev: { style: {} },
-  note: { style: {} }
+  blueprint: {},
+  symbol: {
+    summary: {
+      color: 'rgba(0, 59, 118, 0.88)',
+      fontWeight: 'bold'
+      // backgroundColor: 'rgba(0, 59, 118, 0.25)',
+      // margin: '-10px -10px -5px -10px',
+      // padding: '10px 10px 5px 10px'
+    }
+  },
+  dev: {},
+  note: {}
 };
 
 /// COMPONENT MANAGEMENT //////////////////////////////////////////////////////
@@ -74,14 +82,14 @@ function StackUnit(props) {
     label = 'label',
     className,
     style,
-    color,
+    type,
     open = false,
     sticky = false,
     wrap = false,
     children
   } = props;
-  const colorStyle = INFO_TYPES[color];
-  const s = { padding: '10px 10px 5px 10px', margin: 0, ...colorStyle, ...style };
+  const { summary, details } = INFO_TYPES[type] || {};
+  const s = { padding: '10px 10px 5px 10px', margin: 0, ...details, ...style };
   if (wrap) s.whiteSpace = 'normal';
   const classes = [];
   if (sticky) classes.push('sticky');
@@ -95,7 +103,7 @@ function StackUnit(props) {
         if (sticky) e.preventDefault();
       }}
     >
-      <summary>{label}</summary>
+      <summary style={summary}>{label}</summary>
       {children}
     </details>
   );

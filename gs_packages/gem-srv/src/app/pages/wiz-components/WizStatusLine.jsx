@@ -9,6 +9,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import { UnpackToken } from 'script/tools/class-gscript-tokenizer-v2';
 import { sError } from './wizard-style';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -24,7 +25,14 @@ const LOG = console.log;
 export function StatusLine(/* props */) {
   /// DEFINE STATE ////////////////////////////////////////////////////////////
   const { sel_linenum: num, sel_linepos: pos, error } = WIZCORE.State();
-  const selText = num < 0 ? 'no selection' : `selected ${num},${pos}`;
+  let selInfo;
+  if (num < 0) {
+    selInfo = 'no selection';
+  } else {
+    const { scriptToken } = WIZCORE.SelectedTokenInfo();
+    const [type, value] = UnpackToken(scriptToken);
+    selInfo = `selected ${num},${pos} tok={${type}:${value}}`;
+  }
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <div
@@ -36,7 +44,7 @@ export function StatusLine(/* props */) {
         paddingBottom: '10px'
       }}
     >
-      <tt style={{ color: 'gray' }}>SELECTED TOK</tt> {selText}
+      <tt style={{ color: 'gray' }}>SELECTED TOK</tt> {selInfo}
       <div style={sError}>{error}</div>
     </div>
   );

@@ -10,7 +10,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
-import { GLabelToken, GSymbolToken, StackUnit } from './WizElementLibrary';
+import { GLabelToken, GSymbolToken, StackUnit } from './StructuralElements';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,30 +36,32 @@ export function SymbolSelector(props) {
     const symbolData = validationTokens[vIndex];
     // symbolData has the current symbol data to convert into viewdata
     const viewData = WIZCORE.SymbolToViewData(symbolData);
-    /*/
-    it would be nice to make unitText indicate it's the current value
-    /*/
+    /* TODO: it would be nice to make unitText indicate it's the current value */
     const { unitText, error, ...dicts } = viewData;
-    // walk over each key
-    Object.keys(dicts).forEach((key, i) => {
+    // VALIDATION TOKENS are stored by key in the dicts
+    // e.g. Keywords, Props, Methods, etc
+    Object.keys(dicts).forEach((symbolType, i) => {
       const rowKey = `row${sel_linenum}:${i}`;
-      const { info, items } = viewData[key];
-      // append each item
+      const { info, items } = viewData[symbolType];
       const inner = [];
+      // get all the choices for this symbol type
       items.forEach(choice => {
-        const choiceKey = `${key}:${choice}`;
+        const choiceKey = `${symbolType}:${choice}`;
         inner.push(
           <GSymbolToken
             key={choiceKey}
-            symbolType={key}
+            symbolType={symbolType}
             unitText={unitText}
             choice={choice}
           />
         );
       });
+      // push a left-most label with symbolType with all the symbols
+      // this will be displayed in a two-column grid in the render function
+      // so the left will be the same height as the right
       allDicts.push(
         <>
-          <GLabelToken key={rowKey} name={key} />
+          <GLabelToken key={rowKey} name={symbolType} />
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>{[...inner]}</div>
         </>
       );
@@ -68,18 +70,13 @@ export function SymbolSelector(props) {
       allDicts.push(<p style={{ color: 'red' }}>{error.info}</p>);
     }
   }
-  const prompt = 'SCRIPT LINE EDITOR';
 
   /// RENDER //////////////////////////////////////////////////////////////////
+  /// drawn as "SCRIPT LINE EDITOR"
+  /// [SYMBOL TYPE] symbol symbol symbol
+  const prompt = 'SYMBOL SELECTOR';
   return (
-    <StackUnit
-      label={prompt}
-      open
-      sticky
-      style={{
-        backgroundColor: 'rgba(0,128,255,0.05)'
-      }}
-    >
+    <StackUnit label={prompt} type="symbol" open sticky>
       {allDicts.map((row, i) => {
         const key = `${sel_linenum}${i}`;
         return (
