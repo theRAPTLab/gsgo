@@ -40,9 +40,9 @@ const PR = UR.PrefixUtil('WIZCORE', 'TagCyan');
 const DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let PROJECTS; // current project class-asset-loader
-const DEF_ASSETS = GS_ASSETS_PROJECT_ROOT; // gs_assets is root
-const DEF_PRJID = 'AEP2';
-const DEF_BPID = 'Fish';
+const DEV_ASSETDIR = 'gui-test' || GS_ASSETS_PROJECT_ROOT; // gs_assets is root
+const DEV_PRJID = 'test-ui';
+const DEV_BPID = 'TestAgent';
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -103,27 +103,27 @@ _initializeState({
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// DEFERRED CALL: LOAD_ASSETS will fire after module loaded (and above code)
 UR.HookPhase('UR/LOAD_ASSETS', async () => {
-  [PROJECTS] = await ASSETS.PromiseLoadAssets(DEF_ASSETS);
-  console.log(...PR(`loaded assets from '${DEF_ASSETS}'`));
+  console.log(
+    `%cFORCE LOADING ${DEV_PRJID}:${DEV_BPID} into GUI TESTBED`,
+    'background-color:red;color:white;padding:2px 4px'
+  );
+  console.log(
+    '%cvalues are hardcoded as DEV_PRJID and DEV_BPID in ac-wizcore',
+    'color:gray'
+  );
+  [PROJECTS] = await ASSETS.PromiseLoadAssets(DEV_ASSETDIR);
+  console.log(...PR(`loaded assets from '${DEV_ASSETDIR}'`));
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// DEFERRED CALL: APP_CONFIGURE fires after LOAD_ASSETS (above) completes
 UR.HookPhase('UR/APP_CONFIGURE', () => {
-  const cur_prjid = DEF_PRJID;
-  const cur_bpid = DEF_BPID;
-  console.log(
-    `%cFORCE LOADING ${DEF_PRJID}:${DEF_BPID} into GUI TESTBED`,
-    'background-color:red;color:white;padding:2px 4px'
-  );
-  console.log(
-    '%cvalues are hardcoded as DEF_PRJID and DEF_BPID in ac-wizcore',
-    'color:gray'
-  );
+  const cur_prjid = DEV_PRJID;
+  const cur_bpid = DEV_BPID;
   const bp = GetProjectBlueprint(cur_prjid, cur_bpid);
   const { scriptText: script_text } = bp;
   const vmState = { cur_prjid, cur_bpid, script_text };
   SendState(vmState);
-  console.log(...PR(`loaded blueprint '${DEF_BPID}' from '${DEF_PRJID}'`));
+  console.log(...PR(`loaded blueprint '${DEV_BPID}' from '${DEV_PRJID}'`));
 });
 
 /// DERIVED STATE LOGIC ///////////////////////////////////////////////////////
@@ -511,7 +511,7 @@ function GetProjectList() {
 /** API: return { id, metadata, blueprints, instances, rounds, label }
  *  for the given project id (.gemprj files)
  */
-function GetProject(prjId = DEF_PRJID) {
+function GetProject(prjId = DEV_PRJID) {
   if (PROJECTS === undefined) throw Error('GetProject: no projects loaded');
   try {
     const project = PROJECTS.getProjectByProjId(prjId);
@@ -519,7 +519,7 @@ function GetProject(prjId = DEF_PRJID) {
   } catch (e) {
     const root = GS_ASSETS_PROJECT_ROOT;
     const assetUrl = 'http://localhost/assets';
-    const isDefault = prjId === DEF_PRJID;
+    const isDefault = prjId === DEV_PRJID;
     let out = `
 ASSET ERROR: Project "${prjId}" not found!
 
@@ -538,7 +538,7 @@ ASSET ERROR: Project "${prjId}" not found!
 /** API: return the blueprint object { id, label, scriptText } for the
  *  given projectId and blueprintId
  */
-function GetProjectBlueprint(prjId = DEF_PRJID, bpId = DEF_BPID) {
+function GetProjectBlueprint(prjId = DEV_PRJID, bpId = DEV_BPID) {
   const fn = 'GetProjectBlueprint:';
   const project = GetProject(prjId);
   if (project === undefined) throw Error(`no asset project with id ${prjId}`);
