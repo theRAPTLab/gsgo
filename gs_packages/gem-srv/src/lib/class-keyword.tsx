@@ -182,14 +182,28 @@ class Keyword implements IKeyword {
     switch (argType) {
       case 'objref': // value is string[] of parts
         vtok = this.shelper.objRef(token);
+        // PROTOTYPE: add gsType to the token
+        vtok.gsType = argType;
         break;
       case 'method': // value is an identifier string
         vtok = this.shelper.methodName(token);
+        // PROTOTYPE: add gsType to the token
+        vtok.gsType = argType;
+        break;
+      case 'number': // value is
+        console.log(`${fn} got a number`);
+        break;
+      case 'string': // value is
+        console.log(`${fn} got a string`);
+        break;
+      case 'boolean': // value is
+        console.log(`${fn} got a string`);
         break;
       //
       // TODO: handle other argTypes
       //
       default:
+        console.log('unhandled', argType);
         vtok = this.newSymbolError(
           'errOops',
           `Keyword.${fn} '${argType}' handler not implemented`

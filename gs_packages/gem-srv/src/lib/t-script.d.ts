@@ -207,7 +207,11 @@ export type TSValidType = `${
   | TSArg}`;
 export type TSymUnpackedArg = [name: string, type: TSValidType];
 export type TSymArg = `${string}:${TSValidType}` | TSEnum;
-export type TSymMethodSig = { args?: TSymArg[]; returns?: TSymArg };
+export type TSymMethodSig = {
+  name?: string;
+  args?: TSymArg[];
+  returns?: TSymArg;
+};
 export type TNameSet = Set<string>;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -245,6 +249,7 @@ export type TSymbolData = {
   // ok to change or add, as these are not defined in the reference dictionaries
   error?: TSymbolError; // debugging if error
   unitText?: string; // the scriptText word associated with symbol
+  gsType?: string; // the gemscript meaning of this token
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** TSymbolViewData is the "GUI-friendly" data structure derived from
@@ -255,10 +260,12 @@ export type TSymbolViewData = {
   features?: { items: string[]; info: string };
   props?: { items: string[]; info: string };
   methods?: { items: string[]; info: string };
+  // in the case of arg, items arrau begins with argname, followed by argtype
   arg?: { items: [name: string, type: string]; info: string };
   //
-  unitText?: string; // the scriptText word associated with symbol
   error?: { info: string };
+  unitText?: string; // the scriptText word associated with symbol
+  gsType?: string; // the gemscript meaning of this token
 };
 
 /** blueprint symbol data format */

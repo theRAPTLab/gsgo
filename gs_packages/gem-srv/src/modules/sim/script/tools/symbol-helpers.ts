@@ -376,7 +376,7 @@ class SymbolHelper {
       );
     }
     // all good!
-    this.cur_scope = { methodSig }; // advance scope pointer
+    this.cur_scope = { [methodName]: methodSig }; // advance scope pointer
     return new VSymToken({ methods }, methodName); // valid scope is parent of cur_scope
   }
 
@@ -395,12 +395,12 @@ class SymbolHelper {
         vtoks.push(new VSymError('errScope', `${fn} invalid methodArgs dict`));
       return vtoks;
     }
-
     // SCOPE ARGS 1: retrieve the method's argument symbol data
     const methodName = methodNames[0];
     const methodSignature: TSymMethodSig = this.cur_scope[methodName];
     // TODO: some keywords (e.g. 'when') may have multiple arrays
     const { args } = methodSignature;
+    methodSignature.name = methodName; // add optional methodName to TSymbolData
 
     // SCOPE ARGS 2: general validation tokens for each argument
     // this loop structure is weird because we have to handle overflow
@@ -415,7 +415,9 @@ class SymbolHelper {
       // SCOPE ARGS 3: validate current token against matching  argument definition
       const tok = tokens[tokenIndex];
       const arg = args[tokenIndex];
-      vtoks.push(this.argSymbol(arg, tok));
+      const vtok = this.argSymbol(arg, tok);
+      vtok.methodSig = methodSignature;
+      vtoks.push(vtok);
     }
     // check for underflow
     if (tokenIndex < args.length)
@@ -424,6 +426,7 @@ class SymbolHelper {
           new VSymError('errUnder', `${fn} method requires ${args.length} arg(s)`)
         );
       }
+
     return vtoks;
   }
   /** Return the symbols for an methodSig argType entry. Does NOT change scope
@@ -533,13 +536,18 @@ class SymbolHelper {
         arg
       });
     }
+    // hack in the gsType
+    symData.gsType = argType;
     return symData;
   }
 } // end of SymbolHelper class
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** convert symbol data into lists suitable for gui rendering */
-function SymbolToViewData(symbolData: TSymbolData): TSymbolViewData {
+/** convert symbol data into lists suitable for gui rendering. this is the
+ *  entire list of ALLOWED CHOICES; if you want to just know what unitText
+ *  is, then use UnpackSymbol
+ */
+function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
   let sv_data: any = {};
 
   // check to see what
@@ -582,9 +590,8 @@ function SymbolToViewData(symbolData: TSymbolData): TSymbolViewData {
   return sv_data;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** returns an array of [ unitText, [ symbolType, { items | arg } ]
- *  it purposefully omits text, which is just the text rep of items or arg
- *  the types are
+/** returns an array all symbolTypes associatd with unitText:
+ *  [ unitText, [ symbolType, items ], [ symbolType, items ], ... ]
  */
 function UnpackViewData(svm_data: TSymbolViewData): any[] {
   const list = [];
@@ -606,14 +613,22 @@ function UnpackViewData(svm_data: TSymbolViewData): any[] {
   });
   return list;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Given a symbolData structure for unitText, return the SPECIFIC matching type
+ *  instead of all allowed types
+ */
+function UnpackSymbolType(symbolData: TSymbolData): any[] {
+  return [];
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
   SymbolHelper, // symbol decoder
   VSymError, // create a TSymbolData error object
-  SymbolToViewData,
-  UnpackViewData
+  DecodeSymbolViewData,
+  UnpackViewData,
+  UnpackSymbolType
 };
 export function BindModule() {
   // HACK to force import of this module in Transpiler, otherwise webpack treeshaking
