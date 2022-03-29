@@ -92,7 +92,7 @@ module.exports = {
     'no-bitwise': 'off',
     '@typescript-eslint/camelcase': 'off',
     '@typescript-eslint/no-use-before-define': 1,
-    '@typescript-eslint/no-unused-vars': 'warn',
+    '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/quotes': 'warn',
     '@typescript-eslint/naming-convention': 'off',
     '@typescript-eslint/lines-between-class-members': 'off',
