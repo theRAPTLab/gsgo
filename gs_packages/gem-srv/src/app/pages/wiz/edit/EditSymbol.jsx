@@ -5,6 +5,14 @@
   SymbolSelector - A component that accepts selection of
   { sel_linenum, sel_linepos } and draws out everything in it
 
+  validation data contains all the symbol information for the current
+  vm_pageline, which has validation tokens for each corresponding scriptunit
+
+  prop agent.genergy setmin 0
+  script unit: { identify:prop } { objref:[agent,genergy] } { identifier:setmin } { value:0 }
+  valids unit: { error, unitText, gsType, ...keys of TSymbolData }, ...
+
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
@@ -33,9 +41,9 @@ export function EditSymbol(props) {
     // console.log(vdata);
     const vIndex = sel_linepos - 1;
     const { validationTokens } = sel_validation;
-    const symbolData = validationTokens[vIndex];
+    const symbolData = validationTokens[vIndex]; // indx into line
     // symbolData has the current symbol data to convert into viewdata
-    const viewData = WIZCORE.DecodeSymbolViewData(symbolData);
+    const viewData = WIZCORE.DecodeSymbolViewData(symbolData); // returns the list of symbolnames for a particular symbol
     /* TODO: it would be nice to make unitText indicate it's the current value */
     const { unitText, error, ...dicts } = viewData;
     // VALIDATION TOKENS are stored by key in the dicts
@@ -43,7 +51,7 @@ export function EditSymbol(props) {
     Object.keys(dicts).forEach((symbolType, i) => {
       const rowKey = `row${sel_linenum}:${i}`;
       const { info, items } = viewData[symbolType];
-      const inner = [];
+      const inner = []; // this is the list of choices
       // get all the choices for this symbol type
       items.forEach(choice => {
         const choiceKey = `${symbolType}:${choice}`;

@@ -52,9 +52,9 @@ export class ScriptTextPane extends React.Component {
 
   /** unsubscribe **/
   componentWillUnmount() {
-    console.log('WizScriptText: will unmount');
     WIZCORE.UnsubscribeState(this.handleWizUpdate);
     this.jar.destroy();
+    console.log('WizScriptText: unmounted');
   }
 
   /** INCOMING: handle WIZCORE event updates */

@@ -131,7 +131,6 @@ class StateMgr {
 
   /** Unsubscribe state */
   UnsubscribeState(subFunc) {
-    console.log('unsubscribing');
     if (!this.subs.delete(subFunc))
       console.warn(...PR('function not subscribed for', this.name));
   }

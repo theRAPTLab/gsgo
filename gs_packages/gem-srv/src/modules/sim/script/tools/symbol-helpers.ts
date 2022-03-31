@@ -412,7 +412,7 @@ class SymbolHelper {
         vtoks.push(new VSymError('errOver', `${fn} method ignores extra arg`));
         continue;
       }
-      // SCOPE ARGS 3: validate current token against matching  argument definition
+      // SCOPE ARGS 3: validate current token against matching argument definition
       const tok = tokens[tokenIndex];
       const arg = args[tokenIndex];
       const vtok = this.argSymbol(arg, tok);
@@ -457,7 +457,7 @@ class SymbolHelper {
 
     // a literal string from token.string
     if (argType === 'string' && TokenValue(tok, 'string')) {
-      symData = new VSymToken({ arg }, argName);
+      symData = new VSymToken({ arg }, tokVal);
     }
 
     // an enumeration list match token???

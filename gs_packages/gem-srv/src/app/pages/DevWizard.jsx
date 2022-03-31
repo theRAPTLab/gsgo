@@ -89,6 +89,10 @@ class DevWizard extends React.Component {
     WIZCORE.SubscribeState(this.handleWizUpdate);
   }
 
+  componentWillUnmount() {
+    WIZCORE.UnsubscribeState(this.handleWizUpdate);
+  }
+
   /** INCOMING: handle WIZCORE event updates */
   handleWizUpdate(vmStateEvent) {
     // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL

@@ -194,12 +194,15 @@ GVarNumber.Symbols = {
   ctors: { Number: GVarNumber.Symbols },
   methods: {
     value: { returns: 'value:number' },
-    setWrap: { args: ['nvalue:number'] },
-    setMin: { args: ['nvalue:number'] },
-    setMax: { args: ['nvalue:number'] },
-    setTo: { args: ['nvalue:number'] },
-    setToRnd: { args: ['min:number', 'max:number', 'asInteger:boolean'] },
-    add: { args: ['num:number'] }
+    setMin: { args: ['nvalue:number'], info: 'minimum value' },
+    setMax: { args: ['nvalue:number'], info: 'maximum value' },
+    setTo: { args: ['nvalue:number'], info: 'assign value' },
+    setToRnd: {
+      args: ['min:number', 'max:number', 'asInteger:boolean'],
+      info: 'randomize value'
+    },
+    add: { args: ['num:number'], info: 'add value to current' },
+    sub: { args: ['num:number'], info: 'sub value to current' }
   }
 };
 

@@ -168,6 +168,20 @@ _interceptState(state => {
   }
 });
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** hack test poc */
+export function ScriptChanged() {
+  const { script_tokens } = State(); // we changed this elsewhere
+  try {
+    const script_text = TRANSPILER.ScriptToText(script_tokens);
+    const [script_page, line_tokmap] = TRANSPILER.ScriptToLines(script_tokens);
+    SendState({ script_tokens, script_text, script_page, line_tokmap });
+  } catch (e) {
+    // ignore TextTpScript compiler errors during live typing
+    console.error(`wizcore_interceptState tokens: ${e.toString()}`);
+  }
+}
+
 /// EVENT DISPATCHERS ("REDUCERS") ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Called by the document handler set in DevWizard. There are no other

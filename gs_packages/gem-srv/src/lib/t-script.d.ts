@@ -211,6 +211,7 @@ export type TSymMethodSig = {
   name?: string;
   args?: TSymArg[];
   returns?: TSymArg;
+  info?: string;
 };
 export type TNameSet = Set<string>;
 
