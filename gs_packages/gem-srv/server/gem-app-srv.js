@@ -21,6 +21,7 @@ const Webpack = require('webpack');
 const WebpackDev = require('webpack-dev-middleware');
 const WebpackHot = require('webpack-hot-middleware');
 const UR = require('@gemstep/ursys/server');
+
 const {
   GS_ASSETS_PATH,
   GS_ASSETS_PROJECT_ROOT,
@@ -154,7 +155,7 @@ function StartAppServer(opt = {}) {
 
   // configure cookies middleware (appears in req.cookies)
   app.use(CookieP());
-  // configure headers to allow cross-domain requests of media elements
+  // configure headers to allow CORS cross-domain requests of media elements
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header(

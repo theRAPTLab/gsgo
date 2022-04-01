@@ -96,6 +96,7 @@ module.exports = {
     '@typescript-eslint/quotes': 'warn',
     '@typescript-eslint/naming-convention': 'off',
     '@typescript-eslint/lines-between-class-members': 'off',
+    '@typescript-eslint/quotes': 'off',
     'import/prefer-default-export': 'off',
     '@typescript-eslint/naming-convention': 'off',
     'object-shorthand': 'off',

@@ -58,8 +58,10 @@ function GEMSRV_Start(opt) {
     silent: true
   });
   TOUT('Starting Development Server...');
-  if (error) TOUT('using repo <detached head>\n');
-  if (stdout) TOUT(`using repo '${stdout.trim()}' branch\n`);
+  let branch;
+  if (error) branch = '<detached head>';
+  if (stdout) branch = `${stdout.trim()}`;
+  TOUT(`using repo branch: ${branch}`);
 
   const URNET_PORT = 2930; // hack to avoid confict with 2929 for admsrv fornow
 
@@ -87,7 +89,8 @@ function GEMSRV_Start(opt) {
     await UR.URNET_Start({
       port: URNET_PORT,
       serverName: 'GEM_SRV',
-      runtimePath: RUNTIME_PATH
+      runtimePath: RUNTIME_PATH,
+      branch
     });
   })();
 }

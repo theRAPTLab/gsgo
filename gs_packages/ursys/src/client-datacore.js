@@ -14,6 +14,7 @@ const DBG = require('./common/debug-props');
 let BROKER_UINFO = {};
 let CLIENT_UINFO = {};
 let URDB_UINFO = {};
+let BUILD_UINFO = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** saved from client-netinfo { host, port, uaddr, urnet_version } */
 function SaveBrokerInfo(info) {
@@ -35,6 +36,15 @@ function SaveDBInfo(urdb) {
   });
   // console.log('saving urdb', URDB_UINFO);
   return URDB_UINFO;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** build info is information about the current build (e.g. git branch) */
+function SaveBuildInfo(build) {
+  if (build === undefined) throw Error('SaveBuildInfo got undefined parameter');
+  Object.keys(build).forEach(prop => {
+    BUILD_UINFO[prop] = build[prop];
+  });
+  return BUILD_UINFO;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** saved from client-netinfo { ip }
@@ -78,11 +88,17 @@ function MyNetBroker() {
   return BROKER_UINFO.host;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function MyBuildBranch() {
+  return BUILD_UINFO.branch || 'unknown';
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ConnectionString() {
   const { host } = BROKER_UINFO;
   const port = window.location.port;
+  const branch = MyBuildBranch();
   let str = `${MyUADDR()} ⇆ ${host}`;
   if (port) str += `:${port}`;
+  if (branch) str += ` (branch:${branch})`;
   return str;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -219,12 +235,14 @@ module.exports = {
   SaveBrokerInfo,
   SaveClientInfo,
   SaveDBInfo,
+  SaveBuildInfo,
   MyUADDR,
   MyAppPath,
   MyAppServerHostname,
   MyAppServerPort,
   MyNetBrokerInfo,
   MyNetBroker,
+  MyBuildBranch,
   URDB_GraphQL,
   ConnectionString,
   // URNET
