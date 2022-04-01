@@ -529,7 +529,10 @@ class InstanceEditor extends React.Component {
                 <div className={classes.instanceEditorData}>{instance.bpid}</div>
               </div>
               {inputJSX}
-              <div>{scriptJSX}</div>
+              <div>
+                {scriptJSX}⛔️ ben need to replace jsx() dependence to show props
+                again ⛔️
+              </div>
               <br />
               {isAddingProperty && isEditable && propMenuJSX}
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
