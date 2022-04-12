@@ -44,9 +44,9 @@ const PR = UR.PrefixUtil('WIZCORE', 'TagCyan');
 const DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let PROJECTS; // current project class-asset-loader
-const DEV_ASSETDIR = 'gui-test' || GS_ASSETS_PROJECT_ROOT; // gs_assets is root
-const DEV_PRJID = 'test-ui';
-const DEV_BPID = 'TestAgent';
+const DEV_ASSETDIR = 'local' || GS_ASSETS_PROJECT_ROOT; // gs_assets is root
+const DEV_PRJID = 'AEP';
+const DEV_BPID = 'Fish';
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

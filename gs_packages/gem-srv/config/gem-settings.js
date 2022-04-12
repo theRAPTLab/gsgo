@@ -33,6 +33,13 @@ const RUNTIME_PATH = Path.join(__dirname, `../${RUNTIME_DIRNAME}`);
 
 const MQTT_URL = 'localhost';
 
+/// FIXME:
+/// Need to fix server path so we have a reliable default that does not
+/// depend on individual assets
+const DEV_ASSETDIR = 'local' || GSCONFIG.GS_ASSETS_PROJECT_ROOT; // gs_assets is root
+const DEV_PRJID = 'AEP';
+const DEV_BPID = 'Fish';
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const compositeSettings = {
