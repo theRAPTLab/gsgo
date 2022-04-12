@@ -21,14 +21,10 @@ const LOG = require('./client-status');
 // classes
 const PhaseMachine = require('./class-phase-machine');
 const StateGroupMgr = require('./class-state-group-mgr');
+const StateMgr = require('./class-state-mgr');
 //
-const {
-  IsBrowser,
-  IsNode,
-  IsElectron,
-  IsElectronMain,
-  IsElectronRenderer
-} = DTECT;
+const { IsBrowser, IsNode, IsElectron, IsElectronMain, IsElectronRenderer } =
+  DTECT;
 
 /// CONST /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -208,11 +204,11 @@ const UR = {
   WriteState: StateGroupMgr.WriteState,
   SubscribeState: StateGroupMgr.SubscribeState,
   UnsubscribeState: StateGroupMgr.UnsubscribeState,
-  // FORWARDED CLASSES
-  class: { PhaseMachine, StateGroupMgr },
   // FORWARDED CONSOLE DEBUG UTILITIES
   AddConsoleTool: DBGTEST.addConsoleTool, // arg: { [URkey]:f }
-  ConsoleCompareTexts: DBGTEST.consoleCompareTexts // args: text, ref
+  ConsoleCompareTexts: DBGTEST.consoleCompareTexts, // args: text, ref
+  // FORWARDED CLASSES
+  class: { PhaseMachine, StateGroupMgr, StateMgr }
 };
 if (typeof window === 'undefined')
   throw Error(`

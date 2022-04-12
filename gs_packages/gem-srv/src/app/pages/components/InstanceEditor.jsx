@@ -37,7 +37,7 @@ import * as ACInstances from 'modules/appcore/ac-instances';
 import * as TRANSPILER from 'script/transpiler-v2';
 import { UpdateScript } from 'modules/sim/script/tools/script-to-jsx';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 import InputField from './InputField';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
@@ -184,8 +184,11 @@ class InstanceEditor extends React.Component {
     // 1. Get the list or properties
     const scriptUnits = TRANSPILER.TextToScript(instance.initScript);
     const initProperties = scriptUnits.map(unit => {
-      if (unit[0] && (unit[0].token === 'prop' || unit[0].token === 'featProp')) {
-        return unit[1].token;
+      if (
+        unit[0] &&
+        (unit[0].identifier === 'prop' || unit[0].identifier === 'featProp')
+      ) {
+        return unit[1].identifier;
       }
       return undefined;
     });
@@ -526,7 +529,10 @@ class InstanceEditor extends React.Component {
                 <div className={classes.instanceEditorData}>{instance.bpid}</div>
               </div>
               {inputJSX}
-              <div>{scriptJSX}</div>
+              <div>
+                {scriptJSX}⛔️ ben need to replace jsx() dependence to show props
+                again ⛔️
+              </div>
               <br />
               {isAddingProperty && isEditable && propMenuJSX}
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>

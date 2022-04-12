@@ -1,14 +1,15 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "AddProp" command object
+  implementation of "addProp" keyword command object
+
+  addProp propertyName propertyType initialValue
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword from 'lib/class-keyword';
-import { TOpcode, TScriptUnit } from 'lib/t-script';
-import { addProp } from 'script/ops/_all';
+import { TOpcode, TScriptUnit, TSymbolData, TSymArg } from 'lib/t-script';
+import { addProp } from 'script/ops/agent-ops';
 import { RegisterKeyword, GetVarCtor } from 'modules/datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -17,47 +18,25 @@ export class AddProp extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('addProp');
-    this.args = ['propName string', 'propType string', 'initValue any'];
+    this.args = ['propName:prop', 'propType:gvar', 'initValue:{value}'];
   }
 
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, propName, propType, initValue] = unit;
-    const propCtor = GetVarCtor(propType);
+    const [, propName, propType, initValue] = unit;
+    const propCtor = GetVarCtor(propType as string);
     const progout = [];
-    progout.push(addProp(propName, propCtor, initValue));
+    progout.push(addProp(propName as string, propCtor, initValue));
     return progout;
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { propName, propType, initValue } = state;
-    return [this.keyword, propName, propType, initValue];
+  /** return symbol structure for this keyword */
+  symbolize(unit: TScriptUnit): TSymbolData {
+    const [, propName, propType] = unit;
+    const propCtor = GetVarCtor(propType as string);
+    return { props: { [propName as string]: propCtor.Symbols } };
   }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw, propName, propType, initValue] = unit;
-    const isEditable = children ? children.isEditable : false;
-    const isInstanceEditor = children ? children.isInstanceEditor : false;
-    if (!isInstanceEditor || isEditable) {
-      return super.jsx(
-        index,
-        unit,
-        <>
-          addProp {propName} = {initValue} :{propType}
-        </>
-      );
-    }
-    return super.jsxMin(
-      index,
-      unit,
-      <>
-        {propName}: {initValue}
-      </>
-    );
-  }
-} // end of DefProp
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

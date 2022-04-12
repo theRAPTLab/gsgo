@@ -24,7 +24,7 @@ import {
   TAssetURL,
   TAssetLoader,
   TResource
-} from '../../lib/t-assets.d';
+} from 'lib/t-assets.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -138,22 +138,22 @@ class AssetLoader extends TAssetLoader {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// All asset loaders use this common interface
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** return the asset type */
+  /** API: return the asset type */
   type(): TAssetType {
     return this._type;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** return true if asset name is in this loader */
+  /** API: return true if asset name is in this loader */
   hasAsset(name: TAssetName): boolean {
     return this._nameLookup.has(name);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** return true is asset id is in this loader */
+  /** API: return true is asset id is in this loader */
   hasAssetId(id: TAssetId): boolean {
     return this._assetDict.has(id);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** given an assetName, return numeric assetId. AssetIds are guaranteed to
+  /** API: given an assetName, return numeric assetId. AssetIds are guaranteed to
    *  be unique across all asset types, but name are unique only within the
    *  the assetType category
    */
@@ -163,21 +163,26 @@ class AssetLoader extends TAssetLoader {
       throw Error(this._err('lookupAssetId() called before assets were loaded'));
     return lookup;
   }
-
-  /** given an assetId, return the saved resource */
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API: given an assetId, return the saved resource */
   getAssetById(id: TAssetId): TResource {
     if (this._nameLookup.size === 0)
       throw Error(this._err('getAssetById() called before assets were loaded'));
     const rsrc = this._assetDict.get(id);
     return rsrc;
   }
-
-  /** given an assetName, return the saved resource */
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API: given an assetName, return the saved resource */
   getAsset(name: TAssetName): TResource {
     if (this._nameLookup.size === 0)
       throw Error(this._err('getAsset() called before assets were loaded'));
     const id = this.lookupAssetId(name);
     return this.getAssetById(id);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API: release all assets to reuse instance */
+  reset() {
+    this._unloadAll();
   }
 
   /// LOADER-SPECIFIC OVERRIDES ///////////////////////////////////////////////
@@ -207,15 +212,6 @@ class AssetLoader extends TAssetLoader {
   }
 } // end class
 
-/// STATIC METHODS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// INITIALIZATION ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default AssetLoader;
+export default AssetLoader; // class

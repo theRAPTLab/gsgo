@@ -1,0 +1,201 @@
+/*/ gemstep ui wizard css /*/
+/*/
+    gap is 10px
+    - 10 -130 -250 -360 - column
+    - 70
+    -130
+    -190
+    -250
+    -310
+/*/
+#gui-wizard {
+  --border-color: red;
+  --row0: -10px;
+  --row1: -70px;
+  --row2: -130px;
+  --row3: -190px;
+  --row4: -250px;
+  --row5: -310px;
+  --col0: -10px;
+  --col1: -130px;
+  --col2: -250px;
+  --col3: -370px;
+  --shima: 16px;
+  --shim2a: 30px;
+  --gap: 10px;
+}
+
+.gunit {
+  float: left;
+  background-image: url('../../app/static/gem-ui-shapes.svg');
+  background-repeat: no-repeat;
+  background-size: auto;
+  min-height: 50px;
+  min-width: 16px;
+  background-origin: border-box;
+  display: grid;
+  place-items: center;
+}
+.glabel {
+  user-select: none;
+}
+.gunit.gk0 {
+  background-position: var(--col0) var(--row1);
+  width: var(--shima);
+}
+.gunit.gk1 {
+  background-position: calc(var(--col1) + var(--shima) + var(--gap)) var(--row1);
+  width: var(--shima);
+}
+.gunit.gk {
+  background-position: calc(var(--col0) - var(--shima)) var(--row0);
+  width: 50px;
+}
+
+.gunit.ga0 {
+  margin-left: -10px;
+  background-position: var(--col2) var(--row3);
+  width: var(--shim2a);
+}
+.gunit.ga1 {
+  background-position: calc(var(--col3) + var(--shim2a) + var(--gap)) var(--row3);
+  width: var(--shim2a);
+}
+.gunit.ga {
+  background-position: calc(var(--col2) - var(--shim2a)) var(--row3);
+  width: 50px;
+}
+
+/** ProgramPrinter CSS **/
+.gwiz {
+  box-sizing: border-box;
+}
+.gwiz.gtoken {
+  display: inline-block;
+  padding: 4px 12px;
+  margin: 1px 1px;
+  user-select: none;
+}
+.gwiz.clickable {
+  background-color: rgba(221, 221, 221, 1);
+}
+
+.gwiz.gtoken.first {
+  color: gray;
+  user-select: none;
+  min-height: 1em;
+}
+.gwiz.gline {
+  display: block;
+  border-bottom: 1px solid white;
+}
+.gwiz.styleOpen {
+  border: 0px solid #707070;
+  background-color: rgba(221, 221, 221, 1);
+}
+.gwiz.styleKey {
+  font-weight: bold;
+}
+.gwiz.styleComment {
+  color: dimgrey;
+  background-color: white;
+  font-family: monospace;
+}
+.gwiz.stylePragma {
+  color: white;
+  background-color: teal;
+}
+.gwiz.styleDefine {
+  color: white;
+  background-color: darkslategrey;
+}
+.gwiz.styleCond {
+  background-color: hotpink;
+}
+
+.gwiz.valueType {
+  color: blue;
+}
+.gwiz.stringType {
+  color: maroon;
+}
+.gwiz.exprType {
+  color: darkgreen;
+}
+.gwiz.styleSolid {
+  background-color: black;
+}
+.gwiz.lineLead {
+  min-height: 1em;
+  display: inline-block;
+}
+.gwiz.newline {
+  display: block;
+}
+.gtoken.selected,
+.gtoken.chosen {
+  background-color: rgba(255, 166, 0, 1) !important; /* orange */
+}
+.gtoken:hover {
+  background-color: rgba(255, 166, 0, 0.5);
+}
+.gline.selected {
+  border-bottom: 1px solid rgba(255, 166, 0, 1) !important; /* orange */
+}
+
+/*
+ * Pico overrides
+ */
+:root {
+  --line-height: 1.5;
+  --font-weight: 400;
+  --font-size: 16px;
+  --typography-spacing-vertical: 1.5rem;
+  --transition: 0.2s ease-in-out;
+}
+
+#ScriptContextor details.sticky summary::after {
+  background-image: none;
+}
+
+@media (min-width: 576px) {
+  :root {
+    --font-size: 16px;
+  }
+}
+@media (min-width: 768px) {
+  :root {
+    --font-size: 16px;
+  }
+}
+@media (min-width: 992px) {
+  :root {
+    --font-size: 16px;
+  }
+}
+@media (min-width: 1200px) {
+  :root {
+    --font-size: 16px;
+  }
+}
+
+@media print {
+  #leftText {
+    display: none;
+    width: 0;
+  }
+  #gui-wizard {
+    grid-template-columns: 0% auto !important;
+  }
+  #gui-wizard header,
+  #gui-wizard footer {
+    display: none;
+  }
+}
+/*
+ * Pico overrides for CodeJar
+ */
+#app-container pre > code {
+  padding: 0;
+  display: inline;
+}

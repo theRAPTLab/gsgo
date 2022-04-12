@@ -5,9 +5,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import UR from '@gemstep/ursys/client';
-import Keyword, { EvalRuntimeUnitArgs } from 'lib/class-keyword';
+import Keyword, { K_EvalRuntimeUnitArgs } from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
@@ -31,7 +30,7 @@ export class dbgOut extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('dbgOut');
-    this.args = ['...args'];
+    this.args = ['*:{...}'];
   }
 
   /** create smc blueprint code objects */
@@ -41,31 +40,14 @@ export class dbgOut extends Keyword {
     progout.push((agent, state) => {
       if (COUNTER-- > 0) {
         console.log(
-          ...PR(...EvalRuntimeUnitArgs(unit.slice(1), { agent, ...state.ctx }))
+          ...PR(...K_EvalRuntimeUnitArgs(unit.slice(1), { agent, ...state.ctx }))
         );
       }
       if (COUNTER === 0) console.log('dbgOut limiter at', MAX_OUT, 'statements');
     });
     return progout;
   }
-
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { error } = state;
-    return [this.keyword, error];
-  }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw, ...args] = unit;
-    const isEditable = children ? children.isEditable : false;
-    const isInstanceEditor = children ? children.isInstanceEditor : false;
-    if (!isInstanceEditor || isEditable) {
-      return super.jsx(index, unit, <>{`${kw} ${args}`}</>);
-    }
-    return super.jsxMin(index, unit, <>{`${kw} ${args}`}</>);
-  }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

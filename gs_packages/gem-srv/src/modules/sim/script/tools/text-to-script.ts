@@ -8,21 +8,22 @@
 
 import UR from '@gemstep/ursys/client';
 import { TScriptUnit } from 'lib/t-script.d';
-import GScriptTokenizerDBG from 'script/tools/class-gscript-tokenizer-v2';
-import GScriptTokenizer from 'lib/class-gscript-tokenizer';
+import GScriptTokenizer from 'script/tools/class-gscript-tokenizer-v2';
 import { Blocks } from './test-data/td-tokenizer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TOKENIZE', 'TagDebug');
-const gstDBG = new GScriptTokenizerDBG();
-const gst = new GScriptTokenizer();
+const gstDBG = new GScriptTokenizer();
+const DBG = false;
 
 /// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a text, return the parsed ScriptUnit[] representation */
 function TextToScript(text: string = ''): TScriptUnit[] {
-  return gstDBG.tokenize(text);
+  // this will throw an error string of '{err} @row:col'
+  const script = gstDBG.tokenize(text.trim());
+  return script;
 }
 
 /// TESTS /////////////////////////////////////////////////////////////////////
@@ -48,17 +49,18 @@ function TestScriptifyText(tests: { [key: string]: any }) {
 
 /// CONSOLE TOOL INSTALL //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.AddConsoleTool({
-  'scriptify_test': () => {
-    console.clear();
-    TestScriptifyText(Blocks);
-  },
-  'tokenize': (text, spc = 0) => {
-    const script = gstDBG.tokenize(text);
-    console.log(JSON.stringify(script, null, spc));
-    return script;
-  }
-});
+if (DBG)
+  UR.AddConsoleTool({
+    'run_scriptify_tests': () => {
+      console.clear();
+      TestScriptifyText(Blocks);
+    },
+    'run_tokenize_tests': (text, spc = 0) => {
+      const script = gstDBG.tokenize(text);
+      console.log(JSON.stringify(script, null, spc));
+      return script;
+    }
+  });
 // UR.HookPhase('UR/APP_START', () => TestTokenizeScripts(Blocks));
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

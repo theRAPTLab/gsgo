@@ -17,8 +17,8 @@ import {
   Initialize,
   HandleStateChange,
   UpdateDimensions
-} from './elements/mod-charcontrol-ui';
-import { useStylesHOC } from './elements/page-xui-styles';
+} from './helpers/mod-charcontrol-ui';
+import { useStylesHOC } from './helpers/page-xui-styles';
 import './scrollbar.css';
 import '../../lib/css/charcontrol.css';
 import PanelSimViewer from './components/PanelSimViewer';

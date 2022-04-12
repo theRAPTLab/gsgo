@@ -9,7 +9,7 @@
 
 import RNG from 'modules/sim/sequencer';
 import SM_Object from 'lib/class-sm-object';
-import { IScopeable } from 'lib/t-script';
+import { IScopeable, TSymbolData } from 'lib/t-script';
 import { RegisterVarCTor } from 'modules/datacore';
 import { GVarBoolean } from './gvar-boolean';
 
@@ -183,14 +183,28 @@ export class GVarNumber extends SM_Object implements IScopeable {
   clear() {
     this.value = null;
   }
-  serialize() {
-    const values = super.serialize();
-    values.push('nvalue', this.nvalue);
-    values.push('min', this.min);
-    values.push('max', this.max);
-    return values;
+  symbolize(): TSymbolData {
+    return GVarNumber.Symbols;
   }
 }
+
+/// SYMBOLS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+GVarNumber.Symbols = {
+  ctors: { Number: GVarNumber.Symbols },
+  methods: {
+    value: { returns: 'value:number' },
+    setMin: { args: ['nvalue:number'], info: 'minimum value' },
+    setMax: { args: ['nvalue:number'], info: 'maximum value' },
+    setTo: { args: ['nvalue:number'], info: 'assign value' },
+    setToRnd: {
+      args: ['min:number', 'max:number', 'asInteger:boolean'],
+      info: 'randomize value'
+    },
+    add: { args: ['num:number'], info: 'add value to current' },
+    sub: { args: ['num:number'], info: 'sub value to current' }
+  }
+};
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

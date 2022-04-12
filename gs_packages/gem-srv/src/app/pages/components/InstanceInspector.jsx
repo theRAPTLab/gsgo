@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 import ArrowIcon from '@material-ui/icons/ArrowDropDown';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 
 const SIZE_MIN = 'min'; // name only
 const SIZE_MAX = 'max'; // all

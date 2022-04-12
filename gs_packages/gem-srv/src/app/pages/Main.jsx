@@ -15,8 +15,8 @@ import { withStyles } from '@material-ui/core/styles';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import UR from '@gemstep/ursys/client';
-import SIMCTRL from './elements/mod-sim-control';
-import * as PROJSERVER from './elements/project-server';
+import SIMCTRL from './helpers/mod-sim-control';
+import * as PROJSERVER from './helpers/project-server';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import MissionMapEditor from './MissionMapEditor';
@@ -29,14 +29,14 @@ import DialogConfirm from './components/DialogConfirm';
 
 import PanelTracker from './components/PanelTracker';
 import FormTransform from './components/FormTransform';
-import '../../lib/css/tracker.css';
+import 'lib/css/tracker.css';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
 
 /// STYLES ////////////////////////////////////////////////////////////////////
 // this is where classes.* for css are defined
-import { useStylesHOC } from './elements/page-xui-styles';
+import { useStylesHOC } from './helpers/page-xui-styles';
 import './scrollbar.css';
 import PanelProjectEditor from './components/PanelProjectEditor';
 
@@ -146,10 +146,6 @@ class MissionControl extends React.Component {
     // and prep project-server to load it.
     // project-server will load on UR/APP_START
     PROJSERVER.ProjectDataPreInit(this, projId);
-  }
-
-  componentDidCatch(e) {
-    console.log(e);
   }
 
   componentWillUnmount() {

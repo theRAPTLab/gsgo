@@ -7,7 +7,7 @@
 
 import UR from '@gemstep/ursys/client';
 import * as SIM from 'modules/sim/api-sim';
-import * as TRANSPILER from 'script/transpiler';
+import * as TRANSPILER from 'script/transpiler-v2';
 import {
   DefineInstance,
   GetAllInstances,
@@ -56,13 +56,13 @@ function TestKeywords() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function MakeInstances() {
-  let bundle = TRANSPILER.CompileBlueprint(TRANSPILER.ScriptifyText(FishAgent));
+  let bundle = TRANSPILER.CompileBlueprint(TRANSPILER.TextToScript(FishAgent));
   TRANSPILER.RegisterBlueprint(bundle);
-  bundle = TRANSPILER.CompileBlueprint(TRANSPILER.ScriptifyText(PadAgent));
+  bundle = TRANSPILER.CompileBlueprint(TRANSPILER.TextToScript(PadAgent));
   TRANSPILER.RegisterBlueprint(bundle);
-  bundle = TRANSPILER.CompileBlueprint(TRANSPILER.ScriptifyText(BeeAgent));
+  bundle = TRANSPILER.CompileBlueprint(TRANSPILER.TextToScript(BeeAgent));
   TRANSPILER.RegisterBlueprint(bundle);
-  bundle = TRANSPILER.CompileBlueprint(TRANSPILER.ScriptifyText(WorldAgent));
+  bundle = TRANSPILER.CompileBlueprint(TRANSPILER.TextToScript(WorldAgent));
   TRANSPILER.RegisterBlueprint(bundle);
   for (let i = 0; i < 1; i++) {
     // DefineInstance({
@@ -103,7 +103,7 @@ when Fish touches Algae [[
   prop Algae.foodEnergy setTo 0
   dbgOut 'fish'
 ]]
-`;
+`.trim();
 
 const PadAgent = `
 # BLUEPRINT Pad
@@ -121,7 +121,7 @@ when Fish touches Algae [[
   prop agent.foodEnergy sub 10
   dbgOut 'fish' Fish.id
 ]]
-`;
+`.trim();
 
 const BeeAgent = `
 # BLUEPRINT Bee
@@ -141,7 +141,7 @@ dbgOut agent.Costume.costumeName
 featPropPop agent.Costume.costumeName
 dbgOut agent.Costume.costumeName
 dbgStack
-`;
+`.trim();
 
 const WorldAgent = `
 # BLUEPRINT World
@@ -150,7 +150,7 @@ useFeature Costume
 addProp ticker Number 0
 # PROGRAM UPDATE
 prop ticker add 1
-`;
+`.trim();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// TEST CODE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

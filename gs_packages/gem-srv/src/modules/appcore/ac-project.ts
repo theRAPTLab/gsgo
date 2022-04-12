@@ -3,6 +3,43 @@
 
   Manage project data
 
+  @BEN SRI CODE REVIEW
+
+  * A project model description would be nice: "representation of current
+    loaded project by id to { blueprints, rounds, instances, metadata }"
+    This module manages the CURRENT LOADED PROJECT, apparently, though
+    this isn't said anywhere.
+
+  * Nothing is commented in STATE.initializeState(). Why is projId
+    and project.id both including if they are the same thing?
+
+  * GetProject() load the bare project state object { id, label }
+    and then writes metadata, rounds, blueprints, instances into it.
+    This modifies the underlying data and IT DOES NOT MATCH the
+    STATE.initializeState() declaration, which is supposed to provide
+    the single source of truth for state groups.
+
+  * updateAndPublish() does something similar, accepting a project
+    parameter object that does not match the STATE definition. Also
+    could it be named as the mirror of GetProjec(), if that is the intent?
+
+  * The projId state is defined multiple times in different state groups,
+    which is an error. StateGroupManager was supposed to detect this and
+    print a warning, but the state checker was not checking for a hard
+    undefined so setting the initial values to 0 would bypass it.
+
+  * This module might be a lot simpler if you let dc-project handle the data
+    side of things. You've made dc-project fundamentally a loader/writer
+    which is only one of the parts of a datacore module.
+
+    URSYS MESSAGE HANDLERS
+      DC_PROJECT_UPDATE -> HandleProjectUpdate -> updateAndPublish
+
+    EXPORTS
+      GetProject                return current project
+      updateAndPublish          update current project and distribute change
+      TriggerProjectStateUpdate force-notify all subscribers
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
@@ -48,7 +85,9 @@ const { addEffectHook, deleteEffectHook } = STATE;
 
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function updateAndPublish(project) {
+/** API:
+ */
+function updateAndPublish(project) {
   const projId = _getKey('projId');
   // Init AppCore (AC) modules
   ACMetadata.SetMetadata(projId, project.metadata);
@@ -123,9 +162,9 @@ addEffectHook(hook_Effect);
 
 /// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// Returns in-state project data
-export function GetProject(projId) {
+/** API: Returns in-state project data
+ */
+function GetProject(projId) {
   // Get base data
   let project = _getKey('project');
   if (project === undefined || project.id === undefined) {
@@ -143,17 +182,17 @@ export function GetProject(projId) {
 
   return project;
 }
-
-/// Updates the project state subscribers after a project reload / sim reset
-/// Called by project-server.ReloadProject()
-export async function TriggerProjectStateUpdate(projId) {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Updates the project state subscribers after a project reload / sim reset
+ *  Called by project-server.ReloadProject()
+ */
+async function TriggerProjectStateUpdate(projId) {
   const project = _getKey('project');
   updateAndPublish(project);
 }
 
 /// URSYS HANDLERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 function HandleProjectUpdate(data: { projId: string; project: any }) {
   const { projId, project } = data;
   updateKey({ projId });
@@ -162,5 +201,12 @@ function HandleProjectUpdate(data: { projId: string; project: any }) {
 
 /// URSYS API /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 UR.HandleMessage('*:DC_PROJECT_UPDATE', HandleProjectUpdate);
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export {
+  GetProject, // return current project{}
+  updateAndPublish, // updates project{} and updates subscribers
+  TriggerProjectStateUpdate // force-notify all subscribers
+};

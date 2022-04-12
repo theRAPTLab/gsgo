@@ -12,6 +12,7 @@ const { addConsoleTool } = require('./util/client-debug');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
 const PR = PROMPTS.makeStyleFormatter('LOGGER');
 const MISSING = [];
 
@@ -24,12 +25,13 @@ function MissingAsset(str) {
 
 /// PRINT ERRORS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-addConsoleTool({
-  'missing_assets': () => {
-    console.log('MISSING ASSET LOG');
-    MISSING.forEach((line, ii) => console.log(`${ii}\t${line}`));
-  }
-});
+if (DBG)
+  addConsoleTool({
+    'dump_missing_assets': () => {
+      console.log('MISSING ASSET LOG');
+      MISSING.forEach((line, ii) => console.log(`${ii}\t${line}`));
+    }
+  });
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

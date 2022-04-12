@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { ScriptifyText, CompileBlueprint } from 'script/transpiler';
+import { TextToScript, CompileBlueprint } from 'script/transpiler-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,7 +22,7 @@ function TestCompiler(index?: number) {
   TT.forEach((test, idx) => {
     if (!singleTest || index === idx) {
       const [desc, text] = test;
-      const script = ScriptifyText(text);
+      const script = TextToScript(text);
       const bundle = CompileBlueprint(script);
       const lead = `${idx}`.padStart(2, '0');
       if (singleTest) console.group('test', lead, '-', desc);

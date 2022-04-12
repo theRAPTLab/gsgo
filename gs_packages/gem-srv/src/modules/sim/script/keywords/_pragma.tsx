@@ -1,16 +1,15 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "_pragma" keyword object
+  implementation of keyword "_pragma" keyword object, which is represented
+  by a leading # in scriptText
 
-  NOTE: This is a SYSTEM KEYWORD used for "# DIRECTIVE" syntax, and not
-  intended for direct use. It implements a number of compiler directives,
-  which are defined in the PRAGMA dictionary below.
+  It implements a number of compiler directives, which are defined in the
+  PRAGMA dictionary below.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword from 'lib/class-keyword';
-import { IAgent, IState, TArguments, TOpcode, TScriptUnit } from 'lib/t-script';
+import { TArguments, TOpcode } from 'lib/t-script';
 import { SetBundleOut } from 'modules/datacore/dc-script-bundle';
 import { RegisterKeyword } from 'modules/datacore/dc-script-engine';
 
@@ -39,7 +38,7 @@ export class _pragma extends Keyword {
 
   constructor() {
     super('_pragma');
-    this.args = ['pragmaName:string', '...args'];
+    this.args = ['pragmaName:pragma', '*:{...}'];
   }
 
   /** create smc blueprint code objects */
@@ -58,26 +57,7 @@ export class _pragma extends Keyword {
     // if nothing returns, reset the COMPILER_STATE
     return [(agent, state) => state.reset()];
   }
-
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { pragmaName, value } = state;
-    return [this.keyword, pragmaName, value];
-  }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const pragmaName = unit[1];
-    const value = unit[2];
-    return super.jsx(
-      index,
-      unit,
-      <>
-        # {pragmaName} {unit.slice(2).join(' ')}
-      </>
-    );
-  }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -21,7 +21,7 @@ import PanelBlueprints from './components/PanelBlueprints';
 import PanelMapInstances from './components/PanelMapInstances';
 
 // this is where classes.* for css are defined
-import { useStylesHOC } from './elements/page-xui-styles';
+import { useStylesHOC } from './helpers/page-xui-styles';
 import './scrollbar.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -39,10 +39,6 @@ class MapEditor extends React.Component {
   }
 
   componentDidMount() {}
-
-  componentDidCatch(e) {
-    console.log(e);
-  }
 
   componentWillUnmount() {}
 

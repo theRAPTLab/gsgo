@@ -107,7 +107,8 @@ async function SystemNetBoot() {
   await executePhase('PHASE_INIT');
   // CONNECT TO URNET
   const netInfo = await NETINFO.FetchNetInfo();
-  console.info(...NPR('URNET got connect info:', netInfo));
+  if (DBG)
+    console.info(...NPR('URNET got connect info:', JSON.stringify(netInfo)));
   await executePhase('PHASE_CONNECT'); // NET_CONNECT, NET_REGISTER, NET_READY
   await executePhase('PHASE_LOAD'); // LOAD_DB, LOAD_CONFIG, LOAD_ASSETS
   //

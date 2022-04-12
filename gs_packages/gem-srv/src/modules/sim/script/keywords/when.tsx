@@ -2,18 +2,20 @@
 
   implementation of keyword "when" command object
 
+  Discuss with @BEN: the way that arguments are added to tests means that
+  we have to be more careful about determining the form of the when clause,
+
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword from 'lib/class-keyword';
-import { TOpcode, TScriptUnit } from 'lib/t-script';
+import { TOpcode, TScriptUnit, TSymbolData } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore/dc-script-engine';
 import {
   RegisterSingleInteraction,
   RegisterPairInteraction,
   GetInteractionResults
 } from 'modules/datacore/dc-interactions';
-import { ScriptToJSX } from 'modules/sim/script/tools/script-to-jsx';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -23,12 +25,13 @@ export class when extends Keyword {
   constructor() {
     super('when');
     this.args = [
-      ['Agent:string', 'testName:string', 'consequent:TSMCProgram'],
+      ['Agent:blueprint', 'testName:test', 'testArgs:{...}', 'consequent:block'],
       [
-        'AgentA:string',
-        'AgentB:string',
-        'testName:string',
-        'consequent:TSMCProgram'
+        'AgentA:blueprint',
+        'AgentB:blueprint',
+        'testName:test',
+        'testArgs:{...}',
+        'consequent:block'
       ]
     ];
   }
@@ -47,7 +50,7 @@ export class when extends Keyword {
       prog.push((agent, state) => {
         const passed = GetInteractionResults(key);
         passed.forEach(subject => {
-          const ctx = { [A]: subject };
+          const ctx = { [A as string]: subject };
           agent.exec(consq, ctx);
         });
       });
@@ -71,7 +74,7 @@ export class when extends Keyword {
             return;
           }
 
-          const ctx = { [A]: aa, [B]: bb };
+          const ctx = { [A as string]: aa, [B as string]: bb };
           agent.exec(consq, ctx);
         }); // foreach
       });
@@ -79,75 +82,25 @@ export class when extends Keyword {
     return prog;
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { min, max, floor } = state;
-    return [this.keyword, min, max, floor];
-  }
+  symbolize(unit: TScriptUnit, line?: number): TSymbolData {
+    if (line === undefined) throw Error('when.symbolize() requires arg2 line');
 
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, options: any, children?: any[]): any {
-    let out;
-    let cc = '';
-    if (unit.length < 4 || unit.length > 5) {
-      const [kw] = unit;
-      out = `${kw} invalid number of arguments`;
-    } else if (unit.length === 4) {
-      const [kw, A, testName, consq] = unit;
-      if (consq && Array.isArray(consq)) {
-        const blockIndex = 3; // the position in the unit array to replace <when> <agent> <testName> <conseq>
-        // already nested?
-        if (options.parentLineIndices !== undefined) {
-          // nested parentIndices!
-          options.parentLineIndices = [
-            ...options.parentLineIndices,
-            { index, blockIndex }
-          ];
-        } else {
-          options.parentLineIndices = [{ index, blockIndex }]; // for nested lines
-        }
-        cc = ScriptToJSX(consq, options);
-      }
-      out = `${kw} ${A} ${testName}`;
-    } else if (unit.length === 5) {
-      const [kw, A, testName, B, consq] = unit;
-      if (consq && Array.isArray(consq)) {
-        const blockIndex = 4; // the position in the unit array to replace <when> <agent> <testName> <conseq>
-        // already nested?
-        if (options.parentLineIndices !== undefined) {
-          // nested parentIndices!
-          options.parentLineIndices = [
-            ...options.parentLineIndices,
-            { index, blockIndex }
-          ];
-        } else {
-          options.parentLineIndices = [{ index, blockIndex }]; // for nested lines
-        }
-        cc = ScriptToJSX(consq, options);
-      }
-      out = `${kw} ${A} ${testName} ${B}`;
+    // when A test [block]
+    if (unit.length === 4) {
+      const [, a] = unit;
+      return { context: { [line]: [a as string] } };
     }
-    const isEditable = options ? options.isEditable : false;
-    const isInstanceEditor = options ? options.isInstanceEditor : false;
-
-    if (!isInstanceEditor || isEditable) {
-      return super.jsx(
-        index,
-        unit,
-        <>
-          {out} {cc}
-        </>
-      );
+    // when A test B ..[block]
+    if (unit.length === 5) {
+      const [, a, , b, ...args] = unit;
+      args.pop(); // last arg is consequent
+      return { context: { [line]: [a as string, b as string] } };
     }
-    return super.jsxMin(
-      index,
-      unit,
-      <>
-        {out} (+{cc.length} lines)
-      </>
-    );
+    // failed match (note that the length test sucks for detecting
+    // case where there are argument parameters
+    return {};
   }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

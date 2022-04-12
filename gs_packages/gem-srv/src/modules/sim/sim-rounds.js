@@ -82,9 +82,9 @@ export function StageInit() {
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RunScript(scriptUnits) {
-  if (scriptUnits) {
-    const program = TRANSPILER.CompileText(scriptUnits);
+function RunScript(scriptText) {
+  if (scriptText) {
+    const program = TRANSPILER.CompileText(scriptText);
     const GLOBAL_AGENT = GetGlobalAgent();
     GLOBAL_AGENT.exec(program, { agent: GLOBAL_AGENT });
 

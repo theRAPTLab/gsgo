@@ -26,7 +26,6 @@ let GLOBAL_INTERACTIONS = [];
 
 /// REGISTER NAMED METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// the old test program style (deprecated) is in tests/test-conditions.ts
 RegisterFunction('dies', a => {
   if (a.prop.foodLevel.value < 1) {
     console.log('dead!');

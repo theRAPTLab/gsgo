@@ -21,4 +21,5 @@ export abstract class TAssetLoader {
   type(): TAssetType;
   queueAssetList(assetList: TAssetDef[]): void;
   promiseLoadAssets(): Promise<TAssetDef[]>;
+  reset(): void;
 }

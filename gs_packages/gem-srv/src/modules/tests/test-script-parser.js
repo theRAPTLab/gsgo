@@ -4,8 +4,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import ScriptTokenizer from '../../lib/class-gscript-tokenizer-dbg';
-// import * as TRANSPILER from '../sim/script/transpiler';
+import ScriptTokenizer from 'script/tools/class-gscript-tokenizer-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -66,7 +65,30 @@ const TESTS = {
     K [[ NAME ]] [[
       A
     ]]`,
-    expect: [[{ 'token': 'K' }, { 'program': 'NAME' }, { 'block': ['A'] }]]
+    expect: [
+      [
+        {
+          'line': ''
+        }
+      ],
+      [
+        {
+          'identifier': 'K'
+        },
+        {
+          'program': 'NAME'
+        },
+        {
+          'block': [
+            [
+              {
+                'identifier': 'A'
+              }
+            ]
+          ]
+        }
+      ]
+    ]
   },
   'multiLine': {
     text: `
@@ -75,8 +97,39 @@ const TESTS = {
       D
     ]]`,
     expect: [
-      [{ 'token': 'K' }, { 'token': 'A' }, { 'token': 'B' }, { 'token': 'C' }],
-      [{ 'token': 'if' }, { 'block': ['D'] }]
+      [
+        {
+          'line': ''
+        }
+      ],
+      [
+        {
+          'identifier': 'K'
+        },
+        {
+          'identifier': 'A'
+        },
+        {
+          'identifier': 'B'
+        },
+        {
+          'identifier': 'C'
+        }
+      ],
+      [
+        {
+          'identifier': 'if'
+        },
+        {
+          'block': [
+            [
+              {
+                'identifier': 'D'
+              }
+            ]
+          ]
+        }
+      ]
     ]
   },
   'block': {
@@ -85,14 +138,74 @@ const TESTS = {
       K A B C
       K D E F
     ]]`,
-    expect: [[{ block: ['K A B C', 'K D E F'] }]]
+    expect: [
+      [
+        {
+          'line': ''
+        }
+      ],
+      [
+        {
+          'block': [
+            [
+              {
+                'identifier': 'K'
+              },
+              {
+                'identifier': 'A'
+              },
+              {
+                'identifier': 'B'
+              },
+              {
+                'identifier': 'C'
+              }
+            ],
+            [
+              {
+                'identifier': 'K'
+              },
+              {
+                'identifier': 'D'
+              },
+              {
+                'identifier': 'E'
+              },
+              {
+                'identifier': 'F'
+              }
+            ]
+          ]
+        }
+      ]
+    ]
   },
   'if-then': {
     text: `
     if [[
       X
     ]]`,
-    expect: [[{ token: 'if' }, { block: ['X'] }]]
+    expect: [
+      [
+        {
+          'line': ''
+        }
+      ],
+      [
+        {
+          'identifier': 'if'
+        },
+        {
+          'block': [
+            [
+              {
+                'identifier': 'X'
+              }
+            ]
+          ]
+        }
+      ]
+    ]
   },
   // test:
   'if-then-else': {
@@ -102,7 +215,36 @@ const TESTS = {
     ]] [[
       Z
     ]]`,
-    expect: [[{ token: 'if' }, { block: ['Y'] }, { block: ['Z'] }]]
+    expect: [
+      [
+        {
+          'line': ''
+        }
+      ],
+      [
+        {
+          'identifier': 'if'
+        },
+        {
+          'block': [
+            [
+              {
+                'identifier': 'Y'
+              }
+            ]
+          ]
+        },
+        {
+          'block': [
+            [
+              {
+                'identifier': 'Z'
+              }
+            ]
+          ]
+        }
+      ]
+    ]
   },
   // test:
   'when[[if-then]]': {
@@ -112,7 +254,36 @@ const TESTS = {
         A
       ]]
     ]]`,
-    expect: [[{ token: 'when' }, { block: ['if [[', 'A', ']]'] }]]
+    expect: [
+      [
+        {
+          'line': ''
+        }
+      ],
+      [
+        {
+          'identifier': 'when'
+        },
+        {
+          'block': [
+            [
+              {
+                'identifier': 'if'
+              },
+              {
+                'block': [
+                  [
+                    {
+                      'identifier': 'A'
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    ]
   },
   // test:
   'when[[if-then-else]]': {
@@ -124,7 +295,45 @@ const TESTS = {
         C
       ]]
     ]]`,
-    expect: [[{ token: 'when' }, { block: ['if [[', 'B', ']] [[', 'C', ']]'] }]]
+    expect: [
+      [
+        {
+          'line': ''
+        }
+      ],
+      [
+        {
+          'identifier': 'when'
+        },
+        {
+          'block': [
+            [
+              {
+                'identifier': 'if'
+              },
+              {
+                'block': [
+                  [
+                    {
+                      'identifier': 'B'
+                    }
+                  ]
+                ]
+              },
+              {
+                'block': [
+                  [
+                    {
+                      'identifier': 'C'
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    ]
   },
   'bee-when-ifexpr': {
     text: `
@@ -137,17 +346,57 @@ const TESTS = {
     ]]`,
     expect: [
       [
-        { 'token': 'when' },
-        { 'token': 'Bee' },
-        { 'token': 'touches' },
-        { 'token': 'Bee' },
+        {
+          'line': ''
+        }
+      ],
+      [
+        {
+          'identifier': 'when'
+        },
+        {
+          'identifier': 'Bee'
+        },
+        {
+          'identifier': 'touches'
+        },
+        {
+          'identifier': 'Bee'
+        },
         {
           'block': [
-            'ifExpr {{ true }} [[',
-            "dbgOut 'true'",
-            ']] [[',
-            "dbgOut 'false'",
-            ']]'
+            [
+              {
+                'identifier': 'ifExpr'
+              },
+              {
+                'expr': 'true'
+              },
+              {
+                'block': [
+                  [
+                    {
+                      'identifier': 'dbgOut'
+                    },
+                    {
+                      'string': 'true'
+                    }
+                  ]
+                ]
+              },
+              {
+                'block': [
+                  [
+                    {
+                      'identifier': 'dbgOut'
+                    },
+                    {
+                      'string': 'false'
+                    }
+                  ]
+                ]
+              }
+            ]
           ]
         }
       ]

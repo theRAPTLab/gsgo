@@ -7,7 +7,7 @@ import * as ASSETS from 'modules/asset_core';
 import UR from '@gemstep/ursys/client';
 
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 import { GS_ASSETS_PROJECT_ROOT } from '../../../../config/gem-settings';
 
 import PanelChrome from './PanelChrome';

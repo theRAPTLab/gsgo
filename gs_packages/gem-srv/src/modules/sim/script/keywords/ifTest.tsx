@@ -5,9 +5,9 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import Keyword from 'lib/class-keyword';
-import { TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword, GetTest, UtilFirstValue } from 'modules/datacore';
+import Keyword from '../../../../lib/class-keyword';
+import { TOpcode, TScriptUnit } from '../../../../lib/t-script';
+import { RegisterKeyword, GetTest, UtilFirstValue } from '../../../datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,7 +26,7 @@ export class ifTest extends Keyword {
     const [kw, testName, consq, alter] = unit;
     const code = [];
     code.push((agent, state) => {
-      const ast = GetTest(testName);
+      const ast = GetTest(testName as string);
       if (!ast) throw Error(`ifTest: '${testName}' doesn't exist`);
       const result = UtilFirstValue(agent.exec(ast, state.ctx));
       if (result && consq) agent.exec(consq);
@@ -35,26 +35,12 @@ export class ifTest extends Keyword {
     return code;
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { testName, consequent, alternate } = state;
-    return [this.keyword, testName, consequent, alternate];
-  }
-
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any): any {
-    const [kw, testName, consequent, alternate] = unit;
-    const cc = consequent ? 'TRUE:[consequent]' : '';
-    const aa = alternate ? 'FALSE:[alternate]' : '';
-    return super.jsx(
-      index,
-      unit,
-      <>
-        ifTest {testName} {cc} {aa}
-      </>
-    );
+    const [keyword, testName, consequent, alternate] = unit;
+    return <>{keyword}</>;
   }
-} // end of DefProp
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

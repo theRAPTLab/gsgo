@@ -30,7 +30,7 @@ import {
 } from 'modules/sim/script/tools/script-to-jsx';
 
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 
 const DBG = true;
 

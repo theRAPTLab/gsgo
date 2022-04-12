@@ -9,7 +9,7 @@ import * as PIXI from 'pixi.js';
 import UR from '@gemstep/ursys/client';
 import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
-import { IAgent } from 'lib/t-script';
+import { IAgent, TSymbolData } from 'lib/t-script';
 import { GetAgentById } from 'modules/datacore/dc-agents';
 import { Register } from 'modules/datacore/dc-features';
 import { GetLoader } from 'modules/asset_core/asset-mgr';
@@ -232,6 +232,54 @@ class CostumePack extends GFeature {
     agent.prop.Costume._animationFrame = undefined;
     agent.prop.Costume._animationStartFrame = undefined;
     agent.prop.Costume._animationFrameRate = undefined;
+  }
+
+  symbolize(): TSymbolData {
+    return {
+      props: {
+        counter: GVarNumber.Symbols,
+        costumeName: GVarString.Symbols,
+        currentFrame: GVarNumber.Symbols,
+        flipX: GVarBoolean.Symbols,
+        flipY: GVarBoolean.Symbols,
+        colorHue: GVarNumber.Symbols,
+        colorSaturation: GVarNumber.Symbols,
+        colorValue: GVarNumber.Symbols,
+        colorScaleIndex: GVarNumber.Symbols,
+        colorScaleHue: GVarNumber.Symbols,
+        colorScaleSaturation: GVarNumber.Symbols,
+        colorScaleValue: GVarNumber.Symbols,
+        colorScaleType: GVarString.Symbols,
+        colorScaleSteps: GVarNumber.Symbols
+      },
+      methods: {
+        setCostume: { args: ['costumeName:string', 'poseName:string'] },
+        setPose: { args: ['poseName:string'] },
+        setAnimatedCostume: { args: ['costumeName:string', 'frameRate:number'] },
+        setScale: { args: ['scale:number'] },
+        setGlow: { args: ['seconds:number'] },
+        setColorize: { args: ['red:number', 'green:number', 'blue:number'] },
+        setColorizeHSV: { args: ['hue:number', 'sat:number', 'val:number'] },
+        randomizeColor: {
+          args: ['dRed:number', 'dGreen:number', 'dBlue:number']
+        },
+        randomizeColorHSV: {
+          args: ['dHue:number', 'dSat:number', 'dVal:number']
+        },
+        colorHSVWithinRange: {
+          args: [
+            'col1:number',
+            'col2:number',
+            'dHue:number',
+            'dSat:number',
+            'dVal:number'
+          ]
+        },
+        resetColorize: {},
+        test: {},
+        thinkHook: {}
+      }
+    };
   }
 
   /// COSTUME METHODS /////////////////////////////////////////////////////////

@@ -15,9 +15,9 @@ import {
   LazyTracker,
   LazyFakeTrack,
   LazyCompiler,
-  LazyCompilerV2,
   LazyDevice,
   LazyCharacterController,
+  LazyWizard,
   LazyLogin,
   LazyProject,
   LazyMain,
@@ -37,6 +37,12 @@ class SystemShell extends React.Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false };
+  }
+
+  // https://reactjs.org/docs/error-boundaries.html
+  static getDerivedStateFromError(error) {
+    // Update state so the next render will show the fallback UI.
+    return { hasError: true };
   }
 
   render() {
@@ -77,14 +83,14 @@ class SystemShell extends React.Component {
         <Route path="/app/dev-compiler">
           <LazyCompiler />
         </Route>
-        <Route path="/app/dev-compiler-v2">
-          <LazyCompilerV2 />
-        </Route>
         <Route path="/app/dev-faketrack">
           <LazyFakeTrack />
         </Route>
         <Route path="/app/dev-controller">
           <LazyDevice />
+        </Route>
+        <Route path="/app/dev-wizard">
+          <LazyWizard />
         </Route>
         {/* catchall routes */}
         <Route exact path="/app">

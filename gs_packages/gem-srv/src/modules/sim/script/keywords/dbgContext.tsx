@@ -21,7 +21,7 @@ export class dbgContext extends Keyword {
 
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, numpop] = unit;
+    const [keyword, numpop] = unit;
     const progout = [];
     progout.push((agent, state) => {
       console.log(`agent '${agent.name}' context`, state.ctx);
@@ -29,18 +29,12 @@ export class dbgContext extends Keyword {
     return progout;
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { error } = state;
-    return [this.keyword, error];
-  }
-
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw] = unit;
-    return super.jsx(index, unit, <>unknown keyword: {`'${kw}'`}</>);
+    const [keyword] = unit;
+    return <>{keyword}</>;
   }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

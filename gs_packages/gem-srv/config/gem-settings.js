@@ -17,6 +17,7 @@ const OVERRIDES = require('./local-settings.json');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
 const PACKAGE_NAME = 'GEM_SRV';
 const RUNTIME_DIRNAME = 'runtime';
 const RUNTIME_PATH = Path.join(__dirname, `../${RUNTIME_DIRNAME}`);
@@ -32,6 +33,13 @@ const RUNTIME_PATH = Path.join(__dirname, `../${RUNTIME_DIRNAME}`);
 
 const MQTT_URL = 'localhost';
 
+/// FIXME:
+/// Need to fix server path so we have a reliable default that does not
+/// depend on individual assets
+const DEV_ASSETDIR = 'local' || GSCONFIG.GS_ASSETS_PROJECT_ROOT; // gs_assets is root
+const DEV_PRJID = 'AEP';
+const DEV_BPID = 'Fish';
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const compositeSettings = {
@@ -45,17 +53,19 @@ const compositeSettings = {
   ...OVERRIDES
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-for (let [key, val] of Object.entries(OVERRIDES)) {
-  // eslint-disable-next-line no-continue
-  if (key === '_INFO') continue;
-  if (typeof window === 'undefined') console.log(`LOCAL_SET     ${key}: ${val}`);
-  else
-    console.log(
-      `%cLOCAL_SET%c ${key}`,
-      'background-color:red;color:white;padding:2px 4px',
-      'background-color:inherit;color:red',
-      `= ${val}`
-    );
-}
+if (DBG)
+  for (let [key, val] of Object.entries(OVERRIDES)) {
+    // eslint-disable-next-line no-continue
+    if (key === '_INFO') continue;
+    if (typeof window === 'undefined')
+      console.log(`LOCAL_SET     ${key}: ${val}`);
+    else
+      console.log(
+        `%cLOCAL_SET%c ${key}`,
+        'background-color:red;color:white;padding:2px 4px',
+        'background-color:inherit;color:red',
+        `= ${val}`
+      );
+  }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = compositeSettings;

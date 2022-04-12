@@ -25,7 +25,7 @@ const PROMPTS = require('./prompts');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const TERM = PROMPTS.makeTerminalOut('U-MFEST', 'TagGreen');
 const ASSET_ID_START = 100;
-const DBG = true;
+const DBG = false;
 let m_assetPath = GS_ASSETS_PATH;
 let m_remoteAssetUrl;
 

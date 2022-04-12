@@ -5,8 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
-import Keyword, { DerefFeatureProp } from 'lib/class-keyword';
+import Keyword, { K_DerefFeatureProp } from 'lib/class-keyword';
 import { IAgent, TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
@@ -16,7 +15,7 @@ export class featPropPush extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('featPropPush');
-    this.args = ['objref', 'optionalMethod', 'optionalArgs'];
+    this.args = ['featPropName:objref'];
   }
 
   /** create smc blueprint code objects */
@@ -33,13 +32,13 @@ export class featPropPush extends Keyword {
     if (len === 1) {
       callRef = (agent: IAgent, context: any, pName: string, mName: string) => {
         // console.log('trying to get featProp', ref[0], pName, mName);
-        return agent.getFeatProp(ref[0], pName)[mName];
+        return agent.getFeatProp(ref[0] as string, pName)[mName];
       };
     } else if (len === 2) {
       /** EXPLICIT REF *******************************************************/
       /// e.g. 'agent.Costume' or 'Bee.Costume'
       callRef = (agent: IAgent, context: any, pName: string, mName: string) => {
-        const c = context[ref[0]]; // GAgent context
+        const c = context[ref[0] as string]; // GAgent context
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         return c.getFeatProp(ref[1], pName)[mName];
       };
@@ -56,25 +55,7 @@ export class featPropPush extends Keyword {
     });
     return progout;
   }
-
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { error } = state;
-    return [this.keyword, error];
-  }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw, objref, optMethod, ...optArgs] = unit;
-    const isEditable = children ? children.isEditable : false;
-    const isInstanceEditor = children ? children.isInstanceEditor : false;
-    const jsx = <>featPropPush {`'${objref}'`}</>;
-    if (!isInstanceEditor || isEditable) {
-      return super.jsx(index, unit, jsx);
-    }
-    return super.jsxMin(index, unit, jsx);
-  }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

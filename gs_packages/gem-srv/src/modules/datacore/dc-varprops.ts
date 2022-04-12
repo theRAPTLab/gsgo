@@ -27,3 +27,16 @@ export function GetVarCtor(name: string): IScopeableCtor {
   if (!VAR_DICT.has(name)) throw Error(`GetVarCtor: ${name} `);
   return VAR_DICT.get(name);
 }
+
+/// SYMBOL UTILITIES //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return symbol data for a given gvar */
+export function SymbolDefFor(name: string) {
+  const def = VAR_DICT.get(name);
+  if (def) return def.Symbols;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return all var constructors */
+export function GetAllVarCtors() {
+  return VAR_DICT;
+}

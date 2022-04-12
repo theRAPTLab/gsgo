@@ -6,8 +6,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as TRANSPILER from 'script/transpiler-v2';
 import Blueprint from '../../lib/class-project-blueprint';
+import * as TRANSPILER from '../sim/script/transpiler-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

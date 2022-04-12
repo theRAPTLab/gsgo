@@ -11,7 +11,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from 'app/pages/elements/page-xui-styles';
+import { useStylesHOC } from 'app/pages/helpers/page-xui-styles';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -47,6 +47,7 @@ import {
   FeatureMethod,
   IAgent,
   IScopeable,
+  TSymbolData,
   TStackable
 } from 'lib/t-script';
 import { GVarDictionary } from 'modules/sim/vars/_all_vars';
@@ -62,13 +63,13 @@ const DBG = false;
  *  feature is invoked by an agent, it passes itself in the invocation.
  */
 class Feature implements IFeature {
-  meta: { feature: string };
+  meta: { name: string };
   method: IKeyObject;
   //
+  static Symbols?: TSymbolData; // symbol data
+  //
   constructor(name: string) {
-    this.meta = {
-      feature: name
-    };
+    this.meta = { name };
     this.method = {};
     // features only store methods!!! props are stored in the agent
     // props object as a property named after the feature.
@@ -81,8 +82,15 @@ class Feature implements IFeature {
   initialize(phaseMachine: object) {
     // do something
   }
+
+  /** so can use feature.name */
   get name() {
-    return this.meta.feature;
+    return this.meta.name;
+  }
+
+  /** override to provide feature symbols */
+  symbolize(): TSymbolData {
+    return { ctor: Feature };
   }
   /** called during blueprint instantiation of an agent.
    *  used to add properties specific to the feature.

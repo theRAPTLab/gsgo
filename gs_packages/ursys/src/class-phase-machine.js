@@ -175,26 +175,8 @@ class PhaseMachine {
         promises.push(retval);
       }
     });
-    if (DBG.ops && hooks.length)
-      console.log(...PR(`[${op}] HANDLERS PROCESSED : ${hooks.length}`));
-    if (DBG.ops && icount)
-      console.log(...PR(`[${op}] AWAITING ${icount} PROMISES TO COMPLETE...`));
 
-    // wait for all promises to execute
-    if (this.opTimer) clearTimeout(this.opTimer);
-    this.opTimer = setTimeout(() => {
-      console.log(...PR('*** PHASEMACHINE WARNING ***'));
-      this.consolePhaseInfo('Slow Phase Resolution > 7 sec', 'red');
-      console.log(...PR('check phase hooks for lack of promised resolve()'));
-      const err = `
-ERROR: PhaseMachine ${this.currentPhase}/${this.currentOp} failed to complete\n
-This is an irrecoverable runtime error.
-1. Check console for error information.
-2. Use your phone to send SCREENSHOT of the error to the devteam for troubleshooting.
-      `;
-      alert(err.trim());
-    }, 7000);
-    return Promise.all(promises)
+    const promiseAll = Promise.all(promises)
       .then(values => {
         if (DBG.ops && values.length)
           console.log(
@@ -207,6 +189,28 @@ This is an irrecoverable runtime error.
         console.log(...PR(`[${op}]: ${err}`));
         throw Error(`[${op}]: ${err}`);
       });
+
+    if (DBG.ops && hooks.length)
+      console.log(...PR(`[${op}] HANDLERS PROCESSED : ${hooks.length}`));
+    if (DBG.ops && icount)
+      console.log(...PR(`[${op}] AWAITING ${icount} PROMISES TO COMPLETE...`));
+
+    // timeout timer for phase
+    if (this.opTimer) clearTimeout(this.opTimer);
+    this.opTimer = setTimeout(() => {
+      console.log(...PR('*** PHASEMACHINE WARNING ***'));
+      this.consolePhaseInfo('Slow Phase Resolution > 7 sec', 'red');
+      console.log(...PR('check phase hooks for lack of promised resolve()'));
+      console.log(...PR('promises array:', promises));
+      const err = `
+ERROR: PhaseMachine ${this.currentPhase}/${this.currentOp} failed to complete\n
+This is an irrecoverable runtime error.
+1. Check console for error information.
+2. Use your phone to send SCREENSHOT of the error to the devteam for troubleshooting.
+      `;
+      alert(err.trim());
+    }, 7000);
+    return promiseAll;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

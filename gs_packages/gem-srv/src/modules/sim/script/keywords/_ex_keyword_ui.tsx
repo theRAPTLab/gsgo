@@ -9,56 +9,10 @@
 
 import UR from '@gemstep/ursys/client';
 import React from 'react';
-import Keyword from 'lib/class-keyword';
-import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from 'modules/datacore';
 
-/// REACT COMPONENT ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** implement interactive react component for this keyword, saving information
- *  in the local state
- */
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-type MyState = { templateName: string; baseTemplate: string };
-type MyProps = {
-  index: number;
-  state: MyState;
-  serialize: (state: MyState) => TScriptUnit;
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class ScriptElement extends React.Component<MyProps, MyState> {
-  index: number; // ui index
-  keyword: string; // keyword
-  serialize: (state: MyState) => TScriptUnit;
-  constructor(props: MyProps) {
-    super(props);
-    const { index, state, serialize } = props;
-    this.index = index;
-    this.state = { ...state }; // copy state prop
-    this.serialize = serialize;
-    this.onChange = this.onChange.bind(this);
-  }
-
-  onChange(e) {
-    this.setState({ templateName: e.currentTarget.value }, () => {
-      const updata = {
-        index: this.index,
-        scriptUnit: this.serialize(this.state)
-      };
-      UR.RaiseMessage('SCRIPT_UI_CHANGED', updata);
-    });
-  }
-
-  render() {
-    const { templateName, baseTemplate } = this.state;
-    return (
-      <div>
-        templateName
-        <input onChange={this.onChange} type="text" value={templateName} />
-      </div>
-    );
-  }
-} // end script element
+import Keyword from '../../../../lib/class-keyword';
+import { TOpcode, TScriptUnit } from '../../../../lib/t-script';
+import { RegisterKeyword, GetTest, UtilFirstValue } from '../../../datacore';
 
 /// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -74,27 +28,10 @@ export class defTemplate extends Keyword {
     // this is example code for <ScriptElement>, so don't emit anything
     return [];
   }
-
-  /** return a ScriptUnit made from current state */
-  serialize(state: any): TScriptUnit {
-    const { templateName, baseTemplate } = state;
-    return [this.keyword, templateName, baseTemplate];
-  }
-
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    // note that styleIndex below has to have weird typescript
-    // stuff for originally hyphenated CSS properties so it doesn't
-    // get marked by the linter as invalid CSS
-    const state = {
-      templateName: unit[1],
-      baseTemplate: unit[2]
-    };
-    return super.jsx(
-      index,
-      unit,
-      <ScriptElement index={index} state={state} serialize={this.serialize} />
-    );
+    const [keyword, arg1, arg2] = unit;
+    return <>{keyword}</>;
   }
 } // end of DefTemplate
 

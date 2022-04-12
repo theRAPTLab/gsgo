@@ -16,15 +16,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import {
-  TAssetDef,
-  TAssetType,
-  TAssetLoader,
-  TManifest
-} from '../../lib/t-assets';
+import { TAssetDef, TAssetType, TAssetLoader, TManifest } from 'lib/t-assets';
+import { GS_ASSETS_ROUTE, GS_ASSETS_PATH } from 'config/gem-settings';
 import SpriteLoader from './as-load-sprites';
 import ProjectLoader from './as-load-projects';
-import { GS_ASSETS_ROUTE, GS_ASSETS_PATH } from '../../../config/gem-settings';
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,7 +27,8 @@ import { GS_ASSETS_ROUTE, GS_ASSETS_PATH } from '../../../config/gem-settings';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('ASSETM', 'TagGreen');
-const DBG = true;
+let ASSET_LOAD_COUNT = 0; // used to detect multiple loads
+const DBG = false;
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -65,7 +61,7 @@ function m_RegisterLoader(loader: TAssetLoader) {
  */
 async function m_LoadManifest(route) {
   const url = `${route}?manifest`;
-  console.log(...PR('loading', url));
+  if (DBG) console.log(...PR('loading', url));
   let json: any;
   try {
     json = await fetch(url).then(async response => {
@@ -90,7 +86,11 @@ async function m_LoadManifest(route) {
  *  local directory in gs_assets.
  *  @param {string} subdir if set, relative to assets/
  */
-export async function PromiseLoadAssets(subdir: string = '') {
+async function PromiseLoadAssets(subdir: string = '') {
+  if (ASSET_LOAD_COUNT > 0) {
+    console.warn('PromiseLoadAssets() was called more than once, so aborting');
+    return Promise.reject(new Error('asset loads > 0'));
+  }
   const route = !subdir ? GS_ASSETS_ROUTE : `${GS_ASSETS_ROUTE}/${subdir}`;
   const json = await m_LoadManifest(route);
   if (json === undefined) {
@@ -124,11 +124,21 @@ export async function PromiseLoadAssets(subdir: string = '') {
     }
   }
   if (DBG) console.groupEnd();
+  ASSET_LOAD_COUNT++;
   return Promise.all(promises);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function DBG_ForceLoadAsset(subdir) {
+  ASSET_LOAD_COUNT = 0;
+  LOADER_DICT.forEach((loader, name) => {
+    loader.reset();
+    console.log('resetting', name, 'assets');
+  });
+  return PromiseLoadAssets(subdir);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return the loader class for the given asset type */
-export function GetLoader(asType: TAssetType): any {
+function GetLoader(asType: TAssetType): any {
   return LOADER_DICT.get(asType);
 }
 
@@ -138,5 +148,10 @@ export function GetLoader(asType: TAssetType): any {
 m_RegisterLoader(new SpriteLoader('sprites'));
 m_RegisterLoader(new ProjectLoader('projects'));
 
-/// TEST INTERFACE ////////////////////////////////////////////////////////////
+/// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export {
+  GetLoader, // return loader instance by assettype (eg 'sprites')
+  PromiseLoadAssets, // loads all assets in directory from manifest
+  DBG_ForceLoadAsset // don't use this!!! unstable
+};

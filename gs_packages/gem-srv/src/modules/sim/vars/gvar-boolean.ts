@@ -1,5 +1,5 @@
 import SM_Object from 'lib/class-sm-object';
-import { IScopeable } from 'lib/t-script';
+import { IScopeable, TSymbolData } from 'lib/t-script';
 import { RegisterVarCTor } from 'modules/datacore';
 
 export class GVarBoolean extends SM_Object implements IScopeable {
@@ -55,12 +55,30 @@ export class GVarBoolean extends SM_Object implements IScopeable {
     this.value = this.value && this.fuzzy < -0.75;
     return this;
   }
-  serialize() {
-    const values = super.serialize();
-    values.push('fuzzy', this.fuzzy);
-    return values;
+
+  symbolize(): TSymbolData {
+    return GVarBoolean.Symbols;
   }
 }
+
+/// SYMBOLS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+GVarBoolean.Symbols = {
+  ctors: { Boolean: GVarBoolean.Symbols },
+  methods: {
+    setTo: { args: ['value:boolean'] },
+    true: { returns: 'value:boolean' },
+    false: { returns: 'value:boolean' },
+    invert: { returns: 'value:boolean' },
+    and: { args: ['comparison:{value}'] },
+    or: { args: ['comparison:{value}'] },
+    eq: { args: ['comparison:{value}'] },
+    slightlyTrue: { returns: 'value:boolean' },
+    mostlyTrue: { returns: 'value:boolean' },
+    slightlyFalse: { returns: 'value:boolean' },
+    mostlyFalse: { returns: 'value:boolean' }
+  }
+};
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

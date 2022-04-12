@@ -6,13 +6,34 @@
   server!  Other pages (e.g. ScriptEditor, CharController, and Viewer do not
   have direct access to project data)
 
-  This should be a pure data class that maintains a list of input objects
-  and the agents it updates.
+  @BEN This should be a pure data class that maintains a list of input objects
+  and the agents it updates. I wonder if the notion of "current project" is
+  important to maintain here rather than in ac-project...both cases can
+  be argued for. It was difficult to tease apart exactly what was intended
+  because of the lack of comments.
+
+  @BEN since this module has multiple ways of being interfaced with, probably
+  best to list them all.
+
+  PHASE HOOKS
+    UR/LOAD_DB  m_LoadProjectNames() -> *:DC_PROJECTS_UPDATE { id, label }[]
+
+  MESSAGE-BASED CALL API (LOCAL ONLY)
+    LOCAL:DC_LOAD_PROJECT           -> HandleLoadProject
+    LOCAL:DC_WRITE_PROJECT          -> HandleWriteProject
+    LOCAL:DC_WRITE_PROJECT_SETTINGS -> HandleWriteProjectSettings
+    LOCAL:DC_WRITE_METADATA         -> HandleWriteMetadata
+    LOCAL:DC_WRITE_ROUNDS           -> HandleWriteRounds
+    LOCAL:DC_WRITE_BLUEPRINTS       -> HandleWriteBlueprints
+    LOCAL:DC_WRITE_INSTANCES        -> HandleWriteInstances
+
+  MODULE EXPORTS
+    CreateFileFromTemplate (templateId, newFileName)
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { GetProject } from 'modules/appcore/ac-project';
+import * as PROJECT from 'modules/appcore/ac-project';
 import * as ASSETS from 'modules/asset_core';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
@@ -22,9 +43,7 @@ const DBG = false;
 
 /// MULTIPLE PROJECTS DATABASE QUERIES ////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Loads the list of project names and ids from graphQL
- */
+/** Loads the list of project names and ids from graphQL */
 async function m_LoadProjectNames() {
   const response = await UR.Query(`
     query {
@@ -42,8 +61,6 @@ async function m_LoadProjectNames() {
 }
 
 /// SINGLE PROJECT DATABASE QUERIES ///////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// PROJECT
 
@@ -352,7 +369,7 @@ async function FileWriteProject(projId, project) {
 }
 
 function UpdateProjectFile(projId, data) {
-  const project = GetProject(projId);
+  const project = PROJECT.GetProject(projId);
   project.id = data.id || project.id;
   project.label = data.label || project.label;
   project.metadata = data.metadata || project.metadata;
@@ -362,7 +379,8 @@ function UpdateProjectFile(projId, data) {
   FileWriteProject(projId, project);
 }
 
-export async function CreateFileFromTemplate(templateId, newfilename) {
+/** API: export a project as JSON file via browser */
+async function CreateFileFromTemplate(templateId, newfilename) {
   // 1. open the template file
   const PROJECT_LOADER = ASSETS.GetLoader('projects');
   const project = PROJECT_LOADER.getProjectByProjId(templateId);
@@ -428,7 +446,6 @@ async function HandleWriteInstances(data: { projId: string; instances: any[] }) 
 
 /// URSYS API /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /// Handle both LOCAL and NET requests.  ('*' is deprecated)
 UR.HandleMessage('LOCAL:DC_LOAD_PROJECT', HandleLoadProject);
 UR.HandleMessage('LOCAL:DC_WRITE_PROJECT', HandleWriteProject);
@@ -451,9 +468,14 @@ UR.HookPhase(
     })
 );
 
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export {
+  CreateFileFromTemplate // called by PanelSelectSimulation.jsx
+};
+
 /// TEST CODE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 function putproject() {
   console.log('putprojec!t');
   fetch('http://localhost/assets-update/aquatic', {
@@ -472,4 +494,6 @@ function putproject() {
     .then(json => console.log(json))
     .catch(error => console.error(error));
 }
-window.putproject = putproject;
+UR.AddConsoleTool({
+  test_putproject: putproject
+});

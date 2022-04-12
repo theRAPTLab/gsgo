@@ -12,14 +12,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  IKeyObject,
-  IAgent,
-  IScopeable,
-  TStackable,
-  TMethod,
-  TValue
-} from './t-script';
+import { IKeyObject, IAgent, IScopeable, TSymbolData, TMethod } from './t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,7 +50,9 @@ class SM_Object implements IScopeable {
   meta: { type: symbol; name?: string };
   prop: IKeyObject;
   method: IKeyObject;
-
+  //
+  static Symbols: TSymbolData; // symbol data
+  //
   constructor(initValue?: any) {
     // init is a literal value
     this._value = initValue;
@@ -111,6 +106,11 @@ class SM_Object implements IScopeable {
   /** Call a named method function using javascript semantics */
   getMethod(key: string): TMethod {
     return this.method[key];
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Return symbol data, override in subclassers */
+  symbolize(): TSymbolData {
+    return {};
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Return a serializer array */

@@ -20,7 +20,7 @@ import {
   UpdateScript
 } from 'modules/sim/script/tools/script-to-jsx';
 import { GetAllKeywords } from 'modules/datacore';
-import { CompileToJSX } from '../elements/mod-panel-script';
+import { CompileToJSX } from '../helpers/mod-panel-script';
 
 // Force load sim-features so that Features will be registered
 // And we can read their properties
@@ -34,7 +34,7 @@ import '../../../lib/css/prism_linehighlight.css'; // override TomorrowNight
 
 import DialogConfirm from './DialogConfirm';
 
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
 
@@ -433,8 +433,11 @@ class PanelScript extends React.Component {
   OnToggleWizard(e, value) {
     console.log('clicked', value);
     if (value === null) return; // skip repeated clicks
-    const currentScript = this.jar.toString();
-    const jsx = CompileToJSX(currentScript);
+    // const currentScript = this.jar.toString();
+    // const jsx = CompileToJSX(currentScript);
+    const jsx = (
+      <p>Sri has diabled CompileToJSX() in PanelScript.OnToggleWizard()</p>
+    );
     this.setState({ jsx, viewMode: value });
   }
 

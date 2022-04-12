@@ -43,7 +43,7 @@ class SpriteLoader extends AssetLoader {
   /** please initialize queue mechanism through super(type) */
   constructor(assetType: TAssetType) {
     super(assetType);
-    console.log(...PR(`creating ${assetType} loader instance...`));
+    if (DBG) console.log(...PR(`creating ${assetType} loader instance...`));
     this._loader = new PIXI.Loader();
     this._loadCount = 0;
     this._loadProgress = this._loadProgress.bind(this);
@@ -130,6 +130,11 @@ class SpriteLoader extends AssetLoader {
 
       // (2)
       // now start PIXI loader, which will callback when it's loaded
+      console.groupCollapsed(...PR('[ Hidden PixiJS cache warnings ]'));
+      console.log(
+        "%cNOTE: cache warnings are a debug feature in PixiJS that can't be easily turned off, so we just hide them.",
+        'color:red'
+      );
       this._loader.load(load => {
         const resources = [...Object.entries(load.resources)];
         resources.forEach(kv => {
@@ -147,7 +152,8 @@ class SpriteLoader extends AssetLoader {
         });
         ++this._loadCount;
         resolve(this);
-      });
+        console.groupEnd();
+      }); // end of loadAssets
     };
     return new Promise(loadAssets);
   }
@@ -219,6 +225,12 @@ class SpriteLoader extends AssetLoader {
         )}`
       };
     }
+  }
+  /** erase everything */
+  reset() {
+    super.reset();
+    this._loader = new PIXI.Loader();
+    this._loadCount = 0;
   }
 } // end class
 

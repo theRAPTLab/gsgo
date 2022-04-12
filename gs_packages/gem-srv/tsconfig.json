@@ -17,6 +17,6 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*.ts", "gem_run.js"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "gem_run.js"],
   "exclude": ["node_modules"]
 }

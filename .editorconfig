@@ -9,7 +9,7 @@
 root = true
 
 # settings for our default files
-[*.{js,jsx,ts,tsx,json,md,html,txt}]
+[*.{js,jsx,ts,tsx,json,md,html,txt,css}]
 indent_style = space
 indent_size = 2
 end_of_line = lf
