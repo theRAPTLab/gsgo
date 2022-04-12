@@ -219,11 +219,18 @@ class GAgent extends SM_Object implements IAgent, IActable {
     // create the symbol data for props since they don't exist yet
     const P = 'makeDefaultSymbols()';
     const sym = {};
-    for (const [propName, prop] of Object.entries(this.prop)) {
-      if (sym[propName] !== undefined)
-        throw Error(`${P}: ${propName} already exists`);
-      sym[propName] = prop.symbolize();
+    // Only expose specific GAgent properties
+    const props = ['x', 'y', 'statusText'];
+    for (let prop of props) {
+      if (sym[prop] !== undefined) throw Error(`${P}: ${prop} already exists`);
+      sym[prop] = this.getProp(prop).symbolize();
     }
+    // ORIG: symbolize ALL properties
+    // for (const [propName, prop] of Object.entries(this.prop)) {
+    //   if (sym[propName] !== undefined)
+    //     throw Error(`${P}: ${propName} already exists`);
+    //   sym[propName] = prop.symbolize();
+    // }
     GAgent.Symbols = { props: sym };
     return sym;
   }
