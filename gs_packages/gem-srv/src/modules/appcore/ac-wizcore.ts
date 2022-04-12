@@ -31,7 +31,12 @@ import {
   UnpackViewData,
   UnpackSymbolType
 } from 'script/tools/symbol-helpers';
-import { GS_ASSETS_PROJECT_ROOT } from 'config/gem-settings';
+import {
+  GS_ASSETS_PROJECT_ROOT,
+  DEV_ASSETDIR,
+  DEV_PRJID,
+  DEV_BPID
+} from 'config/gem-settings';
 import { TValidatedScriptUnit, TSymbolData, ISMCBundle } from 'lib/t-script';
 import { GetTextBuffer } from 'lib/class-textbuffer';
 
@@ -44,9 +49,6 @@ const PR = UR.PrefixUtil('WIZCORE', 'TagCyan');
 const DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let PROJECTS; // current project class-asset-loader
-const DEV_ASSETDIR = 'local' || GS_ASSETS_PROJECT_ROOT; // gs_assets is root
-const DEV_PRJID = 'AEP';
-const DEV_BPID = 'Fish';
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
