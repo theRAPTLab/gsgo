@@ -118,24 +118,21 @@ export function EditSymbol(props) {
       return categoryDicts;
     }
 
-    // Special Handling for Features
     // Features need special handling.
-    // symbol-helpers.DecodeSymbolViewData converts features into a shallow
-    // list of Features available in the blueprint, e.g. "Costume",
-    // "AgentWidgets". But what we actually want are a list of the methods
-    // and props for each specific feature.  So we do some extra processing
+    // By default, symbol-helpers.DecodeSymbolViewData converts features into a shallow
+    // list of Features available in the blueprint, e.g. "Costume", "AgentWidgets".
+    // But what we actually want are a list of the methods and props for each
+    // specific feature, e.g. 'Costume.costumeName'.  So we do some extra processing
     // to recursively reach into each feature to determine the props and
     // methods.
     //
     // Walk down dicts
-    // 1. if the key is plain `props`, just expand it normally
-    // 2. but if the key is 'features', recursively expand it.
+    // 1. if the key is 'features', recursively expand its props and methods.
+    // 2. if the key is plain `props`, just expand it normally
     Object.entries(dicts).forEach(([k, v]) => {
-      // at this point we have everything in the top level symbol data
-      // if the key `k` is `features`, we expect want to expand symbolDictionaries to contain
-      // one dictionary for each feature.
       // console.group('symbolType', k, 'symbolDictionary', v);
       if (k === 'features') {
+        // 1. feature, so recursively expand
         Object.entries(v).forEach(([featureName, featureDict]) => {
           if (gsType === 'objref') {
             // prop symbolData
@@ -158,6 +155,7 @@ export function EditSymbol(props) {
           }
         });
       } else {
+        // 2. not a feature, just render the keys
         const sd = {};
         sd[k] = v;
         allDicts.push(renderKeys(sd, viewData));
