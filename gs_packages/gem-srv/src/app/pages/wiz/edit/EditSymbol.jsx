@@ -145,7 +145,7 @@ export function EditSymbol(props) {
             const vd = WIZCORE.DecodeSymbolViewData(featureDict);
             // render it
             allDicts.push(renderKeys(sd, vd, featureName));
-          } else {
+          } else if (gsType === 'method') {
             // method symbolData
             const sd = {};
             sd.methods = featureDict.methods;
@@ -153,6 +153,8 @@ export function EditSymbol(props) {
             const vd = WIZCORE.DecodeSymbolViewData(featureDict);
             // render it
             allDicts.push(renderKeys(sd, vd, featureName));
+          } else {
+            // unspported gsType
           }
         });
       } else {
