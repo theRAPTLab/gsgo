@@ -1,3 +1,4 @@
+/* eslint-disable no-inner-declarations */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
@@ -32,6 +33,7 @@ export function EditSymbol(props) {
   const { sel_linenum, sel_linepos } = selection;
   const label = `options for token ${sel_linenum}:${sel_linepos}`;
   // this is a managed TextBuffer with name "ScriptContextor"
+
   const allDicts = [];
 
   const { sel_validation } = WIZCORE.State();
@@ -42,38 +44,125 @@ export function EditSymbol(props) {
     const vIndex = sel_linepos - 1;
     const { validationTokens } = sel_validation;
     const symbolData = validationTokens[vIndex]; // indx into line
-    // symbolData has the current symbol data to convert into viewdata
+    /* symbolData has the current symbol data to convert into viewdata
+       `symbolData` looks like this: {
+          features: {Costume: {…}, Physics: {…}, AgentWidgets: {…}}
+          gsType: "objref"
+          props: {x: {…}, y: {…}, statusText: {…}, eType: {…}, energyLevel: {…}, …}
+          unitText: "energyLevel"
+        }
+    */
+    const { unitText, error, gsType, ...dicts } = symbolData;
+    /* `dicts` looks like this: {
+          features: {Costume: {…}, Physics: {…}, AgentWidgets: {…}}
+          props: {x: {…}, y: {…}, statusText: {…}, eType: {…}, energyLevel: {…}, …}
+        }
+    */
+
+    // See symbol-helpers.DecodeSymbolViewData
     const viewData = WIZCORE.DecodeSymbolViewData(symbolData); // returns the list of symbolnames for a particular symbol
     /* TODO: it would be nice to make unitText indicate it's the current value */
-    const { unitText, error, ...dicts } = viewData;
     // VALIDATION TOKENS are stored by key in the dicts
     // e.g. Keywords, Props, Methods, etc
-    Object.keys(dicts).forEach((symbolType, i) => {
-      const rowKey = `row${sel_linenum}:${i}`;
-      const { info, items } = viewData[symbolType];
-      const inner = []; // this is the list of choices
-      // get all the choices for this symbol type
-      items.forEach(choice => {
-        const choiceKey = `${symbolType}:${choice}`;
-        inner.push(
-          <GSymbolToken
-            key={choiceKey}
-            symbolType={symbolType}
-            unitText={unitText}
-            choice={choice}
-          />
+    /* `viewData` looks like this at this point: {
+            features: {info: 'Costume, Physics, AgentWidgets', items: ['Costume', 'AgentWidgets', 'Population']}
+            props: {info: 'x, y, statusText, eType, energyLevel, energyUse', items: Array(6)}
+            unitText: "energyLevel"
+        }
+    */
+
+    /**
+     * Renders jsx for each category of symbol and each individual selectable symbol
+     * in a two column grid format.
+     * Used for both the top level `props` and recursive (e.g. `feature.Costume`) props
+     * @param {object} sd - symbolData dicts
+     * @param {object} vd - viewData
+     * @param {string} parentLabel - extra label for features, e.g. "Costume"
+     * @returns jsx
+     */
+    function renderKeys(sd, vd, parentLabel = '') {
+      const categoryDicts = [];
+      Object.keys(sd).forEach((symbolType, i) => {
+        const rowKey = `${sel_linenum}:${i}`;
+        // NEW CODE: Look up from viewData specific to the recursive context
+        const { info, items } = vd[symbolType];
+        // ORIG CODE: Look up from general viewData
+        // const { info, items } = viewData[symbolType];
+        const inner = []; // this is the list of choices
+        // get all the choices for this symbol type
+        items.forEach(choice => {
+          const choiceKey = `${symbolType}:${choice}`;
+          inner.push(
+            <GSymbolToken
+              key={choiceKey}
+              symbolType={symbolType}
+              unitText={unitText}
+              choice={choice}
+            />
+          );
+        });
+        // push a left-most label with symbolType with all the symbols
+        // this will be displayed in a two-column grid in the render function
+        // so the left will be the same height as the right
+        // REVIEW: The <> needs a key.
+        categoryDicts.push(
+          <>
+            <GLabelToken
+              key={rowKey}
+              name={parentLabel ? `${parentLabel}\n${symbolType}` : symbolType}
+            />
+            <div style={{ display: 'flex', flexWrap: 'wrap' }}>{[...inner]}</div>
+          </>
         );
       });
-      // push a left-most label with symbolType with all the symbols
-      // this will be displayed in a two-column grid in the render function
-      // so the left will be the same height as the right
-      allDicts.push(
-        <>
-          <GLabelToken key={rowKey} name={symbolType} />
-          <div style={{ display: 'flex', flexWrap: 'wrap' }}>{[...inner]}</div>
-        </>
-      );
+      return categoryDicts;
+    }
+
+    // Special Handling for Features
+    // Features need special handling.
+    // symbol-helpers.DecodeSymbolViewData converts features into a shallow
+    // list of Features available in the blueprint, e.g. "Costume",
+    // "AgentWidgets". But what we actually want are a list of the methods
+    // and props for each specific feature.  So we do some extra processing
+    // to recursively reach into each feature to determine the props and
+    // methods.
+    //
+    // Walk down dicts
+    // 1. if the key is plain `props`, just expand it normally
+    // 2. but if the key is 'features', recursively expand it.
+    Object.entries(dicts).forEach(([k, v]) => {
+      // at this point we have everything in the top level symbol data
+      // if the key `k` is `features`, we expect want to expand symbolDictionaries to contain
+      // one dictionary for each feature.
+      // console.group('symbolType', k, 'symbolDictionary', v);
+      if (k === 'features') {
+        Object.entries(v).forEach(([featureName, featureDict]) => {
+          if (gsType === 'objref') {
+            // prop symbolData
+            const sd = {};
+            sd.props = featureDict.props;
+            // prop viewData
+            const vd = WIZCORE.DecodeSymbolViewData(featureDict);
+            // render it
+            allDicts.push(renderKeys(sd, vd, featureName));
+          } else {
+            // method symbolData
+            const sd = {};
+            sd.methods = featureDict.methods;
+            // method viewData
+            const vd = WIZCORE.DecodeSymbolViewData(featureDict);
+            // render it
+            allDicts.push(renderKeys(sd, vd, featureName));
+          }
+        });
+      } else {
+        const sd = {};
+        sd[k] = v;
+        allDicts.push(renderKeys(sd, viewData));
+      }
+      // console.groupEnd();
     });
+
     if (error) {
       allDicts.push(<p style={{ color: 'red' }}>{error.info}</p>);
     }
@@ -86,7 +175,7 @@ export function EditSymbol(props) {
   return (
     <StackUnit label={prompt} type="symbol" open sticky>
       {allDicts.map((row, i) => {
-        const key = `${sel_linenum}${i}`;
+        const key = `${sel_linenum}.${i}`;
         return (
           <div
             className="gline"
