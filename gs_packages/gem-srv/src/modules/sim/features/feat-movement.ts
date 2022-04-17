@@ -349,6 +349,8 @@ function moveGoLocation(agent: IAgent) {
   const x = agent.prop.x.value + Math.cos(angle) * distance;
   const y = agent.prop.y.value - Math.sin(angle) * distance;
   m_QueuePosition(agent, x, y);
+
+  m_setDirection(agent, angle);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// FLOAT
