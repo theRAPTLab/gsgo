@@ -299,8 +299,8 @@ function moveEdgeToEdge(agent: IAgent, frame: number) {
   // If agent uses physics, we can get height/width, otherwise default
   // to small padding.
   if (agent.hasFeature('Physics')) {
-    hwidth = agent.callFeatMethod('Physics', 'getWidth') / 2;
-    hheight = agent.callFeatMethod('Physics', 'getHeight') / 2;
+    hwidth = agent.getFeatProp('Physics', 'bodyWidth').value / 2;
+    hheight = agent.getFeatProp('Physics', 'bodyHeight').value / 2;
   }
 
   let direction = agent.prop.Movement.direction.value;
