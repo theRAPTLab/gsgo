@@ -344,6 +344,9 @@ function moveGoLocation(agent: IAgent) {
   target.x = targetX;
   target.y = targetY;
 
+  // if we are withing 1/2 of the 'speed' of the target, we can stop
+  if (DistanceTo(agent, target) < distance / 2) return;
+
   let angle = -AngleTo(agent, target); // flip y
 
   const x = agent.prop.x.value + Math.cos(angle) * distance;
