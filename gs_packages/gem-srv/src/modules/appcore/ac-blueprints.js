@@ -189,7 +189,7 @@ export function GetBlueprintPropertiesMap(bpid) {
 
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function updateAndPublishDerivedProperties(blueprints) {
+function updateAndPublishDerivedBpLists(blueprints) {
   const bpidList = GetBlueprintIDsList(blueprints);
   // compile and update bundles
   const bpBundles = CompileBlueprintBundles(blueprints);
@@ -244,7 +244,7 @@ function hook_Filter(key, propOrValue, propValue) {
   if (key === 'blueprints') {
     // update and publish bpidList too
     const blueprints = propOrValue;
-    updateAndPublishDerivedProperties(blueprints);
+    updateAndPublishDerivedBpLists(blueprints);
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -288,7 +288,7 @@ addEffectHook(hook_Effect);
 export function SetBlueprints(projId, blueprints) {
   updateKey({ projId });
   updateAndPublish(blueprints);
-  updateAndPublishDerivedProperties(blueprints);
+  updateAndPublishDerivedBpLists(blueprints);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -308,7 +308,7 @@ export function InjectBlueprint(projId, blueprintDef) {
   const blueprints = _getKey('blueprints').filter(b => b.id !== blueprintDef.id);
   blueprints.push(bp.get());
   // Update derived states
-  updateAndPublishDerivedProperties(blueprints);
+  updateAndPublishDerivedBpLists(blueprints);
 
   // NOTE: Not updating 'blueprints' state, nor writing to db
 }
