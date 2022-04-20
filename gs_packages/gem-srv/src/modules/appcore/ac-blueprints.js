@@ -23,6 +23,7 @@ STATE.initializeState({
   blueprints: [],
   // runtime states
   bpidList: [],
+  bpNamesList: [],
   bpBundles: new Map(), // compiled bundles of blueprint scrits
   defaultPozyxBpid: '',
   charControlBpidList: [],
@@ -84,11 +85,26 @@ export function GetBlueprintIDsList(blueprints) {
 function CompileBlueprintBundles(blueprints) {
   const bundles = blueprints.map(b => {
     const script = TRANSPILER.TextToScript(b.scriptText);
-    return TRANSPILER.CompileBlueprint(script);
+    const bundle = TRANSPILER.CompileBlueprint(script);
+    TRANSPILER.RegisterBlueprint(bundle);
+    return bundle;
   });
   const bpBundles = new Map();
   bundles.forEach(b => bpBundles.set(b.name, b));
   return bpBundles;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * Returns an array of blueprint names as specified in `# BLUEPRINT xxx`
+ * @returns [...bpName]
+ */
+export function GetBlueprintNamesList(bpBundles) {
+  const bpBundlesArr = [...bpBundles.values()];
+  return bpBundlesArr.map(b => b.name);
+}
+export function GetBpNamesList() {
+  return _getKey('bpNamesList');
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -193,6 +209,8 @@ function updateAndPublishDerivedBpLists(blueprints) {
   const bpidList = GetBlueprintIDsList(blueprints);
   // compile and update bundles
   const bpBundles = CompileBlueprintBundles(blueprints);
+  // update list of blueprint pragma names from compiled bundle
+  const bpNamesList = GetBlueprintNamesList(bpBundles);
   // updating charcontrol
   const charControlBpidList = GenerateCharControlBpidList(bpBundles);
   // updating ptrack
@@ -201,6 +219,7 @@ function updateAndPublishDerivedBpLists(blueprints) {
   const pozyxControlBpidList = GeneratePozyxControlBpidList(bpBundles);
   updateKey({
     bpidList,
+    bpNamesList,
     bpBundles,
     charControlBpidList,
     ptrackControlBpidList,
@@ -208,6 +227,7 @@ function updateAndPublishDerivedBpLists(blueprints) {
   });
   _publishState({
     bpidList,
+    bpNamesList,
     bpBundles,
     charControlBpidList,
     ptrackControlBpidList,
