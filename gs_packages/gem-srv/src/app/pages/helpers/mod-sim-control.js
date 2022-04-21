@@ -119,15 +119,6 @@ class SimControl {
    * * Do not call this directly.  The call should originate from MissionControl
    */
   DoSimReset() {
-    DATACORE.DeleteAllTests();
-    // DATACORE.DeleteAllGlobalConditions(); // removed in script-xp branch
-    GAgent.ClearGlobalAgent();
-    DATACORE.DeleteAllScriptEvents();
-    DATACORE.DeleteAllBlueprints();
-    DATACORE.DeleteAllAgents();
-    DATACORE.DeleteAllInstances();
-
-    ClearDOBJ();
 
     SIM.Reset();
     // MissionControl will take care of reloading and calling SimPlaces
