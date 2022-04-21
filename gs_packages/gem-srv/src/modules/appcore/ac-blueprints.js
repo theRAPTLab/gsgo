@@ -3,11 +3,19 @@
 
   Manage blueprints lists
 
+  See also:
+  * ac-project
+  * dc-script-engine
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import Blueprint from '../../lib/class-project-blueprint';
+import * as GAgent from 'lib/class-gagent';
+import * as DCENGINE from 'modules/datacore/dc-script-engine';
+import * as DCAGENTS from 'modules/datacore/dc-agents';
+import * as SIMAGENTS from 'modules/sim/sim-agents';
 import * as TRANSPILER from '../sim/script/transpiler-v2';
+import Blueprint from '../../lib/class-project-blueprint';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -23,7 +31,7 @@ STATE.initializeState({
   blueprints: [],
   // runtime states
   bpidList: [],
-  bpBundles: new Map(), // compiled bundles of blueprint scrits
+  bpNamesList: [],
   defaultPozyxBpid: '',
   charControlBpidList: [],
   ptrackControlBpidList: [],
@@ -43,6 +51,41 @@ const { _publishState } = STATE;
 /// export these functions
 const { addChangeHook, deleteChangeHook } = STATE;
 const { addEffectHook, deleteEffectHook } = STATE;
+
+/// MODULE METHODS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/**
+ * Use this to compile and add additional blueprints to an already running sim
+ * 1. Compiles blueprints
+ * 2. Register blueprint with dc-script-engine
+ * @param {[ISMCPrograms]} blueprints - array of blueprints (ISMCPrograms)
+ */
+function m_CompileBlueprints(blueprints) {
+  const bundles = blueprints.map(b => {
+    console.log('Compiling', b.id);
+    const script = TRANSPILER.TextToScript(b.scriptText);
+    const bundle = TRANSPILER.CompileBlueprint(script);
+    TRANSPILER.RegisterBlueprint(bundle);
+    return bundle;
+  });
+}
+/**
+ * Use this when reseting the simulation.
+ * Clears all ScriptEvents, Blueprints, Agents, and Instances
+ * and THEN compiles blueprints.
+ * @param {[ISMCPrograms]} blueprints - array of blueprints (ISMCPrograms)
+ * @returns
+ */
+function m_ResetAndCompileBlueprints(blueprints) {
+  GAgent.ClearGlobalAgent();
+  SIMAGENTS.ClearDOBJ();
+  DCENGINE.DeleteAllScriptEvents();
+  DCENGINE.DeleteAllBlueprints();
+  DCAGENTS.DeleteAllAgents();
+  DCAGENTS.DeleteAllInstances();
+  return m_CompileBlueprints(blueprints);
+}
 
 /// ACCESSORS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -74,21 +117,17 @@ export function GetBlueprintIDsList(blueprints) {
   });
 }
 
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
- * Returns a map of blueprint Bundles
- * Local call only.
- * @param [] blueprints
- * @returns Map<string, any>
+ * Returns an array of blueprint names as specified in `# BLUEPRINT xxx`
+ * @returns [...bpName]
  */
-function CompileBlueprintBundles(blueprints) {
-  const bundles = blueprints.map(b => {
-    const script = TRANSPILER.TextToScript(b.scriptText);
-    return TRANSPILER.CompileBlueprint(script);
-  });
-  const bpBundles = new Map();
-  bundles.forEach(b => bpBundles.set(b.name, b));
-  return bpBundles;
+export function GetBlueprintNamesList(bundles) {
+  return bundles.map(b => b.name);
+}
+export function GetBpNamesList() {
+  return _getKey('bpNamesList');
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -96,15 +135,14 @@ function CompileBlueprintBundles(blueprints) {
  * Returns array of blueprint ids that are CharControllable.
  * @returns [...id]
  */
-function GenerateCharControlBpidList(bpBundles) {
-  const bpBundlesArr = [...bpBundles.values()];
-  return bpBundlesArr
+function GenerateCharControlBpidList(bundles) {
+  return bundles
     .filter(bndl => bndl.getTag('isCharControllable'))
     .map(bndl => {
       return bndl.name;
     });
 }
-export function GetCharControlBpidList(bpBundles) {
+export function GetCharControlBpidList() {
   return _getKey('charControlBpidList');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -114,9 +152,8 @@ export function GetCharControlBpidList(bpBundles) {
  *       If objects and poses need separate tracking, this should be split out
  * @returns [...id]
  */
-export function GeneratePTrackControlBpidList(bpBundles) {
-  const bpBundlesArr = [...bpBundles.values()];
-  return bpBundlesArr
+export function GeneratePTrackControlBpidList(bundles) {
+  return bundles
     .filter(bndl => bndl.getTag('isPTrackControllable'))
     .map(bndl => {
       return bndl.name;
@@ -140,9 +177,8 @@ export function GetPTrackControlDefaultBpid() {
  * Returns array of blueprint ids that are PozyxControllable.
  * @returns [...id]
  */
-export function GeneratePozyxControlBpidList(bpBundles) {
-  const bpBundlesArr = [...bpBundles.values()];
-  return bpBundlesArr
+export function GeneratePozyxControlBpidList(bundles) {
+  return bundles
     .filter(bndl => bndl.getTag('isPozyxControllable'))
     .map(bndl => {
       return bndl.name;
@@ -189,26 +225,27 @@ export function GetBlueprintPropertiesMap(bpid) {
 
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function updateAndPublishDerivedProperties(blueprints) {
+function updateAndPublishDerivedBpLists(blueprints) {
   const bpidList = GetBlueprintIDsList(blueprints);
-  // compile and update bundles
-  const bpBundles = CompileBlueprintBundles(blueprints);
+  const bundles = DCENGINE.GetAllBlueprints();
+  // update list of blueprint pragma names from compiled bundle
+  const bpNamesList = GetBlueprintNamesList(bundles);
   // updating charcontrol
-  const charControlBpidList = GenerateCharControlBpidList(bpBundles);
+  const charControlBpidList = GenerateCharControlBpidList(bundles);
   // updating ptrack
-  const ptrackControlBpidList = GeneratePTrackControlBpidList(bpBundles);
+  const ptrackControlBpidList = GeneratePTrackControlBpidList(bundles);
   // updating pozyx
-  const pozyxControlBpidList = GeneratePozyxControlBpidList(bpBundles);
+  const pozyxControlBpidList = GeneratePozyxControlBpidList(bundles);
   updateKey({
     bpidList,
-    bpBundles,
+    bpNamesList,
     charControlBpidList,
     ptrackControlBpidList,
     pozyxControlBpidList
   });
   _publishState({
     bpidList,
-    bpBundles,
+    bpNamesList,
     charControlBpidList,
     ptrackControlBpidList,
     pozyxControlBpidList
@@ -244,7 +281,7 @@ function hook_Filter(key, propOrValue, propValue) {
   if (key === 'blueprints') {
     // update and publish bpidList too
     const blueprints = propOrValue;
-    updateAndPublishDerivedProperties(blueprints);
+    updateAndPublishDerivedBpLists(blueprints);
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -286,9 +323,12 @@ addEffectHook(hook_Effect);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 export function SetBlueprints(projId, blueprints) {
+  // 1. Compile the blueprints
+  m_ResetAndCompileBlueprints(blueprints);
+  // 2. Update state
   updateKey({ projId });
   updateAndPublish(blueprints);
-  updateAndPublishDerivedProperties(blueprints);
+  updateAndPublishDerivedBpLists(blueprints);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -307,9 +347,10 @@ export function InjectBlueprint(projId, blueprintDef) {
   // Remove it if it already exists
   const blueprints = _getKey('blueprints').filter(b => b.id !== blueprintDef.id);
   blueprints.push(bp.get());
-  // Update derived states
-  updateAndPublishDerivedProperties(blueprints);
-
+  // 1. Compile just the injected blueprints
+  m_CompileBlueprints([bp]);
+  // 2. Update derived states
+  updateAndPublishDerivedBpLists(blueprints);
   // NOTE: Not updating 'blueprints' state, nor writing to db
 }
 
@@ -318,10 +359,10 @@ export function InjectBlueprint(projId, blueprintDef) {
 export function UpdateBlueprint(projId, bpid, scriptText) {
   const blueprints = _getKey('blueprints');
   const index = blueprints.findIndex(b => b.id === bpid);
-  console.log('updatebluperint', bpid, scriptText);
+  let blueprint;
   if (index > -1) {
     // Replace existing blueprint
-    const blueprint = {
+    blueprint = {
       ...blueprints[index]
     }; // clone
     // Update the script
@@ -336,12 +377,14 @@ export function UpdateBlueprint(projId, bpid, scriptText) {
       label: bpid,
       scriptText
     };
-    const blueprint = new Blueprint(def);
-    blueprints.push(blueprint.get());
+    blueprint = new Blueprint(def).get();
+    blueprints.push(blueprint);
   }
+  // 1. Compile the new blueprint
+  m_CompileBlueprints([blueprint]);
+  // 2. Update derived states
   updateKey({ projId });
   updateAndPublish(blueprints);
-  console.error('...updating blueprints to', blueprints);
   UR.WriteState('blueprints', 'blueprints', blueprints);
 }
 
