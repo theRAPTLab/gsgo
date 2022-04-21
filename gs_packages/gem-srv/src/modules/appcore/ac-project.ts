@@ -3,6 +3,28 @@
 
   Manage project data
 
+  A `project` is a bare bones data object representing a single GEMSTEP
+  project:
+
+    project = {
+      id,
+      label
+    }
+
+  `GetProject` will return the base `project` stuffed with other parameters
+  that make up a loaded GEMSTEP project that are being handled by sub
+  ac-* classes.
+
+    project = {
+      id,
+      label
+      metadata,
+      rounds,
+      blueprints,
+      instances
+    }
+
+
   @BEN SRI CODE REVIEW
 
   * A project model description would be nice: "representation of current

@@ -86,18 +86,9 @@ class SimControl {
       bpnames: charcontrolBpidList
     });
 
-    // 4. Compile All Blueprints
-    const blueprintDefs = ACBlueprints.GetBlueprints();
-    const sources = blueprintDefs.map(s => {
-      try {
-        return TRANSPILER.TextToScript(s.scriptText);
-      } catch (error) {
-        return console.error('Failed transpilling', s);
-      }
-    });
-    const bundles = sources.map(s => TRANSPILER.CompileBlueprint(s));
-    const blueprints = bundles.map(b => TRANSPILER.RegisterBlueprint(b));
-    const blueprintNames = blueprints.map(b => b.name);
+    // 4. Get current list of blueprint names so AllAgentsProgram knows which
+    //    blueprints to update and remove
+    const blueprintNames = ACBlueprints.GetBpNamesList();
 
     // 5. Create/Update All Instances
     const instancesSpec = ACInstances.GetInstances();
@@ -128,15 +119,6 @@ class SimControl {
    * * Do not call this directly.  The call should originate from MissionControl
    */
   DoSimReset() {
-    DATACORE.DeleteAllTests();
-    // DATACORE.DeleteAllGlobalConditions(); // removed in script-xp branch
-    GAgent.ClearGlobalAgent();
-    DATACORE.DeleteAllScriptEvents();
-    DATACORE.DeleteAllBlueprints();
-    DATACORE.DeleteAllAgents();
-    DATACORE.DeleteAllInstances();
-
-    ClearDOBJ();
 
     SIM.Reset();
     // MissionControl will take care of reloading and calling SimPlaces
