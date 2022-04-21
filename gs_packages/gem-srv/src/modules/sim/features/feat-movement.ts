@@ -299,8 +299,8 @@ function moveEdgeToEdge(agent: IAgent, frame: number) {
   // If agent uses physics, we can get height/width, otherwise default
   // to small padding.
   if (agent.hasFeature('Physics')) {
-    hwidth = agent.callFeatMethod('Physics', 'getWidth') / 2;
-    hheight = agent.callFeatMethod('Physics', 'getHeight') / 2;
+    hwidth = agent.getFeatProp('Physics', 'bodyWidth').value / 2;
+    hheight = agent.getFeatProp('Physics', 'bodyHeight').value / 2;
   }
 
   let direction = agent.prop.Movement.direction.value;
@@ -329,6 +329,32 @@ function moveEdgeToEdge(agent: IAgent, frame: number) {
   // we handled our own bounce, so set x and y directly
   agent.prop.Movement._x = x;
   agent.prop.Movement._y = y;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// goLocation
+function moveGoLocation(agent: IAgent) {
+  // move toward targetX and targetY at speed of distance
+  const distance = agent.prop.Movement.distance.value;
+
+  // grab the targetX and targetY
+  const targetX = agent.prop.Movement.targetX.value;
+  const targetY = agent.prop.Movement.targetY.value;
+
+  const target = {
+    x: targetX,
+    y: targetY
+  };
+
+  // if we are withing 1/2 of the 'speed' of the target, we can stop
+  if (DistanceTo(agent, target) < distance / 2) return;
+
+  const angle = -AngleTo(agent, target); // flip y
+
+  const x = agent.prop.x.value + Math.cos(angle) * distance;
+  const y = agent.prop.y.value - Math.sin(angle) * distance;
+  m_QueuePosition(agent, x, y);
+
+  m_setDirection(agent, angle);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// FLOAT
@@ -408,6 +434,7 @@ const MOVEMENT_FUNCTIONS = new Map([
   ['static', undefined],
   ['wander', moveWander],
   ['edgeToEdge', moveEdgeToEdge],
+  ['goLocation', moveGoLocation],
   ['jitter', moveJitter],
   ['float', moveFloat],
   ['seekAgent', seekAgent],
@@ -618,6 +645,8 @@ class MovementPack extends GFeature {
     this.featAddProp(agent, 'bounceAngle', new GVarNumber(180));
     this.featAddProp(agent, 'isMoving', new GVarBoolean());
     this.featAddProp(agent, 'useAutoOrientation', new GVarBoolean(false));
+    this.featAddProp(agent, 'targetX', new GVarNumber(0)); // so that we can set a location in pieces and go to it
+    this.featAddProp(agent, 'targetY', new GVarNumber(0));
 
     // Initialize internal properties
     agent.prop.Movement._lastMove = 0;
@@ -676,6 +705,10 @@ class MovementPack extends GFeature {
             if (params[3] === 'rand')
               agent.getFeatProp(FEATID, 'direction').value = m_random(0, 180);
           }
+          break;
+        case 'goLocation':
+          SEEK_AGENTS.delete(agent.id);
+          agent.getFeatProp(FEATID, 'distance').value = params[0];
           break;
         case 'jitter':
           SEEK_AGENTS.delete(agent.id);
