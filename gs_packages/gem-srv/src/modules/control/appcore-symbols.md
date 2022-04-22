@@ -2,7 +2,9 @@
 see gsgo-repo-docs/01-architecture/gemstep-arc-appcore
 
 ### ac-instances.js
-
+note: this is both a state module and a datacore module mixed together,
+GEMSTEP CYCLE - manages the instances createf from gemproj
+GUI:
 ```
 timerid AUTOTIMER
 STATE GROUP MGR
@@ -17,6 +19,7 @@ STATE GROUP MGR
 function updateAndPublish -- should be m_UpdateAndPublish
 function delayedInstancesSave -- should be m_DelayedInstancesSave
 
+// manages instances created from the gemprj file
 function GetInstances
 function GetInstance
 function GetInstanceidList -- id should be Id

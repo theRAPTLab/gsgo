@@ -676,7 +676,7 @@ async function HandleRequestProjData(data) {
 /// message-based API to project-server?
 
 /// TRANSFORM UTILS -----------------------------------------------------------
-UR.HandleMessage('NET:TRANSFORM_REQ', HandleTransformReq);
+UR.HandleMessage('NET:TRANSFORM_REQ', HandleTransformReq); // returns locale xforms
 /// PROJECT DATA UTILS ----------------------------------------------------
 UR.HandleMessage('REQ_PROJDATA', HandleRequestProjData);
 UR.HandleMessage('NET:REQ_PROJDATA', HandleRequestProjData);

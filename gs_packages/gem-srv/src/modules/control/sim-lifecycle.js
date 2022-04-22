@@ -72,6 +72,102 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+function createMachine() {}
+
+const states = {};
+
+states.load_projects = {
+  memo: 'startup screen for shows list of project (app/login)',
+  enter: {
+    sysLoadProjects: 'loads all the available projects'
+  },
+  choices: {
+    userCreateProjectFromTemplate: 'select a template to create a new project',
+    userSelectProject:
+      'select a specific project from all projects (exit condition)'
+  }
+};
+
+states.userCreateProjectFromTemplate = {
+  memo: 'sequence to create the template (app/login)',
+  states: {
+    userSelectTemplate: 'click one of the templates on the left',
+    userEnterNewProjectName: 'dialog pops up, type in the name',
+    sysCreateTemplateCopy: '',
+    sysRedirectToProject: 'window.location = project?project=project_name'
+  }
+};
+
+states.userSelectProject = {
+  memo: 'see the choices for main, viewer, character controller (app/project)',
+  choices: {
+    userSelectMain: 'click the main button (location load app/main)',
+    userSelectViewer: 'click the viewer button (location load app/viewer)',
+    userSelectController:
+      'click the controller button (location load app/charcontrol'
+  }
+};
+
+// now we're actually running app/main
+// we're looking at the 'run modes'
+const simEngineOps = {
+  loadRenderableResources: '',
+  loadSimulationEntitites: '',
+  initializeRuntimeCounters: '',
+  setRunMode: 'turn features on/off by named runmode state',
+  startSim: 'start the engine',
+  // during sim run
+  changeRunMode: 'change runmode settings on the fly',
+  // after the run
+  stopSim: 'stops the engine'
+};
+
+const subsystems = {
+  simEngineMode: 'the simulator engine itself, with different runmodes',
+  simEntitySetup: 'all the blueprints, all the instance defs',
+  simRoundSetup: 'number of rounds, loop control',
+  simEnvSetup: 'bounds, locale (trackers, transforms)',
+  simInputBinder: 'connect a tracker entity to an agent instance',
+  simRoundRunner: 'handles config of simEngine as rounds'
+};
+
+states.boot_sim = {
+  memo: 'first time the simulator is showing on the main projector (app/main)',
+  enter: {
+    sysProjectSetup: 'get the project data that controls the simulation runs',
+    sysInitializeSimEngine: 'turn on simEngine in starting loopmode'
+  },
+  choices: {}
+};
+
+states.setup_sim = {};
+states.init_round = {};
+states.pre_round = {};
+states.stage_round = {};
+states.start_round = {};
+states.run_round = {};
+states.post_round = {};
+states.review_round = {};
+
+const GEMSTEP = {
+  id: 'gemstep-cycle',
+  initial: 'boot',
+  states
+};
+
+const system = {};
+const user = {};
+const trigger = {
+  system,
+  user
+};
+
+system.appStart = {
+  info: ['on open app: load your project']
+};
+
+user.appStart = {};
+
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
