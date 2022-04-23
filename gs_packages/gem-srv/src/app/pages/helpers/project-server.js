@@ -287,12 +287,6 @@ function InjectBlueprint(data) {
     return;
   }
   ACBlueprints.InjectBlueprint(CURRENT_PROJECT_ID, blueprint);
-
-  // Compile and Register
-  // REVIEW: Should this be moved to ACBlueprints
-  const source = TRANSPILER.TextToScript(blueprint.scriptText);
-  const bundle = TRANSPILER.CompileBlueprint(source);
-  TRANSPILER.RegisterBlueprint(bundle);
 }
 
 /// TRANSFORM UTILITIES ///////////////////////////////////////////////////////
