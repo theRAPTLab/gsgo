@@ -12,17 +12,9 @@
   be argued for. It was difficult to tease apart exactly what was intended
   because of the lack of comments.
 
-  @BEN since this module has multiple ways of being interfaced with, probably
-  best to list them all.
-
-  PHASE HOOKS
-    UR/LOAD_DB  m_LoadProjectNames() -> *:DC_PROJECTS_UPDATE { id, label }[]
-
   MESSAGE-BASED CALL API (LOCAL ONLY)
     LOCAL:DC_LOAD_PROJECT           -> HandleLoadProject
     LOCAL:DC_WRITE_PROJECT          -> HandleWriteProject
-    LOCAL:DC_WRITE_PROJECT_SETTINGS -> HandleWriteProjectSettings
-    LOCAL:DC_WRITE_METADATA         -> HandleWriteMetadata
     LOCAL:DC_WRITE_ROUNDS           -> HandleWriteRounds
     LOCAL:DC_WRITE_BLUEPRINTS       -> HandleWriteBlueprints
     LOCAL:DC_WRITE_INSTANCES        -> HandleWriteInstances
@@ -44,7 +36,7 @@ const DBG = false;
 /// PROJECT DATA LOADER ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/** Read project data from assets and broadcast loaded data to ac-project*/
+/** Read project data from assets and broadcast loaded data to ac-project */
 async function m_LoadProjectFromAsset(projId) {
   const PROJECT_LOADER = ASSETS.GetLoader('projects');
   const project = PROJECT_LOADER.getProjectByProjId(projId);
@@ -71,7 +63,12 @@ async function m_FileWriteProject(projId, project) {
   return result;
 }
 
-function UpdateProjectFile(projId, data) {
+/** When any subset of project data is changed (e.g. metadata, rounds,
+ *  instances, or blueprints), we need to update the whole project data
+ *  object, then write it to disk.
+ *  Called locally by the various `HandelWrite*` methods.
+ */
+function m_UpdateProjectFile(projId, data) {
   const project = PROJECT.GetProject(projId);
   project.id = data.id || project.id;
   project.label = data.label || project.label;
@@ -111,18 +108,18 @@ async function HandleWriteProject(data: { projId: string; project: any }) {
 }
 async function HandleWriteRounds(data: { projId: string; rounds: any[] }) {
   if (DBG) console.log('WRITE ROUND', data);
-  UpdateProjectFile(data.projId, data);
+  m_UpdateProjectFile(data.projId, data);
 }
 async function HandleWriteBlueprints(data: {
   projId: string;
   blueprints: any[];
 }) {
   if (DBG) console.log('WRITE BLUEPRINTS', data);
-  UpdateProjectFile(data.projId, data);
+  m_UpdateProjectFile(data.projId, data);
 }
 async function HandleWriteInstances(data: { projId: string; instances: any[] }) {
   if (DBG) console.log('WRITE INSTANCES', data);
-  UpdateProjectFile(data.projId, data);
+  m_UpdateProjectFile(data.projId, data);
 }
 
 /// URSYS API /////////////////////////////////////////////////////////////////
