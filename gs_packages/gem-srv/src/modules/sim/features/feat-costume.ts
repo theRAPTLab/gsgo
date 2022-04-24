@@ -401,6 +401,11 @@ class CostumePack extends GFeature {
   // Removes the color overlay, reverting the sprite back to it's original colors
   resetColorize(agent: IAgent) {
     agent.prop.color.clear();
+    // clear other color settings
+    agent.prop.Costume.colorScaleIndex.setTo(undefined);
+    agent.prop.Costume.colorHue.setTo(undefined);
+    agent.prop.Costume.colorSaturation.setTo(undefined);
+    agent.prop.Costume.colorValue.setTo(undefined);
   }
   initHSVColorScale(
     agent: IAgent,
