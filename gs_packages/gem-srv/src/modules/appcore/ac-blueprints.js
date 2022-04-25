@@ -55,6 +55,12 @@ const { addEffectHook, deleteEffectHook } = STATE;
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+/** Blueprint symbols need to be extracted before they are compiled */
+function m_SymbolizeBlueprints(blueprints) {
+  blueprints.forEach(b => {
+    // symbolizeBlueprintHelper in transpiler?
+  });
+}
 /**
  * Use this to compile and add additional blueprints to an already running sim
  * 1. Compiles blueprints
@@ -84,6 +90,7 @@ function m_ResetAndCompileBlueprints(blueprints) {
   DCENGINE.DeleteAllBlueprints();
   DCAGENTS.DeleteAllAgents();
   DCAGENTS.DeleteAllInstances();
+  m_SymbolizeBlueprints(blueprints);
   return m_CompileBlueprints(blueprints);
 }
 
@@ -348,6 +355,7 @@ export function InjectBlueprint(projId, blueprintDef) {
   const blueprints = _getKey('blueprints').filter(b => b.id !== blueprintDef.id);
   blueprints.push(bp.get());
   // 1. Compile just the injected blueprints
+  m_SymbolizeBlueprints([bp]);
   m_CompileBlueprints([bp]);
   // 2. Update derived states
   updateAndPublishDerivedBpLists(blueprints);
@@ -381,6 +389,7 @@ export function UpdateBlueprint(projId, bpid, scriptText) {
     blueprints.push(blueprint);
   }
   // 1. Compile the new blueprint
+  m_SymbolizeBlueprints([blueprint]);
   m_CompileBlueprints([blueprint]);
   // 2. Update derived states
   updateKey({ projId });
