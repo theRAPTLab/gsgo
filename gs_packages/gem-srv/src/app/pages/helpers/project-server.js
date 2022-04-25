@@ -184,16 +184,8 @@ async function Initialize() {
   }
 
   // 2. Load Model from DB
-  UR.CallMessage('LOCAL:DC_LOAD_PROJECT', { projId: CURRENT_PROJECT_ID })
-    .then(status => {
-      const { err } = status;
-      if (err) console.error(err);
-      return status;
-    })
-    .then(status => {
-      if (DBG) console.log('DC_LOAD_PROJECT status:', status);
-      SIMCTRL.SimPlaces(CURRENT_PROJECT);
-    });
+  await ACProject.LoadProjectFromAsset(CURRENT_PROJECT_ID);
+  SIMCTRL.SimPlaces(CURRENT_PROJECT);
 
   // 3. Register as 'Sim' Device
   // devices templates are defined in class-udevice.js

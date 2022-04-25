@@ -25,7 +25,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as PROJECT from 'modules/appcore/ac-project';
 import * as ASSETS from 'modules/asset_core';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
@@ -35,14 +34,6 @@ const DBG = false;
 
 /// PROJECT DATA LOADER ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/** Read project data from assets and broadcast loaded data to ac-project */
-async function m_LoadProjectFromAsset(projId) {
-  const PROJECT_LOADER = ASSETS.GetLoader('projects');
-  const project = PROJECT_LOADER.getProjectByProjId(projId);
-  UR.RaiseMessage('*:DC_PROJECT_UPDATE', { projId, project });
-  return { ok: true };
-}
 
 /** When the project data is changed, FileWriteProject will PUT the changes
  *  to the server, and the server will update the *.gemproj file.
@@ -96,12 +87,6 @@ async function CreateFileFromTemplate(templateId, newfilename) {
 
 /// URSYS HANDLERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-async function HandleLoadProject(data: { projId: string }) {
-  if (data === undefined || data.projId === undefined)
-    throw new Error(`${[...PR]} Called with bad projId: ${data}`);
-  return m_LoadProjectFromAsset(data.projId);
-}
 async function HandleWriteProject(data: { projId: string; project: any }) {
   if (DBG) console.log('WRITE PROJECT', data);
   m_FileWriteProject(data.projId, data.project);
@@ -125,7 +110,6 @@ async function HandleWriteInstances(data: { projId: string; instances: any[] }) 
 /// URSYS API /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Handle both LOCAL and NET requests.  ('*' is deprecated)
-UR.HandleMessage('LOCAL:DC_LOAD_PROJECT', HandleLoadProject);
 UR.HandleMessage('LOCAL:DC_WRITE_PROJECT', HandleWriteProject);
 UR.HandleMessage('LOCAL:DC_WRITE_ROUNDS', HandleWriteRounds);
 UR.HandleMessage('LOCAL:DC_WRITE_BLUEPRINTS', HandleWriteBlueprints);

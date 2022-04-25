@@ -65,6 +65,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import * as ASSETS from 'modules/asset_core';
+import * as DCPROJECT from 'modules/datacore/dc-project';
 import * as ACMetadata from './ac-metadata';
 import * as ACRounds from './ac-rounds';
 import * as ACBlueprints from './ac-blueprints';
@@ -74,6 +76,13 @@ import * as ACInstances from './ac-instances';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AC-PROJECT', 'TagCyan');
 const DBG = false;
+
+/// ACCESSORS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// return copies
+
+/// STATE MANAGER /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// The module name will be used as args for UR.ReadStateGroups
 const STATE = new UR.class.StateGroupMgr('project');
@@ -101,12 +110,6 @@ const { _publishState } = STATE;
 const { addChangeHook, deleteChangeHook } = STATE;
 const { addEffectHook, deleteEffectHook } = STATE;
 
-/// ACCESSORS /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// return copies
-
-/// LOADER ////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API:
  */
 function updateAndPublish(project) {
@@ -213,21 +216,26 @@ async function TriggerProjectStateUpdate(projId) {
   updateAndPublish(project);
 }
 
-/// URSYS HANDLERS ////////////////////////////////////////////////////////////
+/// AC-PROEJCT LOADER //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function HandleProjectUpdate(data: { projId: string; project: any }) {
-  const { projId, project } = data;
+
+function m_HandleProjectUpdate(projId, project) {
   updateKey({ projId });
   updateAndPublish(project);
 }
 
-/// URSYS API /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HandleMessage('*:DC_PROJECT_UPDATE', HandleProjectUpdate);
+/** Read project data from assets and broadcast loaded data to ac-project */
+async function LoadProjectFromAsset(projId) {
+  const PROJECT_LOADER = ASSETS.GetLoader('projects');
+  const project = PROJECT_LOADER.getProjectByProjId(projId);
+  m_HandleProjectUpdate(projId, project);
+  return { ok: true };
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
+  LoadProjectFromAsset,
   GetProject, // return current project{}
   updateAndPublish, // updates project{} and updates subscribers
   TriggerProjectStateUpdate // force-notify all subscribers
