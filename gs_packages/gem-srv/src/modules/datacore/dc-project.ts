@@ -32,13 +32,16 @@ import * as ASSETS from 'modules/asset_core';
 const PR = UR.PrefixUtil('DC-PROJ', 'TagPurple');
 const DBG = false;
 
-/// PROJECT DATA LOADER ///////////////////////////////////////////////////////
+let CURRENT_PROJECT: any = {}; // current project instance
+
+/// PROJECT DATA FILE IO //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/** When the project data is changed, FileWriteProject will PUT the changes
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** When the project data is changed, ProjectFileWrite will send the changes
  *  to the server, and the server will update the *.gemproj file.
  */
-async function m_FileWriteProject(projId, project) {
+async function ProjectFileWrite(projId, project) {
   // REVIEW: Should the url be parameterized, e.g. 'localhost' might be remote?
   const response = await fetch(`http://localhost/assets-update/${projId}`, {
     method: 'PUT',
@@ -54,75 +57,90 @@ async function m_FileWriteProject(projId, project) {
   return result;
 }
 
-/** When any subset of project data is changed (e.g. metadata, rounds,
- *  instances, or blueprints), we need to update the whole project data
- *  object, then write it to disk.
- *  Called locally by the various `HandelWrite*` methods.
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Read project data from assets and broadcast loaded data to ac-project */
+async function ProjectFileLoadFromAsset(projId) {
+  const PROJECT_LOADER = ASSETS.GetLoader('projects');
+  const project = await PROJECT_LOADER.getProjectByProjId(projId);
+  return project;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: During Login, a user can elect to create a new project
+ *  file out of existing template file.  PanelSelectSimulation
+ *  calls this directly.  This will load the template file,
+ *  rename it, then write it to disk.
  */
-function m_UpdateProjectFile(projId, data) {
-  const project = PROJECT.GetProject(projId);
+async function ProjectFileCreateFromTemplate(templateId, newfilename) {
+  // 1. open the template file
+  const PROJECT_LOADER = ASSETS.GetLoader('projects');
+  const project = PROJECT_LOADER.getProjectByProjId(templateId);
+  if (project === undefined)
+    throw new Error(
+      `ProjectFileCreateFromTemplate could not find template ${templateId}`
+    );
+  // 2. update the id
+  project.id = newfilename;
+  // 3. save as a new file
+  return ProjectFileWrite(newfilename, project);
+}
+
+/** Reconstructs project data by merging income updated 'data' with the
+ *  existing CURRENT_PROJECT data.
+ *  When any subset of project data is changed (e.g. metadata, rounds,
+ *  instances, or blueprints), we need to update the whole project data
+ *  object.
+ *  Sends the updated project to the server for writing to disk.
+ */
+async function m_UpdateProjectFile(projId, data) {
+  const project = CURRENT_PROJECT;
   project.id = data.id || project.id;
   project.label = data.label || project.label;
   project.metadata = data.metadata || project.metadata;
   project.rounds = data.rounds || project.rounds;
   project.blueprints = data.blueprints || project.blueprints;
   project.instances = data.instances || project.instances;
-  m_FileWriteProject(projId, project);
+  CURRENT_PROJECT = project;
+  await ProjectFileWrite(projId, project);
+  return project;
 }
 
-/** API: export a project as JSON file via browser */
-async function CreateFileFromTemplate(templateId, newfilename) {
-  // 1. open the template file
-  const PROJECT_LOADER = ASSETS.GetLoader('projects');
-  const project = PROJECT_LOADER.getProjectByProjId(templateId);
-  if (project === undefined)
-    throw new Error(
-      `CreateFileFromTemplate could not find template ${templateId}`
-    );
-  // 2. update the id
-  project.id = newfilename;
-  // 3. save as a new file
-  return m_FileWriteProject(newfilename, project);
-}
-
-/// URSYS HANDLERS ////////////////////////////////////////////////////////////
+/// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function HandleWriteProject(data: { projId: string; project: any }) {
-  if (DBG) console.log('WRITE PROJECT', data);
-  m_FileWriteProject(data.projId, data.project);
+
+/** Stores 'project' in CURRENT_PROJECT */
+function SetCurrentProject(project) {
+  CURRENT_PROJECT = project;
 }
-async function HandleWriteRounds(data: { projId: string; rounds: any[] }) {
-  if (DBG) console.log('WRITE ROUND', data);
-  m_UpdateProjectFile(data.projId, data);
-}
-async function HandleWriteBlueprints(data: {
-  projId: string;
-  blueprints: any[];
-}) {
-  if (DBG) console.log('WRITE BLUEPRINTS', data);
-  m_UpdateProjectFile(data.projId, data);
-}
-async function HandleWriteInstances(data: { projId: string; instances: any[] }) {
-  if (DBG) console.log('WRITE INSTANCES', data);
-  m_UpdateProjectFile(data.projId, data);
+function GetCurrentProject() {
+  return CURRENT_PROJECT;
 }
 
-/// URSYS API /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Handle both LOCAL and NET requests.  ('*' is deprecated)
-UR.HandleMessage('LOCAL:DC_WRITE_PROJECT', HandleWriteProject);
-UR.HandleMessage('LOCAL:DC_WRITE_ROUNDS', HandleWriteRounds);
-UR.HandleMessage('LOCAL:DC_WRITE_BLUEPRINTS', HandleWriteBlueprints);
-UR.HandleMessage('LOCAL:DC_WRITE_INSTANCES', HandleWriteInstances);
+/** Used to update components of the project data file.
+ *  Will call m_UpdateProjectFile to merge the components into the main
+ *  project file and send it to the server for writing to disk.
+ *  @param {object} projData - {id, label, metadata, rounds, blueprints, instances}
+ *                            Can be any or all of the keys.
+ */
+function UpdateProjectData(projId, projData) {
+  if (DBG) console.log('UpdateProjectData', projId, projData);
+  return m_UpdateProjectFile(projId, projData);
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
-  CreateFileFromTemplate // called by PanelSelectSimulation.jsx
+  SetCurrentProject,
+  GetCurrentProject,
+  UpdateProjectData,
+  ProjectFileWrite,
+  ProjectFileLoadFromAsset,
+  ProjectFileCreateFromTemplate
 };
 
 /// TEST CODE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// This is used to test the server's ability to handle a project file write.
 function putproject() {
   console.log('putprojec!t');
   fetch('http://localhost/assets-update/aquatic', {
