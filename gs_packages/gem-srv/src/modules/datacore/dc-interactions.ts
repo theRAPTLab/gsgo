@@ -2,6 +2,14 @@
 
   INTERACTIONS
 
+  Used in `when` clauses, interaction code runs outside of the individual
+  agent blueprints to perform both single and paired 'tests" which
+  produce a list of agent instances that passed the test. It is part of
+  the script engine's runtime state.
+
+  This is a complicated module; it's not intended for use by non-expert
+  users of GEMSTEP.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import RNG from 'modules/sim/sequencer';
@@ -10,7 +18,7 @@ import { GetFunction } from './dc-named-methods';
 
 /// INTERACTION UPDATE TESTS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export const INTERACTION_CACHE = new Map<
+const INTERACTION_CACHE = new Map<
   string,
   {
     singleTestArgs?: Array<any>;
@@ -27,7 +35,7 @@ function m_MakeInteractionKey(args: any[]): string {
  *  of parameters, if it doesn't already exist. Returns the generated key
  *  so runtime code can request the passing agents
  */
-export function RegisterSingleInteraction(testArgs: any[]) {
+function RegisterSingleInteraction(testArgs: any[]) {
   const key = m_MakeInteractionKey(testArgs);
   if (!INTERACTION_CACHE.has(key)) {
     INTERACTION_CACHE.set(key, {
@@ -38,7 +46,7 @@ export function RegisterSingleInteraction(testArgs: any[]) {
   return key;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function RegisterPairInteraction(testArgs: any[]) {
+function RegisterPairInteraction(testArgs: any[]) {
   const key = m_MakeInteractionKey(testArgs);
   if (!INTERACTION_CACHE.has(key)) {
     INTERACTION_CACHE.set(key, {
@@ -49,18 +57,18 @@ export function RegisterPairInteraction(testArgs: any[]) {
   return key;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetInteractionResults(key: string): Array<any> {
+function GetInteractionResults(key: string): Array<any> {
   const cn = INTERACTION_CACHE.get(key);
   if (cn === undefined) return [];
   return cn.passed;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetAllInteractions() {
+function GetAllInteractions() {
   const conditions = INTERACTION_CACHE.values();
   return conditions; // iterator of entries
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function DeleteAllInteractions() {
+function DeleteAllInteractions() {
   INTERACTION_CACHE.clear();
 }
 
@@ -72,7 +80,7 @@ export function DeleteAllInteractions() {
  *  stackoverflow.com/a/12646864/2684520
  *  blog.codinghorror.com/the-danger-of-naivete/
  */
-export function ShuffleArray(array) {
+function ShuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(RNG() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
@@ -83,7 +91,7 @@ export function ShuffleArray(array) {
  *  test looks like (agent)=>boolean
  *  FUTURE OPTIMIZATION will cache the results based on key
  */
-export function SingleAgentFilter(type: string, testA: string, ...args: any) {
+function SingleAgentFilter(type: string, testA: string, ...args: any) {
   const agents = GetAgentsByType(type);
   const testFunc = GetFunction(testA);
   ShuffleArray(agents);
@@ -99,12 +107,7 @@ export function SingleAgentFilter(type: string, testA: string, ...args: any) {
 /** return pairs of agents the pass testAB
  *  test looks like (agentA, agentB)=>boolean
  */
-export function PairAgentFilter(
-  A: string,
-  testAB: string,
-  B: string,
-  ...args: any
-) {
+function PairAgentFilter(A: string, testAB: string, B: string, ...args: any) {
   const setA = GetAgentsByType(A);
   const setB = GetAgentsByType(B);
   const testFunc = GetFunction(testAB);
@@ -120,3 +123,15 @@ export function PairAgentFilter(
   );
   return [pass, fail];
 }
+
+/// MODULE EXPORTS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export {
+  RegisterSingleInteraction,
+  RegisterPairInteraction,
+  GetInteractionResults,
+  GetAllInteractions,
+  DeleteAllInteractions,
+  SingleAgentFilter,
+  PairAgentFilter
+};

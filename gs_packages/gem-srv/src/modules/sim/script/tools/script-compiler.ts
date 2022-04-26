@@ -27,28 +27,14 @@
 
 import UR from '@gemstep/ursys/client';
 
-import {
-  TScriptUnit,
-  TSMCProgram,
-  IToken,
-  TSymbolData,
-  EBundleType,
-  TSymbolRefs,
-  TValidatedScriptUnit
-} from 'lib/t-script.d';
+import { TScriptUnit, TSMCProgram, IToken, EBundleType } from 'lib/t-script.d';
 import SM_State from 'lib/class-sm-state';
 import SM_Bundle from 'lib/class-sm-bundle';
 
-import { GetKeyword, GetAllKeywords } from 'modules/datacore/dc-script-engine';
+import * as DCENGINE from 'modules/datacore/dc-script-engine';
 import { GetProgram } from 'modules/datacore/dc-named-methods';
-import {
-  BundleOut,
-  SetBundleName,
-  AddSymbol,
-  BundleTag
-} from 'modules/datacore/dc-script-bundle';
+import * as DCBUNDLER from 'modules/datacore/dc-script-bundle';
 import GAgent from 'lib/class-gagent';
-import { VSymError } from './symbol-helpers';
 
 import { ParseExpression } from './class-expr-parser-v2';
 import GScriptTokenizer, {
@@ -82,6 +68,8 @@ function m_StripErrors(code: TSMCProgram, unit: TScriptUnit, ...args: any[]) {
   });
   return out;
 }
+
+/// SUPPORT API ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** utility to return the 'decoded' value of a token
  *  note: gscript-tokenizer now has an improved version of this called
@@ -113,12 +101,11 @@ function DecodeToken(tok: IToken): any {
   if (type === 'expr') return { expr: ParseExpression(value) };
   if (type === 'comment') return { comment: value };
   if (type === 'directive') return '_pragma';
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   if (type === 'block') return CompileScript(value);
   if (type === 'program') return GetProgram(value);
   throw Error(`DecodeToken unhandled type ${type}`);
 }
-
-/// SUPPORT API ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given a ScriptUnit, return the 'decoded' tokens as usable valuables when
  *  it is time to invoke a compiler function
@@ -139,7 +126,7 @@ function DecodeStatement(toks: TScriptUnit): any[] {
  *  AFTER the statement tokens has been decoded as far as it can be by
  *  DecodeStatement()
  */
-function is_Keyword(tok: any): boolean {
+function isKeywordString(tok: any): boolean {
   // don't compile comment lines, but compile everything else
   if (typeof tok === 'string') {
     if (tok.length > 0) return true;
@@ -167,61 +154,12 @@ function CompileStatement(statement: TScriptUnit, idx?: number): TSMCProgram {
   let kw = kwArgs[0];
   // let's compile!
   // if first keyword is invalid return empty array (no code generated)
-  if (!is_Keyword(kw)) return [];
+  if (!isKeywordString(kw)) return [];
   // otherwise, compile the statement!
-  kwProcessor = GetKeyword(kw);
-  if (!kwProcessor) kwProcessor = GetKeyword('keywordErr');
+  kwProcessor = DCENGINE.GetKeyword(kw);
+  if (!kwProcessor) kwProcessor = DCENGINE.GetKeyword('keywordErr');
   const compiledStatement = kwProcessor.compile(kwArgs, idx);
   return compiledStatement;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: A mirror of CompileStatement, extracts the symbol data as a separate
- *  pass so we don't have to rewrite the entire compiler and existing keyword
- *  code. Note that this does not recurse into statement blocks, because the
- *  only keywords in a statement that add symbol data are `addProp` and `when`
- *  which are always level 0 (not nested)
- */
-function SymbolizeStatement(statement: TScriptUnit, line: number): TSymbolData {
-  const kwArgs = DecodeStatement(statement); // replace with UnpackStatement
-  let kw = kwArgs[0];
-  if (kw === '') return {}; // blank lines emit no symbol info
-  if (!is_Keyword(kw)) return {}; // if !keyword return no symbol
-  const kwProcessor = GetKeyword(kw);
-  if (!kwProcessor) {
-    console.warn(`keyword processor ${kw} bad`);
-    return {
-      error: { code: 'errExist', info: `missing kwProcessor for: '${kw}'` }
-    };
-  }
-  // ***NOTE***
-  // May return empty object, but that just means there are no symbols produced.
-  // keywords don't return symbols unless they are adding props or features.
-  const symbols = kwProcessor.symbolize(kwArgs, line); // these are new objects
-  return symbols;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Given statement, return the associated validation data structure
- *  consisting of an array of ValidationTokens and a validationLog with
- *  debug information for each token in the array.
- */
-function ValidateStatement(
-  statement: TScriptUnit,
-  refs: TSymbolRefs
-): TValidatedScriptUnit {
-  const { bundle, globals } = refs || {};
-  const [kw] = DecodeStatement(statement);
-  const kwp = GetKeyword(kw);
-  if (kwp === undefined) {
-    const keywords = GetAllKeywords();
-    return {
-      validationTokens: [
-        new VSymError('errExist', `invalid keyword '${kw}'`, { keywords })
-      ]
-    };
-  }
-  // DO THE RIGHT THING II: return the Validation Tokens
-  kwp.validateInit({ bundle, globals });
-  return kwp.validate(statement);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Compile ScriptUnits into a TSMCProgram (TOpcode[]). It ignores
@@ -242,13 +180,14 @@ function CompileScript(script: TScriptUnit[]): TSMCProgram {
   return program;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** CompileBlueprint parses # DIRECTIVES to set up a program bundle */
+/** CompileBlueprint parses # DIRECTIVES to set up a program bundle. It
+ *  returns a NEW bundle, because there are times you want a bundle
+ *  but it doesn't actually store them.
+ */
 function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
   const fn = 'CompileBlueprint:';
-  let objcode;
+  let objcode: TSMCProgram;
   const bdl = new SM_Bundle();
-  // always add GAgent.Symbols, which are the default built-in props
-  AddSymbol(bdl, GAgent.Symbols);
   //
   if (!Array.isArray(script))
     throw Error(`${fn} script should be array, not ${typeof script}`);
@@ -259,7 +198,7 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
       const [lead, kw, bpName, bpParent] = DecodeStatement(stm);
       if (lead === '_pragma' && kw.toUpperCase() === 'BLUEPRINT') {
         if (DBG) console.log(...PR('compiling', bpName));
-        SetBundleName(bdl, bpName, bpParent);
+        DCBUNDLER.SetBundleName(bdl, bpName, bpParent);
         return;
       }
       throw Error(`${fn} # BLUEPRINT must be first line in script`);
@@ -268,7 +207,7 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
     // special case 2: tag processing
     const [lead, kw, tagName, tagValue] = DecodeStatement(stm);
     if (lead === '_pragma' && kw.toUpperCase() === 'TAG') {
-      BundleTag(bdl, tagName, tagValue);
+      DCBUNDLER.BundleTag(bdl, tagName, tagValue);
       return;
     }
 
@@ -277,15 +216,17 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
     objcode = m_StripErrors(objcode, stm);
     // save objcode to current bundle section, which can be changed
     // through pragma PROGRAM
-    BundleOut(bdl, objcode);
-    // add symbol data
-    const symbols = SymbolizeStatement(stm, ii);
-    AddSymbol(bdl, symbols);
+    DCBUNDLER.BundleOut(bdl, objcode);
+    // add symbol data TODO MOVE TO script-symbolizer
+    // const symbols = SymbolizeStatement(stm, ii);
+    // DCBUNDLER.AddSymbol(bdl, symbols);
   }); // script forEach
 
   if (bdl.name === undefined) throw Error(`${fn} missing BLUEPRINT directive`);
+  // always add GAgent.Symbols, which are the default built-in props
+  DCBUNDLER.AddSymbol(bdl, GAgent.Symbols);
+  // set type to "BLUEPRINT" (there are other bundle types too)
   bdl.setType(EBundleType.BLUEPRINT);
-  if (DBG) console.log(...PR(bdl.name, 'symbols:', bdl.symbols));
   return bdl;
 }
 
@@ -377,6 +318,5 @@ export {
   UnpackToken,
   DecodeToken,
   DecodeTokenPrimitive,
-  DecodeStatement,
-  ValidateStatement
+  DecodeStatement
 };

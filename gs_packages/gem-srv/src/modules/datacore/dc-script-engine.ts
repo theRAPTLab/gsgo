@@ -1,6 +1,14 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  SCRIPT TRANSPILER DATA
+  SIMULATION ENGINE ENTITIES
+
+  data store for all runtime script engine entities:
+  blueprints:    bundles of compiled code and metadata for an agent
+  keywords:      keyword processors
+  named scripts: TSMCPrograms that are named (UNUSED)
+  script events: named event triggers, store TSMCPrograms by blueprint name
+
+  conditions are stored in dc-interactions
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -23,6 +31,7 @@ const PR = UR.PrefixUtil('DCSCRP');
 const DBG = false;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// SCRIPT ENGINE STATE
 const BLUEPRINTS: Map<string, ISMCBundle> = new Map();
 const KEYWORDS: Map<string, IKeyword> = new Map();
 const SCRIPTS: Map<string, TScriptUnit[]> = new Map();

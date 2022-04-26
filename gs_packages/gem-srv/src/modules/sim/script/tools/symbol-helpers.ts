@@ -18,17 +18,12 @@
 
 import UR from '@gemstep/ursys/client';
 
-import {
-  GetAllKeywords,
-  GetFeature,
-  GetAllFeatures,
-  GetAllBlueprints,
-  UnpackArg,
-  UnpackToken,
-  TokenValue,
-  IsValidBundle,
-  GetAllVarCtors
-} from 'modules/datacore';
+import * as ENGINE from 'modules/datacore/dc-script-engine';
+import * as FEATURES from 'modules/datacore/dc-features';
+import * as BUNDLER from 'modules/datacore/dc-script-bundle';
+import * as VARS from 'modules/datacore/dc-varprops';
+import * as TOKENIZER from 'script/tools/class-gscript-tokenizer-v2';
+import * as PARSER from 'script/tools/class-expr-parser-v2'; // ParseExpression
 import {
   IToken,
   TSymbolData,
@@ -129,7 +124,7 @@ class SymbolHelper {
     const fn = 'setReferences:';
     const { bundle, globals } = refs || {};
     if (bundle) {
-      if (IsValidBundle(bundle)) this.refs.bundle = bundle;
+      if (BUNDLER.IsValidBundle(bundle)) this.refs.bundle = bundle;
       else throw Error(`${fn} invalid bundle`);
     }
     if (!bundle.symbols)
@@ -181,8 +176,8 @@ class SymbolHelper {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** returns a list of valid keywords for the script engine */
   allKeywords(token: IToken): TSymbolData {
-    const [type, value] = UnpackToken(token);
-    const keywords = GetAllKeywords();
+    const [type, value] = TOKENIZER.UnpackToken(token);
+    const keywords = ENGINE.GetAllKeywords();
     if (type !== 'identifier' && type !== 'directive') {
       this.scan_error = true;
       return new VSymError('errParse', 'no keyword token', {
@@ -259,7 +254,7 @@ class SymbolHelper {
     // error checking & type overrides
     const fn = 'objRef:';
     this.resetScope();
-    let [matchType, parts] = UnpackToken(token);
+    let [matchType, parts] = TOKENIZER.UnpackToken(token);
     if (DBG) console.log(...PR(`${fn}: ${matchType}:${parts}`));
     // was there a previous scope-breaking error?
     if (this.scanError())
@@ -329,7 +324,7 @@ class SymbolHelper {
    */
   methodName(token: IToken): TSymbolData {
     const fn = 'methodName:';
-    let [matchType, methodName] = UnpackToken(token);
+    let [matchType, methodName] = TOKENIZER.UnpackToken(token);
     if (DBG) console.log(...PR(`${fn}: ${matchType}:${methodName}`));
 
     // was there a previous scope-breaking error?
@@ -434,13 +429,13 @@ class SymbolHelper {
    */
   argSymbol(arg, tok): TSymbolData {
     const fn = 'argSymbol:';
-    const [argName, argType] = UnpackArg(arg);
-    const [tokType, tokVal] = UnpackToken(tok);
+    const [argName, argType] = ENGINE.UnpackArg(arg);
+    const [tokType, tokVal] = TOKENIZER.UnpackToken(tok);
     let symData;
 
     // a literal boolean value from token.value
     if (argType === 'boolean') {
-      let value = TokenValue(tok, 'value');
+      let value = TOKENIZER.TokenValue(tok, 'value');
       if (typeof value === 'boolean')
         symData = new VSymToken({ arg }, value.toString());
       else
@@ -448,7 +443,7 @@ class SymbolHelper {
     }
     // a literal number value from token.value
     if (argType === 'number') {
-      let value = TokenValue(tok, 'value');
+      let value = TOKENIZER.TokenValue(tok, 'value');
       if (typeof value === 'number')
         symData = new VSymToken({ arg }, value.toString());
       else
@@ -456,7 +451,7 @@ class SymbolHelper {
     }
 
     // a literal string from token.string
-    if (argType === 'string' && TokenValue(tok, 'string')) {
+    if (argType === 'string' && TOKENIZER.TokenValue(tok, 'string')) {
       symData = new VSymToken({ arg }, tokVal);
     }
 
@@ -467,23 +462,23 @@ class SymbolHelper {
     }
 
     // all symbols available in current bundle match token.objref
-    if (argType === 'objref' && TokenValue(tok, 'objref')) {
+    if (argType === 'objref' && TOKENIZER.TokenValue(tok, 'objref')) {
       symData = new VSymToken(this.bdl_scope, argName);
     }
 
     // all props, feature props in bundle match token.identifier
-    if (argType === 'prop' && TokenValue(tok, 'identifier')) {
+    if (argType === 'prop' && TOKENIZER.TokenValue(tok, 'identifier')) {
       symData = new VSymToken(this.bdl_scope, argName);
     }
 
     // all methods in bundle match token.identifier
-    if (argType === 'method' && TokenValue(tok, 'identifier')) {
+    if (argType === 'method' && TOKENIZER.TokenValue(tok, 'identifier')) {
       symData = new VSymToken(this.cur_scope, argName);
     }
 
     // all gvars available in system match token.identifier
-    if (argType === 'gvar' && TokenValue(tok, 'identifier')) {
-      const map = GetAllVarCtors();
+    if (argType === 'gvar' && TOKENIZER.TokenValue(tok, 'identifier')) {
+      const map = VARS.GetAllVarCtors();
       const ctors = {};
       const list = [...map.keys()];
       list.forEach(ctorName => {
@@ -494,20 +489,20 @@ class SymbolHelper {
 
     // all feature symbols in system match token.identifier
     // e.g. addFeature
-    if (argType === 'feature' && TokenValue(tok, 'identifier')) {
-      const map = GetAllFeatures();
+    if (argType === 'feature' && TOKENIZER.TokenValue(tok, 'identifier')) {
+      const map = FEATURES.GetAllFeatures();
       const features = {}; // { [featureName: string]: TSymbolData };
       const list = [...map.keys()];
       list.forEach(featName => {
-        features[featName] = GetFeature(featName).symbolize();
+        features[featName] = FEATURES.GetFeature(featName).symbolize();
       });
       symData = new VSymToken({ features }, argName);
     }
 
     // all blueprint symbols in project match token.identifier
     // e.g. when agent test, when agentA test agentB
-    if (argType === 'blueprint' && TokenValue(tok, 'identifier')) {
-      const list = GetAllBlueprints();
+    if (argType === 'blueprint' && TOKENIZER.TokenValue(tok, 'identifier')) {
+      const list = ENGINE.GetAllBlueprints();
       const blueprints = {};
       list.forEach(bundle => {
         blueprints[bundle.name] = bundle.symbols;
@@ -584,7 +579,7 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
     };
   }
   if (arg) {
-    const [name, type] = UnpackArg(arg);
+    const [name, type] = ENGINE.UnpackArg(arg);
     sv_data.arg = { info: arg, items: [name, type] };
   }
   return sv_data;
