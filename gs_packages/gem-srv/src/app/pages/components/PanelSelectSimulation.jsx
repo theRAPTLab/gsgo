@@ -3,10 +3,10 @@ import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as ASSETS from 'modules/asset_core';
+import * as DCPROJECT from 'modules/datacore/dc-project';
 
-import { CreateFileFromTemplate } from 'modules/datacore/dc-project'; // Have to import to load db
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import * as ACProjects from 'modules/appcore/ac-projects'; // Have to import to access state
+// MUST IMPORT -- Even though 'ACProjects' is not directly referenced, ave to import to access state
+import * as ACProjects from 'modules/appcore/ac-projects';
 
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../helpers/page-xui-styles';
@@ -124,7 +124,7 @@ class PanelSelectSimulation extends React.Component {
 
   async onCreateFileFromTemplate() {
     const { selectedTemplateId, filename } = this.state;
-    await CreateFileFromTemplate(selectedTemplateId, filename);
+    await DCPROJECT.ProjectFileCreateFromTemplate(selectedTemplateId, filename);
     // then open it
     const { onClick } = this.props;
     onClick(`project=${filename}`);
