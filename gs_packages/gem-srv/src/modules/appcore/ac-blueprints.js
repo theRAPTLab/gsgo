@@ -105,9 +105,9 @@ export function GetBlueprints() {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetBlueprint(bpid) {
+export function GetBlueprint(bpName) {
   const blueprints = _getKey('blueprints');
-  return blueprints.find(b => b.id === bpid);
+  return blueprints.find(b => b.name === bpName);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -120,7 +120,8 @@ export function GetBlueprint(bpid) {
 export function GetBlueprintIDsList(blueprints) {
   const bp = blueprints || _getKey('blueprints');
   return bp.map(b => {
-    return { id: b.id, label: b.label };
+    // This should use blueprint 'name' not the blueprint's gemproj id
+    return { id: b.name, label: b.name };
   });
 }
 
@@ -213,19 +214,19 @@ export function GetPozyxControlDefaultBpid() {
  * that have been defined by the blueprint.
  * Used to populate property menus when selecting properties to show
  * in InstanceInspectors
- * @param {string} bpid
+ * @param {string} bpName
  * @param {string} [modelId=currentModelId]
  * @return {Object[]} [...{ name, type, defaultValue, isFeatProp }]
  */
-export function GetBlueprintProperties(bpid) {
-  const blueprint = GetBlueprint(bpid);
+export function GetBlueprintProperties(bpName) {
+  const blueprint = GetBlueprint(bpName);
   if (!blueprint) return []; // blueprint was probably deleted
   return TRANSPILER.ExtractBlueprintProperties(blueprint.scriptText);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetBlueprintPropertiesMap(bpid) {
-  const blueprint = GetBlueprint(bpid);
+export function GetBlueprintPropertiesMap(bpName) {
+  const blueprint = GetBlueprint(bpName);
   if (!blueprint) return []; // blueprint was probably deleted
   return TRANSPILER.ExtractBlueprintPropertiesMap(blueprint.scriptText);
 }
@@ -387,11 +388,11 @@ export function UpdateBlueprint(projId, bpid, scriptText) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-export function DeleteBlueprint(bpid) {
+export function DeleteBlueprint(bpName) {
   const blueprints = _getKey('blueprints');
-  const index = blueprints.findIndex(b => b.id === bpid);
+  const index = blueprints.findIndex(b => b.name === bpName);
   if (index < 0) {
-    console.warn(...PR(`Trying to delete non-existent bpid ${bpid}`));
+    console.warn(...PR(`Trying to delete non-existent bpid ${bpName}`));
     return;
   }
   blueprints.splice(index, 1);
