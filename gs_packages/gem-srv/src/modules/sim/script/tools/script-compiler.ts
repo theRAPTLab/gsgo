@@ -27,21 +27,30 @@
 
 import UR from '@gemstep/ursys/client';
 
-import { TScriptUnit, TSMCProgram, IToken, EBundleType } from 'lib/t-script.d';
-import SM_State from 'lib/class-sm-state';
+import {
+  IKeyword,
+  IToken,
+  TScriptUnit,
+  TCompiledStatement,
+  TSMCProgram,
+  EBundleType,
+  TSymbolData,
+  TSymbolRefs,
+  TValidatedScriptUnit
+} from 'lib/t-script.d';
 import SM_Bundle from 'lib/class-sm-bundle';
 
 import * as DCENGINE from 'modules/datacore/dc-script-engine';
-import { GetProgram } from 'modules/datacore/dc-named-methods';
+import * as DCPROGRAMS from 'modules/datacore/dc-named-methods';
 import * as DCBUNDLER from 'modules/datacore/dc-script-bundle';
 import GAgent from 'lib/class-gagent';
+import { VSymError } from './symbol-helpers';
 
 import { ParseExpression } from './class-expr-parser-v2';
 import GScriptTokenizer, {
   IsValidToken,
   UnpackToken
 } from './class-gscript-tokenizer-v2';
-import { ScriptTest, BlueprintTest } from './test-data/td-compiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -51,8 +60,14 @@ const Scriptifier = new GScriptTokenizer();
 
 /// COMPILER SUPPORT FUNCTIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** filter-out errors in the code array, which are strings instead of functions */
-function m_StripErrors(code: TSMCProgram, unit: TScriptUnit, ...args: any[]) {
+/** filter-out errors in the code array, which are non-functions, so we are
+ *  returning a pure code array
+ */
+function m_StripErrors(
+  code: TCompiledStatement,
+  unit: TScriptUnit,
+  ...args: any[]
+): TSMCProgram {
   const out = code.filter(f => {
     if (typeof f === 'function') return true;
     if (Array.isArray(f)) {
@@ -66,7 +81,7 @@ function m_StripErrors(code: TSMCProgram, unit: TScriptUnit, ...args: any[]) {
       console.log(...PR(`fn: '${f}' ${args.join(' ')}`), unit);
     return false;
   });
-  return out;
+  return out as TSMCProgram;
 }
 
 /// SUPPORT API ///////////////////////////////////////////////////////////////
@@ -86,8 +101,7 @@ function DecodeTokenPrimitive(arg) {
   return value;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return 'expanded' version of argument, suitable for passing to a keyword
- *  compiler
+/** converts scriptToken to the runtime value pased to keyword.compile()
  */
 function DecodeToken(tok: IToken): any {
   const [type, value] = UnpackToken(tok);
@@ -103,7 +117,7 @@ function DecodeToken(tok: IToken): any {
   if (type === 'directive') return '_pragma';
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   if (type === 'block') return CompileScript(value);
-  if (type === 'program') return GetProgram(value);
+  if (type === 'program') return DCPROGRAMS.GetProgram(value);
   throw Error(`DecodeToken unhandled type ${type}`);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -140,6 +154,55 @@ function isKeywordString(tok: any): boolean {
   }
   return false;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: A mirror of CompileStatement, extracts the symbol data as a separate
+ *  pass so we don't have to rewrite the entire compiler and existing keyword
+ *  code. Note that this does not recurse into statement blocks, because the
+ *  only keywords in a statement that add symbol data are `addProp` and `when`
+ *  which are always level 0 (not nested)
+ */
+function SymbolizeStatement(statement: TScriptUnit, line: number): TSymbolData {
+  const kwArgs = DecodeStatement(statement); // replace with UnpackStatement
+  let kw = kwArgs[0];
+  if (kw === '') return {}; // blank lines emit no symbol info
+  if (!isKeywordString(kw)) return {}; // if !keyword return no symbol
+  const kwProcessor = DCENGINE.GetKeyword(kw);
+  if (!kwProcessor) {
+    console.warn(`keyword processor ${kw} bad`);
+    return {
+      error: { code: 'errExist', info: `missing kwProcessor for: '${kw}'` }
+    };
+  }
+  // ***NOTE***
+  // May return empty object, but that just means there are no symbols produced.
+  // keywords don't return symbols unless they are adding props or features.
+  const symbols = kwProcessor.symbolize(kwArgs, line); // these are new objects
+  return symbols;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Given statement, return the associated validation data structure
+ *  consisting of an array of ValidationTokens and a validationLog with
+ *  debug information for each token in the array.
+ */
+function ValidateStatement(
+  statement: TScriptUnit,
+  refs: TSymbolRefs
+): TValidatedScriptUnit {
+  const { bundle, globals } = refs || {};
+  const [kw] = DecodeStatement(statement);
+  const kwp = DCENGINE.GetKeyword(kw);
+  if (kwp === undefined) {
+    const keywords = DCENGINE.GetAllKeywords();
+    return {
+      validationTokens: [
+        new VSymError('errExist', `invalid keyword '${kw}'`, { keywords })
+      ]
+    };
+  }
+  // DO THE RIGHT THING II: return the Validation Tokens
+  kwp.validateInit({ bundle, globals });
+  return kwp.validate(statement);
+}
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -147,8 +210,11 @@ function isKeywordString(tok: any): boolean {
  *  to generate a TSMCProgram consisting of TOpcodes. This skips directives
  *  and comments, generating no code.
  */
-function CompileStatement(statement: TScriptUnit, idx?: number): TSMCProgram {
-  let kwProcessor;
+function CompileStatement(
+  statement: TScriptUnit,
+  idx?: number
+): TCompiledStatement {
+  let kwProcessor: IKeyword;
   // convert the tokens into actual values to feed the kw compiler
   const kwArgs = DecodeStatement(statement);
   let kw = kwArgs[0];
@@ -169,12 +235,12 @@ function CompileScript(script: TScriptUnit[]): TSMCProgram {
   const program: TSMCProgram = [];
   if (script.length === 0) return [];
   // compile unit-by-unit
-  let objcode: TSMCProgram;
+  let objcode: TCompiledStatement;
   script.forEach((statement, ii) => {
     if (statement[0] === '_pragma') return; // ignore directives
     objcode = CompileStatement(statement, ii);
     objcode = m_StripErrors(objcode, statement);
-    program.push(...objcode);
+    program.push(...(objcode as TSMCProgram));
   });
   // return TSMCProgram (TOpcode functions)
   return program;
@@ -186,8 +252,10 @@ function CompileScript(script: TScriptUnit[]): TSMCProgram {
  */
 function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
   const fn = 'CompileBlueprint:';
-  let objcode: TSMCProgram;
+  let objcode: TCompiledStatement;
   const bdl = new SM_Bundle();
+  // TODO: move the symbolizer to a new SymbolizeBlueprint() call
+  DCBUNDLER.AddSymbol(bdl, GAgent.Symbols);
   //
   if (!Array.isArray(script))
     throw Error(`${fn} script should be array, not ${typeof script}`);
@@ -217,9 +285,9 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
     // save objcode to current bundle section, which can be changed
     // through pragma PROGRAM
     DCBUNDLER.BundleOut(bdl, objcode);
-    // add symbol data TODO MOVE TO script-symbolizer
-    // const symbols = SymbolizeStatement(stm, ii);
-    // DCBUNDLER.AddSymbol(bdl, symbols);
+    // TODO: move the symbolizer to a new SymbolizeBlueprint() call
+    const symbols = SymbolizeStatement(stm, ii);
+    DCBUNDLER.AddSymbol(bdl, symbols);
   }); // script forEach
 
   if (bdl.name === undefined) throw Error(`${fn} missing BLUEPRINT directive`);
@@ -230,86 +298,6 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
   return bdl;
 }
 
-/// TESTS /////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestCompile(tests) {
-  const entries = Object.entries(tests);
-  console.group(...PR(`TEST: CompileScript (${entries.length} tests)`));
-  entries.forEach((kv, ii) => {
-    const [testName, testArgs] = kv;
-    // workaround out-of-date typescript compiler that doesn't recognize spread
-    const text = testArgs['text'].trim();
-    const ctx = { ...testArgs['ctx'] }; // shallow copy object
-    const stack = testArgs['stack'].slice(); // copy stack by value!!!
-    // const { text, ctx, stack } = testArgs;
-    console.group(...PR(`T${ii + 1} '${testName}'`));
-    console.groupCollapsed('SOURCE TEXT');
-    console.log(`%c${text}`, 'padding:4px 6px;background-color:LightYellow');
-    console.groupEnd();
-    const script = Scriptifier.tokenize(text);
-    const program = CompileScript(script);
-    const state = new SM_State(stack, ctx);
-    const agent = new GAgent('CompilerTest');
-    console.log('%cprogram:', 'color:brown', program);
-    console.group(`EXEC '${testName}' (test agent+context)`);
-    console.log('IN  stack:', state.stack, 'ctx:', state.ctx);
-    program.forEach((op, idx) => {
-      if (typeof op !== 'function')
-        console.warn(`op ${idx} is not a function, got ${typeof op}`, op);
-      op(agent, state);
-    });
-    console.log('OUT stack:', state.stack, 'ctx:', state.ctx);
-    console.groupEnd();
-    console.groupEnd();
-  });
-  console.groupEnd();
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestCompileBlueprint(tests) {
-  const entries = Object.entries(tests);
-  console.group(...PR(`TEST: CompileBlueprint (${entries.length} tests)`));
-  entries.forEach((kv, ii) => {
-    const [testName, testArgs] = kv;
-    // workaround out-of-date typescript compiler that doesn't recognize spread
-    const text = testArgs['text'].trim();
-    console.group(...PR(`T${ii + 1} '${testName}'`));
-    console.groupCollapsed('SOURCE TEXT');
-    console.log(`%c${text}`, 'padding:4px 6px;background-color:LightYellow');
-    console.groupEnd();
-    const script = Scriptifier.tokenize(text);
-    const bdl = CompileBlueprint(script);
-    const bdlName = bdl.name;
-    const programs = bdl.getPrograms();
-    console.group(...PR(`bundle:'${bdlName}'`));
-    Object.entries(programs).forEach(([type, program]) => {
-      const agent = new GAgent('CompilerTest');
-      console.log('%cprogram:', 'color:brown', type, program);
-      console.group(`EXEC '${testName}' (test agent+context)`);
-      agent.exec(program);
-      console.groupEnd();
-    });
-    console.groupEnd();
-    console.groupEnd();
-    console.groupEnd();
-  });
-  console.groupEnd();
-}
-
-/// CONSOLE TOOL INSTALL //////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if (DBG)
-  UR.AddConsoleTool({
-    'run_compiler_tests': () => {
-      console.clear();
-      TestCompile(ScriptTest);
-    },
-    'run_blueprint_tests': () => {
-      console.clear();
-      TestCompileBlueprint(BlueprintTest);
-    }
-  });
-// UR.HookPhase('UR/APP_START', () => TestCompile(Script));
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export { CompileScript, CompileBlueprint };
@@ -318,5 +306,7 @@ export {
   UnpackToken,
   DecodeToken,
   DecodeTokenPrimitive,
-  DecodeStatement
+  DecodeStatement,
+  SymbolizeStatement,
+  ValidateStatement
 };

@@ -5,8 +5,6 @@
   AGENTS. It exposes the various elements of the script engine that affect
   the simulator, which is controlled via the `api-sim` module.
 
-
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
@@ -107,7 +105,9 @@ export {
   DecodeTokenPrimitive, // utility: to convert a scriptToken into runtime data
   DecodeToken, // utility: with DecodeTokenPrimitive, converts a token into runtime entity
   UnpackToken, // utility: more useful version of DecodeToken
-  DecodeStatement // utility: works with DecodeToken to create runtime enties
+  DecodeStatement, // utility: works with DecodeToken to create runtime enties
+  SymbolizeStatement, // utility: extract symbols defined by a keyword
+  ValidateStatement // utility: check script tokens against symbols
 } from 'script/tools/script-compiler';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// API: These methods make new agents from registered blueprints that are
@@ -117,11 +117,6 @@ export {
   MakeAgent, // BlueprintName => Agent
   RemoveAgent
 };
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// API: run validation over a script
-export {
-  ValidateStatement // tests the statement for correct syntax and typing
-} from 'script/tools/script-validator';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// FORWARDED API: convert text to tokenized scripts
 export {

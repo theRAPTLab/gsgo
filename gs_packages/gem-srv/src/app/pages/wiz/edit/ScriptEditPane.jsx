@@ -160,13 +160,10 @@ function TokenTyper(props) {
   // TODO: this manipulation should all be moved to a WIZCORE method
   // as much as possible
   const { sel_linepos: pos, validation, scriptToken } = selection;
-  console.log(selection);
   const { validationTokens: vtoks, validationLog } = validation;
   const vtok = vtoks[pos - 1];
   const { arg, gsType, methodSig, unitText } = vtok; // we want to SWITCH ON THIS
   const { name, args: methodArgs, info } = methodSig || {}; // HACK FOR TESTING and not breaking other tokens
-
-  console.log('unitText', unitText);
   // end TODO
   const processNumberInput = e => {
     e.preventDefault();

@@ -6,10 +6,9 @@
 
 import UR from '@gemstep/ursys/client';
 import {
-  TOpcode,
+  TCompiledStatement,
   ISMCBundle,
   EBundleType,
-  TBundleSymbols,
   TSymbolData
 } from 'lib/t-script.d';
 
@@ -169,7 +168,7 @@ export function BundleTag(
 /** main API for add a program to a bundle. It does not check the bundle
  *  type because it may not have been set yet.
  */
-export function BundleOut(bdl: ISMCBundle, prog: TOpcode[]) {
+export function BundleOut(bdl: ISMCBundle, prog: TCompiledStatement) {
   if (typeof bdl !== 'object') throw Error(`${bdl} is not an object`);
   if (!bdl[BUNDLE_OUT]) bdl[BUNDLE_OUT] = [];
   // console.log(`writing ${prog.length} opcode(s) to [${BUNDLE_OUT}]`);

@@ -69,18 +69,17 @@ export class prop extends Keyword {
   /** custom validation, overriding the generic validation() method of the
    *  base Keyword class.
    */
-  // validate(unit: TScriptUnit): TValidatedScriptUnit {
-  //   // super.validate(unit); // do basic sanity checks
-  //   const vtoks = []; // validation token array
-  //   const [kwTok, objrefTok, methodTok, ...argToks] = unit; // get arg pattern
-  //   // returns symbols for each dtok position excepting the keyword
-  //   vtoks.push(this.shelper.allKeywords(kwTok));
-  //   vtoks.push(this.shelper.objRef(objrefTok));
-  //   vtoks.push(this.shelper.methodName(methodTok));
-  //   vtoks.push(...this.shelper.argsList(argToks));
-  //   const log = this._dbgValidationLog(vtoks);
-  //   return { validationTokens: vtoks, validationLog: log };
-  // }
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    const vtoks = []; // validation token array
+    const [kwTok, objrefTok, methodTok, ...argToks] = unit; // get arg pattern
+    // returns symbols for each dtok position excepting the keyword
+    vtoks.push(this.shelper.allKeywords(kwTok));
+    vtoks.push(this.shelper.objRef(objrefTok));
+    vtoks.push(this.shelper.methodName(methodTok));
+    vtoks.push(...this.shelper.argsList(argToks));
+    const log = this._dbgValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: log };
+  }
 } // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
