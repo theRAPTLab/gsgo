@@ -346,9 +346,9 @@ export function InjectBlueprint(projId, blueprintDef) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-export function UpdateBlueprint(projId, bpid, scriptText) {
+export function UpdateBlueprint(projId, bpName, scriptText) {
   const blueprints = _getKey('blueprints');
-  const index = blueprints.findIndex(b => b.id === bpid);
+  const index = blueprints.findIndex(b => b.name === bpName);
   let blueprint;
   if (index > -1) {
     // Replace existing blueprint
