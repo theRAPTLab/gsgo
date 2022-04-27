@@ -340,7 +340,7 @@ export function InjectBlueprint(projId, blueprintDef) {
   const bp = new Blueprint(def);
   // 1. Compile just the injected blueprints
   m_SymbolizeBlueprints([bp]);
-  const bndl = m_CompileBlueprints([bp]);
+  m_CompileBlueprints([bp]);
   // NOTE: Not updating 'blueprints' state, nor writing to db
 }
 
