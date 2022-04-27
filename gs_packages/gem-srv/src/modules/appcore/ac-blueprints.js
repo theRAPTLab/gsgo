@@ -338,14 +338,9 @@ export function InjectBlueprint(projId, blueprintDef) {
     scriptText: blueprintDef.scriptText
   };
   const bp = new Blueprint(def);
-  // Remove it if it already exists
-  const blueprints = _getKey('blueprints').filter(b => b.id !== blueprintDef.id);
-  blueprints.push(bp.get());
   // 1. Compile just the injected blueprints
   m_SymbolizeBlueprints([bp]);
-  m_CompileBlueprints([bp]);
-  // 2. Update derived states
-  updateAndPublishDerivedBpLists(blueprints);
+  const bndl = m_CompileBlueprints([bp]);
   // NOTE: Not updating 'blueprints' state, nor writing to db
 }
 
