@@ -186,7 +186,11 @@ async function TriggerProjectStateUpdate(projId) {
 
 async function LoadProjectFromAsset(projId) {
   const project = await DCPROJECT.ProjectFileLoadFromAsset(projId);
-  if (!project) throw new Error(`Project ${projId} could not be loaded!`);
+  if (!project)
+    // eslint-disable-next-line no-alert
+    alert(
+      `The project "${projId}" could not be loaded!  Are you sure it exists?`
+    );
   // Init AppCore (AC) modules
   ACMetadata.SetMetadata(projId, project.metadata);
   ACRounds.SetRounds(projId, project.rounds);
