@@ -3,8 +3,8 @@
 
   Manage project data
 
-  A `project` is a bare bones data object representing a single GEMSTEP
-  project:
+  A `project` is a bare bones data object representing a the wrapper info
+  around single GEMSTEP project data:
 
     project = {
       id,
@@ -181,9 +181,13 @@ async function TriggerProjectStateUpdate(projId) {
   updateAndPublish(project);
 }
 
-/// AC-PROJECT LOADER //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+/** API: This is the main project data loader call.
+ *  Requests .gemproj file data from the server, and saves the data to
+ *  all the ac-* submodules as well as datacore.
+ *  project-server calls this during Initialize when Main is first loaded.
+ */
 async function LoadProjectFromAsset(projId) {
   const project = await DCPROJECT.ProjectFileLoadFromAsset(projId);
   if (!project)
@@ -196,8 +200,8 @@ async function LoadProjectFromAsset(projId) {
   ACRounds.SetRounds(projId, project.rounds);
   ACBlueprints.SetBlueprints(projId, project.blueprints);
   ACInstances.SetInstances(projId, project.instances);
-  // Update dc-project
-  DCPROJECT.SetCurrentProject(project); // update dc-project
+  // Update datacore
+  DCPROJECT.SetCurrentProject(project);
   updateKey({ projId });
   updateAndPublish(project);
 }
