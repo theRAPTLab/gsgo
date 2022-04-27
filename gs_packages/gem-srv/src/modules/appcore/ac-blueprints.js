@@ -11,9 +11,10 @@
 
 import UR from '@gemstep/ursys/client';
 import * as GAgent from 'lib/class-gagent';
-import * as DCENGINE from 'modules/datacore/dc-script-engine';
 import * as DCAGENTS from 'modules/datacore/dc-agents';
 import * as SIMAGENTS from 'modules/sim/sim-agents';
+import * as DCPROJECT from 'modules/datacore/dc-project';
+import * as DCENGINE from 'modules/datacore/dc-script-engine';
 import * as TRANSPILER from '../sim/script/transpiler-v2';
 import Blueprint from '../../lib/class-project-blueprint';
 
@@ -69,7 +70,6 @@ function m_SymbolizeBlueprints(blueprints) {
  */
 function m_CompileBlueprints(blueprints) {
   const bundles = blueprints.map(b => {
-    console.log('Compiling', b.id);
     const script = TRANSPILER.TextToScript(b.scriptText);
     const bundle = TRANSPILER.CompileBlueprint(script);
     TRANSPILER.RegisterBlueprint(bundle);
@@ -260,11 +260,11 @@ function updateAndPublishDerivedBpLists(blueprints) {
 }
 
 /// Update the main blueprint property
-/// AND also update dervied properties
 function updateAndPublish(blueprints) {
-  const bpidList = GetBlueprintIDsList(blueprints);
-  updateKey({ blueprints, bpidList });
-  _publishState({ blueprints, bpidList });
+  updateKey({ blueprints });
+  _publishState({ blueprints });
+  // update datacore
+  DCPROJECT.UpdateProjectData({ blueprints });
 }
 
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
@@ -302,21 +302,7 @@ function hook_Effect(effectKey, propOrValue, propValue) {
   if (effectKey === 'blueprints') {
     if (DBG) console.log(...PR(`effect ${effectKey} = ${propOrValue}`));
     // (a) start async autosave
-    if (AUTOTIMER) clearInterval(AUTOTIMER);
-    AUTOTIMER = setInterval(() => {
-      const projId = _getKey('projId');
-      const blueprints = propOrValue;
-      UR.CallMessage('LOCAL:DC_WRITE_BLUEPRINTS', {
-        projId,
-        blueprints
-      }).then(status => {
-        const { err } = status;
-        if (err) console.error(err);
-        return status;
-      });
-      clearInterval(AUTOTIMER);
-      AUTOTIMER = 0;
-    }, 1000);
+    DCPROJECT.ProjectFileRequestWrite();
   }
   // otherwise return nothing to handle procesing normally
 }
@@ -394,6 +380,8 @@ export function UpdateBlueprint(projId, bpid, scriptText) {
   // 2. Update derived states
   updateKey({ projId });
   updateAndPublish(blueprints);
+  updateAndPublishDerivedBpLists(blueprints);
+
   UR.WriteState('blueprints', 'blueprints', blueprints);
 }
 

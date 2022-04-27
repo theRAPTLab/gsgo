@@ -6,6 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import * as DCPROJECT from 'modules/datacore/dc-project';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -68,6 +69,8 @@ const { addEffectHook, deleteEffectHook } = STATE;
 function updateAndPublish(rounds) {
   updateKey({ rounds });
   _publishState({ rounds });
+  // update datacore
+  DCPROJECT.UpdateProjectData({ rounds });
 }
 
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
@@ -94,18 +97,7 @@ function hook_Effect(effectKey, propOrValue, propValue) {
   if (effectKey === 'rounds') {
     if (DBG) console.log(...PR(`effect ${effectKey} = ${propOrValue}`));
     // (a) start async autosave
-    if (AUTOTIMER) clearInterval(AUTOTIMER);
-    AUTOTIMER = setInterval(() => {
-      const projId = _getKey('projId');
-      const rounds = propOrValue;
-      UR.CallMessage('LOCAL:DC_WRITE_ROUNDS', { projId, rounds }).then(status => {
-        const { err } = status;
-        if (err) console.error(err);
-        return status;
-      });
-      clearInterval(AUTOTIMER);
-      AUTOTIMER = 0;
-    }, 1000);
+    DCPROJECT.ProjectFileRequestWrite();
   }
   // otherwise return nothing to handle procesing normally
 }
