@@ -114,11 +114,11 @@ export function GetBlueprint(bpName) {
 /**
  * Returns array of blueprint definitions defined for a project
  * Generally used by selector UI for `bpidList` objects
- * Pass 'blueprint' on initia calls before the key is set
+ * Pass 'blueprint' on initial calls before the key is set
  * @returns [...{id, label}]
  */
-export function GetBlueprintIDsList(blueprints) {
-  const bp = blueprints || _getKey('blueprints');
+export function GetBlueprintIDsList(bundles) {
+  const bp = bundles || _getKey('blueprints');
   return bp.map(b => {
     // This should use blueprint 'name' not the blueprint's gemproj id
     return { id: b.name, label: b.name };
@@ -234,8 +234,8 @@ export function GetBlueprintPropertiesMap(bpName) {
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function updateAndPublishDerivedBpLists(blueprints) {
-  const bpidList = GetBlueprintIDsList(blueprints);
   const bundles = DCENGINE.GetAllBlueprints();
+  const bpidList = GetBlueprintIDsList(bundles);
   // update list of blueprint pragma names from compiled bundle
   const bpNamesList = GetBlueprintNamesList(bundles);
   // updating charcontrol
