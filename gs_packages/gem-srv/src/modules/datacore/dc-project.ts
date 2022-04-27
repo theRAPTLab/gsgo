@@ -12,15 +12,47 @@
   be argued for. It was difficult to tease apart exactly what was intended
   because of the lack of comments.
 
-  MESSAGE-BASED CALL API (LOCAL ONLY)
-    LOCAL:DC_LOAD_PROJECT           -> HandleLoadProject
-    LOCAL:DC_WRITE_PROJECT          -> HandleWriteProject
-    LOCAL:DC_WRITE_ROUNDS           -> HandleWriteRounds
-    LOCAL:DC_WRITE_BLUEPRINTS       -> HandleWriteBlueprints
-    LOCAL:DC_WRITE_INSTANCES        -> HandleWriteInstances
+  There are essentially three types of calls handled by dc-project.
 
-  MODULE EXPORTS
-    CreateFileFromTemplate (templateId, newFileName)
+  1. Initial Project Load
+     When Main is first loaded, project data is loaded from the *.gemproj file
+     in the gs_assets folder.  project-server calls
+     ac-project.LoadProjectFromAsset, which in turn calls
+     DCPROJECT.ProjectFileLoadFromAsset which requests data from the server:
+
+        ACProject.LoadProjectFromAsset =>
+        DCPROJECT.ProjectFileLoadFromAsset
+
+     When the data is received by the server, ACProject loads the project
+     data to itsef and hands off components to its children, setting
+     ac-metadata, ac-rounds, ac-blueprint, ac-instances states.
+
+
+  2. Write to Disk when Project Data Changes
+     When metadata, rounds definitions, blueprint definitions, or
+     instance definitions change (as handled by ac-metadata, ac-rounds
+     ac-blueprints, and ac-instances), they call
+
+        UpdateProjectData,
+
+     which updates the CURRENT_PROJECT state.
+
+     If the updated data needs to be saved, they then call
+
+        ProjectFileRequestWrite
+
+     in their hook_Effect methods.  This will queue a project file
+     write to server with the next AUTOTIMER fire.  The use of the
+     AUTOTIMER is to reduce the frequency of updates to no more than
+     one per second.
+
+
+  3. Create new project file from a template
+     On the Login screen, if a user elects to create a new project
+     from an existing template file, PanelSelectSimulation calls
+     CreateFileFromTemplate, which will load the template file,
+     rename it, then save it as a project file.
+
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -33,6 +65,7 @@ const PR = UR.PrefixUtil('DC-PROJ', 'TagPurple');
 const DBG = false;
 
 let CURRENT_PROJECT: any = {}; // current project instance
+let AUTOTIMER;
 
 /// PROJECT DATA FILE IO //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -41,7 +74,7 @@ let CURRENT_PROJECT: any = {}; // current project instance
 /** When the project data is changed, ProjectFileWrite will send the changes
  *  to the server, and the server will update the *.gemproj file.
  */
-async function ProjectFileWrite(projId, project) {
+async function m_ProjectFileWrite(projId, project) {
   // REVIEW: Should the url be parameterized, e.g. 'localhost' might be remote?
   const response = await fetch(`http://localhost/assets-update/${projId}`, {
     method: 'PUT',
@@ -55,6 +88,20 @@ async function ProjectFileWrite(projId, project) {
   }
   const result = await response.json();
   return result;
+}
+
+/** Sends the CURRENT_PROJECT data to the server for writing to disk
+ *  This operates on a delay timer so saves only happen after a pause of
+ *  1 second to reduce the frequency of saves.
+ */
+function ProjectFileRequestWrite() {
+  if (AUTOTIMER) clearInterval(AUTOTIMER);
+  AUTOTIMER = setInterval(() => {
+    const projId = CURRENT_PROJECT.id;
+    m_ProjectFileWrite(projId, CURRENT_PROJECT);
+    clearInterval(AUTOTIMER);
+    AUTOTIMER = 0;
+  }, 1000);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -82,7 +129,7 @@ async function ProjectFileCreateFromTemplate(templateId, newfilename) {
   // 2. update the id
   project.id = newfilename;
   // 3. save as a new file
-  return ProjectFileWrite(newfilename, project);
+  return m_ProjectFileWrite(newfilename, project);
 }
 
 /** Reconstructs project data by merging income updated 'data' with the
@@ -92,7 +139,7 @@ async function ProjectFileCreateFromTemplate(templateId, newfilename) {
  *  object.
  *  Sends the updated project to the server for writing to disk.
  */
-async function m_UpdateProjectFile(projId, data) {
+async function m_UpdateProjectFile(data: any = {}) {
   const project = CURRENT_PROJECT;
   project.id = data.id || project.id;
   project.label = data.label || project.label;
@@ -101,7 +148,6 @@ async function m_UpdateProjectFile(projId, data) {
   project.blueprints = data.blueprints || project.blueprints;
   project.instances = data.instances || project.instances;
   CURRENT_PROJECT = project;
-  await ProjectFileWrite(projId, project);
   return project;
 }
 
@@ -122,9 +168,9 @@ function GetCurrentProject() {
  *  @param {object} projData - {id, label, metadata, rounds, blueprints, instances}
  *                            Can be any or all of the keys.
  */
-function UpdateProjectData(projId, projData) {
-  if (DBG) console.log('UpdateProjectData', projId, projData);
-  return m_UpdateProjectFile(projId, projData);
+function UpdateProjectData(projData) {
+  if (DBG) console.log('UpdateProjectData', projData);
+  return m_UpdateProjectFile(projData);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -133,7 +179,7 @@ export {
   SetCurrentProject,
   GetCurrentProject,
   UpdateProjectData,
-  ProjectFileWrite,
+  ProjectFileRequestWrite,
   ProjectFileLoadFromAsset,
   ProjectFileCreateFromTemplate
 };
