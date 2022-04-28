@@ -362,8 +362,11 @@ class CostumePack extends GFeature {
   // `dHue`, `dSat`, and `dVal` are the max change values
   // They are essentially +/-, e.g. if dHue is 0.2, then the random value
   // will change the existing value by +/- 0.2.
+  // If the current HSV of the agent has not been defined, we default
+  // to randomize everything.  (Otherwise, we end up with black if the
+  // color had been previously reset.)
   randomizeColorHSV(agent: IAgent, dHue: number, dSat: number, dVal: number) {
-    const [h, s, v] = this.getColorHSV(agent);
+    const [h = 0.5, s = 0.5, v = 0.5] = this.getColorHSV(agent);
     const newH = m_Clamp1(h + RNG() * 2 * dHue - dHue);
     const newS = m_Clamp1(s + RNG() * 2 * dSat - dSat);
     const newV = m_Clamp1(v + RNG() * 2 * dVal - dVal);
@@ -401,6 +404,11 @@ class CostumePack extends GFeature {
   // Removes the color overlay, reverting the sprite back to it's original colors
   resetColorize(agent: IAgent) {
     agent.prop.color.clear();
+    // clear other color settings
+    agent.prop.Costume.colorScaleIndex.setTo(undefined);
+    agent.prop.Costume.colorHue.setTo(undefined);
+    agent.prop.Costume.colorSaturation.setTo(undefined);
+    agent.prop.Costume.colorValue.setTo(undefined);
   }
   initHSVColorScale(
     agent: IAgent,
