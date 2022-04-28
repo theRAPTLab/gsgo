@@ -22,11 +22,10 @@ import UR from '@gemstep/ursys/client';
 export * from './dc-varprops';
 export * from './dc-agents';
 export * from './dc-features';
-export * from './dc-script-bundle';
+export * from './dc-sim-bundler';
 export * from './dc-script-engine';
 export * from './dc-named-methods';
-export * from './dc-interactions';
-export * from './dc-sim';
+export * from './dc-sim-conditions';
 export * from './dc-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

@@ -35,9 +35,8 @@ function ScriptToJSX(units: TScriptUnit[], options: any[]): any[] {
   if (DBG) console.groupCollapsed(...PR('RENDERING SCRIPT'));
 
   units.forEach((rawUnit, index) => {
-    let unit = DecodeStatement(
-      rawUnit
-    ); /* bug? DecodeToken will compile the script */
+    let unit =
+      DecodeStatement(rawUnit); /* bug? DecodeToken will compile the script */
 
     // ORIG: Skip blank lines
     // if (unit.length === 0) return;

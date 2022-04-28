@@ -6,7 +6,7 @@
 
 import Keyword from 'lib/class-keyword';
 import { TSMCProgram, TOpcode, TScriptUnit } from 'lib/t-script';
-import { CompilerState } from 'modules/datacore/dc-script-bundle';
+import { CompilerState } from 'modules/datacore/dc-sim-bundler';
 import {
   RegisterKeyword,
   UtilDerefArg,

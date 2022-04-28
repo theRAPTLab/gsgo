@@ -42,7 +42,7 @@ import SM_Bundle from 'lib/class-sm-bundle';
 
 import * as DCENGINE from 'modules/datacore/dc-script-engine';
 import * as DCPROGRAMS from 'modules/datacore/dc-named-methods';
-import * as DCBUNDLER from 'modules/datacore/dc-script-bundle';
+import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
 import GAgent from 'lib/class-gagent';
 import { VSymError } from './symbol-helpers';
 

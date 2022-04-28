@@ -20,7 +20,7 @@ import UR from '@gemstep/ursys/client';
 
 import * as ENGINE from 'modules/datacore/dc-script-engine';
 import * as FEATURES from 'modules/datacore/dc-features';
-import * as BUNDLER from 'modules/datacore/dc-script-bundle';
+import * as BUNDLER from 'modules/datacore/dc-sim-bundler';
 import * as VARS from 'modules/datacore/dc-varprops';
 import * as TOKENIZER from 'script/tools/class-gscript-tokenizer-v2';
 import * as PARSER from 'script/tools/class-expr-parser-v2'; // ParseExpression

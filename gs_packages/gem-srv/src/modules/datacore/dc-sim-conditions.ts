@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  INTERACTIONS
+  DATACORE SIM CONDITIONS
 
   Used in `when` clauses, interaction code runs outside of the individual
   agent blueprints to perform both single and paired 'tests" which
