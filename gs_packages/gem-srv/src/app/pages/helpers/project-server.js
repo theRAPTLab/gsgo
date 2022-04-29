@@ -31,6 +31,7 @@ import UR from '@gemstep/ursys/client';
 import RNG from 'modules/sim/sequencer';
 import * as TRANSPILER from 'script/transpiler-v2';
 import 'modules/datacore/dc-project'; // must import to load db
+import * as DCEngine from 'modules/datacore/dc-script-engine';
 import * as DCAgents from 'modules/datacore/dc-agents';
 import * as DCInputs from 'modules/datacore/dc-inputs';
 import * as ACProject from 'modules/appcore/ac-project';
@@ -184,16 +185,8 @@ async function Initialize() {
   }
 
   // 2. Load Model from DB
-  UR.CallMessage('LOCAL:DC_LOAD_PROJECT', { projId: CURRENT_PROJECT_ID })
-    .then(status => {
-      const { err } = status;
-      if (err) console.error(err);
-      return status;
-    })
-    .then(status => {
-      if (DBG) console.log('DC_LOAD_PROJECT status:', status);
-      SIMCTRL.SimPlaces(CURRENT_PROJECT);
-    });
+  await ACProject.LoadProjectFromAsset(CURRENT_PROJECT_ID);
+  SIMCTRL.SimPlaces(CURRENT_PROJECT);
 
   // 3. Register as 'Sim' Device
   // devices templates are defined in class-udevice.js
@@ -265,6 +258,18 @@ function RequestProject(projId = CURRENT_PROJECT_ID) {
   return ACProject.GetProject();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Handle ScriptEditor's request for a list of editable blueprints
+ *  Used by REQ_PROJ_DATA
+ * @return [ {name, scriptText, editor} ]
+ */
+function RequestBpEditList(projId = CURRENT_PROJECT_ID) {
+  if (projId === undefined)
+    throw new Error(
+      'Tried to current GetProject before setting CURRENT_PROJECT_ID'
+    );
+  return ACBlueprints.GetBpEditList(projId);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Used by REQ_PROJ_DATA and Main
  */
 function GetBoundary() {
@@ -287,12 +292,6 @@ function InjectBlueprint(data) {
     return;
   }
   ACBlueprints.InjectBlueprint(CURRENT_PROJECT_ID, blueprint);
-
-  // Compile and Register
-  // REVIEW: Should this be moved to ACBlueprints
-  const source = TRANSPILER.TextToScript(blueprint.scriptText);
-  const bundle = TRANSPILER.CompileBlueprint(source);
-  TRANSPILER.RegisterBlueprint(bundle);
 }
 
 /// TRANSFORM UTILITIES ///////////////////////////////////////////////////////
@@ -363,7 +362,7 @@ function GetPozyxBPNames() {
  *  @param {string} blueprintName
  */
 function BlueprintDelete(blueprintName) {
-  // Delete any insmtances using the blueprint
+  // Delete any instances using the blueprint
   ACInstances.DeleteInstancesByBPID(blueprintName);
   // Delete the old blueprint from project
   ACBlueprints.DeleteBlueprint(blueprintName);
@@ -424,8 +423,8 @@ function InstanceAdd(data, sendUpdate = true) {
 
   // If blueprint has `# PROGRAM INIT` we run that
   // otherwise we auto-place the agent around the center of the screen
-  const blueprint = ACBlueprints.GetBlueprint(data.blueprintName);
-  const hasInit = TRANSPILER.HasDirective(blueprint.script, 'INIT');
+  const blueprint = DCEngine.GetBlueprint(data.blueprintName);
+  const hasInit = blueprint.init && blueprint.init.length > 0;
   const SPREAD = 100;
   if (!hasInit && !instance.initScript) {
     instance.initScript = `prop x setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}
@@ -525,10 +524,10 @@ function m_RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
 function ScriptUpdate(data) {
   const source = TRANSPILER.TextToScript(data.script);
   const bundle = TRANSPILER.CompileBlueprint(source); // compile to get name
-  const bpid = bundle.name;
+  const bpName = bundle.name;
 
   // 1. Did the blueprint name change?  Remove the old blueprint
-  if (data.origBlueprintName !== bpid) {
+  if (data.origBlueprintName !== bpName) {
     // If name changed, remove the original
     BlueprintDelete(data.origBlueprintName);
     // NOTE We have to delete before adding the new blueprint otherwise
@@ -537,14 +536,14 @@ function ScriptUpdate(data) {
   }
 
   // 2. Add or update the blueprint
-  ACBlueprints.UpdateBlueprint(data.projId, bpid, data.script);
+  ACBlueprints.UpdateBlueprint(data.projId, bpName, data.script);
 
   // 3. Convert instances
-  if (data.origBlueprintName !== bpid) {
+  if (data.origBlueprintName !== bpName) {
     // If name changed, change existing instances to use the new blueprint
     // Name change should only happen after the new blueprint is defined
     // otherwise we end up defining instances for nonexisting blueprints
-    ACInstances.RenameInstanceBlueprint(data.origBlueprintName, bpid);
+    ACInstances.RenameInstanceBlueprint(data.origBlueprintName, bpName);
   }
 
   // 3. Clean the init scripts
@@ -553,7 +552,7 @@ function ScriptUpdate(data) {
   const instances = ACInstances.GetInstances();
   const cleanedInstances = instances.map(i => {
     // Only clean init scripts for the submitted blueprint
-    if (i.bpid !== bpid) return i;
+    if (i.bpid !== bpName) return i;
     return m_RemoveInvalidPropsFromInstanceInit(i, validPropNames);
   });
   ACInstances.WriteInstances(cleanedInstances);
@@ -568,7 +567,7 @@ function ScriptUpdate(data) {
   //    Also skip reset if we're in the middle of multiple rounds of
   //    running.  (RoundHasBeenStarted)
   if (!IsRunning() && !RoundHasBeenStarted()) {
-    DCAgents.GetInstancesType(bpid).forEach(a => DCAgents.DeleteAgent(a));
+    DCAgents.GetInstancesType(bpName).forEach(a => DCAgents.DeleteAgent(a));
     // Also delete input agents
     DCInputs.InputsReset();
   }
@@ -637,6 +636,7 @@ function InstanceHoverOut(data) {
 /// parameters above as I think they are supposed to be
 const FN_LOOKUP = {
   RequestProject,
+  RequestBpEditList,
   GetProjectBoundary: GetBoundary,
   GetCharControlBpidList,
 

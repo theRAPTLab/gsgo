@@ -6,6 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import * as DCPROJECT from 'modules/datacore/dc-project';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -118,6 +119,8 @@ function updateAndPublish(instances) {
   const instanceidList = GetInstanceidList(instances);
   updateKey({ instances, instanceidList });
   _publishState({ instances, instanceidList });
+  // update datacore
+  DCPROJECT.UpdateProjectData({ instances });
 }
 
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
@@ -169,23 +172,6 @@ function hook_Filter(key, propOrValue, propValue) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-function delayedInstancesSave() {
-  if (AUTOTIMER) clearInterval(AUTOTIMER);
-  AUTOTIMER = setInterval(() => {
-    const projId = _getKey('projId');
-    const instances = _getKey('instances');
-    UR.CallMessage('LOCAL:DC_WRITE_INSTANCES', {
-      projId,
-      instances
-    }).then(status => {
-      const { err } = status;
-      if (err) console.error(err);
-      return status;
-    });
-    clearInterval(AUTOTIMER);
-    AUTOTIMER = 0;
-  }, 1000);
-}
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Optionally fire once all state change hooks have been processed.
@@ -196,13 +182,13 @@ function hook_Effect(effectKey, propOrValue, propValue) {
     console.log(
       ...PR('ACInstances:hook_Effect called', effectKey, propOrValue, propValue)
     );
-  if (effectKey === 'currentInstance') delayedInstancesSave();
+  if (effectKey === 'currentInstance') DCPROJECT.ProjectFileRequestWrite();
 
   if (effectKey === 'instances') {
     if (DBG) console.log(...PR(`effect ${effectKey} = ${propOrValue}`));
     updateAndPublish(propOrValue);
     // (a) start async autosave
-    delayedInstancesSave();
+    DCPROJECT.ProjectFileRequestWrite();
   }
   // otherwise return nothing to handle procesing normally
 }
