@@ -3,8 +3,8 @@
 
   Manage project data
 
-  A `project` is a bare bones data object representing a single GEMSTEP
-  project:
+  A `project` is a bare bones data object representing a the wrapper info
+  around single GEMSTEP project data:
 
     project = {
       id,
@@ -65,6 +65,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import * as DCPROJECT from 'modules/datacore/dc-project';
 import * as ACMetadata from './ac-metadata';
 import * as ACRounds from './ac-rounds';
 import * as ACBlueprints from './ac-blueprints';
@@ -75,11 +76,17 @@ import * as ACInstances from './ac-instances';
 const PR = UR.PrefixUtil('AC-PROJECT', 'TagCyan');
 const DBG = false;
 
+/// ACCESSORS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// return copies
+
+/// STATE MANAGER /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 /// The module name will be used as args for UR.ReadStateGroups
 const STATE = new UR.class.StateGroupMgr('project');
 /// StateGroup keys must be unique across the entire app
 STATE.initializeState({
-  // dummy
   projId: undefined,
   project: {
     id: undefined,
@@ -101,29 +108,18 @@ const { _publishState } = STATE;
 const { addChangeHook, deleteChangeHook } = STATE;
 const { addEffectHook, deleteEffectHook } = STATE;
 
-/// ACCESSORS /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// return copies
-
-/// LOADER ////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API:
  */
 function updateAndPublish(project) {
-  const projId = _getKey('projId');
-  // Init AppCore (AC) modules
-  ACMetadata.SetMetadata(projId, project.metadata);
-  ACRounds.SetRounds(projId, project.rounds);
-  ACBlueprints.SetBlueprints(projId, project.blueprints);
-  ACInstances.SetInstances(projId, project.instances);
   // Init Self
   updateKey({ project });
   _publishState({ project });
+  // also update datacore
+  DCPROJECT.UpdateProjectData(project);
 }
 
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let AUTOTIMER;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Intercept changes to project so we can cache the changes
  *  for later write to DB after some time has elapsed. Returns the modified
@@ -142,7 +138,7 @@ function hook_Filter(key, propOrValue, propValue) {
   if (key === 'project') {
     const projId = _getKey('projId');
     const project = propOrValue;
-    ACMetadata.SetMetadata(projId, project.metadata);
+    if (project.metadata) ACMetadata.SetMetadata(projId, project.metadata);
     // REVIEW: Do we need to also update Rounds, Blueprints, and Instances?
   }
 
@@ -159,20 +155,7 @@ function hook_Effect(effectKey, propOrValue, propValue) {
   if (effectKey === 'project') {
     if (DBG) console.log(...PR(`effect ${effectKey} = ${propOrValue}`));
     // (a) start async autosave
-    if (AUTOTIMER) clearInterval(AUTOTIMER);
-    AUTOTIMER = setInterval(() => {
-      const projId = _getKey('projId');
-      const project = propOrValue;
-      UR.CallMessage('LOCAL:DC_WRITE_PROJECT', { projId, project }).then(
-        status => {
-          const { err } = status;
-          if (err) console.error(err);
-          return status;
-        }
-      );
-      clearInterval(AUTOTIMER);
-      AUTOTIMER = 0;
-    }, 1000);
+    DCPROJECT.ProjectFileRequestWrite();
   }
   // otherwise return nothing to handle procesing normally
 }
@@ -186,49 +169,47 @@ addEffectHook(hook_Effect);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Returns in-state project data
  */
-function GetProject(projId) {
-  // Get base data
-  let project = _getKey('project');
-  if (project === undefined || project.id === undefined) {
-    // Project not loaded yet
-    throw new Error(
-      'ac-projects.GetProject called before project state was defined!'
-    );
-  }
-
-  // Get State Data from Submodules
-  project.metadata = ACMetadata.GetMetadata();
-  project.rounds = ACRounds.GetRounds();
-  project.blueprints = ACBlueprints.GetBlueprints();
-  project.instances = ACInstances.GetInstances();
-
-  return project;
+function GetProject() {
+  return DCPROJECT.GetCurrentProject();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Updates the project state subscribers after a project reload / sim reset
  *  Called by project-server.ReloadProject()
  */
 async function TriggerProjectStateUpdate(projId) {
-  const project = _getKey('project');
+  const project = DCPROJECT.GetCurrentProject();
   updateAndPublish(project);
 }
 
-/// URSYS HANDLERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function HandleProjectUpdate(data: { projId: string; project: any }) {
-  const { projId, project } = data;
+
+/** API: This is the main project data loader call.
+ *  Requests .gemproj file data from the server, and saves the data to
+ *  all the ac-* submodules as well as datacore.
+ *  project-server calls this during Initialize when Main is first loaded.
+ */
+async function LoadProjectFromAsset(projId) {
+  const project = await DCPROJECT.ProjectFileLoadFromAsset(projId);
+  if (!project)
+    // eslint-disable-next-line no-alert
+    alert(
+      `The project "${projId}" could not be loaded!  Are you sure it exists?`
+    );
+  // Init AppCore (AC) modules
+  ACMetadata.SetMetadata(projId, project.metadata);
+  ACRounds.SetRounds(projId, project.rounds);
+  ACBlueprints.SetBlueprints(projId, project.blueprints);
+  ACInstances.SetInstances(projId, project.instances);
+  // Update datacore
+  DCPROJECT.SetCurrentProject(project);
   updateKey({ projId });
   updateAndPublish(project);
 }
 
-/// URSYS API /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HandleMessage('*:DC_PROJECT_UPDATE', HandleProjectUpdate);
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
+  LoadProjectFromAsset,
   GetProject, // return current project{}
-  updateAndPublish, // updates project{} and updates subscribers
   TriggerProjectStateUpdate // force-notify all subscribers
 };

@@ -201,7 +201,7 @@ class ProjectLoader extends AssetLoader {
   getProjectByProjId(projId) {
     const projassets = [...this._assetDict.values()];
     const projasset = projassets.find(a => a.rsrc.id === projId);
-    return projasset.rsrc;
+    return projasset ? projasset.rsrc : undefined;
   }
 } // end class
 

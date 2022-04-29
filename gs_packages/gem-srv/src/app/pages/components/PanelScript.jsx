@@ -367,7 +367,7 @@ class PanelScript extends React.Component {
     // select the new script
     if (this.origBlueprintName !== currentBlueprintName) {
       this.origBlueprintName = currentBlueprintName;
-      UR.RaiseMessage('SELECT_SCRIPT', { scriptId: currentBlueprintName });
+      UR.RaiseMessage('SELECT_SCRIPT', { bpName: currentBlueprintName });
     }
   }
 
@@ -411,7 +411,7 @@ class PanelScript extends React.Component {
       openConfirmDelete: false
     });
     if (yesDelete) {
-      UR.RaiseMessage('SELECT_SCRIPT', { scriptId: undefined }); // go to selection screen
+      UR.RaiseMessage('SELECT_SCRIPT', { bpName: undefined }); // go to selection screen
       UR.RaiseMessage('NET:BLUEPRINT_DELETE', {
         blueprintName: this.origBlueprintName
       });
