@@ -177,7 +177,8 @@ class Compiler extends React.Component {
     const source = TRANSPILER.TextToScript(this.text);
     this.source = source;
     console.groupCollapsed('parsed text');
-    TRANSPILER.ScriptToConsole(source);
+    // deprecated
+    // TRANSPILER.ScriptToConsole(source);
     console.groupEnd();
     this.setState({ source: JSON.stringify(source) });
   }

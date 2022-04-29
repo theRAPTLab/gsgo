@@ -10,7 +10,7 @@
 
 import Keyword from 'lib/class-keyword';
 import { TArguments, TOpcode } from 'lib/t-script';
-import { SetBundleOut } from 'modules/datacore/dc-script-bundle';
+import { SetBundleOut } from 'modules/datacore/dc-sim-bundler';
 import { RegisterKeyword } from 'modules/datacore/dc-script-engine';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

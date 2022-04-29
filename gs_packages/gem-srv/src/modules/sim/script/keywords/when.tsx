@@ -15,7 +15,7 @@ import {
   RegisterSingleInteraction,
   RegisterPairInteraction,
   GetInteractionResults
-} from 'modules/datacore/dc-interactions';
+} from 'modules/datacore/dc-sim-conditions';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

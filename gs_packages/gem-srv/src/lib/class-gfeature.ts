@@ -37,7 +37,7 @@
     // end of class
   }
   /// REGISTER FEATURE INSTANCE ///
-  Register(new FeaturePack('FeatureName');
+  RegisterFeature(new FeaturePack('FeatureName');
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 

@@ -1,32 +1,24 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  PROGRAM BUNDLER
+  DATACORE SIM BUNDLER
+
+  This module keeps track of the current blueprint compiling operation as well
+  as provide utility methods for manipulating Blueprint Bundle objects that
+  are passed to its utility methods.
+
+  The actual blueprint bundle is managed by DATACORE SIM RESOURCES, where it
+  is saved in the BUNDLES dictionary.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
 import {
-  TOpcode,
+  TCompiledStatement,
   ISMCBundle,
   EBundleType,
-  TBundleSymbols,
   TSymbolData
 } from 'lib/t-script.d';
-
-/// valid keys are defined in ISMCBundle, and values indicate the
-/// context that these program
-const BUNDLE_CONTEXTS = [
-  'define',
-  'init',
-  'update',
-  'think',
-  'exec',
-  'condition',
-  'event',
-  'test',
-  'conseq',
-  'alter'
-];
+import * as CHECK from './dc-type-check';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,15 +31,6 @@ const PR = UR.PrefixUtil('SYMBOL', 'TagPurple');
 let BUNDLE_NAME = ''; // the current compiling bundle name (blueprint)
 let BUNDLE_OUT = 'define'; // the current compiler output track
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function IsValidBundleProgram(name: string): boolean {
-  return BUNDLE_CONTEXTS.includes(name);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return true if the passed bundle string is valid */
-export function IsValidBundleType(type: EBundleType) {
-  return Object.values(EBundleType).includes(type as any);
-}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** set the datacore global var BUNDLE_NAME to to bpName, which tells the
  *  BundleOut(bdl,prog) call where the program should be added
@@ -80,7 +63,7 @@ export function SetBundleName(
  */
 export function SetBundleOut(str: string): boolean {
   const bdlKey = str.toLowerCase();
-  if (IsValidBundleProgram(bdlKey)) {
+  if (CHECK.IsValidBundleProgram(bdlKey)) {
     BUNDLE_OUT = bdlKey;
     return true;
   }
@@ -169,7 +152,7 @@ export function BundleTag(
 /** main API for add a program to a bundle. It does not check the bundle
  *  type because it may not have been set yet.
  */
-export function BundleOut(bdl: ISMCBundle, prog: TOpcode[]) {
+export function BundleOut(bdl: ISMCBundle, prog: TCompiledStatement) {
   if (typeof bdl !== 'object') throw Error(`${bdl} is not an object`);
   if (!bdl[BUNDLE_OUT]) bdl[BUNDLE_OUT] = [];
   // console.log(`writing ${prog.length} opcode(s) to [${BUNDLE_OUT}]`);

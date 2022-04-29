@@ -22,8 +22,7 @@ import {
   IKeyword,
   IScopeable,
   IAgent,
-  TOpcode,
-  TOpcodeErr,
+  TCompiledStatement,
   IToken,
   TScriptUnit,
   TSymbolData,
@@ -58,7 +57,7 @@ class Keyword implements IKeyword {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** override in subclass */
-  compile(unit: TScriptUnit, idx?: number): (TOpcode | TOpcodeErr)[] {
+  compile(unit: TScriptUnit, idx?: number): TCompiledStatement {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -131,9 +130,10 @@ class Keyword implements IKeyword {
       tok = unit[tokIndex];
       arg = this.args[tokIndex - 1] as TSymArg; // this.args also be TSymArg[]
       const [, argType] = UnpackArg(arg);
-      // (2B) is this a regular argument type?
+      // (2B) NOT an arglist? (a regular argument)?
       if (argType !== '{...}') {
         vtok = this.validateToken(arg, tok);
+        console.log(arg, vtok);
         vtoks.push(vtok); // save the vtok and do the next token
         tokIndex++;
         continue;
