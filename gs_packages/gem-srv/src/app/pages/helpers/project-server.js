@@ -511,10 +511,10 @@ function m_RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
 function ScriptUpdate(data) {
   const source = TRANSPILER.TextToScript(data.script);
   const bundle = TRANSPILER.CompileBlueprint(source); // compile to get name
-  const bpid = bundle.name;
+  const bpName = bundle.name;
 
   // 1. Did the blueprint name change?  Remove the old blueprint
-  if (data.origBlueprintName !== bpid) {
+  if (data.origBlueprintName !== bpName) {
     // If name changed, remove the original
     BlueprintDelete(data.origBlueprintName);
     // NOTE We have to delete before adding the new blueprint otherwise
@@ -523,14 +523,14 @@ function ScriptUpdate(data) {
   }
 
   // 2. Add or update the blueprint
-  ACBlueprints.UpdateBlueprint(data.projId, bpid, data.script);
+  ACBlueprints.UpdateBlueprint(data.projId, bpName, data.script);
 
   // 3. Convert instances
-  if (data.origBlueprintName !== bpid) {
+  if (data.origBlueprintName !== bpName) {
     // If name changed, change existing instances to use the new blueprint
     // Name change should only happen after the new blueprint is defined
     // otherwise we end up defining instances for nonexisting blueprints
-    ACInstances.RenameInstanceBlueprint(data.origBlueprintName, bpid);
+    ACInstances.RenameInstanceBlueprint(data.origBlueprintName, bpName);
   }
 
   // 3. Clean the init scripts
@@ -539,7 +539,7 @@ function ScriptUpdate(data) {
   const instances = ACInstances.GetInstances();
   const cleanedInstances = instances.map(i => {
     // Only clean init scripts for the submitted blueprint
-    if (i.bpid !== bpid) return i;
+    if (i.bpid !== bpName) return i;
     return m_RemoveInvalidPropsFromInstanceInit(i, validPropNames);
   });
   ACInstances.WriteInstances(cleanedInstances);
@@ -554,7 +554,7 @@ function ScriptUpdate(data) {
   //    Also skip reset if we're in the middle of multiple rounds of
   //    running.  (RoundHasBeenStarted)
   if (!IsRunning() && !RoundHasBeenStarted()) {
-    DCAgents.GetInstancesType(bpid).forEach(a => DCAgents.DeleteAgent(a));
+    DCAgents.GetInstancesType(bpName).forEach(a => DCAgents.DeleteAgent(a));
     // Also delete input agents
     DCInputs.InputsReset();
   }

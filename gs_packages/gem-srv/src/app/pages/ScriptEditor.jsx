@@ -71,7 +71,7 @@ class ScriptEditor extends React.Component {
       panelConfiguration: 'select',
       projId: '',
       model: {},
-      scriptId: '',
+      bpName: '',
       script: '',
       instances: [],
       monitoredInstances: [],
@@ -104,7 +104,7 @@ class ScriptEditor extends React.Component {
     if (DBG) console.log(...PR('componentDidMount'));
     const params = new URLSearchParams(window.location.search.substring(1));
     const projId = params.get('project');
-    const scriptId = params.get('script');
+    const bpName = params.get('script');
     document.title = `GEMSTEP SCRIPT EDITOR: ${projId}`;
 
     // start URSYS
@@ -114,12 +114,12 @@ class ScriptEditor extends React.Component {
 
     // Set model section
     let { panelConfiguration, script } = this.state;
-    if (scriptId === '') {
+    if (bpName === '') {
       // New Script
       panelConfiguration = 'script';
       script = SCRIPT_TEMPLATE;
     }
-    this.setState({ panelConfiguration, projId, scriptId, script });
+    this.setState({ panelConfiguration, projId, bpName, script });
 
     UR.HookPhase('UR/APP_START', async () => {
       const devAPI = UR.SubscribeDeviceSpec({
@@ -160,43 +160,50 @@ class ScriptEditor extends React.Component {
   Initialize() {
     if (this.state.isReady) return; // already initialized
     const { projId } = this.state;
-    this.RequestModel(projId);
+    this.RequestBpEditList(projId);
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
   }
 
   /**
-   * This requests model data from Mission Control's
-   * ProjectData module.
-   * project-server will respond with model data { result: model }
-   * which is handled by UpdateModelData, below.
+   * This requests blueprint data from project-server used to populate
+   * the list of editable blueprints.
    */
-  RequestModel(projId) {
-    if (DBG) console.log(...PR('RequestModel...', projId));
-    const fnName = 'RequestProject';
+  RequestBpEditList(projId) {
+    console.error(...PR('RequestBpEditList...', projId));
+    if (DBG) console.log(...PR('RequestBpEditList...', projId));
+    const fnName = 'RequestBpEditList';
     UR.CallMessage('NET:REQ_PROJDATA', {
       fnName,
       parms: [projId]
     }).then(rdata => {
-      return this.UpdateModelData(rdata.result);
+      return this.UpdateBpEditList(rdata.result);
     });
   }
-  HandleModelUpdate(data) {
-    this.UpdateModelData(data.project);
-  }
+
   /**
-   * This saves the model data to the local state
-   * and loads the current script if it's been specified
-   * @param {Object} model
+   * Locally store list of editable blueprints
+   * and load the current script if it's been specified
+   * @param {[{name, scriptText}]} bpEditList
    */
-  UpdateModelData(model) {
-    if (DBG) console.log(...PR('UpdateModelData', model));
-    const { scriptId } = this.state;
-    this.setState({ model }, () => {
-      if (scriptId) {
-        this.OnSelectScript({ scriptId });
+  UpdateBpEditList(bpEditList) {
+    if (DBG) console.log(...PR('UpdateBpEditList', bpEditList));
+    console.log(...PR('UpdateBpEditList', bpEditList));
+    const { bpName } = this.state;
+    this.setState({ bpEditList }, () => {
+      if (bpName) {
+        this.OnSelectScript({ bpName });
       }
     });
+  }
+
+  HandleProjectUpdate(data) {
+    // Project data has been updated externally, re-request bp data if the
+    // the updated project was what we have open
+    const { projId } = this.state;
+    console.error('ScriptEditor: MODEL UPDATE!', data, projId);
+    if (data && data.project && data.project.id && data.project.id === projId)
+      this.RequestBpEditList(projId);
   }
 
   UnRegisterInstances() {
@@ -222,10 +229,10 @@ class ScriptEditor extends React.Component {
    */
   OnInstanceUpdate(data) {
     if (DBG) console.log(...PR('OnInstanceUpdate'));
-    const { scriptId, monitoredInstances } = this.state;
+    const { bpName, monitoredInstances } = this.state;
     // Only show instances for the current blueprint
     const instances = data.instances.filter(i => {
-      return i.blueprint === scriptId;
+      return i.blueprint === bpName;
     });
     // Register the instances for monitoring
     instances.forEach(i => {
@@ -248,13 +255,13 @@ class ScriptEditor extends React.Component {
   OnInspectorUpdate(data) {
     if (DBG) console.log(...PR('OnInspectorUpdate'));
     // Only show instances for the current blueprint
-    const { scriptId } = this.state;
+    const { bpName } = this.state;
     if (!data || data.agents === undefined) {
       console.error('OnInspectorUpdate got bad data', data);
       return;
     }
     const instances = data.agents.filter(i => {
-      return i.blueprint.name === scriptId;
+      return i.blueprint.name === bpName;
     });
     this.setState({ instances });
   }
@@ -268,10 +275,10 @@ class ScriptEditor extends React.Component {
 
   /**
    * Call with stringId=undefined to go to selection screen
-   * @param {string} data { scriptId }
+   * @param {string} data { bpName }
    */
   OnSelectScript(data) {
-    const { scriptId } = data;
+    const { bpName } = data;
     if (DBG) console.warn(...PR('OnSelectScript', data));
     this.UnRegisterInstances();
     const { model, projId } = this.state;
@@ -282,26 +289,26 @@ class ScriptEditor extends React.Component {
       );
       return; // no scripts defined
     }
-    const agent = model.blueprints.find(s => s.id === scriptId);
-    const script = agent && agent.scriptText ? agent.scriptText : SCRIPT_TEMPLATE;
+    const bpDef = bpEditList.find(b => b.name === bpName);
+    const script = bpDef ? bpDef.scriptText : SCRIPT_TEMPLATE;
 
     // add script to URL
     window.history.pushState(
       {},
       '',
-      `/app/scripteditor?project=${projId}&script=${scriptId}`
+      `/app/scripteditor?project=${projId}&script=${bpName}`
     );
 
-    // Show script selector if scriptId was not passed
+    // Show script selector if bpName was not passed
     let panelConfiguration = 'script';
-    if (scriptId === undefined) {
+    if (bpName === undefined) {
       panelConfiguration = 'select';
     }
 
     this.setState({
       panelConfiguration,
       script,
-      scriptId
+      bpName
     });
   }
 
@@ -336,7 +343,7 @@ class ScriptEditor extends React.Component {
       panelConfiguration,
       projId,
       model,
-      scriptId,
+      bpName,
       script,
       instances,
       message,

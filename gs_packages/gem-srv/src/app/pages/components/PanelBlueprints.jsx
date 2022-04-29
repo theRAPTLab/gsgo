@@ -47,15 +47,15 @@ class PanelBlueprints extends React.Component {
     UR.UnsubscribeState('blueprints', this.urStateUpdated);
   }
 
-  OnBlueprintClick(scriptId) {
+  OnBlueprintClick(bpName) {
     const { projId, enableAdd } = this.props;
     if (enableAdd) {
       // Panel is in MissionEdit: Add Instance
-      UR.RaiseMessage('LOCAL:INSTANCE_ADD', { projId, blueprintName: scriptId });
+      UR.RaiseMessage('LOCAL:INSTANCE_ADD', { projId, blueprintName: bpName });
     } else {
       // Panel is in MissionRun: Open script in a new window
       window.open(
-        `/app/scripteditor?project=${projId}&script=${scriptId}`,
+        `/app/scripteditor?project=${projId}&script=${bpName}`,
         '_blank'
       );
     }
