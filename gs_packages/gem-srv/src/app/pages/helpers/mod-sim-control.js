@@ -119,7 +119,6 @@ class SimControl {
    * * Do not call this directly.  The call should originate from MissionControl
    */
   DoSimReset() {
-
     SIM.Reset();
     // MissionControl will take care of reloading and calling SimPlaces
   }

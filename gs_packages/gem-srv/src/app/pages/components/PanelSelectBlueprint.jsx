@@ -16,31 +16,30 @@ class PanelSelectAgent extends React.Component {
     this.OnAddScript = this.OnAddScript.bind(this);
   }
 
-  onClick(id) {
+  onClick(name) {
     // This should request a agent load through URSYS
     // HACK for now to go to main select screen
     const { onClick } = this.props;
     onClick('script');
   }
 
-  OnScriptClick(id) {
+  OnScriptClick(bpName) {
     // ScriptEditor handles `SELECT_SCRIPT` by opening the script
     // Need { id, label}
-    UR.RaiseMessage('SELECT_SCRIPT', { scriptId: id });
+    UR.RaiseMessage('SELECT_SCRIPT', { bpName });
   }
 
   OnAddScript() {
-    UR.RaiseMessage('SELECT_SCRIPT', { scriptId: '' }); // empty agent sets new agent
+    UR.RaiseMessage('SELECT_SCRIPT', { bpName: '' }); // empty agent sets new agent
   }
 
   render() {
     const { title } = this.state;
-    const { id, isActive, agents, modelId, onClick, classes } = this.props;
+    const { id, isActive, bpEditList, projId, onClick, classes } = this.props;
 
-    // agents are [ {id, label}, ... ]
-    const sortedBlueprints = agents.sort((a, b) => {
-      if (a.label < b.label) return -1;
-      if (a.label > b.label) return 1;
+    const sortedBlueprints = bpEditList.sort((a, b) => {
+      if (a.name < b.name) return -1;
+      if (a.name > b.name) return 1;
       return 0;
     });
 
@@ -58,15 +57,15 @@ class PanelSelectAgent extends React.Component {
             }}
           >
             {sortedBlueprints.map(m => (
-              <div key={m.id} style={{ height: '60px' }}>
+              <div key={m.name} style={{ height: '60px' }}>
                 <button
                   type="button"
                   disabled={m.editor !== undefined}
                   style={{ width: '300px' }}
                   className={classes.button}
-                  onClick={() => this.OnScriptClick(m.id)}
+                  onClick={() => this.OnScriptClick(m.name)}
                 >
-                  {m.label}
+                  {m.name}
                 </button>
                 <div className={classes.instructions}>
                   {m.editor ? `Checked out by ${m.editor}` : ''}

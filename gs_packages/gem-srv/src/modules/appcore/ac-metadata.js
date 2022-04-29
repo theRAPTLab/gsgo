@@ -6,6 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import * as DCPROJECT from 'modules/datacore/dc-project';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -51,11 +52,12 @@ const { addEffectHook, deleteEffectHook } = STATE;
 function updateAndPublish(metadata) {
   updateKey({ metadata });
   _publishState({ metadata });
+  // also update datacore
+  DCPROJECT.UpdateProjectData({ metadata });
 }
 
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let AUTOTIMER;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Intercept changes to metadata so we can cache the changes
  *  for later write to DB after some time has elapsed. Returns the modified
@@ -77,20 +79,7 @@ function hook_Effect(effectKey, propOrValue, propValue) {
   if (effectKey === 'metadata') {
     if (DBG) console.log(...PR(`effect ${effectKey} = ${propOrValue}`));
     // (a) start async autosave
-    if (AUTOTIMER) clearInterval(AUTOTIMER);
-    AUTOTIMER = setInterval(() => {
-      const projId = _getKey('projId');
-      const metadata = propOrValue;
-      UR.CallMessage('LOCAL:DC_WRITE_METADATA', { projId, metadata }).then(
-        status => {
-          const { err } = status;
-          if (err) console.error(err);
-          return status;
-        }
-      );
-      clearInterval(AUTOTIMER);
-      AUTOTIMER = 0;
-    }, 1000);
+    DCPROJECT.ProjectFileRequestWrite();
   }
   // otherwise return nothing to handle procesing normally
 }

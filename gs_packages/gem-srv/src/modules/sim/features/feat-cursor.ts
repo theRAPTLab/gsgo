@@ -37,7 +37,6 @@ const CURSOR_BLUEPRINTS = new Map(); // key = agent id, value = agent id
 /// so we know which blueprints have registered to use cursors
 function m_CompileCursors() {
   let touchscripts = '';
-  let whenscripts = '';
   const bpNames = Array.from(CURSOR_BLUEPRINTS.keys());
   bpNames.forEach(bpName => {
     touchscripts += `featCall Touches monitor ${bpName} c2c\n`;
@@ -123,6 +122,9 @@ function m_UpdateInhabitAgent(frametime) {
 
       // if target is missing then it was probably removed even though it's still touching
       if (!target) return false;
+
+      // if target is a cursor, ignore -- don't pick up other cursors
+      if (target.blueprint.name === 'Cursor') return false;
 
       // if target already has cursor, it's already inhabited, so skip it
       if (target.cursor) return false;
