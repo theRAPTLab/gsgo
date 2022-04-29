@@ -70,7 +70,6 @@ export class prop extends Keyword {
    *  base Keyword class.
    */
   // validate(unit: TScriptUnit): TValidatedScriptUnit {
-  //   // super.validate(unit); // do basic sanity checks
   //   const vtoks = []; // validation token array
   //   const [kwTok, objrefTok, methodTok, ...argToks] = unit; // get arg pattern
   //   // returns symbols for each dtok position excepting the keyword

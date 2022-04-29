@@ -346,6 +346,8 @@ export interface IKeyword {
   getName(): string;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export type TCompiledStatement = (TOpcode | TOpcodeErr)[];
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** weird Typescript constructor definition used by Transpiler
  *  see fettblog.eu/typescript-interface-constructor-pattern/
  */

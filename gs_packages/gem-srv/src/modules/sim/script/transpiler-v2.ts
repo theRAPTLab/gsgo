@@ -1,29 +1,29 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Implement a "Keyword Dictionary" that manages the compile() and render()
-  output for a particular script keyword. This module also exposes static
-  methods for compiling and rendering TScriptUnit[] arrays
+  TRANSPILER is the main API for managing the SIMULATION ENGINE's scriptable
+  AGENTS. It exposes the various elements of the script engine that affect
+  the simulator, which is controlled via the `api-sim` module.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
 import GAgent from 'lib/class-gagent';
+import SM_Bundle from 'lib/class-sm-bundle';
 import { TScriptUnit, TSMCProgram, TInstance, EBundleType } from 'lib/t-script.d';
 import * as DCAGENTS from 'modules/datacore/dc-agents';
 import * as DCENGINE from 'modules/datacore/dc-script-engine';
-import SM_Bundle from 'lib/class-sm-bundle';
 
 // critical imports
 import 'script/keywords/_all_keywords';
 
 // tooling imports
-import * as TextScriptTools from 'script/tools/text-to-script';
-import * as ScriptCompiler from 'script/tools/script-compiler';
-import * as SymbolClasses from 'script/tools/symbol-helpers';
+import * as DECOMPILER from 'script/tools/text-to-script';
+import * as COMPILER from 'script/tools/script-compiler';
+import * as SYMBOLHELPERS from 'script/tools/symbol-helpers';
 
 // dummy to import symbol-utilities otherwise it gets treeshaken out
-SymbolClasses.BindModule();
+SYMBOLHELPERS.BindModule();
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,63 +33,12 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Compile a source text and return compiled TMethod. Similar to
  *  CompileBlueprint but does not handle directives or build a bundle. Used
- *  for generating code snippets on-the-fly.
+ *  for generating code snippets from any GEMSCRIPT text (e.g. for init
+ *  scripts, or anything that isn't part of the
  */
 function CompileText(text: string = ''): TSMCProgram {
-  const script = TextScriptTools.TextToScript(text);
-  return ScriptCompiler.CompileScript(script);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Utility to dump node format of script */
-function ScriptToConsole(units: TScriptUnit[], lines: string[] = []) {
-  let str = [];
-  let blkn = 0;
-  let offset = 0;
-  units.forEach((arr, idx) => {
-    str = [];
-    blkn = 0;
-    arr.forEach(item => {
-      const {
-        identifier,
-        objref,
-        directive,
-        value,
-        string,
-        comment,
-        block,
-        expr
-      } = item;
-      if (identifier) str.push(identifier);
-      if (objref) {
-        str.push(objref.join('.'));
-      }
-      if (directive) str.push(directive);
-      if (value) str.push(value);
-      if (string) str.push(`"${string}"`);
-      if (comment) str.push(`// ${comment}`);
-      if (block) {
-        str.push('[[');
-        block.forEach(line => str.push(line));
-        str.push(']]');
-        blkn = 1 + block.length;
-      }
-      if (expr) str.push(expr);
-    });
-    const out = str.join(' ');
-    let line = lines[idx + offset];
-    if (line !== undefined) line = line.trim();
-    if (line === undefined) console.log('OK:', out);
-    else if (blkn > 0) {
-      console.log(`%cSKIPPING BLOCK MATCHING:\n${out}`, 'color:#aaa');
-      offset += blkn;
-    } else if (line !== out)
-      console.log(
-        `%cMISMATCH %c SOURCE vs DECOMPILED UNITS\n  source: ${line}\n  decomp: %c${out}`,
-        'color:red',
-        'color:auto',
-        'background-color:yellow'
-      );
-  });
+  const script = DECOMPILER.TextToScript(text);
+  return COMPILER.CompileScript(script);
 }
 
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
@@ -120,6 +69,7 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
  *  dc-agents, because datacore modules must be pure definition
  */
 function MakeAgent(instanceDef: TInstance) {
+  const fn = 'MakeAgent:';
   const { bpid, label } = instanceDef;
   const agent = new GAgent(label, String(instanceDef.id));
   // handle extension of base agent
@@ -129,11 +79,10 @@ function MakeAgent(instanceDef: TInstance) {
     if (!bdl) throw Error(`agent blueprint for '${bpid}' not defined`);
     // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
     agent.setBlueprint(bdl);
-
     return DCAGENTS.SaveAgent(agent);
   }
   throw Error(
-    `MakeAgent(): bad blueprint name ${JSON.stringify(
+    `${fn} bad blueprint name ${JSON.stringify(
       bpid
     )} in instanceDef ${JSON.stringify(instanceDef)}`
   );
@@ -143,104 +92,55 @@ function RemoveAgent(instanceDef: TInstance) {
   DCAGENTS.DeleteAgent(instanceDef);
 }
 
-/// CONSOLE TESTING ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** can a simpler context object be created as a wrapper that doesn't bloat
- *  every object?
- *  this is playground code to figure out how to create the Expression
- *  context object that is simpler than our current version, such that
- *  agent.prop('x').value becomes just x or agent.x
- */
-if (DBG)
-  UR.AddConsoleTool({
-    run_context_tests: () => {
-      const bpText = `
-    # BLUEPRINT ContextTester
-    # PROGRAM DEFINE
-    addProp aNumber Number 0
-    addProp aBool Boolean false
-    addProp aString String 'hello'
-    `.trim();
-      // create base agent
-      const agent = new GAgent('context_tester');
-      // invoke blueprint creation
-      const bpScript = TextScriptTools.TextToScript(bpText);
-      if (!bpScript) return `error: compiler error\n${bpText}`;
-      const bdl = ScriptCompiler.CompileBlueprint(bpScript);
-      if (!bdl) return `error: bad bundle from text:\n${bpText}`;
-      console.log(`attaching blueprint '${bdl.name}' to ${agent.name}`);
-      // return a fancy wrapper object that will be used as context for
-      // expressions
-      // x, y
-      const ctx1 = {
-        agent: {
-          get x() {
-            return agent.prop.x.value;
-          },
-          set x(val) {
-            agent.prop.x.value = val;
-          }
-        }
-      };
-      // how about using defineProperty programmatically?
-      const ctx2 = {};
-      Object.defineProperty(ctx2, 'x', {
-        get: () => agent.prop.x.value,
-        set: val => {
-          agent.prop.x.value = val;
-        }
-      });
-
-      // this would be defined on GAgent
-      function addContext(prop) {
-        Object.defineProperty(this.context, prop, {
-          get: () => this.prop[prop].value,
-          set: val => {
-            this.prop.x.value = val;
-          }
-        });
-      }
-      // set window.ctx
-      (window as any).ctx = ctx2;
-      return 'inspect window.ctx';
-    }
-  });
-// automatically fire test code because I hate typing
-if (DBG)
-  setTimeout(() => {
-    console.log((window as any).run_context_tests());
-  }, 500);
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// FORWARDED EXPORTS
+/// API: These methods are related to transpiling GEMSCRIPT
+/// from source text and
+export {
+  CompileText // compile a script text that IS NOT a blueprint
+};
+export {
+  CompileScript, // API: return a TSMCProgram from a script text
+  CompileBlueprint, // API: return a blueprint bundle from a blueprint text
+  DecodeTokenPrimitive, // utility: to convert a scriptToken into runtime data
+  DecodeToken, // utility: with DecodeTokenPrimitive, converts a token into runtime entity
+  UnpackToken, // utility: more useful version of DecodeToken
+  DecodeStatement, // utility: works with DecodeToken to create runtime enties
+  SymbolizeStatement, // utility: extract symbols defined by a keyword
+  ValidateStatement // utility: check script tokens against symbols
+} from 'script/tools/script-compiler';
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// API: These methods make new agents from registered blueprints that are
+/// created by CompileBlueprint()
+export {
+  RegisterBlueprint, // TScriptUnit[] => ISM_Bundle
+  MakeAgent, // BlueprintName => Agent
+  RemoveAgent
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// FORWARDED API: convert text to tokenized scripts
+export {
+  TextToScript // text w/ newlines => TScriptUnit[]
+} from 'script/tools/text-to-script';
+/// FORWARDED API: converts tokenized scripts, scriptTokens to text representation
 export {
   ScriptToText, // TScriptUnit[] => produce source text from units
   TokenToString, // for converting a token to its text representation
   StatementToText // convert scriptUnit[] to text
 } from 'script/tools/script-to-text';
-export {
-  TextToScript // text w/ newlines => TScriptUnit[]
-} from 'script/tools/text-to-script';
+/// DEPRCECATED API: convert tokenized script into a React representation
 export {
   ScriptToJSX // TScriptUnit[] => jsx
 } from 'script/tools/script-to-jsx';
+/// FORWARDED API: convert tokenized script to React-renderable data structures
 export {
   ScriptToLines, // converts script into a viewmodel suitable for rendering as lines
   LINE_START_NUM // either 0 or 1, read to modify index
-} from 'script/tools/script-helpers';
-export {
-  CompileScript, // combine scriptunits through m_CompileBundle
-  CompileBlueprint,
-  DecodeTokenPrimitive, // for decoding the value of a token, returns token otherwise
-  DecodeToken, // Working with DecodeTokenPrimitive, converts a token into runtime entity
-  DecodeStatement, // Works with DecodeToken to create runtime enties
-  ValidateStatement, // tests the statement for correct syntax and typing
-  UnpackToken // more useful version of DecodeToken
-} from 'script/tools/script-compiler';
+} from 'script/tools/script-to-lines';
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// these are routines that extract these values using brute force techniques
-/// before the compiler generated this information for us
+/// DEPRECATED API: these are routines that extract these values using brute
+/// force techniques before the compiler generated this information for us
 export {
   ExtractBlueprintName,
   ExtractBlueprintProperties,
@@ -251,15 +151,3 @@ export {
   ExtractFeatPropMap,
   HasDirective
 } from 'script/tools/script-extraction-utilities';
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// DEFINED IN TRANSPILER EXPORTS
-export {
-  CompileText, // compile a script text that IS NOT a blueprint
-  ScriptToConsole // used in DevCompiler print script to console
-};
-/// BLUEPRINT OPERATIONS
-export {
-  MakeAgent, // BlueprintName => Agent
-  RemoveAgent,
-  RegisterBlueprint // TScriptUnit[] => ISM_Bundle
-};
