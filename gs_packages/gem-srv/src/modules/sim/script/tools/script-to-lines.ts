@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  ScriptUnit Utilities
+  SCRIPT TO LINES
 
-  * ScriptToLines converts a program of scriptUnit statements into
-    a line-based data structure suitable for rendering as an array of
-    React elements
+  Converts a program of scriptUnit statements into a line-based data structure
+  suitable for rendering as an array of React elements. This is used by the
+  GUI Wizard that Sri's been working on.
+
+  The main API accepts a script
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -27,7 +29,6 @@ const LINE_START_NUM = 1; // set to 1 for no 0 indexes
 /// convert statements that contain nested statements in their line-by-line
 /// equivalent
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 class ScriptLiner {
   LINE_BUF;
   PAGE;
@@ -115,7 +116,7 @@ class ScriptLiner {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   lineOut(): void {
-    // don't export zero buffer lines which happens when this.StatementToLines
+    // don't export zero buffer lines which happens when this.statementToLines
     // has no statement tokens
 
     // ALTERNATIVELY, we can assume it is a CLOSING ]] and render that instead
@@ -154,7 +155,7 @@ class ScriptLiner {
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  StatementToLines(statement: TScriptUnit): void {
+  statementToLines(statement: TScriptUnit): void {
     // process all the tokens in the statement
     if (statement.length === 0) {
       if (DBG) console.log('Empty Statement', statement);
@@ -167,7 +168,7 @@ class ScriptLiner {
         if (DBG) this.DBGTEXT += 'BLOCK ';
         this.lineOut();
         this.indent();
-        tok.block.forEach(bstm => this.StatementToLines(bstm));
+        tok.block.forEach(bstm => this.statementToLines(bstm));
         this.outdent();
         return;
       }
@@ -183,15 +184,17 @@ class ScriptLiner {
    *  tokens
    */
   programToLines(program) {
-    program.forEach(stm => this.StatementToLines(stm));
+    program.forEach(stm => this.statementToLines(stm));
   }
 
   /// EXPORTED API METHODS //////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: given a script of ScriptUnit statements, return a this.PAGE of VMPageLine and
-   *  VMToken
+  /** API: given a script of ScriptUnit statements, return VMPageLine[] and
+   *  a map of "line:pos" to its source scriptToken
    */
-  scriptToLines(program: TScriptUnit[]): [VMPageLine[], Map<string, IToken>] {
+  makeScriptLineMaps(
+    program: TScriptUnit[]
+  ): [VMPageLine[], Map<string, IToken>] {
     this.clearData();
     this.programToLines(program); // updates this.PAGE
     this.mapLinesToTokens(this.PAGE); // updates this.MAP
@@ -200,12 +203,17 @@ class ScriptLiner {
   }
 } // end of ScriptLiner
 
+/// STATIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** this has to be taken into account by modules indexing into State()
- *  line and script maps (see ac-wizcore)
- */
-const scriptLiner = new ScriptLiner();
+const LINER = new ScriptLiner();
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: given a program, return a page of vmlines and line-to-token map */
 function ScriptToLines(program: TScriptUnit[]) {
-  return scriptLiner.scriptToLines(program);
+  const [script_page, line_tokmap] = LINER.makeScriptLineMaps(program);
+  return [script_page, line_tokmap];
 }
-export { LINE_START_NUM, ScriptLiner, ScriptToLines };
+
+/// MODULE EXPORTS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export default ScriptLiner;
+export { LINE_START_NUM, ScriptToLines };

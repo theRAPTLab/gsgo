@@ -25,7 +25,7 @@ import { TStateObject } from '@gemstep/ursys/types';
 import * as ASSETS from 'modules/asset_core/asset-mgr';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as SENGINE from 'modules/datacore/dc-script-engine';
-import { ScriptLiner } from 'script/tools/script-helpers';
+import { ScriptLiner } from 'script/tools/script-to-lines';
 import {
   DecodeSymbolViewData,
   UnpackViewData,
@@ -306,7 +306,7 @@ function WizardTextChanged(text) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a scriptText consiting of a single line, return the validation
  *  data for testing. Note that this will nuke the PAGE and MAP structures
- *  for the rest of the script because script-helpers doesn't handle multiple
+ *  for the rest of the script because script-to-lines doesn't handle multiple
  *  instances
  */
 function WizardTestLine(text) {
@@ -390,7 +390,7 @@ function GetAllTokenObjects(statements) {
  */
 function SelectedTokenId() {
   const { sel_linenum, sel_linepos } = State();
-  if (sel_linenum < 1) return undefined; // START_COUNT=1 in script-helpers
+  if (sel_linenum < 1) return undefined; // START_COUNT=1 in script-to-lines
   if (sel_linepos < 1) return `${sel_linenum}`;
   return `${sel_linenum},${sel_linepos}`;
 }
@@ -405,7 +405,7 @@ function SelectedLineNum() {
  */
 function GetTokenById(key) {
   const scriptToken = State('line_tokmap').get(key);
-  // this can happen if script-helpers ScriptToLines() is called on another body
+  // this can happen if script-to-lines ScriptToLines() is called on another body
   // of text that isn't what you're clicking on
   return scriptToken;
 }

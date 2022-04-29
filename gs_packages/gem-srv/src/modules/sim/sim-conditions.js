@@ -10,7 +10,7 @@ import {
   GetAllInteractions,
   SingleAgentFilter,
   PairAgentFilter
-} from 'modules/datacore/dc-interactions';
+} from 'modules/datacore/dc-sim-conditions';
 import { GetScriptEventHandlers } from 'modules/datacore/dc-script-engine';
 import { GetAgentsByType } from 'modules/datacore/dc-agents';
 import { GetGlobalAgent } from 'lib/class-gagent';

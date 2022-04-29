@@ -136,7 +136,7 @@ export {
 export {
   ScriptToLines, // converts script into a viewmodel suitable for rendering as lines
   LINE_START_NUM // either 0 or 1, read to modify index
-} from 'script/tools/script-helpers';
+} from 'script/tools/script-to-lines';
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// DEPRECATED API: these are routines that extract these values using brute
