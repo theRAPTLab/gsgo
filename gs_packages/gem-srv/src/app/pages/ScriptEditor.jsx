@@ -14,14 +14,13 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelSimViewer from './components/PanelSimViewer';
-import PanelSelectAgent from './components/PanelSelectAgent';
+import PanelSelectBlueprint from './components/PanelSelectBlueprint';
 import PanelScript from './components/PanelScript';
 import PanelInstances from './components/PanelInstances';
 import PanelMessage from './components/PanelMessage';
@@ -70,7 +69,7 @@ class ScriptEditor extends React.Component {
       noMain: true,
       panelConfiguration: 'select',
       projId: '',
-      model: {},
+      bpEditList: [],
       bpName: '',
       script: '',
       instances: [],
@@ -80,9 +79,9 @@ class ScriptEditor extends React.Component {
     };
     this.Initialize = this.Initialize.bind(this);
     this.CleanupComponents = this.CleanupComponents.bind(this);
-    this.RequestModel = this.RequestModel.bind(this);
-    this.HandleModelUpdate = this.HandleModelUpdate.bind(this);
-    this.UpdateModelData = this.UpdateModelData.bind(this);
+    this.RequestBpEditList = this.RequestBpEditList.bind(this);
+    this.HandleProjectUpdate = this.HandleProjectUpdate.bind(this);
+    this.UpdateBpEditList = this.UpdateBpEditList.bind(this);
     this.UnRegisterInstances = this.UnRegisterInstances.bind(this);
     this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
@@ -95,7 +94,7 @@ class ScriptEditor extends React.Component {
     UR.HandleMessage('SELECT_SCRIPT', this.OnSelectScript);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
-    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
+    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleProjectUpdate);
     UR.HandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
@@ -152,7 +151,7 @@ class ScriptEditor extends React.Component {
     UR.UnhandleMessage('SELECT_SCRIPT', this.OnSelectScript);
     UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
-    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
+    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleProjectUpdate);
     UR.UnhandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
@@ -281,11 +280,11 @@ class ScriptEditor extends React.Component {
     const { bpName } = data;
     if (DBG) console.warn(...PR('OnSelectScript', data));
     this.UnRegisterInstances();
-    const { model, projId } = this.state;
-    if (model === undefined || model.blueprints === undefined) {
+    const { bpEditList, projId } = this.state;
+    if (bpEditList === undefined || bpEditList.length < 1) {
       console.warn(
-        'ScriptEditor.OnSelectAgent: model or model.scripts is not defined',
-        model
+        'ScriptEditor.OnSelectAgent: No bpEditList to load',
+        bpEditList
       );
       return; // no scripts defined
     }
@@ -342,7 +341,7 @@ class ScriptEditor extends React.Component {
       noMain,
       panelConfiguration,
       projId,
-      model,
+      bpEditList,
       bpName,
       script,
       instances,
@@ -360,10 +359,6 @@ class ScriptEditor extends React.Component {
       />
     );
 
-    const agents =
-      model && model.blueprints
-        ? model.blueprints.map(s => ({ id: s.id, label: s.label }))
-        : [];
     return (
       <div
         className={classes.root}
@@ -389,10 +384,10 @@ class ScriptEditor extends React.Component {
         </div>
         <div id="console-left" className={classes.left}>
           {panelConfiguration === 'select' && (
-            <PanelSelectAgent
+            <PanelSelectBlueprint
               id="select"
-              agents={agents}
-              modelId={projId}
+              bpEditList={bpEditList}
+              projId={projId}
               onClick={this.OnPanelClick}
             />
           )}

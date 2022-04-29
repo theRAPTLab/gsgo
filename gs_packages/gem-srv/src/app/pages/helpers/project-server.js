@@ -31,6 +31,7 @@ import UR from '@gemstep/ursys/client';
 import RNG from 'modules/sim/sequencer';
 import * as TRANSPILER from 'script/transpiler-v2';
 import 'modules/datacore/dc-project'; // must import to load db
+import * as DCEngine from 'modules/datacore/dc-script-engine';
 import * as DCAgents from 'modules/datacore/dc-agents';
 import * as DCInputs from 'modules/datacore/dc-inputs';
 import * as ACProject from 'modules/appcore/ac-project';
@@ -257,6 +258,18 @@ function RequestProject(projId = CURRENT_PROJECT_ID) {
   return ACProject.GetProject();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Handle ScriptEditor's request for a list of editable blueprints
+ *  Used by REQ_PROJ_DATA
+ * @return [ {name, scriptText, editor} ]
+ */
+function RequestBpEditList(projId = CURRENT_PROJECT_ID) {
+  if (projId === undefined)
+    throw new Error(
+      'Tried to current GetProject before setting CURRENT_PROJECT_ID'
+    );
+  return ACBlueprints.GetBpEditList(projId);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Used by REQ_PROJ_DATA and Main
  */
 function GetBoundary() {
@@ -410,8 +423,8 @@ function InstanceAdd(data, sendUpdate = true) {
 
   // If blueprint has `# PROGRAM INIT` we run that
   // otherwise we auto-place the agent around the center of the screen
-  const blueprint = ACBlueprints.GetBlueprint(data.blueprintName);
-  const hasInit = TRANSPILER.HasDirective(blueprint.script, 'INIT');
+  const blueprint = DCEngine.GetBlueprint(data.blueprintName);
+  const hasInit = blueprint.init && blueprint.init.length > 0;
   const SPREAD = 100;
   if (!hasInit && !instance.initScript) {
     instance.initScript = `prop x setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}
@@ -623,6 +636,7 @@ function InstanceHoverOut(data) {
 /// parameters above as I think they are supposed to be
 const FN_LOOKUP = {
   RequestProject,
+  RequestBpEditList,
   GetProjectBoundary: GetBoundary,
   GetCharControlBpidList,
 
