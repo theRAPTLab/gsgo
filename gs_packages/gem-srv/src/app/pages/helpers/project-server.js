@@ -362,7 +362,7 @@ function GetPozyxBPNames() {
  *  @param {string} blueprintName
  */
 function BlueprintDelete(blueprintName) {
-  // Delete any insmtances using the blueprint
+  // Delete any instances using the blueprint
   ACInstances.DeleteInstancesByBPID(blueprintName);
   // Delete the old blueprint from project
   ACBlueprints.DeleteBlueprint(blueprintName);

@@ -137,7 +137,6 @@ async function ProjectFileCreateFromTemplate(templateId, newfilename) {
  *  When any subset of project data is changed (e.g. metadata, rounds,
  *  instances, or blueprints), we need to update the whole project data
  *  object.
- *  Sends the updated project to the server for writing to disk.
  */
 async function m_UpdateProjectFile(data: any = {}) {
   const project = CURRENT_PROJECT;
