@@ -181,10 +181,14 @@ function m_GetBpNameScriptList() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// return copies
 
+// /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// DEPRECATED?
+// function GetBlueprints() {
+//   const blueprints = _getKey('blueprints');
+//   return [...blueprints];
+// }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetBlueprints() {
-  const blueprints = _getKey('blueprints');
-  return [...blueprints];
 /**
  * Returns a single blueprint definition object
  * @param {string} bpName
