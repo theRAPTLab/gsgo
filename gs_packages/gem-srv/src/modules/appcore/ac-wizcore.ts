@@ -25,7 +25,7 @@ import { TStateObject } from '@gemstep/ursys/types';
 import * as ASSETS from 'modules/asset_core/asset-mgr';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as SENGINE from 'modules/datacore/dc-script-engine';
-import { ScriptLiner } from 'script/tools/script-to-lines';
+import ScriptLiner from 'script/tools/script-to-lines';
 import {
   DecodeSymbolViewData,
   UnpackViewData,

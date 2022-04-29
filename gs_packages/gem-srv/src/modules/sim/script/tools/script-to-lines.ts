@@ -192,9 +192,7 @@ class ScriptLiner {
   /** API: given a script of ScriptUnit statements, return VMPageLine[] and
    *  a map of "line:pos" to its source scriptToken
    */
-  makeScriptLineMaps(
-    program: TScriptUnit[]
-  ): [VMPageLine[], Map<string, IToken>] {
+  scriptToLines(program: TScriptUnit[]): [VMPageLine[], Map<string, IToken>] {
     this.clearData();
     this.programToLines(program); // updates this.PAGE
     this.mapLinesToTokens(this.PAGE); // updates this.MAP
@@ -209,7 +207,7 @@ const LINER = new ScriptLiner();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: given a program, return a page of vmlines and line-to-token map */
 function ScriptToLines(program: TScriptUnit[]) {
-  const [script_page, line_tokmap] = LINER.makeScriptLineMaps(program);
+  const [script_page, line_tokmap] = LINER.scriptToLines(program);
   return [script_page, line_tokmap];
 }
 
