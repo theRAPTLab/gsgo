@@ -200,7 +200,17 @@ class ProjectLoader extends AssetLoader {
   /** Returns project matching projId (not assetId) */
   getProjectByProjId(projId) {
     const projassets = [...this._assetDict.values()];
-    const projasset = projassets.find(a => a.rsrc.id === projId);
+    const projasset = projassets.find(a => {
+      if (!a.rsrc) {
+        console.error(
+          ...PR(
+            `getProjectByProjId for project '${projId}' could not find a valid 'rsrc' -- review gemproj file or promiseLoadAssets`
+          )
+        );
+        return undefined;
+      }
+      return a.rsrc.id === projId;
+    });
     return projasset ? projasset.rsrc : undefined;
   }
 } // end class
