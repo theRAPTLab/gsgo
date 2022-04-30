@@ -443,10 +443,13 @@ prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
  *  @param {bpid, id} data
  */
 function InstanceDelete(data) {
+  // Remove from project
+  ACInstances.DeleteInstance(data.id);
   // Remove from Sim
   DCAgents.DeleteInstance(data);
   DCAgents.DeleteAgent(data);
-  // RaiseModelUpdate(data.modelId); // not needed?  shouldn't state cause this?
+  RaiseModelUpdate(data.modelId); // not needed?  shouldn't state cause this?
+  RaiseInstancesListUpdate();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: (HACK) Manually change the init script when updating position.
@@ -686,7 +689,7 @@ UR.HandleMessage('NET:BLUEPRINT_DELETE', HandleBlueprintDelete);
 UR.HandleMessage('INJECT_BLUEPRINT', InjectBlueprint);
 /// INSTANCE EDITING UTILS ----------------------------------------------------
 UR.HandleMessage('LOCAL:INSTANCE_ADD', InstanceAdd);
-UR.HandleMessage('INSTANCE_DELETE', InstanceDelete);
+UR.HandleMessage('LOCAL:INSTANCE_DELETE', InstanceDelete);
 UR.HandleMessage('NET:INSTANCE_UPDATE_POSITION', InstanceUpdatePosition);
 // INSPECTOR UTILS --------------------------------------------------------
 UR.HandleMessage('NET:INSPECTOR_REGISTER', DoRegisterInspector);
