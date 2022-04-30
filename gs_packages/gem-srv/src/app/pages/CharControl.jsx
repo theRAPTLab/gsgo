@@ -94,7 +94,7 @@ class CharController extends React.Component {
     // Update size of controller canvas and entities
     window.addEventListener('resize', UpdateDimensions);
 
-    UR.HookPhase('UR/APP_START', async function char_control() {
+    UR.HookPhase('UR/APP_START', async () => {
       const devAPI = UR.SubscribeDeviceSpec({
         selectify: device => device.meta.uclass === 'Sim',
         notify: deviceLists => {

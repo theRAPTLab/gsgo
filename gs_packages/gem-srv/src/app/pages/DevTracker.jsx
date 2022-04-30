@@ -62,7 +62,7 @@ class DevTracker extends React.Component {
     RENDERER.HookResize(window);
     document.title = 'TRACKER';
     INPUT.StartTrackerVisuals();
-    UR.HookPhase('UR/APP_START', async function dev_tracker() {
+    UR.HookPhase('UR/APP_START', async () => {
       // STEP 1 is to get a "deviceAPI" from a Device Subscription
       const devAPI = UR.SubscribeDeviceSpec({
         selectify: device => device.meta.uclass === 'CharControl',
