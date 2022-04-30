@@ -147,7 +147,7 @@ class ProjectLoader extends AssetLoader {
           // convert .gemprj format to json
           // 1. Look for scripts inside of ``
           // 2. For each ``, insert "\n" and replace ` with "
-          const cleaned = String(result).replace(/`[\s\S]+?`/g, match => {
+          const cleaned = String(result).replace(/`[\s\S]*?`/g, match => {
             return match.replace(/\n/g, '\\n').replace(/`/g, '"');
           });
 
