@@ -359,24 +359,29 @@ function GetPozyxBPNames() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API:
  *  Removes the script from the project and any instances using the blueprint
- *  @param {string} blueprintName
+ *  Called by ScriptUpdate when ScriptEditor submits a changed blueprint name.
+ *  Called by PanelScript when ScriptEditor deletes the script.
+ *  @param {string} bpName
  */
-function BlueprintDelete(blueprintName) {
-  // Delete any instances using the blueprint
-  ACInstances.DeleteInstancesByBPID(blueprintName);
-  // Delete the old blueprint from project
-  ACBlueprints.DeleteBlueprint(blueprintName);
-
-  // The instance delete and blueprint delete do trigger state updates
-  // but project-server only listents to `project` state updates
-  // so we have to trigger the updates locally as well as for remote viewers
-  // These only trigger URSYS updates, not state updates!
-  RaiseModelUpdate();
-  RaiseBpidListUpdate();
-  RaiseInstancesListUpdate();
+function BlueprintDelete(bpName) {
+  // 1. Remove from proj
+  //    DON'T Delete any instance definitions using the blueprint YET!
+  //    ScriptUpdate needs to convert the old instances to the new bpName
+  // ACInstances.DeleteInstancesByBPID(bpName);
+  //    Delete the old blueprint from project
+  ACBlueprints.DeleteBlueprint(bpName);
+  // 2. Remove from sim
+  DCAgents.DeleteInstancesByBlueprint(bpName);
+  DCAgents.DeleteAgentByBlueprint(bpName);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** PanelScript is the only one who calls this to delete a blueprint
+ *  BlueprintDelete does not delete instances -- it relies on ScriptUpdate
+ *  to delete instances.  So we need to explicitly remove them here.
+ *  @param {*} data - {blueprintName, modelId}
+ */
 function HandleBlueprintDelete(data) {
+  ACInstances.DeleteInstancesByBPID(data.blueprintName);
   BlueprintDelete(data.blueprintName, data.modelId);
 }
 
