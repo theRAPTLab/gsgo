@@ -13,7 +13,7 @@
 
   import GFeature from 'lib/class-gfeature';
   import { IAgent } from 'lib/t-script'
-  import { Register } from 'modules/datacore/dc-sim-resources';
+  import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
 
   class FeaturePack extends GFeature {
     constructor(name:string) {
@@ -90,7 +90,7 @@ class Feature implements IFeature {
 
   /** override to provide feature symbols */
   symbolize(): TSymbolData {
-    return { ctor: Feature };
+    return {};
   }
   /** called during blueprint instantiation of an agent.
    *  used to add properties specific to the feature.
