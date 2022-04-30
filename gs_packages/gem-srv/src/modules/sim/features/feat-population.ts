@@ -8,14 +8,14 @@
 import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
-import { Register } from 'modules/datacore/dc-features';
+import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
 import { IAgent, TSMCProgram } from 'lib/t-script';
 import {
   GVarBoolean,
   GVarDictionary,
   GVarNumber,
   GVarString
-} from 'modules/sim/vars/_all_vars';
+} from 'script/vars/_all_vars';
 import {
   CopyAgentProps,
   DeleteAgent,
@@ -655,4 +655,4 @@ class PopulationPack extends GFeature {
 /// REGISTER FEATURE SINGLETON ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new PopulationPack('Population');
-Register(INSTANCE);
+RegisterFeature(INSTANCE);

@@ -25,7 +25,7 @@ const TimerPack = {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
-import { Register } from 'modules/datacore/dc-features';
+import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,8 +59,8 @@ class TimerPack extends GFeature {
   }
 }
 
-/// import { Register } from 'modules/datacore/dc-features';
+/// import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new TimerPack('Timer');
-Register(INSTANCE);
+RegisterFeature(INSTANCE);

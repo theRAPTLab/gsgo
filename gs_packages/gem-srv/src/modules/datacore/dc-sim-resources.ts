@@ -140,8 +140,8 @@ function GetAllKeywords() {
 
 /// VALUE TYPE UTILITIES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a SMObject, store in VARTYPES */
-function RegisterVarCTor(name: string, ctor: IScopeableCtor) {
+/** given a SMObject, store in VARS dict */
+function RegisterVarCTor(name: string, ctor) {
   if (VARS.has(name)) throw Error(`RegisterVarCTor: ${name} exists`);
   VARS.set(name, ctor);
 }
@@ -151,6 +151,10 @@ function GetVarCtor(name: string): IScopeableCtor {
   if (!VARS.has(name)) throw Error(`GetVarCtor: ${name} `);
   return VARS.get(name);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetAllVarCtors(): Map<string, IScopeableCtor> {
+  return VARS;
+}
 
 /// SYMBOL UTILITIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -158,11 +162,6 @@ function GetVarCtor(name: string): IScopeableCtor {
 function SymbolDefFor(name: string) {
   const def = VARS.get(name);
   if (def) return def.Symbols;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return all var constructors */
-function GetAllVarCtors() {
-  return VARS;
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -204,6 +203,26 @@ function GetFunction(name: string): Function {
   // return always random results if the test doesn't exist
   if (!f) f = () => Math.random() > 0.5;
   return f;
+}
+
+/// DEPRECATED - MOVE TO FEAT VISION //////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Returns the SCALED bounding rect of the agent
+export function GetAgentBoundingRect(agent) {
+  // Based on costume
+  if (!agent.hasFeature('Costume'))
+    throw new Error(
+      `GetAgentBoundingRect: Tried to use vision on an agent with no costume ${agent.id}`
+    );
+  const { w, h } = agent.callFeatMethod('Costume', 'getScaledBounds');
+  const halfw = w / 2;
+  const halfh = h / 2;
+  return [
+    { x: agent.x - halfw, y: agent.y - halfh },
+    { x: agent.x + halfw, y: agent.y - halfh },
+    { x: agent.x + halfw, y: agent.y + halfh },
+    { x: agent.x - halfw, y: agent.y + halfh }
+  ];
 }
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////

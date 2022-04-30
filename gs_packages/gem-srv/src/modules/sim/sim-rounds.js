@@ -8,7 +8,7 @@ import { interval } from 'rxjs';
 import UR from '@gemstep/ursys/client';
 import { GetAgentsByType } from 'modules/datacore/dc-agents';
 import * as ACRounds from 'modules/appcore/ac-rounds';
-import { GVarNumber } from 'modules/sim/vars/_all_vars';
+import { GVarNumber } from 'modules/sim/script/vars/_all_vars';
 import { GetGlobalAgent } from 'lib/class-gagent';
 import SM_State from 'lib/class-sm-state';
 import * as TRANSPILER from './script/transpiler-v2';

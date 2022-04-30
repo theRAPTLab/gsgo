@@ -16,7 +16,7 @@
 
 import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
-import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
+import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import {
@@ -26,7 +26,7 @@ import {
   DefineInstance,
   GetAgentById
 } from 'modules/datacore/dc-agents';
-import { Register } from 'modules/datacore/dc-features';
+import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
 import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';
@@ -812,4 +812,4 @@ class MovementPack extends GFeature {
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new MovementPack(FEATID);
-Register(INSTANCE);
+RegisterFeature(INSTANCE);

@@ -12,9 +12,9 @@
 
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
-import { Register } from 'modules/datacore/dc-features';
+import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
 import { IAgent } from 'lib/t-script';
-import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
+import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
 import {
   GetAgentById,
   GetAgentsByType,
@@ -228,4 +228,4 @@ class CursorPack extends GFeature {
 /// REGISTER FEATURE SINGLETON ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new CursorPack('Cursor');
-Register(INSTANCE);
+RegisterFeature(INSTANCE);

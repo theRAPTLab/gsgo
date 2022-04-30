@@ -40,8 +40,7 @@ import {
 } from 'lib/t-script.d';
 import SM_Bundle from 'lib/class-sm-bundle';
 
-import * as DCENGINE from 'modules/datacore/dc-script-engine';
-import * as DCPROGRAMS from 'modules/datacore/dc-named-methods';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
 import GAgent from 'lib/class-gagent';
 import { VSymError } from './symbol-helpers';
@@ -117,7 +116,7 @@ function DecodeToken(tok: IToken): any {
   if (type === 'directive') return '_pragma';
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   if (type === 'block') return CompileScript(value);
-  if (type === 'program') return DCPROGRAMS.GetProgram(value);
+  if (type === 'program') return DCENGINE.GetProgram(value);
   throw Error(`DecodeToken unhandled type ${type}`);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -162,13 +161,14 @@ function isKeywordString(tok: any): boolean {
  *  which are always level 0 (not nested)
  */
 function SymbolizeStatement(statement: TScriptUnit, line: number): TSymbolData {
+  const fn = 'SymbolizeStatement:';
   const kwArgs = DecodeStatement(statement); // replace with UnpackStatement
   let kw = kwArgs[0];
   if (kw === '') return {}; // blank lines emit no symbol info
   if (!isKeywordString(kw)) return {}; // if !keyword return no symbol
   const kwProcessor = DCENGINE.GetKeyword(kw);
   if (!kwProcessor) {
-    console.warn(`keyword processor ${kw} bad`);
+    console.warn(`${fn} keyword processor ${kw} bad`);
     return {
       error: { code: 'errExist', info: `missing kwProcessor for: '${kw}'` }
     };

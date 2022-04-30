@@ -17,11 +17,15 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { GVarNumber, GVarString, GVarBoolean } from 'modules/sim/vars/_all_vars';
+import {
+  GVarNumber,
+  GVarString,
+  GVarBoolean
+} from 'modules/sim/script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent, TSymbolData } from 'lib/t-script';
 import { GetAgentById } from 'modules/datacore/dc-agents';
-import { Register } from 'modules/datacore/dc-features';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 import { GetGlobalAgent } from 'lib/class-gagent';
 import FLAGS from 'modules/flags';
 
@@ -220,7 +224,6 @@ class WidgetPack extends GFeature {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
     super.decorate(agent);
-
     // Public Props
     this.featAddProp(agent, 'text', new GVarString(agent.name)); // default to agent name
     let prop = new GVarNumber();
@@ -253,7 +256,6 @@ class WidgetPack extends GFeature {
 
   symbolize(): TSymbolData {
     return {
-      ctor: WidgetPack,
       props: {
         text: GVarString.Symbols,
         meter: GVarNumber.Symbols,
@@ -345,4 +347,4 @@ class WidgetPack extends GFeature {
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new WidgetPack(FEATID);
-Register(INSTANCE);
+DCENGINE.RegisterFeature(INSTANCE);

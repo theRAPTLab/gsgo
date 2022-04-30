@@ -13,11 +13,14 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { GVarNumber, GVarString, GVarBoolean } from 'modules/sim/vars/_all_vars';
+import { GVarNumber, GVarString, GVarBoolean } from 'script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { GetAgentById, GetAgentsByType } from 'modules/datacore/dc-agents';
-import { Register, GetAgentBoundingRect } from 'modules/datacore/dc-features';
+import {
+  RegisterFeature,
+  GetAgentBoundingRect
+} from 'modules/datacore/dc-sim-resources';
 import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';
 import { ProjectPoint } from 'lib/util-vector';
@@ -331,4 +334,4 @@ class VisionPack extends GFeature {
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new VisionPack(FEATID);
-Register(INSTANCE);
+RegisterFeature(INSTANCE);

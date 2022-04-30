@@ -68,7 +68,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { GVarNumber, GVarString, GVarBoolean } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import {
@@ -76,7 +75,8 @@ import {
   GetAgentsByType,
   GetAllAgents
 } from 'modules/datacore/dc-agents';
-import { Register, GetAgentBoundingRect } from 'modules/datacore/dc-features';
+import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
+
 import { DistanceTo } from 'lib/util-vector';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -232,4 +232,4 @@ class TouchPack extends GFeature {
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new TouchPack(FEATID);
-Register(INSTANCE);
+RegisterFeature(INSTANCE);

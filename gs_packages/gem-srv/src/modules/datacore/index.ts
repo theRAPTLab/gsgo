@@ -19,12 +19,9 @@ import UR from '@gemstep/ursys/client';
 
 /// FORWARDED EXPORTS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export * from './dc-varprops';
 export * from './dc-agents';
-export * from './dc-features';
+export * from './dc-sim-resources';
 export * from './dc-sim-bundler';
-export * from './dc-script-engine';
-export * from './dc-named-methods';
 export * from './dc-sim-conditions';
 export * from './dc-render';
 
