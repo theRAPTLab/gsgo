@@ -7,7 +7,7 @@
   on Typescript's compile-time static type checking to help us here.
 
   inherits data structures from
-  - dc-script-engine    ValidateArgs used by RegisterKeyword
+  - dc-sim-resources    ValidateArgs used by RegisterKeyword
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 

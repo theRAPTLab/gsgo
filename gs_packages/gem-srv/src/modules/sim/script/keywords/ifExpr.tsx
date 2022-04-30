@@ -7,7 +7,7 @@
 
 import Keyword from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword, UtilFirstValue } from 'modules/datacore';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,7 +27,7 @@ export class ifExpr extends Keyword {
     const code = [];
     code.push((agent, state) => {
       const vals = agent.exec(test, state.ctx);
-      const result = UtilFirstValue(vals);
+      const result = this.utilFirstValue(vals);
       if (result && consq) agent.exec(consq, state.ctx);
       if (!result && alter) agent.exec(alter, state.ctx);
     });
@@ -38,4 +38,4 @@ export class ifExpr extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(ifExpr);
+DCENGINE.RegisterKeyword(ifExpr);

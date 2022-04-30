@@ -266,6 +266,13 @@ class Keyword implements IKeyword {
     console.groupEnd();
     return [];
   }
+
+  /// UTILITIES ///////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  utilFirstValue(thing: any) {
+    if (Array.isArray(thing)) return thing.shift();
+    return thing;
+  }
 } // end of Keyword Class
 
 /*/////////////////////////////////// * \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\

@@ -12,7 +12,7 @@ import GAgent from 'lib/class-gagent';
 import SM_Bundle from 'lib/class-sm-bundle';
 import { TScriptUnit, TSMCProgram, TInstance, EBundleType } from 'lib/t-script.d';
 import * as DCAGENTS from 'modules/datacore/dc-agents';
-import * as DCENGINE from 'modules/datacore/dc-script-engine';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 
 // critical imports
 import 'script/keywords/_all_keywords';

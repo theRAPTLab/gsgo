@@ -10,7 +10,7 @@
 
 import UR from '@gemstep/ursys/client';
 import { TScriptUnit } from 'lib/t-script.d';
-import { GetKeyword } from 'modules/datacore/dc-script-engine';
+import { GetKeyword } from 'modules/datacore/dc-sim-resources';
 import { ScriptToText } from './script-to-text';
 import { TextToScript } from './text-to-script';
 import { DecodeStatement } from './script-compiler';

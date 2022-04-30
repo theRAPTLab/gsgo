@@ -5,14 +5,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { RegisterFunction, GetFunction } from 'modules/datacore/dc-named-methods';
-import {
-  GetAllInteractions,
-  SingleAgentFilter,
-  PairAgentFilter
-} from 'modules/datacore/dc-sim-conditions';
-import { GetScriptEventHandlers } from 'modules/datacore/dc-script-engine';
-import { GetAgentsByType } from 'modules/datacore/dc-agents';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCCONDS from 'modules/datacore/dc-sim-conditions';
+import * as DCAGENTS from 'modules/datacore/dc-agents';
+
 import { GetGlobalAgent } from 'lib/class-gagent';
 import { DistanceTo } from 'lib/util-vector';
 
@@ -26,7 +22,7 @@ let GLOBAL_INTERACTIONS = [];
 
 /// REGISTER NAMED METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-RegisterFunction('dies', a => {
+DCENGINE.RegisterFunction('dies', a => {
   if (a.prop.foodLevel.value < 1) {
     console.log('dead!');
     return true;
@@ -111,12 +107,12 @@ RegisterFunction('dies', a => {
 /// Two centers are within `distance` of each other
 /// NOTE: This can be used without Physics or Touches
 ///       This is functionally equivalent to 'centerTouchesCenter'
-RegisterFunction('isCenteredOn', (a, b, distance = 5) => {
+DCENGINE.RegisterFunction('isCenteredOn', (a, b, distance = 5) => {
   // checks if distance between agents is less than distance
   return DistanceTo(a, b) <= distance;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-RegisterFunction('isCloseTo', (a, b, distance = 30) => {
+DCENGINE.RegisterFunction('isCloseTo', (a, b, distance = 30) => {
   // checks if distance between agents is less than distance
   // Doesn't need Physics or Touch
   return DistanceTo(a, b) <= distance;
@@ -131,19 +127,19 @@ function m_TouchTest(a, b, touchType) {
 }
 /// a center touches b center
 /// This is the Physics equivalent of `isCenteredOn`
-RegisterFunction('centerTouchesCenter', (a, b) => {
+DCENGINE.RegisterFunction('centerTouchesCenter', (a, b) => {
   return m_TouchTest(a, b, 'c2c');
 });
 /// a center touches b bounds
-RegisterFunction('centerTouches', (a, b) => {
+DCENGINE.RegisterFunction('centerTouches', (a, b) => {
   return m_TouchTest(a, b, 'c2b');
 });
 /// a bounds touches b bounds
-RegisterFunction('touches', (a, b) => {
+DCENGINE.RegisterFunction('touches', (a, b) => {
   return m_TouchTest(a, b, 'b2b');
 });
 /// a bounds touches b bounds
-RegisterFunction('isInside', (a, b) => {
+DCENGINE.RegisterFunction('isInside', (a, b) => {
   return m_TouchTest(a, b, 'binb');
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -159,15 +155,15 @@ function m_FirstTouchTest(a, b, touchType) {
   );
 }
 /// a center first touches b center
-RegisterFunction('centerFirstTouchesCenter', (a, b) => {
+DCENGINE.RegisterFunction('centerFirstTouchesCenter', (a, b) => {
   return m_FirstTouchTest(a, b, 'c2c');
 });
 /// a center first touches b bounds
-RegisterFunction('centerFirstTouches', (a, b) => {
+DCENGINE.RegisterFunction('centerFirstTouches', (a, b) => {
   return m_FirstTouchTest(a, b, 'c2b');
 });
 /// a bounds first touches b bounds
-RegisterFunction('firstTouches', (a, b) => {
+DCENGINE.RegisterFunction('firstTouches', (a, b) => {
   return m_FirstTouchTest(a, b, 'b2b');
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -182,31 +178,31 @@ function m_LastTouchTest(a, b, touchType) {
   );
 }
 /// a center last touches b center
-RegisterFunction('centerLastTouchesCenter', (a, b) => {
+DCENGINE.RegisterFunction('centerLastTouchesCenter', (a, b) => {
   return m_LastTouchTest(a, b, 'c2c');
 });
 /// a center last touches b bounds
-RegisterFunction('centerLastTouches', (a, b) => {
+DCENGINE.RegisterFunction('centerLastTouches', (a, b) => {
   return m_LastTouchTest(a, b, 'c2b');
 });
 /// a bounds last touches b bounds
-RegisterFunction('lastTouches', (a, b) => {
+DCENGINE.RegisterFunction('lastTouches', (a, b) => {
   return m_LastTouchTest(a, b, 'b2b');
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-RegisterFunction('sees', (a, b) => {
+DCENGINE.RegisterFunction('sees', (a, b) => {
   // checks if b is within vision cone of a
   if (!a.hasFeature('Vision') || !b.hasFeature('Costume')) return false;
   return a.canSeeCone ? a.canSeeCone.get(b.id) : false;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-RegisterFunction('doesNotSee', (a, b) => {
+DCENGINE.RegisterFunction('doesNotSee', (a, b) => {
   // checks if b is NOT within vision cone of a
   if (!a.hasFeature('Vision') || !b.hasFeature('Costume')) return false;
   return a.canSeeCone ? !a.canSeeCone.get(b.id) : true;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-RegisterFunction('seesCamouflaged', (a, b) => {
+DCENGINE.RegisterFunction('seesCamouflaged', (a, b) => {
   // checks if b's color relative to its background is visible to a
   // AND the color range is outside of the detectableRange
   const canSeeCone = a.canSeeCone ? !a.canSeeCone.get(b.id) : true;
@@ -223,18 +219,18 @@ function Update(frame) {
   /** HANDLE GLOBAL FILTER TESTS ***************************************************/
   /// run all the filtering tests and store results for use by Agents during
   /// their subsequent SIM/AGENTS_UPDATE phase
-  GLOBAL_INTERACTIONS = [...GetAllInteractions()]; // [ [k,v], [k,v] ]
+  GLOBAL_INTERACTIONS = [...DCCONDS.GetAllInteractions()]; // [ [k,v], [k,v] ]
   GLOBAL_INTERACTIONS.forEach(entry => {
     const { singleTestArgs, pairTestArgs } = entry;
     if (singleTestArgs !== undefined) {
       // SINGLE AGENT TEST FILTER
       const [A, testName, ...args] = singleTestArgs;
-      const [passed] = SingleAgentFilter(A, testName, ...args);
+      const [passed] = DCCONDS.SingleAgentFilter(A, testName, ...args);
       entry.passed = passed;
     } else if (pairTestArgs !== undefined) {
       // PAIR AGENT TEST FILTER
       const [A, testName, B, ...args] = pairTestArgs;
-      const [passed] = PairAgentFilter(A, testName, B, ...args);
+      const [passed] = DCCONDS.PairAgentFilter(A, testName, B, ...args);
       entry.passed = passed;
     } else {
       throw Error('malformed global_interaction entry');
@@ -250,10 +246,10 @@ function Update(frame) {
     that are TOPcode[]. However, we need to get the context of each
     blueprint and run them per-agent
     /*/
-    const handlers = GetScriptEventHandlers(event.type);
+    const handlers = DCCONDS.GetScriptEventHandlers(event.type);
     handlers.forEach(h => {
       const { agentType, handler } = h;
-      const agents = GetAgentsByType(agentType);
+      const agents = DCAGENTS.GetAgentsByType(agentType);
       agents.forEach(agent => {
         const ctx = { agent, [agentType]: agent };
         agent.exec(handler, ctx);

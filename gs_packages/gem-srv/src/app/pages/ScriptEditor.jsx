@@ -120,7 +120,7 @@ class ScriptEditor extends React.Component {
     }
     this.setState({ panelConfiguration, projId, bpName, script });
 
-    UR.HookPhase('UR/APP_START', async () => {
+    UR.HookPhase('UR/APP_START', async function script_editor() {
       const devAPI = UR.SubscribeDeviceSpec({
         selectify: device => device.meta.uclass === 'Sim',
         notify: deviceLists => {

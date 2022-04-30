@@ -74,9 +74,8 @@ class CharController extends React.Component {
     };
     this.init = this.init.bind(this);
     this.updateCharControlBpidList = this.updateCharControlBpidList.bind(this);
-    this.handleSetCharControlBpidList = this.handleSetCharControlBpidList.bind(
-      this
-    );
+    this.handleSetCharControlBpidList =
+      this.handleSetCharControlBpidList.bind(this);
     this.requestBPNames = this.requestBPNames.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
     UR.HandleMessage(
@@ -95,7 +94,7 @@ class CharController extends React.Component {
     // Update size of controller canvas and entities
     window.addEventListener('resize', UpdateDimensions);
 
-    UR.HookPhase('UR/APP_START', async () => {
+    UR.HookPhase('UR/APP_START', async function char_control() {
       const devAPI = UR.SubscribeDeviceSpec({
         selectify: device => device.meta.uclass === 'Sim',
         notify: deviceLists => {

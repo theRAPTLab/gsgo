@@ -7,28 +7,9 @@
 import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import InstanceDef from 'lib/class-instance-def';
-import {
-  GetBlueprint,
-  GetAllBlueprints,
-  DeleteBlueprint
-} from 'modules/datacore/dc-script-engine';
-import {
-  GetAllAgents,
-  DeleteAgent,
-  DeleteAgentByBlueprint,
-  GetAgentsByType,
-  GetAgentById,
-  GetAgentByName,
-  DeleteAllAgents,
-  DefineInstance,
-  UpdateInstance,
-  DeleteInstance,
-  DeleteAllInstances,
-  DeleteInstancesByBlueprint,
-  GetAllInstances,
-  GetInstance,
-  GetInstancesType
-} from '../datacore/dc-agents';
+
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCAGENTS from 'modules/datacore/dc-agents';
 import DisplayObject from '../../lib/class-display-object';
 import * as RENDERER from '../render/api-render';
 import { MakeDraggable } from '../../lib/vis/draggable';
@@ -123,7 +104,7 @@ const SCRIPT_TO_INSTANCE = new SyncMap({
  */
 function MakeAgent(def) {
   const initScript = TRANSPILER.CompileText(def.initScript);
-  let agent = GetAgentById(def.id);
+  let agent = DCAGENTS.GetAgentById(def.id);
   if (!agent) agent = TRANSPILER.MakeAgent(def);
   agent.exec(initScript, { agent });
 }
@@ -133,7 +114,7 @@ SCRIPT_TO_INSTANCE.setMapFunctions({
     def.label = newDef.label;
     def.bpid = newDef.bpid;
     def.initScript = newDef.initScript;
-    DefineInstance({
+    DCAGENTS.DefineInstance({
       id: newDef.id,
       label: newDef.label,
       bpid: newDef.bpid,
@@ -147,10 +128,10 @@ SCRIPT_TO_INSTANCE.setMapFunctions({
     // If blueprint is updated and recompiled
     // the old instance has been removed
     // so we have to check here if it's still there
-    if (GetInstance(newDef)) {
-      UpdateInstance(newDef);
+    if (DCAGENTS.GetInstance(newDef)) {
+      DCAGENTS.UpdateInstance(newDef);
     } else {
-      DefineInstance({
+      DCAGENTS.DefineInstance({
         id: newDef.id,
         label: newDef.label,
         bpid: newDef.bpid,
@@ -160,7 +141,7 @@ SCRIPT_TO_INSTANCE.setMapFunctions({
     MakeAgent(newDef);
   },
   onRemove: (newDef, def) => {
-    DeleteInstance(newDef);
+    DCAGENTS.DeleteInstance(newDef);
   }
 });
 
@@ -195,24 +176,24 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 
 /**
  * Removes any blueprints that do not match `namesToKeep`:
- *   1. blueprints defined in dc-script-engine
+ *   1. blueprints defined in dc-sim-resources
  *   2. agents in dc-agents
  *   3. instances in dc-agents
  * @param {string[]} namesToKeep array of blueprint names
  */
 function FilterBlueprints(namesToKeep) {
-  const blueprints = GetAllBlueprints(); // Array of SM_Bundle
+  const blueprints = DCENGINE.GetAllBlueprints(); // Array of SM_Bundle
   blueprints.forEach(b => {
     if (!namesToKeep.includes(b.name)) {
       // remove the blueprint
-      DeleteBlueprint(b.name);
+      DCENGINE.DeleteBlueprint(b.name);
 
       // [We can't rely on SyncMap to remove because it doesn't
       //  sync to blueprints, just to instanceDefs]
       // remove any agents using the blueprint
-      DeleteAgentByBlueprint(b.name);
+      DCAGENTS.DeleteAgentByBlueprint(b.name);
       // remove instances using the blueprint
-      DeleteInstancesByBlueprint(b.name);
+      DCAGENTS.DeleteInstancesByBlueprint(b.name);
     }
   });
 }
@@ -270,25 +251,25 @@ export function AgentProgram(blueprint) {
   // for (let i = 0; i < 20; i++) TRANSPILER.MakeAgent(`bun${i}`, { blueprint });
 
   // Remove any existing agent instances
-  let instances = GetAllInstances();
+  let instances = DCAGENTS.GetAllInstances();
   instances.forEach(instance => {
     if (instance.bpid === blueprint) {
       TRANSPILER.RemoveAgent(instance);
     }
   });
   // And clear the INSTANCES map for the blueprint
-  DeleteInstancesByBlueprint(blueprint);
+  DCAGENTS.DeleteInstancesByBlueprint(blueprint);
 
   // Initiate a new instance for the submitted blueprint
   // using a unique name.
-  DefineInstance({
+  DCAGENTS.DefineInstance({
     blueprint,
     name: `${blueprint}${Math.trunc(RNG() * 1000)}`,
     init: []
   });
 
   // Make an agent for each instance
-  instances = GetAllInstances();
+  instances = DCAGENTS.GetAllInstances();
   instances.forEach(instance => {
     // Make an instance only for this blueprint, ignore others
     // otherwise other blueprints will get duplicate instances
@@ -309,21 +290,21 @@ export function ClearDOBJ() {
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentsUpdate(frameTime) {
-  const allAgents = GetAllAgents();
+  const allAgents = DCAGENTS.GetAllAgents();
   allAgents.forEach(agent => {
     agent.agentUPDATE(frameTime);
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentThink(frameTime) {
-  const allAgents = GetAllAgents();
+  const allAgents = DCAGENTS.GetAllAgents();
   allAgents.forEach(agent => {
     agent.agentTHINK(frameTime);
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentExec(frameTime) {
-  const allAgents = GetAllAgents();
+  const allAgents = DCAGENTS.GetAllAgents();
   allAgents.forEach(agent => {
     agent.agentEXEC(frameTime);
   });
@@ -334,7 +315,7 @@ function AgentReset(frameTime) {
 }
 
 function VisUpdate(frameTime) {
-  const allAgents = GetAllAgents();
+  const allAgents = DCAGENTS.GetAllAgents();
   AGENT_TO_DOBJ.syncFromArray(allAgents);
   AGENT_TO_DOBJ.mapObjects();
   const dobjs = AGENT_TO_DOBJ.getMappedObjects();

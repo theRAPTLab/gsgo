@@ -7,34 +7,16 @@
   dictionaries were scattered across separate datacore modules which made
   it hard to see the distinct systems we support in addition o the simulator
 
-  BLUEPRINTS - the compiled bundles used to instance AGENTS
-  KEYWORDS - the keyword modules used to transpile GEM-SCRIPT
-  VARS - the scriptable variables (properties) in GEM-SCRIPT
-
-  replaces
-  - dc-script-engine  BLUEPRINTS, KEYWORDS, EVENTS
-  - dc-varprops       now called SCRIPT_VARS
-  - dc-named-methods  now called EVENT_SCRIPTS, TEST_SCRIPTS, NAMED_SCRIPTS
-                      and NAMED_FUNCTIONS
-  - dc-features       FEATURES
-
-  adds
-  - dc-type-checks    holds common compile- and run time type validators
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import UR from '@gemstep/ursys/client';
 import {
   TSMCProgram,
-  TScriptUnit,
   ISMCBundle,
   IFeature,
   IScopeableCtor,
   IKeyword,
   IKeywordCtor,
-  TSymArg,
-  TSValidType,
-  TSymUnpackedArg
+  TSymArg
 } from 'lib/t-script.d';
 import * as CHECK from './dc-type-check';
 
@@ -225,6 +207,43 @@ export function GetAgentBoundingRect(agent) {
   ];
 }
 
+/// SCRIPT EVENTS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Register an agentset to a particular handler. It's a TSMCProgram[] (an
+ *  array of program arrays consisting of a stack of functions) that will
+ *  get run when the EventHandler receives it.
+ *  SCRIPT_EVENTS: Map<string, Map<string,TSMCProgram[]>> = new Map();
+ *                eventName->Map(blueprintName)->TSMCProgram[]
+ */
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function SubscribeToScriptEvent(
+  evtName: string,
+  bpName: string,
+  consq: TSMCProgram
+) {
+  if (!EVENT_SCRIPTS.has(evtName)) EVENT_SCRIPTS.set(evtName, new Map());
+  const subbedBPs = EVENT_SCRIPTS.get(evtName); // event->blueprint codearr
+  if (!subbedBPs.has(bpName)) subbedBPs.set(bpName, []);
+  // get the blueprint array for bpName, created if necessary
+  const codearr = subbedBPs.get(bpName);
+  if (typeof consq === 'function') codearr.push(consq);
+  else codearr.push(...consq);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetScriptEventHandlers(evtName: string) {
+  if (!EVENT_SCRIPTS.has(evtName)) EVENT_SCRIPTS.set(evtName, new Map());
+  const subbedBPs = EVENT_SCRIPTS.get(evtName); // event->blueprint codearr
+  const handlers = [];
+  subbedBPs.forEach((handler, agentType) => {
+    handlers.push({ agentType, handler });
+  });
+  return handlers;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function DeleteAllScriptEvents() {
+  EVENT_SCRIPTS.clear();
+}
+
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
@@ -240,3 +259,4 @@ export { RegisterFunction, GetFunction };
 export { RegisterProgram, GetProgram };
 export { RegisterTest, GetTest, DeleteAllTests };
 export { GetFeature, GetAllFeatures, RegisterFeature, DeleteAllFeatures };
+export { SubscribeToScriptEvent, GetScriptEventHandlers, DeleteAllScriptEvents };

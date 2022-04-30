@@ -21,7 +21,7 @@
 
   2. DCENGINE.BLUEPRINTS -- A map of compiled blueprint bundles indexed by bpName
               The bundles are used to
-              The compiled blueprint bundles are stored in dc-script-engine.
+              The compiled blueprint bundles are stored in dc-sim-resources.
 
   Nomenclature:
   * `bpid`    is the unique id of the blueprint in the .gemproj file
@@ -50,7 +50,7 @@
 
   See also:
   * ac-project
-  * dc-script-engine
+  * dc-sim-resources
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -59,7 +59,7 @@ import * as GAgent from 'lib/class-gagent';
 import * as DCAGENTS from 'modules/datacore/dc-agents';
 import * as SIMAGENTS from 'modules/sim/sim-agents';
 import * as DCPROJECT from 'modules/datacore/dc-project';
-import * as DCENGINE from 'modules/datacore/dc-script-engine';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 import * as TRANSPILER from '../sim/script/transpiler-v2';
 import Blueprint from '../../lib/class-project-blueprint';
 
@@ -115,7 +115,7 @@ function m_SymbolizeBlueprints(blueprints) {
 /**
  * Use this to compile and add additional blueprints to an already running sim
  * 1. Compiles blueprints
- * 2. Registers blueprint with dc-script-engine
+ * 2. Registers blueprint with dc-sim-resources
  * 3. Registers BPTEXTMAP
  * @param {[ISMCPrograms]} blueprints - array of blueprints (ISMCPrograms)
  * @return SM_Bundle[]
@@ -233,7 +233,6 @@ function GetBlueprintIDsList(bundles) {
     return { id: b.name, label: b.name };
   });
 }
-
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**

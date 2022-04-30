@@ -70,7 +70,7 @@ class Viewer extends React.Component {
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
 
-    UR.HookPhase('UR/APP_START', async () => {
+    UR.HookPhase('UR/APP_START', async function viewer() {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const devAPI = UR.SubscribeDeviceSpec({
         selectify: device => device.meta.uclass === 'Sim',
@@ -160,13 +160,8 @@ class Viewer extends React.Component {
    *  make this happen.
    */
   render() {
-    const {
-      noMain,
-      panelConfiguration,
-      projId,
-      bpidList,
-      instances
-    } = this.state;
+    const { noMain, panelConfiguration, projId, bpidList, instances } =
+      this.state;
     const { classes } = this.props;
 
     document.title = `VIEWER ${projId}`;
