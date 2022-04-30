@@ -260,3 +260,37 @@ export { RegisterProgram, GetProgram };
 export { RegisterTest, GetTest, DeleteAllTests };
 export { GetFeature, GetAllFeatures, RegisterFeature, DeleteAllFeatures };
 export { SubscribeToScriptEvent, GetScriptEventHandlers, DeleteAllScriptEvents };
+
+/* original exports from dc-script-engine
+export { BLUEPRINTS, KEYWORDS, SCRIPTS, SCRIPT_EVENTS };
+export {
+  RegisterKeyword,
+  GetKeyword,
+  GetAllKeywords,
+  //
+  SubscribeToScriptEvent,
+  GetScriptEventHandlers,
+  DeleteAllScriptEvents,
+  //
+  SaveScript,
+  DeleteScript,
+  UpdateScriptIndex,
+  //
+  SaveBlueprint,
+  GetBlueprint,
+  GetAllBlueprints,
+  DeleteBlueprint,
+  DeleteAllBlueprints,
+  //
+  UnpackArg,
+  ValidateArgs,
+  UtilDerefArg,
+  UtilFirstValue
+};
+export {
+  UnpackToken,
+  IsValidToken,
+  IsValidTokenType,
+  TokenValue
+} from 'script/tools/class-gscript-tokenizer-v2';
+*/
