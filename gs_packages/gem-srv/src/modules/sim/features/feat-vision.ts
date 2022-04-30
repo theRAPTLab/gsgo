@@ -13,14 +13,11 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { GVarNumber, GVarString, GVarBoolean } from 'script/vars/_all_vars';
+import { GVarNumber, GVarBoolean } from 'script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
-import { GetAgentById, GetAgentsByType } from 'modules/datacore/dc-agents';
-import {
-  RegisterFeature,
-  GetAgentBoundingRect
-} from 'modules/datacore/dc-sim-resources';
+import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';
 import { ProjectPoint } from 'lib/util-vector';
@@ -45,7 +42,7 @@ const VISION_AGENTS = new Map();
  * @param agentId
  */
 function m_getAgent(agentId): IAgent {
-  const a = GetAgentById(agentId);
+  const a = DCAGENTS.GetAgentById(agentId);
   if (!a) VISION_AGENTS.delete(agentId);
   return a;
 }
@@ -103,7 +100,7 @@ function m_IsTargetWithinVisionCone(visionPoly, target): boolean {
   )
     return false;
 
-  const targetPoly = GetAgentBoundingRect(target);
+  const targetPoly = DCENGINE.GetAgentBoundingRect(target);
   // Returns array of intersecting objects, or [] if no intersects
   const result = intersect(visionPoly, targetPoly);
   return result.length > 0;
@@ -178,7 +175,7 @@ function m_update(frame) {
 
     const { visionPoly, visionPath } = m_updateVisionCone(agent);
 
-    const targets = GetAgentsByType(VISION_AGENTS.get(agentId));
+    const targets = DCAGENTS.GetAgentsByType(VISION_AGENTS.get(agentId));
     targets.forEach(t => {
       if (agent.id === t.id) return; // skip self
 
@@ -334,4 +331,4 @@ class VisionPack extends GFeature {
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new VisionPack(FEATID);
-RegisterFeature(INSTANCE);
+DCENGINE.RegisterFeature(INSTANCE);

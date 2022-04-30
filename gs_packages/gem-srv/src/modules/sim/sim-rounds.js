@@ -6,7 +6,6 @@
 
 import { interval } from 'rxjs';
 import UR from '@gemstep/ursys/client';
-import { GetAgentsByType } from 'modules/datacore/dc-agents';
 import * as ACRounds from 'modules/appcore/ac-rounds';
 import { GVarNumber } from 'modules/sim/script/vars/_all_vars';
 import { GetGlobalAgent } from 'lib/class-gagent';

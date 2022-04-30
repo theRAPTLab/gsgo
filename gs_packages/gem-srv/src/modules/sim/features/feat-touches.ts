@@ -70,12 +70,8 @@
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
-import {
-  GetAgentById,
-  GetAgentsByType,
-  GetAllAgents
-} from 'modules/datacore/dc-agents';
-import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
+import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 
 import { DistanceTo } from 'lib/util-vector';
 
@@ -97,7 +93,7 @@ const AGENT_TOUCHTYPES = new Map(); // Touch-enabled Agents
  * @param agentId
  */
 function m_GetAgent(agentId): IAgent {
-  const a = GetAgentById(agentId);
+  const a = DCAGENTS.GetAgentById(agentId);
   if (!a) AGENT_TOUCHTYPES.delete(agentId);
   return a;
 }
@@ -139,7 +135,7 @@ function m_Update(frame) {
     if (!agent) return;
 
     d_TouchTypes.forEach((touchTypes, bpname) => {
-      const targets = GetAgentsByType(bpname);
+      const targets = DCAGENTS.GetAgentsByType(bpname);
       targets.forEach(t => {
         // skip self
         if (agentId === t.id) return;
@@ -211,7 +207,7 @@ class TouchPack extends GFeature {
     const touchingId = targetIds.find(id => agent.isTouching.get(id)[touchType]);
     if (touchingId) {
       // console.log(agent.id, 'isTouching', touchingId);
-      return GetAgentById(touchingId);
+      return DCAGENTS.GetAgentById(touchingId);
     }
     return undefined;
   }
@@ -220,7 +216,7 @@ class TouchPack extends GFeature {
   /// Use when deleting an agent otherwise isTouching and lastTouched
   /// are never reset.  See feat-population.m_Delete
   clearTouches(agent: IAgent, targetId: string) {
-    const agents = GetAllAgents();
+    const agents = DCAGENTS.GetAllAgents();
     agents.forEach(a => {
       // use `delete` not clear to prevent memory leak
       if (a.lastTouched) a.lastTouched.delete(targetId);
@@ -232,4 +228,4 @@ class TouchPack extends GFeature {
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new TouchPack(FEATID);
-RegisterFeature(INSTANCE);
+DCENGINE.RegisterFeature(INSTANCE);

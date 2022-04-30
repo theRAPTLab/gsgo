@@ -25,7 +25,7 @@ import {
   GetAllAgents,
   DefineInstance,
   GetAgentById
-} from 'modules/datacore/dc-agents';
+} from 'modules/datacore/dc-sim-agents';
 import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
 import { intersect } from 'lib/vendor/js-intersect';
@@ -430,7 +430,7 @@ function wanderUntilAgent(agent: IAgent, frame: number) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Movement Function Library
-const MOVEMENT_FUNCTIONS = new Map([
+const MOVEMENT_FUNCTIONS: Map<string, Function> = new Map([
   ['static', undefined],
   ['wander', moveWander],
   ['edgeToEdge', moveEdgeToEdge],

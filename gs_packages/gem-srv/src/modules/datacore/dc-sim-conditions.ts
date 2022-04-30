@@ -13,7 +13,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import RNG from 'modules/sim/sequencer';
-import * as DCAGENTS from './dc-agents';
+import * as DCAGENTS from './dc-sim-agents';
 import * as DCENGINE from './dc-sim-resources';
 
 /// INTERACTION UPDATE TESTS //////////////////////////////////////////////////

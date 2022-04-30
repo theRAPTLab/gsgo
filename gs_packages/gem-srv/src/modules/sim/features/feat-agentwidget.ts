@@ -24,7 +24,7 @@ import {
 } from 'modules/sim/script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent, TSymbolData } from 'lib/t-script';
-import { GetAgentById } from 'modules/datacore/dc-agents';
+import { GetAgentById } from 'modules/datacore/dc-sim-agents';
 import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 import { GetGlobalAgent } from 'lib/class-gagent';
 import FLAGS from 'modules/flags';

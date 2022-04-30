@@ -10,7 +10,7 @@ import UR from '@gemstep/ursys/client';
 import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent, TSymbolData } from 'lib/t-script';
-import { GetAgentById } from 'modules/datacore/dc-agents';
+import { GetAgentById } from 'modules/datacore/dc-sim-agents';
 import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
 import { GetLoader } from 'modules/asset_core/asset-mgr';
 import { Clamp } from 'lib/util-vector';

@@ -7,7 +7,7 @@
 import UR from '@gemstep/ursys/client';
 import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 import * as DCCONDS from 'modules/datacore/dc-sim-conditions';
-import * as DCAGENTS from 'modules/datacore/dc-agents';
+import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 
 import { GetGlobalAgent } from 'lib/class-gagent';
 import { DistanceTo } from 'lib/util-vector';
@@ -246,7 +246,7 @@ function Update(frame) {
     that are TOPcode[]. However, we need to get the context of each
     blueprint and run them per-agent
     /*/
-    const handlers = DCCONDS.GetScriptEventHandlers(event.type);
+    const handlers = DCENGINE.GetScriptEventHandlers(event.type);
     handlers.forEach(h => {
       const { agentType, handler } = h;
       const agents = DCAGENTS.GetAgentsByType(agentType);

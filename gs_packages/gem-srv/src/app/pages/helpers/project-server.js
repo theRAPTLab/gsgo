@@ -32,8 +32,8 @@ import RNG from 'modules/sim/sequencer';
 import * as TRANSPILER from 'script/transpiler-v2';
 import 'modules/datacore/dc-project'; // must import to load db
 import * as DCENGINE from 'modules/datacore/dc-sim-resources';
-import * as DCAgents from 'modules/datacore/dc-agents';
-import * as DCInputs from 'modules/datacore/dc-inputs';
+import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
+import * as DCINPUTS from 'modules/datacore/dc-inputs';
 import * as ACProject from 'modules/appcore/ac-project';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
 import * as ACBlueprints from 'modules/appcore/ac-blueprints';
@@ -77,7 +77,7 @@ function urLocaleStateUpdated(stateObj, cb) {
   const state = UR.ReadFlatStateGroups('locales');
 
   // Copy to PTRACK_TRANSFORM
-  const { PTRACK_TRANSFORM } = DCInputs;
+  const { PTRACK_TRANSFORM } = DCINPUTS;
   const ptrack = state.ptrack;
   PTRACK_TRANSFORM.scaleX = ptrack.xScale;
   PTRACK_TRANSFORM.scaleY = ptrack.yScale;
@@ -86,7 +86,7 @@ function urLocaleStateUpdated(stateObj, cb) {
   PTRACK_TRANSFORM.rotation = ptrack.zRot;
 
   // Copy to POZYX_TRANSFORM
-  const { POZYX_TRANSFORM } = DCInputs;
+  const { POZYX_TRANSFORM } = DCINPUTS;
   const pozyx = state.pozyx;
   POZYX_TRANSFORM.scaleX = pozyx.xScale;
   POZYX_TRANSFORM.scaleY = pozyx.yScale;
@@ -117,7 +117,7 @@ function urProjectStateUpdated(stateObj, cb) {
 function SendInspectorUpdate(frametime) {
   if (frametime % 30 !== 0) return;
   // walk down agents and broadcast results for monitored agents
-  const agents = DCAgents.GetAllAgents();
+  const agents = DCAGENTS.GetAllAgents();
   // Send all instances, but minmize non-monitored
   const inspectorAgents = agents.map(a =>
     MONITORED_INSTANCES.includes(a.id)
@@ -298,8 +298,8 @@ function InjectBlueprint(data) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function HandleTransformReq() {
   return {
-    ptrack: DCInputs.PTRACK_TRANSFORM,
-    pozyx: DCInputs.POZYX_TRANSFORM
+    ptrack: DCINPUTS.PTRACK_TRANSFORM,
+    pozyx: DCINPUTS.POZYX_TRANSFORM
   };
 }
 /// MODEL UPDATE BROADCASTERS /////////////////////////////////////////////////
@@ -444,8 +444,8 @@ prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
  */
 function InstanceDelete(data) {
   // Remove from Sim
-  DCAgents.DeleteInstance(data);
-  DCAgents.DeleteAgent(data);
+  DCAGENTS.DeleteInstance(data);
+  DCAGENTS.DeleteAgent(data);
   // RaiseModelUpdate(data.modelId); // not needed?  shouldn't state cause this?
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -479,7 +479,7 @@ function InstanceRequestEdit(data) {
   //    TODO: Prevent others from editing?
   //          May not be necessary if we only allow one map editor
   // 1. Set Agent Data
-  const agent = DCAgents.GetAgentById(data.agentId);
+  const agent = DCAGENTS.GetAgentById(data.agentId);
   // 2. If already selected, deselect it.
   if (agent.isSelected) {
     // 2a. Deselect it
@@ -567,9 +567,9 @@ function ScriptUpdate(data) {
   //    Also skip reset if we're in the middle of multiple rounds of
   //    running.  (RoundHasBeenStarted)
   if (!IsRunning() && !RoundHasBeenStarted()) {
-    DCAgents.GetInstancesType(bpName).forEach(a => DCAgents.DeleteAgent(a));
+    DCAGENTS.GetInstancesType(bpName).forEach(a => DCAGENTS.DeleteAgent(a));
     // Also delete input agents
-    DCInputs.InputsReset();
+    DCINPUTS.InputsReset();
   }
 
   // 5. Inform network devices
@@ -584,7 +584,7 @@ function ScriptUpdate(data) {
  *  @param {object} data -- {projId, agentId}
  */
 function InstanceSelect(data) {
-  const agent = DCAgents.GetAgentById(data.agentId);
+  const agent = DCAGENTS.GetAgentById(data.agentId);
   agent.setSelected(true);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -592,7 +592,7 @@ function InstanceSelect(data) {
  *  @param {object} data -- {projId, agentId}
  */
 function InstanceDeselect(data) {
-  const agent = DCAgents.GetAgentById(data.agentId);
+  const agent = DCAGENTS.GetAgentById(data.agentId);
   if (agent) {
     // agent may have been deleted, so make sure it still exists
     agent.setSelected(false);
@@ -603,7 +603,7 @@ function InstanceDeselect(data) {
  *  @param {object} data -- {projId, agentId}
  */
 function InstanceHoverOver(data) {
-  const agent = DCAgents.GetAgentById(data.agentId);
+  const agent = DCAGENTS.GetAgentById(data.agentId);
   if (agent) {
     // agent may have been deleted, so make sure it still exists
     agent.setHovered(true);
@@ -614,7 +614,7 @@ function InstanceHoverOver(data) {
  *  @param {object} data -- {projId, agentId}
  */
 function InstanceHoverOut(data) {
-  const agent = DCAgents.GetAgentById(data.agentId);
+  const agent = DCAGENTS.GetAgentById(data.agentId);
   if (agent) {
     // agent may have been deleted, so make sure it still exists
     agent.setHovered(false);

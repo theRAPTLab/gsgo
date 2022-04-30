@@ -9,7 +9,7 @@ import UR from '@gemstep/ursys/client';
 import InstanceDef from 'lib/class-instance-def';
 
 import * as DCENGINE from 'modules/datacore/dc-sim-resources';
-import * as DCAGENTS from 'modules/datacore/dc-agents';
+import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 import DisplayObject from '../../lib/class-display-object';
 import * as RENDERER from '../render/api-render';
 import { MakeDraggable } from '../../lib/vis/draggable';
@@ -177,8 +177,8 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 /**
  * Removes any blueprints that do not match `namesToKeep`:
  *   1. blueprints defined in dc-sim-resources
- *   2. agents in dc-agents
- *   3. instances in dc-agents
+ *   2. agents in dc-sim-agents
+ *   3. instances in dc-sim-agents
  * @param {string[]} namesToKeep array of blueprint names
  */
 function FilterBlueprints(namesToKeep) {
@@ -213,7 +213,7 @@ function AgentSelect() {}
  * @param {Object[]} instancesSpec Array of to-be-defined spec objects {id, name, blueprint, init, ...args}
  *                              from model.instances
  * @param {TInstance[]} instanceDefs Array of existing instanceDef (TInstance) objects {id, name, blueprint, init, ...args }
- *                             from dc-agents
+ *                             from dc-sim-agents
  */
 export function AllAgentsProgram(data) {
   const { blueprintNames, instancesSpec } = data;

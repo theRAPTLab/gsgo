@@ -22,8 +22,8 @@ import UR from '@gemstep/ursys/client';
 import { GVarNumber, GVarString } from 'script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent, TSymbolData } from 'lib/t-script';
-import { GetAgentById } from 'modules/datacore/dc-agents';
-import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
+import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,7 +45,7 @@ const PHYSICS_AGENTS = new Map();
  * @param agentId
  */
 function m_getAgent(agentId): IAgent {
-  const a = GetAgentById(agentId);
+  const a = DCAGENTS.GetAgentById(agentId);
   if (!a) PHYSICS_AGENTS.delete(agentId);
   return a;
 }
@@ -212,7 +212,6 @@ class PhysicsPack extends GFeature {
 
   symbolize(): TSymbolData {
     return {
-      ctor: PhysicsPack,
       props: {
         'radius': GVarNumber.Symbols,
         'width': GVarNumber.Symbols,
@@ -231,7 +230,7 @@ class PhysicsPack extends GFeature {
         'setRadius': { args: ['radius:number'] },
         'getWidth': { returns: 'width:number' },
         'getHeight': { returns: 'height:number' },
-        'getBounds': { returns: 'bounds:object' }
+        'getBounds': { returns: 'bounds:string' }
       }
     };
   }
@@ -403,4 +402,4 @@ class PhysicsPack extends GFeature {
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new PhysicsPack('Physics');
-RegisterFeature(INSTANCE);
+DCENGINE.RegisterFeature(INSTANCE);

@@ -18,7 +18,7 @@ import UR from '@gemstep/ursys/client';
 import * as ACBlueprints from '../appcore/ac-blueprints';
 import InputDef from '../../lib/class-input-def';
 import SyncMap from '../../lib/class-syncmap';
-import { DeleteAgent } from './dc-agents';
+import * as DCAGENTS from './dc-sim-agents';
 import { TYPES } from '../step/lib/class-ptrack-endpoint';
 import { DistanceTo, Lerp, Rotate } from '../../lib/util-vector';
 
@@ -424,5 +424,5 @@ export function GetInputDefs(): object[] {
  */
 export function InputsReset() {
   const defs = GetInputDefs();
-  defs.forEach(d => DeleteAgent(d));
+  defs.forEach(d => DCAGENTS.DeleteAgent(d));
 }
