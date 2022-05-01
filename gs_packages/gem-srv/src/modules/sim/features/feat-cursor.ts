@@ -161,7 +161,6 @@ function m_UpdateInhabitAgent(frametime) {
 class CursorPack extends GFeature {
   constructor(name) {
     super(name);
-    this.featAddMethod('bindCursor', this.bindCursor);
     this.featAddMethod('releaseCursor', this.releaseCursor);
     UR.HandleMessage('COMPILE_CURSORS', m_CompileCursors);
 
@@ -188,25 +187,6 @@ class CursorPack extends GFeature {
       );
     }
   }
-
-  // DEPRECATED!!!
-  // This was only used by the old approach of inserting a `when` script
-  // into the Cursor blueprint.
-  // ----------------
-  //
-  // `agent` in this case is usually the `Cursor` agent.
-  //
-  // This method is generally only used by the Cursor Feature class itself.
-  // Students should not need to use this method.
-  //
-  // 1. First set `cursorTargetId`
-  //    We need to do it this way because we can't pass an agent or agent.id
-  //    as parameter values.
-  // 2. Then call `bindCursor`
-  // bindCursor(agent: IAgent) {
-  //   const targetAgent = GetAgentById(agent.prop.Cursor.cursorTargetId.value);
-  //   targetAgent.cursor = agent;
-  // }
 
   // `agent` in this case is the character being bound to, rather than
   // the Cursor agent. e.g. to release a Moth, you would call
