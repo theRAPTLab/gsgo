@@ -18,12 +18,10 @@
 
 import UR from '@gemstep/ursys/client';
 
-import * as ENGINE from 'modules/datacore/dc-script-engine';
-import * as FEATURES from 'modules/datacore/dc-features';
+import * as CHECK from 'modules/datacore/dc-type-check';
+import * as ENGINE from 'modules/datacore/dc-sim-resources';
 import * as BUNDLER from 'modules/datacore/dc-sim-bundler';
-import * as VARS from 'modules/datacore/dc-varprops';
 import * as TOKENIZER from 'script/tools/class-gscript-tokenizer-v2';
-import * as PARSER from 'script/tools/class-expr-parser-v2'; // ParseExpression
 import {
   IToken,
   TSymbolData,
@@ -429,7 +427,7 @@ class SymbolHelper {
    */
   argSymbol(arg, tok): TSymbolData {
     const fn = 'argSymbol:';
-    const [argName, argType] = ENGINE.UnpackArg(arg);
+    const [argName, argType] = CHECK.UnpackArg(arg);
     const [tokType, tokVal] = TOKENIZER.UnpackToken(tok);
     let symData;
 
@@ -478,7 +476,7 @@ class SymbolHelper {
 
     // all gvars available in system match token.identifier
     if (argType === 'gvar' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const map = VARS.GetAllVarCtors();
+      const map = ENGINE.GetAllVarCtors();
       const ctors = {};
       const list = [...map.keys()];
       list.forEach(ctorName => {
@@ -490,11 +488,11 @@ class SymbolHelper {
     // all feature symbols in system match token.identifier
     // e.g. addFeature
     if (argType === 'feature' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const map = FEATURES.GetAllFeatures();
+      const map = ENGINE.GetAllFeatures();
       const features = {}; // { [featureName: string]: TSymbolData };
       const list = [...map.keys()];
       list.forEach(featName => {
-        features[featName] = FEATURES.GetFeature(featName).symbolize();
+        features[featName] = ENGINE.GetFeature(featName).symbolize();
       });
       symData = new VSymToken({ features }, argName);
     }
@@ -579,7 +577,7 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
     };
   }
   if (arg) {
-    const [name, type] = ENGINE.UnpackArg(arg);
+    const [name, type] = CHECK.UnpackArg(arg);
     sv_data.arg = { info: arg, items: [name, type] };
   }
   return sv_data;

@@ -12,14 +12,11 @@
 
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
-import { Register } from 'modules/datacore/dc-features';
+import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
 import { IAgent } from 'lib/t-script';
-import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
-import {
-  GetAgentById,
-  GetAgentsByType,
-  GetAllAgents
-} from 'modules/datacore/dc-agents';
+import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
+import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 import { GetGlobalAgent } from 'lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -97,12 +94,12 @@ prop zIndex setTo 1000
  */
 function m_UpdateInhabitAgent(frametime) {
   // Handle the inhabiting programmatically
-  const cursors = GetAgentsByType('Cursor');
+  const cursors = DCAGENTS.GetAgentsByType('Cursor');
   cursors.find(c => {
     // Make sure the target still exists, if it doesn't allow pickup
     if (
       c.prop.isInhabitingTarget.value &&
-      GetAgentById(c.prop.Cursor.cursorTargetId.value)
+      DCAGENTS.GetAgentById(c.prop.Cursor.cursorTargetId.value)
     )
       return false; // cursor already mapped
 
@@ -118,7 +115,7 @@ function m_UpdateInhabitAgent(frametime) {
       if (isTouching && !isTouching.c2c) return false; // not touching this target
 
       // is touching target
-      const target = GetAgentById(id);
+      const target = DCAGENTS.GetAgentById(id);
 
       // if target is missing then it was probably removed even though it's still touching
       if (!target) return false;
@@ -136,7 +133,7 @@ function m_UpdateInhabitAgent(frametime) {
     // not touching anything
     if (!targetId) return false;
     // found target, set target as inhabitingTarget
-    const target = GetAgentById(targetId);
+    const target = DCAGENTS.GetAgentById(targetId);
 
     if (!target) {
       console.error(
@@ -211,7 +208,7 @@ class CursorPack extends GFeature {
   // `agent` in this case is the character being bound to, rather than
   // the Cursor agent. e.g. to release a Moth, you would call
   //   `featCall Moth.Cursor releaseCursor`
-  // NOTE: dc-agents.DeleteAgent will explicitly release the cursor when
+  // NOTE: dc-sim-agents.DeleteAgent will explicitly release the cursor when
   // an agent is deleted.
   releaseCursor(agent: IAgent) {
     // clear the cursor state
@@ -228,4 +225,4 @@ class CursorPack extends GFeature {
 /// REGISTER FEATURE SINGLETON ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new CursorPack('Cursor');
-Register(INSTANCE);
+RegisterFeature(INSTANCE);

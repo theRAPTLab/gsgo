@@ -13,7 +13,7 @@ import {
   GetAllInstances,
   GetAllAgents,
   GetAgentsByType
-} from 'modules/datacore/dc-agents';
+} from 'modules/datacore/dc-sim-agents';
 import SyncMap from 'lib/class-syncmap';
 import DisplayObject from 'lib/class-display-object';
 import * as RENDERER from 'modules/render/api-render';

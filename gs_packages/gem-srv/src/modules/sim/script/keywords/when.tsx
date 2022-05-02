@@ -10,12 +10,8 @@
 
 import Keyword from 'lib/class-keyword';
 import { TOpcode, TScriptUnit, TSymbolData } from 'lib/t-script';
-import { RegisterKeyword } from 'modules/datacore/dc-script-engine';
-import {
-  RegisterSingleInteraction,
-  RegisterPairInteraction,
-  GetInteractionResults
-} from 'modules/datacore/dc-sim-conditions';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCCOND from 'modules/datacore/dc-sim-conditions';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,10 +41,10 @@ export class when extends Keyword {
       /** SINGLE AGENT WHEN TEST *********************************************/
       const [kw, A, testName, ...args] = unit;
       const consq = args.pop();
-      const key = RegisterSingleInteraction([A, testName, ...args]);
+      const key = DCCOND.RegisterSingleInteraction([A, testName, ...args]);
       // return a function that will do all the things
       prog.push((agent, state) => {
-        const passed = GetInteractionResults(key);
+        const passed = DCCOND.GetInteractionResults(key);
         passed.forEach(subject => {
           const ctx = { [A as string]: subject };
           agent.exec(consq, ctx);
@@ -58,9 +54,9 @@ export class when extends Keyword {
       /** PAIRED AGENTS WHEN TEST ********************************************/
       const [kw, A, testName, B, ...args] = unit;
       const consq = args.pop();
-      const key = RegisterPairInteraction([A, testName, B, ...args]);
+      const key = DCCOND.RegisterPairInteraction([A, testName, B, ...args]);
       prog.push((agent, state) => {
-        const passed = GetInteractionResults(key);
+        const passed = DCCOND.GetInteractionResults(key);
         passed.forEach(pairs => {
           const [aa, bb] = pairs;
 
@@ -105,4 +101,4 @@ export class when extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(when);
+DCENGINE.RegisterKeyword(when);

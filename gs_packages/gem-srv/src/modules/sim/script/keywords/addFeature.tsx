@@ -10,7 +10,7 @@
 import Keyword from 'lib/class-keyword';
 import { TOpcode, TScriptUnit, TSymbolData, TOpcodeErr } from 'lib/t-script';
 import { addFeature } from 'script/ops/agent-ops';
-import { GetFeature } from 'modules/datacore/dc-features';
+import { GetFeature } from 'modules/datacore/dc-sim-resources';
 import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////

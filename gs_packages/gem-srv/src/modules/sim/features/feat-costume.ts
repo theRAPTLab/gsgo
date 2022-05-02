@@ -7,11 +7,11 @@
 import RNG from 'modules/sim/sequencer';
 import * as PIXI from 'pixi.js';
 import UR from '@gemstep/ursys/client';
-import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
+import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent, TSymbolData } from 'lib/t-script';
-import { GetAgentById } from 'modules/datacore/dc-agents';
-import { Register } from 'modules/datacore/dc-features';
+import { GetAgentById } from 'modules/datacore/dc-sim-agents';
+import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
 import { GetLoader } from 'modules/asset_core/asset-mgr';
 import { Clamp } from 'lib/util-vector';
 import { HSVfromRGB, RGBfromHSV, HSVfromHEX, HEXfromHSV } from 'lib/util-color';
@@ -514,4 +514,4 @@ class CostumePack extends GFeature {
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new CostumePack('Costume');
-Register(INSTANCE);
+RegisterFeature(INSTANCE);

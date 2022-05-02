@@ -16,7 +16,7 @@
 
 import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
-import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
+import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import {
@@ -25,8 +25,8 @@ import {
   GetAllAgents,
   DefineInstance,
   GetAgentById
-} from 'modules/datacore/dc-agents';
-import { Register } from 'modules/datacore/dc-features';
+} from 'modules/datacore/dc-sim-agents';
+import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
 import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';
@@ -430,7 +430,7 @@ function wanderUntilAgent(agent: IAgent, frame: number) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Movement Function Library
-const MOVEMENT_FUNCTIONS = new Map([
+const MOVEMENT_FUNCTIONS: Map<string, Function> = new Map([
   ['static', undefined],
   ['wander', moveWander],
   ['edgeToEdge', moveEdgeToEdge],
@@ -812,4 +812,4 @@ class MovementPack extends GFeature {
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new MovementPack(FEATID);
-Register(INSTANCE);
+RegisterFeature(INSTANCE);

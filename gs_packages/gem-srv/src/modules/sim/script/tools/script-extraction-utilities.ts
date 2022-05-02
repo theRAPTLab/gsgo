@@ -11,7 +11,7 @@ import {
   GVarDictionary,
   GVarNumber,
   GVarString
-} from 'modules/sim/vars/_all_vars';
+} from 'script/vars/_all_vars';
 import GAgent from 'lib/class-gagent';
 import { TextToScript } from './text-to-script';
 import { CompileBlueprint, DecodeStatement } from './script-compiler';
