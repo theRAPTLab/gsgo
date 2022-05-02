@@ -23,7 +23,7 @@ import React from 'react';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 import * as TRANSPILER from 'script/transpiler-v2';
-import { GetAllFeatures } from 'modules/datacore/dc-features';
+import { GetAllFeatures } from 'modules/datacore/dc-sim-resources';
 import {
   ScriptToJSX,
   UpdateScript

@@ -13,8 +13,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import RNG from 'modules/sim/sequencer';
-import { GetAgentsByType } from './dc-agents';
-import { GetFunction } from './dc-named-methods';
+import * as DCAGENTS from './dc-sim-agents';
+import * as DCENGINE from './dc-sim-resources';
 
 /// INTERACTION UPDATE TESTS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -92,8 +92,8 @@ function ShuffleArray(array) {
  *  FUTURE OPTIMIZATION will cache the results based on key
  */
 function SingleAgentFilter(type: string, testA: string, ...args: any) {
-  const agents = GetAgentsByType(type);
-  const testFunc = GetFunction(testA);
+  const agents = DCAGENTS.GetAgentsByType(type);
+  const testFunc = DCENGINE.GetFunction(testA);
   ShuffleArray(agents);
   const pass = [];
   const fail = [];
@@ -108,9 +108,9 @@ function SingleAgentFilter(type: string, testA: string, ...args: any) {
  *  test looks like (agentA, agentB)=>boolean
  */
 function PairAgentFilter(A: string, testAB: string, B: string, ...args: any) {
-  const setA = GetAgentsByType(A);
-  const setB = GetAgentsByType(B);
-  const testFunc = GetFunction(testAB);
+  const setA = DCAGENTS.GetAgentsByType(A);
+  const setB = DCAGENTS.GetAgentsByType(B);
+  const testFunc = DCENGINE.GetFunction(testAB);
   ShuffleArray(setA);
   ShuffleArray(setB);
   const pass = [];

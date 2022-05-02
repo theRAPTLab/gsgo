@@ -160,13 +160,8 @@ class Viewer extends React.Component {
    *  make this happen.
    */
   render() {
-    const {
-      noMain,
-      panelConfiguration,
-      projId,
-      bpidList,
-      instances
-    } = this.state;
+    const { noMain, panelConfiguration, projId, bpidList, instances } =
+      this.state;
     const { classes } = this.props;
 
     document.title = `VIEWER ${projId}`;

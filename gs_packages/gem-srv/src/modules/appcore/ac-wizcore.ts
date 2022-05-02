@@ -24,8 +24,8 @@ import UR from '@gemstep/ursys/client';
 import { TStateObject } from '@gemstep/ursys/types';
 import * as ASSETS from 'modules/asset_core/asset-mgr';
 import * as TRANSPILER from 'script/transpiler-v2';
-import * as SENGINE from 'modules/datacore/dc-script-engine';
 import ScriptLiner from 'script/tools/script-to-lines';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 import {
   DecodeSymbolViewData,
   UnpackViewData,
@@ -481,7 +481,7 @@ function ValidatePageLine(pageLine): TValidatedScriptUnit {
 /** PLACEHOLDER: retrieve bundle information. prob should be in dc-bundle */
 function GetBundleSymbol(symbolType: keyof TSymbolData) {
   if (symbolType === 'keywords') {
-    return SENGINE.GetAllKeywords() || {};
+    return DCENGINE.GetAllKeywords() || {};
   }
   const bdl: ISMCBundle = State().cur_bdl; // returns null
   if (!bdl) return {};

@@ -10,9 +10,9 @@
 import UR from '@gemstep/ursys/client';
 import GAgent from 'lib/class-gagent';
 import SM_Bundle from 'lib/class-sm-bundle';
-import { TScriptUnit, TSMCProgram, TInstance, EBundleType } from 'lib/t-script.d';
-import * as DCAGENTS from 'modules/datacore/dc-agents';
-import * as DCENGINE from 'modules/datacore/dc-script-engine';
+import { TSMCProgram, TInstance, EBundleType } from 'lib/t-script.d';
+import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 
 // critical imports
 import 'script/keywords/_all_keywords';
@@ -66,7 +66,7 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to make an Agent. This has to be done in a module outside of
- *  dc-agents, because datacore modules must be pure definition
+ *  dc-sim-agents, because datacore modules must be pure definition
  */
 function MakeAgent(instanceDef: TInstance) {
   const fn = 'MakeAgent:';

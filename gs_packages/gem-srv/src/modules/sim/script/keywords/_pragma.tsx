@@ -10,8 +10,8 @@
 
 import Keyword from 'lib/class-keyword';
 import { TArguments, TOpcode } from 'lib/t-script';
-import { SetBundleOut } from 'modules/datacore/dc-sim-bundler';
-import { RegisterKeyword } from 'modules/datacore/dc-script-engine';
+import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -28,7 +28,7 @@ const PRAGMA = {
       state.stack.push('_blueprint', blueprintName, baseBlueprint);
     };
   },
-  'PROGRAM': libName => SetBundleOut(libName)
+  'PROGRAM': libName => DCBUNDLER.SetBundleOut(libName)
 };
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -62,4 +62,4 @@ export class _pragma extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(_pragma);
+DCENGINE.RegisterKeyword(_pragma);

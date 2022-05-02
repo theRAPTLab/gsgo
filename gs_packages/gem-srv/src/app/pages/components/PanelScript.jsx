@@ -349,8 +349,8 @@ class PanelScript extends React.Component {
    * 5. Transpiler.MakeAgent
    *    a. MakeAgent creates a new agent out of the instancedef
    *       retrieving the existing blueprint from datacore.
-   *    b. MakeAgent saves the agent via dc-agents.SaveAgent
-   * 6. dc-agents.SaveAgent
+   *    b. MakeAgent saves the agent via dc-sim-agents.SaveAgent
+   * 6. dc-sim-agents.SaveAgent
    *    a. SaveAgent saves it to the AGENTS map.
    *    b. SaveAgent saves agents by id, which comes from a counter
    */

@@ -2,7 +2,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { GetFeature } from 'modules/datacore/dc-features';
+import { GetFeature } from 'modules/datacore/dc-sim-resources';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
