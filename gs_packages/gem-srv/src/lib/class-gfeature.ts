@@ -13,7 +13,7 @@
 
   import GFeature from 'lib/class-gfeature';
   import { IAgent } from 'lib/t-script'
-  import { Register } from 'modules/datacore/dc-features';
+  import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
 
   class FeaturePack extends GFeature {
     constructor(name:string) {
@@ -50,7 +50,7 @@ import {
   TSymbolData,
   TStackable
 } from 'lib/t-script';
-import { GVarDictionary } from 'modules/sim/vars/_all_vars';
+import { GVarDictionary } from 'script/vars/_all_vars';
 
 /// CONSTANTS & DECLARATIONS  /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -90,7 +90,7 @@ class Feature implements IFeature {
 
   /** override to provide feature symbols */
   symbolize(): TSymbolData {
-    return { ctor: Feature };
+    return {};
   }
   /** called during blueprint instantiation of an agent.
    *  used to add properties specific to the feature.

@@ -176,19 +176,14 @@ class PhaseMachine {
       }
     });
 
-    const promiseAll = Promise.all(promises)
-      .then(values => {
-        if (DBG.ops && values.length)
-          console.log(
-            ...PR(`[${op}] PROMISES RETVALS  : ${values.length}`, values)
-          );
-        if (this.opTimer) clearTimeout(this.opTimer);
-        return values;
-      })
-      .catch(err => {
-        console.log(...PR(`[${op}]: ${err}`));
-        throw Error(`[${op}]: ${err}`);
-      });
+    const promiseAll = Promise.all(promises).then(values => {
+      if (DBG.ops && values.length)
+        console.log(
+          ...PR(`[${op}] PROMISES RETVALS  : ${values.length}`, values)
+        );
+      if (this.opTimer) clearTimeout(this.opTimer);
+      return values;
+    });
 
     if (DBG.ops && hooks.length)
       console.log(...PR(`[${op}] HANDLERS PROCESSED : ${hooks.length}`));

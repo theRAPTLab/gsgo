@@ -34,7 +34,7 @@ import {
 } from 'lib/t-script';
 import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
 import { SymbolHelper, VSymError } from 'script/tools/symbol-helpers';
-import { UnpackToken, UnpackArg } from 'modules/datacore';
+import { UnpackToken, UnpackArg } from 'modules/datacore/dc-type-check';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -265,6 +265,13 @@ class Keyword implements IKeyword {
     console.error('trace');
     console.groupEnd();
     return [];
+  }
+
+  /// UTILITIES ///////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  utilFirstValue(thing: any) {
+    if (Array.isArray(thing)) return thing.shift();
+    return thing;
   }
 } // end of Keyword Class
 

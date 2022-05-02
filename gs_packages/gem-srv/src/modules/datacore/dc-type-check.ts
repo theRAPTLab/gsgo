@@ -7,11 +7,16 @@
   on Typescript's compile-time static type checking to help us here.
 
   inherits data structures from
-  - dc-script-engine    ValidateArgs used by RegisterKeyword
+  - dc-sim-resources    ValidateArgs used by RegisterKeyword
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { TSymArg, TSValidType, EBundleType } from 'lib/t-script.d';
+import {
+  TSymArg,
+  TSymUnpackedArg,
+  TSValidType,
+  EBundleType
+} from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -79,7 +84,28 @@ function ValidateArgs(args: TSymArg[]): boolean {
   }
   return true;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given a string 'arg' of form 'name:argType', return [name, argType] if the
+ *  string meets type requirements, [undefined, undefined] otherwise
+ */
+function UnpackArg(arg: TSymArg): TSymUnpackedArg {
+  if (typeof arg !== 'string') return [undefined, undefined];
+  let [name, type, ...xtra] = arg.split(':') as TSymUnpackedArg;
+  // if there are multiple :, then that is an error
+  if (xtra.length > 0) return [undefined, undefined];
+  if (!VALID_ARGTYPES.includes(type)) return [undefined, undefined];
+  // a zero-length name is an error except for the
+  // multi-argument {args} glob type
+  if (name.length === 0) {
+    if (type === '{...}') name = '**';
+    else return [undefined, undefined];
+  }
+  // name and type are good, so return valid unpacked arg
+  return [name, type];
+}
 
+/// BUNDLE UTILITIES //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// valid keys are defined in ISMCBundle, and values indicate the
 /// context that these program
 const BUNDLE_CONTEXTS = [
@@ -94,7 +120,6 @@ const BUNDLE_CONTEXTS = [
   'conseq',
   'alter'
 ];
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function IsValidBundleProgram(name: string): boolean {
   return BUNDLE_CONTEXTS.includes(name);
@@ -107,5 +132,6 @@ function IsValidBundleType(type: EBundleType) {
 
 /// MODULE ExPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { ValidateArgs };
+export { ValidateArgs, UnpackArg };
+export { UnpackToken } from 'script/tools/class-gscript-tokenizer-v2';
 export { IsValidBundleProgram, IsValidBundleType };

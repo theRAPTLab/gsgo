@@ -31,7 +31,7 @@ import UR from '@gemstep/ursys/client';
 import DeleteIcon from '@material-ui/icons/Delete';
 import VisibilityIcon from '@material-ui/icons/VisibilityOff';
 import { Button, ClickAwayListener } from '@material-ui/core';
-import { GetAllFeatures } from 'modules/datacore/dc-features';
+import { GetAllFeatures } from 'modules/datacore/dc-sim-resources';
 import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import * as ACInstances from 'modules/appcore/ac-instances';
 import * as TRANSPILER from 'script/transpiler-v2';

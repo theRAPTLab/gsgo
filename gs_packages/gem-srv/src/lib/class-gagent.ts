@@ -10,7 +10,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { GetFeature, GetProgram, GetTest } from 'modules/datacore';
-import * as GLOBAL from 'modules/datacore/dc-globals';
 import { Evaluate } from 'lib/expr-evaluator';
 import {
   IFeature,
@@ -23,7 +22,7 @@ import {
   ISMCBundle,
   ControlMode
 } from 'lib/t-script.d';
-import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
+import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
 import FLAGS from 'modules/flags';
 import SM_Message from './class-sm-message';
 import SM_Object from './class-sm-object';

@@ -74,9 +74,8 @@ class CharController extends React.Component {
     };
     this.init = this.init.bind(this);
     this.updateCharControlBpidList = this.updateCharControlBpidList.bind(this);
-    this.handleSetCharControlBpidList = this.handleSetCharControlBpidList.bind(
-      this
-    );
+    this.handleSetCharControlBpidList =
+      this.handleSetCharControlBpidList.bind(this);
     this.requestBPNames = this.requestBPNames.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
     UR.HandleMessage(

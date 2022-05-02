@@ -31,7 +31,6 @@ import { AdjustmentFilter } from '@pixi/filter-adjustment';
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
 import { OutlineFilter } from '@pixi/filter-outline';
 import { GlowFilter } from '@pixi/filter-glow';
-import * as DATACORE from 'modules/datacore';
 import * as ASSETS from 'modules/asset_core';
 import FLAGS from 'modules/flags';
 import { IVisual } from './t-visual';

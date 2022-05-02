@@ -47,8 +47,6 @@ export * from './randomPos'; // randomizes position
 
 // conditional keywords
 /*DEPRECATED*/ export * from './ifExpr'; // run code conditionally
-// export * from './ifTest'; // run a named test during agent runtime
-// export * from './ifProg'; // experimental placeholder
 
 // debug keywords (very slow performance)
 export * from './dbgOut';

@@ -8,7 +8,7 @@ import {
   InputsUpdate,
   GetInputDefs
 } from 'modules/datacore/dc-inputs';
-import { GetAgentById, DeleteAgent } from 'modules/datacore/dc-agents';
+import { GetAgentById, DeleteAgent } from 'modules/datacore/dc-sim-agents';
 import SyncMap from '../../lib/class-syncmap';
 import InputDef from '../../lib/class-input-def';
 import * as TRANSPILER from './script/transpiler-v2';

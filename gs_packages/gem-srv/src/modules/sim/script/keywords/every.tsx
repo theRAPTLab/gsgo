@@ -18,7 +18,7 @@
 import UR from '@gemstep/ursys/client';
 import Keyword from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from 'modules/datacore/dc-script-engine';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -108,4 +108,4 @@ export class every extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(every);
+DCENGINE.RegisterKeyword(every);

@@ -16,9 +16,9 @@
 /*/ required libraries /*/
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
-import { Register } from 'modules/datacore/dc-features';
+import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
 /*/ add your other libraries here /*/
-import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
+import { GVarNumber, GVarString } from 'script/vars/_all_vars';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -96,4 +96,4 @@ function m_StaticMethod() {
 /// REGISTER FEATURE SINGLETON ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new MyFeature('MyFeature');
-Register(INSTANCE);
+RegisterFeature(INSTANCE);
