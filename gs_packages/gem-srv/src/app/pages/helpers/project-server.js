@@ -315,7 +315,18 @@ function HandleTransformReq() {
  */
 function RaiseModelUpdate(projId = CURRENT_PROJECT_ID) {
   const project = ACProject.GetProject(projId);
+  // Tell ScriptEditor and PanelScript to update with new instance/project data
   UR.RaiseMessage('NET:UPDATE_MODEL', { projId, project });
+  if (
+    SIMCTRL.IsRunning() || // Don't allow reset if sim is running
+    SIMCTRL.RoundHasBeenStarted() // Don't allow reset after a Round has started
+    // to prevent resets om between rounds
+  ) {
+    PARENT_COMPONENT.setState({ scriptsNeedUpdate: true });
+    return; // skip restart if it's already running
+  }
+  // Sim is not running, so restart
+  PARENT_COMPONENT.setState({ projId }, () => SIMCTRL.SimPlaces(project));
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

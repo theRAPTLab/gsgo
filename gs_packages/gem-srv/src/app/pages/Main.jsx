@@ -83,14 +83,12 @@ class MissionControl extends React.Component {
     this.UpdateDeviceList = this.UpdateDeviceList.bind(this);
 
     // Data Update Handlers
-    this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     this.DoSimStop = this.DoSimStop.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.PostMessage = this.PostMessage.bind(this);
     this.DoShowMessage = this.DoShowMessage.bind(this);
-    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
     UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
@@ -151,9 +149,7 @@ class MissionControl extends React.Component {
   componentWillUnmount() {
     UR.UnsubscribeState('project', this.urStateUpdated);
     UR.UnhandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);
-    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.UnhandleMessage('NET:INSTANCES_UPDATE', this.HandleInstancesUpdate);
     UR.UnhandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
     UR.UnhandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
@@ -198,23 +194,6 @@ class MissionControl extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// DATA UPDATE HANDLERS
   ///
-  HandleSimDataUpdate(data) {
-    // REVIEW: This logic should probably be in mod-sim-control?
-    if (DBG) console.log('HandleSimDataUpdate', data);
-    if (
-      SIMCTRL.IsRunning() || // Don't allow reset if sim is running
-      SIMCTRL.RoundHasBeenStarted() // Don't allow reset after a Round has started
-      // to prevent resets om between rounds
-    ) {
-      this.setState({ scriptsNeedUpdate: true });
-      return; // skip update if it's already running
-    }
-    this.setState(
-      { projId: data.projId },
-      // Call Sim Places to recompile agents.
-      () => SIMCTRL.SimPlaces(data.project)
-    );
-  }
   /**
    * User has submitted a new script, just update message
    * project-server handles script editing and instance creation
