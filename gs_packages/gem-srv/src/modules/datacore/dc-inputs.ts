@@ -106,7 +106,8 @@ export const PTRACK_TRANSFORM = {
   scaleY: 0,
   translateX: 0,
   translateY: 0,
-  rotation: 0
+  rotation: 0,
+  useAccelerometer: undefined // Not applicable to PTRACK, but defined here for tscript validation
 };
 
 export const POZYX_TRANSFORM = {
