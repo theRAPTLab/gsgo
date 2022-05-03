@@ -382,8 +382,8 @@ function BlueprintDelete(bpName) {
   //    Delete the old blueprint from project
   ACBlueprints.DeleteBlueprint(bpName);
   // 2. Remove from sim
-  DCAgents.DeleteInstancesByBlueprint(bpName);
-  DCAgents.DeleteAgentByBlueprint(bpName);
+  DCAGENTS.DeleteInstancesByBlueprint(bpName);
+  DCAGENTS.DeleteAgentByBlueprint(bpName);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** PanelScript is the only one who calls this to delete a blueprint
@@ -462,8 +462,8 @@ function InstanceDelete(data) {
   // Remove from project
   ACInstances.DeleteInstance(data.id);
   // Remove from Sim
-  DCAgents.DeleteInstance(data);
-  DCAgents.DeleteAgent(data);
+  DCAGENTS.DeleteInstance(data);
+  DCAGENTS.DeleteAgent(data);
   RaiseModelUpdate(data.modelId); // not needed?  shouldn't state cause this?
   RaiseInstancesListUpdate();
 }
