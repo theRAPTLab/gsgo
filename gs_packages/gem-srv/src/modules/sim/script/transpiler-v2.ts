@@ -149,5 +149,4 @@ export {
   ExtractFeaturesUsed,
   ExtractFeatPropMapFromScript,
   ExtractFeatPropMap,
-  HasDirective
 } from 'script/tools/script-extraction-utilities';

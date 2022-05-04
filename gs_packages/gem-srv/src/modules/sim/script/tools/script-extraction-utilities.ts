@@ -223,5 +223,4 @@ export {
   ExtractFeaturesUsed,
   ExtractFeatPropMapFromScript,
   ExtractFeatPropMap,
-  HasDirective
 };
