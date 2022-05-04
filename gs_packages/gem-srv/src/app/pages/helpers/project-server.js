@@ -216,16 +216,6 @@ async function Initialize() {
   });
 }
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API:
- *  Called by Main.LoadModel after a SIM RESET
- */
-async function ReloadProject() {
-  CURRENT_PROJECT = ACProject.GetProject(CURRENT_PROJECT_ID);
-  await ACProject.TriggerProjectStateUpdate();
-  SIMCTRL.SimPlaces(CURRENT_PROJECT);
-}
-
 /// API CALLS: MODEL DATA REQUESTS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// HACKY DOWNLOAD FILE
@@ -725,7 +715,6 @@ UR.HookPhase('UR/APP_START', Initialize);
 export {
   ProjectDataPreInit,
   //
-  ReloadProject,
   ExportProject,
   //
   GetPozyxBPNames,

@@ -85,13 +85,13 @@ class MissionControl extends React.Component {
     // Data Update Handlers
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     this.DoSimStop = this.DoSimStop.bind(this);
-    this.DoSimReset = this.DoSimReset.bind(this);
+    this.OnSimWasReset = this.OnSimWasReset.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.PostMessage = this.PostMessage.bind(this);
     this.DoShowMessage = this.DoShowMessage.bind(this);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
-    UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
+    UR.HandleMessage('NET:SIM_WAS_RESET', this.OnSimWasReset);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
     UR.HandleMessage('SHOW_MESSAGE', this.DoShowMessage);
 
@@ -151,7 +151,7 @@ class MissionControl extends React.Component {
     UR.UnhandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);
     UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.UnhandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
-    UR.UnhandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
+    UR.UnhandleMessage('NET:SIM_WAS_RESET', this.OnSimWasReset);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
     UR.UnhandleMessage('DRAG_END', this.HandleDragEnd);
     UR.UnhandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
@@ -208,17 +208,12 @@ class MissionControl extends React.Component {
     // Give it extra time after the "HACK_SIM_STOP" message is raised as the sim does not stop  immediately
     setTimeout(() => this.forceUpdate(), 250);
   }
-  DoSimReset() {
+  OnSimWasReset() {
     this.PostMessage('Simulation Reset!');
-    if (SIMCTRL.IsRunning()) UR.RaiseMessage('NET:HACK_SIM_STOP'); // stop first
     this.setState(
       {
         inspectorInstances: [],
         scriptsNeedUpdate: false
-      },
-      () => {
-        SIMCTRL.DoSimReset(); // First, clear state, then project-server.DoSimREset so they fire in order
-        PROJSERVER.ReloadProject();
       }
     );
   }
