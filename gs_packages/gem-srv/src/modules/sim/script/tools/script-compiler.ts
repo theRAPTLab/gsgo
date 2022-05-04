@@ -292,7 +292,8 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
 
   if (bdl.name === undefined) throw Error(`${fn} missing BLUEPRINT directive`);
   // always add GAgent.Symbols, which are the default built-in props
-  DCBUNDLER.AddSymbol(bdl, GAgent.Symbols);
+  // TODO: remove the duplicate AddSymbol when writing SymbolizeBlueprint
+  // DCBUNDLER.AddSymbol(bdl, GAgent.Symbols);
   // set type to "BLUEPRINT" (there are other bundle types too)
   bdl.setType(EBundleType.BLUEPRINT);
   return bdl;
