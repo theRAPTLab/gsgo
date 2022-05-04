@@ -394,6 +394,7 @@ class ScriptEditor extends React.Component {
           {panelConfiguration === 'script' && (
             <PanelScript
               id="script"
+              bpName={bpName}
               script={script}
               projId={projId}
               onClick={this.OnPanelClick}

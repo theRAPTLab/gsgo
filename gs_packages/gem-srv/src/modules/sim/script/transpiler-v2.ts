@@ -142,11 +142,10 @@ export {
 /// DEPRECATED API: these are routines that extract these values using brute
 /// force techniques before the compiler generated this information for us
 export {
-  ExtractBlueprintName,
   ExtractBlueprintProperties,
   ExtractBlueprintPropertiesMap,
   ExtractBlueprintPropertiesTypeMap,
   ExtractFeaturesUsed,
   ExtractFeatPropMapFromScript,
-  ExtractFeatPropMap,
+  ExtractFeatPropMap
 } from 'script/tools/script-extraction-utilities';
