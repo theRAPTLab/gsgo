@@ -147,7 +147,7 @@ class ProjectLoader extends AssetLoader {
           // convert .gemprj format to json
           // 1. Look for scripts inside of ``
           // 2. For each ``, insert "\n" and replace ` with "
-          const cleaned = String(result).replace(/`[\s\S]+?`/g, match => {
+          const cleaned = String(result).replace(/`[\s\S]*?`/g, match => {
             return match.replace(/\n/g, '\\n').replace(/`/g, '"');
           });
 
@@ -200,7 +200,17 @@ class ProjectLoader extends AssetLoader {
   /** Returns project matching projId (not assetId) */
   getProjectByProjId(projId) {
     const projassets = [...this._assetDict.values()];
-    const projasset = projassets.find(a => a.rsrc.id === projId);
+    const projasset = projassets.find(a => {
+      if (!a.rsrc) {
+        console.error(
+          ...PR(
+            `getProjectByProjId for project '${projId}' could not find a valid 'rsrc' -- review gemproj file or promiseLoadAssets`
+          )
+        );
+        return undefined;
+      }
+      return a.rsrc.id === projId;
+    });
     return projasset ? projasset.rsrc : undefined;
   }
 } // end class

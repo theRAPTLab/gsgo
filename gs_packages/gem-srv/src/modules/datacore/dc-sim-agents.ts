@@ -90,8 +90,8 @@ function DeleteAllInstances() {
   INSTANCE_COUNTER = INSTANCE_COUNTER_START_VAL;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function DeleteInstancesByBlueprint(blueprint) {
-  INSTANCES.set(blueprint, []);
+function DeleteInstancesByBlueprint(bpName) {
+  INSTANCES.set(bpName, []);
 }
 
 /// AGENT UTILITIES ///////////////////////////////////////////////////////////
@@ -195,9 +195,9 @@ function DeleteAgent(instancedef) {
   AGENT_DICT.delete(id);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function DeleteAgentByBlueprint(blueprintName) {
-  const agents = AGENTS.get(blueprintName);
-  AGENTS.delete(blueprintName);
+function DeleteAgentByBlueprint(bpName) {
+  const agents = AGENTS.get(bpName);
+  AGENTS.delete(bpName);
   if (agents) agents.forEach(a => AGENT_DICT.delete(a.id));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

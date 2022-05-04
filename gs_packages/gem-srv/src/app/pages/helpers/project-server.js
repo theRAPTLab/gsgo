@@ -216,16 +216,6 @@ async function Initialize() {
   });
 }
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API:
- *  Called by Main.LoadModel after a SIM RESET
- */
-async function ReloadProject() {
-  CURRENT_PROJECT = ACProject.GetProject(CURRENT_PROJECT_ID);
-  await ACProject.TriggerProjectStateUpdate();
-  SIMCTRL.SimPlaces(CURRENT_PROJECT);
-}
-
 /// API CALLS: MODEL DATA REQUESTS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// HACKY DOWNLOAD FILE
@@ -315,7 +305,18 @@ function HandleTransformReq() {
  */
 function RaiseModelUpdate(projId = CURRENT_PROJECT_ID) {
   const project = ACProject.GetProject(projId);
+  // Tell ScriptEditor and PanelScript to update with new instance/project data
   UR.RaiseMessage('NET:UPDATE_MODEL', { projId, project });
+  if (
+    SIMCTRL.IsRunning() || // Don't allow reset if sim is running
+    SIMCTRL.RoundHasBeenStarted() // Don't allow reset after a Round has started
+    // to prevent resets om between rounds
+  ) {
+    PARENT_COMPONENT.setState({ scriptsNeedUpdate: true });
+    return; // skip restart if it's already running
+  }
+  // Sim is not running, so restart
+  PARENT_COMPONENT.setState({ projId }, () => SIMCTRL.SimPlaces(project));
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -359,24 +360,29 @@ function GetPozyxBPNames() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API:
  *  Removes the script from the project and any instances using the blueprint
- *  @param {string} blueprintName
+ *  Called by ScriptUpdate when ScriptEditor submits a changed blueprint name.
+ *  Called by PanelScript when ScriptEditor deletes the script.
+ *  @param {string} bpName
  */
-function BlueprintDelete(blueprintName) {
-  // Delete any instances using the blueprint
-  ACInstances.DeleteInstancesByBPID(blueprintName);
-  // Delete the old blueprint from project
-  ACBlueprints.DeleteBlueprint(blueprintName);
-
-  // The instance delete and blueprint delete do trigger state updates
-  // but project-server only listents to `project` state updates
-  // so we have to trigger the updates locally as well as for remote viewers
-  // These only trigger URSYS updates, not state updates!
-  RaiseModelUpdate();
-  RaiseBpidListUpdate();
-  RaiseInstancesListUpdate();
+function BlueprintDelete(bpName) {
+  // 1. Remove from proj
+  //    DON'T Delete any instance definitions using the blueprint YET!
+  //    ScriptUpdate needs to convert the old instances to the new bpName
+  // ACInstances.DeleteInstancesByBPID(bpName);
+  //    Delete the old blueprint from project
+  ACBlueprints.DeleteBlueprint(bpName);
+  // 2. Remove from sim
+  DCAGENTS.DeleteInstancesByBlueprint(bpName);
+  DCAGENTS.DeleteAgentByBlueprint(bpName);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** PanelScript is the only one who calls this to delete a blueprint
+ *  BlueprintDelete does not delete instances -- it relies on ScriptUpdate
+ *  to delete instances.  So we need to explicitly remove them here.
+ *  @param {*} data - {blueprintName, modelId}
+ */
 function HandleBlueprintDelete(data) {
+  ACInstances.DeleteInstancesByBPID(data.blueprintName);
   BlueprintDelete(data.blueprintName, data.modelId);
 }
 
@@ -443,10 +449,13 @@ prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
  *  @param {bpid, id} data
  */
 function InstanceDelete(data) {
+  // Remove from project
+  ACInstances.DeleteInstance(data.id);
   // Remove from Sim
   DCAGENTS.DeleteInstance(data);
   DCAGENTS.DeleteAgent(data);
-  // RaiseModelUpdate(data.modelId); // not needed?  shouldn't state cause this?
+  RaiseModelUpdate(data.modelId); // not needed?  shouldn't state cause this?
+  RaiseInstancesListUpdate();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: (HACK) Manually change the init script when updating position.
@@ -686,7 +695,7 @@ UR.HandleMessage('NET:BLUEPRINT_DELETE', HandleBlueprintDelete);
 UR.HandleMessage('INJECT_BLUEPRINT', InjectBlueprint);
 /// INSTANCE EDITING UTILS ----------------------------------------------------
 UR.HandleMessage('LOCAL:INSTANCE_ADD', InstanceAdd);
-UR.HandleMessage('INSTANCE_DELETE', InstanceDelete);
+UR.HandleMessage('LOCAL:INSTANCE_DELETE', InstanceDelete);
 UR.HandleMessage('NET:INSTANCE_UPDATE_POSITION', InstanceUpdatePosition);
 // INSPECTOR UTILS --------------------------------------------------------
 UR.HandleMessage('NET:INSPECTOR_REGISTER', DoRegisterInspector);
@@ -706,7 +715,6 @@ UR.HookPhase('UR/APP_START', Initialize);
 export {
   ProjectDataPreInit,
   //
-  ReloadProject,
   ExportProject,
   //
   GetPozyxBPNames,
