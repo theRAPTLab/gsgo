@@ -118,6 +118,9 @@ function NextRound() {
   RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
   if (DBG) console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
 }
+/** Runs the GLOOP_COSTUMES Phase where pozyx/ptrack/charcontrol inputs
+ *  can pickup and inhabit agents BEFORE the simulation starts runing.
+ */
 function Costumes() {
   if (DBG) console.log(...PR('Costumes!'));
   // Unsubscribe from PRERUN, otherwise it'll keep running.

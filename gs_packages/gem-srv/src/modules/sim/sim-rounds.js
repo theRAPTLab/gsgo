@@ -71,6 +71,7 @@ function StopRoundTimer() {
 }
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Called bya pi-sim during Stage() */
 export function StageInit() {
   const GLOBAL_AGENT = GetGlobalAgent();
   if (!GLOBAL_AGENT.hasFeature('Population'))
@@ -117,6 +118,7 @@ export function RoundInit(SIMSTATUS) {
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Called by api-sim
 /// 'stopfn' will be called when the timer runs out
 export function RoundStart(stopfn) {
   StartRoundTimer(stopfn);

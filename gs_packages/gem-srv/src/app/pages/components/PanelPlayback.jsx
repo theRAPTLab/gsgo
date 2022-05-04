@@ -24,7 +24,7 @@ class PanelPlayback extends React.Component {
 
   OnResetClick() {
     this.setState({ isRunning: false });
-    UR.RaiseMessage('NET:HACK_SIM_RESET');
+    UR.RaiseMessage('NET:SIM_RESET');
   }
 
   OnCostumesClick() {

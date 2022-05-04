@@ -122,7 +122,6 @@ class PhysicsPack extends GFeature {
     this.featAddMethod('setRadius', this.setRadius);
     this.featAddMethod('getWidth', this.getWidth);
     this.featAddMethod('getHeight', this.getHeight);
-    this.featAddMethod('getBounds', this.getBounds);
 
     UR.HookPhase('SIM/PHYSICS_UPDATE', m_Update);
   }
@@ -229,8 +228,7 @@ class PhysicsPack extends GFeature {
         'setSize': { args: ['width:number', 'height:number'] },
         'setRadius': { args: ['radius:number'] },
         'getWidth': { returns: 'width:number' },
-        'getHeight': { returns: 'height:number' },
-        'getBounds': { returns: 'bounds:string' }
+        'getHeight': { returns: 'height:number' }
       }
     };
   }
@@ -249,6 +247,21 @@ class PhysicsPack extends GFeature {
     agent.prop.Physics.costumeWidth.setTo(w);
     agent.prop.Physics.costumeHeight.setTo(h);
     return { width: w, height: h };
+  }
+  /**
+   * Returns the Physics Body bounds, which is scale * width||height
+   * Since sprites are centered, we adjust the x and y
+   */
+  m_GetBounds(agent: IAgent) {
+    // console.log('getting bounds for', agent);
+    const w = this.getBodyWidth(agent);
+    const h = this.getBodyHeight(agent);
+    return {
+      x: agent.x - w / 2,
+      y: agent.y - h / 2,
+      width: w,
+      height: h
+    };
   }
 
   /// PHYSICS METHODS /////////////////////////////////////////////////////////
@@ -313,25 +326,10 @@ class PhysicsPack extends GFeature {
         return agent.prop.Physics.bodyRadius.value * 2;
     }
   }
-  /**
-   * Returns the Physics Body bounds, which is scale * width||height
-   * Since sprites are centered, we adjust the x and y
-   */
-  getBounds(agent: IAgent) {
-    // console.log('getting bounds for', agent);
-    const w = this.getBodyWidth(agent);
-    const h = this.getBodyHeight(agent);
-    return {
-      x: agent.x - w / 2,
-      y: agent.y - h / 2,
-      width: w,
-      height: h
-    };
-  }
   /** Used by sim-conditions for 'touches' test */
   intersectsWith(agent: IAgent, b: IAgent): boolean {
-    const boundsA = this.getBounds(agent);
-    const boundsB = this.getBounds(b);
+    const boundsA = this.m_GetBounds(agent);
+    const boundsB = this.m_GetBounds(b);
     // REVIEW: This currently treats all intersections as rectangules
     // Round objects are not specifically handled.
     return this.intersects(boundsA, boundsB);
@@ -340,7 +338,7 @@ class PhysicsPack extends GFeature {
     agent: IAgent,
     b: { x: number; y: number; width: number; height: number }
   ): boolean {
-    const boundsA = this.getBounds(agent);
+    const boundsA = this.m_GetBounds(agent);
     // REVIEW: This currently treats all intersections as rectangules
     // Round objects are not specifically handled.
     return this.intersects(boundsA, b);
@@ -349,7 +347,7 @@ class PhysicsPack extends GFeature {
     agent: IAgent,
     b: { x: number; y: number; width: number; height: number }
   ): boolean {
-    const boundsA = this.getBounds(agent);
+    const boundsA = this.m_GetBounds(agent);
     const size = 10; // size of the center box.
     const boundsB = {
       x: b.x - size / 2,
@@ -368,13 +366,13 @@ class PhysicsPack extends GFeature {
       width: size,
       height: size
     };
-    const boundsB = this.getBounds(b);
+    const boundsB = this.m_GetBounds(b);
     return this.intersects(centerA, boundsB);
   }
   // bounds of A is inside bounds of B
   isBoundedBy(agentA: IAgent, agentB: IAgent): boolean {
-    const a = this.getBounds(agentA);
-    const b = this.getBounds(agentB);
+    const a = this.m_GetBounds(agentA);
+    const b = this.m_GetBounds(agentB);
     const ahw = a.width / 2;
     const ahh = a.height / 2;
     const bhw = b.width / 2;

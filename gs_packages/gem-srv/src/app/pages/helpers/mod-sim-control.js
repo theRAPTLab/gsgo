@@ -1,8 +1,8 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Sim Control - Control Module for Mission Control
+  Sim Control - Control Module for Main
 
-  Handles runtime data
+  Serves as the interface between project data and api-sim.
 
   This sets up all of the phase hooks that manage the running of
   the sim.
@@ -16,9 +16,9 @@
 
 import UR from '@gemstep/ursys/client';
 import * as TRANSPILER from 'script/transpiler-v2';
-import * as SIM from 'modules/sim/api-sim';
+import * as APISIM from 'modules/sim/api-sim';
 import { ClearDOBJ } from 'modules/sim/sim-agents';
-import * as DATACORE from 'modules/datacore';
+import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 import * as RENDERER from 'modules/render/api-render';
 import { SetInputStageBounds } from 'modules/datacore/dc-inputs';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
@@ -45,6 +45,7 @@ class SimControl {
     // Let MissionControl handle NET:HACK_SIM_RESET, then call this.DoSimReset directly.
     // UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.HandleMessage('NET:HACK_SIM_COSTUMES', this.DoSimCostumes);
+    UR.HandleMessage('NET:SIM_RESET', this.DoSimReset);
     UR.HandleMessage('NET:HACK_SIM_START', this.DoSimStart);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
     UR.HandleMessage('NET:HACK_SIM_NEXTROUND', this.DoSimNextRound);
@@ -60,10 +61,8 @@ class SimControl {
    * Compiles blueprints after model loading.
    * Also updates the boundary display (since model might define new boundaries)
    */
-  SimPlaces(model) {
-    if (DBG) console.warn(...PR('DoSimPlaces! Compiling...'));
-    // Skip if no model is loaded
-    if (!model) return;
+  SimPlaces() {
+    if (DBG) console.warn(...PR('DoSimPlaces!'));
 
     // 2. Show Boundary
     const boundary = ACMetadata.GetBoundary();
@@ -110,7 +109,7 @@ class SimControl {
   }
 
   DoSimCostumes() {
-    SIM.Costumes();
+    APISIM.Costumes();
   }
 
   /**
@@ -119,36 +118,40 @@ class SimControl {
    * * Do not call this directly.  The call should originate from MissionControl
    */
   DoSimReset() {
-    SIM.Reset();
-    // MissionControl will take care of reloading and calling SimPlaces
+    if (APISIM.IsRunning()) UR.RaiseMessage('NET:HACK_SIM_STOP'); // stop first
+    APISIM.Reset();
+    // Remove existing agents so they are re-created with SimPlaces and AllAgentsProgram
+    DCAGENTS.DeleteAllAgents();
+    this.SimPlaces();
+    UR.RaiseMessage('NET:SIM_WAS_RESET'); // Main needs to reset parms
   }
 
   DoSimStart() {
-    SIM.Start();
+    APISIM.Start();
   }
 
   DoSimStop() {
-    SIM.Stop(); // Stop Round
+    APISIM.Stop(); // Stop Round
   }
 
   DoSimNextRound() {
-    SIM.NextRound();
+    APISIM.NextRound();
   }
 
   DoSimEnd() {
-    SIM.End();
+    APISIM.End();
   }
 
   IsRunning() {
-    return SIM.IsRunning();
+    return APISIM.IsRunning();
   }
 
   RoundsCompleted() {
-    return SIM.RoundsCompleted();
+    return APISIM.RoundsCompleted();
   }
 
   RoundHasBeenStarted() {
-    return SIM.RoundHasBeenStarted();
+    return APISIM.RoundHasBeenStarted();
   }
 }
 
