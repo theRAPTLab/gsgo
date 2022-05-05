@@ -216,12 +216,10 @@ function HasDirective(bpText: string, directive: string) {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
-  ExtractBlueprintName,
   ExtractBlueprintProperties,
   ExtractBlueprintPropertiesMap,
   ExtractBlueprintPropertiesTypeMap,
   ExtractFeaturesUsed,
   ExtractFeatPropMapFromScript,
-  ExtractFeatPropMap,
-  HasDirective
+  ExtractFeatPropMap
 };

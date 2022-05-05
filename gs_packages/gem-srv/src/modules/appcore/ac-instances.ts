@@ -19,8 +19,6 @@ let AUTOTIMER;
 const STATE = new UR.class.StateGroupMgr('instances');
 /// StateGroup keys must be unique across the entire app
 STATE.initializeState({
-  // dummy
-  projId: 0,
   instances: [
     {
       id: '1',
@@ -172,7 +170,6 @@ function hook_Filter(key, propOrValue, propValue) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Optionally fire once all state change hooks have been processed.
  *  This is provided as the second arg of addChangeHook()
@@ -206,7 +203,6 @@ addEffectHook(hook_Effect);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 export function SetInstances(projId, instances) {
-  updateKey({ projId });
   updateAndPublish(instances);
 }
 

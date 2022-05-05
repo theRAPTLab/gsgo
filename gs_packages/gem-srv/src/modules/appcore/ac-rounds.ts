@@ -17,8 +17,6 @@ const DBG = false;
 const STATE = new UR.class.StateGroupMgr('rounds');
 /// StateGroup keys must be unique across the entire app
 STATE.initializeState({
-  // dummy
-  projId: 0,
   rounds: [
     {
       id: 1,
@@ -144,6 +142,5 @@ export function RoundsShouldLoop() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 export function SetRounds(projId, rounds) {
-  updateKey({ projId });
   updateAndPublish(rounds);
 }

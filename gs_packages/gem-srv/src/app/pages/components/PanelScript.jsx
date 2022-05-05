@@ -14,7 +14,6 @@ import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { withStyles } from '@material-ui/core/styles';
 import UR from '@gemstep/ursys/client';
-import * as TRANSPILER from 'script/transpiler-v2';
 import {
   ScriptToJSX,
   UpdateScript
@@ -172,7 +171,6 @@ if (DBG) console.log(...PR('PRISM gemscript types', types_regex));
 class PanelScript extends React.Component {
   constructor() {
     super();
-    this.origBlueprintName = '';
     this.state = {
       viewMode: 'code',
       jsx: '',
@@ -196,7 +194,6 @@ class PanelScript extends React.Component {
 
     this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
     this.HandleScriptIsDirty = this.HandleScriptIsDirty.bind(this);
-    this.UpdateBlueprintName = this.UpdateBlueprintName.bind(this);
     this.GetTitle = this.GetTitle.bind(this);
     this.HandleScriptUIChanged = this.HandleScriptUIChanged.bind(this);
     this.SendText = this.SendText.bind(this);
@@ -225,11 +222,6 @@ class PanelScript extends React.Component {
       this.text = code;
       this.setState({ isDirty: true });
     });
-    // Read original blueprint name
-    // We need to save this in case the user changes the name
-    // If the name is changed we have to clean up the old instances
-    const { script } = this.props;
-    this.UpdateBlueprintName(script);
 
     window.addEventListener('beforeunload', e => {
       const { isDirty } = this.state;
@@ -254,12 +246,6 @@ class PanelScript extends React.Component {
 
   HandleScriptIsDirty() {
     this.setState({ isDirty: true });
-  }
-
-  UpdateBlueprintName(script) {
-    if (DBG) console.log(...PR('UpdateBlueprintName -- setting state'));
-    const blueprintName = TRANSPILER.ExtractBlueprintName(script);
-    this.origBlueprintName = blueprintName;
   }
 
   GetTitle(blueprintName) {
@@ -355,20 +341,18 @@ class PanelScript extends React.Component {
    *    b. SaveAgent saves agents by id, which comes from a counter
    */
   SendText() {
-    const { projId } = this.props;
+    const { projId, bpName } = this.props;
     const text = this.jar.toString();
-    const currentBlueprintName = TRANSPILER.ExtractBlueprintName(text);
-    UR.RaiseMessage('NET:SCRIPT_UPDATE', {
+    UR.CallMessage('NET:SCRIPT_UPDATE', {
       projId,
       script: text,
-      origBlueprintName: this.origBlueprintName
+      origBlueprintName: bpName
+    }).then(result => {
+      const newBpName = result.bpName;
+      this.setState({ isDirty: false });
+      // select the new script
+      UR.RaiseMessage('SELECT_SCRIPT', { bpName: newBpName });
     });
-    this.setState({ isDirty: false });
-    // select the new script
-    if (this.origBlueprintName !== currentBlueprintName) {
-      this.origBlueprintName = currentBlueprintName;
-      UR.RaiseMessage('SELECT_SCRIPT', { bpName: currentBlueprintName });
-    }
   }
 
   OnSelectScriptClick(action) {
@@ -452,7 +436,7 @@ class PanelScript extends React.Component {
       openConfirmDelete,
       openConfirmUnload
     } = this.state;
-    const { id, script, projId, onClick, classes } = this.props;
+    const { id, bpName, script, projId, onClick, classes } = this.props;
 
     // CodeJar Refresh
     //
@@ -487,8 +471,7 @@ class PanelScript extends React.Component {
       needsSyntaxReHighlight = false;
     }
 
-    const blueprintName = TRANSPILER.ExtractBlueprintName(script);
-    const updatedTitle = this.GetTitle(blueprintName);
+    const updatedTitle = this.GetTitle(bpName);
 
     // TOP BAR ----------------------------------------------------------------
     const TopBar = (
@@ -537,16 +520,16 @@ class PanelScript extends React.Component {
     const DialogConfirmDelete = (
       <DialogConfirm
         open={openConfirmDelete}
-        message={`Are you sure you want to delete the "${blueprintName}" script?`}
-        yesMessage={`Delete ${blueprintName}`}
+        message={`Are you sure you want to delete the "${bpName}" script?`}
+        yesMessage={`Delete ${bpName}`}
         onClose={this.OnDeleteConfirm}
       />
     );
     const DialogConfirmUnload = (
       <DialogConfirm
         open={openConfirmUnload}
-        message={`Are you sure you want to leave without saving the "${blueprintName}" script?`}
-        yesMessage={`Leave ${blueprintName} without saving`}
+        message={`Are you sure you want to leave without saving the "${bpName}" script?`}
+        yesMessage={`Leave ${bpName} without saving`}
         noMessage="Back to Edit"
         onClose={this.OnUnloadConfirm}
       />
