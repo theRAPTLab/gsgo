@@ -78,7 +78,6 @@ const STATE = new UR.class.StateGroupMgr('blueprints');
 /// StateGroup keys must be unique across the entire app
 STATE.initializeState({
   // db states
-  projId: 0,
   blueprints: [], // [{scriptText},...] raw blueprint text used for saving to gemproj file
   // runtime states
   bpidList: [],
@@ -434,7 +433,6 @@ function SetBlueprints(projId, blueprints) {
   // 1. Compile the blueprints
   m_ResetAndCompileBlueprints(blueprints);
   // 2. Update state
-  updateKey({ projId });
   // convert to new blueprints format
   const bpScriptList = m_GetBpScriptList();
   updateAndPublish(bpScriptList);
@@ -497,7 +495,6 @@ function UpdateBlueprint(projId, bpName, scriptText) {
   m_CompileBlueprints([blueprint]); // add/update BPTEXTMAP as a side effect
 
   // 2. Update states and derived states
-  updateKey({ projId });
   const bpScriptList = m_GetBpScriptList();
   updateAndPublish(bpScriptList); // triggers write
   updateAndPublishDerivedBpLists();
