@@ -210,12 +210,10 @@ class MissionControl extends React.Component {
   }
   OnSimWasReset() {
     this.PostMessage('Simulation Reset!');
-    this.setState(
-      {
-        inspectorInstances: [],
-        scriptsNeedUpdate: false
-      }
-    );
+    this.setState({
+      inspectorInstances: [],
+      scriptsNeedUpdate: false
+    });
   }
   /**
    * Handler for `NET:INSPECTOR_UPDATE`

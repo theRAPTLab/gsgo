@@ -56,19 +56,19 @@ class PanelSelectAgent extends React.Component {
               padding: '30px'
             }}
           >
-            {sortedBlueprints.map(m => (
-              <div key={m.name} style={{ height: '60px' }}>
+            {sortedBlueprints.map(bp => (
+              <div key={bp.name} style={{ height: '60px' }}>
                 <button
                   type="button"
-                  disabled={m.editor !== undefined}
+                  disabled={bp.editor !== undefined}
                   style={{ width: '300px' }}
                   className={classes.button}
-                  onClick={() => this.OnScriptClick(m.name)}
+                  onClick={() => this.OnScriptClick(bp.name)}
                 >
-                  {m.name}
+                  {bp.name}
                 </button>
                 <div className={classes.instructions}>
-                  {m.editor ? `Checked out by ${m.editor}` : ''}
+                  {bp.editor ? `Checked out by ${bp.editor}` : ''}
                   <br />
                   <br />
                 </div>
