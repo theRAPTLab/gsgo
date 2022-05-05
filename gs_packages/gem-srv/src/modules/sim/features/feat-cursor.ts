@@ -54,8 +54,7 @@ function m_CompileCursors() {
   });
 
   const CURSOR_BLUEPRINT = {
-    id: 'Cursor',
-    label: 'Cursor',
+    name: 'Cursor',
     scriptText: `# BLUEPRINT Cursor
 # TAG isCharControllable true
 # TAG isPozyxControllable true

@@ -434,8 +434,8 @@ function SetBlueprints(projId, blueprints) {
   m_ResetAndCompileBlueprints(blueprints);
   // 2. Update state
   // convert to new blueprints format
-  const bpScriptList = m_GetBpScriptList();
-  updateAndPublish(bpScriptList);
+  const bpNameScriptList = m_GetBpNameScriptList();
+  updateAndPublish(bpNameScriptList); // triggers write
   updateAndPublishDerivedBpLists();
 }
 
@@ -495,8 +495,8 @@ function UpdateBlueprint(projId, bpName, scriptText) {
   m_CompileBlueprints([blueprint]); // add/update BPTEXTMAP as a side effect
 
   // 2. Update states and derived states
-  const bpScriptList = m_GetBpScriptList();
-  updateAndPublish(bpScriptList); // triggers write
+  const bpNameScriptList = m_GetBpNameScriptList();
+  updateAndPublish(bpNameScriptList); // triggers write
   updateAndPublishDerivedBpLists();
 
   // REVIEW: Is this WriteState call necessary if we're already calling updateKey and updateAndPublish?
@@ -508,8 +508,8 @@ function UpdateBlueprint(projId, bpName, scriptText) {
 function DeleteBlueprint(bpName) {
   BPTEXTMAP.delete(bpName); // local
   DCENGINE.DeleteBlueprint(bpName); // bpBndles
-  const bpScriptList = m_GetBpScriptList();
-  updateAndPublish(bpScriptList); // triggers write
+  const bpNameScriptList = m_GetBpNameScriptList();
+  updateAndPublish(bpNameScriptList); // triggers write
   updateAndPublishDerivedBpLists();
   // ORIG CODE predating use of BPTEXTMPA and DCENGINE
   //
