@@ -15,8 +15,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import UR from '@gemstep/ursys/client';
-
 /// FORWARDED EXPORTS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export * from './dc-sim-agents';
@@ -24,37 +22,3 @@ export * from './dc-sim-resources';
 export * from './dc-sim-bundler';
 export * from './dc-sim-conditions';
 export * from './dc-render';
-
-/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// const PR = UR.PrefixUtil('DATCORE', 'TagRed');
-
-/// DEFAULT TEXT FOR SCRIPT TESTING ///////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DEFAULT_TEXT = `
-# BLUEPRINT Bee
-# PROGRAM DEFINE
-useFeature Costume
-useFeature Movement
-addProp foodLevel Number 50
-featCall Costume setCostume 'bunny.json' 1
-# PROGRAM UPDATE
-prop agent.skin setTo 'bunny.json'
-ifExpr {{true}} [[
-  ifExpr {{ false }} [[
-    dbgOut 'true'
-  ]] [[
-    dbgOut 'chained blocks work'
-  ]]
-]]
-`;
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetDefaultText() {
-  return DEFAULT_TEXT;
-}
-
-/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// for loading data structures
-UR.HookPhase('UR/LOAD_ASSETS', () => new Promise(resolve => resolve('loaded')));

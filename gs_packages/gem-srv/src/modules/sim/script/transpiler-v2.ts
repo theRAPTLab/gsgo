@@ -104,7 +104,6 @@ export {
   CompileBlueprint, // API: return a blueprint bundle from a blueprint text
   DecodeTokenPrimitive, // utility: to convert a scriptToken into runtime data
   DecodeToken, // utility: with DecodeTokenPrimitive, converts a token into runtime entity
-  UnpackToken, // utility: more useful version of DecodeToken
   DecodeStatement, // utility: works with DecodeToken to create runtime enties
   SymbolizeStatement, // utility: extract symbols defined by a keyword
   ValidateStatement // utility: check script tokens against symbols

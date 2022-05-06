@@ -5,14 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import UR from '@gemstep/ursys/client';
 import { TScriptUnit, IToken } from 'lib/t-script.d';
-import { Blocks } from './test-data/td-tokenizer';
-
-/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
-const PR = UR.PrefixUtil('TEXTIFY', 'TagDebug');
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -82,39 +75,6 @@ function ScriptToText(units: TScriptUnit[]): string {
   });
   return text.join('\n');
 }
-
-/// TESTS /////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestTextifyScript(tests: { [key: string]: any }) {
-  console.group(...PR('TEST: ScriptToText'));
-  Object.entries(tests).forEach(kv => {
-    const [testName, testArgs] = kv;
-    // workaround out-of-date typescript compiler that doesn't recognize spread
-    const units = JSON.parse(testArgs['expect']);
-    const text = ScriptToText(units).trim();
-    const expect = testArgs['text'].trim();
-    const [pass, printInfo] = UR.ConsoleCompareTexts(text, expect);
-    if (!pass) {
-      console.group(...PR(`${testName} comparison failed`));
-      printInfo(testName);
-      console.groupEnd();
-    } else {
-      printInfo(testName);
-    }
-  });
-  console.groupEnd();
-}
-
-/// CONSOLE TOOL INSTALL //////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if (DBG)
-  UR.AddConsoleTool({
-    'run_textify_tests': () => {
-      console.clear();
-      TestTextifyScript(Blocks);
-    }
-  });
-// UR.HookPhase('UR/APP_START', () => TestTextifyScript(Blocks));
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

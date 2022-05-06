@@ -9,20 +9,16 @@
   The actual blueprint bundle is managed by DATACORE SIM RESOURCES, where it
   is saved in the BUNDLES dictionary.
 
+  CONCEPTUAL DESIGN
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import {
-  TCompiledStatement,
-  ISMCBundle,
-  EBundleType,
-  TSymbolData
-} from 'lib/t-script.d';
+import { TCompiledStatement, ISMCBundle, TSymbolData } from 'lib/t-script.d';
 import * as CHECK from './dc-type-check';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// const PR = UR.PrefixUtil('DCBDL');
 const DBG = false;
 const PR = UR.PrefixUtil('SYMBOL', 'TagPurple');
 
@@ -35,7 +31,7 @@ let BUNDLE_OUT = 'define'; // the current compiler output track
 /** set the datacore global var BUNDLE_NAME to to bpName, which tells the
  *  BundleOut(bdl,prog) call where the program should be added
  */
-export function SetBundleName(
+function SetBundleName(
   bdl: ISMCBundle,
   bpName: string,
   bpParent?: string
@@ -61,7 +57,7 @@ export function SetBundleName(
 /** set the datacore global var BUNDLE_OUT to bdlKey, which tells the
  *  BundleOut(bdl,prog) call where the program should be added
  */
-export function SetBundleOut(str: string): boolean {
+function SetBundleOut(str: string): boolean {
   const bdlKey = str.toLowerCase();
   if (CHECK.IsValidBundleProgram(bdlKey)) {
     BUNDLE_OUT = bdlKey;
@@ -73,7 +69,7 @@ export function SetBundleOut(str: string): boolean {
 /** return the state of the bundler, which is valid while a blueprint script is
  *  being compiled (e.g. CompileBlueprint())
  */
-export function CompilerState() {
+function CompilerState() {
   return {
     bundleName: BUNDLE_NAME,
     bundleOut: BUNDLE_OUT
@@ -91,7 +87,7 @@ export function CompilerState() {
  *  @returns void
  *
  */
-export function AddSymbol(bdl: ISMCBundle, symdata: TSymbolData) {
+function AddSymbol(bdl: ISMCBundle, symdata: TSymbolData) {
   if (bdl.symbols === undefined) bdl.symbols = {};
   const _bdlsym = bdl.symbols;
 
@@ -126,11 +122,7 @@ export function AddSymbol(bdl: ISMCBundle, symdata: TSymbolData) {
   if (symdata.error) console.log('symbol error:', symdata.error);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function BundleTag(
-  bdl: ISMCBundle,
-  tagName: string,
-  tagValue: any
-): boolean {
+function BundleTag(bdl: ISMCBundle, tagName: string, tagValue: any): boolean {
   if (typeof bdl !== 'object') {
     console.warn('arg1 is not a bundle, got:', bdl);
     return false;
@@ -152,7 +144,7 @@ export function BundleTag(
 /** main API for add a program to a bundle. It does not check the bundle
  *  type because it may not have been set yet.
  */
-export function BundleOut(bdl: ISMCBundle, prog: TCompiledStatement) {
+function BundleOut(bdl: ISMCBundle, prog: TCompiledStatement) {
   if (typeof bdl !== 'object') throw Error(`${bdl} is not an object`);
   if (!bdl[BUNDLE_OUT]) bdl[BUNDLE_OUT] = [];
   // console.log(`writing ${prog.length} opcode(s) to [${BUNDLE_OUT}]`);
@@ -161,7 +153,7 @@ export function BundleOut(bdl: ISMCBundle, prog: TCompiledStatement) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** HELPER: returns bundle if it is a bundle, throw error otherwise */
-export function IsValidBundle(bundle: ISMCBundle) {
+function IsValidBundle(bundle: ISMCBundle) {
   const { symbols, name } = bundle;
   const { props, features } = symbols;
   const hasSymbols =
@@ -170,3 +162,15 @@ export function IsValidBundle(bundle: ISMCBundle) {
   console.warn('IsValidBundle: not a bundle', bundle);
   throw Error('IsValidBundle: invalid parameter not bundle');
 }
+
+/// MODULE EXPORTS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export {
+  SetBundleName,
+  SetBundleOut,
+  CompilerState,
+  AddSymbol,
+  BundleTag,
+  BundleOut,
+  IsValidBundle
+};

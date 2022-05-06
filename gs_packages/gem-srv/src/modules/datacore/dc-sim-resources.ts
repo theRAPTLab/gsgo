@@ -12,8 +12,10 @@
 import {
   TSMCProgram,
   ISMCBundle,
+  TScriptUnit,
   IFeature,
   IScopeableCtor,
+  IToken,
   IKeyword,
   IKeywordCtor,
   TSymArg
@@ -103,7 +105,7 @@ function DeleteAllBlueprints() {
 function RegisterKeyword(Ctor: IKeywordCtor, key?: string) {
   const fn = 'RegisterKeyword:';
   const kobj = new Ctor();
-  if (!CHECK.ValidateArgs(kobj.args as TSymArg[]))
+  if (!CHECK.AreValidArgs(kobj.args as TSymArg[]))
     throw Error(`${fn} invalid argDef in keyword '${kobj.keyword}'`);
   KEYWORDS.set(key || kobj.keyword, kobj);
 }
@@ -246,6 +248,7 @@ function DeleteAllScriptEvents() {
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// blueprints are stored as "bundles" by their name
 export {
   SaveBlueprint,
   GetBlueprint,
@@ -253,37 +256,36 @@ export {
   DeleteBlueprint,
   DeleteAllBlueprints
 };
+/// scriptable properties are called "gvars" and have constructors for each type
 export { RegisterVarCTor, GetVarCtor, SymbolDefFor, GetAllVarCtors };
+/// the transpiler is extendable using "keyword' modules that implement
+/// symbolize, validate, and compile
 export { RegisterKeyword, GetKeyword, GetAllKeywords };
+/// engine maintains dicts of named Javascript functions
 export { RegisterFunction, GetFunction };
+/// engine maintain dicts of compiler script code (TSMCProgram)
 export { RegisterProgram, GetProgram };
+/// "when" conditions use programs that expect a certain input
 export { RegisterTest, GetTest, DeleteAllTests };
-export { GetFeature, GetAllFeatures, RegisterFeature, DeleteAllFeatures };
+/// extensions to the script engine capabilities are handled with "feature" modules
+export {
+  GetFeature,
+  GetAllFeatures,
+  GetFeatureMethod,
+  RegisterFeature,
+  DeleteAllFeatures
+};
+/// simulation triggers are managed through "script event" dicts
 export { SubscribeToScriptEvent, GetScriptEventHandlers, DeleteAllScriptEvents };
 
-/* original exports from dc-script-engine
+/* exports from dc-script-engine that are no longer exported
 export { BLUEPRINTS, KEYWORDS, SCRIPTS, SCRIPT_EVENTS };
-export {
-  RegisterKeyword,
-  GetKeyword,
-  GetAllKeywords,
-  //
-  SubscribeToScriptEvent,
-  GetScriptEventHandlers,
-  DeleteAllScriptEvents,
-  //
   SaveScript,
   DeleteScript,
   UpdateScriptIndex,
   //
-  SaveBlueprint,
-  GetBlueprint,
-  GetAllBlueprints,
-  DeleteBlueprint,
-  DeleteAllBlueprints,
-  //
   UnpackArg,
-  ValidateArgs,
+  AreValidArgs,
   UtilDerefArg,
   UtilFirstValue
 };

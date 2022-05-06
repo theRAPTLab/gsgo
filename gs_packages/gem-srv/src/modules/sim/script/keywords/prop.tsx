@@ -24,21 +24,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Keyword, { K_DerefProp } from 'lib/class-keyword';
-import {
-  IAgent,
-  IState,
-  TOpcode,
-  TScriptUnit,
-  TSymArg,
-  TValidatedScriptUnit
-} from 'lib/t-script';
-import { VMToken } from 'lib/t-ui';
-import {
-  RegisterKeyword,
-  GetVarCtor,
-  UnpackArg,
-  UnpackToken
-} from 'modules/datacore';
+import { IAgent, IState, TOpcode, TScriptUnit, TSymArg } from 'lib/t-script';
+import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

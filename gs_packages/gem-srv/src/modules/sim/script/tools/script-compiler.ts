@@ -42,20 +42,16 @@ import SM_Bundle from 'lib/class-sm-bundle';
 
 import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
+import * as CHECK from 'modules/datacore/dc-type-check';
 import GAgent from 'lib/class-gagent';
 import { VSymError } from './symbol-helpers';
 
 import { ParseExpression } from './class-expr-parser-v2';
-import GScriptTokenizer, {
-  IsValidToken,
-  UnpackToken
-} from './class-gscript-tokenizer-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const PR = UR.PrefixUtil('COMPILE', 'TagDebug');
-const Scriptifier = new GScriptTokenizer();
 
 /// COMPILER SUPPORT FUNCTIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -91,7 +87,7 @@ function m_StripErrors(
  *  value or token. TODO: review whether it should replace DecodeToken
  */
 function DecodeTokenPrimitive(arg) {
-  const [type, value] = UnpackToken(arg);
+  const [type, value] = CHECK.UnpackToken(arg);
   if (type === undefined) {
     console.warn('unknown argument type:', arg);
     throw Error('DecodeTokenPrimitive: unknown argument type');
@@ -100,10 +96,11 @@ function DecodeTokenPrimitive(arg) {
   return value;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** converts scriptToken to the runtime value pased to keyword.compile()
+/** Converts scriptToken to the runtime value pased to keyword methods
+ *  like compiler(), symbolize(), and validate()
  */
 function DecodeToken(tok: IToken): any {
-  const [type, value] = UnpackToken(tok);
+  const [type, value] = CHECK.UnpackToken(tok);
   if (type === undefined)
     throw Error(`DecodeToken: invalid token ${JSON.stringify(tok)}`);
   if (type === 'identifier') return value;
@@ -123,9 +120,9 @@ function DecodeToken(tok: IToken): any {
 /** Given a ScriptUnit, return the 'decoded' tokens as usable valuables when
  *  it is time to invoke a compiler function
  */
-function DecodeStatement(toks: TScriptUnit): any[] {
-  const dUnit: TScriptUnit = toks.map((tok, ii) => {
-    if (ii === 0) {
+function DecodeStatement(statement: TScriptUnit): any[] {
+  const dUnit: TScriptUnit = statement.map((tok, line) => {
+    if (line === 0) {
       const arg = DecodeToken(tok);
       if (typeof arg === 'object' && arg.comment) return '_comment';
       return arg;
@@ -135,39 +132,18 @@ function DecodeStatement(toks: TScriptUnit): any[] {
   return dUnit;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** check that the passed decoded token is actually a keyword. This is called
- *  AFTER the statement tokens has been decoded as far as it can be by
- *  DecodeStatement()
- */
-function isKeywordString(tok: any): boolean {
-  // don't compile comment lines, but compile everything else
-  if (typeof tok === 'string') {
-    if (tok.length > 0) return true;
-    return false; // the case for blank lines, now allowed
-  }
-  // this shouldn't happen, but just ruling it out
-  if (Array.isArray(tok)) return false;
-  // if it's an object, do a bit more digging
-  if (typeof tok === 'object') {
-    if (tok.line) return false;
-  }
-  return false;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: A mirror of CompileStatement, extracts the symbol data as a separate
  *  pass so we don't have to rewrite the entire compiler and existing keyword
  *  code. Note that this does not recurse into statement blocks, because the
  *  only keywords in a statement that add symbol data are `addProp` and `when`
  *  which are always level 0 (not nested)
  */
-function SymbolizeStatement(statement: TScriptUnit, line: number): TSymbolData {
+function SymbolizeStatement(statement: TScriptUnit, line?: number): TSymbolData {
   const fn = 'SymbolizeStatement:';
-  const kwArgs = DecodeStatement(statement); // replace with UnpackStatement
-  let kw = kwArgs[0];
-  if (kw === '') return {}; // blank lines emit no symbol info
-  if (!isKeywordString(kw)) return {}; // if !keyword return no symbol
-  const kwProcessor = DCENGINE.GetKeyword(kw);
-  if (!kwProcessor) {
+  const kw = CHECK.DecodeKeywordToken(statement[0]);
+  if (!kw) return {}; // blank lines emit no symbol info
+  const kwp = DCENGINE.GetKeyword(kw);
+  if (!kwp) {
     console.warn(`${fn} keyword processor ${kw} bad`);
     return {
       error: { code: 'errExist', info: `missing kwProcessor for: '${kw}'` }
@@ -176,7 +152,8 @@ function SymbolizeStatement(statement: TScriptUnit, line: number): TSymbolData {
   // ***NOTE***
   // May return empty object, but that just means there are no symbols produced.
   // keywords don't return symbols unless they are adding props or features.
-  const symbols = kwProcessor.symbolize(kwArgs, line); // these are new objects
+  const kwArgs = DecodeStatement(statement);
+  const symbols = kwp.symbolize(kwArgs, line); // these are new objects
   return symbols;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -189,19 +166,20 @@ function ValidateStatement(
   refs: TSymbolRefs
 ): TValidatedScriptUnit {
   const { bundle, globals } = refs || {};
-  const [kw] = DecodeStatement(statement);
+  const kw = CHECK.DecodeKeywordToken(statement[0]);
   const kwp = DCENGINE.GetKeyword(kw);
-  if (kwp === undefined) {
-    const keywords = DCENGINE.GetAllKeywords();
-    return {
-      validationTokens: [
-        new VSymError('errExist', `invalid keyword '${kw}'`, { keywords })
-      ]
-    };
+  if (kwp !== undefined) {
+    kwp.validateInit({ bundle, globals });
+    return kwp.validate(statement);
   }
-  // DO THE RIGHT THING II: return the Validation Tokens
-  kwp.validateInit({ bundle, globals });
-  return kwp.validate(statement);
+  // if got this far, the keyword was unrecognized
+  const keywords = DCENGINE.GetAllKeywords();
+  const err = new VSymError('errExist', `invalid keyword '${kw}'`, {
+    keywords
+  });
+  return {
+    validationTokens: [err]
+  };
 }
 
 /// MAIN API //////////////////////////////////////////////////////////////////
@@ -212,19 +190,15 @@ function ValidateStatement(
  */
 function CompileStatement(
   statement: TScriptUnit,
-  idx?: number
+  line?: number
 ): TCompiledStatement {
-  let kwProcessor: IKeyword;
-  // convert the tokens into actual values to feed the kw compiler
+  const fn = 'CompileStatement:';
+  const kw = CHECK.DecodeKeywordToken(statement[0]);
+  if (!kw) return []; // skips comments, blank lines
+  const kwp = DCENGINE.GetKeyword(kw) || DCENGINE.GetKeyword('keywordErr');
+  if (!kwp) throw Error(`${fn} bad keyword ${kw}`);
   const kwArgs = DecodeStatement(statement);
-  let kw = kwArgs[0];
-  // let's compile!
-  // if first keyword is invalid return empty array (no code generated)
-  if (!isKeywordString(kw)) return [];
-  // otherwise, compile the statement!
-  kwProcessor = DCENGINE.GetKeyword(kw);
-  if (!kwProcessor) kwProcessor = DCENGINE.GetKeyword('keywordErr');
-  const compiledStatement = kwProcessor.compile(kwArgs, idx);
+  const compiledStatement = kwp.compile(kwArgs, line);
   return compiledStatement;
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -238,7 +212,7 @@ function CompileScript(script: TScriptUnit[]): TSMCProgram {
   let objcode: TCompiledStatement;
   script.forEach((statement, ii) => {
     if (statement[0] === '_pragma') return; // ignore directives
-    objcode = CompileStatement(statement, ii);
+    objcode = CompileStatement(statement);
     objcode = m_StripErrors(objcode, statement);
     program.push(...(objcode as TSMCProgram));
   });
@@ -260,9 +234,10 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
   if (!Array.isArray(script))
     throw Error(`${fn} script should be array, not ${typeof script}`);
   if (script.length === 0) return bdl;
-  script.forEach((stm, ii) => {
+
+  script.forEach((stm, line) => {
     // special case 1: first line must be # BLUEPRINT directive
-    if (ii === 0) {
+    if (line === 0) {
       const [lead, kw, bpName, bpParent] = DecodeStatement(stm);
       if (lead === '_pragma' && kw.toUpperCase() === 'BLUEPRINT') {
         if (DBG) console.log(...PR('compiling', bpName));
@@ -280,13 +255,13 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
     }
 
     // normal processing of statement
-    objcode = CompileStatement(stm, ii);
+    objcode = CompileStatement(stm, line);
     objcode = m_StripErrors(objcode, stm);
     // save objcode to current bundle section, which can be changed
     // through pragma PROGRAM
     DCBUNDLER.BundleOut(bdl, objcode);
     // TODO: move the symbolizer to a new SymbolizeBlueprint() call
-    const symbols = SymbolizeStatement(stm, ii);
+    const symbols = SymbolizeStatement(stm, line);
     DCBUNDLER.AddSymbol(bdl, symbols);
   }); // script forEach
 
@@ -299,15 +274,24 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
   return bdl;
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given an array of scriptunits, scan the top-level statements for _pragma
+ *  directives and return what it finds
+ */
+function ExtractDirectives(script: TScriptUnit[]) {
+  script.forEach(stm => {
+    const kw = CHECK.DecodeKeywordToken(stm[0]);
+  });
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export { CompileScript, CompileBlueprint };
 export {
-  IsValidToken,
-  UnpackToken,
   DecodeToken,
   DecodeTokenPrimitive,
   DecodeStatement,
   SymbolizeStatement,
-  ValidateStatement
+  ValidateStatement,
+  ExtractDirectives
 };

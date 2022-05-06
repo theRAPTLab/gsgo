@@ -6,8 +6,14 @@
   types. We need these because we're interpreting GEM-SCRIPT, and can't rely
   on Typescript's compile-time static type checking to help us here.
 
-  inherits data structures from
-  - dc-sim-resources    ValidateArgs used by RegisterKeyword
+  Decoders take an object and interpret it as a value
+  Unpackers take an object and return [type, value]
+  Validators take an object and return the value, validOptions, and errors
+
+  A kwTok is a scriptToken that follows the keyword. They are of type IToken,
+  an object with properties.
+  A mArg is an argument passed to an SMObject method. They are of type
+  TSymArg, a formatted string.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -15,8 +21,10 @@ import {
   TSymArg,
   TSymUnpackedArg,
   TSValidType,
-  EBundleType
+  EBundleType,
+  TScriptUnit
 } from 'lib/t-script.d';
+import * as TOKENIZER from 'script/tools/class-gscript-tokenizer-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -48,20 +56,20 @@ const VALID_ARGTYPES: TSValidType[] = [
   '{...}'
 ];
 
-/// KEYWORD UTILITIES /////////////////////////////////////////////////////////
+/// METHOD ARGUMENT UTILITIES /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given an array of TSymbolArgType (or array of arrays TSymbolArgType)
  *  iterate through all the argument definitions and make sure they are
  *  valid syntax
  */
-function ValidateArgs(args: TSymArg[]): boolean {
-  const fn = 'ValidateArgs';
+function AreValidArgs(args: TSymArg[]): boolean {
+  const fn = 'AreValidArgs';
   if (!Array.isArray(args)) {
     console.warn(`${fn}: invalid argtype array`);
     return false;
   }
   for (const arg of args) {
-    if (Array.isArray(arg)) return ValidateArgs(arg);
+    if (Array.isArray(arg)) return AreValidArgs(arg);
     if (typeof arg !== 'string') {
       console.warn(`${fn}: invalid argDef ${typeof arg}`);
       return false;
@@ -130,8 +138,27 @@ function IsValidBundleType(type: EBundleType) {
   return Object.values(EBundleType).includes(type as any);
 }
 
-/// MODULE ExPORTS ////////////////////////////////////////////////////////////
+/// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { ValidateArgs, UnpackArg };
-export { UnpackToken } from 'script/tools/class-gscript-tokenizer-v2';
-export { IsValidBundleProgram, IsValidBundleType };
+/// token check utilities
+export {
+  // type checks
+  IsNonCodeToken,
+  IsValidToken,
+  IsValidTokenType,
+  // token evaluation
+  DecodePragmaToken,
+  DecodeKeywordToken,
+  UnpackToken,
+  TokenValue
+} from 'script/tools/class-gscript-tokenizer-v2';
+export {
+  // method arguments
+  UnpackArg,
+  AreValidArgs
+};
+export {
+  /// bundle checking utilities
+  IsValidBundleProgram,
+  IsValidBundleType
+};
