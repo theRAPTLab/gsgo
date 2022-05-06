@@ -125,6 +125,7 @@ UR.HookPhase('UR/LOAD_ASSETS', async () => {
 UR.HookPhase('UR/APP_CONFIGURE', () => {
   const cur_prjid = DEV_PRJID;
   const cur_bpid = DEV_BPID;
+  // This retrieves the uncompiled/unbundled bpDef object {name, scriptText} from gem proj
   const bp = GetProjectBlueprint(cur_prjid, cur_bpid);
   const { scriptText: script_text } = bp;
   const vmState = { cur_prjid, cur_bpid, script_text };
@@ -564,14 +565,14 @@ ASSET ERROR: Project "${prjId}" not found!
 /** API: return the blueprint object { id, label, scriptText } for the
  *  given projectId and blueprintId
  */
-function GetProjectBlueprint(prjId = DEV_PRJID, bpId = DEV_BPID) {
+function GetProjectBlueprint(prjId = DEV_PRJID, bpName = DEV_BPID) {
   const fn = 'GetProjectBlueprint:';
   const project = GetProject(prjId);
   if (project === undefined) throw Error(`no asset project with id ${prjId}`);
   const { blueprints } = project;
-  const match = blueprints.find(bp => bp.id === bpId);
+  const match = blueprints.find(bp => bp.name === bpName);
   if (match === undefined)
-    throw Error(`${fn} no blueprint ${bpId} in project ${prjId}`);
+    throw Error(`${fn} no blueprint ${bpName} in project ${prjId}`);
   return match;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -579,11 +580,11 @@ function GetProjectBlueprint(prjId = DEV_PRJID, bpId = DEV_BPID) {
  *  { id, label, scriptText, ... }
  *  object or undefined if no exist
  */
-function LoadProjectBlueprint(prjId, bpId) {
+function LoadProjectBlueprint(prjId, bpName) {
   const { blueprints } = PROJECTS.getProjectByProjId(prjId);
   if (!blueprints) return `no projectId '${prjId}'`;
-  const found = blueprints.find(bp => bp.id === bpId);
-  if (!found) return `no blueprint '${bpId}' found in '${bpId}'`;
+  const found = blueprints.find(bp => bp.name === bpName);
+  if (!found) return `no blueprint '${bpName}' found in '${bpName}'`;
   const { scriptText } = found;
   const scriptToks = TRANSPILER.TextToScript(scriptText);
   let cur_bdl = TRANSPILER.CompileBlueprint(scriptToks);
@@ -632,17 +633,17 @@ UR.AddConsoleTool({
       (window as any).list_proj_bps();
     }
   },
-  load_proj_bp: (projId, bpId) => {
+  load_proj_bp: (projId, bpName) => {
     if (typeof projId !== 'string') {
       console.log('must provide a projId string from this list:');
       (window as any).list_projects();
       return;
     }
-    if (typeof bpId !== 'string') {
+    if (typeof bpName !== 'string') {
       console.log('must provide a blueprint string from this list:');
       (window as any).list_bps(projId);
     }
-    LoadProjectBlueprint(projId, bpId);
+    LoadProjectBlueprint(projId, bpName);
     console.log('*** RELOADING STATE');
   }
 });
