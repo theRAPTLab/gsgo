@@ -71,7 +71,7 @@ const DBG = false;
 // A local store of raw `scriptText` indexed by `bpName`
 // Auto-generated during m_CompileBlueprints
 // Used as source of derived values
-const BPTEXTMAP = new Map(); // [ ...[bpName, bpScriptText] ]
+const BPSCRIPTTEXTMAP = new Map(); // [ ...[bpName, bpScriptText] ]
 
 /// The module name will be used as args for UR.ReadStateGroups
 const STATE = new UR.class.StateGroupMgr('blueprints');
@@ -116,7 +116,7 @@ function m_SymbolizeBlueprints(blueprints) {
  * 1. Compiles blueprints
  * 2. Registers blueprint with dc-sim-resources
  * 3. Registers BPTEXTMAP
- * @param {[ISMCPrograms]} blueprints - array of blueprints (ISMCPrograms)
+ * @param {array} blueprints - array of blueprint definitions [ {name, scriptText} ]
  * @return SM_Bundle[]
  */
 function m_CompileBlueprints(blueprints) {
@@ -126,7 +126,7 @@ function m_CompileBlueprints(blueprints) {
     // Save to datacore
     TRANSPILER.RegisterBlueprint(bundle);
     // Save local reference
-    BPTEXTMAP.set(bundle.name, b.scriptText);
+    BPSCRIPTTEXTMAP.set(bundle.name, b.scriptText);
     return bundle;
   });
   return bundles;
@@ -135,7 +135,7 @@ function m_CompileBlueprints(blueprints) {
  * Use this when reseting the simulation.
  * Clears all ScriptEvents, Blueprints, Agents, and Instances
  * and THEN compiles blueprints.
- * @param {[ISMCPrograms]} blueprints - array of blueprints (ISMCPrograms)
+ * @param {array} blueprints - array of blueprint definitions [ {name, scriptText} ]
  * @returns
  */
 function m_ResetAndCompileBlueprints(blueprints) {
@@ -158,7 +158,7 @@ function m_ResetAndCompileBlueprints(blueprints) {
  * @returns [ {scriptText} ]
  */
 function m_GetBpScriptList() {
-  return [...BPTEXTMAP.values()].map(s => {
+  return [...BPSCRIPTTEXTMAP.values()].map(s => {
     return { scriptText: s };
   });
 }
@@ -169,7 +169,7 @@ function m_GetBpScriptList() {
  */
 function m_GetBpNameScriptList() {
   const bpEditList = [];
-  BPTEXTMAP.forEach((val, key) => {
+  BPSCRIPTTEXTMAP.forEach((val, key) => {
     // REVIEW: Also need to stuff in edit status?  (e.g. whehter someone else is editing)
     bpEditList.push({ name: key, scriptText: val });
   });
@@ -194,7 +194,7 @@ function m_GetBpNameScriptList() {
  * @returns {name, scriptText} - bpDef
  */
 function GetBlueprint(bpName) {
-  return BPTEXTMAP.get(bpName);
+  return BPSCRIPTTEXTMAP.get(bpName);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -434,8 +434,8 @@ function SetBlueprints(projId, blueprints) {
   m_ResetAndCompileBlueprints(blueprints);
   // 2. Update state
   // convert to new blueprints format
-  const bpScriptList = m_GetBpScriptList();
-  updateAndPublish(bpScriptList);
+  const bpNameScriptList = m_GetBpNameScriptList();
+  updateAndPublish(bpNameScriptList); // triggers write
   updateAndPublishDerivedBpLists();
 }
 
@@ -446,12 +446,10 @@ function SetBlueprints(projId, blueprints) {
 /// Initiated by mod-sim-control.SimPlaces
 ///
 /// NOTE: Does not trigger state update since this is only used for cursor?
-function InjectBlueprint(projId, blueprintDef) {
+function InjectBlueprint(projId, bpDef) {
   // Add new blueprint
   const def = {
-    id: blueprintDef.id,
-    label: blueprintDef.label,
-    scriptText: blueprintDef.scriptText
+    scriptText: bpDef.scriptText
   };
   const bp = new Blueprint(def);
   // 1. Compile just the injected blueprints
@@ -495,8 +493,8 @@ function UpdateBlueprint(projId, bpName, scriptText) {
   m_CompileBlueprints([blueprint]); // add/update BPTEXTMAP as a side effect
 
   // 2. Update states and derived states
-  const bpScriptList = m_GetBpScriptList();
-  updateAndPublish(bpScriptList); // triggers write
+  const bpNameScriptList = m_GetBpNameScriptList();
+  updateAndPublish(bpNameScriptList); // triggers write
   updateAndPublishDerivedBpLists();
 
   // REVIEW: Is this WriteState call necessary if we're already calling updateKey and updateAndPublish?
@@ -506,10 +504,10 @@ function UpdateBlueprint(projId, bpName, scriptText) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 function DeleteBlueprint(bpName) {
-  BPTEXTMAP.delete(bpName); // local
+  BPSCRIPTTEXTMAP.delete(bpName); // local
   DCENGINE.DeleteBlueprint(bpName); // bpBndles
-  const bpScriptList = m_GetBpScriptList();
-  updateAndPublish(bpScriptList); // triggers write
+  const bpNameScriptList = m_GetBpNameScriptList();
+  updateAndPublish(bpNameScriptList); // triggers write
   updateAndPublishDerivedBpLists();
   // ORIG CODE predating use of BPTEXTMPA and DCENGINE
   //
