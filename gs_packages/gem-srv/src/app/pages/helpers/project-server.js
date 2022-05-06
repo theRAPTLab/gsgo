@@ -585,6 +585,8 @@ function ScriptUpdate(data) {
   RaiseModelUpdate();
   RaiseBpidListUpdate();
   RaiseInstancesListUpdate();
+
+  return { bpName };
 }
 
 /// INSTANCE SELECTION HANDLERS ///////////////////////////////////////////////
