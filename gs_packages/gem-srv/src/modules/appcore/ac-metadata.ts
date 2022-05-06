@@ -17,8 +17,6 @@ const DBG = false;
 const STATE = new UR.class.StateGroupMgr('metadata');
 /// StateGroup keys must be unique across the entire app
 STATE.initializeState({
-  // dummy
-  projId: 0,
   metadata: [
     {
       top: -100,
@@ -185,6 +183,5 @@ export function Wraps(wall = 'any') {
 
 export function SetMetadata(projId, metadata) {
   if (DBG) console.log(...PR('ac-metadata setting metadata to', metadata));
-  updateKey({ projId });
   updateAndPublish(metadata);
 }
