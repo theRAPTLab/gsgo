@@ -20,7 +20,7 @@ import {
   IKeywordCtor,
   TSymArg
 } from 'lib/t-script.d';
-import * as CHECK from './dc-type-check';
+import * as CHECK from './dc-sim-data-utils';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

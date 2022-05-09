@@ -42,7 +42,7 @@ import SM_Bundle from 'lib/class-sm-bundle';
 
 import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
-import * as CHECK from 'modules/datacore/dc-type-check';
+import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import GAgent from 'lib/class-gagent';
 import { VSymError } from './symbol-helpers';
 
@@ -273,7 +273,6 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
   bdl.setType(EBundleType.BLUEPRINT);
   return bdl;
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given an array of scriptunits, scan the top-level statements for _pragma
  *  directives and return what it finds

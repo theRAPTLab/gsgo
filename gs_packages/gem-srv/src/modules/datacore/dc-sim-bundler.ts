@@ -15,7 +15,7 @@
 
 import UR from '@gemstep/ursys/client';
 import { TCompiledStatement, ISMCBundle, TSymbolData } from 'lib/t-script.d';
-import * as CHECK from './dc-type-check';
+import * as CHECK from './dc-sim-data-utils';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
