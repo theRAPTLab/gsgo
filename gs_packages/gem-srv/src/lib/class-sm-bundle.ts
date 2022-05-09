@@ -19,6 +19,8 @@ import {
   TRegcode,
   ISMCBundle,
   TSymbolData,
+  TBundleDirectives,
+  TBundleTags,
   ISMCPrograms,
   EBundleType
 } from './t-script.d';
@@ -43,10 +45,10 @@ export default class SM_Bundle implements ISMCBundle {
   test: TOpcode[]; // returns true or false
   conseq: TOpcode[]; // run if true
   alter: TOpcode[]; // run if false
-  // tags
-  tags: Map<string, any>;
-  // symbols
+  // metadata
+  tags: TBundleTags;
   symbols: TSymbolData;
+  directives: TBundleDirectives;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   constructor(name?: string, type?: EBundleType) {
     if (typeof name === 'string') this.setName(name);

@@ -65,20 +65,23 @@ function DeleteAllFeatures() {
 
 /// BLUEPRINT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SaveBlueprint(bp: ISMCBundle) {
-  const { name } = bp;
+/** API: saves the blueprint, using bp.name property as the key */
+function SaveBlueprint(bpBundle: ISMCBundle) {
+  const { name } = bpBundle;
   // just overwrite it
-  BLUEPRINTS.set(name, bp);
-  return bp;
+  BLUEPRINTS.set(name, bpBundle);
+  return bpBundle;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetBlueprint(name: string): ISMCBundle {
-  name = name || 'default';
-  const bdl = BLUEPRINTS.get(name);
+/** API: return a blueprint bundle by bpName */
+function GetBlueprint(bpName: string): ISMCBundle {
+  bpName = bpName || 'default';
+  const bdl = BLUEPRINTS.get(bpName);
   // if (!bdl) console.warn(`blueprint '${name}' does not exist`);
   return bdl;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: return an array of all blueprint bundles */
 function GetAllBlueprints() {
   const arr = [];
   const maps = [...BLUEPRINTS.values()];
@@ -87,6 +90,12 @@ function GetAllBlueprints() {
   });
   return arr;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: return an array of blueprint name string */
+function GetBlueprintList() {
+  return [...BLUEPRINTS.keys()];
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function DeleteBlueprint(name: string) {
   if (!BLUEPRINTS.has(name)) {
@@ -253,6 +262,7 @@ export {
   SaveBlueprint,
   GetBlueprint,
   GetAllBlueprints,
+  GetBlueprintList,
   DeleteBlueprint,
   DeleteAllBlueprints
 };

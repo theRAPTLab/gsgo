@@ -268,7 +268,7 @@ export type TSymbolViewData = {
   unitText?: string; // the scriptText word associated with symbol
   gsType?: string; // the gemscript meaning of this token
 };
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** blueprint symbol data format */
 export type TBundleSymbols = {
   props?: { [propName: string]: TSymbolData }; // map to varctor.symbols
@@ -303,6 +303,13 @@ export type TValidatedScriptUnit = {
   validationLog?: string[];
 };
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** tag types used by ben's extensions */
+export type TBundleTags = Map<string, any>;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** store directives in the bundle */
+export type TBundleDirectives = Map<string, IToken[]>;
+
 /// PROGRAM BUNDLES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** An ISMCBundle is a dictionary of TSCMPrograms. See also dc-script-bundle for
@@ -315,21 +322,16 @@ export interface ISMCBundle extends ISMCPrograms {
   parent?: string; // the parent bundle, if any
   type?: EBundleType; // enum type (see below)
   symbols?: TBundleSymbols;
-  tags: Map<string, any>; // ben's hack for 'character controlable' blueprints
-  setTag(tagName: string, value: any): void;
-  getTag(tagName: string): any;
+  tags?: TBundleTags; // ben's hack for 'character controlable' blueprints
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** defines the kinds of bundles */
+/** defines the kinds of bundles. most of the time our bundles refer to
+ *  blueprint bundles that contain a subset of possible keys.
+ */
 export enum EBundleType {
   INIT = 'init', // freshly created or empty bundle (set to another type)
-  PROG = 'program', // a program type
-  COND = 'condition', // test, conseq, alter program,
-  BLUEPRINT = 'blueprint', // blueprint for initializing agents
-  G_PROG = 'gprogram', // named program to store in global
-  G_COND = 'gcondition', // named global state based on condition
-  G_TEST = 'gtest' // named global test returning true or false
+  BLUEPRINT = 'blueprint' // blueprint for initializing agents
 }
 
 /// SCRIPT UNIT TRANSPILER ////////////////////////////////////////////////////

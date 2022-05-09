@@ -570,10 +570,19 @@ function GetProjectBlueprint(prjId = DEV_PRJID, bpName = DEV_BPID) {
   const project = GetProject(prjId);
   if (project === undefined) throw Error(`no asset project with id ${prjId}`);
   const { blueprints } = project;
-  const match = blueprints.find(bp => bp.name === bpName);
-  if (match === undefined)
-    throw Error(`${fn} no blueprint ${bpName} in project ${prjId}`);
-  return match;
+  let match = blueprints.find(bp => bp.name === bpName);
+  if (match === undefined) {
+    match = blueprints.find(bp => bp.id === bpName);
+    if (match !== undefined)
+      console.error(`WARNING: blueprint data using 'id', not 'name'`);
+    else {
+      const err = `${fn} no blueprint ${bpName} in project ${prjId}`;
+      console.warn(err);
+      console.log('available lists', blueprints);
+      throw Error(err);
+    }
+    return match;
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return the blueprint of the given project,
