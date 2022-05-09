@@ -23,7 +23,8 @@ import {
   TAssetName,
   TAssetURL,
   TAssetLoader,
-  TResource
+  TResource,
+  TManifest
 } from 'lib/t-assets.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -210,8 +211,42 @@ class AssetLoader extends TAssetLoader {
       resolve([]);
     });
   }
+
+  /// STATIC MANIFEST METHOD //////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** utility function to load manifest from a constructed route of the form
+   *  http://host:port/assets/subdir
+   */
+  static async promiseManifest(route: string): Promise<TManifest> {
+    const url = `${route}?manifest`;
+    let json: any;
+    try {
+      json = await fetch(url).then(async response => {
+        if (!response.ok) throw new Error('network error');
+        let js: TManifest = await response.json();
+        if (Array.isArray(js) && js.length > 0) {
+          if (DBG) console.log('converting json array...');
+          js = js.shift();
+        }
+        return js;
+      });
+      return json as TManifest;
+    } catch (err) {
+      // console.warn(err);
+      json = undefined;
+    }
+    return json;
+  }
 } // end class
 
+/// STANDALONE MANIFEST LOADER METHOD /////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function PromiseManifest(route: string): Promise<TManifest> {
+  return AssetLoader.promiseManifest(route);
+}
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default AssetLoader; // class
+/// class to extend
+export default AssetLoader;
+/// utility methods
+export { PromiseManifest };

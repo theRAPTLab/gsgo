@@ -20,6 +20,7 @@ import { TAssetDef, TAssetType, TAssetLoader, TManifest } from 'lib/t-assets';
 import { GS_ASSETS_ROUTE, GS_ASSETS_PATH } from 'config/gem-settings';
 import SpriteLoader from './as-load-sprites';
 import ProjectLoader from './as-load-projects';
+import { PromiseManifest } from './class-asset-loader';
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -54,33 +55,6 @@ function m_RegisterLoader(loader: TAssetLoader) {
   LOADER_DICT.set(asType, loader);
 }
 
-/// MAIN API //////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** utility function to load manifest from a constructed route of the form
- *  http://host:port/assets/subdir
- */
-async function m_LoadManifest(route) {
-  const url = `${route}?manifest`;
-  if (DBG) console.log(...PR('loading', url));
-  let json: any;
-  try {
-    json = await fetch(url).then(async response => {
-      if (!response.ok) throw new Error('network error');
-      let js: TManifest = await response.json();
-      if (Array.isArray(js) && js.length > 0) {
-        if (DBG) console.log('converting json array...');
-        js = js.shift();
-      }
-      return js;
-    });
-    if (DBG) console.log(...PR('success', json));
-    return json as TManifest;
-  } catch (err) {
-    // console.warn(err);
-    json = undefined;
-  }
-  return json;
-}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a manifest, load all asset types. this currently loads from the
  *  local directory in gs_assets.
@@ -92,7 +66,7 @@ async function PromiseLoadAssets(subdir: string = '') {
     return Promise.reject(new Error('asset loads > 0'));
   }
   const route = !subdir ? GS_ASSETS_ROUTE : `${GS_ASSETS_ROUTE}/${subdir}`;
-  const json = await m_LoadManifest(route);
+  const json = await PromiseManifest(route);
   if (json === undefined) {
     const jsonErr = `ERROR: No asset manifest found at "${route}".\n\nTROUBLESHOOTING\n1. Are there assets in '${GS_ASSETS_PATH}/${subdir}?'.\n2. gsgo-settings.json has correct paths?\n3. gem-srv/config/*-settings overrides has correct paths?\n4. Does AssetServer have downloadable assets?`;
     UR.LOG.MissingAsset(jsonErr);
@@ -150,8 +124,12 @@ m_RegisterLoader(new ProjectLoader('projects'));
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// basic API
 export {
   GetLoader, // return loader instance by assettype (eg 'sprites')
-  PromiseLoadAssets, // loads all assets in directory from manifest
+  PromiseLoadAssets // loads all assets in directory from manifest
+};
+/// utilities
+export {
   DBG_ForceLoadAsset // don't use this!!! unstable
 };
