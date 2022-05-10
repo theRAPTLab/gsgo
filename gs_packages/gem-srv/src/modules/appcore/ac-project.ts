@@ -132,13 +132,23 @@ function updateAndPublish(project) {
  */
 function hook_Filter(key, propOrValue, propValue) {
   if (DBG) console.log('ac-project: hook_Filter', key, propOrValue, propValue);
-
-  // If project is being updated by PanelProjectEditor, we also need to update metadata
-  // NOTE: This does not update Rounds, Blueprints, and Instances!
   if (key === 'project') {
     const project = propOrValue;
-    if (project.metadata) ACMetadata.SetMetadata(projId, project.metadata);
-    // REVIEW: Do we need to also update Rounds, Blueprints, and Instances?
+    // update datacore
+    // Since 'project' data updates are direct state updates, we need to also
+    // update datacore.  NOTE the other submodules, e.g. ac-blueprint, and
+    // ac-metadata rely on direct calls
+    DCPROJECT.UpdateProjectData(project);
+    // Send Network Update so that PanelSelectSimulation running
+    // on other computers receive the update
+    UR.RaiseMessage('NET:PROJECTS_UPDATE', {
+      projectNames: [
+        {
+          id: project.id,
+          label: project.label
+        }
+      ]
+    });
   }
 
   // No need to return anything if data is not being filtered.
