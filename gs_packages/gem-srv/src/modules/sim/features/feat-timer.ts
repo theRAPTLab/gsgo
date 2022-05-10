@@ -25,6 +25,7 @@ const TimerPack = {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
+import { IAgent, TSymbolData } from 'lib/t-script';
 import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -47,7 +48,16 @@ class TimerPack extends GFeature {
   decorate(agent) {
     super.decorate(agent);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {},
+      methods: {
+        setRoundTimer: {},
+        stopRound: {}
+      }
+    };
+  }
   /// TIMER METHODS ///////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ///

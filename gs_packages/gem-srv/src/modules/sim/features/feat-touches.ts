@@ -69,7 +69,7 @@
 
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
-import { IAgent } from 'lib/t-script';
+import { IAgent, TSymbolData } from 'lib/t-script';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 
@@ -179,13 +179,24 @@ class TouchPack extends GFeature {
     super(name);
     this.featAddMethod('monitor', this.monitor);
     this.featAddMethod('getTouchingAgent', this.getTouchingAgent);
+    this.featAddMethod('clearTouches', this.clearTouches);
     UR.HookPhase('SIM/PHYSICS_THINK', m_Update);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
     super.decorate(agent);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {},
+      methods: {
+        monitor: { args: ['targetBlueprintName:string', 'touchTypes:{...}'] },
+        getTouchingAgent: { args: ['touchType:string'] },
+        clearTouches: { args: ['targetId:string'] }
+      }
+    };
+  }
   /// VISION METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ///
