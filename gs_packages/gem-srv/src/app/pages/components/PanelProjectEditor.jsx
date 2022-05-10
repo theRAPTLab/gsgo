@@ -67,6 +67,7 @@ class ProjectEditor extends React.Component {
       return boolstr.toLowerCase().trim() === 'true';
     }
 
+    let isMetaData = false;
     const { project } = this.state;
     if (e.target.id === 'id') {
       project.id = val;
@@ -74,10 +75,18 @@ class ProjectEditor extends React.Component {
       project.label = val;
     } else if (e.target.id === 'wrap') {
       project.metadata.wrap = val.split(',').map(w => cleanBoolString(w));
+      isMetaData = true;
     } else {
       project.metadata[e.target.id] = val;
+      isMetaData = true;
     }
-    this.setState({ project }, () => this.SaveProjectData());
+    this.setState({ project }, () => {
+      if (isMetaData) {
+        this.SaveMetaData();
+      } else {
+        this.SaveProjectData();
+      }
+    });
   }
 
   urStateUpdated(stateObj, cb) {
@@ -101,6 +110,10 @@ class ProjectEditor extends React.Component {
   SaveProjectData() {
     const { project } = this.state;
     UR.WriteState('project', 'project', project);
+  }
+  SaveMetaData() {
+    const { project } = this.state;
+    UR.WriteState('metadata', 'metadata', project.metadata);
   }
 
   render() {
