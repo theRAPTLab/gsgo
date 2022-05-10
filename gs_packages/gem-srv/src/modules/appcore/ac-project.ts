@@ -108,16 +108,6 @@ const { _publishState } = STATE;
 const { addChangeHook, deleteChangeHook } = STATE;
 const { addEffectHook, deleteEffectHook } = STATE;
 
-/** API:
- */
-function updateAndPublish(project) {
-  // Init Self
-  updateKey({ project });
-  _publishState({ project });
-  // also update datacore
-  DCPROJECT.UpdateProjectData(project);
-}
-
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -174,21 +164,37 @@ function hook_Effect(effectKey, propOrValue, propValue) {
 addChangeHook(hook_Filter);
 addEffectHook(hook_Effect);
 
+/// CONVENIENCE METHODS ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Use this if you want to bypass hook_Filter and hook_Effect
+ *  e.g. on initial load, skip hook_Effect so the initial load data
+ *  isn't re-written to server.
+ */
+function updateAndPublish(project) {
+  updateKey({ project });
+  _publishState({ project });
+}
+
 /// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Returns in-state project data
  */
-function GetProject() {
+function GetProject(projId) {
   return DCPROJECT.GetCurrentProject();
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Updates the project state subscribers after a project reload / sim reset
- *  Called by project-server.ReloadProject()
- */
-async function TriggerProjectStateUpdate(projId) {
-  const project = DCPROJECT.GetCurrentProject();
-  updateAndPublish(project);
-}
+
+// Deprecated?  Not needed?
+// DoSimReset and project reload should take care of the project state?
+// And besides on reload we want to use the current project values.
+//
+// /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// /** API: Updates the project state subscribers after a project reload / sim reset
+//  *  Called by project-server.ReloadProject()
+//  */
+// async function TriggerProjectStateUpdate(projId) {
+//   const project = DCPROJECT.GetCurrentProject();
+//   updateAndPublish(project);
+// }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -218,6 +224,7 @@ async function LoadProjectFromAsset(projId) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
   LoadProjectFromAsset,
-  GetProject, // return current project{}
-  TriggerProjectStateUpdate // force-notify all subscribers
+  // This should be replaced by DCPROJECT.GetCurrentProject() call?
+  GetProject // return current project{}
+  // TriggerProjectStateUpdate // force-notify all subscribers
 };
