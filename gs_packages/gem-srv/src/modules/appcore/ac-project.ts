@@ -87,7 +87,7 @@ const DBG = false;
 const STATE = new UR.class.StateGroupMgr('project');
 /// StateGroup keys must be unique across the entire app
 STATE.initializeState({
-  projId: undefined,
+  // REVIEW: Rename 'project' to 'projLabel' since it is not a project object?
   project: {
     id: undefined,
     label: undefined
@@ -136,7 +136,6 @@ function hook_Filter(key, propOrValue, propValue) {
   // If project is being updated by PanelProjectEditor, we also need to update metadata
   // NOTE: This does not update Rounds, Blueprints, and Instances!
   if (key === 'project') {
-    const projId = _getKey('projId');
     const project = propOrValue;
     if (project.metadata) ACMetadata.SetMetadata(projId, project.metadata);
     // REVIEW: Do we need to also update Rounds, Blueprints, and Instances?
@@ -202,7 +201,6 @@ async function LoadProjectFromAsset(projId) {
   ACInstances.SetInstances(projId, project.instances);
   // Update datacore
   DCPROJECT.SetCurrentProject(project);
-  updateKey({ projId });
   updateAndPublish(project);
 }
 
