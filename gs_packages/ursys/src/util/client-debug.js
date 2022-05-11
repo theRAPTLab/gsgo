@@ -21,9 +21,12 @@ const DBG = false;
 /** add obj keys to window object, testing to make sure that it doesn't already
  *  exist in the window.UR object
  */
-function addConsoleTool(obj) {
-  if (typeof obj !== 'object')
-    console.warn(...PR('addConsoleTool: invalid argument', obj));
+function addConsoleTool(arg1, arg2) {
+  if (typeof arg2 === 'function' && typeof arg1 === 'string') {
+    arg1 = { [arg1]: arg2 };
+  }
+  if (typeof arg1 !== 'object')
+    console.warn(...PR('addConsoleTool: invalid argument', arg1));
   if (typeof window === 'undefined') {
     console.warn(
       ...PR('addConsoleTool: non-browser environment detected...aborted.')
@@ -31,7 +34,7 @@ function addConsoleTool(obj) {
     return;
   }
   //---
-  Object.entries(obj).forEach(kv => {
+  Object.entries(arg1).forEach(kv => {
     let args;
     const [key, f] = kv;
     if (typeof f !== 'function')

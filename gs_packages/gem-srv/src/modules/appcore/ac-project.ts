@@ -108,6 +108,7 @@ const { _publishState } = STATE;
 const { addChangeHook, deleteChangeHook } = STATE;
 const { addEffectHook, deleteEffectHook } = STATE;
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API:
  */
 function updateAndPublish(project) {
@@ -119,7 +120,6 @@ function updateAndPublish(project) {
 }
 
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Intercept changes to project so we can cache the changes
  *  for later write to DB after some time has elapsed. Returns the modified

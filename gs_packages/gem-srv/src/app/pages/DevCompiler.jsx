@@ -34,7 +34,7 @@ const DBG = false;
 
 /// HARDCODED SCRIPT TEXT /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const defaultText = DATACORE.GetDefaultText();
+const defaultText = `# blueprint DevCompiler`;
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

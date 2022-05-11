@@ -22,21 +22,16 @@
 
 import UR from '@gemstep/ursys/client';
 import { TStateObject } from '@gemstep/ursys/types';
-import * as ASSETS from 'modules/asset_core/asset-mgr';
 import * as TRANSPILER from 'script/transpiler-v2';
 import ScriptLiner from 'script/tools/script-to-lines';
 import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCPROJECT from 'modules/datacore/dc-projects-v2';
 import {
   DecodeSymbolViewData,
   UnpackViewData,
   UnpackSymbolType
 } from 'script/tools/symbol-helpers';
-import {
-  GS_ASSETS_PROJECT_ROOT,
-  DEV_ASSETDIR,
-  DEV_PRJID,
-  DEV_BPID
-} from 'config/gem-settings';
+import { DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 import { TValidatedScriptUnit, TSymbolData, ISMCBundle } from 'lib/t-script';
 import { GetTextBuffer } from 'lib/class-textbuffer';
 
@@ -117,8 +112,8 @@ UR.HookPhase('UR/LOAD_ASSETS', async () => {
     '%cvalues are hardcoded as DEV_PRJID and DEV_BPID in ac-wizcore',
     'color:gray'
   );
-  [PROJECTS] = await ASSETS.PromiseLoadAssets(DEV_ASSETDIR);
-  console.log(...PR(`loaded assets from '${DEV_ASSETDIR}'`));
+  // return promise to hold LOAD_ASSETS until done
+  return DCPROJECT.SetAssetDirectory('/assets/art-assets/');
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// DEFERRED CALL: APP_CONFIGURE fires after LOAD_ASSETS (above) completes
@@ -126,7 +121,7 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
   const cur_prjid = DEV_PRJID;
   const cur_bpid = DEV_BPID;
   // This retrieves the uncompiled/unbundled bpDef object {name, scriptText} from gem proj
-  const bp = GetProjectBlueprint(cur_prjid, cur_bpid);
+  const bp = DCPROJECT.GetProjectBlueprint(cur_prjid, cur_bpid);
   const { scriptText: script_text } = bp;
   const vmState = { cur_prjid, cur_bpid, script_text };
   SendState(vmState);
@@ -520,69 +515,10 @@ function IsTokenInMaster(tok) {
   return found;
 }
 
-/// ASSET UTILITIES ///////////////////////////////////////////////////////////
+/// UI-to-APP STATE AND MODES /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function LoadAssetDirectory(dir = GS_ASSETS_PROJECT_ROOT) {
-  [PROJECTS] = await ASSETS.DBG_ForceLoadAsset(dir);
-  console.log(...PR(`loaded assets from '${dir}'`));
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: return array of string project ids (.gemprj files) using the
- *  current PROJECTS asset loader instance
- */
-function GetProjectList() {
-  if (PROJECTS === undefined) throw Error('GetProjectList: no projects loaded');
-  return PROJECTS.getProjectsList(); // Array{ id, label }
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: return { id, metadata, blueprints, instances, rounds, label }
- *  for the given project id (.gemprj files)
- */
-function GetProject(prjId = DEV_PRJID) {
-  if (PROJECTS === undefined) throw Error('GetProject: no projects loaded');
-  try {
-    const project = PROJECTS.getProjectByProjId(prjId);
-    return project;
-  } catch (e) {
-    const root = GS_ASSETS_PROJECT_ROOT;
-    const assetUrl = 'http://localhost/assets';
-    const isDefault = prjId === DEV_PRJID;
-    let out = `
-ASSET ERROR: Project "${prjId}" not found!
-
-1. Browse to '${assetUrl}' in Chrome.
-    Does '${prjId}' appear in folder listing?
-2. Check the gsgo/gs_assets/${root} drive directory.
-    Does the ${prjId} dir exist?`;
-    if (isDefault)
-      out += `
-3. You are loading the default project path.
-    is GS_ASSETS_PROJECT_ROOT set in local-settings.json?`;
-    alert(out);
-  }
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: return the blueprint object { id, label, scriptText } for the
- *  given projectId and blueprintId
- */
-function GetProjectBlueprint(prjId = DEV_PRJID, bpName = DEV_BPID) {
-  const fn = 'GetProjectBlueprint:';
-  const project = GetProject(prjId);
-  if (project === undefined) throw Error(`no asset project with id ${prjId}`);
-  const { blueprints } = project;
-  let match = blueprints.find(bp => bp.name === bpName);
-  if (match === undefined) {
-    match = blueprints.find(bp => bp.id === bpName);
-    if (match !== undefined)
-      console.error(`WARNING: blueprint data using 'id', not 'name'`);
-    else {
-      const err = `${fn} no blueprint ${bpName} in project ${prjId}`;
-      console.warn(err);
-      console.log('available lists', blueprints);
-      throw Error(err);
-    }
-    return match;
-  }
+export function UIToggleRunEditMode() {
+  SendState({ dev_or_user: 1 - State().dev_or_user });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return the blueprint of the given project,
@@ -599,75 +535,6 @@ function LoadProjectBlueprint(prjId, bpName) {
   let cur_bdl = TRANSPILER.CompileBlueprint(scriptToks);
   SendState({ script_text: scriptText, cur_bdl }, () => {});
 }
-
-/// UI-to-APP STATE AND MODES /////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function UIToggleRunEditMode() {
-  SendState({ dev_or_user: 1 - State().dev_or_user });
-}
-
-/// DEBUGGING METHODS /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.AddConsoleTool({
-  load_proj: dir => LoadAssetDirectory(dir),
-  list_proj: () => {
-    const list = PROJECTS.getProjectsList();
-    let out = '';
-    list.forEach(project => {
-      const { id, label } = project;
-      if (!id.startsWith('_template_')) out += `  '${id}'\n`;
-    });
-    console.log(out);
-  },
-  list_proj_bps: projId => {
-    if (typeof projId !== 'string') {
-      console.log('ERROR: you must provide a projId string from this list:');
-      (window as any).list_proj();
-      return;
-    }
-    try {
-      const project = GetProject(projId);
-      const { blueprints } = project;
-      let out = '';
-      blueprints.forEach(bp => {
-        const { id, label } = bp;
-        out += `  '${id}'\n`;
-      });
-      console.log(out);
-      console.log('to load new blueprint, use:');
-      console.log(`    load_proj_bp('${projId}', 'Blueprint')`);
-      console.log(' and the editor will refresh');
-    } catch (e) {
-      console.log(`error loading blueprint '${projId}' does it exist?`);
-      (window as any).list_proj_bps();
-    }
-  },
-  load_proj_bp: (projId, bpName) => {
-    if (typeof projId !== 'string') {
-      console.log('must provide a projId string from this list:');
-      (window as any).list_projects();
-      return;
-    }
-    if (typeof bpName !== 'string') {
-      console.log('must provide a blueprint string from this list:');
-      (window as any).list_bps(projId);
-    }
-    LoadProjectBlueprint(projId, bpName);
-    console.log('*** RELOADING STATE');
-  }
-});
-
-/// EXPORTED BLUEPRINT UTILS //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export {
-  LoadAssetDirectory, // force load asset directory (for debugging)
-  GetProjectList, // return projectIds in current assets (.gemprj)
-  GetProject, // return project data by projectId or undefined
-  GetProjectBlueprint // return prjId's bpId or undefined
-};
-export {
-  LoadProjectBlueprint // load scriptText, trigger Wizard redraw
-};
 
 /// EXPORTED STATE METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
