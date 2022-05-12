@@ -45,19 +45,19 @@ class Viewer extends React.Component {
       noMain: true,
       panelConfiguration: 'sim',
       projId: '',
-      bpidList: [],
+      bpNamesList: [],
       instances: []
     };
     this.Initialize = this.Initialize.bind(this);
     this.RequestProjectData = this.RequestProjectData.bind(this);
-    this.HandleBpidList = this.HandleBpidList.bind(this);
+    this.HandleBpNamesListUpdate = this.HandleBpNamesListUpdate.bind(this);
     this.HandleInstancesList = this.HandleInstancesList.bind(this);
     this.HandleInspectorUpdate = this.HandleInspectorUpdate.bind(this);
     this.OnModelClick = this.OnModelClick.bind(this);
     this.OnHomeClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
-    UR.HandleMessage('NET:BPIDLIST_UPDATE', this.HandleBpidList);
+    UR.HandleMessage('NET:BPNAMESLIST_UPDATE', this.HandleBpNamesListUpdate);
     UR.HandleMessage('NET:INSTANCESLIST_UPDATE', this.HandleInstancesList);
 
     // Instance Interaction Handlers
@@ -95,7 +95,7 @@ class Viewer extends React.Component {
 
   componentWillUnmount() {
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
-    UR.UnhandleMessage('NET:BPIDLIST_UPDATE', this.HandleBpidList);
+    UR.UnhandleMessage('NET:BPNAMESLIST_UPDATE', this.HandleBpNamesListUpdate);
     UR.UnhandleMessage('NET:INSTANCESLIST_UPDATE', this.HandleInstancesList);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
   }
@@ -110,18 +110,17 @@ class Viewer extends React.Component {
   RequestProjectData() {
     if (DBG) console.log(...PR('RequestProjectData...'));
     UR.CallMessage('NET:REQ_PROJDATA', {
-      fnName: 'GetBpidList'
-    }).then(rdata => this.HandleBpidList(rdata));
+      fnName: 'GetBpDefs'
+    }).then(rdata => this.HandleBpNamesListUpdate(rdata));
     UR.CallMessage('NET:REQ_PROJDATA', {
       fnName: 'GetInstanceidList'
     }).then(rdata => this.HandleInstancesList(rdata));
   }
 
-  HandleBpidList(rdata) {
-    console.error('getbpidList', rdata);
+  HandleBpNamesListUpdate(rdata) {
     this.setState({
       projId: rdata.result.projId,
-      bpidList: rdata.result.bpidList
+      bpNamesList: rdata.result.bpNamesList
     });
   }
   HandleInstancesList(rdata) {
@@ -160,7 +159,7 @@ class Viewer extends React.Component {
    *  make this happen.
    */
   render() {
-    const { noMain, panelConfiguration, projId, bpidList, instances } =
+    const { noMain, panelConfiguration, projId, bpNamesList, instances } =
       this.state;
     const { classes } = this.props;
 
@@ -202,7 +201,11 @@ class Viewer extends React.Component {
           className={classes.left} // commented out b/c adding a padding
           style={{ backgroundColor: 'transparent' }}
         >
-          <PanelBlueprints id="blueprints" projId={projId} bpidList={bpidList} />
+          <PanelBlueprints
+            id="blueprints"
+            projId={projId}
+            bpNamesList={bpNamesList}
+          />
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimViewer id="sim" onClick={this.OnPanelClick} />

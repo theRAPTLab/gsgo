@@ -210,11 +210,11 @@ function m_PozyxDampen(
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-function GetDefaultPozyxBpid() {
-  return ACBlueprints.GetPozyxControlDefaultBpid();
+function GetDefaultPozyxBpName() {
+  return ACBlueprints.GetPozyxControlDefaultBpName();
 }
-function GetDefaultPTrackBpid() {
-  return ACBlueprints.GetPTrackControlDefaultBpid();
+function GetDefaultPTrackBpName() {
+  return ACBlueprints.GetPTrackControlDefaultBpName();
 }
 ///////////////////////////////////////////////////////////////////////////////
 /// ENTITY_TO_COBJ (was POZYX_TO_COBJ) /////////////////////////////////////////////////////////////
@@ -234,8 +234,8 @@ ENTITY_TO_COBJ.setMapFunctions({
     // HACK Blueprints into cobj
     cobj.bpid =
       entity.type === TYPES.Pozyx
-        ? GetDefaultPozyxBpid()
-        : GetDefaultPTrackBpid();
+        ? GetDefaultPozyxBpName()
+        : GetDefaultPTrackBpName();
     cobj.label = entity.type === TYPES.Pozyx ? entity.id.substring(2) : entity.id;
     cobj.framesSinceLastUpdate = 0;
   },
@@ -254,8 +254,8 @@ ENTITY_TO_COBJ.setMapFunctions({
     cobj.y = pos.y;
     cobj.bpid =
       entity.type === TYPES.Pozyx
-        ? GetDefaultPozyxBpid()
-        : GetDefaultPTrackBpid();
+        ? GetDefaultPozyxBpName()
+        : GetDefaultPTrackBpName();
     cobj.label = entity.type === TYPES.Pozyx ? entity.id.substring(2) : entity.id;
     cobj.framesSinceLastUpdate = 0;
   },
@@ -404,7 +404,7 @@ export function InputsUpdate() {
   });
   // 2. Process PTrack, Pozyx, FakeTrack Inputs
   //    ENTITY_TO_COBJ is regularly updated by api-input.StartTrackerVisuals
-  if (GetDefaultPozyxBpid() !== undefined) {
+  if (GetDefaultPozyxBpName() !== undefined) {
     InputUpdateEntityTracks();
   }
   // 3. Combine them all

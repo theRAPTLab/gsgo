@@ -321,13 +321,13 @@ function RaiseModelUpdate(projId = CURRENT_PROJECT_ID) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Used by Viewer via REQ_PROJ_DATA
-function GetBpidList(projId = CURRENT_PROJECT_ID) {
-  const bpidList = ACBlueprints.GetBlueprintIDsList();
-  return { projId, bpidList };
+function GetBpNamesList(projId = CURRENT_PROJECT_ID) {
+  const bpNamesList = ACBlueprints.GetBpNamesList();
+  return { projId, bpNamesList };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RaiseBpidListUpdate(projId = CURRENT_PROJECT_ID) {
-  UR.RaiseMessage('NET:BPIDLIST_UPDATE', GetBpidList(projId));
+function RaiseBpNamesListUpdate(projId = CURRENT_PROJECT_ID) {
+  UR.RaiseMessage('NET:BPNAMESLIST_UPDATE', GetBpNamesList(projId));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Used by Viewer via REQ_PROJ_DATA
@@ -348,14 +348,14 @@ function RaiseInstancesListUpdate(projId = CURRENT_PROJECT_ID) {
  *  CharControl requests this list directly via REQ:PROJ_DATA
  *  @return {string[]} [ ...bpid ]
  */
-function GetCharControlBpidList() {
-  return ACBlueprints.GetCharControlBpidList();
+function GetCharControlBpNames() {
+  return ACBlueprints.GetCharControlBpNames();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API:
  */
 function GetPozyxBPNames() {
-  return ACBlueprints.GetPozyxControlBpidList();
+  return ACBlueprints.GetPozyxControlBpNames();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API:
@@ -583,7 +583,7 @@ function ScriptUpdate(data) {
 
   // 5. Inform network devices
   RaiseModelUpdate();
-  RaiseBpidListUpdate();
+  RaiseBpNamesListUpdate();
   RaiseInstancesListUpdate();
 
   return { bpName };
@@ -649,10 +649,10 @@ const FN_LOOKUP = {
   RequestProject,
   RequestBpEditList,
   GetProjectBoundary: GetBoundary,
-  GetCharControlBpidList,
+  GetCharControlBpNames,
 
   GetBlueprintProperties: ACBlueprints.GetBlueprintProperties,
-  GetBpidList,
+  GetBpDefs: GetBpNamesList,
   GetInstanceidList
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

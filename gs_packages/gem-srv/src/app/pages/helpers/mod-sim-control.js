@@ -80,7 +80,7 @@ class SimControl {
 
     //    Set char controlled agents
     //    This is primarily for Viewers
-    const charcontrolBpidList = ACBlueprints.GetCharControlBpidList();
+    const charcontrolBpidList = ACBlueprints.GetCharControlBpNames();
     UR.RaiseMessage('NET:SET_CHARCONTROL_BPIDLIST', {
       bpnames: charcontrolBpidList
     });

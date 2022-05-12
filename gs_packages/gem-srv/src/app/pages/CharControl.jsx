@@ -153,7 +153,7 @@ class CharController extends React.Component {
     // will come back before we're ready
     if (DBG) console.log(...PR('requestBPNames'));
     UR.CallMessage('NET:REQ_PROJDATA', {
-      fnName: 'GetCharControlBpidList'
+      fnName: 'GetCharControlBpNames'
     }).then(rdata => this.updateCharControlBpidList(rdata.result));
   }
 

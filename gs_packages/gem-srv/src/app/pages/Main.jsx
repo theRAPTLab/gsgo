@@ -59,13 +59,13 @@ PANEL_CONFIG.set('tracker', '0px auto 400px'); // columns
 class MissionControl extends React.Component {
   constructor() {
     super();
-    const { bpidList } = UR.ReadFlatStateGroups('project');
+    const { bpNamesList } = UR.ReadFlatStateGroups('blueprints');
     this.state = {
       panelConfiguration: 'run',
       message: '',
       projId: '', // set by project-server
       projectIsLoaded: false,
-      bpidList,
+      bpNamesList,
       devices: [],
       inspectorInstances: [],
       runIsMinimized: true,
@@ -165,9 +165,9 @@ class MissionControl extends React.Component {
   }
 
   urStateUpdated(stateObj, cb) {
-    const { project, bpidList } = stateObj;
+    const { project, bpNamesList } = stateObj;
     if (project) this.setState({ projectIsLoaded: true });
-    if (bpidList) this.setState({ bpidList });
+    if (bpNamesList) this.setState({ bpNamesList });
     if (typeof cb === 'function') cb();
   }
 
@@ -363,7 +363,7 @@ class MissionControl extends React.Component {
       message,
       projId,
       projectIsLoaded,
-      bpidList,
+      bpNamesList,
       devices,
       inspectorInstances,
       runIsMinimized,
@@ -411,12 +411,12 @@ class MissionControl extends React.Component {
       panelConfiguration === 'edit' ? (
         <>
           <PanelProjectEditor />
-          <MissionMapEditor projId={projId} bpidList={bpidList} />
+          <MissionMapEditor projId={projId} bpNamesList={bpNamesList} />
         </>
       ) : (
         <MissionRun
           projId={projId}
-          bpidList={bpidList}
+          bpNamesList={bpNamesList}
           devices={devices}
           toggleMinimized={this.OnToggleNetworkMapSize}
           minimized={runIsMinimized}

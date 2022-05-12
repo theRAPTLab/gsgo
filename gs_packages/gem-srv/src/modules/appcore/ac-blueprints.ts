@@ -79,12 +79,11 @@ STATE.initializeState({
   // db states
   bpDefs: [], // [{name, scriptText},...] raw blueprint script text used for saving to gemproj file
   // runtime states derived from bpDefs or bpBundles
-  bpidList: [],
   bpNamesList: [],
   defaultPozyxBpid: '',
-  charControlBpidList: [],
-  ptrackControlBpidList: [],
-  pozyxControlBpidList: []
+  charControlBpNames: [],
+  ptrackControlBpNames: [],
+  pozyxControlBpNames: []
 });
 /// These are the primary methods you'll need to use to read and write
 /// state on the behalf of code using APPCORE.
@@ -206,22 +205,6 @@ function GetBpEditList(projId) {
   // project that is NOT the CURRENT_PROJECT.
   // REVIEW: Currently does not return info about openeditors, but it should
   return _getKey('bpDefs');
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Returns array of blueprint definitions defined for a project
- *  Generally used by selector UI for `bpidList` objects
- *  Pass 'blueprint' on initial calls before the key is set
- *  @returns [ ...{id, label} ]
- */
-////////////// REVIEW: Remove dependency on this
-function GetBlueprintIDsList(bundles) {
-  const bp = bundles || _getKey('bpDefs');
-  return bp.map(b => {
-    // REVIEW: This should be deprecated.  No need to keep separate
-    // id and label lists, just a single [bpName] array ought to suffice.
-    // This should use blueprint 'name' not the blueprint's gemproj id
-    return { id: b.name, label: b.name };
-  });
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -358,18 +341,16 @@ function updateAndPublishDerivedBpLists() {
   // updating pozyx
   const pozyxControlBpidList = m_GeneratePozyxControlBpidList(bundles);
   updateKey({
-    bpidList,
     bpNamesList,
-    charControlBpidList,
-    ptrackControlBpidList,
-    pozyxControlBpidList
+    charControlBpNames,
+    ptrackControlBpNames,
+    pozyxControlBpNames
   });
   _publishState({
-    bpidList,
     bpNamesList,
-    charControlBpidList,
-    ptrackControlBpidList,
-    pozyxControlBpidList
+    charControlBpNames,
+    ptrackControlBpNames,
+    pozyxControlBpNames
   });
 }
 
@@ -496,7 +477,6 @@ export {
   GetBlueprintBundle,
   // Derived Blueprint Lists
   GetBpEditList, // used by ScriptEditor to display list of bp to edit
-  GetBlueprintIDsList,
   GetBpNamesList,
   GetCharControlBpidList,
   GetPTrackControlBpidList,
