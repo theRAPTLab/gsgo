@@ -114,17 +114,17 @@ addEffectHook(hook_Effect);
 /// return copies
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetRounds() {
+function GetRounds() {
   const rounds = _getKey('rounds');
   return [...rounds]; // clone
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetRoundCount() {
+function GetRoundCount() {
   const rounds = _getKey('rounds');
   return rounds.length;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetRoundDef(index) {
+function GetRoundDef(index) {
   const rounds = _getKey('rounds');
   if (index > rounds.length)
     throw new Error(
@@ -133,14 +133,26 @@ export function GetRoundDef(index) {
   return rounds[index];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function RoundsShouldLoop() {
+function RoundsShouldLoop() {
   const metadata = _getKey('metadata');
   return metadata.roundsCanLoop;
 }
 
 /// UPDATERS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-export function SetRounds(projId, rounds) {
+function SetRounds(projId, rounds) {
+  DCPROJECT.UpdateProjectData({ rounds });
   updateAndPublish(rounds);
 }
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export {
+  // Getters
+  GetRounds,
+  GetRoundCount,
+  GetRoundDef,
+  RoundsShouldLoop,
+  // Updaters
+  SetRounds
+};
