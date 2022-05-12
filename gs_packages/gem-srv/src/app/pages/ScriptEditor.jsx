@@ -186,7 +186,6 @@ class ScriptEditor extends React.Component {
    */
   UpdateBpEditList(bpEditList) {
     if (DBG) console.log(...PR('UpdateBpEditList', bpEditList));
-    console.log(...PR('UpdateBpEditList', bpEditList));
     const { bpName } = this.state;
     this.setState({ bpEditList }, () => {
       if (bpName) {
@@ -199,7 +198,6 @@ class ScriptEditor extends React.Component {
     // Project data has been updated externally, re-request bp data if the
     // the updated project was what we have open
     const { projId } = this.state;
-    console.error('ScriptEditor: MODEL UPDATE!', data, projId);
     if (data && data.project && data.project.id && data.project.id === projId)
       this.RequestBpEditList(projId);
   }
