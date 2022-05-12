@@ -348,14 +348,9 @@ function GetBlueprintPropertiesMap(bpName: string): Map<string, object> {
  */
 function updateAndPublishDerivedBpLists() {
   const bundles = DCENGINE.GetAllBlueprints();
-  // const bpidList = GetBlueprintIDsList(bundles);
-  // update list of blueprint pragma names from compiled bundle
   const bpNamesList = m_ExtractBlueprintNamesList(bundles);
-  // updating charcontrol
   const charControlBpNames = m_GenerateCharControlBpNames(bundles);
-  // updating ptrack
   const ptrackControlBpNames = m_GeneratePTrackControlBpNames(bundles);
-  // updating pozyx
   const pozyxControlBpNames = m_GeneratePozyxControlBpNames(bundles);
   updateKey({
     bpNamesList,
@@ -478,7 +473,6 @@ function UpdateBlueprint(projId: string, bpName: string, scriptText: string) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: */
 function DeleteBlueprint(bpName: string) {
-  // BPSCRIPTTEXTMAP.delete(bpName); // local
   // 1. Remove from DCEngine
   DCENGINE.DeleteBlueprint(bpName); // bpBndles
 
@@ -497,7 +491,7 @@ export {
   GetBpEditList, // used by ScriptEditor to display list of bp to edit
   GetBpNamesList,
   GetCharControlBpNames,
-  GetPTrackControlBpNames as GetPTrackControlBpidList,
+  GetPTrackControlBpNames,
   GetPTrackControlDefaultBpName,
   GetPozyxControlBpNames,
   GetPozyxControlDefaultBpName,
