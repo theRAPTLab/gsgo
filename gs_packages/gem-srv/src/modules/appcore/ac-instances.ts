@@ -117,8 +117,6 @@ function updateAndPublish(instances) {
   const instanceidList = GetInstanceidList(instances);
   updateKey({ instances, instanceidList });
   _publishState({ instances, instanceidList });
-  // update datacore
-  DCPROJECT.UpdateProjectData({ instances });
 }
 
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
@@ -165,6 +163,11 @@ function hook_Filter(key, propOrValue, propValue) {
     m_UpdateCurrentInstance(instance);
     return [key, propOrValue];
   }
+  if (key === 'instances') {
+    // update datacore
+    const instances = propOrValue;
+    DCPROJECT.UpdateProjectData({ instances });
+  }
   return undefined;
 }
 
@@ -183,7 +186,6 @@ function hook_Effect(effectKey, propOrValue, propValue) {
 
   if (effectKey === 'instances') {
     if (DBG) console.log(...PR(`effect ${effectKey} = ${propOrValue}`));
-    updateAndPublish(propOrValue);
     // (a) start async autosave
     DCPROJECT.ProjectFileRequestWrite();
   }
