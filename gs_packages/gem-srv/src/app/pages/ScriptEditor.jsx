@@ -169,7 +169,6 @@ class ScriptEditor extends React.Component {
    * the list of editable blueprints.
    */
   RequestBpEditList(projId) {
-    console.error(...PR('RequestBpEditList...', projId));
     if (DBG) console.log(...PR('RequestBpEditList...', projId));
     const fnName = 'RequestBpEditList';
     UR.CallMessage('NET:REQ_PROJDATA', {
