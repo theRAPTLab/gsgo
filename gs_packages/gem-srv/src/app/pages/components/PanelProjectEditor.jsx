@@ -109,11 +109,11 @@ class ProjectEditor extends React.Component {
 
   SaveProjectData() {
     const { project } = this.state;
-    UR.WriteState('project', 'project', project);
+    UR.CallMessage('PROJDATA_UPDATE', { project });
   }
   SaveMetaData() {
     const { project } = this.state;
-    UR.WriteState('metadata', 'metadata', project.metadata);
+    UR.CallMessage('METADATA_UPDATE', { metadata: project.metadata });
   }
 
   render() {

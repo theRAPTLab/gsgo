@@ -248,6 +248,24 @@ function RequestProject(projId = CURRENT_PROJECT_ID) {
   return ACProject.GetProject();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** PanelProjectEditor calls with edited project information
+ *  @param {object} data
+ *  @param {object} data.project - {id, label}
+ */
+function UpdateProject(data) {
+  const { project } = data;
+  UR.WriteState('project', 'project', project);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** PanelProjectEditor calls with edited project metadata information
+ *  @param {object} data
+ *  @param {object} data.metadata
+ */
+function UpdateMetadata(data) {
+  const { metadata } = data;
+  UR.WriteState('metadata', 'metadata', metadata);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Handle ScriptEditor's request for a list of editable blueprints
  *  Used by REQ_PROJ_DATA
  * @return [ {name, scriptText, editor} ]
@@ -691,6 +709,8 @@ UR.HandleMessage('NET:TRANSFORM_REQ', HandleTransformReq); // returns locale xfo
 /// PROJECT DATA UTILS ----------------------------------------------------
 UR.HandleMessage('REQ_PROJDATA', HandleRequestProjData);
 UR.HandleMessage('NET:REQ_PROJDATA', HandleRequestProjData);
+UR.HandleMessage('PROJDATA_UPDATE', UpdateProject);
+UR.HandleMessage('METADATA_UPDATE', UpdateMetadata);
 ///
 UR.HandleMessage('NET:SCRIPT_UPDATE', ScriptUpdate);
 UR.HandleMessage('NET:BLUEPRINT_DELETE', HandleBlueprintDelete);
