@@ -148,13 +148,7 @@ class ProjectEditor extends React.Component {
           }}
         >
           <div className={classes.inspectorLabel}>id (url)&nbsp;</div>
-          <div className={classes.inspectorData}>
-            <input
-              id="id"
-              defaultValue={project.id}
-              onChange={this.onFormInputUpdate}
-            />
-          </div>
+          <div className={classes.inspectorData}>{project.id}</div>
           <div className={classes.inspectorLabel}>label&nbsp;</div>
           <div className={classes.inspectorData}>
             <input
