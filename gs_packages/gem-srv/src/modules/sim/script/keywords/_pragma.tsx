@@ -9,7 +9,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Keyword from 'lib/class-keyword';
-import { TArguments, TOpcode } from 'lib/t-script';
 import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
 import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 

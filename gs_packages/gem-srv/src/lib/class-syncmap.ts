@@ -22,20 +22,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+// uses types from t-pool
 import Pool from './class-pool';
-import {
-  IPoolable,
-  IPoolOptions,
-  ISyncResults,
-  ISyncMap,
-  MapFunctions,
-  TestFunction,
-  AddFunction,
-  UpdateFunction,
-  RemoveFunction,
-  PoolableMap,
-  PoolableArray
-} from './t-pool.d';
 import MappedPool from './class-mapped-pool';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

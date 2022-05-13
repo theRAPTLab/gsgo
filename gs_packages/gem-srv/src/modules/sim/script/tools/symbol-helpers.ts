@@ -22,14 +22,8 @@ import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as ENGINE from 'modules/datacore/dc-sim-resources';
 import * as BUNDLER from 'modules/datacore/dc-sim-bundler';
 import * as TOKENIZER from 'script/tools/class-gscript-tokenizer-v2';
-import {
-  IToken,
-  TSymbolData,
-  TSymbolRefs,
-  TSymbolErrorCodes,
-  TSymMethodSig,
-  TSymbolViewData
-} from 'lib/t-script.d';
+
+// uses types defined in t-script.d
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

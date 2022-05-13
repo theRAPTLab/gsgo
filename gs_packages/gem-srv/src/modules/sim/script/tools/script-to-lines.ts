@@ -11,8 +11,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { TScriptUnit, IToken, TNameSet } from 'lib/t-script.d';
-import { VMToken, VMPageLine } from 'lib/t-ui.d';
+// uses types defined in t-script.d and t-ui.d
 
 /// CONSTANT & DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -12,7 +12,6 @@ import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 import DisplayObject from '../../lib/class-display-object';
 import * as RENDERER from '../render/api-render';
-import { MakeDraggable } from '../../lib/vis/draggable';
 import * as TRANSPILER from './script/transpiler-v2';
 import SyncMap from '../../lib/class-syncmap';
 import { ClearGlobalAgent } from '../../lib/class-gagent';

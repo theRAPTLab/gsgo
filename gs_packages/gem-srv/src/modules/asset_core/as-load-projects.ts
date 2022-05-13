@@ -24,7 +24,7 @@
 
 import UR from '@gemstep/ursys/client';
 import AssetLoader from './class-asset-loader';
-import { TAssetDef, TAssetType } from '../../lib/t-assets';
+// import { TAssetDef, TAssetType } from '../../lib/t-assets';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

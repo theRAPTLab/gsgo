@@ -13,7 +13,7 @@
 import RNG from 'modules/sim/sequencer';
 import { GetAgentsByType } from 'modules/datacore';
 import { ParseExpression } from 'lib/expr-parser';
-import { ISMCBundle } from 'lib/t-script';
+// uses types defined in t-script.d
 import { Evaluate } from 'lib/expr-evaluator';
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////

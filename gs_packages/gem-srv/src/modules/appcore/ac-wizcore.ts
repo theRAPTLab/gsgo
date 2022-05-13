@@ -25,14 +25,13 @@ import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
 import ScriptLiner from 'script/tools/script-to-lines';
 import * as DCENGINE from 'modules/datacore/dc-sim-resources';
-import * as DCPROJECT from 'modules/datacore/dc-projects-v2';
+import * as DCPROJECT from 'modules/datacore/dc-project-v2';
 import {
   DecodeSymbolViewData,
   UnpackViewData,
   UnpackSymbolType
 } from 'script/tools/symbol-helpers';
 import { DEV_PRJID, DEV_BPID } from 'config/gem-settings';
-import { TValidatedScriptUnit, TSymbolData, ISMCBundle } from 'lib/t-script';
 import { GetTextBuffer } from 'lib/class-textbuffer';
 
 // load state

@@ -10,7 +10,8 @@
 import UR from '@gemstep/ursys/client';
 import GAgent from 'lib/class-gagent';
 import SM_Bundle from 'lib/class-sm-bundle';
-import { TSMCProgram, TInstance, EBundleType } from 'lib/t-script.d';
+import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
+// uses types defined in t-script.d
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 

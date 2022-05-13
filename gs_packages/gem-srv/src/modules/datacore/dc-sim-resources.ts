@@ -9,17 +9,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  TSMCProgram,
-  ISMCBundle,
-  TScriptUnit,
-  IFeature,
-  IScopeableCtor,
-  IToken,
-  IKeyword,
-  IKeywordCtor,
-  TSymArg
-} from 'lib/t-script.d';
 import * as CHECK from './dc-sim-data-utils';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

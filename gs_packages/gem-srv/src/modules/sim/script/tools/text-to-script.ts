@@ -6,8 +6,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { TScriptUnit } from 'lib/t-script.d';
 import GScriptTokenizer from 'script/tools/class-gscript-tokenizer-v2';
+// uses types defined in t-script.d
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -14,7 +14,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { TCompiledStatement, ISMCBundle, TSymbolData } from 'lib/t-script.d';
+import SM_Bundle from 'lib/class-sm-bundle';
 import * as CHECK from './dc-sim-data-utils';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -32,7 +32,7 @@ let BUNDLE_OUT = 'define'; // the current compiler output track
  *  BundleOut(bdl,prog) call where the program should be added
  */
 function SetBundleName(
-  bdl: ISMCBundle,
+  bdl: SM_Bundle,
   bpName: string,
   bpParent?: string
 ): boolean {
@@ -87,7 +87,7 @@ function CompilerState() {
  *  @returns void
  *
  */
-function AddSymbol(bdl: ISMCBundle, symdata: TSymbolData) {
+function AddSymbol(bdl: SM_Bundle, symdata: TSymbolData) {
   if (bdl.symbols === undefined) bdl.symbols = {};
   const _bdlsym = bdl.symbols;
 
@@ -122,7 +122,7 @@ function AddSymbol(bdl: ISMCBundle, symdata: TSymbolData) {
   if (symdata.error) console.log('symbol error:', symdata.error);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function BundleTag(bdl: ISMCBundle, tagName: string, tagValue: any): boolean {
+function BundleTag(bdl: SM_Bundle, tagName: string, tagValue: any): boolean {
   if (typeof bdl !== 'object') {
     console.warn('arg1 is not a bundle, got:', bdl);
     return false;
@@ -144,7 +144,7 @@ function BundleTag(bdl: ISMCBundle, tagName: string, tagValue: any): boolean {
 /** main API for add a program to a bundle. It does not check the bundle
  *  type because it may not have been set yet.
  */
-function BundleOut(bdl: ISMCBundle, prog: TCompiledStatement) {
+function BundleOut(bdl: SM_Bundle, prog: TCompiledStatement) {
   if (typeof bdl !== 'object') throw Error(`${bdl} is not an object`);
   if (!bdl[BUNDLE_OUT]) bdl[BUNDLE_OUT] = [];
   // console.log(`writing ${prog.length} opcode(s) to [${BUNDLE_OUT}]`);
@@ -153,7 +153,7 @@ function BundleOut(bdl: ISMCBundle, prog: TCompiledStatement) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** HELPER: returns bundle if it is a bundle, throw error otherwise */
-function IsValidBundle(bundle: ISMCBundle) {
+function IsValidBundle(bundle: SM_Bundle) {
   const { symbols, name } = bundle;
   const { props, features } = symbols;
   const hasSymbols =

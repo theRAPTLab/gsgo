@@ -17,17 +17,10 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  TSymArg,
-  TSymUnpackedArg,
-  TSValidType,
-  EBundleType,
-  TScriptUnit
-} from 'lib/t-script.d';
-import * as TOKENIZER from 'script/tools/class-gscript-tokenizer-v2';
-
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
+
 const DBG = false;
 const VALID_ARGTYPES: TSValidType[] = [
   // see t-script.d "SYMBOL DATA AND TYPES"

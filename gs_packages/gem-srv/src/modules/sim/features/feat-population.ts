@@ -8,7 +8,6 @@
 import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
-import { IAgent, TSMCProgram } from 'lib/t-script';
 import {
   GVarBoolean,
   GVarDictionary,

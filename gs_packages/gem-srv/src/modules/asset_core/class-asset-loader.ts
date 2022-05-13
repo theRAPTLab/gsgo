@@ -44,16 +44,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  TAssetDef,
-  TAssetType,
-  TAssetId,
-  TAssetName,
-  TAssetURL,
-  TAssetLoader,
-  TResource,
-  TManifest
-} from 'lib/t-assets.d';
+// uses types from t-assets.d
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -67,7 +58,7 @@ function m_NewAssetRecord() {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class AssetLoader extends TAssetLoader {
+class AssetLoader implements TAssetLoader {
   _queue: TAssetDef[]; // the queue of assets to load
   _type: TAssetType; // the kind of asset this instance will manage
   _loadCount: number;
@@ -76,7 +67,6 @@ class AssetLoader extends TAssetLoader {
 
   /** please initialize queue mechanism through super(type) */
   constructor(assetType: TAssetType) {
-    super();
     this._queue = [];
     this._loadCount = 0;
     this._type = assetType;

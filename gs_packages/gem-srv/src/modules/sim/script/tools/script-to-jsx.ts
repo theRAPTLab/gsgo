@@ -9,13 +9,11 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { TScriptUnit } from 'lib/t-script.d';
+import * as merge from 'deepmerge'; // using require so TS doesn't look for types
 import { GetKeyword } from 'modules/datacore/dc-sim-resources';
 import { ScriptToText } from './script-to-text';
 import { TextToScript } from './text-to-script';
 import { DecodeStatement } from './script-compiler';
-
-const merge = require('deepmerge'); // using require so TS doesn't look for types
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -98,7 +96,7 @@ function ScriptToJSX(units: TScriptUnit[], options: any[]): any[] {
 function UpdateLine(origScriptUnits: any, update: any) {
   // Make a copy of the update data since we modify parentLineIndices at each level
   // otherwise we may end up chagning the parentLineIndices for other lines.
-  const updateLineData = merge.all([update]);
+  const updateLineData: any = merge.all([update]); // @BEN I added any type to stop lint errors
   const line = updateLineData.index;
   const nestParent = updateLineData.parentLineIndices.shift();
   const parentIndex = nestParent.index;

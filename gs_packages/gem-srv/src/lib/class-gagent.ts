@@ -11,19 +11,10 @@
 
 import { GetFeature, GetProgram, GetTest } from 'modules/datacore';
 import { Evaluate } from 'lib/expr-evaluator';
-import {
-  IFeature,
-  IAgent,
-  TMethod,
-  TSMCProgram,
-  TSymbolData,
-  IScopeable,
-  IActable,
-  ISMCBundle,
-  ControlMode
-} from 'lib/t-script.d';
+// imports types from t-script.d
 import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
 import FLAGS from 'modules/flags';
+import { EControlMode } from '../types/t-script.d';
 import SM_Message from './class-sm-message';
 import SM_Object from './class-sm-object';
 import SM_State from './class-sm-state';
@@ -38,8 +29,8 @@ let REF_ID_COUNT = 0;
 class GAgent extends SM_Object implements IAgent, IActable {
   blueprint: ISMCBundle;
   featureMap: Map<string, IFeature>;
-  controlMode: ControlMode;
-  controlModeHistory: ControlMode[];
+  controlMode: EControlMode;
+  controlModeHistory: EControlMode[];
   isCaptive: boolean;
   isSelected: boolean;
   isHovered: boolean;
@@ -75,7 +66,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.thinkQueue = [];
     this.execQueue = [];
     // built-in movement control states
-    this.controlMode = ControlMode.auto;
+    this.controlMode = EControlMode.auto;
     this.controlModeHistory = [];
     // shared basic props in props for conceptual symmetry
     this.prop.x = new GVarNumber(0); // default to 0, otherwise it'll start out undefined
@@ -236,20 +227,20 @@ class GAgent extends SM_Object implements IAgent, IActable {
 
   /// MOVEMENT MODES //////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  private pushMode = (mode: ControlMode) => {
+  private pushMode = (mode: EControlMode) => {
     this.controlMode = mode;
     return this.controlModeHistory.push(mode);
   };
   mode = () => this.controlMode;
-  setPreviousMode = () => this.controlModeHistory.pop() || ControlMode.auto;
-  setModeStatic = () => this.pushMode(ControlMode.static);
-  setModeDrag = () => this.pushMode(ControlMode.drag);
-  setModePuppet = () => this.pushMode(ControlMode.puppet);
-  setModeAuto = () => this.pushMode(ControlMode.auto);
-  isModeStatic = () => this.controlMode === ControlMode.static;
-  isModeDrag = () => this.controlMode === ControlMode.drag;
-  isModePuppet = () => this.controlMode === ControlMode.puppet; // is input Agent
-  isModeAuto = () => this.controlMode === ControlMode.auto;
+  setPreviousMode = () => this.controlModeHistory.pop() || EControlMode.auto;
+  setModeStatic = () => this.pushMode(EControlMode.static);
+  setModeDrag = () => this.pushMode(EControlMode.drag);
+  setModePuppet = () => this.pushMode(EControlMode.puppet);
+  setModeAuto = () => this.pushMode(EControlMode.auto);
+  isModeStatic = () => this.controlMode === EControlMode.static;
+  isModeDrag = () => this.controlMode === EControlMode.drag;
+  isModePuppet = () => this.controlMode === EControlMode.puppet; // is input Agent
+  isModeAuto = () => this.controlMode === EControlMode.auto;
 
   /// AGENT INTERACTION STATES ////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

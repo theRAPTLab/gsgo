@@ -30,7 +30,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { TAssetDef, TAssetType, TAssetLoader, TManifest } from 'lib/t-assets';
+// import { TAssetDef, TAssetType, TAssetLoader, TManifest } from 'lib/t-assets';
 import { GS_ASSETS_ROUTE, GS_ASSETS_PATH } from 'config/gem-settings';
 import SpriteLoader from './as-load-sprites';
 import ProjectLoader from './as-load-projects';

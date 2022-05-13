@@ -27,17 +27,8 @@
 
 import UR from '@gemstep/ursys/client';
 
-import {
-  IKeyword,
-  IToken,
-  TScriptUnit,
-  TCompiledStatement,
-  TSMCProgram,
-  EBundleType,
-  TSymbolData,
-  TSymbolRefs,
-  TValidatedScriptUnit
-} from 'lib/t-script.d';
+// uses types in t-script.d
+import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 import SM_Bundle from 'lib/class-sm-bundle';
 
 import * as DCENGINE from 'modules/datacore/dc-sim-resources';
@@ -45,7 +36,6 @@ import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import GAgent from 'lib/class-gagent';
 import { VSymError } from './symbol-helpers';
-
 import { ParseExpression } from './class-expr-parser-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -228,6 +218,7 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
   const fn = 'CompileBlueprint:';
   let objcode: TCompiledStatement;
   const bdl = new SM_Bundle();
+  bdl.setType(EBundleType.BLUEPRINT);
   // TODO: move the symbolizer to a new SymbolizeBlueprint() call
   DCBUNDLER.AddSymbol(bdl, GAgent.Symbols);
   //

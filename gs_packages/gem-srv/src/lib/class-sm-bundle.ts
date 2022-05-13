@@ -14,16 +14,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  TOpcode,
-  TRegcode,
-  ISMCBundle,
-  TSymbolData,
-  TBundleDirectives,
-  TBundleTags,
-  ISMCPrograms,
-  EBundleType
-} from './t-script.d';
+// uses types from t-script
+import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
