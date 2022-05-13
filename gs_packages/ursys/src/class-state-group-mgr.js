@@ -48,6 +48,63 @@
   values directly. This would help manage overlapping
   asynchronous operations.
 
+
+  BEN's NOTES on USE:
+
+  In general, you interact with state group manager by having
+  components subscribe to a state group and then update the state
+  via a 'WriteState' URSYS call.
+
+  1.  Subscribing to State
+        UR.SubscribeState(<stateGrp, <handlerFn>);
+        handlerFn(stateObj, cb) { ... }
+
+        e.g.
+        UR.SubscribeState('blueprints', this.urStateUpdated);
+        urStateUpdated(stateObj, cb) {
+          const { bpidList } = stateObj;
+          if (bpidList) this.setState({ bpidList });
+          if (typeof cb === 'function') cb();
+        }
+
+  2.  Changing State
+        UR.WriteState(<stateGrpMgr>, <stateGrp>, <state data>);
+        e.g. UR.WriteState('projects', 'projectNames', projectNames);
+
+        This will call:
+        a. WriteState
+        b. _handleChange
+           -- changeHooks
+              ++  hook_Filter
+        d. _smartUpdate
+           --  updateKey (or updateKeyProp)
+           --  _publishState
+           --  effects
+               ++ hook_Effect
+
+  3.  updateKey
+        Calling `updateKey` directly will skip:
+        * changeHooks / hook_Filter
+        * _publishState
+        * effects / hook_Effect
+
+        Use this to skip hook_Filter and hook_Effect, e.g. to skip a
+        file write call in hook_Effect when initially setting the state.
+
+  4.  _publishState
+        Calling `_publishState` will send the state update to all subscribers
+
+  5.  changeHooks / hook_Filter
+        changeHooks are useful for:
+        * filtering data (e.g. removing invalid or unwanted data) before the state
+          is saved
+        * generating derived properties from the base state (e.g. lists of names)
+        * saving a copy of the data to datacore
+
+  6.  effectHooks / hook_Effect
+        effectHooks are useful for:
+        * Requesting data writes after all states have been updated
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const PROMPT = require('./util/prompts');

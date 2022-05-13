@@ -59,14 +59,14 @@ const { addEffectHook, deleteEffectHook } = STATE;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// return copies and derived data
 
-export function GetInstances() {
+function GetInstances() {
   const instances = _getKey('instances');
   return [...instances]; // clone
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-export function GetInstance(id) {
+function GetInstance(id) {
   const instances = _getKey('instances');
   return instances.find(i => i.id === id);
 }
@@ -80,7 +80,7 @@ export function GetInstance(id) {
  * from in-progress changes rather than saved state.
  * @returns [...{id, label, blueprint}]
  */
-export function GetInstanceidList(currentInstances) {
+function GetInstanceidList(currentInstances) {
   const instances = currentInstances || _getKey('instances');
   return instances.map(i => {
     return { id: i.id, label: i.label, bpid: i.bpid };
@@ -90,7 +90,7 @@ export function GetInstanceidList(currentInstances) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /** Returns a unique instance ID by finding the highest id and adding 1 */
-export function GetInstanceUID() {
+function GetInstanceUID() {
   const instances = _getKey('instances');
   if (instances.length < 1) return String(0);
   const max = instances.reduce((prev, b) => {
@@ -105,7 +105,7 @@ export function GetInstanceUID() {
 /** Sets the`id` instance as the `currentInstance` state object
  *  Used by InstanceEditor to handle updates.
  */
-export function EditInstance(id) {
+function EditInstance(id) {
   const instance = GetInstance(id);
   updateKey({ currentInstance: instance });
   _publishState({ currentInstance: instance });
@@ -117,8 +117,6 @@ function updateAndPublish(instances) {
   const instanceidList = GetInstanceidList(instances);
   updateKey({ instances, instanceidList });
   _publishState({ instances, instanceidList });
-  // update datacore
-  DCPROJECT.UpdateProjectData({ instances });
 }
 
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
@@ -129,7 +127,7 @@ function updateAndPublish(instances) {
  *  NOTE: Used by hook_Filter
  *  NOTE: Does not write to db
  */
-export function UpdateCurrentInstance(instance) {
+function m_UpdateCurrentInstance(instance) {
   const instances = GetInstances();
   const id = instance.id;
   const index = instances.findIndex(i => i.id === id);
@@ -162,8 +160,13 @@ function hook_Filter(key, propOrValue, propValue) {
   if (key === 'currentInstance') {
     // Update `instances` with the currentInstance
     const instance = propOrValue;
-    UpdateCurrentInstance(instance);
+    m_UpdateCurrentInstance(instance);
     return [key, propOrValue];
+  }
+  if (key === 'instances') {
+    // update datacore
+    const instances = propOrValue;
+    DCPROJECT.UpdateProjectData({ instances });
   }
   return undefined;
 }
@@ -183,7 +186,6 @@ function hook_Effect(effectKey, propOrValue, propValue) {
 
   if (effectKey === 'instances') {
     if (DBG) console.log(...PR(`effect ${effectKey} = ${propOrValue}`));
-    updateAndPublish(propOrValue);
     // (a) start async autosave
     DCPROJECT.ProjectFileRequestWrite();
   }
@@ -202,21 +204,23 @@ addEffectHook(hook_Effect);
 /// UPDATERS MULTIPLE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-export function SetInstances(projId, instances) {
+/** API: Use to initialize data without writing to disk
+ *  Will not call DCPROJECT.ProjectFileRequestWrite.
+ */
+function SetInstances(projId, instances) {
   updateAndPublish(instances);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-export function WriteInstances(instances) {
+function WriteInstances(instances) {
   UR.WriteState('instances', 'instances', instances); // calls updateAndPublish via hook_Effect
 }
 
 /// UPDATERS SINGLE ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-export function AddInstance(instance) {
+function AddInstance(instance) {
   const instances = _getKey('instances');
   instances.push(instance);
   UR.WriteState('instances', 'instances', instances); // calls updateAndPublish via hook_Effect
@@ -226,7 +230,7 @@ export function AddInstance(instance) {
 
 /** Saves instance to db, Updates and publishes `instances` with the `instance` object
  */
-export function WriteInstance(instance) {
+function WriteInstance(instance) {
   const instances = GetInstances();
   const id = instance.id;
   const index = instances.findIndex(i => i.id === id);
@@ -236,7 +240,7 @@ export function WriteInstance(instance) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-export function DeleteInstance(id) {
+function DeleteInstance(id) {
   const instances = _getKey('instances');
   const index = instances.findIndex(i => i.id === id);
   instances.splice(index, 1);
@@ -245,7 +249,7 @@ export function DeleteInstance(id) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-export function DeleteInstancesByBPID(bpid) {
+function DeleteInstancesByBPID(bpid) {
   const instances = _getKey('instances');
   const reduced = instances.filter(i => i.bpid !== bpid);
   UR.WriteState('instances', 'instances', reduced); // calls updateAndPublish via hook_Effect
@@ -253,7 +257,7 @@ export function DeleteInstancesByBPID(bpid) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-export function RenameInstanceBlueprint(oldBpid, newBpid) {
+function RenameInstanceBlueprint(oldBpid, newBpid) {
   const instances = _getKey('instances');
   UR.WriteState(
     'instances',
@@ -265,3 +269,24 @@ export function RenameInstanceBlueprint(oldBpid, newBpid) {
     })
   ); // calls updateAndPublish via hook_Effect
 }
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export {
+  // Getters
+  GetInstances,
+  GetInstance,
+  GetInstanceidList,
+  GetInstanceUID,
+  // InstanceEditor
+  EditInstance,
+  // Multiple Setters
+  SetInstances,
+  WriteInstances,
+  // Single Setters
+  AddInstance,
+  WriteInstance,
+  DeleteInstance,
+  DeleteInstancesByBPID,
+  RenameInstanceBlueprint
+};

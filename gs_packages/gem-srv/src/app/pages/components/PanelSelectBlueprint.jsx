@@ -37,11 +37,17 @@ class PanelSelectAgent extends React.Component {
     const { title } = this.state;
     const { id, isActive, bpEditList, projId, onClick, classes } = this.props;
 
-    const sortedBlueprints = bpEditList.sort((a, b) => {
-      if (a.name < b.name) return -1;
-      if (a.name > b.name) return 1;
-      return 0;
-    });
+    const sortedBlueprints = bpEditList
+      ? bpEditList.sort((a, b) => {
+          if (a.name < b.name) return -1;
+          if (a.name > b.name) return 1;
+          return 0;
+        })
+      : [];
+
+    // NOTE that `bp.editor` is not currently being tracked at all.
+    // We still need to build the system to register and track who
+    // is editing a specific blueprint
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>

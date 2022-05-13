@@ -53,7 +53,7 @@ export function StartTrackerVisuals() {
   // // REVIEW: Skip starting tracker if there are no pozyx mappings.
   // //         Otherwise, dc-inputs will try to create instances with
   // //         no blueprint names.
-  // const defaultPozyxBpid = ACBlueprints.GetPozyxControlDefaultBpid(); // GetDefaultPozyxBPName();
+  // const defaultPozyxBpid = ACBlueprints.GetPozyxControlDefaultBpName(); // GetDefaultPozyxBPName();
   // if (!defaultPozyxBpid) {
   //   console.error('skipping StartTrackerVisuals');
   //   return;
