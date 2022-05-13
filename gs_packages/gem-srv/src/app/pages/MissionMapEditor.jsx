@@ -52,7 +52,7 @@ class MapEditor extends React.Component {
    *  make this happen.
    */
   render() {
-    const { projId, bpidList, classes } = this.props;
+    const { projId, bpNamesList, classes } = this.props;
     if (DBG) console.log(...PR('render', classes));
     return (
       <div
@@ -67,7 +67,7 @@ class MapEditor extends React.Component {
         <PanelBlueprints
           id="blueprints"
           projId={projId}
-          bpidList={bpidList}
+          bpNamesList={bpNamesList}
           enableAdd
         />
         <PanelMapInstances id="instances" />

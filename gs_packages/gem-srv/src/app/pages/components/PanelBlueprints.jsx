@@ -26,10 +26,10 @@ import PanelChrome from './PanelChrome';
 class PanelBlueprints extends React.Component {
   constructor() {
     super();
-    const { bpidList } = UR.ReadFlatStateGroups('blueprints');
+    const { bpNamesList } = UR.ReadFlatStateGroups('blueprints');
     this.state = {
       title: '',
-      bpidList
+      bpNamesList
     };
     this.OnBlueprintClick = this.OnBlueprintClick.bind(this);
     this.OnNewBlueprint = this.OnNewBlueprint.bind(this);
@@ -67,17 +67,17 @@ class PanelBlueprints extends React.Component {
   }
 
   urStateUpdated(stateObj, cb) {
-    const { bpidList } = stateObj;
-    if (bpidList) {
-      this.setState({ bpidList });
+    const { bpNamesList } = stateObj;
+    if (bpNamesList) {
+      this.setState({ bpNamesList });
     }
     if (typeof cb === 'function') cb();
   }
 
   render() {
-    const { title, bpidList } = this.state;
+    const { title, bpNamesList } = this.state;
     const { projId, id, isActive, enableAdd, classes } = this.props;
-    if (!bpidList) return ''; // not loaded yet
+    if (!bpNamesList) return ''; // not loaded yet
 
     const instructions = enableAdd
       ? 'Click to add a character'
@@ -89,12 +89,12 @@ class PanelBlueprints extends React.Component {
 
     // Hide special blueprints
     const hide = ['Cursor'];
-    const filteredBpidList = bpidList.filter(bp => !hide.includes(bp.label));
+    const filteredbpNamesList = bpNamesList.filter(bp => !hide.includes(bp));
 
     // sort alphabetically
-    const sortedBlueprints = filteredBpidList.sort((a, b) => {
-      if (a.label < b.label) return -1;
-      if (a.label > b.label) return 1;
+    const sortedBlueprints = filteredbpNamesList.sort((a, b) => {
+      if (a < b) return -1;
+      if (a > b) return 1;
       return 0;
     });
 
@@ -128,7 +128,7 @@ class PanelBlueprints extends React.Component {
                 flexWrap: 'wrap'
               }}
             >
-              {sortedBlueprints.map(a => (
+              {sortedBlueprints.map(bpName => (
                 <div
                   style={{
                     flex: '0 1 auto',
@@ -136,15 +136,15 @@ class PanelBlueprints extends React.Component {
                     overflow: 'hide'
                   }}
                   className={classes.instanceListItem}
-                  onClick={() => this.OnBlueprintClick(a.id)}
-                  key={a.label}
+                  onClick={() => this.OnBlueprintClick(bpName)}
+                  key={bpName}
                 >
                   {enableAdd ? (
                     <AddIcon style={{ fontSize: 10, marginRight: '0.3em' }} />
                   ) : (
                     <EditIcon style={{ fontSize: 10, marginRight: '0.3em' }} />
                   )}
-                  &nbsp;{a.label}
+                  &nbsp;{bpName}
                 </div>
               ))}
             </div>

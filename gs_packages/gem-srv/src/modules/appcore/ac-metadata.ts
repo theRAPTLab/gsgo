@@ -45,15 +45,6 @@ const { _publishState } = STATE;
 const { addChangeHook, deleteChangeHook } = STATE;
 const { addEffectHook, deleteEffectHook } = STATE;
 
-/// LOADER ////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function updateAndPublish(metadata) {
-  updateKey({ metadata });
-  _publishState({ metadata });
-  // also update datacore
-  DCPROJECT.UpdateProjectData({ metadata });
-}
-
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,7 +55,9 @@ function updateAndPublish(metadata) {
 function hook_Filter(key, propOrValue, propValue) {
   if (DBG) console.log('hook_Filter', key, propOrValue, propValue);
   // No need to return anything if data is not being filtered.
-  // if (key === 'metadata') return [key, propOrValue, propValue];
+  // also update datacore
+  const metadata = propOrValue;
+  if (key === 'metadata') DCPROJECT.UpdateProjectData({ metadata });
   // return undefined;
 }
 
@@ -87,6 +80,13 @@ function hook_Effect(effectKey, propOrValue, propValue) {
 addChangeHook(hook_Filter);
 addEffectHook(hook_Effect);
 
+/// CONVENIENCE METHODS ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function updateAndPublish(metadata) {
+  updateKey({ metadata });
+  _publishState({ metadata });
+}
+
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Handled by class-project
@@ -95,13 +95,12 @@ addEffectHook(hook_Effect);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// return copies
 
-export function GetMetadata() {
+function GetMetadata() {
   return { ..._getKey('metadata') }; // clone
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-export function GetBoundary() {
+function GetBoundary() {
   const metadata = _getKey('metadata');
   if (!metadata) return { width: 0, height: 0, bgcolor: 0 }; // not loaded yet
   const width = metadata.right - metadata.left;
@@ -111,7 +110,6 @@ export function GetBoundary() {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /**
  * Test function used by feat-movement to determine whether a wall
  * is set to wrap or prevent passing
@@ -122,7 +120,7 @@ export function GetBoundary() {
  * @param {string} wall - 'top', 'right', 'bottom', 'left', or 'any'
  * @returns
  */
-export function Wraps(wall = 'any') {
+function Wraps(wall = 'any') {
   const BOUNDS = _getKey('metadata');
 
   /**
@@ -181,7 +179,16 @@ export function Wraps(wall = 'any') {
 /// UPDATERS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-export function SetMetadata(projId, metadata) {
+/** API: Use this to initialize the data
+ *  This will trigger a state update without writing to disk.
+ */
+function SetMetadata(projId, metadata) {
   if (DBG) console.log(...PR('ac-metadata setting metadata to', metadata));
+  // Update datacore
+  DCPROJECT.UpdateProjectData({ metadata });
   updateAndPublish(metadata);
 }
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export { GetMetadata, GetBoundary, Wraps, SetMetadata };
