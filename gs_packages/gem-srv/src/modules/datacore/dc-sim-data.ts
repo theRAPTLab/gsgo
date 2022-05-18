@@ -15,7 +15,7 @@ import * as CHECK from './dc-sim-data-utils';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
+const DBG = false;
 const FEATURES: Map<string, IFeature> = new Map();
 const BLUEPRINTS: Map<string, SM_Bundle> = new Map();
 const KEYWORDS: Map<string, IKeyword> = new Map();
@@ -70,10 +70,11 @@ function SaveBlueprintBundle(bdl: SM_Bundle) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return a blueprint bundle by bpName */
 function GetBlueprintBundle(bpName: string): SM_Bundle {
+  const fn = 'GetBlueprintBundle:';
   bpName = bpName || 'default';
   let bdl = BLUEPRINTS.get(bpName);
   if (bdl === undefined) {
-    console.log(`'${bpName}' doesn't exist so create it`);
+    if (DBG) console.log(`${fn} creating '${bpName}' bundle on request`);
     bdl = new SM_Bundle(bpName, EBundleType.BLUEPRINT);
   }
   return bdl;

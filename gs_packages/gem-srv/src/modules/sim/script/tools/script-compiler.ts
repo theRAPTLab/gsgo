@@ -43,32 +43,6 @@ import { ParseExpression } from './class-expr-parser-v2';
 const DBG = false;
 const PR = UR.PrefixUtil('COMPILE', 'TagDebug');
 
-/// COMPILER SUPPORT FUNCTIONS ////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** filter-out errors in the code array, which are non-functions, so we are
- *  returning a pure code array
- */
-function m_StripErrors(
-  code: TCompiledStatement,
-  unit: TScriptUnit,
-  ...args: any[]
-): TSMCProgram {
-  const out = code.filter(f => {
-    if (typeof f === 'function') return true;
-    if (Array.isArray(f)) {
-      // didn't get a function return, so it must be an error code
-      const [err, line] = f as any[];
-      const where = line !== undefined ? `line ${line}` : '';
-      console.log(...PR(`fn: ${err} ${where}`), unit);
-    }
-    // got a single string, so is error
-    if (typeof f === 'string')
-      console.log(...PR(`fn: '${f}' ${args.join(' ')}`), unit);
-    return false;
-  });
-  return out as TSMCProgram;
-}
-
 /// SUPPORT API ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** utility to return the 'decoded' value of a token
@@ -203,7 +177,6 @@ function CompileScript(script: TScriptUnit[]): TSMCProgram {
   script.forEach((statement, ii) => {
     if (statement[0] === '_pragma') return; // ignore directives
     objcode = CompileStatement(statement);
-    objcode = m_StripErrors(objcode, statement);
     program.push(...(objcode as TSMCProgram));
   });
   // return TSMCProgram (TOpcode functions)
@@ -238,83 +211,74 @@ function ExtractBlueprintDirectives(script: TScriptUnit[]) {
       default: // do nothing
     }
   });
-  const PROGRAM = {};
+  const PROGRAMS = {};
   [...programs].forEach(k => {
-    PROGRAM[k] = true;
+    PROGRAMS[k as string] = true;
   });
-  const TAG = {};
+  const TAGS = {};
   [...tags.keys()].forEach(k => {
-    TAG[k] = tags.get(k);
+    TAGS[k] = tags.get(k);
   });
   return {
     BLUEPRINT: [bpName, bpBase],
-    PROGRAM,
-    TAG
+    PROGRAMS,
+    TAGS
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** NEW API: being prototyped in ac-wizcore */
+/** API:
+ */
 export function CompileBlueprintScript(script: TScriptUnit[]): SM_Bundle {
-  const { BLUEPRINT } = ExtractBlueprintDirectives(script);
+  const fn = 'CompileBlueprintScript:';
+  // get blueprint metadata
+  const { BLUEPRINT, TAGS } = ExtractBlueprintDirectives(script);
   const [bpName] = BLUEPRINT;
+  // get the bundle to work on
   const bdl = DCENGINE.GetBlueprintBundle(bpName);
-  console.log(...PR(bpName, bdl));
-  //
+  DCBUNDLER.OpenBundle(bdl);
+  DCBUNDLER.SetBundleType(EBundleType.BLUEPRINT);
+
+  if (!Array.isArray(script))
+    throw Error(`${fn} script should be array, not ${typeof script}`);
+
+  let objcode: TCompiledStatement;
+  script.forEach((stm, line) => {
+    objcode = CompileStatement(stm, line);
+    DCBUNDLER.AddProgram(objcode);
+  }); // script forEach
+  return DCBUNDLER.CloseBundle();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** CompileBlueprint parses # DIRECTIVES to set up a program bundle. It
- *  returns a NEW bundle, because there are times you want a bundle
- *  but it doesn't actually store them.
+/** DEPRECATED: Compile a script into a bundle, which is automatically saved
+ *  under the blueprint name
+ *  replaced by CompileBlueprintScript()
  */
 function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
   const fn = 'CompileBlueprint:';
-  let objcode: TCompiledStatement;
-  const bdl = new SM_Bundle();
-  bdl.setType(EBundleType.BLUEPRINT);
-  // TODO: move the symbolizer to a new SymbolizeBlueprint() call
-  DCBUNDLER.AddSymbol(bdl, GAgent.Symbols);
-  //
+  // get blueprint metadata
+  const { BLUEPRINT, TAGS } = ExtractBlueprintDirectives(script);
+  const [bpName] = BLUEPRINT;
+  // get the bundle to work on
+  const bdl = DCENGINE.GetBlueprintBundle(bpName);
+  DCBUNDLER.OpenBundle(bdl);
+  DCBUNDLER.SetBundleType(EBundleType.BLUEPRINT);
+  DCBUNDLER.AddSymbols(GAgent.Symbols); // TODO: move into SymbolizeBlueprint()
+
   if (!Array.isArray(script))
     throw Error(`${fn} script should be array, not ${typeof script}`);
-  if (script.length === 0) return bdl;
 
+  let objcode: TCompiledStatement;
   script.forEach((stm, line) => {
-    // special case 1: first line must be # BLUEPRINT directive
-    if (line === 0) {
-      const [lead, kw, bpName, bpParent] = DecodeStatement(stm);
-      if (lead === '_pragma' && kw.toUpperCase() === 'BLUEPRINT') {
-        if (DBG) console.log(...PR('compiling', bpName));
-        DCBUNDLER.SetBundleName(bdl, bpName, bpParent);
-        return;
-      }
-      throw Error(`${fn} # BLUEPRINT must be first line in script`);
-    }
-
-    // special case 2: tag processing
-    const [lead, kw, tagName, tagValue] = DecodeStatement(stm);
-    if (lead === '_pragma' && kw.toUpperCase() === 'TAG') {
-      DCBUNDLER.SetBundleTag(bdl, tagName, tagValue);
-      return;
-    }
-
     // normal processing of statement
     objcode = CompileStatement(stm, line);
-    objcode = m_StripErrors(objcode, stm);
-    // save objcode to current bundle section, which can be changed
-    // through pragma PROGRAM
-    DCBUNDLER.AddProgram(bdl, objcode);
-    // TODO: move the symbolizer to a new SymbolizeBlueprint() call
+    DCBUNDLER.AddProgram(objcode);
+    // TODO: move into SymbolizeBlueprint()
     const symbols = SymbolizeStatement(stm, line);
-    DCBUNDLER.AddSymbol(bdl, symbols);
+    DCBUNDLER.AddSymbols(symbols);
   }); // script forEach
 
-  if (bdl.name === undefined) throw Error(`${fn} missing BLUEPRINT directive`);
-  // always add GAgent.Symbols, which are the default built-in props
-  // TODO: remove the duplicate AddSymbol when writing SymbolizeBlueprint
-  // DCBUNDLER.AddSymbol(bdl, GAgent.Symbols);
-  // set type to "BLUEPRINT" (there are other bundle types too)
-  bdl.setType(EBundleType.BLUEPRINT);
-  return bdl;
+  if (!DCBUNDLER.HasBundleName) throw Error(`${fn} missing BLUEPRINT directive`);
+  return DCBUNDLER.CloseBundle();
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

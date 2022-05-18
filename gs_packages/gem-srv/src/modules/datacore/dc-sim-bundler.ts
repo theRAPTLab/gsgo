@@ -2,11 +2,11 @@
 
   DATACORE SIM BUNDLER
 
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
 import SM_Bundle from 'lib/class-sm-bundle';
+import { EBundleType, EBundleTag } from 'modules/../types/t-script.d'; // workaround to import as obj
 import * as CHECK from './dc-sim-data-utils';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -20,26 +20,45 @@ let CUR_NAME = ''; // the current compiling bundle name (blueprint)
 let CUR_PROGRAM = 'define'; // the current compiler output track
 let CUR_BUNDLE: SM_Bundle;
 
+/// MODULE HELPERS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** utility: throws an error if there is no CURRENT_BUNDLE, otherwise */
+function m_HasCurrentBundle(prompt: string): SM_Bundle {
+  if (CUR_BUNDLE === undefined)
+    throw Error(`${prompt} call OpenBundle() before this call`);
+  return CUR_BUNDLE;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** utility: throws an error if there is a CURRENT_BUNDLE set */
+function m_CheckCurrentBundleIsClear(prompt: string): void {
+  if (CUR_BUNDLE !== undefined)
+    throw Error(`${prompt} bundle already set ${CUR_BUNDLE.name}`);
+  return undefined;
+}
 /// COMPILER BUNDLE GATEKEEPING ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Tranpiler uses these to set an implicit bundle that's used for operations
 /// to maintain compatibility
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: before starting TRANSPILER bundle-dependent ops, set the bundle */
-function OpenBundle(bdl: SM_Bundle) {
+/** API: before starting TRANSPILER bundle-dependent ops, set the bundle.
+ *  Returns the bundle that was opened
+ */
+function OpenBundle(bdl: SM_Bundle): SM_Bundle {
   const fn = 'BeginBundle:';
-  if (CUR_BUNDLE !== undefined)
-    throw Error(`${fn} bundle already set ${CUR_BUNDLE.name}`);
+  m_CheckCurrentBundleIsClear(fn);
   CUR_BUNDLE = bdl;
+  return bdl;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: close the bundle, which unsets the CUR_BUNDLE and disables
- *  the bundle state methods that rely on current bundle
+ *  the bundle state methods that rely on current bundle.
+ *  Returns the bundle that was "closed"
  */
-function CloseBundle() {
+function CloseBundle(): SM_Bundle {
   const fn = 'EndBundle:';
-  if (CUR_BUNDLE === undefined) throw Error(`${fn} no bundle set, can't end`);
+  const bdl = m_HasCurrentBundle(fn);
   CUR_BUNDLE = undefined;
+  return bdl;
 }
 
 /// BUNDLE OPERATIONS /////////////////////////////////////////////////////////
@@ -48,6 +67,8 @@ function CloseBundle() {
  *  AddProgram(bdl,prog) call where the program should be added
  */
 function SetProgramOut(str: string): boolean {
+  const fn = 'SetProgramOut:';
+  m_HasCurrentBundle(fn);
   const bdlKey = str.toLowerCase();
   if (CHECK.IsValidBundleProgram(bdlKey)) {
     CUR_PROGRAM = bdlKey;
@@ -64,11 +85,9 @@ function SetProgramOut(str: string): boolean {
  *  AddProgram(bdl,prog) call where the program should be added. Used by
  *  Transpiler.
  */
-function SetBundleName(
-  bdl: ISMCBundle,
-  bpName: string,
-  bpParent?: string
-): boolean {
+function SetBundleName(bpName: string, bpParent?: string): boolean {
+  const fn = 'SetBundleName:';
+  const bdl = m_HasCurrentBundle(fn);
   if (typeof bdl !== 'object') {
     console.warn('arg1 is not a bundle, got:', bdl);
     return false;
@@ -87,12 +106,20 @@ function SetBundleName(
   return true;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: set the bundle type of current bundle */
+function SetBundleType(type: EBundleType = EBundleType.BLUEPRINT) {
+  const fn = 'SetBundleType:';
+  const bdl = m_HasCurrentBundle(fn);
+  if (bdl.type !== type)
+    console.warn(`${fn} ${bdl.name} type changed from ${bdl.type} to ${type}`);
+  bdl.setType(type);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: set one of several tags */
-function SetBundleTag(
-  bdl: ISMCBundle,
-  tagName: TBundleTagTypes,
-  tagValue: any
-): boolean {
+function SetBundleTag(tagName: EBundleTag, tagValue: any): boolean {
+  const fn = 'SetProgramOut:';
+  const bdl = m_HasCurrentBundle(fn);
   if (!(bdl instanceof SM_Bundle)) {
     console.warn('arg1 is not a bundle, got:', bdl);
     return false;
@@ -109,6 +136,17 @@ function SetBundleTag(
   bdl.setTag(tagName, tagValue);
   return true;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: set tags from TAGS { [tagName]:value }
+ *  the tagname is derived from decoded scriptunit args[0]
+ *  the tagvalue is derived from args[1]
+ *  i.e. the source scriptokens were _pragma TAG ...args
+ */
+function SetBundleTags(tags: { [tagName: string]: any }) {
+  Object.entries(tags).forEach(([name, value]) => {
+    SetBundleTag(name as EBundleTag, value);
+  });
+}
 
 /// BUNDLE INCREMENTALLY ADDED DATA ///////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -118,7 +156,9 @@ function SetBundleTag(
  *  setting.
  *  note: bundle type because it may not have been set yet.
  */
-function AddProgram(bdl: ISMCBundle, prog: TCompiledStatement) {
+function AddProgram(prog: TCompiledStatement) {
+  const fn = 'SetProgramOut:';
+  const bdl = m_HasCurrentBundle(fn);
   if (typeof bdl !== 'object') throw Error(`${bdl} is not an object`);
   if (!bdl[CUR_PROGRAM]) bdl[CUR_PROGRAM] = [];
   // console.log(`writing ${prog.length} opcode(s) to [${CUR_PROGRAM}]`);
@@ -136,7 +176,9 @@ function AddProgram(bdl: ISMCBundle, prog: TCompiledStatement) {
  *  @returns void
  *
  */
-function AddSymbol(bdl: ISMCBundle, symdata: TSymbolData) {
+function AddSymbols(symdata: TSymbolData) {
+  const fn = 'SetProgramOut:';
+  const bdl = m_HasCurrentBundle(fn);
   if (bdl.symbols === undefined) bdl.symbols = {};
   const _bdlsym = bdl.symbols;
 
@@ -183,6 +225,28 @@ function CompilerState() {
     bundle: CUR_BUNDLE
   };
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function ClearCompilerState() {
+  CUR_NAME = undefined;
+  CUR_PROGRAM = undefined;
+  CUR_BUNDLE = undefined;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function IsValidBundle() {
+  const fn = 'IsValidBundle:';
+  const bdl = m_HasCurrentBundle(fn);
+  CHECK.IsValidBundle(bdl);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function HasBundleName() {
+  return CUR_NAME;
+}
+
+/// ERROR LOGGING /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function LogKeywordError(keyword: string, scriptLine) {
+  console.log(`error: ${keyword} with`, scriptLine);
+}
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -191,10 +255,18 @@ export {
   CloseBundle,
   //
   SetBundleName,
+  SetBundleType,
   SetProgramOut,
   SetBundleTag,
+  SetBundleTags,
   AddProgram,
-  AddSymbol,
+  AddSymbols,
   //
-  CompilerState
+  LogKeywordError,
+  //
+  CompilerState,
+  ClearCompilerState,
+  //
+  IsValidBundle,
+  HasBundleName
 };

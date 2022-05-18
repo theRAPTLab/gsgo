@@ -300,10 +300,6 @@ declare global {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** tag types used by ben's extensions */
-  type TBundleTagTypes =
-    | 'isCharControllable' // char controller controllable
-    | 'isPozyxControllable' // pozyx tracker controllable
-    | 'isPTrackControllable'; // ptrack tracker controllable
   type TBundleTags = Map<string, any>;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** store directives in the bundle as raw scriptunits*/
@@ -337,8 +333,6 @@ declare global {
     validate(unit: TScriptUnit): TValidatedScriptUnit;
     getName(): string;
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  type TCompiledStatement = (TOpcode | TOpcodeErr)[];
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** weird Typescript constructor definition used by Transpiler
    *  see fettblog.eu/typescript-interface-constructor-pattern/
@@ -502,4 +496,11 @@ export enum EControlMode {
 export enum EBundleType {
   INIT = 'init', // freshly created or empty bundle (set to another type)
   BLUEPRINT = 'blueprint' // blueprint for initializing agents
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** list of possible tags in a bundle (not mutually-exclusive) */
+export enum EBundleTag {
+  isCharControllable = 'isCharControllable', // char controller controllable
+  isPozyxControllable = 'isPozyxControllable', // pozyx tracker controllable
+  isPTrackControllable = 'isPTrackControllable' // ptrack tracker controllable
 }

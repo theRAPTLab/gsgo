@@ -19,7 +19,7 @@
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
+import { EBundleType, EBundleTag } from 'modules/../types/t-script.d'; // workaround to import as obj
 
 const DBG = false;
 const VALID_ARGTYPES: TSValidType[] = [
@@ -130,6 +130,11 @@ function IsValidBundleProgram(name: string): boolean {
 function IsValidBundleType(type: EBundleType) {
   return Object.values(EBundleType).includes(type as any);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return true if the passed bundle string is valid */
+function IsValidBundleTag(type: EBundleType) {
+  return Object.values(EBundleTag).includes(type as any);
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: returns bundle if it is a bundle with minimum properties,
  *  throw error otherwise
@@ -176,5 +181,6 @@ export {
   /// bundle checking utilities
   IsValidBundleProgram,
   IsValidBundleType,
+  IsValidBundleTag,
   IsValidBundle
 };

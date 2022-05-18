@@ -45,6 +45,7 @@ function CompileText(text: string = ''): TSMCProgram {
 
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: */
 function RegisterBlueprintBundle(bdl: SM_Bundle): SM_Bundle {
   // ensure that bundle has at least a define and name
   if (bdl.type === EBundleType.INIT) {
@@ -66,9 +67,11 @@ function RegisterBlueprintBundle(bdl: SM_Bundle): SM_Bundle {
   console.log(bdl);
   throw Error('not blueprint');
 }
+
+/// AGENT UTILITIES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Utility to make an Agent. This has to be done in a module outside of
- *  dc-sim-agents, because datacore modules must be pure definition
+/** API: "Make" an agent using an instance definitions, which adds the new
+ *  instance to the simulation engine data
  */
 function MakeAgent(instanceDef: TInstance) {
   const fn = 'MakeAgent:';
