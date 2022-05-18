@@ -139,7 +139,7 @@ _interceptState(state => {
   if (!script_tokens && script_text) {
     const toks = TRANSPILER.TextToScript(script_text);
     state.script_tokens = toks;
-    state.cur_bdl = TRANSPILER.CompileBlueprint(toks);
+    state.cur_bdl = TRANSPILER.BundleBlueprint(toks);
     const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
     state.script_page = vmPage;
     state.line_tokmap = tokMap;
@@ -286,7 +286,7 @@ function WizardTextChanged(text) {
     // and update the state WITHOUT broadcasting the changes
     // to avoid retriggering the scriptText editor
     script_tokens = TRANSPILER.TextToScript(text); // can throw error
-    cur_bdl = TRANSPILER.CompileBlueprint(script_tokens); // can throw error
+    cur_bdl = TRANSPILER.BundleBlueprint(script_tokens); // can throw error
     _setState({ script_text: text, script_tokens, cur_bdl });
     // since the script tokens have changed, need to redo the viewmodels for
     // the scriptWizard and tell it to update
@@ -534,7 +534,7 @@ function LoadProjectBlueprint(prjId, bpName) {
   if (!found) return `no blueprint '${bpName}' found in '${bpName}'`;
   const { scriptText } = found;
   const scriptToks = TRANSPILER.TextToScript(scriptText);
-  let cur_bdl = TRANSPILER.CompileBlueprint(scriptToks);
+  let cur_bdl = TRANSPILER.BundleBlueprint(scriptToks);
   SendState({ script_text: scriptText, cur_bdl }, () => {});
 }
 
@@ -599,8 +599,6 @@ UR.AddConsoleTool('bundle', (bpName: string) => {
 
   // ENTER SYMBOLIZE BLUEPRINT
   return undefined;
-
-  // bdl = CompileBlueprint(script);
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** run bundler prototype test */

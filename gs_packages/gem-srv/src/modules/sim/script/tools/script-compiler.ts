@@ -253,8 +253,8 @@ export function CompileBlueprintScript(script: TScriptUnit[]): SM_Bundle {
  *  under the blueprint name
  *  replaced by CompileBlueprintScript()
  */
-function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
-  const fn = 'CompileBlueprint:';
+function BundleBlueprint(script: TScriptUnit[]): SM_Bundle {
+  const fn = 'BundleBlueprint:';
   // get blueprint metadata
   const { BLUEPRINT, TAGS } = ExtractBlueprintDirectives(script);
   const [bpName] = BLUEPRINT;
@@ -284,7 +284,7 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export { ExtractBlueprintDirectives };
-export { CompileScript, CompileBlueprint };
+export { CompileScript, BundleBlueprint };
 export {
   DecodeToken,
   DecodeTokenPrimitive,

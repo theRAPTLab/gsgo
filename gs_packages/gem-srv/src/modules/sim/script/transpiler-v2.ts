@@ -114,7 +114,7 @@ export {
 };
 export {
   CompileScript, // API: return a TSMCProgram from a script text
-  CompileBlueprint, // API: return a blueprint bundle from a blueprint text
+  BundleBlueprint, // API: return a blueprint bundle from a blueprint text
   DecodeTokenPrimitive, // utility: to convert a scriptToken into runtime data
   DecodeToken, // utility: with DecodeTokenPrimitive, converts a token into runtime entity
   DecodeStatement, // utility: works with DecodeToken to create runtime enties

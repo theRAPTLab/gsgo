@@ -92,7 +92,7 @@ class Compiler extends React.Component {
     UR.HandleMessage('SCRIPT_SRC_CHANGED', this.updateScript);
     // temp: make sure the blueprint
     // eventually this needs to be part of application startup
-    const bdl = TRANSPILER.CompileBlueprint(this.source);
+    const bdl = TRANSPILER.BundleBlueprint(this.source);
     TRANSPILER.RegisterBlueprintBundle(bdl);
     // codejar
     this.jarRef = React.createRef();
@@ -192,7 +192,7 @@ class Compiler extends React.Component {
     DATACORE.DeleteAllScriptEvents();
     DATACORE.DeleteAllAgents();
     DATACORE.DeleteAllInstances();
-    const bdl = TRANSPILER.CompileBlueprint(this.source);
+    const bdl = TRANSPILER.BundleBlueprint(this.source);
     const bp = TRANSPILER.RegisterBlueprintBundle(bdl);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
     // update local jsx render

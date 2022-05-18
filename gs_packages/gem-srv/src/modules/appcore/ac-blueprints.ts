@@ -122,7 +122,7 @@ function m_SymbolizeBlueprints(blueprints) {
 function m_CompileBlueprints(blueprints) {
   const bundles = blueprints.map(b => {
     const script = TRANSPILER.TextToScript(b.scriptText);
-    const bundle = TRANSPILER.CompileBlueprint(script);
+    const bundle = TRANSPILER.BundleBlueprint(script);
     // Save to datacore
     TRANSPILER.RegisterBlueprintBundle(bundle);
     // Save local reference

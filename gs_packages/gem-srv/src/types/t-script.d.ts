@@ -168,6 +168,7 @@ declare global {
   type TArg = number | string | IToken;
   type TArguments = TArg[]; // decoded tokens provided to compile functions
   type TScript = TScriptUnit[]; // We use TScriptUnit[] in code
+  type TCompiledStatement = (TOpcode | TOpcodeErr)[];
 
   /// COMPILER OUPUT //////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
