@@ -123,7 +123,7 @@ const BUNDLE_CONTEXTS = [
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function IsValidBundleProgram(name: string): boolean {
-  return BUNDLE_CONTEXTS.includes(name);
+  return BUNDLE_CONTEXTS.includes(name.toLowerCase());
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return true if the passed bundle string is valid */

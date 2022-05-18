@@ -21,7 +21,7 @@ export class onEvent extends Keyword {
   compile(unit: TScriptUnit, idx?: number): TOpcode[] {
     let [kw, eventName, consq] = unit;
     consq = this.utilFirstValue(consq); // a program name possibly?
-    const { bpName } = DCBUNDLER.CompilerState();
+    const { bpName } = DCBUNDLER.BundlerState();
     DCENGINE.SubscribeToScriptEvent(
       String(eventName),
       bpName,

@@ -47,9 +47,12 @@ export class _pragma extends Keyword {
 
   /** create smc blueprint code objects */
   compile(params: TArguments): TOpcode[] {
-    const [kw, pragmaName, ...args] = params;
+    // don't do anything if the bundler is inactive, as it is for the
+    // case when compiling a script outside of a blueprint
+    if (!DCBUNDLER.BundlerActive()) return [];
 
     // get a valid pragma
+    const [, pragmaName, ...args] = params;
     const processor = PRAGMA[(pragmaName as string).toUpperCase()];
     if (processor === undefined) {
       DCBUNDLER.LogKeywordError(this.keyword, params);
@@ -57,6 +60,7 @@ export class _pragma extends Keyword {
     }
     // got this far, then it's a valid pragma and we run it
     const out = processor(...args);
+
     if (out.length > 0) return out; // pragma returns a program
     return []; // return null program otherwise
   }

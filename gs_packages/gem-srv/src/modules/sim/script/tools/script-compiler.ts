@@ -175,7 +175,6 @@ function CompileScript(script: TScriptUnit[]): TSMCProgram {
   // compile unit-by-unit
   let objcode: TCompiledStatement;
   script.forEach((statement, ii) => {
-    if (statement[0] === '_pragma') return; // ignore directives
     objcode = CompileStatement(statement);
     program.push(...(objcode as TSMCProgram));
   });

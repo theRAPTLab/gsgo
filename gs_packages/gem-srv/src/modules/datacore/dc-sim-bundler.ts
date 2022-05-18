@@ -16,8 +16,8 @@ const PR = UR.PrefixUtil('SYMBOL', 'TagPurple');
 
 /// GLOBAL DATACORE STATE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let CUR_NAME = ''; // the current compiling bundle name (blueprint)
-let CUR_PROGRAM = 'define'; // the current compiler output track
+let CUR_NAME: string; // the current compiling bundle name (blueprint)
+let CUR_PROGRAM: string; // the current compiler output track
 let CUR_BUNDLE: SM_Bundle;
 
 /// MODULE HELPERS ////////////////////////////////////////////////////////////
@@ -35,6 +35,26 @@ function m_CheckCurrentBundleIsClear(prompt: string): void {
     throw Error(`${prompt} bundle already set ${CUR_BUNDLE.name}`);
   return undefined;
 }
+
+/// BUNDLE STATUS FOR CURRENT TRANSPILER OPERATION ////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: return the state of the bundler, which is valid while a blueprint
+ *  script is being compiled (e.g. CompileBlueprint())
+ */
+function BundlerState() {
+  return {
+    bpName: CUR_NAME,
+    programOut: CUR_PROGRAM,
+    bundle: CUR_BUNDLE
+  };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function ClearBundlerState() {
+  CUR_NAME = undefined;
+  CUR_PROGRAM = undefined;
+  CUR_BUNDLE = undefined;
+}
+
 /// COMPILER BUNDLE GATEKEEPING ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Tranpiler uses these to set an implicit bundle that's used for operations
@@ -68,6 +88,7 @@ function CloseBundle(): SM_Bundle {
  */
 function SetProgramOut(str: string): boolean {
   const fn = 'SetProgramOut:';
+  if (DBG) console.log(...PR(`${fn} setting bundleType ${str}`));
   m_HasCurrentBundle(fn);
   const bdlKey = str.toLowerCase();
   if (CHECK.IsValidBundleProgram(bdlKey)) {
@@ -103,6 +124,7 @@ function SetBundleName(bpName: string, bpParent?: string): boolean {
   // set the bundle name AND save it
   bdl.name = bpName;
   CUR_NAME = bpName;
+  if (DBG) console.log(...PR(`${fn} setting bundleName ${CUR_NAME}`));
   return true;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -113,6 +135,7 @@ function SetBundleType(type: EBundleType = EBundleType.BLUEPRINT) {
   if (bdl.type !== type)
     console.warn(`${fn} ${bdl.name} type changed from ${bdl.type} to ${type}`);
   bdl.setType(type);
+  if (DBG) console.log(...PR(`${fn} setting bundleType ${type}`));
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -134,6 +157,7 @@ function SetBundleTag(tagName: EBundleTag, tagValue: any): boolean {
   }
   // set the bundle name AND save it
   bdl.setTag(tagName, tagValue);
+  if (DBG) console.log(...PR(`${fn} setting bundleTag ${tagName} ${tagValue}`));
   return true;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -213,24 +237,7 @@ function AddSymbols(symdata: TSymbolData) {
   if (symdata.error) console.log('symbol error:', symdata.error);
 }
 
-/// BUNDLE INSPECTOR FOR CURRENT BUNDLE ///////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: return the state of the bundler, which is valid while a blueprint
- *  script is being compiled (e.g. CompileBlueprint())
- */
-function CompilerState() {
-  return {
-    bpName: CUR_NAME,
-    programOut: CUR_PROGRAM,
-    bundle: CUR_BUNDLE
-  };
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ClearCompilerState() {
-  CUR_NAME = undefined;
-  CUR_PROGRAM = undefined;
-  CUR_BUNDLE = undefined;
-}
+/// CURRENT BUNDLE INSPECTORS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function IsValidBundle() {
   const fn = 'IsValidBundle:';
@@ -240,6 +247,17 @@ function IsValidBundle() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function HasBundleName() {
   return CUR_NAME;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: an active bundler is when the bundle is set, but not necessarily
+ *  the name or current program
+ */
+function BundlerActive() {
+  return CUR_BUNDLE !== undefined;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function BundlerProgramIsSet() {
+  return BundlerActive() && CUR_PROGRAM !== undefined;
 }
 
 /// ERROR LOGGING /////////////////////////////////////////////////////////////
@@ -264,8 +282,10 @@ export {
   //
   LogKeywordError,
   //
-  CompilerState,
-  ClearCompilerState,
+  BundlerState,
+  ClearBundlerState,
+  BundlerActive,
+  BundlerProgramIsSet,
   //
   IsValidBundle,
   HasBundleName
