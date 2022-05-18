@@ -9,8 +9,7 @@
 
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
-import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
-import { IAgent } from 'lib/t-script';
+import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
 import { GetGlobalAgent } from 'lib/class-gagent';
 

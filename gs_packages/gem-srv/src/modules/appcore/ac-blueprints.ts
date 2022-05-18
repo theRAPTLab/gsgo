@@ -57,7 +57,7 @@
 import UR from '@gemstep/ursys/client';
 import * as GAgent from 'lib/class-gagent';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCENGINE from 'modules/datacore/dc-sim-data';
 import * as DCPROJECT from 'modules/datacore/dc-project';
 import * as SIMAGENTS from 'modules/sim/sim-agents';
 import * as TRANSPILER from '../sim/script/transpiler-v2';

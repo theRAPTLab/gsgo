@@ -12,11 +12,10 @@
 
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
-import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
-import { IAgent } from 'lib/t-script';
+import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCENGINE from 'modules/datacore/dc-sim-data';
 import { GetGlobalAgent } from 'lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

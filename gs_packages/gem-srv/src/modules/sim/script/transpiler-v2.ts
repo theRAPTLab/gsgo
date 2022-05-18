@@ -14,7 +14,7 @@ import { EBundleType } from 'modules/../types/t-script.d'; // workaround to impo
 
 import GAgent from 'lib/class-gagent';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCENGINE from 'modules/datacore/dc-sim-data';
 
 // critical imports
 import 'script/keywords/_all_keywords';

@@ -24,7 +24,7 @@ import UR from '@gemstep/ursys/client';
 import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
 import ScriptLiner from 'script/tools/script-to-lines';
-import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCENGINE from 'modules/datacore/dc-sim-data';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import {
   DecodeSymbolViewData,
@@ -587,9 +587,12 @@ UR.AddConsoleTool('bundle', (bpName: string) => {
 
     let bdl = DCENGINE.GetBlueprintBundle(bpName);
     let script = TRANSPILER.TextToScript(scriptText);
-    // bdl = TRANSPILER.SymbolizeBlueprint(script,bdl)); // always returns new bundle
-    // bdl = TRANSPILER.ValidateBlueprint(script,bdl)); // so we can call on any bundle and not modify it
+
+    // FOCUS HERE ...
+    // bdl = TRANSPILER.SymbolizeBlueprint(script, bdl)); // always returns new bundle
+    // bdl = TRANSPILER.ValidateBlueprint(script, bdl)); // so we can call on any bundle and not modify it
     // bdl = TRANSPILER.CompileBlueprint(script, bdl); // if we just want the data out of it
+
     // by the end of this,
     DCENGINE.RegisterBlueprintBundle(bdl); // gives us a chance to fire an update event
   }

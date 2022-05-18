@@ -8,7 +8,7 @@ import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import InstanceDef from 'lib/class-instance-def';
 
-import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCENGINE from 'modules/datacore/dc-sim-data';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 import DisplayObject from '../../lib/class-display-object';
 import * as RENDERER from '../render/api-render';

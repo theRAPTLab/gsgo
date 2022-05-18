@@ -31,7 +31,7 @@ import UR from '@gemstep/ursys/client';
 import RNG from 'modules/sim/sequencer';
 import * as TRANSPILER from 'script/transpiler-v2';
 import 'modules/datacore/dc-project'; // must import to load db
-import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCENGINE from 'modules/datacore/dc-sim-data';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 import * as DCINPUTS from 'modules/datacore/dc-inputs';
 import * as ACProject from 'modules/appcore/ac-project';

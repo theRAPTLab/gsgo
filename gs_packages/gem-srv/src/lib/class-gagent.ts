@@ -9,7 +9,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCENGINE from 'modules/datacore/dc-sim-data';
 import { Evaluate } from 'lib/expr-evaluator';
 // imports types from t-script.d
 import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';

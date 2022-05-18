@@ -19,7 +19,7 @@
 import UR from '@gemstep/ursys/client';
 
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-import * as ENGINE from 'modules/datacore/dc-sim-resources';
+import * as ENGINE from 'modules/datacore/dc-sim-data';
 import * as BUNDLER from 'modules/datacore/dc-sim-bundler';
 import * as TOKENIZER from 'script/tools/class-gscript-tokenizer-v2';
 

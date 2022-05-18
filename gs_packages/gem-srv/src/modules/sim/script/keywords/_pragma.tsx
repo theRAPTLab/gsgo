@@ -10,7 +10,7 @@
 
 import Keyword from 'lib/class-keyword';
 import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
-import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCENGINE from 'modules/datacore/dc-sim-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

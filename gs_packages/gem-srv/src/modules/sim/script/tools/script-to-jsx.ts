@@ -10,7 +10,7 @@
 
 import UR from '@gemstep/ursys/client';
 import * as merge from 'deepmerge'; // using require so TS doesn't look for types
-import { GetKeyword } from 'modules/datacore/dc-sim-resources';
+import { GetKeyword } from 'modules/datacore/dc-sim-data';
 import { ScriptToText } from './script-to-text';
 import { TextToScript } from './text-to-script';
 import { DecodeStatement } from './script-compiler';
