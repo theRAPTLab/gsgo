@@ -300,9 +300,13 @@ declare global {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** tag types used by ben's extensions */
+  type TBundleTagTypes =
+    | 'isCharControllable' // char controller controllable
+    | 'isPozyxControllable' // pozyx tracker controllable
+    | 'isPTrackControllable'; // ptrack tracker controllable
   type TBundleTags = Map<string, any>;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** store directives in the bundle */
+  /** store directives in the bundle as raw scriptunits*/
   type TBundleDirectives = Map<string, IToken[]>;
 
   /// PROGRAM BUNDLES /////////////////////////////////////////////////////////

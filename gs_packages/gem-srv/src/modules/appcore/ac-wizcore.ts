@@ -25,7 +25,7 @@ import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
 import ScriptLiner from 'script/tools/script-to-lines';
 import * as DCENGINE from 'modules/datacore/dc-sim-resources';
-import * as DCPROJECT from 'modules/datacore/dc-project-v2';
+import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import {
   DecodeSymbolViewData,
   UnpackViewData,
@@ -41,8 +41,6 @@ const { StateMgr } = UR.class;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('WIZCORE', 'TagCyan');
 const DBG = true;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let PROJECTS; // current project class-asset-loader
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -75,21 +73,26 @@ _initializeState({
   // script UI interaction
   script_text: '# BLUEPRINT AWAIT LOAD', // the source text (WizardText)
   script_tokens: [], // source tokens (from text)
+
   script_page: [], // source tokens 'printed' as lines
   line_tokmap: new Map(), // lookup map from tokenLine+Pos to original token
+
   sel_linenum: -1, // selected line of wizard. If < 0 it is not set
   sel_linepos: -1, // select index into line. If < 0 it is not set
   error: '', // used for displaying error messages
+
   // project context
   proj_list: [], // project list
   cur_prjid: null, // current project id
   cur_bpid: null, // current blueprint
   cur_bdl: null, // current blueprint bundle
+
   // selection-driven data
   sel_symbol: null, // selection-dependent symbol data
   sel_validation: null, // { validationTokens, validationLog }
   sel_context: null, // selection-dependent context
   sel_unittext: '', // selection-dependent unit_text
+
   // runtime filters to limit what to show
   rt_bpfilter: null,
   rt_propfilter: null,
@@ -112,7 +115,7 @@ UR.HookPhase('UR/LOAD_ASSETS', async () => {
     'color:gray'
   );
   // return promise to hold LOAD_ASSETS until done
-  return DCPROJECT.SetAssetDirectory('/assets/art-assets/');
+  return PROJ_v2.SetAssetDirectory('/assets/art-assets/');
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// DEFERRED CALL: APP_CONFIGURE fires after LOAD_ASSETS (above) completes
@@ -120,7 +123,7 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
   const cur_prjid = DEV_PRJID;
   const cur_bpid = DEV_BPID;
   // This retrieves the uncompiled/unbundled bpDef object {name, scriptText} from gem proj
-  const bp = DCPROJECT.GetProjectBlueprint(cur_prjid, cur_bpid);
+  const bp = PROJ_v2.GetProjectBlueprint(cur_prjid, cur_bpid);
   const { scriptText: script_text } = bp;
   const vmState = { cur_prjid, cur_bpid, script_text };
   SendState(vmState);
@@ -525,7 +528,7 @@ export function UIToggleRunEditMode() {
  *  object or undefined if no exist
  */
 function LoadProjectBlueprint(prjId, bpName) {
-  const { blueprints } = PROJECTS.getProjectByProjId(prjId);
+  const { blueprints } = PROJ_v2.GetProject(prjId);
   if (!blueprints) return `no projectId '${prjId}'`;
   const found = blueprints.find(bp => bp.name === bpName);
   if (!found) return `no blueprint '${bpName}' found in '${bpName}'`;
@@ -534,6 +537,73 @@ function LoadProjectBlueprint(prjId, bpName) {
   let cur_bdl = TRANSPILER.CompileBlueprint(scriptToks);
   SendState({ script_text: scriptText, cur_bdl }, () => {});
 }
+
+/// PROTOTYPING ///////////////////////////////////////////////////////////////
+/// script-compiler CompileBlueprintBundle
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** testing the bundler + symbolizer code */
+UR.AddConsoleTool('bundle', (bpName: string) => {
+  //
+  const assetDir = 'assets/art-assets';
+  const projectId = 'aquatic_energy';
+
+  // PROJECT LOADER - GET A BLUEPRINT SCRIPT TEXT
+  PROJ_v2.SetAssetDirectory(assetDir);
+  const { scriptText } = PROJ_v2.GetProjectBlueprint(projectId, bpName);
+  const script = TRANSPILER.TextToScript(scriptText);
+
+  // prototype CompileBlueprintBundle
+  const { BLUEPRINT } = TRANSPILER.ExtractBlueprintDirectives(script);
+  const [name] = BLUEPRINT;
+  if (name !== bpName) throw Error('uh oh, no match blueprint name');
+
+  // these are separate data structures that rely on each other
+  // GUI <-- needs bundle to get symboldata
+  // Validator <-- needs bundle to get symboldata to return validationd data
+  // ScriptEngine <-- needs the bundle to create instances of blueprints from
+  // bundle itself is dependent on the scriptText for a particular blueprint in a gemproj file
+
+  // bpName... we want to do Symbolize followed by Validate followed by Compile
+  // we'll call this the first-time initialization of a bundle for use by
+  // the GUI and the SCRIPT ENGINE
+  // what's the name of this operation in terms of the GUI experience???
+
+  // CreateBundleFromBlueprint(bpName)
+  // -- assumes depends on DC-SIMENGINE's dictionary of blueprints as bundle dict source
+  // -- assume that the ASSETDIR has already been set and initialized somewhere
+  // -- other appserver apps share the same message network and projId but ASSETDIR is hardcoded
+  // -- we need to to have ASSETDIR + PROJID be the 'application key' for setting up a networked GEMSTEP run
+
+  function CreateBundleFromBlueprint(bpName) {
+    // retrieve a bundle, which might be blank, but the TRANSPILER
+    // is left to manage that detail; we just know that we're getting the
+    // bundle associated with this name if there is a blueprint named that
+    // there is a recompile signal that has to happen if the name changes
+    // project-server handles this? make musre the project-data class also
+    // fires a similar event so bundles can be recreated
+
+    let { projectId } = PROJ_v2.CurrentProject();
+    let { scriptText } = PROJ_v2.GetProjectBlueprint(projectId, bpName);
+
+    let bdl = DCENGINE.GetBlueprintBundle(bpName);
+    let script = TRANSPILER.TextToScript(scriptText);
+    // bdl = TRANSPILER.SymbolizeBlueprint(script,bdl)); // always returns new bundle
+    // bdl = TRANSPILER.ValidateBlueprint(script,bdl)); // so we can call on any bundle and not modify it
+    // bdl = TRANSPILER.CompileBlueprint(script, bdl); // if we just want the data out of it
+    // by the end of this,
+    DCENGINE.RegisterBlueprintBundle(bdl); // gives us a chance to fire an update event
+  }
+
+  // ENTER SYMBOLIZE BLUEPRINT
+  return undefined;
+
+  // bdl = CompileBlueprint(script);
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** run bundler prototype test */
+UR.HookPhase('UR/APP_START', () => {
+  setTimeout(() => (window as any).bundle('Fish'), 1000);
+});
 
 /// EXPORTED STATE METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -571,3 +641,5 @@ export {
   UnpackViewData, // forward convert ViewData to an hybrid format
   UnpackSymbolType // forward unpack symbol into [unit,type, ...param]
 };
+
+export { LoadProjectBlueprint };

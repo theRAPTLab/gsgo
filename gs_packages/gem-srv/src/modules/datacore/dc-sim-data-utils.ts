@@ -130,6 +130,28 @@ function IsValidBundleProgram(name: string): boolean {
 function IsValidBundleType(type: EBundleType) {
   return Object.values(EBundleType).includes(type as any);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: returns bundle if it is a bundle with minimum properties,
+ *  throw error otherwise
+ */
+function IsValidBundle(bundle: ISMCBundle) {
+  const fn = 'IsValidBundle:';
+  if (bundle === undefined) {
+    console.warn(`${fn} arg must be bundle object`);
+    return false;
+  }
+  const { symbols, name } = bundle;
+  if (typeof name !== 'string' || name.length === 0) {
+    console.warn(`${fn} bundle missing name`);
+    return false;
+  }
+  const { props, features } = symbols;
+  const hasSymbols =
+    typeof props !== 'undefined' || typeof features !== 'undefined';
+  if (hasSymbols) return true;
+  console.warn(`${fn} missing props or features dict(s)`, bundle);
+  return undefined;
+}
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -153,5 +175,6 @@ export {
 export {
   /// bundle checking utilities
   IsValidBundleProgram,
-  IsValidBundleType
+  IsValidBundleType,
+  IsValidBundle
 };

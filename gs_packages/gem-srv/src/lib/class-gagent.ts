@@ -9,7 +9,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { GetFeature, GetProgram, GetTest } from 'modules/datacore';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 import { Evaluate } from 'lib/expr-evaluator';
 // imports types from t-script.d
 import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
@@ -275,7 +275,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     if (this.featureMap.has(fName))
       throw Error(`feature '${fName}' already in blueprint`);
     // save the FeaturePack object reference in agent.feature map
-    const fpack = GetFeature(fName);
+    const fpack = DCENGINE.GetFeature(fName);
     if (!fpack) throw Error(`'${fName}' is not an available feature`);
     this.featureMap.set(fName, fpack);
     fpack.decorate(this);
@@ -482,7 +482,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Execute a named program stored in global program store */
   exec_program(progName: string, context, ...args) {
-    const prog = GetProgram(progName) || GetTest(progName);
+    const prog = DCENGINE.GetProgram(progName) || DCENGINE.GetTest(progName);
     if (prog !== undefined) return this.exec(prog, context, ...args);
     throw Error(`program ${progName} not found in PROGRAMS or TESTS`);
   }

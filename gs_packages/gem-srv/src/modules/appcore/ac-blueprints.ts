@@ -124,7 +124,7 @@ function m_CompileBlueprints(blueprints) {
     const script = TRANSPILER.TextToScript(b.scriptText);
     const bundle = TRANSPILER.CompileBlueprint(script);
     // Save to datacore
-    TRANSPILER.RegisterBlueprint(bundle);
+    TRANSPILER.RegisterBlueprintBundle(bundle);
     // Save local reference
     BPSCRIPTTEXTMAP.set(bundle.name, b.scriptText);
     return bundle;
@@ -142,7 +142,7 @@ function m_ResetAndCompileBlueprints(blueprints) {
   GAgent.ClearGlobalAgent();
   SIMAGENTS.ClearDOBJ();
   DCENGINE.DeleteAllScriptEvents();
-  DCENGINE.DeleteAllBlueprints();
+  DCENGINE.DeleteAllBlueprintBundles();
   DCAGENTS.DeleteAllAgents();
   DCAGENTS.DeleteAllInstances();
   m_SymbolizeBlueprints(blueprints);
@@ -199,7 +199,7 @@ function GetBlueprint(bpName) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetBlueprintBundle(bpName) {
-  return DCENGINE.GetBlueprint(bpName);
+  return DCENGINE.GetBlueprintBundle(bpName);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -348,7 +348,7 @@ function GetBlueprintPropertiesMap(bpName) {
  * controllers and components.
  */
 function updateAndPublishDerivedBpLists() {
-  const bundles = DCENGINE.GetAllBlueprints();
+  const bundles = DCENGINE.GetAllBlueprintBundles();
   const bpidList = GetBlueprintIDsList(bundles);
   // update list of blueprint pragma names from compiled bundle
   const bpNamesList = GetBlueprintNamesList(bundles);
@@ -505,7 +505,7 @@ function UpdateBlueprint(projId, bpName, scriptText) {
 
 function DeleteBlueprint(bpName) {
   BPSCRIPTTEXTMAP.delete(bpName); // local
-  DCENGINE.DeleteBlueprint(bpName); // bpBndles
+  DCENGINE.DeleteBlueprintBundle(bpName); // bpBndles
   const bpNameScriptList = m_GetBpNameScriptList();
   updateAndPublish(bpNameScriptList); // triggers write
   updateAndPublishDerivedBpLists();

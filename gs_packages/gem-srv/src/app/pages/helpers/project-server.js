@@ -278,7 +278,7 @@ function GetBoundary() {
 function InjectBlueprint(data) {
   const { blueprint } = data;
   // Skip if already defined
-  if (ACBlueprints.GetBlueprint(blueprint.id)) {
+  if (ACBlueprints.GetBlueprintBundle(blueprint.id)) {
     return;
   }
   ACBlueprints.InjectBlueprint(CURRENT_PROJECT_ID, blueprint);
@@ -370,7 +370,7 @@ function BlueprintDelete(bpName) {
   //    ScriptUpdate needs to convert the old instances to the new bpName
   // ACInstances.DeleteInstancesByBPID(bpName);
   //    Delete the old blueprint from project
-  ACBlueprints.DeleteBlueprint(bpName);
+  ACBlueprints.DeleteBlueprintBundle(bpName);
   // 2. Remove from sim
   DCAGENTS.DeleteInstancesByBlueprint(bpName);
   DCAGENTS.DeleteAgentByBlueprint(bpName);
@@ -429,7 +429,7 @@ function InstanceAdd(data, sendUpdate = true) {
 
   // If blueprint has `# PROGRAM INIT` we run that
   // otherwise we auto-place the agent around the center of the screen
-  const blueprint = DCENGINE.GetBlueprint(data.blueprintName);
+  const blueprint = DCENGINE.GetBlueprintBundle(data.blueprintName);
   const hasInit = blueprint.init && blueprint.init.length > 0;
   const SPREAD = 100;
   if (!hasInit && !instance.initScript) {

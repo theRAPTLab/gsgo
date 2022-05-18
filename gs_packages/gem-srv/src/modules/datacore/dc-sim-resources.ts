@@ -9,13 +9,15 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import SM_Bundle from 'lib/class-sm-bundle';
+import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 import * as CHECK from './dc-sim-data-utils';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = true;
 const FEATURES: Map<string, IFeature> = new Map();
-const BLUEPRINTS: Map<string, ISMCBundle> = new Map();
+const BLUEPRINTS: Map<string, SM_Bundle> = new Map();
 const KEYWORDS: Map<string, IKeyword> = new Map();
 const VARS: Map<string, IScopeableCtor> = new Map();
 const EVENT_SCRIPTS: Map<string, Map<string, TSMCProgram>> = new Map();
@@ -25,10 +27,8 @@ const NAMED_FUNCTIONS: Map<string, Function> = new Map();
 
 /// FEATURES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Retrieve a feature module by name (as defined in the feature class)
- *  and return its instance
- */
-function GetFeature(fName) {
+/** Retrieve a feature module by its name and return its instance */
+function GetFeature(fName: string): IFeature {
   return FEATURES.get(fName);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,15 +36,13 @@ function GetAllFeatures() {
   return FEATURES;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** retrieve a method from a feature instance
- */
+/** retrieve a method from a feature instance */
 function GetFeatureMethod(fName: string, mName: string) {
   return GetFeature(fName)[mName];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Register a feature module by name (as defined in the feature class)
- */
-function RegisterFeature(fpack) {
+/** Register a feature module by name (as defined in the feature class */
+function RegisterFeature(fpack: IFeature) {
   FEATURES.set(fpack.name, fpack);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -54,24 +52,35 @@ function DeleteAllFeatures() {
 
 /// BLUEPRINT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: saves the blueprint, using bp.name property as the key */
-function SaveBlueprint(bpBundle: ISMCBundle) {
-  const { name } = bpBundle;
-  // just overwrite it
-  BLUEPRINTS.set(name, bpBundle);
-  return bpBundle;
-}
+/// Blueprints are an object containing the elements of a 'transpiled'
+/// blueprint scriptText, and are used to instantiate characters in the
+/// simulation engine
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: return a blueprint bundle by bpName */
-function GetBlueprint(bpName: string): ISMCBundle {
-  bpName = bpName || 'default';
-  const bdl = BLUEPRINTS.get(bpName);
-  // if (!bdl) console.warn(`blueprint '${name}' does not exist`);
+/** API: saves the blueprint, using bp.name property as the key */
+function SaveBlueprintBundle(bdl: SM_Bundle) {
+  const fn = 'SaveBlueprintBundle:';
+  if (bdl.type === EBundleType.INIT) {
+    return undefined;
+  }
+  const { name } = bdl;
+  // just overwrite it
+  BLUEPRINTS.set(name, bdl);
   return bdl;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: return an array of all blueprint bundles */
-function GetAllBlueprints() {
+/** API: return a blueprint bundle by bpName */
+function GetBlueprintBundle(bpName: string): SM_Bundle {
+  bpName = bpName || 'default';
+  let bdl = BLUEPRINTS.get(bpName);
+  if (bdl === undefined) {
+    console.log(`'${bpName}' doesn't exist so create it`);
+    bdl = new SM_Bundle(bpName, EBundleType.BLUEPRINT);
+  }
+  return bdl;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: return an array of all the blueprint bundles in the engine */
+function GetAllBlueprintBundles(): SM_Bundle[] {
   const arr = [];
   const maps = [...BLUEPRINTS.values()];
   maps.forEach(map => {
@@ -80,27 +89,35 @@ function GetAllBlueprints() {
   return arr;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: return an array of blueprint name string */
-function GetBlueprintList() {
+/** API: return an array of blueprint names string */
+function GetBlueprintBundleList(): string[] {
   return [...BLUEPRINTS.keys()];
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function DeleteBlueprint(name: string) {
-  if (!BLUEPRINTS.has(name)) {
-    console.warn(`trying to delete non-existent blueprint '${name}'`);
-    return;
+/** API: delete blueprint bundle by name */
+function DeleteBlueprintBundle(bpName: string): void {
+  if (!BLUEPRINTS.has(bpName)) {
+    console.warn(`trying to delete non-existent blueprint '${bpName}'`);
   }
-  BLUEPRINTS.delete(name);
+  BLUEPRINTS.delete(bpName);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function DeleteAllBlueprints() {
+/** API: delete all blueprint bundles. Used when clearing sim engine state. */
+function DeleteAllBlueprintBundles(): void {
   BLUEPRINTS.clear();
 }
 
 /// KEYWORDS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RegisterKeyword(Ctor: IKeywordCtor, key?: string) {
+/// The GEMSTEP transpiler script language is built from 'keyword' modules
+/// that can compile a 'decoded script tokens' into a compiled output,
+/// symbols, or validated against syntax rules. See class-keyword.ts and
+/// transpiler.ts for examples of use
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: variable types (e.g. gvar-number.ts is the type of a 'number' prop
+ *  have to be declared and registered to be available to the transpiler
+ */
+function RegisterKeyword(Ctor: IKeywordCtor, key?: string): void {
   const fn = 'RegisterKeyword:';
   const kobj = new Ctor();
   if (!CHECK.AreValidArgs(kobj.args as TSymArg[]))
@@ -108,11 +125,13 @@ function RegisterKeyword(Ctor: IKeywordCtor, key?: string) {
   KEYWORDS.set(key || kobj.keyword, kobj);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: return a registered keyword module */
 function GetKeyword(name: string): IKeyword {
   return KEYWORDS.get(name);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetAllKeywords() {
+/** API: return the list of all registered keywords */
+function GetAllKeywords(): string[] {
   const arr = [];
   KEYWORDS.forEach((value, key) => {
     arr.push(key);
@@ -123,29 +142,29 @@ function GetAllKeywords() {
 /// VALUE TYPE UTILITIES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a SMObject, store in VARS dict */
-function RegisterVarCTor(name: string, ctor) {
-  if (VARS.has(name)) throw Error(`RegisterVarCTor: ${name} exists`);
-  VARS.set(name, ctor);
+function RegisterVarCTor(propType: string, ctor) {
+  if (VARS.has(propType)) throw Error(`RegisterVarCTor: ${propType} exists`);
+  VARS.set(propType, ctor);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** get the registered SMObject constructor by name */
-function GetVarCtor(name: string): IScopeableCtor {
-  if (!VARS.has(name)) throw Error(`GetVarCtor: ${name} `);
-  return VARS.get(name);
+/** API: get the registered SMObject constructor by name */
+function GetVarCtor(propType: string): IScopeableCtor {
+  if (!VARS.has(propType)) throw Error(`GetVarCtor: ${propType} `);
+  return VARS.get(propType);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetAllVarCtors(): Map<string, IScopeableCtor> {
+/** API: return the VAR ctor dictionary */
+function GetPropTypesDict(): Map<string, IScopeableCtor> {
   return VARS;
 }
-
-/// SYMBOL UTILITIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return symbol data for a given gvar */
-function SymbolDefFor(name: string) {
-  const def = VARS.get(name);
+/** API: get symbol data for a named type (e.g. 'number') */
+function SymbolDefFor(propType: string): TSymbolData {
+  const def = VARS.get(propType);
   if (def) return def.Symbols;
 }
 
+/// TEST DICTIONARIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** returns true if test was saved for the first time, false otherwise */
 function RegisterTest(name: string, program: TSMCProgram): boolean {
@@ -163,6 +182,7 @@ function DeleteAllTests() {
   TEST_SCRIPTS.clear();
 }
 
+/// NAMED PROGRAM DICTIONARIES ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RegisterProgram(name: string, program: TSMCProgram) {
   if (NAMED_SCRIPTS.has(name)) throw Error(`RegisterProgram: ${name} exists`);
@@ -173,6 +193,7 @@ function GetProgram(name: string): TSMCProgram {
   return NAMED_SCRIPTS.get(name);
 }
 
+/// NAMED FUNCTIONS DICTIONARIES //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RegisterFunction(name: string, func: Function): boolean {
   const newRegistration = !NAMED_FUNCTIONS.has(name);
@@ -248,15 +269,15 @@ function DeleteAllScriptEvents() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// blueprints are stored as "bundles" by their name
 export {
-  SaveBlueprint,
-  GetBlueprint,
-  GetAllBlueprints,
-  GetBlueprintList,
-  DeleteBlueprint,
-  DeleteAllBlueprints
+  SaveBlueprintBundle,
+  GetBlueprintBundle,
+  GetAllBlueprintBundles,
+  GetBlueprintBundleList,
+  DeleteBlueprintBundle,
+  DeleteAllBlueprintBundles
 };
 /// scriptable properties are called "gvars" and have constructors for each type
-export { RegisterVarCTor, GetVarCtor, SymbolDefFor, GetAllVarCtors };
+export { RegisterVarCTor, GetVarCtor, SymbolDefFor, GetPropTypesDict };
 /// the transpiler is extendable using "keyword' modules that implement
 /// symbolize, validate, and compile
 export { RegisterKeyword, GetKeyword, GetAllKeywords };

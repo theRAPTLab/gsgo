@@ -181,11 +181,11 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
  * @param {string[]} namesToKeep array of blueprint names
  */
 function FilterBlueprints(namesToKeep) {
-  const blueprints = DCENGINE.GetAllBlueprints(); // Array of SM_Bundle
+  const blueprints = DCENGINE.GetAllBlueprintBundles(); // Array of SM_Bundle
   blueprints.forEach(b => {
     if (!namesToKeep.includes(b.name)) {
       // remove the blueprint
-      DCENGINE.DeleteBlueprint(b.name);
+      DCENGINE.DeleteBlueprintBundle(b.name);
 
       // [We can't rely on SyncMap to remove because it doesn't
       //  sync to blueprints, just to instanceDefs]

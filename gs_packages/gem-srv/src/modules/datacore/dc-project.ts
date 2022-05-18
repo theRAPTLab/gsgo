@@ -69,8 +69,6 @@ let AUTOTIMER;
 
 /// PROJECT DATA FILE IO //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** When the project data is changed, ProjectFileWrite will send the changes
  *  to the server, and the server will update the *.gemproj file.
  */

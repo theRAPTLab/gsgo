@@ -275,7 +275,7 @@ class AssetLoader implements TAssetLoader {
       // console.warn(err);
       manifest = undefined;
     }
-    console.log('returning manifest', manifest);
+    if (DBG) console.log('returning manifest', manifest);
     return manifest;
   }
 } // end class

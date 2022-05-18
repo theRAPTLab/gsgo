@@ -116,7 +116,7 @@ class SymbolHelper {
     const fn = 'setReferences:';
     const { bundle, globals } = refs || {};
     if (bundle) {
-      if (BUNDLER.IsValidBundle(bundle)) this.refs.bundle = bundle;
+      if (CHECK.IsValidBundle(bundle)) this.refs.bundle = bundle;
       else throw Error(`${fn} invalid bundle`);
     }
     if (!bundle.symbols)
@@ -470,7 +470,7 @@ class SymbolHelper {
 
     // all gvars available in system match token.identifier
     if (argType === 'gvar' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const map = ENGINE.GetAllVarCtors();
+      const map = ENGINE.GetPropTypesDict();
       const ctors = {};
       const list = [...map.keys()];
       list.forEach(ctorName => {
@@ -494,7 +494,7 @@ class SymbolHelper {
     // all blueprint symbols in project match token.identifier
     // e.g. when agent test, when agentA test agentB
     if (argType === 'blueprint' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const list = ENGINE.GetAllBlueprints();
+      const list = ENGINE.GetAllBlueprintBundles();
       const blueprints = {};
       list.forEach(bundle => {
         blueprints[bundle.name] = bundle.symbols;

@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  AGENTS
+  DC AGENTS
 
   Handles Blueprints for Agents
   Handles instancing of Blueprints
@@ -21,6 +21,40 @@ const INSTANCES: TInstanceMap = new Map(); // @BEN is this similar to AGENT_DICT
 const INSTANCE_COUNTER_START_VAL = 9000; // reserve ids < 9000 for User Defined instances?
 let INSTANCE_COUNTER = INSTANCE_COUNTER_START_VAL;
 
+/// AGENT SUPPORT UTILITIES ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** UTILITY: Copies all `agent.prop` GVars.  Does not copy Feature GVars
+ *  Used by CopyAgentProps.
+ */
+function m_CopyProps(props: object, targetProps: object) {
+  for (const [key, value] of Object.entries(props)) {
+    // Test for targetProps[key] b/c non-GVar properties (like `statusHistory`) do not have a setTo
+    if (targetProps[key] && targetProps[key].setTo) {
+      targetProps[key].setTo(value.value);
+    }
+  }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** UTILITY: Blindly copy all featProps.  Used by CopyAgentProps.
+ *  NOTE: Ignores Dicts!!!!
+ */
+function m_CopyFeatProps(origFeatProps: any[], targetAgentFeatProps: any) {
+  const featProps = [...Object.keys(origFeatProps)];
+  featProps.forEach(p => {
+    // only copy GVars, skip private variables
+    const gvar = origFeatProps[p];
+    // if it's gvar, return the value, otherwise skip
+    // REVIEW: Ignores DICTS!
+    if (gvar !== undefined && gvar.value !== undefined) {
+      targetAgentFeatProps[p].setTo(gvar.value);
+      // copy min and max values?
+      if (gvar.min !== undefined) targetAgentFeatProps[p].min = gvar.min;
+      if (gvar.max !== undefined) targetAgentFeatProps[p].max = gvar.max;
+    }
+  });
+}
+
+/// INSTANCE API METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given the creation parameters, make a new instance. The init program sets
  *  the default values (and any other startup code if needed).
@@ -38,6 +72,7 @@ function DefineInstance(instanceDef: TInstance) {
   bpi.push(instanceDef);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: replace an instanceDef by id with an updated definition */
 function UpdateInstance(instanceDef: TInstance) {
   const { bpid, id } = instanceDef;
   const bpi = INSTANCES.get(bpid);
@@ -47,6 +82,7 @@ function UpdateInstance(instanceDef: TInstance) {
   bpi[index] = instanceDef;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: deleted an instanceDef by id if it exits */
 function DeleteInstance(instanceDef: TInstance) {
   const { bpid, id } = instanceDef;
   const bpi = INSTANCES.get(bpid);
@@ -60,6 +96,7 @@ function DeleteInstance(instanceDef: TInstance) {
   bpi.splice(index, 1);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: return an array all instanceDefs for all blueprint types */
 function GetAllInstances() {
   const instances = [];
   const map = [...INSTANCES.values()];
@@ -67,16 +104,16 @@ function GetAllInstances() {
   return instances;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetInstance(instanceDef: TInstance) {
-  const { bpid, id } = instanceDef;
+/** API: retrieve an instanceDef by a bpid (name) and id */
+function GetInstance({ bpid, id: instanceDefId }) {
   const bpi = INSTANCES.get(bpid);
   if (bpi === undefined) return undefined;
-  const index = bpi.findIndex(i => i.id === id);
+  const index = bpi.findIndex(i => i.id === instanceDefId);
   if (index < 0) return undefined;
   return bpi[index];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return the instance definitions that are blueprint */
+/** API: return the instance definitions that are blueprint */
 function GetInstancesType(blueprint: string) {
   if (typeof blueprint !== 'string')
     throw Error(`bad blueprint typeof ${typeof blueprint}`);
@@ -84,51 +121,25 @@ function GetInstancesType(blueprint: string) {
   return INSTANCES.get(blueprint);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: clear the blueprint-to-instanceDefs map. Used when starting a
+ *  new sim round
+ */
 function DeleteAllInstances() {
   INSTANCES.clear();
   INSTANCE_COUNTER = INSTANCE_COUNTER_START_VAL;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: delete all the instanceDefs associated with a particular blueprintName
+ */
 function DeleteInstancesByBlueprint(bpName) {
   INSTANCES.set(bpName, []);
 }
 
-/// AGENT UTILITIES ///////////////////////////////////////////////////////////
+/// AGENT API METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Copies all `agent.prop` GVars.  Does not copy Feature GVars
- *  Used by CopyAgentProps.
- */
-function m_CopyProps(props: object, targetProps: object) {
-  for (const [key, value] of Object.entries(props)) {
-    // Test for targetProps[key] b/c non-GVar properties (like `statusHistory`) do not have a setTo
-    if (targetProps[key] && targetProps[key].setTo) {
-      targetProps[key].setTo(value.value);
-    }
-  }
-}
-/**
- * Blindly copy all featProps.  Used by CopyAgentProps.
- * NOTE: Ignores Dicts!!!!
- */
-function m_CopyFeatProps(origFeatProps: any[], targetAgentFeatProps: any) {
-  const featProps = [...Object.keys(origFeatProps)];
-  featProps.forEach(p => {
-    // only copy GVars, skip private variables
-    const gvar = origFeatProps[p];
-    // if it's gvar, return the value, otherwise skip
-    // REVIEW: Ignores DICTS!
-    if (gvar !== undefined && gvar.value !== undefined) {
-      targetAgentFeatProps[p].setTo(gvar.value);
-      // copy min and max values?
-      if (gvar.min !== undefined) targetAgentFeatProps[p].min = gvar.min;
-      if (gvar.max !== undefined) targetAgentFeatProps[p].max = gvar.max;
-    }
-  });
-}
-/**
- * This will copy the feature Map and all 'prop' properties from orig to target
- * @param origAgent
- * @param targetAgent a freshly minted agent with no settings
+/** This will copy the feature Map and all 'prop' properties from orig to target
+ *  @param origAgent
+ *  @param targetAgent a freshly minted agent with no settings
  */
 function CopyAgentProps(origAgent: IAgent, targetAgent: IAgent) {
   // blueprint is already copied by MakeAgent
@@ -147,7 +158,7 @@ function CopyAgentProps(origAgent: IAgent, targetAgent: IAgent) {
 
   return targetAgent;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** save agent by type into agent map, which contains weaksets of types
  *  AGENTS has instances by blueprint name, which is a Map of agents
  *  AGENT_DICT has instances by id
@@ -168,8 +179,7 @@ function SaveAgent(agent) {
   return agent;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- *  To delete the agent, we need to remove it from: AGENT and AGENT_DICT.
+/** To delete the agent, we need to remove it from: AGENT and AGENT_DICT.
  *
  *  1. AGENT map values are a second map of `agents`.
  *     `agents` key is a GAgent.id, which is based on an sm-object counter.
@@ -194,6 +204,7 @@ function DeleteAgent(instancedef) {
   AGENT_DICT.delete(id);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 function DeleteAgentByBlueprint(bpName) {
   const agents = AGENTS.get(bpName);
   AGENTS.delete(bpName);

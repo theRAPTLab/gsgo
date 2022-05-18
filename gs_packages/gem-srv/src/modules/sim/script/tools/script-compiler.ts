@@ -209,6 +209,58 @@ function CompileScript(script: TScriptUnit[]): TSMCProgram {
   // return TSMCProgram (TOpcode functions)
   return program;
 }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: given an array of scriptunits, scan the top-level statements for _pragma
+ *  directives and return what it finds
+ */
+function ExtractBlueprintDirectives(script: TScriptUnit[]) {
+  const fn = 'ExtractBlueprintDirectives:';
+  let bpName: string;
+  let bpBase: string;
+  let programs = new Set();
+  let tags = new Map();
+  script.forEach(stm => {
+    const [kw, directive, ...args] = DecodeStatement(stm);
+    if (kw !== '_pragma') return;
+    switch (directive.toUpperCase()) {
+      case 'BLUEPRINT':
+        if (!bpName) {
+          [bpName, bpBase] = args;
+        } else throw Error(`${fn} blueprint name repeated`);
+        break;
+      case 'PROGRAM':
+        programs.add(args[0]);
+        break;
+      case 'TAG':
+        tags.set(args[0], args[1]);
+        break;
+      default: // do nothing
+    }
+  });
+  const PROGRAM = {};
+  [...programs].forEach(k => {
+    PROGRAM[k] = true;
+  });
+  const TAG = {};
+  [...tags.keys()].forEach(k => {
+    TAG[k] = tags.get(k);
+  });
+  return {
+    BLUEPRINT: [bpName, bpBase],
+    PROGRAM,
+    TAG
+  };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** NEW API: being prototyped in ac-wizcore */
+export function CompileBlueprintScript(script: TScriptUnit[]): SM_Bundle {
+  const { BLUEPRINT } = ExtractBlueprintDirectives(script);
+  const [bpName] = BLUEPRINT;
+  const bdl = DCENGINE.GetBlueprintBundle(bpName);
+  console.log(...PR(bpName, bdl));
+  //
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** CompileBlueprint parses # DIRECTIVES to set up a program bundle. It
  *  returns a NEW bundle, because there are times you want a bundle
@@ -241,7 +293,7 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
     // special case 2: tag processing
     const [lead, kw, tagName, tagValue] = DecodeStatement(stm);
     if (lead === '_pragma' && kw.toUpperCase() === 'TAG') {
-      DCBUNDLER.BundleTag(bdl, tagName, tagValue);
+      DCBUNDLER.SetBundleTag(bdl, tagName, tagValue);
       return;
     }
 
@@ -250,7 +302,7 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
     objcode = m_StripErrors(objcode, stm);
     // save objcode to current bundle section, which can be changed
     // through pragma PROGRAM
-    DCBUNDLER.BundleOut(bdl, objcode);
+    DCBUNDLER.AddProgram(bdl, objcode);
     // TODO: move the symbolizer to a new SymbolizeBlueprint() call
     const symbols = SymbolizeStatement(stm, line);
     DCBUNDLER.AddSymbol(bdl, symbols);
@@ -264,24 +316,15 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
   bdl.setType(EBundleType.BLUEPRINT);
   return bdl;
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given an array of scriptunits, scan the top-level statements for _pragma
- *  directives and return what it finds
- */
-function ExtractDirectives(script: TScriptUnit[]) {
-  script.forEach(stm => {
-    const kw = CHECK.DecodeKeywordToken(stm[0]);
-  });
-}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export { ExtractBlueprintDirectives };
 export { CompileScript, CompileBlueprint };
 export {
   DecodeToken,
   DecodeTokenPrimitive,
   DecodeStatement,
   SymbolizeStatement,
-  ValidateStatement,
-  ExtractDirectives
+  ValidateStatement
 };

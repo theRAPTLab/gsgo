@@ -2,14 +2,6 @@
 
   DATACORE SIM BUNDLER
 
-  This module keeps track of the current blueprint compiling operation as well
-  as provide utility methods for manipulating Blueprint Bundle objects that
-  are passed to its utility methods.
-
-  The actual blueprint bundle is managed by DATACORE SIM RESOURCES, where it
-  is saved in the BUNDLES dictionary.
-
-  CONCEPTUAL DESIGN
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -24,15 +16,56 @@ const PR = UR.PrefixUtil('SYMBOL', 'TagPurple');
 
 /// GLOBAL DATACORE STATE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let BUNDLE_NAME = ''; // the current compiling bundle name (blueprint)
-let BUNDLE_OUT = 'define'; // the current compiler output track
+let CUR_NAME = ''; // the current compiling bundle name (blueprint)
+let CUR_PROGRAM = 'define'; // the current compiler output track
+let CUR_BUNDLE: SM_Bundle;
 
+/// COMPILER BUNDLE GATEKEEPING ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** set the datacore global var BUNDLE_NAME to to bpName, which tells the
- *  BundleOut(bdl,prog) call where the program should be added
+/// Tranpiler uses these to set an implicit bundle that's used for operations
+/// to maintain compatibility
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: before starting TRANSPILER bundle-dependent ops, set the bundle */
+function OpenBundle(bdl: SM_Bundle) {
+  const fn = 'BeginBundle:';
+  if (CUR_BUNDLE !== undefined)
+    throw Error(`${fn} bundle already set ${CUR_BUNDLE.name}`);
+  CUR_BUNDLE = bdl;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: close the bundle, which unsets the CUR_BUNDLE and disables
+ *  the bundle state methods that rely on current bundle
+ */
+function CloseBundle() {
+  const fn = 'EndBundle:';
+  if (CUR_BUNDLE === undefined) throw Error(`${fn} no bundle set, can't end`);
+  CUR_BUNDLE = undefined;
+}
+
+/// BUNDLE OPERATIONS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: set the datacore global var CUR_PROGRAM to bdlKey, which tells the
+ *  AddProgram(bdl,prog) call where the program should be added
+ */
+function SetProgramOut(str: string): boolean {
+  const bdlKey = str.toLowerCase();
+  if (CHECK.IsValidBundleProgram(bdlKey)) {
+    CUR_PROGRAM = bdlKey;
+    return true;
+  }
+  return false;
+}
+
+/// BUNDLE SETTINGS ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// methods for setting the fixed properties of a bundle
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: set the datacore global var CUR_NAME to to bpName, which tells the
+ *  AddProgram(bdl,prog) call where the program should be added. Used by
+ *  Transpiler.
  */
 function SetBundleName(
-  bdl: SM_Bundle,
+  bdl: ISMCBundle,
   bpName: string,
   bpParent?: string
 ): boolean {
@@ -50,33 +83,49 @@ function SetBundleName(
   }
   // set the bundle name AND save it
   bdl.name = bpName;
-  BUNDLE_NAME = bpName;
+  CUR_NAME = bpName;
   return true;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** set the datacore global var BUNDLE_OUT to bdlKey, which tells the
- *  BundleOut(bdl,prog) call where the program should be added
- */
-function SetBundleOut(str: string): boolean {
-  const bdlKey = str.toLowerCase();
-  if (CHECK.IsValidBundleProgram(bdlKey)) {
-    BUNDLE_OUT = bdlKey;
-    return true;
+/** API: set one of several tags */
+function SetBundleTag(
+  bdl: ISMCBundle,
+  tagName: TBundleTagTypes,
+  tagValue: any
+): boolean {
+  if (!(bdl instanceof SM_Bundle)) {
+    console.warn('arg1 is not a bundle, got:', bdl);
+    return false;
   }
-  return false;
+  if (typeof tagName !== 'string') {
+    console.warn('arg2 is not bundleName, got:', tagName);
+    return false;
+  }
+  if (tagValue === undefined) {
+    console.warn('arg3 is not tagValue, got:', tagValue);
+    return false;
+  }
+  // set the bundle name AND save it
+  bdl.setTag(tagName, tagValue);
+  return true;
 }
+
+/// BUNDLE INCREMENTALLY ADDED DATA ///////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return the state of the bundler, which is valid while a blueprint script is
- *  being compiled (e.g. CompileBlueprint())
+/// methods that add data
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: add a compiled program to a bundle, based on the current programOut
+ *  setting.
+ *  note: bundle type because it may not have been set yet.
  */
-function CompilerState() {
-  return {
-    bundleName: BUNDLE_NAME,
-    bundleOut: BUNDLE_OUT
-  };
+function AddProgram(bdl: ISMCBundle, prog: TCompiledStatement) {
+  if (typeof bdl !== 'object') throw Error(`${bdl} is not an object`);
+  if (!bdl[CUR_PROGRAM]) bdl[CUR_PROGRAM] = [];
+  // console.log(`writing ${prog.length} opcode(s) to [${CUR_PROGRAM}]`);
+  bdl[CUR_PROGRAM].push(...prog);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** add properties to symbol table where TBundleSymbols contains
+/** API: add properties to symbol table where TBundleSymbols contains
  *  { props, methods, features } that point to a Map<string,gvar> or
  *  Map<string,any[]> respectively:
  *  { features: { [featName]: featModule } }
@@ -87,7 +136,7 @@ function CompilerState() {
  *  @returns void
  *
  */
-function AddSymbol(bdl: SM_Bundle, symdata: TSymbolData) {
+function AddSymbol(bdl: ISMCBundle, symdata: TSymbolData) {
   if (bdl.symbols === undefined) bdl.symbols = {};
   const _bdlsym = bdl.symbols;
 
@@ -121,56 +170,31 @@ function AddSymbol(bdl: SM_Bundle, symdata: TSymbolData) {
   }
   if (symdata.error) console.log('symbol error:', symdata.error);
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function BundleTag(bdl: SM_Bundle, tagName: string, tagValue: any): boolean {
-  if (typeof bdl !== 'object') {
-    console.warn('arg1 is not a bundle, got:', bdl);
-    return false;
-  }
-  if (typeof tagName !== 'string') {
-    console.warn('arg2 is not bundleName, got:', tagName);
-    return false;
-  }
-  if (tagValue === undefined) {
-    console.warn('arg3 is not tagValue, got:', tagValue);
-    return false;
-  }
-  // set the bundle name AND save it
-  bdl.setTag(tagName, tagValue);
-  return true;
-}
 
+/// BUNDLE INSPECTOR FOR CURRENT BUNDLE ///////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** main API for add a program to a bundle. It does not check the bundle
- *  type because it may not have been set yet.
+/** API: return the state of the bundler, which is valid while a blueprint
+ *  script is being compiled (e.g. CompileBlueprint())
  */
-function BundleOut(bdl: SM_Bundle, prog: TCompiledStatement) {
-  if (typeof bdl !== 'object') throw Error(`${bdl} is not an object`);
-  if (!bdl[BUNDLE_OUT]) bdl[BUNDLE_OUT] = [];
-  // console.log(`writing ${prog.length} opcode(s) to [${BUNDLE_OUT}]`);
-  bdl[BUNDLE_OUT].push(...prog);
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** HELPER: returns bundle if it is a bundle, throw error otherwise */
-function IsValidBundle(bundle: SM_Bundle) {
-  const { symbols, name } = bundle;
-  const { props, features } = symbols;
-  const hasSymbols =
-    typeof props !== 'undefined' || typeof features !== 'undefined';
-  if (hasSymbols) return bundle;
-  console.warn('IsValidBundle: not a bundle', bundle);
-  throw Error('IsValidBundle: invalid parameter not bundle');
+function CompilerState() {
+  return {
+    bpName: CUR_NAME,
+    programOut: CUR_PROGRAM,
+    bundle: CUR_BUNDLE
+  };
 }
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
+  OpenBundle,
+  CloseBundle,
+  //
   SetBundleName,
-  SetBundleOut,
-  CompilerState,
+  SetProgramOut,
+  SetBundleTag,
+  AddProgram,
   AddSymbol,
-  BundleTag,
-  BundleOut,
-  IsValidBundle
+  //
+  CompilerState
 };

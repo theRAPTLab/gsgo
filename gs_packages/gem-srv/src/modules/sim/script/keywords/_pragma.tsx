@@ -27,7 +27,7 @@ const PRAGMA = {
       state.stack.push('_blueprint', blueprintName, baseBlueprint);
     };
   },
-  'PROGRAM': libName => DCBUNDLER.SetBundleOut(libName)
+  'PROGRAM': libName => DCBUNDLER.SetProgramOut(libName)
 };
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
