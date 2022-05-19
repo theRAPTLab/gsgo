@@ -388,7 +388,7 @@ function BlueprintDelete(bpName) {
   //    ScriptUpdate needs to convert the old instances to the new bpName
   // ACInstances.DeleteInstancesByBPID(bpName);
   //    Delete the old blueprint from project
-  ACBlueprints.DeleteBlueprintBundle(bpName);
+  ACBlueprints.DeleteBlueprint(bpName);
   // 2. Remove from sim
   DCAGENTS.DeleteInstancesByBlueprint(bpName);
   DCAGENTS.DeleteAgentByBlueprint(bpName);
