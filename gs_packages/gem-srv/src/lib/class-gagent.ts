@@ -49,6 +49,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   isTouching: any;
   statusObject: StatusObject;
   static Symbols: TSymbolData;
+
   //
   constructor(agentName = '<anon>', id?: string | number) {
     super(agentName); // sets value to agentName, which is only for debugging
@@ -445,7 +446,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   exec(m: TMethod, context?, ...args): any {
     if (m === undefined) return undefined;
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    const ctx = { agent: this, global: GLOBAL_AGENT };
+    const ctx = { agent: this, global: GAgent.GLOBAL_AGENT };
     Object.assign(ctx, context);
     if (Array.isArray(m)) return this.exec_smc(m, ctx, ...args);
     if (typeof m === 'object') {
@@ -549,6 +550,19 @@ class GAgent extends SM_Object implements IAgent, IActable {
         this.featureMap.keys()
       ]);
   }
+  /// STATIC METHODS AND MEMBERS //////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static GLOBAL_AGENT: GAgent;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static ClearGlobalAgent() {
+    GAgent.GLOBAL_AGENT = new GAgent('GlobalAgent');
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static GetGlobalAgent() {
+    if (GAgent.GLOBAL_AGENT === undefined)
+      GAgent.GLOBAL_AGENT = new GAgent('GlobalAgent');
+    return GAgent.GLOBAL_AGENT;
+  }
   // end of Agent class
 }
 
@@ -556,23 +570,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 GAgent.Symbols = undefined; // set by GAgent.makeDefaultSymbols()
 
-/// GLOBAL INSTANCES //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// The global agent is our "World Agent" that contains shared properties for
-/// a running simulation
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let GLOBAL_AGENT = new GAgent('GlobalAgent');
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetGlobalAgent() {
-  return GLOBAL_AGENT;
-}
-function ClearGlobalAgent() {
-  // REVIEW: Is there a more proper way to remove an agent?
-  GLOBAL_AGENT = new GAgent('GlobalAgent');
-}
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export main Agent
 export default GAgent;
-export { GetGlobalAgent, ClearGlobalAgent };

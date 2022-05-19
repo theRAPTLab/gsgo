@@ -54,6 +54,7 @@ declare global {
     getFeatMethod: (fname: string, mName: string) => [IFeature, TMethod];
     callFeatMethod: (fName: string, mName: string, ...args) => any;
     getFeatProp: (fName: string, pName: string) => IScopeable;
+
     // these are the ONLY built-in agent properties
     skin: string; // logical 'appearance' descriptor
     x: number; // x location in simulator world

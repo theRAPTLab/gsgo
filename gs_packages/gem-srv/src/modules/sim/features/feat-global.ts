@@ -9,10 +9,9 @@
 
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
-import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
-import { IAgent, TSymbolData } from 'lib/t-script';
+import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
-import { GetGlobalAgent } from 'lib/class-gagent';
+import GAgent from 'lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -54,9 +53,8 @@ class GlobalPack extends GFeature {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// GLOBAL AGENT
-
   addGlobalProp(agent: IAgent, pName: string, type: string, value: any) {
-    const global = GetGlobalAgent();
+    const global = GAgent.GetGlobalAgent();
     let gvar;
     if (type === 'String') gvar = new GVarString();
     if (type === 'Number') gvar = new GVarNumber();
@@ -66,14 +64,14 @@ class GlobalPack extends GFeature {
   }
 
   globalProp(agent: IAgent, pName: string, method: string, value: any) {
-    const global = GetGlobalAgent();
+    const global = GAgent.GetGlobalAgent();
     global.prop[pName][method](value);
     if (DBG)
       console.log(...PR('globalProp', pName, method, global.prop[pName].value));
   }
 
   getGlobalProp(agent: IAgent, pName: string) {
-    const global = GetGlobalAgent();
+    const global = GAgent.GetGlobalAgent();
     return global.prop[pName];
   }
 }

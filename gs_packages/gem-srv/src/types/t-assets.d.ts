@@ -72,7 +72,7 @@ declare global {
   type TBlueprint = {
     id?: string; // id is being phased out in favor of name
     name?: string; // name is required once id is resolved
-    label: string;
+    label?: string;
     scriptText: string;
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
