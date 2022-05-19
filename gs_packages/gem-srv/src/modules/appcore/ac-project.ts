@@ -87,7 +87,7 @@ const DBG = false;
 const STATE = new UR.class.StateGroupMgr('project');
 /// StateGroup keys must be unique across the entire app
 STATE.initializeState({
-  projId: undefined,
+  // REVIEW: Rename 'project' to 'projLabel' since it is not a project object?
   project: {
     id: undefined,
     label: undefined
@@ -108,17 +108,6 @@ const { _publishState } = STATE;
 const { addChangeHook, deleteChangeHook } = STATE;
 const { addEffectHook, deleteEffectHook } = STATE;
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API:
- */
-function updateAndPublish(project) {
-  // Init Self
-  updateKey({ project });
-  _publishState({ project });
-  // also update datacore
-  DCPROJECT.UpdateProjectData(project);
-}
-
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Intercept changes to project so we can cache the changes
@@ -132,14 +121,23 @@ function updateAndPublish(project) {
  */
 function hook_Filter(key, propOrValue, propValue) {
   if (DBG) console.log('ac-project: hook_Filter', key, propOrValue, propValue);
-
-  // If project is being updated by PanelProjectEditor, we also need to update metadata
-  // NOTE: This does not update Rounds, Blueprints, and Instances!
   if (key === 'project') {
-    const projId = _getKey('projId');
     const project = propOrValue;
-    if (project.metadata) ACMetadata.SetMetadata(projId, project.metadata);
-    // REVIEW: Do we need to also update Rounds, Blueprints, and Instances?
+    // update datacore
+    // Since 'project' data updates are direct state updates, we need to also
+    // update datacore.  NOTE the other submodules, e.g. ac-blueprint, and
+    // ac-metadata rely on direct calls
+    DCPROJECT.UpdateProjectData(project);
+    // Send Network Update so that PanelSelectSimulation running
+    // on other computers receive the update
+    UR.RaiseMessage('NET:PROJECTS_UPDATE', {
+      projectNames: [
+        {
+          id: project.id,
+          label: project.label
+        }
+      ]
+    });
   }
 
   // No need to return anything if data is not being filtered.
@@ -165,21 +163,37 @@ function hook_Effect(effectKey, propOrValue, propValue) {
 addChangeHook(hook_Filter);
 addEffectHook(hook_Effect);
 
+/// CONVENIENCE METHODS ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Use this if you want to bypass hook_Filter and hook_Effect
+ *  e.g. on initial load, skip hook_Effect so the initial load data
+ *  isn't re-written to server.
+ */
+function updateAndPublish(project) {
+  updateKey({ project });
+  _publishState({ project });
+}
+
 /// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Returns in-state project data
  */
-function GetProject() {
+function GetProject(projId) {
   return DCPROJECT.GetCurrentProject();
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Updates the project state subscribers after a project reload / sim reset
- *  Called by project-server.ReloadProject()
- */
-async function TriggerProjectStateUpdate(projId) {
-  const project = DCPROJECT.GetCurrentProject();
-  updateAndPublish(project);
-}
+
+// Deprecated?  Not needed?
+// DoSimReset and project reload should take care of the project state?
+// And besides on reload we want to use the current project values.
+//
+// /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// /** API: Updates the project state subscribers after a project reload / sim reset
+//  *  Called by project-server.ReloadProject()
+//  */
+// async function TriggerProjectStateUpdate(projId) {
+//   const project = DCPROJECT.GetCurrentProject();
+//   updateAndPublish(project);
+// }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -202,7 +216,6 @@ async function LoadProjectFromAsset(projId) {
   ACInstances.SetInstances(projId, project.instances);
   // Update datacore
   DCPROJECT.SetCurrentProject(project);
-  updateKey({ projId });
   updateAndPublish(project);
 }
 
@@ -210,6 +223,7 @@ async function LoadProjectFromAsset(projId) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
   LoadProjectFromAsset,
-  GetProject, // return current project{}
-  TriggerProjectStateUpdate // force-notify all subscribers
+  // This should be replaced by DCPROJECT.GetCurrentProject() call?
+  GetProject // return current project{}
+  // TriggerProjectStateUpdate // force-notify all subscribers
 };

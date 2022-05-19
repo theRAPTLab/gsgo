@@ -232,7 +232,7 @@ class CostumePack extends GFeature {
     agent.prop.Costume._animationStartFrame = undefined;
     agent.prop.Costume._animationFrameRate = undefined;
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   symbolize(): TSymbolData {
     return {
       props: {

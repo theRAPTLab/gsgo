@@ -9,7 +9,8 @@
 
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
-import { RegisterFeature } from 'modules/datacore/dc-sim-data';
+import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
+import { IAgent, TSymbolData } from 'lib/t-script';
 import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
 import { GetGlobalAgent } from 'lib/class-gagent';
 
@@ -38,7 +39,19 @@ class GlobalPack extends GFeature {
   decorate(agent) {
     super.decorate(agent);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {},
+      methods: {
+        // REVIEW TODO: 'value' is :any...is it a GVAR?
+        'addGlobalProp': { args: ['pName:string', 'type:string', 'value:gvar'] },
+        // REVIEW TODO: 'value' is :any...is it a GVAR?
+        'globalProp': { args: ['pName:string', 'method:string', 'value:gvar'] },
+        'getGlobalProp': { args: ['pName:string'] }
+      }
+    };
+  }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// GLOBAL AGENT
 

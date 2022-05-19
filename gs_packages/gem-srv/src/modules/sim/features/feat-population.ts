@@ -8,6 +8,7 @@
 import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
+import { IAgent, TSMCProgram, TSymbolData } from 'lib/t-script';
 import {
   GVarBoolean,
   GVarDictionary,
@@ -15,7 +16,7 @@ import {
   GVarString
 } from 'script/vars/_all_vars';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCENGINE from 'modules/datacore/dc-sim-data';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 import * as TRANSPILER from 'modules/sim/script/transpiler-v2';
 import merge from 'deepmerge';
 
@@ -166,7 +167,59 @@ class PopulationPack extends GFeature {
 
     agent.prop.Population._countsByProp = new Map();
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {
+        'count': GVarNumber.Symbols,
+        'sum': GVarNumber.Symbols,
+        'avg': GVarNumber.Symbols,
+        'min': GVarNumber.Symbols,
+        'max': GVarNumber.Symbols,
+        'monitoredAgent': GVarNumber.Symbols,
+        'monitoredAgentProp': GVarNumber.Symbols,
+        'monitoredAgentPropFeature': GVarNumber.Symbols,
+        'spawnMutationProp': GVarNumber.Symbols,
+        'spawnMutationPropFeature': GVarNumber.Symbols,
+        'spawnMutationMaxAdd': GVarNumber.Symbols,
+        'spawnMutationMaxSubtract': GVarNumber.Symbols,
+        'targetPopulationSize': GVarNumber.Symbols,
+        'deleteAfterSpawning': GVarNumber.Symbols
+      },
+      methods: {
+        'createAgent': { args: ['blueprintName:string', 'initScript:string'] },
+        'spawnChild': { args: ['spawnScript:string', 'def:objref'] },
+        'removeAgent': {},
+        'getRandomActiveAgent': { args: ['bpname:number'] },
+        'releaseAllAgents': {},
+        'releaseInertAgents': {},
+        'hideInertAgents': {},
+        'removeInertAgents': {},
+        'agentsReproduce': { args: ['bpname:string', 'spawnScript:string'] },
+        'oneAgentReproduce': { args: ['bpname:string', 'spawnScript:string'] },
+        'populateBySpawning': { args: ['bpname:string', 'spawnScript:string'] },
+        'agentsForEachActive': { args: ['bpname:string', 'program:program'] },
+        'agentsForEach': { args: ['bpname:string', 'program:program'] },
+        'getActiveAgentsCount': { args: ['blueprintName:string'] },
+        'countAgents': { args: ['blueprintName:string'] },
+        'countAgentProp': { args: ['blueprintName:string', 'prop:string'] },
+        'minAgentProp': { args: ['bpname:string', 'prop:string'] },
+        'maxAgentProp': { args: ['bpname:string', 'prop:string'] },
+        'countAgentsByPropType': {
+          args: ['bpname:string', 'prop:string', 'clear:boolean']
+        },
+        'setAgentsByFeatPropTypeKeys': { args: ['bpname:string', 'keys:{...}'] },
+        'countExistingAgentsByFeatPropType': {
+          args: [
+            'blueprintName:string',
+            'feature:string',
+            'featprop:string',
+            'clear:boolean'
+          ]
+        }
+      }
+    };
+  }
   /// POPULATION METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

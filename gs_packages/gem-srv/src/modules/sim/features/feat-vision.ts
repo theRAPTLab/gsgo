@@ -15,8 +15,9 @@
 import UR from '@gemstep/ursys/client';
 import { GVarNumber, GVarBoolean } from 'script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
+import { IAgent, TSymbolData } from 'lib/t-script';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCENGINE from 'modules/datacore/dc-sim-data';
+import * as DCENGINE from 'modules/datacore/dc-sim-resources';
 import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';
 import { ProjectPoint } from 'lib/util-vector';
@@ -277,6 +278,32 @@ class VisionPack extends GFeature {
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorValueDetectionThreshold', prop);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {
+        'visionable': GVarNumber.Symbols,
+        'viewDistance': GVarNumber.Symbols,
+        'viewAngle': GVarNumber.Symbols,
+        'colorHueDetectionThreshold': GVarNumber.Symbols,
+        'colorSaturationDetectionThreshold': GVarNumber.Symbols,
+        'colorValueDetectionThreshold': GVarNumber.Symbols
+      },
+      methods: {
+        'monitor': { args: ['targetBlueprintName:string'] },
+        'isCamouflaged': {
+          args: [
+            'backgroundColor:number',
+            'hRange:number',
+            'sRange:number',
+            'vRange:number'
+          ]
+        },
+        // REVIEW TODO: target is an IAgent.  Should it be `blueprint`?
+        'canSeeColorOfAgent': { args: ['target:objref'] }
+      }
+    };
   }
 
   /// VISION METHODS /////////////////////////////////////////////////////////

@@ -248,6 +248,24 @@ function RequestProject(projId = CURRENT_PROJECT_ID) {
   return ACProject.GetProject();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** PanelProjectEditor calls with edited project information
+ *  @param {object} data
+ *  @param {object} data.project - {id, label}
+ */
+function UpdateProject(data) {
+  const { project } = data;
+  UR.WriteState('project', 'project', project);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** PanelProjectEditor calls with edited project metadata information
+ *  @param {object} data
+ *  @param {object} data.metadata
+ */
+function UpdateMetadata(data) {
+  const { metadata } = data;
+  UR.WriteState('metadata', 'metadata', metadata);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Handle ScriptEditor's request for a list of editable blueprints
  *  Used by REQ_PROJ_DATA
  * @return [ {name, scriptText, editor} ]
@@ -321,13 +339,13 @@ function RaiseModelUpdate(projId = CURRENT_PROJECT_ID) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Used by Viewer via REQ_PROJ_DATA
-function GetBpidList(projId = CURRENT_PROJECT_ID) {
-  const bpidList = ACBlueprints.GetBlueprintIDsList();
-  return { projId, bpidList };
+function GetBpNamesList(projId = CURRENT_PROJECT_ID) {
+  const bpNamesList = ACBlueprints.GetBpNamesList();
+  return { projId, bpNamesList };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RaiseBpidListUpdate(projId = CURRENT_PROJECT_ID) {
-  UR.RaiseMessage('NET:BPIDLIST_UPDATE', GetBpidList(projId));
+function RaiseBpNamesListUpdate(projId = CURRENT_PROJECT_ID) {
+  UR.RaiseMessage('NET:BPNAMESLIST_UPDATE', GetBpNamesList(projId));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Used by Viewer via REQ_PROJ_DATA
@@ -348,14 +366,14 @@ function RaiseInstancesListUpdate(projId = CURRENT_PROJECT_ID) {
  *  CharControl requests this list directly via REQ:PROJ_DATA
  *  @return {string[]} [ ...bpid ]
  */
-function GetCharControlBpidList() {
-  return ACBlueprints.GetCharControlBpidList();
+function GetCharControlBpNames() {
+  return ACBlueprints.GetCharControlBpNames();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API:
  */
 function GetPozyxBPNames() {
-  return ACBlueprints.GetPozyxControlBpidList();
+  return ACBlueprints.GetPozyxControlBpNames();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API:
@@ -583,8 +601,10 @@ function ScriptUpdate(data) {
 
   // 5. Inform network devices
   RaiseModelUpdate();
-  RaiseBpidListUpdate();
+  RaiseBpNamesListUpdate();
   RaiseInstancesListUpdate();
+
+  return { bpName };
 }
 
 /// INSTANCE SELECTION HANDLERS ///////////////////////////////////////////////
@@ -647,10 +667,10 @@ const FN_LOOKUP = {
   RequestProject,
   RequestBpEditList,
   GetProjectBoundary: GetBoundary,
-  GetCharControlBpidList,
+  GetCharControlBpNames,
 
   GetBlueprintProperties: ACBlueprints.GetBlueprintProperties,
-  GetBpidList,
+  GetBpDefs: GetBpNamesList,
   GetInstanceidList
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -689,6 +709,8 @@ UR.HandleMessage('NET:TRANSFORM_REQ', HandleTransformReq); // returns locale xfo
 /// PROJECT DATA UTILS ----------------------------------------------------
 UR.HandleMessage('REQ_PROJDATA', HandleRequestProjData);
 UR.HandleMessage('NET:REQ_PROJDATA', HandleRequestProjData);
+UR.HandleMessage('PROJDATA_UPDATE', UpdateProject);
+UR.HandleMessage('METADATA_UPDATE', UpdateMetadata);
 ///
 UR.HandleMessage('NET:SCRIPT_UPDATE', ScriptUpdate);
 UR.HandleMessage('NET:BLUEPRINT_DELETE', HandleBlueprintDelete);

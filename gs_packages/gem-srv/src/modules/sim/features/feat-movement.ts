@@ -18,6 +18,7 @@ import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
+import { IAgent, TSymbolData } from 'lib/t-script';
 import {
   DeleteAgent,
   GetAgentsByType,
@@ -25,7 +26,7 @@ import {
   DefineInstance,
   GetAgentById
 } from 'modules/datacore/dc-sim-agents';
-import { RegisterFeature } from 'modules/datacore/dc-sim-data';
+import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
 import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';
@@ -48,7 +49,6 @@ const PR = UR.PrefixUtil('FeatMovement');
 const DBG = false;
 
 let BOUNDS = UR.ReadFlatStateGroups('metadata');
-UR.SubscribeState('metadata', urStateUpdated);
 
 const MOVEWINDOW = 10; // A move will leave `isMoved` active for this number of frames
 const MOVEDISTANCE = 3; // Minimum distance moved before `isMoved` is registered
@@ -625,14 +625,16 @@ class MovementPack extends GFeature {
     this.featAddMethod('seekNearestVisibleCone', this.seekNearestVisibleCone);
     this.featAddMethod('seekNearestVisibleColor', this.seekNearestVisibleColor);
     this.featAddMethod('wanderUntilInside', this.wanderUntilInside);
-  }
 
+    UR.SubscribeState('metadata', urStateUpdated);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** This runs once to initialize the feature for all agents */
   initialize(pm) {
     super.initialize(pm);
     pm.hook('INPUT', this.handleInput);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
     super.decorate(agent);
     MOVEMENT_AGENTS.set(agent.id, agent);
@@ -664,21 +666,55 @@ class MovementPack extends GFeature {
     // agent.prop.Movement._targetAngle // cached value so input agents can keep turning between updates
     // agent.prop.Movement._jitterRotate
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {
+        movementType: GVarNumber.Symbols,
+        controller: GVarString.Symbols,
+        direction: GVarNumber.Symbols,
+        compassDirection: GVarBoolean.Symbols,
+        distance: GVarBoolean.Symbols,
+        bounceAngle: GVarNumber.Symbols,
+        isMoving: GVarNumber.Symbols,
+        useAutoOrientation: GVarNumber.Symbols,
+        targetX: GVarNumber.Symbols,
+        targetY: GVarNumber.Symbols
+      },
+      methods: {
+        setController: { args: ['x:number'] },
+        queuePosition: { args: ['x:number', 'y:number'] },
+        setMovementType: { args: ['type:string', 'params:{...}'] },
+        setRandomDirection: {},
+        setRandomPosition: {},
+        setRandomPositionX: {},
+        setRandomPositionY: {},
+        setRandomStart: {},
+        setRandomStartPosition: { args: ['width:number', 'height:number'] },
+        jitterPos: { args: ['min:number', 'max:number', 'round:boolean'] },
+        jitterRotate: {},
+        seekNearest: { args: ['targetType:string'] },
+        seekNearestVisibleCone: { args: ['targetType:string'] },
+        seekNearestVisibleColor: { args: ['targetType:string'] },
+        wanderUntilInside: { args: ['targetType:string'] }
+      }
+    };
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   handleInput() {
     // hook into INPUT phase and do what needs doing for
     // the feature as a whole
   }
-
-  setController(agent, x) {
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  setController(agent: IAgent, x: number) {
     if (DBG) console.log(...PR(`setting control to ${x}`));
     agent.getProp('controller').value = x;
   }
-
-  queuePosition(agent, x, y) {
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  queuePosition(agent: IAgent, x: number, y: number) {
     m_QueuePosition(agent, x, y);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // TYPES
   // These are convenience functions.
   // Each can be set separately via featProps.
@@ -721,11 +757,11 @@ class MovementPack extends GFeature {
       }
     }
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setRandomDirection(agent: IAgent) {
     m_setDirection(agent, m_random(0, 360));
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setRandomBoundedPosition(
     agent: IAgent,
     bounds: { left: number; right: number; top: number; bottom: number }
@@ -734,26 +770,26 @@ class MovementPack extends GFeature {
     const y = m_random(bounds.top, bounds.bottom);
     m_QueuePosition(agent, x, y);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setRandomPosition(agent: IAgent) {
     this.setRandomBoundedPosition(agent, BOUNDS);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setRandomPositionX(agent: IAgent) {
     const x = m_random(BOUNDS.left, BOUNDS.right);
     m_QueuePosition(agent, x, agent.prop.y.value);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setRandomPositionY(agent: IAgent) {
     const y = m_random(BOUNDS.top, BOUNDS.bottom);
     m_QueuePosition(agent, agent.prop.x.value, y);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setRandomStart(agent: IAgent) {
     this.setRandomDirection(agent);
     this.setRandomPosition(agent);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setRandomStartPosition(agent: IAgent, width: number, height: number) {
     const hwidth = width / 2;
     const hheight = height / 2;
@@ -764,13 +800,13 @@ class MovementPack extends GFeature {
       bottom: hheight
     });
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   jitterPos(agent, min: number = -5, max: number = 5, round: boolean = true) {
     const x = m_random(min, max, round);
     const y = m_random(min, max, round);
     m_QueuePosition(agent, agent.prop.x.value + x, agent.prop.y.value + y);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // A single trigger that will clear itself after being run
   // The advantage of setting this as a method is that the script
   // doesn't have to clear the flag afterwards.  This makes it
@@ -778,14 +814,14 @@ class MovementPack extends GFeature {
   jitterRotate(agent) {
     agent.prop.Movement._jitterRotate = true;
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   seekNearest(agent: IAgent, targetType: string) {
     // Clear any existing target.  This is especially important between rounds.
     agent.prop.Movement._targetId = undefined;
     SEEK_AGENTS.set(agent.id, { targetType, useVisionCone: false });
     this.setMovementType(agent, 'seekAgent');
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // vision cone visible
   seekNearestVisibleCone(agent: IAgent, targetType: string) {
     // Clear any existing target.  This is especially important between rounds.
@@ -793,7 +829,7 @@ class MovementPack extends GFeature {
     SEEK_AGENTS.set(agent.id, { targetType, useVisionCone: true });
     this.setMovementType(agent, 'seekAgentOrWander');
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // color visible
   seekNearestVisibleColor(agent: IAgent, targetType: string) {
     // Clear any existing target.  This is especially important between rounds.
@@ -801,7 +837,7 @@ class MovementPack extends GFeature {
     SEEK_AGENTS.set(agent.id, { targetType, useVisionColor: true });
     this.setMovementType(agent, 'seekAgentOrWander');
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   wanderUntilInside(agent: IAgent, targetType: string) {
     INSIDE_AGENTS.set(agent.id, { targetType });
     this.setMovementType(agent, 'wanderUntilAgent');

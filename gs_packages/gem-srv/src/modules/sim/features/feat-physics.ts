@@ -207,7 +207,7 @@ class PhysicsPack extends GFeature {
     }
     this.setShape(agent, RECTANGLE);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   symbolize(): TSymbolData {
     return {
       props: {

@@ -252,7 +252,7 @@ class WidgetPack extends GFeature {
     // REGISTER the Agent for updates
     WIDGET_AGENTS.set(agent.id, agent.id);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   symbolize(): TSymbolData {
     return {
       props: {

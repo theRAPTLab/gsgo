@@ -97,7 +97,7 @@ UR.HookPhase('SIM/INPUTS_READ', ProcessInputs);
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function InputsInit(frameTime) {
-  const BPNAMES = ACBlueprints.GetCharControlBpidList();
+  const BPNAMES = ACBlueprints.GetCharControlBpNames();
   // GetInputBPnames();
   BPNAMES.forEach(b => InputInit(b));
 }

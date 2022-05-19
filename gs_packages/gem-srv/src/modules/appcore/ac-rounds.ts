@@ -62,18 +62,7 @@ const { _publishState } = STATE;
 const { addChangeHook, deleteChangeHook } = STATE;
 const { addEffectHook, deleteEffectHook } = STATE;
 
-/// LOADER ////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function updateAndPublish(rounds) {
-  updateKey({ rounds });
-  _publishState({ rounds });
-  // update datacore
-  DCPROJECT.UpdateProjectData({ rounds });
-}
-
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let AUTOTIMER;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Intercept changes to rounds so we can cache the changes
  *  for later write to DB after some time has elapsed. Returns the modified
@@ -82,7 +71,11 @@ let AUTOTIMER;
 function hook_Filter(key, propOrValue, propValue) {
   if (DBG) console.log('hook_Filter', key, propOrValue, propValue);
   // No need to return anything if data is not being filtered.
-  // if (key === 'rounds') return [key, propOrValue, propValue];
+  if (key === 'rounds') {
+    // update datacore
+    const rounds = propOrValue;
+    DCPROJECT.UpdateProjectData({ rounds });
+  }
   // return undefined;
 }
 
@@ -105,6 +98,17 @@ function hook_Effect(effectKey, propOrValue, propValue) {
 addChangeHook(hook_Filter);
 addEffectHook(hook_Effect);
 
+/// CONVENIENCE METHODS ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Use this if you want to bypass hook_Filter and hook_Effect
+ *  e.g. on initial load, skip hook_Effect so the initial load data
+ *  isn't re-written to server.
+ */
+function updateAndPublish(rounds) {
+  updateKey({ rounds });
+  _publishState({ rounds });
+}
+
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Handled by class-project
@@ -114,17 +118,17 @@ addEffectHook(hook_Effect);
 /// return copies
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetRounds() {
+function GetRounds() {
   const rounds = _getKey('rounds');
   return [...rounds]; // clone
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetRoundCount() {
+function GetRoundCount() {
   const rounds = _getKey('rounds');
   return rounds.length;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetRoundDef(index) {
+function GetRoundDef(index) {
   const rounds = _getKey('rounds');
   if (index > rounds.length)
     throw new Error(
@@ -133,14 +137,26 @@ export function GetRoundDef(index) {
   return rounds[index];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function RoundsShouldLoop() {
+function RoundsShouldLoop() {
   const metadata = _getKey('metadata');
   return metadata.roundsCanLoop;
 }
 
 /// UPDATERS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-export function SetRounds(projId, rounds) {
+function SetRounds(projId, rounds) {
+  DCPROJECT.UpdateProjectData({ rounds });
   updateAndPublish(rounds);
 }
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export {
+  // Getters
+  GetRounds,
+  GetRoundCount,
+  GetRoundDef,
+  RoundsShouldLoop,
+  // Updaters
+  SetRounds
+};
