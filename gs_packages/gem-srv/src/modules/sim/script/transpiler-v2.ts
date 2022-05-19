@@ -46,7 +46,7 @@ function CompileText(text: string = ''): TSMCProgram {
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: */
-function RegisterBlueprintBundle(bdl: SM_Bundle): SM_Bundle {
+function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
   // ensure that bundle has at least a define and name
   if (bdl.type === EBundleType.INIT) {
     return undefined;
@@ -104,7 +104,7 @@ function RemoveAgent(instanceDef: TInstance) {
 export {
   MakeAgent, // BlueprintName => Agent
   RemoveAgent,
-  RegisterBlueprintBundle
+  RegisterBlueprint
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// API: These methods are related to transpiling GEMSCRIPT
@@ -113,16 +113,19 @@ export {
   CompileText // compile a script text that IS NOT a blueprint
 };
 export {
-  CompileScript, // API: return a TSMCProgram from a script text
-  BundleBlueprint, // API: return a blueprint bundle from a blueprint text
   DecodeTokenPrimitive, // utility: to convert a scriptToken into runtime data
   DecodeToken, // utility: with DecodeTokenPrimitive, converts a token into runtime entity
   DecodeStatement, // utility: works with DecodeToken to create runtime enties
   SymbolizeStatement, // utility: extract symbols defined by a keyword
   ValidateStatement, // utility: check script tokens against symbols
   //
-  ExtractBlueprintDirectives,
-  CompileBlueprintScript
+  CompileScript, // API: return a TSMCProgram from a script text
+  ExtractBlueprintDirectives, // API: return directives from script text
+  //
+  CompileBlueprint, // API: save a blueprint script as a bundle with program output
+  SymbolizeBlueprint, // API: save blueprint symbols to a bundle
+  ValidateBlueprint, // API: save validation tokens to a bundle
+  BundleBlueprint // API: Compile,Symbolize,Validate a blueprint script to a bundle
 } from 'script/tools/script-compiler';
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

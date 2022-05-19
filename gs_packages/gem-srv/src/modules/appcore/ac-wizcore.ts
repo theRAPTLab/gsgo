@@ -115,7 +115,7 @@ UR.HookPhase('UR/LOAD_ASSETS', async () => {
     'color:gray'
   );
   // return promise to hold LOAD_ASSETS until done
-  return PROJ_v2.SetAssetDirectory('/assets/art-assets/');
+  return PROJ_v2.LoadAssetDirectory('/assets/art-assets/');
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// DEFERRED CALL: APP_CONFIGURE fires after LOAD_ASSETS (above) completes
@@ -548,57 +548,17 @@ UR.AddConsoleTool('bundle', (bpName: string) => {
   const projectId = 'aquatic_energy';
 
   // PROJECT LOADER - GET A BLUEPRINT SCRIPT TEXT
-  PROJ_v2.SetAssetDirectory(assetDir);
+  PROJ_v2.LoadAssetDirectory(assetDir);
   const { scriptText } = PROJ_v2.GetProjectBlueprint(projectId, bpName);
+  // CREATE SCRIPT
   const script = TRANSPILER.TextToScript(scriptText);
-
-  // prototype CompileBlueprintBundle
-  const { BLUEPRINT } = TRANSPILER.ExtractBlueprintDirectives(script);
-  const [name] = BLUEPRINT;
-  if (name !== bpName) throw Error('uh oh, no match blueprint name');
-
-  // these are separate data structures that rely on each other
-  // GUI <-- needs bundle to get symboldata
-  // Validator <-- needs bundle to get symboldata to return validationd data
-  // ScriptEngine <-- needs the bundle to create instances of blueprints from
-  // bundle itself is dependent on the scriptText for a particular blueprint in a gemproj file
-
-  // bpName... we want to do Symbolize followed by Validate followed by Compile
-  // we'll call this the first-time initialization of a bundle for use by
-  // the GUI and the SCRIPT ENGINE
-  // what's the name of this operation in terms of the GUI experience???
-
-  // CreateBundleFromBlueprint(bpName)
-  // -- assumes depends on DC-SIMENGINE's dictionary of blueprints as bundle dict source
-  // -- assume that the ASSETDIR has already been set and initialized somewhere
-  // -- other appserver apps share the same message network and projId but ASSETDIR is hardcoded
-  // -- we need to to have ASSETDIR + PROJID be the 'application key' for setting up a networked GEMSTEP run
-
-  function CreateBundleFromBlueprint(bpName) {
-    // retrieve a bundle, which might be blank, but the TRANSPILER
-    // is left to manage that detail; we just know that we're getting the
-    // bundle associated with this name if there is a blueprint named that
-    // there is a recompile signal that has to happen if the name changes
-    // project-server handles this? make musre the project-data class also
-    // fires a similar event so bundles can be recreated
-
-    let { projectId } = PROJ_v2.CurrentProject();
-    let { scriptText } = PROJ_v2.GetProjectBlueprint(projectId, bpName);
-
-    let bdl = DCENGINE.GetBlueprintBundle(bpName);
-    let script = TRANSPILER.TextToScript(scriptText);
-
-    // FOCUS HERE ...
-    // bdl = TRANSPILER.SymbolizeBlueprint(script, bdl)); // always returns new bundle
-    // bdl = TRANSPILER.ValidateBlueprint(script, bdl)); // so we can call on any bundle and not modify it
-    // bdl = TRANSPILER.CompileBlueprint(script, bdl); // if we just want the data out of it
-
-    // by the end of this,
-    DCENGINE.RegisterBlueprintBundle(bdl); // gives us a chance to fire an update event
-  }
-
-  // ENTER SYMBOLIZE BLUEPRINT
-  return undefined;
+  // Make the bundle
+  const { symbols } = TRANSPILER.SymbolizeBlueprint(script);
+  const bdl = TRANSPILER.CompileBlueprint(script);
+  // const { page } = TRANSPILER.ValidateBlueprint(script)
+  TRANSPILER.RegisterBlueprint(bdl);
+  // RETURN SYMBOLIZE BLUEPRINT
+  return symbols;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** run bundler prototype test */

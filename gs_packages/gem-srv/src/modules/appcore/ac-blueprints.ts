@@ -104,7 +104,6 @@ const { addEffectHook, deleteEffectHook } = STATE;
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /** Blueprint symbols need to be extracted before they are compiled */
 function m_SymbolizeBlueprints(blueprints) {
   blueprints.forEach(b => {
@@ -124,7 +123,7 @@ function m_CompileBlueprints(blueprints) {
     const script = TRANSPILER.TextToScript(b.scriptText);
     const bundle = TRANSPILER.BundleBlueprint(script);
     // Save to datacore
-    TRANSPILER.RegisterBlueprintBundle(bundle);
+    TRANSPILER.RegisterBlueprint(bundle);
     // Save local reference
     BPSCRIPTTEXTMAP.set(bundle.name, b.scriptText);
     return bundle;

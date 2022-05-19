@@ -13,6 +13,10 @@ const DBG = true;
 const PR = UR.PrefixUtil('PROJ-V2', 'TagGreen');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROJECT_DATA = new GEM_ProjectData();
+let CUR_PRJ: TProject;
+let CUR_BP: TBlueprint;
+let CUR_PRJID;
+let CUR_BPNAME;
 let ASSET_DIR;
 
 /// MODULE INITIALIZATION /////////////////////////////////////////////////////
@@ -20,13 +24,13 @@ let ASSET_DIR;
 /** API: Set the current AssetDirectory containing a projects directory,
  *  and load all the project definitions into a PROJECTS dictionary.
  */
-async function SetAssetDirectory(assetUrl: string): Promise<void> {
+async function LoadAssetDirectory(assetUrl: string): Promise<void> {
   await PROJECT_DATA.loadProjectData(assetUrl);
   ASSET_DIR = assetUrl;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Return the current asset directory */
-function GetAssetDirectory(): string {
+function CurrentAssetUrl(): string {
   return ASSET_DIR;
 }
 
@@ -45,14 +49,31 @@ function GetProjectList(filterString?: string): TProjectList[] {
  *  for the given project id (.gemprj files)
  */
 function GetProject(prjId: string): TProject {
-  return PROJECT_DATA.getProject(prjId);
+  CUR_PRJID = prjId;
+  CUR_PRJ = PROJECT_DATA.getProject(prjId);
+  return CUR_PRJ;
 }
 
 /** API: return the blueprint object { id, label, scriptText } for the
  *  given projectId and blueprintId
  */
 function GetProjectBlueprint(prjId: string, bpName: string): TBlueprint {
-  return PROJECT_DATA.getProjectBlueprint(prjId, bpName);
+  CUR_PRJID = prjId;
+  CUR_BPNAME = bpName;
+  CUR_BP = PROJECT_DATA.getProjectBlueprint(prjId, bpName);
+  return CUR_BP;
+}
+
+/** API: return the current project information */
+function CurrentProject() {
+  return CUR_PRJ;
+}
+
+/** API: return the current project information */
+function CurrentBlueprint(): TBlueprint {
+  const prj = CurrentProject();
+  if (!prj) return undefined;
+  return CUR_BP;
 }
 
 /// DEUGGGER STUFF ////////////////////////////////////////////////////////////
@@ -63,5 +84,6 @@ UR.AddConsoleTool('projects', () => {
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { SetAssetDirectory };
+export { LoadAssetDirectory, CurrentAssetUrl };
 export { GetProjectList, GetProject, GetProjectBlueprint };
+export { CurrentProject, CurrentBlueprint };
