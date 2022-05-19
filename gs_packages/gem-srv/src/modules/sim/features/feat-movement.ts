@@ -18,7 +18,6 @@ import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
-import { IAgent, TSymbolData } from 'lib/t-script';
 import {
   DeleteAgent,
   GetAgentsByType,
@@ -26,7 +25,7 @@ import {
   DefineInstance,
   GetAgentById
 } from 'modules/datacore/dc-sim-agents';
-import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
+import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
 import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';

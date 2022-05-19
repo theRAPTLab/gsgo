@@ -59,15 +59,14 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { TBlueprint } from 'lib/t-assets.d';
-import { ISMCBundle } from 'lib/t-script.d';
-import * as GAgent from 'lib/class-gagent';
+import GAgent from 'lib/class-gagent';
+import Blueprint from 'lib/class-project-blueprint';
+import SM_Bundle from 'lib/class-sm-bundle';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCENGINE from 'modules/datacore/dc-sim-data';
 import * as DCPROJECT from 'modules/datacore/dc-project';
 import * as SIMAGENTS from 'modules/sim/sim-agents';
 import * as TRANSPILER from '../sim/script/transpiler-v2';
-import Blueprint from '../../lib/class-project-blueprint';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,24 +86,9 @@ STATE.initializeState({
   ptrackControlBpNames: [],
   pozyxControlBpNames: []
 });
-/// These are the primary methods you'll need to use to read and write
-/// state on the behalf of code using APPCORE.
-const { stateObj, flatStateValue, _getKey, updateKey } = STATE;
-/// For handling state change subscribers, export these functions
-const { subscribe, unsubcribe } = STATE;
-/// For React components to send state changes, export this function
-const { handleChange } = STATE;
-/// For publishing state change, this can be used inside this module
-/// DO NOT CALL THIS FROM OUTSIDE
-const { _publishState } = STATE;
-/// To allow outside code to modify state change requests on-the-fly,
-/// export these functions
-const { addChangeHook, deleteChangeHook } = STATE;
-const { addEffectHook, deleteEffectHook } = STATE;
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /** Helper function to merge a new 'bpDef' into 'bpDef's either by:
  *  --  replacing existing bpDef
  *  --  or, inserting a new bpDef
@@ -119,24 +103,23 @@ function m_MergeBlueprint(bpDef: TBlueprint, bpDefs: TBlueprint[]): TBlueprint[]
   }
   return bpDefs;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Blueprint symbols need to be extracted before they are compiled */
 function m_SymbolizeBlueprints(blueprints: TBlueprint[]) {
   blueprints.forEach(b => {
     // symbolizeBlueprintHelper in transpiler?
   });
 }
-
-/**
- * Use this to compile and add additional blueprints to an already running sim
- * 1. Compiles blueprints
- * 2. Registers blueprint with dc-sim-resources
- * NOTE Does NOT update state!!!
- * NOTE Returns a valid bpDefs array -- use this to convert old gemproj files
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Use this to compile and add additional blueprints to an already running sim
+ *  1. Compiles blueprints
+ *  2. Registers blueprint with dc-sim-resources
+ *  NOTE Does NOT update state!!!
+ *  NOTE Returns a valid bpDefs array -- use this to convert old gemproj files
  *      that may or may use a blueprint 'id' instead of 'name'
- * @param {TBlueprint[]} bpDefs - array of blueprint definitions [ {name?, scriptText} ]
- *                       Accepts old gemproj files that use 'id' instead of 'name'
- * @returns {TBlueprint[]} - bpDefs that all use 'name', not 'id'
+ *  @param {TBlueprint[]} bpDefs - array of blueprint definitions [ {name?, scriptText} ]
+ *                        Accepts old gemproj files that use 'id' instead of 'name'
+ *  @returns {TBlueprint[]} - bpDefs that all use 'name', not 'id'
  */
 function m_CompileBlueprints(bpDefs: TBlueprint[]): TBlueprint[] {
   return bpDefs.map(b => {
@@ -146,7 +129,7 @@ function m_CompileBlueprints(bpDefs: TBlueprint[]): TBlueprint[] {
     return { name: bundle.name, scriptText: b.scriptText };
   });
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * Use this when reseting the simulation.
  * Clears all ScriptEvents, Blueprints, Agents, and Instances
@@ -159,7 +142,7 @@ function m_ResetAndCompileBlueprints(blueprints: TBlueprint[]): TBlueprint[] {
   GAgent.ClearGlobalAgent();
   SIMAGENTS.ClearDOBJ();
   DCENGINE.DeleteAllScriptEvents();
-  DCENGINE.DeleteAllBlueprints();
+  DCENGINE.DeleteAllBlueprintBundles();
   DCAGENTS.DeleteAllAgents();
   DCAGENTS.DeleteAllInstances();
   m_SymbolizeBlueprints(blueprints);
@@ -178,27 +161,24 @@ function m_ResetAndCompileBlueprints(blueprints: TBlueprint[]): TBlueprint[] {
 function GetBpDefs(projId: string): TBlueprint[] {
   // REVIEW NOTE this should support getting a list of blueprints for a specific
   // project that is NOT the CURRENT_PROJECT.
-  return _getKey('bpDefs');
+  return STATE._getKey('bpDefs');
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Returns a single blueprint definition object
  *  @param {string} bpName
  *  @returns {TBlueprint} {name, scriptText} - bpDef
  */
 function GetBlueprint(bpName: string): TBlueprint {
-  return _getKey('bpDefs').find(b => b.name === bpName);
+  return STATE._getKey('bpDefs').find(b => b.name === bpName);
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Returns a single blueprint bundle object
  *  @param {string} bpName
  *  @returns {ISMCBundle} f
  */
 function GetBlueprintBundle(bpName: string): ISMCBundle {
-  return DCENGINE.GetBlueprint(bpName);
+  return DCENGINE.GetBlueprintBundle(bpName);
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Returns a list of blueprints with names and scriptText.
  *  Requested by ScriptEditor (via project-server) to display of list of
@@ -206,11 +186,12 @@ function GetBlueprintBundle(bpName: string): ISMCBundle {
  *  @param {string} projId
  *  @returns {TBlueprint[]} [ {name, scriptText }]
  */
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetBpEditList(projId: string): TBlueprint[] {
   // REVIEW NOTE this should support getting a list of blueprints for a specific
   // project that is NOT the CURRENT_PROJECT.
   // REVIEW: Currently does not return info about openeditors, but it should
-  return _getKey('bpDefs');
+  return STATE._getKey('bpDefs');
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -227,98 +208,94 @@ function m_ExtractBlueprintNamesList(bundles: ISMCBundle[]): string[] {
  *  @returns {string[]} - [ bpName ]
  */
 function GetBpNamesList(): string[] {
-  return _getKey('bpNamesList');
+  return STATE._getKey('bpNamesList');
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Generates an array of blueprint names that have been tagged
- * as CharControllable by inspecting the bundle.
- * Used to populate agent selection on charController.
- * @returns {string[]} - [ name ]
+/** Generates an array of blueprint names that have been tagged
+ *  as CharControllable by inspecting the bundle.
+ *  Used to populate agent selection on charController.
+ *  @returns {string[]} - [ name ]
  */
-function m_GenerateCharControlBpNames(bundles: ISMCBundle[]): string[] {
+function m_GenerateCharControlBpNames(bundles: SM_Bundle[]): string[] {
   return bundles
     .filter(bndl => bndl.getTag('isCharControllable'))
     .map(bndl => {
       return bndl.name;
     });
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Returns array of blueprint names that are CharControllable.
- * @returns {string[]} - [ name ]
+ *  @returns {string[]} - [ name ]
  */
 function GetCharControlBpNames(): string[] {
-  return _getKey('charControlBpNames');
+  return STATE._getKey('charControlBpNames');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Generates an array of blueprint names that have been tagged
- * as Ptrack controllable by inspecting the bundle.
- * NOTE: This does not distinguish between people, poses, and objects
+/** Generates an array of blueprint names that have been tagged
+ *  as Ptrack controllable by inspecting the bundle.
+ *  NOTE: This does not distinguish between people, poses, and objects
  *       If objects and poses need separate tracking, this should be split out
- * @return {string[]} - [ bpName ]
+ *  @return {string[]} - [ bpName ]
  */
-function m_GeneratePTrackControlBpNames(bundles: ISMCBundle[]): string[] {
+function m_GeneratePTrackControlBpNames(bundles: SM_Bundle[]): string[] {
   return bundles
     .filter(bndl => bndl.getTag('isPTrackControllable'))
     .map(bndl => {
       return bndl.name;
     });
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Returns array of blueprint names that are PTrack controllable.
- * @returns {string[]} - [ bpName ]
+ *  @returns {string[]} - [ bpName ]
  */
 function GetPTrackControlBpNames(): string[] {
-  return _getKey('ptrackControlBpNames');
+  return STATE._getKey('ptrackControlBpNames');
 }
-/**
- * API: returns the first ptrack controllable blueprint name as the default bp to use
- * Used by dc-inputs to determine mapping of inputs to agents
- * @returns {string} - bpName
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: returns the first ptrack controllable blueprint name as the default bp to use
+ *  Used by dc-inputs to determine mapping of inputs to agents
+ *  @returns {string} - bpName
  */
 function GetPTrackControlDefaultBpName(): string {
-  const ptrackBpNames = _getKey('ptrackControlBpNames');
+  const ptrackBpNames = STATE._getKey('ptrackControlBpNames');
   if (ptrackBpNames.length < 1) return undefined;
   return ptrackBpNames[0];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Generates an array of blueprint names that have been tagged
- * as Pozyx controllable by inspecting the bundle.
- * @returns {string[]} - [ bpName ]
+/** Generates an array of blueprint names that have been tagged
+ *  as Pozyx controllable by inspecting the bundle.
+ *  @returns {string[]} - [ bpName ]
  */
-function m_GeneratePozyxControlBpNames(bundles: ISMCBundle[]): string[] {
+function m_GeneratePozyxControlBpNames(bundles: SM_Bundle[]): string[] {
   return bundles
     .filter(bndl => bndl.getTag('isPozyxControllable'))
     .map(bndl => {
       return bndl.name;
     });
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Returns array of blueprint names that are Pozyx controllable.
  *  @returns {string[]} - [ bpName ]
  */
 function GetPozyxControlBpNames(): string[] {
-  return _getKey('pozyxControlBpNames');
+  return STATE._getKey('pozyxControlBpNames');
 }
-/**
- * API: Returns the first pozyx controllable blueprint name as the default bp to use
- * Used dc-inputs to determine mapping
- * @returns {string} - bpName
+/** API: Returns the first pozyx controllable blueprint name as the default bp to use
+ *  Used dc-inputs to determine mapping
+ *  @returns {string} - bpName
  */
 function GetPozyxControlDefaultBpName(): string {
-  const pozyxBpNames = _getKey('pozyxControlBpNames');
+  const pozyxBpNames = STATE._getKey('pozyxControlBpNames');
   if (pozyxBpNames.length < 1) return undefined;
   return pozyxBpNames[0];
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * API: Returns array of properties {name, type, defaultvalue, isFeatProp}
- * that have been defined by the blueprint.
- * Used to populate property menus when selecting properties to show
- * in InstanceInspectors
- * @param {string} bpName
- * @return {Object[]} [...{ name, type, defaultValue, isFeatProp }]
+/** API: Returns array of properties {name, type, defaultvalue, isFeatProp}
+ *  that have been defined by the blueprint.
+ *  Used to populate property menus when selecting properties to show
+ *  in InstanceInspectors
+ *  @param {string} bpName
+ *  @return {Object[]} [...{ name, type, defaultValue, isFeatProp }]
  */
 function GetBlueprintProperties(bpName: string): object[] {
   const blueprint = GetBlueprint(bpName);
@@ -326,7 +303,6 @@ function GetBlueprintProperties(bpName: string): object[] {
   // REVIEW: SymbolHelpers might replace this
   return TRANSPILER.ExtractBlueprintProperties(blueprint.scriptText);
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Parses the blueprint scriptText to find the properties that
  *  have been defined.  Used by instanceEditor to display current
@@ -341,24 +317,23 @@ function GetBlueprintPropertiesMap(bpName: string): Map<string, object> {
 
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Generate and publish derived blueprint lists from the bundles in DCENGINE.
- * The derived blueprint lists are generally used to populate react UI
- * controllers and components.
+/** Generate and publish derived blueprint lists from the bundles in DCENGINE.
+ *  The derived blueprint lists are generally used to populate react UI
+ *  controllers and components.
  */
-function updateAndPublishDerivedBpLists() {
-  const bundles = DCENGINE.GetAllBlueprints();
+function m_UpdateAndPublishDerivedBpLists() {
+  const bundles = DCENGINE.GetAllBlueprintBundles();
   const bpNamesList = m_ExtractBlueprintNamesList(bundles);
   const charControlBpNames = m_GenerateCharControlBpNames(bundles);
   const ptrackControlBpNames = m_GeneratePTrackControlBpNames(bundles);
   const pozyxControlBpNames = m_GeneratePozyxControlBpNames(bundles);
-  updateKey({
+  STATE.updateKey({
     bpNamesList,
     charControlBpNames,
     ptrackControlBpNames,
     pozyxControlBpNames
   });
-  _publishState({
+  STATE._publishState({
     bpNamesList,
     charControlBpNames,
     ptrackControlBpNames,
@@ -367,13 +342,12 @@ function updateAndPublishDerivedBpLists() {
 }
 
 /// Update the main blueprint property
-function updateAndPublishBpDefs(bpDefs: TBlueprint[]) {
-  updateKey({ bpDefs });
-  _publishState({ bpDefs });
+function m_UpdateAndPublishBpDefs(bpDefs: TBlueprint[]) {
+  STATE.updateKey({ bpDefs });
+  STATE._publishState({ bpDefs });
 }
 
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Intercept changes to blueprints so we can cache the changes
  *  for later write to DB after some time has elapsed. Returns the modified
@@ -393,11 +367,9 @@ function hook_Filter(key, propOrValue, propValue) {
     // update datacore
     DCPROJECT.UpdateProjectData({ blueprints }); // note blueprints:blueprints object
     // update and publish bpidList too
-    updateAndPublishDerivedBpLists();
+    m_UpdateAndPublishDerivedBpLists();
   }
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Optionally fire once all state change hooks have been processed.
  *  This is provided as the second arg of addChangeHook()
@@ -414,12 +386,11 @@ function hook_Effect(effectKey, propOrValue, propValue) {
 
 /// ADD LOCAL MODULE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-addChangeHook(hook_Filter);
-addEffectHook(hook_Effect);
+STATE.addChangeHook(hook_Filter);
+STATE.addEffectHook(hook_Effect);
 
 /// UPDATERS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /** API: Use this to initialize the state
  *  Called by ac-project with gemproj data
  *  @param {[]} blueprints - Array of {name, scripText} from gemproj file
@@ -432,8 +403,8 @@ function SetBlueprints(projId: string, blueprints: TBlueprint[]) {
   DCPROJECT.UpdateProjectData({ blueprints }); // note blueprints:blueprints object
 
   // 3. Update state
-  updateAndPublishBpDefs(bpDefs);
-  updateAndPublishDerivedBpLists();
+  m_UpdateAndPublishBpDefs(bpDefs);
+  m_UpdateAndPublishDerivedBpLists();
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -455,7 +426,6 @@ function InjectBlueprint(projId: string, bpDef: TBlueprint) {
   // NOTE: Not updating 'blueprints' state, nor writing to db
   // because this is used to insert cursors, which do not need a UI
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Add new blueprint or update existing blueprint */
 function UpdateBlueprint(projId: string, bpName: string, scriptText: string) {
@@ -466,18 +436,17 @@ function UpdateBlueprint(projId: string, bpName: string, scriptText: string) {
   m_CompileBlueprints([bpDef]); // add/update BPTEXTMAP as a side effect
 
   // 2. Update states and derived states
-  const bpDefs = m_MergeBlueprint(bpDef, _getKey('bpDefs'));
+  const bpDefs = m_MergeBlueprint(bpDef, STATE._getKey('bpDefs'));
   UR.WriteState('blueprints', 'bpDefs', bpDefs);
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: */
 function DeleteBlueprint(bpName: string) {
   // 1. Remove from DCEngine
-  DCENGINE.DeleteBlueprint(bpName); // bpBndles
+  DCENGINE.DeleteBlueprintBundle(bpName); // bpBndles
 
   // 2. Update states and derived states
-  const bpDefs = _getKey('bpDefs').filter(b => b.name !== bpName);
+  const bpDefs = STATE._getKey('bpDefs').filter(b => b.name !== bpName);
   UR.WriteState('blueprints', 'bpDefs', bpDefs);
 }
 

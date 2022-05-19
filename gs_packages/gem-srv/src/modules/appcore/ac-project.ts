@@ -110,7 +110,6 @@ const { addEffectHook, deleteEffectHook } = STATE;
 
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Intercept changes to project so we can cache the changes
  *  for later write to DB after some time has elapsed. Returns the modified
  *  values, if any, for subsequent update to GSTATE and publishState.

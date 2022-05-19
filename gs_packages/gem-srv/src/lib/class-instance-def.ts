@@ -1,5 +1,4 @@
-import { TScriptUnit } from 'lib/t-script.d';
-import { IPoolable } from './t-pool.d';
+// imports types from t-script.d and t-pool.d
 
 class InstanceDef implements IPoolable {
   // poolable

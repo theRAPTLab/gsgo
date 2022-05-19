@@ -9,12 +9,7 @@
 
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import { UnpackArg } from 'modules/datacore';
-import {
-  TokenToString,
-  UnpackToken,
-  DecodeTokenPrimitive
-} from 'script/transpiler-v2';
+import { TokenToString, DecodeTokenPrimitive } from 'script/transpiler-v2';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import Console from '../stat/Console';
 import { EditSymbol } from './EditSymbol';

@@ -31,7 +31,7 @@ import UR from '@gemstep/ursys/client';
 import RNG from 'modules/sim/sequencer';
 import * as TRANSPILER from 'script/transpiler-v2';
 import 'modules/datacore/dc-project'; // must import to load db
-import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCENGINE from 'modules/datacore/dc-sim-data';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 import * as DCINPUTS from 'modules/datacore/dc-inputs';
 import * as ACProject from 'modules/appcore/ac-project';
@@ -296,7 +296,7 @@ function GetBoundary() {
 function InjectBlueprint(data) {
   const { blueprint } = data;
   // Skip if already defined
-  if (ACBlueprints.GetBlueprint(blueprint.id)) {
+  if (ACBlueprints.GetBlueprintBundle(blueprint.id)) {
     return;
   }
   ACBlueprints.InjectBlueprint(CURRENT_PROJECT_ID, blueprint);
@@ -447,7 +447,7 @@ function InstanceAdd(data, sendUpdate = true) {
 
   // If blueprint has `# PROGRAM INIT` we run that
   // otherwise we auto-place the agent around the center of the screen
-  const blueprint = DCENGINE.GetBlueprint(data.blueprintName);
+  const blueprint = DCENGINE.GetBlueprintBundle(data.blueprintName);
   const hasInit = blueprint.init && blueprint.init.length > 0;
   const SPREAD = 100;
   if (!hasInit && !instance.initScript) {
@@ -550,7 +550,7 @@ function m_RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
  */
 function ScriptUpdate(data) {
   const source = TRANSPILER.TextToScript(data.script);
-  const bundle = TRANSPILER.CompileBlueprint(source); // compile to get name
+  const bundle = TRANSPILER.BundleBlueprint(source); // compile to get name
   const bpName = bundle.name;
 
   // 1. Did the blueprint name change?  Remove the old blueprint

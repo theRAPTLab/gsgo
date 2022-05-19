@@ -4,7 +4,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IPoolable } from 'lib/t-pool';
+// uses types from t-pool
 import { ITrackerData } from './t-input';
 
 /** A storage class for PTrack Entities. This is a legacy

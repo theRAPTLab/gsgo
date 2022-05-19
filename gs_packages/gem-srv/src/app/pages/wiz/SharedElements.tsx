@@ -12,11 +12,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import {
-  TokenToString,
-  UnpackToken,
-  DecodeTokenPrimitive
-} from 'script/transpiler-v2';
+import { UnpackToken, TokenValue } from 'script/tools/class-gscript-tokenizer-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -290,7 +286,7 @@ export function GToken(props) {
       label = `<${value}>`;
       break;
     default:
-      label = TokenToString(token);
+      label = TokenValue(token);
   }
   // blank line? Just emit a line space
   if (label === '') {

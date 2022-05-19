@@ -9,21 +9,12 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { GetFeature, GetProgram, GetTest } from 'modules/datacore';
+import * as DCENGINE from 'modules/datacore/dc-sim-data';
 import { Evaluate } from 'lib/expr-evaluator';
-import {
-  IFeature,
-  IAgent,
-  TMethod,
-  TSMCProgram,
-  TSymbolData,
-  IScopeable,
-  IActable,
-  ISMCBundle,
-  ControlMode
-} from 'lib/t-script.d';
+// imports types from t-script.d
 import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
 import FLAGS from 'modules/flags';
+import { EControlMode } from '../types/t-script.d';
 import SM_Message from './class-sm-message';
 import SM_Object from './class-sm-object';
 import SM_State from './class-sm-state';
@@ -38,8 +29,8 @@ let REF_ID_COUNT = 0;
 class GAgent extends SM_Object implements IAgent, IActable {
   blueprint: ISMCBundle;
   featureMap: Map<string, IFeature>;
-  controlMode: ControlMode;
-  controlModeHistory: ControlMode[];
+  controlMode: EControlMode;
+  controlModeHistory: EControlMode[];
   isCaptive: boolean;
   isSelected: boolean;
   isHovered: boolean;
@@ -58,6 +49,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   isTouching: any;
   statusObject: StatusObject;
   static Symbols: TSymbolData;
+
   //
   constructor(agentName = '<anon>', id?: string | number) {
     super(agentName); // sets value to agentName, which is only for debugging
@@ -75,7 +67,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.thinkQueue = [];
     this.execQueue = [];
     // built-in movement control states
-    this.controlMode = ControlMode.auto;
+    this.controlMode = EControlMode.auto;
     this.controlModeHistory = [];
     // shared basic props in props for conceptual symmetry
     this.prop.x = new GVarNumber(0); // default to 0, otherwise it'll start out undefined
@@ -236,20 +228,20 @@ class GAgent extends SM_Object implements IAgent, IActable {
 
   /// MOVEMENT MODES //////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  private pushMode = (mode: ControlMode) => {
+  private pushMode = (mode: EControlMode) => {
     this.controlMode = mode;
     return this.controlModeHistory.push(mode);
   };
   mode = () => this.controlMode;
-  setPreviousMode = () => this.controlModeHistory.pop() || ControlMode.auto;
-  setModeStatic = () => this.pushMode(ControlMode.static);
-  setModeDrag = () => this.pushMode(ControlMode.drag);
-  setModePuppet = () => this.pushMode(ControlMode.puppet);
-  setModeAuto = () => this.pushMode(ControlMode.auto);
-  isModeStatic = () => this.controlMode === ControlMode.static;
-  isModeDrag = () => this.controlMode === ControlMode.drag;
-  isModePuppet = () => this.controlMode === ControlMode.puppet; // is input Agent
-  isModeAuto = () => this.controlMode === ControlMode.auto;
+  setPreviousMode = () => this.controlModeHistory.pop() || EControlMode.auto;
+  setModeStatic = () => this.pushMode(EControlMode.static);
+  setModeDrag = () => this.pushMode(EControlMode.drag);
+  setModePuppet = () => this.pushMode(EControlMode.puppet);
+  setModeAuto = () => this.pushMode(EControlMode.auto);
+  isModeStatic = () => this.controlMode === EControlMode.static;
+  isModeDrag = () => this.controlMode === EControlMode.drag;
+  isModePuppet = () => this.controlMode === EControlMode.puppet; // is input Agent
+  isModeAuto = () => this.controlMode === EControlMode.auto;
 
   /// AGENT INTERACTION STATES ////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -284,7 +276,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     if (this.featureMap.has(fName))
       throw Error(`feature '${fName}' already in blueprint`);
     // save the FeaturePack object reference in agent.feature map
-    const fpack = GetFeature(fName);
+    const fpack = DCENGINE.GetFeature(fName);
     if (!fpack) throw Error(`'${fName}' is not an available feature`);
     this.featureMap.set(fName, fpack);
     fpack.decorate(this);
@@ -454,7 +446,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   exec(m: TMethod, context?, ...args): any {
     if (m === undefined) return undefined;
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    const ctx = { agent: this, global: GLOBAL_AGENT };
+    const ctx = { agent: this, global: GAgent.GLOBAL_AGENT };
     Object.assign(ctx, context);
     if (Array.isArray(m)) return this.exec_smc(m, ctx, ...args);
     if (typeof m === 'object') {
@@ -491,7 +483,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Execute a named program stored in global program store */
   exec_program(progName: string, context, ...args) {
-    const prog = GetProgram(progName) || GetTest(progName);
+    const prog = DCENGINE.GetProgram(progName) || DCENGINE.GetTest(progName);
     if (prog !== undefined) return this.exec(prog, context, ...args);
     throw Error(`program ${progName} not found in PROGRAMS or TESTS`);
   }
@@ -558,6 +550,19 @@ class GAgent extends SM_Object implements IAgent, IActable {
         this.featureMap.keys()
       ]);
   }
+  /// STATIC METHODS AND MEMBERS //////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static GLOBAL_AGENT: GAgent;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static ClearGlobalAgent() {
+    GAgent.GLOBAL_AGENT = new GAgent('GlobalAgent');
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static GetGlobalAgent() {
+    if (GAgent.GLOBAL_AGENT === undefined)
+      GAgent.GLOBAL_AGENT = new GAgent('GlobalAgent');
+    return GAgent.GLOBAL_AGENT;
+  }
   // end of Agent class
 }
 
@@ -565,23 +570,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 GAgent.Symbols = undefined; // set by GAgent.makeDefaultSymbols()
 
-/// GLOBAL INSTANCES //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// The global agent is our "World Agent" that contains shared properties for
-/// a running simulation
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let GLOBAL_AGENT = new GAgent('GlobalAgent');
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetGlobalAgent() {
-  return GLOBAL_AGENT;
-}
-function ClearGlobalAgent() {
-  // REVIEW: Is there a more proper way to remove an agent?
-  GLOBAL_AGENT = new GAgent('GlobalAgent');
-}
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export main Agent
 export default GAgent;
-export { GetGlobalAgent, ClearGlobalAgent };

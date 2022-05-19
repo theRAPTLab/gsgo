@@ -33,9 +33,7 @@ import { OutlineFilter } from '@pixi/filter-outline';
 import { GlowFilter } from '@pixi/filter-glow';
 import * as ASSETS from 'modules/asset_core';
 import FLAGS from 'modules/flags';
-import { IVisual } from './t-visual';
-import { IPoolable } from './t-pool.d';
-import { IActable } from './t-script';
+// uses types from t-visual, t-pool, t-script
 import { MakeDraggable } from './vis/draggable';
 import { MakeHoverable } from './vis/hoverable';
 import { MakeSelectable } from './vis/selectable';

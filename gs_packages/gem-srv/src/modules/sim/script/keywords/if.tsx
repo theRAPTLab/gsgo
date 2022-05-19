@@ -6,8 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Keyword from 'lib/class-keyword';
-import { TOpcode, TScriptUnit, TSymbolData } from 'lib/t-script';
-import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCENGINE from 'modules/datacore/dc-sim-data';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -14,14 +14,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  TOpcode,
-  TRegcode,
-  ISMCBundle,
-  TSymbolData,
-  ISMCPrograms,
-  EBundleType
-} from './t-script.d';
+// uses types from t-script
+import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,10 +37,10 @@ export default class SM_Bundle implements ISMCBundle {
   test: TOpcode[]; // returns true or false
   conseq: TOpcode[]; // run if true
   alter: TOpcode[]; // run if false
-  // tags
-  tags: Map<string, any>;
-  // symbols
+  // metadata
+  tags: TBundleTags;
   symbols: TSymbolData;
+  directives: TBundleDirectives;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   constructor(name?: string, type?: EBundleType) {
     if (typeof name === 'string') this.setName(name);

@@ -9,8 +9,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { TabProps } from '@material-ui/core';
-import { IToken } from 'lib/t-script.d';
+
+// uses types defined in t-script.d
 import { StringToParts } from 'lib/util-path';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

@@ -23,10 +23,9 @@ import {
   GVarBoolean
 } from 'modules/sim/script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
-import { IAgent, TSymbolData } from 'lib/t-script';
 import { GetAgentById } from 'modules/datacore/dc-sim-agents';
-import * as DCENGINE from 'modules/datacore/dc-sim-resources';
-import { GetGlobalAgent } from 'lib/class-gagent';
+import * as DCENGINE from 'modules/datacore/dc-sim-data';
+import GAgent from 'lib/class-gagent';
 import FLAGS from 'modules/flags';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -69,7 +68,7 @@ function m_FeaturesUpdate(frame) {
         value = agent.getProp(graphProp).value;
       } else if (agent.prop.AgentWidgets._graphGlobalProp) {
         const graphProp = agent.prop.AgentWidgets._graphGlobalProp;
-        const global = GetGlobalAgent();
+        const global = GAgent.GetGlobalAgent();
         value = global.prop[graphProp].value;
       }
       const counter = agent.prop.AgentWidgets._graphCounter++;
@@ -111,7 +110,7 @@ function m_GraphsUpdate(frame) {
       //   agent.prop[agent.prop.AgentWidgets._histogramFeature][
       //     agent.prop.AgentWidgets._histogramProp
       //   ];
-      const GLOBAL_AGENT = GetGlobalAgent();
+      const GLOBAL_AGENT = GAgent.GetGlobalAgent();
       const values =
         GLOBAL_AGENT.prop[agent.prop.AgentWidgets._histogramFeature][
           agent.prop.AgentWidgets._histogramProp

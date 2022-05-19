@@ -8,11 +8,13 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import GAgent from 'lib/class-gagent';
+
 import SM_Bundle from 'lib/class-sm-bundle';
-import { TSMCProgram, TInstance, EBundleType } from 'lib/t-script.d';
+import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
+
+import GAgent from 'lib/class-gagent';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCENGINE from 'modules/datacore/dc-sim-data';
 
 // critical imports
 import 'script/keywords/_all_keywords';
@@ -43,6 +45,7 @@ function CompileText(text: string = ''): TSMCProgram {
 
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: */
 function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
   // ensure that bundle has at least a define and name
   if (bdl.type === EBundleType.INIT) {
@@ -52,7 +55,7 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
     if (DBG) console.group(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
     // First deregister the blueprint if it exists
     // RemoveGlobalCondition(bdl.name); // deprecatd in script-xp
-    DCENGINE.SaveBlueprint(bdl);
+    DCENGINE.SaveBlueprintBundle(bdl);
     // run conditional programming in template
     // this is a stack of functions that run in global context
     // initialize global programs in the bundle
@@ -64,9 +67,11 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
   console.log(bdl);
   throw Error('not blueprint');
 }
+
+/// AGENT UTILITIES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Utility to make an Agent. This has to be done in a module outside of
- *  dc-sim-agents, because datacore modules must be pure definition
+/** API: "Make" an agent using an instance definitions, which adds the new
+ *  instance to the simulation engine data
  */
 function MakeAgent(instanceDef: TInstance) {
   const fn = 'MakeAgent:';
@@ -75,7 +80,7 @@ function MakeAgent(instanceDef: TInstance) {
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
   if (typeof bpid === 'string') {
-    const bdl = DCENGINE.GetBlueprint(bpid);
+    const bdl = DCENGINE.GetBlueprintBundle(bpid);
     if (!bdl) throw Error(`agent blueprint for '${bpid}' not defined`);
     // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
     agent.setBlueprint(bdl);
@@ -94,29 +99,35 @@ function RemoveAgent(instanceDef: TInstance) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// API: These methods make new agents from registered blueprints that are
+/// created by CompileBlueprint()
+export {
+  MakeAgent, // BlueprintName => Agent
+  RemoveAgent,
+  RegisterBlueprint
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// API: These methods are related to transpiling GEMSCRIPT
 /// from source text and
 export {
   CompileText // compile a script text that IS NOT a blueprint
 };
 export {
-  CompileScript, // API: return a TSMCProgram from a script text
-  CompileBlueprint, // API: return a blueprint bundle from a blueprint text
   DecodeTokenPrimitive, // utility: to convert a scriptToken into runtime data
   DecodeToken, // utility: with DecodeTokenPrimitive, converts a token into runtime entity
-  UnpackToken, // utility: more useful version of DecodeToken
   DecodeStatement, // utility: works with DecodeToken to create runtime enties
   SymbolizeStatement, // utility: extract symbols defined by a keyword
-  ValidateStatement // utility: check script tokens against symbols
+  ValidateStatement, // utility: check script tokens against symbols
+  //
+  CompileScript, // API: return a TSMCProgram from a script text
+  ExtractBlueprintDirectives, // API: return directives from script text
+  //
+  CompileBlueprint, // API: save a blueprint script as a bundle with program output
+  SymbolizeBlueprint, // API: save blueprint symbols to a bundle
+  ValidateBlueprint, // API: save validation tokens to a bundle
+  BundleBlueprint // API: Compile,Symbolize,Validate a blueprint script to a bundle
 } from 'script/tools/script-compiler';
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// API: These methods make new agents from registered blueprints that are
-/// created by CompileBlueprint()
-export {
-  RegisterBlueprint, // TScriptUnit[] => ISM_Bundle
-  MakeAgent, // BlueprintName => Agent
-  RemoveAgent
-};
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// FORWARDED API: convert text to tokenized scripts
 export {

@@ -22,22 +22,16 @@
 
 import UR from '@gemstep/ursys/client';
 import { TStateObject } from '@gemstep/ursys/types';
-import * as ASSETS from 'modules/asset_core/asset-mgr';
 import * as TRANSPILER from 'script/transpiler-v2';
 import ScriptLiner from 'script/tools/script-to-lines';
-import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCENGINE from 'modules/datacore/dc-sim-data';
+import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import {
   DecodeSymbolViewData,
   UnpackViewData,
   UnpackSymbolType
 } from 'script/tools/symbol-helpers';
-import {
-  GS_ASSETS_PROJECT_ROOT,
-  DEV_ASSETDIR,
-  DEV_PRJID,
-  DEV_BPID
-} from 'config/gem-settings';
-import { TValidatedScriptUnit, TSymbolData, ISMCBundle } from 'lib/t-script';
+import { DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 import { GetTextBuffer } from 'lib/class-textbuffer';
 
 // load state
@@ -47,8 +41,6 @@ const { StateMgr } = UR.class;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('WIZCORE', 'TagCyan');
 const DBG = true;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let PROJECTS; // current project class-asset-loader
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -81,21 +73,26 @@ _initializeState({
   // script UI interaction
   script_text: '# BLUEPRINT AWAIT LOAD', // the source text (WizardText)
   script_tokens: [], // source tokens (from text)
+
   script_page: [], // source tokens 'printed' as lines
   line_tokmap: new Map(), // lookup map from tokenLine+Pos to original token
+
   sel_linenum: -1, // selected line of wizard. If < 0 it is not set
   sel_linepos: -1, // select index into line. If < 0 it is not set
   error: '', // used for displaying error messages
+
   // project context
   proj_list: [], // project list
   cur_prjid: null, // current project id
   cur_bpid: null, // current blueprint
   cur_bdl: null, // current blueprint bundle
+
   // selection-driven data
   sel_symbol: null, // selection-dependent symbol data
   sel_validation: null, // { validationTokens, validationLog }
   sel_context: null, // selection-dependent context
   sel_unittext: '', // selection-dependent unit_text
+
   // runtime filters to limit what to show
   rt_bpfilter: null,
   rt_propfilter: null,
@@ -117,8 +114,8 @@ UR.HookPhase('UR/LOAD_ASSETS', async () => {
     '%cvalues are hardcoded as DEV_PRJID and DEV_BPID in ac-wizcore',
     'color:gray'
   );
-  [PROJECTS] = await ASSETS.PromiseLoadAssets(DEV_ASSETDIR);
-  console.log(...PR(`loaded assets from '${DEV_ASSETDIR}'`));
+  // return promise to hold LOAD_ASSETS until done
+  return PROJ_v2.LoadAssetDirectory('/assets/art-assets/');
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// DEFERRED CALL: APP_CONFIGURE fires after LOAD_ASSETS (above) completes
@@ -126,7 +123,7 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
   const cur_prjid = DEV_PRJID;
   const cur_bpid = DEV_BPID;
   // This retrieves the uncompiled/unbundled bpDef object {name, scriptText} from gem proj
-  const bp = GetProjectBlueprint(cur_prjid, cur_bpid);
+  const bp = PROJ_v2.GetProjectBlueprint(cur_prjid, cur_bpid);
   const { scriptText: script_text } = bp;
   const vmState = { cur_prjid, cur_bpid, script_text };
   SendState(vmState);
@@ -142,7 +139,7 @@ _interceptState(state => {
   if (!script_tokens && script_text) {
     const toks = TRANSPILER.TextToScript(script_text);
     state.script_tokens = toks;
-    state.cur_bdl = TRANSPILER.CompileBlueprint(toks);
+    state.cur_bdl = TRANSPILER.BundleBlueprint(toks);
     const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
     state.script_page = vmPage;
     state.line_tokmap = tokMap;
@@ -289,7 +286,7 @@ function WizardTextChanged(text) {
     // and update the state WITHOUT broadcasting the changes
     // to avoid retriggering the scriptText editor
     script_tokens = TRANSPILER.TextToScript(text); // can throw error
-    cur_bdl = TRANSPILER.CompileBlueprint(script_tokens); // can throw error
+    cur_bdl = TRANSPILER.BundleBlueprint(script_tokens); // can throw error
     _setState({ script_text: text, script_tokens, cur_bdl });
     // since the script tokens have changed, need to redo the viewmodels for
     // the scriptWizard and tell it to update
@@ -520,60 +517,10 @@ function IsTokenInMaster(tok) {
   return found;
 }
 
-/// ASSET UTILITIES ///////////////////////////////////////////////////////////
+/// UI-to-APP STATE AND MODES /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function LoadAssetDirectory(dir = GS_ASSETS_PROJECT_ROOT) {
-  [PROJECTS] = await ASSETS.DBG_ForceLoadAsset(dir);
-  console.log(...PR(`loaded assets from '${dir}'`));
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: return array of string project ids (.gemprj files) using the
- *  current PROJECTS asset loader instance
- */
-function GetProjectList() {
-  if (PROJECTS === undefined) throw Error('GetProjectList: no projects loaded');
-  return PROJECTS.getProjectsList(); // Array{ id, label }
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: return { id, metadata, blueprints, instances, rounds, label }
- *  for the given project id (.gemprj files)
- */
-function GetProject(prjId = DEV_PRJID) {
-  if (PROJECTS === undefined) throw Error('GetProject: no projects loaded');
-  try {
-    const project = PROJECTS.getProjectByProjId(prjId);
-    return project;
-  } catch (e) {
-    const root = GS_ASSETS_PROJECT_ROOT;
-    const assetUrl = 'http://localhost/assets';
-    const isDefault = prjId === DEV_PRJID;
-    let out = `
-ASSET ERROR: Project "${prjId}" not found!
-
-1. Browse to '${assetUrl}' in Chrome.
-    Does '${prjId}' appear in folder listing?
-2. Check the gsgo/gs_assets/${root} drive directory.
-    Does the ${prjId} dir exist?`;
-    if (isDefault)
-      out += `
-3. You are loading the default project path.
-    is GS_ASSETS_PROJECT_ROOT set in local-settings.json?`;
-    alert(out);
-  }
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: return the blueprint object { id, label, scriptText } for the
- *  given projectId and blueprintId
- */
-function GetProjectBlueprint(prjId = DEV_PRJID, bpName = DEV_BPID) {
-  const fn = 'GetProjectBlueprint:';
-  const project = GetProject(prjId);
-  if (project === undefined) throw Error(`no asset project with id ${prjId}`);
-  const { blueprints } = project;
-  const match = blueprints.find(bp => bp.name === bpName);
-  if (match === undefined)
-    throw Error(`${fn} no blueprint ${bpName} in project ${prjId}`);
-  return match;
+export function UIToggleRunEditMode() {
+  SendState({ dev_or_user: 1 - State().dev_or_user });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return the blueprint of the given project,
@@ -581,84 +528,43 @@ function GetProjectBlueprint(prjId = DEV_PRJID, bpName = DEV_BPID) {
  *  object or undefined if no exist
  */
 function LoadProjectBlueprint(prjId, bpName) {
-  const { blueprints } = PROJECTS.getProjectByProjId(prjId);
+  const { blueprints } = PROJ_v2.GetProject(prjId);
   if (!blueprints) return `no projectId '${prjId}'`;
   const found = blueprints.find(bp => bp.name === bpName);
   if (!found) return `no blueprint '${bpName}' found in '${bpName}'`;
   const { scriptText } = found;
   const scriptToks = TRANSPILER.TextToScript(scriptText);
-  let cur_bdl = TRANSPILER.CompileBlueprint(scriptToks);
+  let cur_bdl = TRANSPILER.BundleBlueprint(scriptToks);
   SendState({ script_text: scriptText, cur_bdl }, () => {});
 }
 
-/// UI-to-APP STATE AND MODES /////////////////////////////////////////////////
+/// PROTOTYPING ///////////////////////////////////////////////////////////////
+/// script-compiler CompileBlueprintBundle
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function UIToggleRunEditMode() {
-  SendState({ dev_or_user: 1 - State().dev_or_user });
-}
+/** testing the bundler + symbolizer code */
+UR.AddConsoleTool('bundle', (bpName: string) => {
+  //
+  const assetDir = 'assets/art-assets';
+  const projectId = 'aquatic_energy';
 
-/// DEBUGGING METHODS /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.AddConsoleTool({
-  load_proj: dir => LoadAssetDirectory(dir),
-  list_proj: () => {
-    const list = PROJECTS.getProjectsList();
-    let out = '';
-    list.forEach(project => {
-      const { id, label } = project;
-      if (!id.startsWith('_template_')) out += `  '${id}'\n`;
-    });
-    console.log(out);
-  },
-  list_proj_bps: projId => {
-    if (typeof projId !== 'string') {
-      console.log('ERROR: you must provide a projId string from this list:');
-      (window as any).list_proj();
-      return;
-    }
-    try {
-      const project = GetProject(projId);
-      const { blueprints } = project;
-      let out = '';
-      blueprints.forEach(bp => {
-        const { id, label } = bp;
-        out += `  '${id}'\n`;
-      });
-      console.log(out);
-      console.log('to load new blueprint, use:');
-      console.log(`    load_proj_bp('${projId}', 'Blueprint')`);
-      console.log(' and the editor will refresh');
-    } catch (e) {
-      console.log(`error loading blueprint '${projId}' does it exist?`);
-      (window as any).list_proj_bps();
-    }
-  },
-  load_proj_bp: (projId, bpName) => {
-    if (typeof projId !== 'string') {
-      console.log('must provide a projId string from this list:');
-      (window as any).list_projects();
-      return;
-    }
-    if (typeof bpName !== 'string') {
-      console.log('must provide a blueprint string from this list:');
-      (window as any).list_bps(projId);
-    }
-    LoadProjectBlueprint(projId, bpName);
-    console.log('*** RELOADING STATE');
-  }
+  // PROJECT LOADER - GET A BLUEPRINT SCRIPT TEXT
+  PROJ_v2.LoadAssetDirectory(assetDir);
+  const { scriptText } = PROJ_v2.GetProjectBlueprint(projectId, bpName);
+  // CREATE SCRIPT
+  const script = TRANSPILER.TextToScript(scriptText);
+  // Make the bundle
+  const { symbols } = TRANSPILER.SymbolizeBlueprint(script);
+  const bdl = TRANSPILER.CompileBlueprint(script);
+  // const { page } = TRANSPILER.ValidateBlueprint(script)
+  TRANSPILER.RegisterBlueprint(bdl);
+  // RETURN SYMBOLIZE BLUEPRINT
+  return symbols;
 });
-
-/// EXPORTED BLUEPRINT UTILS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export {
-  LoadAssetDirectory, // force load asset directory (for debugging)
-  GetProjectList, // return projectIds in current assets (.gemprj)
-  GetProject, // return project data by projectId or undefined
-  GetProjectBlueprint // return prjId's bpId or undefined
-};
-export {
-  LoadProjectBlueprint // load scriptText, trigger Wizard redraw
-};
+/** run bundler prototype test */
+UR.HookPhase('UR/APP_START', () => {
+  setTimeout(() => (window as any).bundle('Fish'), 1000);
+});
 
 /// EXPORTED STATE METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -696,3 +602,5 @@ export {
   UnpackViewData, // forward convert ViewData to an hybrid format
   UnpackSymbolType // forward unpack symbol into [unit,type, ...param]
 };
+
+export { LoadProjectBlueprint };

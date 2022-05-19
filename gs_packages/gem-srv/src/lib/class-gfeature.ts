@@ -13,7 +13,7 @@
 
   import GFeature from 'lib/class-gfeature';
   import { IAgent } from 'lib/t-script'
-  import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
+  import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 
   class FeaturePack extends GFeature {
     constructor(name:string) {
