@@ -1,5 +1,5 @@
 import SM_Object from 'lib/class-sm-object';
-import { IScopeable, TSymbolData } from 'lib/t-script';
+// uses types defined in t-script.d
 import { RegisterVarCTor } from 'modules/datacore';
 
 export class GVarBoolean extends SM_Object implements IScopeable {

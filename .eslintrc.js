@@ -83,6 +83,19 @@ module.exports = {
     'no-debugger': 'warn',
     'no-alert': 'warn',
     'no-restricted-syntax': 'off',
+    /* typescript recommendations */
+    'no-undef': 'off', // TS handles this better; works with global types
+    'no-unused-vars': 'off',
+    'no-shadow': 'off',
+    'no-param-reassign': 'off',
+    'object-curly-newline': 'off',
+    'react/jsx-props-no-spreading': 'off',
+    'arrow-body-style': 'off',
+    'no-plusplus': 'off',
+    'prefer-const': 'off',
+    'prefer-destructuring': 'off',
+    'class-methods-use-this': 'off',
+    'jsx-a11y/label-has-associated-control': 'off',
     /* ursys style overrides */
     'spaced-comment': 'off',
     'camelcase': 'off',
@@ -111,18 +124,6 @@ module.exports = {
     'react/forbid-prop-types': 'off',
     'react/prop-types': 'off',
     /* disable prettier conflicts manually */
-    'arrow-parens': 'off',
-    /* disable eslint rules that are double-reported due to typescript */
-    'no-unused-vars': 'off',
-    'no-shadow': 'off',
-    'no-param-reassign': 'off',
-    'object-curly-newline': 'off',
-    'react/jsx-props-no-spreading': 'off',
-    'arrow-body-style': 'off',
-    'no-plusplus': 'off',
-    'prefer-const': 'off',
-    'prefer-destructuring': 'off',
-    'class-methods-use-this': 'off',
-    'jsx-a11y/label-has-associated-control': 'off'
+    'arrow-parens': 'off'
   }
 };

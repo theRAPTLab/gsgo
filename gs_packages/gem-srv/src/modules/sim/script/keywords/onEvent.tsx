@@ -5,9 +5,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Keyword from 'lib/class-keyword';
-import { TSMCProgram, TOpcode, TScriptUnit } from 'lib/t-script';
-import { CompilerState } from 'modules/datacore/dc-sim-bundler';
-import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
+import * as DCENGINE from 'modules/datacore/dc-sim-data';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,10 +21,10 @@ export class onEvent extends Keyword {
   compile(unit: TScriptUnit, idx?: number): TOpcode[] {
     let [kw, eventName, consq] = unit;
     consq = this.utilFirstValue(consq); // a program name possibly?
-    const { bundleName } = CompilerState();
+    const { bpName } = DCBUNDLER.BundlerState();
     DCENGINE.SubscribeToScriptEvent(
       String(eventName),
-      bundleName,
+      bpName,
       consq as TSMCProgram
     );
     // this runs in global context inside sim-conditions

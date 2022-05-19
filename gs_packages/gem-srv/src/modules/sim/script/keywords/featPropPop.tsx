@@ -6,9 +6,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Keyword, { K_DerefFeatureProp } from 'lib/class-keyword';
-import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
-import { GetGlobalAgent } from 'lib/class-gagent';
+import GAgent from 'lib/class-gagent';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,7 +37,7 @@ export class featPropPop extends Keyword {
         // eslint-disable-next-line @typescript-eslint/dot-notation
         let prop;
         if (ref[0] === 'Global') {
-          prop = GetGlobalAgent().getProp(pName);
+          prop = GAgent.GetGlobalAgent().getProp(pName);
         } else {
           prop = agent.getFeatProp(ref[0] as string, pName);
         }

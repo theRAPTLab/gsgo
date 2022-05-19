@@ -1,11 +1,22 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  PROJECT ASSET_CORE LOADER for ASSET MANAGER
+  PROJECT LOADER for ASSET MANAGER
 
-  Extends AssetLoader with additional Project-related information
+  ROLE:
+    Manages and stores a type of asset on behalf of manager
+    Loads assets as a read-only resource into its own dictionary.
 
-  * getProjectsList
-  * getProjectByProjId
+  PATTERNS:
+    Assets have an id that is unique across all asset types that is assigned
+    by the asset manifest.
+
+    Loaders are initialized by passing an asset list to queueAssetList(),
+    but the assets are not loaded until promiseLoadAssetList() is
+    called.
+
+    Retrieving assets is handled by the base class. Since assets all
+    have a universal ID system, it is possible for the base clase
+    to provide a consistent interface across multiple types of assets.
 
   See `class-asset-loader` for the underlying utility methods.
 
@@ -13,20 +24,12 @@
 
 import UR from '@gemstep/ursys/client';
 import AssetLoader from './class-asset-loader';
-import { TAssetDef, TAssetType } from '../../lib/t-assets';
-import {
-  GS_ASSETS_ROUTE,
-  GS_ASSETS_PROJECT_ROOT
-} from '../../../config/gem-settings';
+// import { TAssetDef, TAssetType } from '../../lib/t-assets';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AS-PROJECT');
-const ASSET_URL = `${GS_ASSETS_ROUTE}`;
 const DBG = false;
-
-/// MODULE HELPERS /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -34,54 +37,13 @@ class ProjectLoader extends AssetLoader {
   // _loader: PIXI.Loader;
   _loadCount: number;
 
-  /** please initialize queue mechanism through super(type) */
-  constructor(assetType: TAssetType) {
-    super(assetType);
+  constructor() {
+    super('projects');
     this._loadCount = 0;
-    // this._loadProgress = this._loadProgress.bind(this);
-    // this._loader.onProgress.add(this._loadProgress);
-    // this._loadComplete = this._loadComplete.bind(this);
-    // this._loader.onComplete.add(this._loadComplete);
   }
 
   /// INHERITED FROM ASSETLOADER BASE CLASS ///////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ NOTE: you can refer to an asset either by id or name. The id is unique
-      across all loaders, but the name is unique only within their loader.
-
-      The base AssetLoader class manages the dictionary storage and lookup for
-      you with these methods:
-
-      * type() - returns the asset type (e.g. 'sprites')
-      * hasAsset(name) - return true if asset w/ name
-      * hasAssetId(id) - return true if asset w/ id
-      * lookupAssetId(name) - return id associated with name
-
-      When retrieving and storing asset records, these are in the form of
-      TResource which looks like { assetId, assetName, assetURL, ?rsrc, ?error }
-
-      * getAssetById(id) - return asset record for id
-      * getAsset(name) - return asset recod for name
-
-      These special protected methods are used to add an AssetDefinition to a
-      queue managed by the AssetLoader base class:
-
-      * _queueAsset(id,name,url) - add an AssetDef to the queue
-      * _nextAsset() - return the AssetDef at the top of queue, removing it
-      * _saveAsset(assetDef, rsrc, ?error) - save the loaded rsrc
-      * _unloadAsset(name) - remove asset by name to release memory
-      * _unloadAll() - remove all assets in the dictionaries, resetting
-
-      Subclassers use these methods to implement asset-specific loader code,
-      making use of the queue methods listed above"
-
-      * queueAssetList(asList) - optional override. Queue a list of AssetDefs
-      * promiseLoadAssets() - must override. return promise for loading queue
-
-      It's presumed that all assets have a name, an id assigned by the Asset
-      Manifest, and a URL that points to the resource on-disk or on an http
-      server.
-  /*/
+  /// see class-asset-loader for provided methods
 
   /// LOADER-SPECIFIC METHOD OVERRIDES and METHODS ////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -91,66 +53,34 @@ class ProjectLoader extends AssetLoader {
       const { assetId, assetName, assetUrl } = item;
       if (typeof assetId !== 'number') throw Error('bad/missing assetId in list');
       if (!(assetId && assetName && assetUrl)) throw Error('bad asset list');
-      const remoteUrl = `${ASSET_URL}/${assetUrl}`;
-      this._queueAsset(assetId, assetName, remoteUrl);
+      this._queueAsset(assetId, assetName, assetUrl);
     });
   }
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** override this method to implement own loader. should return a promise
    *  that will be added to an array of Promises to exist during ASSET_LOAD
    */
   promiseLoadAssets(): Promise<TAssetDef[]> {
-    const i = this._loadCount;
-    if (DBG) console.log(...PR(`[${i}] loading ${this._queue.length} items...`));
-    // define function to return wrapped in promise
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const loadAssets = (resolve: Function, reject: Function) => {
-      // if (this._loader.loading) {
-      //   const batch = this._loadCount;
-      //   console.warn(`error: batch [${batch}] is still loading`);
-      //   reject();
-      //   return;
-      // }
+    const promises = [];
 
-      const loader = [];
-      // (1)
-      // pop queued assets and add to the loader queue
-      let item: TAssetDef = this._nextAsset();
-      while (item !== undefined) {
-        this._saveAsset(item); // write stub without resource to lookup later
-        const { assetName, assetUrl } = item;
-        if (DBG) console.log(...PR('Loading', assetName, assetUrl));
-        loader.push({
-          assetName,
-          assetUrl
-        });
-
-        ++this._loadCount;
-
-        item = this._nextAsset();
-      } // end while
-
-      // (2)
-      // project loader: read files and save it to resource
-      loader.forEach(l => {
-        const { assetName, assetUrl } = l;
-        const assetId = this.lookupAssetId(assetName);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const fetchProject = new Promise((res, rej) => {
-          const project = fetch(assetUrl).then(async response => {
-            if (!response.ok) throw new Error('network error');
-            return response.text();
-          });
-          res(project);
-        }).then(result => {
+    let item: TAssetDef = this._nextAsset();
+    while (item !== undefined) {
+      this._saveAsset(item); // write stub without resource to lookup later
+      const { assetName, assetUrl } = item;
+      const assetId = this.lookupAssetId(assetName);
+      // note: fetch returns a promise, so you don't need to wrap it in one
+      const promiseFetch = fetch(assetUrl)
+        .then(response => {
+          if (!response.ok) throw new Error('network error');
+          return response.text();
+        })
+        .then(result => {
           // convert .gemprj format to json
           // 1. Look for scripts inside of ``
           // 2. For each ``, insert "\n" and replace ` with "
           const cleaned = String(result).replace(/`[\s\S]*?`/g, match => {
             return match.replace(/\n/g, '\\n').replace(/`/g, '"');
           });
-
           try {
             const json = JSON.parse(cleaned);
             // Override the project.id with the filename
@@ -158,18 +88,18 @@ class ProjectLoader extends AssetLoader {
             const filename = paths[paths.length - 1];
             const url = encodeURIComponent(filename.split('.')[0]);
             json.id = url;
-
             this._saveAsset({ assetId, assetName }, json);
           } catch (err) {
             console.error(...PR(`parse error ${err} on ${assetName}`));
           }
         });
-      });
-      // we need to call resolve otherwise the promise is never fulfilled
-      resolve(this);
-    };
-    return new Promise(loadAssets);
+      promises.push(promiseFetch);
+      item = this._nextAsset();
+    } // end while
+    return Promise.all(promises);
   }
+
+  /// ASSET TYPE-SPECIFIC OPERATIONS //////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Returns array of projects [{id, label}] */
   getProjectsList(): any {
@@ -185,7 +115,7 @@ class ProjectLoader extends AssetLoader {
   getProjectBlueprints(prjId): any {
     const project = this.getProjectByProjId(prjId);
     if (!project || project.id === undefined)
-      return `no projectId '${prjId}' in ${GS_ASSETS_PROJECT_ROOT}`;
+      return `no projectId '${prjId}' found`;
     const { blueprints } = project;
     if (!Array.isArray(blueprints)) return 'bad project.blueprints object';
     // gpt this far, valid blueprint list
@@ -204,7 +134,7 @@ class ProjectLoader extends AssetLoader {
       if (!a.rsrc) {
         console.error(
           ...PR(
-            `getProjectByProjId for project '${projId}' could not find a valid 'rsrc' -- review gemproj file or promiseLoadAssets`
+            `getProjectByProjId for project '${projId}' could not find a valid 'rsrc' entry -- review gemproj file or promiseLoadAssets`
           )
         );
         return undefined;

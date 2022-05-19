@@ -6,20 +6,21 @@
   types. We need these because we're interpreting GEM-SCRIPT, and can't rely
   on Typescript's compile-time static type checking to help us here.
 
-  inherits data structures from
-  - dc-sim-resources    ValidateArgs used by RegisterKeyword
+  Decoders take an object and interpret it as a value
+  Unpackers take an object and return [type, value]
+  Validators take an object and return the value, validOptions, and errors
+
+  A kwTok is a scriptToken that follows the keyword. They are of type IToken,
+  an object with properties.
+  A mArg is an argument passed to an SMObject method. They are of type
+  TSymArg, a formatted string.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  TSymArg,
-  TSymUnpackedArg,
-  TSValidType,
-  EBundleType
-} from 'lib/t-script.d';
-
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+import { EBundleType, EBundleTag } from 'modules/../types/t-script.d'; // workaround to import as obj
+
 const DBG = false;
 const VALID_ARGTYPES: TSValidType[] = [
   // see t-script.d "SYMBOL DATA AND TYPES"
@@ -48,20 +49,20 @@ const VALID_ARGTYPES: TSValidType[] = [
   '{...}'
 ];
 
-/// KEYWORD UTILITIES /////////////////////////////////////////////////////////
+/// METHOD ARGUMENT UTILITIES /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given an array of TSymbolArgType (or array of arrays TSymbolArgType)
  *  iterate through all the argument definitions and make sure they are
  *  valid syntax
  */
-function ValidateArgs(args: TSymArg[]): boolean {
-  const fn = 'ValidateArgs';
+function AreValidArgs(args: TSymArg[]): boolean {
+  const fn = 'AreValidArgs';
   if (!Array.isArray(args)) {
     console.warn(`${fn}: invalid argtype array`);
     return false;
   }
   for (const arg of args) {
-    if (Array.isArray(arg)) return ValidateArgs(arg);
+    if (Array.isArray(arg)) return AreValidArgs(arg);
     if (typeof arg !== 'string') {
       console.warn(`${fn}: invalid argDef ${typeof arg}`);
       return false;
@@ -122,16 +123,64 @@ const BUNDLE_CONTEXTS = [
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function IsValidBundleProgram(name: string): boolean {
-  return BUNDLE_CONTEXTS.includes(name);
+  return BUNDLE_CONTEXTS.includes(name.toLowerCase());
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return true if the passed bundle string is valid */
 function IsValidBundleType(type: EBundleType) {
   return Object.values(EBundleType).includes(type as any);
 }
-
-/// MODULE ExPORTS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return true if the passed bundle string is valid */
+function IsValidBundleTag(type: EBundleType) {
+  return Object.values(EBundleTag).includes(type as any);
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { ValidateArgs, UnpackArg };
-export { UnpackToken } from 'script/tools/class-gscript-tokenizer-v2';
-export { IsValidBundleProgram, IsValidBundleType };
+/** API: returns bundle if it is a bundle with minimum properties,
+ *  throw error otherwise
+ */
+function IsValidBundle(bundle: ISMCBundle) {
+  const fn = 'IsValidBundle:';
+  if (bundle === undefined) {
+    console.warn(`${fn} arg must be bundle object`);
+    return false;
+  }
+  const { symbols, name } = bundle;
+  if (typeof name !== 'string' || name.length === 0) {
+    console.warn(`${fn} bundle missing name`);
+    return false;
+  }
+  const { props, features } = symbols;
+  const hasSymbols =
+    typeof props !== 'undefined' || typeof features !== 'undefined';
+  if (hasSymbols) return true;
+  console.warn(`${fn} missing props or features dict(s)`, bundle);
+  return undefined;
+}
+
+/// MODULE EXPORTS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// token check utilities
+export {
+  // type checks
+  IsNonCodeToken,
+  IsValidToken,
+  IsValidTokenType,
+  // token evaluation
+  DecodePragmaToken,
+  DecodeKeywordToken,
+  UnpackToken,
+  TokenValue
+} from 'script/tools/class-gscript-tokenizer-v2';
+export {
+  // method arguments
+  UnpackArg,
+  AreValidArgs
+};
+export {
+  /// bundle checking utilities
+  IsValidBundleProgram,
+  IsValidBundleType,
+  IsValidBundleTag,
+  IsValidBundle
+};

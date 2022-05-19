@@ -4,17 +4,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  ISyncResults,
-  IPoolable,
-  MapFunctions,
-  AddFunction,
-  UpdateFunction,
-  RemoveFunction,
-  TestFunction,
-  PoolableMap,
-  PoolableArray
-} from './t-pool.d';
+// uses types from t-pool.d
 import Pool from './class-pool';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

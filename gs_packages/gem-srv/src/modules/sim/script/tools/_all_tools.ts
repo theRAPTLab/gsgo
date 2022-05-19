@@ -4,7 +4,7 @@ import ExpressionEvaluator, { Evaluate } from './class-expr-evaluator-v2';
 /// CORE METHODS
 export {
   CompileScript,
-  CompileBlueprint,
+  BundleBlueprint,
   DecodeTokenPrimitive,
   DecodeToken,
   DecodeStatement

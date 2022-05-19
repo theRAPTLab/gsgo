@@ -18,18 +18,12 @@
 
 import UR from '@gemstep/ursys/client';
 
-import * as CHECK from 'modules/datacore/dc-type-check';
-import * as ENGINE from 'modules/datacore/dc-sim-resources';
+import * as CHECK from 'modules/datacore/dc-sim-data-utils';
+import * as ENGINE from 'modules/datacore/dc-sim-data';
 import * as BUNDLER from 'modules/datacore/dc-sim-bundler';
 import * as TOKENIZER from 'script/tools/class-gscript-tokenizer-v2';
-import {
-  IToken,
-  TSymbolData,
-  TSymbolRefs,
-  TSymbolErrorCodes,
-  TSymMethodSig,
-  TSymbolViewData
-} from 'lib/t-script.d';
+
+// uses types defined in t-script.d
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -122,7 +116,7 @@ class SymbolHelper {
     const fn = 'setReferences:';
     const { bundle, globals } = refs || {};
     if (bundle) {
-      if (BUNDLER.IsValidBundle(bundle)) this.refs.bundle = bundle;
+      if (CHECK.IsValidBundle(bundle)) this.refs.bundle = bundle;
       else throw Error(`${fn} invalid bundle`);
     }
     if (!bundle.symbols)
@@ -476,7 +470,7 @@ class SymbolHelper {
 
     // all gvars available in system match token.identifier
     if (argType === 'gvar' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const map = ENGINE.GetAllVarCtors();
+      const map = ENGINE.GetPropTypesDict();
       const ctors = {};
       const list = [...map.keys()];
       list.forEach(ctorName => {
@@ -500,7 +494,7 @@ class SymbolHelper {
     // all blueprint symbols in project match token.identifier
     // e.g. when agent test, when agentA test agentB
     if (argType === 'blueprint' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const list = ENGINE.GetAllBlueprints();
+      const list = ENGINE.GetAllBlueprintBundles();
       const blueprints = {};
       list.forEach(bundle => {
         blueprints[bundle.name] = bundle.symbols;

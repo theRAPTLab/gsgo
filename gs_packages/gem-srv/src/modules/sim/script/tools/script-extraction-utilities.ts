@@ -14,7 +14,7 @@ import {
 } from 'script/vars/_all_vars';
 import GAgent from 'lib/class-gagent';
 import { TextToScript } from './text-to-script';
-import { CompileBlueprint, DecodeStatement } from './script-compiler';
+import * as COMPILER from './script-compiler';
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A brute force method of retrieving the blueprint name from a script
@@ -23,7 +23,7 @@ import { CompileBlueprint, DecodeStatement } from './script-compiler';
  */
 function ExtractBlueprintName(bpText: string): string {
   const script = TextToScript(bpText);
-  const bundle = CompileBlueprint(script); // compile to get name
+  const bundle = COMPILER.BundleBlueprint(script); // compile to get name
   return bundle.name;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -205,7 +205,7 @@ function HasDirective(bpText: string, directive: string) {
   const units = TextToScript(bpText);
   let result = false;
   units.forEach(rawUnit => {
-    const unit = DecodeStatement(rawUnit);
+    const unit = COMPILER.DecodeStatement(rawUnit);
     if (unit.length !== 3) return; // we're expecting `# PROGRAM xxx` so length = 3
     if (unit[0] === '_pragma' && unit[1] === 'PROGRAM' && unit[2] === directive)
       result = true;

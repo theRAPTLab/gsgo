@@ -37,7 +37,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////xa///////////////////*/
 
-import { IToken, TScriptUnit, TArguments } from 'lib/t-script.d';
+// import { IToken, TScriptUnit, TArguments } from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -722,11 +722,11 @@ function Tokenize(text: string): IToken[] {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to validate token types
  *  returns [ token_type, token_value ] if it is a valid token,
- *  [undefined, undefined] otherwise
+ *  [undefined, errstring] otherwise
  */
 function UnpackToken(tok: IToken): [type: string, value: any] {
   // null tokens return error
-  if (typeof tok !== 'object') return ['<undefined>', undefined];
+  if (typeof tok !== 'object') return [undefined, 'not an object'];
   // count number of valid types in the token
   // we allow only one of these, but ignore other
   // properties
@@ -737,14 +737,14 @@ function UnpackToken(tok: IToken): [type: string, value: any] {
   };
   const found_types = Object.keys(types).reduce(f_counter, 0);
   // an IToken can only contain one property
-  if (found_types > 1) return [undefined, undefined];
+  if (found_types > 1) return [undefined, 'malformed token'];
 
   // if we get this far, then valid single type
   const [type] = types; // extract the type
   const test = validTokenTypes[type];
   // test if type key value is expected type
-  if (typeof test !== 'function') return [undefined, undefined];
-  if (!test(tok[type])) return [undefined, undefined];
+  if (typeof test !== 'function') return [undefined, 'internal error'];
+  if (!test(tok[type])) return [undefined, 'invalid token value'];
   // if got this far, it's a valid token, so return its decoded value
   // as [ tokenType, tokenValue ]
   return [type, tok[type]];
@@ -811,17 +811,33 @@ function TokenValue(tok, matchType?: string) {
   if (matchType && matchType !== type) return undefined;
   return tokenValue;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Utility to return the pragma value if it is one, undefined otherwise */
+function DecodePragmaToken(tok: IToken): string[] {
+  const [type, tokenValue] = UnpackToken(tok);
+  if (type === '_pragma') return tokenValue;
+  return undefined;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function DecodeKeywordToken(tok: any): string {
+  const fn = 'DecodeKeywordToken:';
+  const [type, value] = UnpackToken(tok);
+  if (type === 'directive') return '_pragma';
+  if (type === 'line') return '';
+  if (type === 'comment') return '';
+  if (type !== 'identifier') throw Error(`${fn} tok wrong type`);
+  return value;
+}
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default ScriptTokenizer;
-export {
-  Tokenize,
-  UnpackScript,
-  UnpackStatement,
-  UnpackToken,
-  IsNonCodeToken,
-  IsValidToken,
-  IsValidTokenType,
-  TokenValue
-};
+/// the main tokenizer, accepting a script text and return a fully tokenized
+/// array of statements comprised of arrays of scriptTokens, which can also
+/// be nested
+export { Tokenize };
+/// converts a tokenized script into a data structure that can be used for
+/// UI or analytical purposes. UnpackToken is the method that's most used.
+export { UnpackScript, UnpackStatement, UnpackToken };
+export { DecodeKeywordToken, DecodePragmaToken, TokenValue };
+/// utilities to return whether a particular token is of a particular type
+export { IsNonCodeToken, IsValidToken, IsValidTokenType };

@@ -16,7 +16,7 @@
 /*/ required libraries /*/
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
-import { RegisterFeature } from 'modules/datacore/dc-sim-resources';
+import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 /*/ add your other libraries here /*/
 import { GVarNumber, GVarString } from 'script/vars/_all_vars';
 

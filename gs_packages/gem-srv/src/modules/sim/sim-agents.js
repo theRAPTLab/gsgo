@@ -8,14 +8,14 @@ import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import InstanceDef from 'lib/class-instance-def';
 
-import * as DCENGINE from 'modules/datacore/dc-sim-resources';
+import SyncMap from 'lib/class-syncmap';
+import GAgent from 'lib/class-gagent';
+import DisplayObject from 'lib/class-display-object';
+
+import * as DCENGINE from 'modules/datacore/dc-sim-data';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import DisplayObject from '../../lib/class-display-object';
-import * as RENDERER from '../render/api-render';
-import { MakeDraggable } from '../../lib/vis/draggable';
-import * as TRANSPILER from './script/transpiler-v2';
-import SyncMap from '../../lib/class-syncmap';
-import { ClearGlobalAgent } from '../../lib/class-gagent';
+import * as RENDERER from 'modules/render/api-render';
+import * as TRANSPILER from 'script/transpiler-v2';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -182,11 +182,11 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
  * @param {string[]} namesToKeep array of blueprint names
  */
 function FilterBlueprints(namesToKeep) {
-  const blueprints = DCENGINE.GetAllBlueprints(); // Array of SM_Bundle
+  const blueprints = DCENGINE.GetAllBlueprintBundles(); // Array of SM_Bundle
   blueprints.forEach(b => {
     if (!namesToKeep.includes(b.name)) {
       // remove the blueprint
-      DCENGINE.DeleteBlueprint(b.name);
+      DCENGINE.DeleteBlueprintBundle(b.name);
 
       // [We can't rely on SyncMap to remove because it doesn't
       //  sync to blueprints, just to instanceDefs]
@@ -220,7 +220,7 @@ export function AllAgentsProgram(data) {
   if (!blueprintNames) return console.warn(...PR('no blueprint'));
 
   // 1. Reset Global Agent First
-  ClearGlobalAgent();
+  GAgent.ClearGlobalAgent();
 
   // 2. Remove Unused Blueprints and Agents
   FilterBlueprints(blueprintNames);
