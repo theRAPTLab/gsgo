@@ -93,7 +93,7 @@ class Compiler extends React.Component {
     // temp: make sure the blueprint
     // eventually this needs to be part of application startup
     const bdl = TRANSPILER.BundleBlueprint(this.source);
-    TRANSPILER.RegisterBlueprintBundle(bdl);
+    TRANSPILER.RegisterBlueprint(bdl);
     // codejar
     this.jarRef = React.createRef();
     this.jar = '';
@@ -193,7 +193,7 @@ class Compiler extends React.Component {
     DATACORE.DeleteAllAgents();
     DATACORE.DeleteAllInstances();
     const bdl = TRANSPILER.BundleBlueprint(this.source);
-    const bp = TRANSPILER.RegisterBlueprintBundle(bdl);
+    const bp = TRANSPILER.RegisterBlueprint(bdl);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
     // update local jsx render
     // const jsx = TRANSPILER.ScriptToJSX(this.source);
