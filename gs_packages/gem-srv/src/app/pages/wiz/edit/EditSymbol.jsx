@@ -13,7 +13,6 @@
   script unit: { identify:prop } { objref:[agent,genergy] } { identifier:setmin } { value:0 }
   valids unit: { error, unitText, gsType, ...keys of TSymbolData }, ...
 
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';

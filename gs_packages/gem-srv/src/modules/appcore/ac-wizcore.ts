@@ -245,22 +245,22 @@ function DispatchClick(event) {
   }
 
   /** (3) ScriptContextor clicks ********************************************/
-  const sc = document.getElementById('ScriptContextor');
-  if (m_ChildOf(event.target, sc)) {
-    console.log('click inside ScriptContextor', event.target);
-    return;
-  }
+  // const sc = document.getElementById('ScriptContextor');
+  // if (m_ChildOf(event.target, sc)) {
+  //   console.log('click inside ScriptContextor', event.target);
+  //   return;
+  // }
 
   /** (4) DESELECT IF NON-TOKEN *********************************************/
-  const sv = document.getElementById('ScriptWizardView');
-  if (m_ChildOf(event.target, sv)) {
-    // if nothing processed, then unset selection
-    SendState({ sel_linenum: -1, sel_linepos: -1 });
-    return;
-  }
+  // const sv = document.getElementById('ScriptWizardView');
+  // if (m_ChildOf(event.target, sv)) {
+  //   // if nothing processed, then unset selection
+  //   SendState({ sel_linenum: -1, sel_linepos: -1 });
+  //   return;
+  // }
 
   /** (N) unhandled click oops **********************************************/
-  console.log('unhandled click in', event.target);
+  // console.log('unhandled click in', event.target);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Called by the ScriptElementEditor component, or anything that wants to intercept

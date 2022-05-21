@@ -297,7 +297,6 @@ function BundleBlueprint(script: TScriptUnit[]): SM_Bundle {
     const symbols = SymbolizeStatement(stm, line);
     DCBUNDLER.AddSymbols(symbols);
   }); // script forEach
-
   if (!DCBUNDLER.HasBundleName) throw Error(`${fn} missing BLUEPRINT directive`);
   return DCBUNDLER.CloseBundle();
 }
