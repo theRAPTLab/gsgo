@@ -26,7 +26,6 @@ import * as TRANSPILER from 'script/transpiler-v2';
 import ScriptLiner from 'script/tools/script-to-lines';
 import * as DCENGINE from 'modules/datacore/dc-sim-data';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
-import * as TEST_SYMBOLS from 'script/tools/x-symbol-tests';
 import {
   DecodeSymbolViewData,
   UnpackViewData,
