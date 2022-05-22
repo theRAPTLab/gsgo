@@ -14,7 +14,7 @@ import { EBundleType } from 'modules/../types/t-script.d'; // workaround to impo
 
 import GAgent from 'lib/class-gagent';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCENGINE from 'modules/datacore/dc-sim-data';
+import * as DCSIM from 'modules/datacore/dc-sim-data';
 
 // critical imports
 import 'script/keywords/_all_keywords';
@@ -55,7 +55,7 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
     if (DBG) console.group(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
     // First deregister the blueprint if it exists
     // RemoveGlobalCondition(bdl.name); // deprecatd in script-xp
-    DCENGINE.SaveBlueprintBundle(bdl);
+    DCSIM.SaveBlueprintBundle(bdl);
     // run conditional programming in template
     // this is a stack of functions that run in global context
     // initialize global programs in the bundle
@@ -80,7 +80,7 @@ function MakeAgent(instanceDef: TInstance) {
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
   if (typeof bpid === 'string') {
-    const bdl = DCENGINE.GetBlueprintBundle(bpid);
+    const bdl = DCSIM.GetBlueprintBundle(bpid);
     if (!bdl) throw Error(`agent blueprint for '${bpid}' not defined`);
     // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
     agent.setBlueprint(bdl);

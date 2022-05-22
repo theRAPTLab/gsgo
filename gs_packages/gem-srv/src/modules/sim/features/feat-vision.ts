@@ -16,7 +16,7 @@ import UR from '@gemstep/ursys/client';
 import { GVarNumber, GVarBoolean } from 'script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCENGINE from 'modules/datacore/dc-sim-data';
+import * as DCSIM from 'modules/datacore/dc-sim-data';
 import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';
 import { ProjectPoint } from 'lib/util-vector';
@@ -99,7 +99,7 @@ function m_IsTargetWithinVisionCone(visionPoly, target): boolean {
   )
     return false;
 
-  const targetPoly = DCENGINE.GetAgentBoundingRect(target);
+  const targetPoly = DCSIM.GetAgentBoundingRect(target);
   // Returns array of intersecting objects, or [] if no intersects
   const result = intersect(visionPoly, targetPoly);
   return result.length > 0;
@@ -356,4 +356,4 @@ class VisionPack extends GFeature {
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new VisionPack(FEATID);
-DCENGINE.RegisterFeature(INSTANCE);
+DCSIM.RegisterFeature(INSTANCE);

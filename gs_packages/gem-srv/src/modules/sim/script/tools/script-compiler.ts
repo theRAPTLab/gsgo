@@ -31,7 +31,7 @@ import UR from '@gemstep/ursys/client';
 import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 import SM_Bundle from 'lib/class-sm-bundle';
 
-import * as DCENGINE from 'modules/datacore/dc-sim-data';
+import * as DCSIM from 'modules/datacore/dc-sim-data';
 import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import GAgent from 'lib/class-gagent';
@@ -77,7 +77,7 @@ function DecodeToken(tok: IToken): any {
   if (type === 'directive') return '_pragma';
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   if (type === 'block') return CompileScript(value);
-  if (type === 'program') return DCENGINE.GetProgram(value);
+  if (type === 'program') return DCSIM.GetProgram(value);
   throw Error(`DecodeToken unhandled type ${type}`);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -151,7 +151,7 @@ function SymbolizeStatement(statement: TScriptUnit, line?: number): TSymbolData 
   const fn = 'SymbolizeStatement:';
   const kw = CHECK.DecodeKeywordToken(statement[0]);
   if (!kw) return {}; // blank lines emit no symbol info
-  const kwp = DCENGINE.GetKeyword(kw);
+  const kwp = DCSIM.GetKeyword(kw);
   if (!kwp) {
     console.warn(`${fn} keyword processor ${kw} bad`);
     return {
@@ -175,7 +175,7 @@ function SymbolizeBlueprint(script: TScriptUnit[]) {
   const { BLUEPRINT } = ExtractBlueprintDirectives(script);
   const [bpName] = BLUEPRINT;
   // get the bundle to work on
-  const bdl = DCENGINE.GetBlueprintBundle(bpName);
+  const bdl = DCSIM.GetBlueprintBundle(bpName);
   DCBUNDLER.OpenBundle(bdl);
   DCBUNDLER.SetBundleType(EBundleType.BLUEPRINT);
   // add symbols
@@ -199,13 +199,13 @@ function ValidateStatement(
 ): TValidatedScriptUnit {
   const { bundle, globals } = refs || {};
   const kw = CHECK.DecodeKeywordToken(statement[0]);
-  const kwp = DCENGINE.GetKeyword(kw);
+  const kwp = DCSIM.GetKeyword(kw);
   if (kwp !== undefined) {
     kwp.validateInit({ bundle, globals });
     return kwp.validate(statement);
   }
   // if got this far, the keyword was unrecognized
-  const keywords = DCENGINE.GetAllKeywords();
+  const keywords = DCSIM.GetAllKeywords();
   const err = new VSymError('errExist', `invalid keyword '${kw}'`, {
     keywords
   });
@@ -232,7 +232,7 @@ function CompileStatement(stm: TScriptUnit, line?: number): TCompiledStatement {
   const fn = 'CompileStatement:';
   const kw = CHECK.DecodeKeywordToken(stm[0]);
   if (!kw) return []; // skips comments, blank lines
-  const kwp = DCENGINE.GetKeyword(kw) || DCENGINE.GetKeyword('keywordErr');
+  const kwp = DCSIM.GetKeyword(kw) || DCSIM.GetKeyword('keywordErr');
   if (!kwp) throw Error(`${fn} bad keyword ${kw}`);
   const kwArgs = DecodeStatement(stm);
   const compiledStatement = kwp.compile(kwArgs, line);
@@ -263,7 +263,7 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
   const { BLUEPRINT, TAGS } = ExtractBlueprintDirectives(script);
   const [bpName] = BLUEPRINT;
   // get the bundle to work on
-  const bdl = DCENGINE.GetBlueprintBundle(bpName);
+  const bdl = DCSIM.GetBlueprintBundle(bpName);
   DCBUNDLER.OpenBundle(bdl);
   DCBUNDLER.SetBundleType(EBundleType.BLUEPRINT);
   // compile unit-by-unit
@@ -283,7 +283,7 @@ function BundleBlueprint(script: TScriptUnit[]): SM_Bundle {
   const { BLUEPRINT, TAGS } = ExtractBlueprintDirectives(script);
   const [bpName] = BLUEPRINT;
   // get the bundle to work on
-  const bdl = DCENGINE.GetBlueprintBundle(bpName);
+  const bdl = DCSIM.GetBlueprintBundle(bpName);
   DCBUNDLER.OpenBundle(bdl);
   DCBUNDLER.SetBundleType(EBundleType.BLUEPRINT);
   DCBUNDLER.AddSymbols(GAgent.Symbols);

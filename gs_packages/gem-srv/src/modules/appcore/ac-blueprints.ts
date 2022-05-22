@@ -20,7 +20,7 @@
               The raw scriptText is needed for script editing via ScriptEditor
               and for saving blueprints to the gemproj project file.
 
-  2. DCENGINE.BLUEPRINTS -- A map of compiled blueprint *bundles* indexed by bpName
+  2. DCSIM.BLUEPRINTS -- A map of compiled blueprint *bundles* indexed by bpName
               The bundles are used to extract the name of blueprints, and
               the sim engine uses the bundles to run gemscript programs.
               The compiled blueprint bundles are stored in dc-sim-resources.
@@ -63,7 +63,7 @@ import GAgent from 'lib/class-gagent';
 import Blueprint from 'lib/class-project-blueprint';
 import SM_Bundle from 'lib/class-sm-bundle';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCENGINE from 'modules/datacore/dc-sim-data';
+import * as DCSIM from 'modules/datacore/dc-sim-data';
 import * as DCPROJECT from 'modules/datacore/dc-project';
 import * as SIMAGENTS from 'modules/sim/sim-agents';
 import * as TRANSPILER from '../sim/script/transpiler-v2';
@@ -141,8 +141,8 @@ function m_CompileBlueprints(bpDefs: TBlueprint[]): TBlueprint[] {
 function m_ResetAndCompileBlueprints(blueprints: TBlueprint[]): TBlueprint[] {
   GAgent.ClearGlobalAgent();
   SIMAGENTS.ClearDOBJ();
-  DCENGINE.DeleteAllScriptEvents();
-  DCENGINE.DeleteAllBlueprintBundles();
+  DCSIM.DeleteAllScriptEvents();
+  DCSIM.DeleteAllBlueprintBundles();
   DCAGENTS.DeleteAllAgents();
   DCAGENTS.DeleteAllInstances();
   m_SymbolizeBlueprints(blueprints);
@@ -177,7 +177,7 @@ function GetBlueprint(bpName: string): TBlueprint {
  *  @returns {ISMCBundle} f
  */
 function GetBlueprintBundle(bpName: string): ISMCBundle {
-  return DCENGINE.GetBlueprintBundle(bpName);
+  return DCSIM.GetBlueprintBundle(bpName);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Returns a list of blueprints with names and scriptText.
@@ -317,12 +317,12 @@ function GetBlueprintPropertiesMap(bpName: string): Map<string, object> {
 
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Generate and publish derived blueprint lists from the bundles in DCENGINE.
+/** Generate and publish derived blueprint lists from the bundles in DCSIM.
  *  The derived blueprint lists are generally used to populate react UI
  *  controllers and components.
  */
 function m_UpdateAndPublishDerivedBpLists() {
-  const bundles = DCENGINE.GetAllBlueprintBundles();
+  const bundles = DCSIM.GetAllBlueprintBundles();
   const bpNamesList = m_ExtractBlueprintNamesList(bundles);
   const charControlBpNames = m_GenerateCharControlBpNames(bundles);
   const ptrackControlBpNames = m_GeneratePTrackControlBpNames(bundles);
@@ -443,7 +443,7 @@ function UpdateBlueprint(projId: string, bpName: string, scriptText: string) {
 /** API: */
 function DeleteBlueprint(bpName: string) {
   // 1. Remove from DCEngine
-  DCENGINE.DeleteBlueprintBundle(bpName); // bpBndles
+  DCSIM.DeleteBlueprintBundle(bpName); // bpBndles
 
   // 2. Update states and derived states
   const bpDefs = STATE._getKey('bpDefs').filter(b => b.name !== bpName);

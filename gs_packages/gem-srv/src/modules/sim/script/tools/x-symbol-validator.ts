@@ -15,7 +15,7 @@
 import UR from '@gemstep/ursys/client';
 
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-import * as ENGINE from 'modules/datacore/dc-sim-data';
+import * as DCSIM from 'modules/datacore/dc-sim-data';
 import * as BUNDLER from 'modules/datacore/dc-sim-bundler';
 import * as TOKENIZER from 'script/tools/class-gscript-tokenizer-v2';
 
@@ -124,7 +124,7 @@ class SymbolValidator {
   /** returns a list of valid keywords for the script engine */
   allKeywords(rawTok: IToken): SymbolToken {
     const [type, value] = TOKENIZER.UnpackToken(rawTok);
-    const keywords = ENGINE.GetAllKeywords();
+    const keywords = DCSIM.GetAllKeywords();
     if (type !== 'identifier' && type !== 'directive') {
       this.scan_error = true;
       return InvalidToken('errParse', 'no keyword rawTok', {
@@ -427,7 +427,7 @@ class SymbolValidator {
 
     // all gvars available in system match rawTok.identifier
     if (argType === 'gvar' && TOKENIZER.TokenValue(rawTok, 'identifier')) {
-      const map = ENGINE.GetPropTypesDict();
+      const map = DCSIM.GetPropTypesDict();
       const ctors = {};
       const list = [...map.keys()];
       list.forEach(ctorName => {
@@ -439,11 +439,11 @@ class SymbolValidator {
     // all feature symbols in system match rawTok.identifier
     // e.g. addFeature
     if (argType === 'feature' && TOKENIZER.TokenValue(rawTok, 'identifier')) {
-      const map = ENGINE.GetAllFeatures();
+      const map = DCSIM.GetAllFeatures();
       const features = {}; // { [featureName: string]: TSymbolData };
       const list = [...map.keys()];
       list.forEach(featName => {
-        features[featName] = ENGINE.GetFeature(featName).symbolize();
+        features[featName] = DCSIM.GetFeature(featName).symbolize();
       });
       symToken = ValidToken({ features }, argName);
     }
@@ -451,7 +451,7 @@ class SymbolValidator {
     // all blueprint symbols in project match rawTok.identifier
     // e.g. when agent test, when agentA test agentB
     if (argType === 'blueprint' && TOKENIZER.TokenValue(rawTok, 'identifier')) {
-      const list = ENGINE.GetAllBlueprintBundles();
+      const list = DCSIM.GetAllBlueprintBundles();
       const blueprints = {};
       list.forEach(bundle => {
         blueprints[bundle.name] = bundle.symbols;
