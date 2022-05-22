@@ -170,6 +170,7 @@ export {
   DecodePragmaToken,
   DecodeKeywordToken,
   UnpackToken,
+  UnpackStatement,
   TokenValue
 } from 'script/tools/class-gscript-tokenizer-v2';
 export {

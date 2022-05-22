@@ -163,13 +163,16 @@ declare global {
     comment?: string; // gobbleComment()
     line?: string; // as-is line insertion
   }
-  // CODE REVIEW: @Sri 'decoded' script tokens like TArg should be rewritten to work as
-  // 'unpacked' tokens, which always return [type, value]
   type TScriptUnit = IToken[]; // tokens from script-parser
-  type TArg = number | string | IToken;
+  /*  @SRI: this conflation of args and tokens continues to bite us in the ass
+      perhaps instead of having a DecodeStatement method, we push the decoding
+      down to use const [value,type] = UnpackToken(tok) in the compiler
+      statements themselves */
+  type TArg = number | string | IToken; // "decoded" tokens
   type TArguments = TArg[]; // decoded tokens provided to compile functions
   type TScript = TScriptUnit[]; // We use TScriptUnit[] in code
   type TCompiledStatement = (TOpcode | TOpcodeErr)[];
+  type TUnpackedToken = [type: string, value: any];
 
   /// COMPILER OUPUT //////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

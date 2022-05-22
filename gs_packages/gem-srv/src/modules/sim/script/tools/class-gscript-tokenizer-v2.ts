@@ -724,7 +724,7 @@ function Tokenize(text: string): IToken[] {
  *  returns [ token_type, token_value ] if it is a valid token,
  *  [undefined, errstring] otherwise
  */
-function UnpackToken(tok: IToken): [type: string, value: any] {
+function UnpackToken(tok: IToken): TUnpackedToken {
   // null tokens return error
   if (typeof tok !== 'object') return [undefined, 'not an object'];
   // count number of valid types in the token

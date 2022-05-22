@@ -24,6 +24,22 @@ const EVENT_SCRIPTS: Map<string, Map<string, TSMCProgram>> = new Map();
 const TEST_SCRIPTS: Map<string, TSMCProgram> = new Map();
 const NAMED_SCRIPTS: Map<string, TSMCProgram> = new Map();
 const NAMED_FUNCTIONS: Map<string, Function> = new Map();
+///
+const { warn, log } = console;
+
+/// HELPER METHODS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_EnsureLowerCase(s: string, p?: string) {
+  p = typeof p === 'string' ? p : '';
+  if (typeof s !== 'string') return undefined;
+  return s.toLowerCase();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_EnsureUpperCase(s: string, p?: string) {
+  p = typeof p === 'string' ? p : '';
+  if (typeof s !== 'string') return undefined;
+  return s.toUpperCase();
+}
 
 /// FEATURES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -118,16 +134,18 @@ function DeleteAllBlueprintBundles(): void {
 /** API: variable types (e.g. gvar-number.ts is the type of a 'number' prop
  *  have to be declared and registered to be available to the transpiler
  */
-function RegisterKeyword(Ctor: IKeywordCtor, key?: string): void {
+function RegisterKeyword(Ctor: IKeywordCtor, alias: string): void {
   const fn = 'RegisterKeyword:';
+  alias = m_EnsureLowerCase(alias);
   const kobj = new Ctor();
   if (!CHECK.AreValidArgs(kobj.args as TSymArg[]))
     throw Error(`${fn} invalid argDef in keyword '${kobj.keyword}'`);
-  KEYWORDS.set(key || kobj.keyword, kobj);
+  KEYWORDS.set(alias || m_EnsureLowerCase(kobj.keyword), kobj);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return a registered keyword module */
 function GetKeyword(name: string): IKeyword {
+  name = m_EnsureLowerCase(name);
   return KEYWORDS.get(name);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -144,12 +162,14 @@ function GetAllKeywords(): string[] {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a SMObject, store in VARS dict */
 function RegisterVarCTor(propType: string, ctor) {
+  propType = m_EnsureLowerCase(propType);
   if (VARS.has(propType)) throw Error(`RegisterVarCTor: ${propType} exists`);
   VARS.set(propType, ctor);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: get the registered SMObject constructor by name */
 function GetVarCtor(propType: string): IScopeableCtor {
+  propType = m_EnsureLowerCase(propType);
   if (!VARS.has(propType)) throw Error(`GetVarCtor: ${propType} `);
   return VARS.get(propType);
 }
@@ -161,6 +181,7 @@ function GetPropTypesDict(): Map<string, IScopeableCtor> {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: get symbol data for a named type (e.g. 'number') */
 function SymbolDefFor(propType: string): TSymbolData {
+  propType = m_EnsureLowerCase(propType);
   const def = VARS.get(propType);
   if (def) return def.Symbols;
 }
@@ -169,13 +190,14 @@ function SymbolDefFor(propType: string): TSymbolData {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** returns true if test was saved for the first time, false otherwise */
 function RegisterTest(name: string, program: TSMCProgram): boolean {
-  // if (TESTS.has(name)) throw Error(`RegisterTest: ${name} exists`);
+  name = m_EnsureLowerCase(name);
   const newRegistration = !TEST_SCRIPTS.has(name);
   TEST_SCRIPTS.set(name, program);
   return newRegistration;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetTest(name: string): TSMCProgram {
+  name = m_EnsureLowerCase(name);
   return TEST_SCRIPTS.get(name);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -186,23 +208,27 @@ function DeleteAllTests() {
 /// NAMED PROGRAM DICTIONARIES ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RegisterProgram(name: string, program: TSMCProgram) {
+  name = m_EnsureLowerCase(name);
   if (NAMED_SCRIPTS.has(name)) throw Error(`RegisterProgram: ${name} exists`);
   NAMED_SCRIPTS.set(name, program);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetProgram(name: string): TSMCProgram {
+  name = m_EnsureLowerCase(name);
   return NAMED_SCRIPTS.get(name);
 }
 
 /// NAMED FUNCTIONS DICTIONARIES //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RegisterFunction(name: string, func: Function): boolean {
+  name = m_EnsureLowerCase(name);
   const newRegistration = !NAMED_FUNCTIONS.has(name);
   NAMED_FUNCTIONS.set(name, func);
   return newRegistration;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetFunction(name: string): Function {
+  name = m_EnsureLowerCase(name);
   let f = NAMED_FUNCTIONS.get(name);
   // return always random results if the test doesn't exist
   if (!f) f = () => Math.random() > 0.5;
@@ -243,6 +269,7 @@ function SubscribeToScriptEvent(
   bpName: string,
   consq: TSMCProgram
 ) {
+  evtName = m_EnsureUpperCase(evtName);
   if (!EVENT_SCRIPTS.has(evtName)) EVENT_SCRIPTS.set(evtName, new Map());
   const subbedBPs = EVENT_SCRIPTS.get(evtName); // event->blueprint codearr
   if (!subbedBPs.has(bpName)) subbedBPs.set(bpName, []);
@@ -253,6 +280,7 @@ function SubscribeToScriptEvent(
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetScriptEventHandlers(evtName: string) {
+  evtName = m_EnsureUpperCase(evtName);
   if (!EVENT_SCRIPTS.has(evtName)) EVENT_SCRIPTS.set(evtName, new Map());
   const subbedBPs = EVENT_SCRIPTS.get(evtName); // event->blueprint codearr
   const handlers = [];

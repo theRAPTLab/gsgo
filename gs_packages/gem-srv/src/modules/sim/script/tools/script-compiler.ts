@@ -82,7 +82,8 @@ function DecodeToken(tok: IToken): any {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given a ScriptUnit, return the 'decoded' tokens as usable valuables when
- *  it is time to invoke a compiler function
+ *  it is time to invoke a compiler function. See also UnpackStatement() for
+ *  a similar function that returns [type,value] (in dc-sim-data-utils)
  */
 function DecodeStatement(statement: TScriptUnit): any[] {
   const dUnit: TScriptUnit = statement.map((tok, line) => {
