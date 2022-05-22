@@ -64,7 +64,7 @@ STORE._initializeState({
   script_tokens: [], // source tokens (from text)
 
   script_page: [], // source tokens 'printed' as lines
-  line_tokmap: new Map(), // lookup map from tokenLine+Pos to original token
+  key_to_token: new Map(), // lookup map from tokenLine+Pos to original token
 
   sel_linenum: -1, // selected line of wizard. If < 0 it is not set
   sel_linepos: -1, // select index into line. If < 0 it is not set
@@ -131,7 +131,7 @@ STORE._interceptState(state => {
     state.cur_bdl = TRANSPILER.BundleBlueprint(toks);
     const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
     state.script_page = vmPage;
-    state.line_tokmap = tokMap;
+    state.key_to_token = tokMap;
   }
   // if script_tokens is changing, we also want to emit new script_text
   if (!script_text && script_tokens) {
@@ -140,7 +140,7 @@ STORE._interceptState(state => {
       state.script_text = text;
       const [vmPage, tokMap] = TRANSPILER.ScriptToLines(script_tokens);
       state.script_page = vmPage;
-      state.line_tokmap = tokMap;
+      state.key_to_token = tokMap;
     } catch (e) {
       // ignore TextTpScript compiler errors during live typing
       console.error(`wizcore_interceptState tokens: ${e.toString()}`);
@@ -163,8 +163,8 @@ export function ScriptChanged() {
   const { script_tokens } = State(); // we changed this elsewhere
   try {
     const script_text = TRANSPILER.ScriptToText(script_tokens);
-    const [script_page, line_tokmap] = TRANSPILER.ScriptToLines(script_tokens);
-    STORE.SendState({ script_tokens, script_text, script_page, line_tokmap });
+    const [script_page, key_to_token] = TRANSPILER.ScriptToLines(script_tokens);
+    STORE.SendState({ script_tokens, script_text, script_page, key_to_token });
   } catch (e) {
     // ignore TextTpScript compiler errors during live typing
     console.error(`wizcore_interceptState tokens: ${e.toString()}`);
@@ -279,8 +279,8 @@ function WizardTextChanged(text) {
     STORE._setState({ script_text: text, script_tokens, cur_bdl });
     // since the script tokens have changed, need to redo the viewmodels for
     // the scriptWizard and tell it to update
-    const [script_page, line_tokmap] = TRANSPILER.ScriptToLines(script_tokens);
-    STORE.SendState({ script_page, line_tokmap });
+    const [script_page, key_to_token] = TRANSPILER.ScriptToLines(script_tokens);
+    STORE.SendState({ script_page, key_to_token });
   } catch (e) {
     STORE.SendState({ error: e.toString() });
     // eslint-disable-next-line no-useless-return
@@ -392,7 +392,7 @@ function SelectedLineNum() {
 /** return the token by tokenKey 'line,pos'
  */
 function GetTokenById(key) {
-  const scriptToken = STORE.State('line_tokmap').get(key);
+  const scriptToken = STORE.State('key_to_token').get(key);
   // this can happen if script-to-lines ScriptToLines() is called on another body
   // of text that isn't what you're clicking on
   return scriptToken;

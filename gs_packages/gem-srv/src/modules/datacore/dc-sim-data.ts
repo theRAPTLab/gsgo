@@ -134,7 +134,7 @@ function DeleteAllBlueprintBundles(): void {
 /** API: variable types (e.g. gvar-number.ts is the type of a 'number' prop
  *  have to be declared and registered to be available to the transpiler
  */
-function RegisterKeyword(Ctor: IKeywordCtor, alias: string): void {
+function RegisterKeyword(Ctor: IKeywordCtor, alias?: string): void {
   const fn = 'RegisterKeyword:';
   alias = m_EnsureLowerCase(alias);
   const kobj = new Ctor();
