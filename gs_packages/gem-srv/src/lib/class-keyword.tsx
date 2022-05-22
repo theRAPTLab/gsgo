@@ -18,20 +18,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  IKeyword,
-  IScopeable,
-  IAgent,
-  TCompiledStatement,
-  IToken,
-  TScriptUnit,
-  TSymbolData,
-  TSymbolRefs,
-  TSymArg,
-  TSymbolErrorCodes,
-  DerefMethod,
-  TValidatedScriptUnit
-} from 'lib/t-script';
 import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
 import { SymbolHelper, VSymError } from 'script/tools/symbol-helpers';
 import { UnpackToken, UnpackArg } from 'modules/datacore/dc-sim-data-utils';
@@ -133,7 +119,6 @@ class Keyword implements IKeyword {
       // (2B) NOT an arglist? (a regular argument)?
       if (argType !== '{...}') {
         vtok = this.validateToken(arg, tok);
-        console.log(arg, vtok);
         vtoks.push(vtok); // save the vtok and do the next token
         tokIndex++;
         continue;

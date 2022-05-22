@@ -8,7 +8,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Keyword from 'lib/class-keyword';
-import { TOpcode, TScriptUnit, TSymbolData, TSymArg } from 'lib/t-script';
 import { addProp } from 'script/ops/agent-ops';
 import { RegisterKeyword, GetVarCtor } from 'modules/datacore';
 

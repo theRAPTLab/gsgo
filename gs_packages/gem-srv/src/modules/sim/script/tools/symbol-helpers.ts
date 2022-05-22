@@ -97,7 +97,9 @@ class SymbolHelper {
   keyword: string; // store the name of the keyword that created this instance
   scan_error: boolean; // set if a bad token was encountered during scoping
   arg_index: number; // reset to 0 when a methodSig is set
-  //
+
+  /// CONSTRUCTOR + INITIALIZERS //////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   constructor(keyword: string = '?') {
     this.refs = {
       bundle: null,
@@ -108,7 +110,7 @@ class SymbolHelper {
     this.scan_error = false;
     this.arg_index = undefined; // numeric when methodSig is available
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
   /** reference are the default lookup dictionaries. This is more than
    *  just the globals context, including the entire
    */
@@ -178,6 +180,7 @@ class SymbolHelper {
     }
     return new VSymToken({ keywords }, value);
   }
+
   /** If part is 'agent', return the bundle symbols or undefined. This is only
    *  used for objref check of first part
    */
@@ -213,10 +216,8 @@ class SymbolHelper {
   }
 
   /// SCOPE-DEPENDENT ACCESSOR/MODIFIERS //////////////////////////////////////
-  /// search the current scope (or scope override
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** search the current scope for a matching featureName
-   */
+  /** search the current scope for a matching featureName */
   featureName(part: string) {
     const features = this.cur_scope.features;
     if (features === undefined) return undefined; // no match
@@ -225,6 +226,7 @@ class SymbolHelper {
     this.cur_scope = feature; // advance scope
     return features; // valid scope is parent of cur_scope
   }
+
   /** check the current scope or bundle for propName matches or undefined. Use
    *  this in the cases where you DO NOT WANT an objectref instead, as you would
    *  for the addProp keyword */
@@ -239,6 +241,7 @@ class SymbolHelper {
     this.cur_scope = prop; // advance scope pointer
     return ctx; // valid scope is parent of cur_scope
   }
+
   /** scans the current scope for a terminal property or feature, after
    *  which a methodName would be expected in the next tokens
    */
@@ -312,6 +315,7 @@ class SymbolHelper {
       this.cur_scope
     );
   }
+
   /** given an existing symboldata scope set in this.cur_scope, looks for a method.
    */
   methodName(token: IToken): TSymbolData {
@@ -416,6 +420,7 @@ class SymbolHelper {
 
     return vtoks;
   }
+
   /** Return the symbols for an methodSig argType entry. Does NOT change scope
    *  because the scope is always the same methodSig symbol data
    */
@@ -529,9 +534,10 @@ class SymbolHelper {
   }
 } // end of SymbolHelper class
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** convert symbol data into lists suitable for gui rendering. this is the
- *  entire list of ALLOWED CHOICES; if you want to just know what unitText
+/// UTILITY METHODS ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** UTILITY: convert symbol data into lists suitable for gui rendering. this is
+ *  the entire list of ALLOWED CHOICES; if you want to just know what unitText
  *  is, then use UnpackSymbol
  */
 function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
@@ -577,7 +583,7 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
   return sv_data;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** returns an array all symbolTypes associatd with unitText:
+/** UTILITY: returns an array all symbolTypes associatd with unitText:
  *  [ unitText, [ symbolType, items ], [ symbolType, items ], ... ]
  */
 function UnpackViewData(svm_data: TSymbolViewData): any[] {
@@ -601,7 +607,7 @@ function UnpackViewData(svm_data: TSymbolViewData): any[] {
   return list;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Given a symbolData structure for unitText, return the SPECIFIC matching type
+/** UTILITY: Given a symbolData structure for unitText, return the SPECIFIC matching type
  *  instead of all allowed types
  */
 function UnpackSymbolType(symbolData: TSymbolData): any[] {
