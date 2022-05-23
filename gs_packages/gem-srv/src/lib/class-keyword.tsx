@@ -186,6 +186,7 @@ class Keyword implements IKeyword {
           "'prop' typehandler should be objref?"
         );
         break;
+      case 'blueprint': // a blueprint name
       case 'number': // value is
       case 'string': // value is
       case 'boolean': // value is

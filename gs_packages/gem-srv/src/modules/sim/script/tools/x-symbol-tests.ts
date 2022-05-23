@@ -16,8 +16,8 @@ const { warn, log, group, groupEnd } = console;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const USE_TEST_SCRIPT = false;
-const TEST_SCRIPT = `# blueprint TestAgentInternal
+const USE_TEST_SCRIPT = true;
+const TEST_SCRIPT = `# blueprint Boo
 # TAG isCharControllable false
 # PROGRAM DEFINE
 useFeature Costume
@@ -29,6 +29,11 @@ prop energyLevel setTo 0
 prop agent.energyLevel setTo 0
 prop energyLevel setTo 'foo'
 prop energyLevel
+
+# ProgRam ConDition
+when Boo centerFirstTouches Boo [[
+  prop Boo.energyType add 1
+]]
 
 # PROGRAM Update
 every 1 runAtStart [[

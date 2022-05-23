@@ -68,9 +68,17 @@ function SaveNetInfo(netInfo: NetProps) {
   CLIENT_INFO = DATACORE.SaveClientInfo(client);
   URDB_ENDPOINT = DATACORE.SaveDBInfo(urdb);
   BUILD_INFO = DATACORE.SaveBuildInfo(build);
-  console.log(...PR(build));
   if (DBG)
-    console.log(...PR('session broker', NET_BROKER, 'client info', CLIENT_INFO));
+    console.log(
+      ...PR(
+        'session broker',
+        NET_BROKER,
+        'client info',
+        CLIENT_INFO,
+        'build info',
+        BUILD_INFO
+      )
+    );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** connect to the appserver's netinfo webservice */

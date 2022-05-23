@@ -204,7 +204,15 @@ declare global {
   type TSAgent = `${'blueprint' | 'feature'}`;
   type TSEnum = { enum: string[] }; // special format for enums
   type TSArg = `${'{...}'}`; // multiple arg token marker
-  type TSValidType = `${TSLit | TSSMObj | TSDeferred | TSDict | TSAgent | TSArg}`;
+  type TSList = `${'{list}'}`; // forbidden type!!! don't use!!!
+  type TSValidType = `${
+    | TSLit
+    | TSSMObj
+    | TSDeferred
+    | TSDict
+    | TSAgent
+    | TSArg
+    | TSList}`;
   type TSymUnpackedArg = [name: string, type: TSValidType];
   type TSymArg = `${string}:${TSValidType}` | TSEnum;
   type TSymMethodSig = {
