@@ -25,6 +25,8 @@ export default class SM_Bundle implements ISMCBundle {
   name: string; // the name of the bundle, if any
   parent: string; // the name of parent bundle, if any
   type: EBundleType; // enum type (see t-script.d)
+  script: TScriptUnit[]; // saved script
+  text: string; // save script text
   // lifecycle programs (can be in multiple types)
   define: TOpcode[]; // allocation phase
   init: TOpcode[]; // initialize phase
@@ -78,6 +80,13 @@ export default class SM_Bundle implements ISMCBundle {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   getTag(tagName: string): any {
     return this.tags.get(tagName);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  saveScript(script: TScriptUnit[]) {
+    if (!Array.isArray(script)) throw Error(`not a script`);
+    if (script.length > 0 && !Array.isArray(script[0]))
+      throw Error(`not a script`);
+    this.script = script;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** return an object with non-empty program arrays

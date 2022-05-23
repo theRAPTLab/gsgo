@@ -92,6 +92,8 @@ function GetBlueprintBundle(bpName: string): SM_Bundle {
   if (bdl === undefined) {
     if (DBG) console.log(`${fn} creating '${bpName}' bundle on request`);
     bdl = new SM_Bundle(bpName, EBundleType.BLUEPRINT);
+    // save the new bundle in dictionary
+    BLUEPRINTS.set(bpName, bdl);
   }
   return bdl;
 }

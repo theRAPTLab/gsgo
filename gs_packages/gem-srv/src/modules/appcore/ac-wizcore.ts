@@ -23,7 +23,6 @@
 import UR from '@gemstep/ursys/client';
 import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
-import ScriptLiner from 'script/tools/script-to-lines';
 import * as TEST_SYMBOLS from 'script/tools/x-symbol-tests';
 import * as DCSIM from 'modules/datacore/dc-sim-data';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
@@ -298,14 +297,13 @@ function WizardTextChanged(text) {
  *  instances
  */
 function WizardTestLine(text) {
-  const SPRINTER = new ScriptLiner();
   try {
     const script = TRANSPILER.TextToScript(text);
-    const [vmPage] = SPRINTER.scriptToLines(script); // note: use different instance
-    const [vmPageLine] = vmPage;
+    const [vmPage] = TRANSPILER.ScriptToLines(script); // note: use different instance
+    const [vmPageLine] = vmPage; // get the first line
+    const { vmTokens, lineScript } = vmPageLine;
     const { validationTokens: vtoks, validationLog } =
       ValidatePageLine(vmPageLine);
-    const { vmTokens, lineScript } = vmPageLine;
     return { validTokens: vtoks, vmTokens, lineScript };
   } catch (e) {
     const error = e.toString();
@@ -399,18 +397,19 @@ function GetTokenById(key) {
   return scriptToken;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Return the script_page line, taking the 1-index into account */
+function GetVMPageLine(line: number) {
+  const { script_page } = STORE.State();
+  return script_page[line - TRANSPILER.LINE_START_NUM];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return selection information, used for interactive lookup */
 function SelectedTokenInfo() {
   const scriptToken = GetTokenById(SelectedTokenId());
   const context = {}; // TODO: look up scope from symbol-utilities
-  const {
-    sel_linenum,
-    sel_linepos,
-    script_page,
-    sel_validation: validation
-  } = STORE.State();
+  const { sel_linenum, sel_linepos, sel_validation: validation } = STORE.State();
   if (sel_linenum > 0 && sel_linepos > 0) {
-    const vmPageLine = script_page[sel_linenum - TRANSPILER.LINE_START_NUM];
+    const vmPageLine = GetVMPageLine(sel_linenum);
     const selInfo = {
       scriptToken, // the actual script token (not vmToken)
       sel_linenum, // line number in VMPage
@@ -423,6 +422,7 @@ function SelectedTokenInfo() {
   }
   return undefined;
 }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return a string version of a ScriptUnit */
 function GetLineScriptText(lineScript) {
@@ -436,8 +436,7 @@ function GetLineScriptText(lineScript) {
 function ValidateLine(lineNum: number): TValidatedScriptUnit {
   // ERRORS AND DEBUG STUFF
   const fn = 'ValidateLine:';
-  const { script_page } = STORE.State();
-  const vmPageLine = script_page[lineNum - TRANSPILER.LINE_START_NUM];
+  const vmPageLine = GetVMPageLine(lineNum);
   const { lineScript, globalRefs } = vmPageLine;
   const { cur_bdl } = STORE.State();
   return TRANSPILER.ValidateStatement(lineScript, {

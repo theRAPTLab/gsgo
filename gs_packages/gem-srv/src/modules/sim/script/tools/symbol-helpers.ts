@@ -172,6 +172,9 @@ class SymbolHelper {
   allKeywords(token: IToken): TSymbolData {
     const [type, value] = TOKENIZER.UnpackToken(token);
     const keywords = ENGINE.GetAllKeywords();
+    if (type === 'comment' || type === 'line') {
+      return new VSymToken({ keywords }, value);
+    }
     if (type !== 'identifier' && type !== 'directive') {
       this.scan_error = true;
       return new VSymError('errParse', 'no keyword token', {
@@ -522,8 +525,6 @@ class SymbolHelper {
     // }
 
     if (symData === undefined) {
-      console.group(...PR('UNHANDLED ARGTYPE'));
-      console.groupEnd();
       return new VSymError('errOops', `${fn} ${argType} has no token mapper`, {
         arg
       });

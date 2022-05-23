@@ -2,10 +2,10 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "_comment" object
+  implementation of keyword "blank line" object
 
-  NOTE: This is a SYSTEM KEYWORD used for // COMMENT syntax, and not intended
-  for direct use
+  NOTE: This is a SYSTEM KEYWORD used for empty lines, and isn't intended
+  for direct use.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -14,10 +14,10 @@ import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class _comment extends Keyword {
+export class _line extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
-    super('_comment');
+    super('_line');
     this.args = ['?:{...}'];
   }
 
@@ -30,4 +30,4 @@ export class _comment extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(_comment);
+RegisterKeyword(_line);

@@ -312,17 +312,18 @@ declare global {
 
   /// PROGRAM BUNDLES /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** An ISMCBundle is a dictionary of TSCMPrograms. See also dc-script-bundle for
-   *  the BUNDLE_OUTS definition, which maps the bundle props to a particular
-   *  runtime context (e.g. BLUEPRINT) A TSMCProgram is just TOpcode[] A
-   *  TSMCGlobalProgram is just TRegcode[]
+  /** An ISMCBundle is a collection of compiled elements. This is the minimum
+   *  metadata; see class-sm-bundle for the list of possible entities
    */
   interface ISMCBundle extends ISMCPrograms {
     name?: string; // the blueprint name of the bundle, if any
     parent?: string; // the parent bundle, if any
     type?: EBundleType; // enum type (see below)
+    script?: TScriptUnit[]; // saved script
+    text?: string; // saved text
     symbols?: TBundleSymbols;
     tags?: TBundleTags; // ben's hack for 'character controlable' blueprints
+    directives?: TBundleDirectives;
   }
 
   /// SCRIPT UNIT TRANSPILER //////////////////////////////////////////////////

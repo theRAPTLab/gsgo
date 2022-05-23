@@ -205,7 +205,9 @@ class ScriptLiner {
 const LINER = new ScriptLiner();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: given a program, return a page of vmlines and line-to-token map */
-function ScriptToLines(program: TScriptUnit[]) {
+function ScriptToLines(
+  program: TScriptUnit[]
+): [VMPageLine[], Map<string, IToken>] {
   const [script_page, key_to_token] = LINER.scriptToLines(program);
   return [script_page, key_to_token];
 }

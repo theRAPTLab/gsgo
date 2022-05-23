@@ -104,11 +104,16 @@ class Keyword implements IKeyword {
     let tok: IToken; // hold reference to current dtoken for each pass through arglist
     let vtok: TSymbolData; // hold vtok reference for each pass through arglist
     let arg: TSymArg; // hold current argument
+
+    /* new */
+    // let argCount = this.shelper.countArgs(unit);
+
     const vtoks: TSymbolData[] = [];
 
     // (1) first token is keyword
     tok = unit[0];
     vtoks.push(this.shelper.allKeywords(tok));
+
     // (2) loop through keyword argument signature in this.args
     let tokIndex = 1; // start dtok[1] after keyword
     while (tokIndex < unit.length) {
@@ -155,7 +160,6 @@ class Keyword implements IKeyword {
    *  see props.tsx for an example
    */
   validateToken(arg: TSymArg, token?: IToken): TSymbolData {
-    const fn = 'validateToken:';
     let vtok;
     const [argName, argType] = UnpackArg(arg);
     const [tokType, value] = UnpackToken(token);
@@ -175,23 +179,21 @@ class Keyword implements IKeyword {
         // PROTOTYPE: add gsType to the token
         vtok.gsType = argType;
         break;
-      case 'number': // value is
-        console.log(`${fn} got a number`);
-        break;
-      case 'string': // value is
-        console.log(`${fn} got a string`);
-        break;
-      case 'boolean': // value is
-        console.log(`${fn} got a string`);
-        break;
-      //
       // TODO: handle other argTypes
-      //
+      case 'prop': // a prop reference
+        vtok = this.newSymbolError(
+          'errType',
+          "'prop' typehandler should be objref?"
+        );
+        break;
+      case 'number': // value is
+      case 'string': // value is
+      case 'boolean': // value is
+      case 'pragma': // a directive
       default:
-        console.log('unhandled', argType);
         vtok = this.newSymbolError(
           'errOops',
-          `Keyword.${fn} '${argType}' handler not implemented`
+          `'${argType}' typehandler not implemented`
         );
     }
     // validation token symbols

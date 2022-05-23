@@ -8,6 +8,7 @@ import UR from '@gemstep/ursys/client';
 import SM_Bundle from 'lib/class-sm-bundle';
 import { EBundleType, EBundleTag } from 'modules/../types/t-script.d'; // workaround to import as obj
 import * as CHECK from './dc-sim-data-utils';
+import * as DCSIM from './dc-sim-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -30,7 +31,7 @@ function m_HasCurrentBundle(prompt: string): SM_Bundle {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** utility: throws an error if there is a CURRENT_BUNDLE set */
-function m_CheckCurrentBundleIsClear(prompt: string): void {
+function m_CheckNoOpenBundle(prompt: string): void {
   if (CUR_BUNDLE !== undefined)
     throw Error(`${prompt} bundle already set ${CUR_BUNDLE.name}`);
   return undefined;
@@ -60,19 +61,24 @@ function ClearBundlerState() {
 /// Tranpiler uses these to set an implicit bundle that's used for operations
 /// to maintain compatibility
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: before starting TRANSPILER bundle-dependent ops, set the bundle.
- *  Returns the bundle that was opened
+/** API: Sets the "working bundle" from either a provided bundle or bpName
+ *  that is an index into the DCSIM Bundle Dictionary
+ *  @param {(string|SM_Bundle)} bp - blueprintName or bundle to use for
+ *  subsequent bundle operations
+ *  @returns SM_Bundle
  */
-function OpenBundle(bdl: SM_Bundle): SM_Bundle {
+function OpenBundle(bp: string | SM_Bundle): SM_Bundle {
   const fn = 'BeginBundle:';
-  m_CheckCurrentBundleIsClear(fn);
-  CUR_BUNDLE = bdl;
-  return bdl;
+  m_CheckNoOpenBundle(fn);
+  if (bp instanceof SM_Bundle) CUR_BUNDLE = bp;
+  if (typeof bp === 'string') CUR_BUNDLE = DCSIM.GetBlueprintBundle(bp);
+  if (CUR_BUNDLE instanceof SM_Bundle) return CUR_BUNDLE;
+  throw Error(`${fn} arg1 was not a bundle or bundleName`);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: close the bundle, which unsets the CUR_BUNDLE and disables
  *  the bundle state methods that rely on current bundle.
- *  Returns the bundle that was "closed"
+ *  @returns the bundle that was originally "opened" with OpenBundle()
  */
 function CloseBundle(): SM_Bundle {
   const fn = 'EndBundle:';
@@ -132,8 +138,10 @@ function SetBundleName(bpName: string, bpParent?: string): boolean {
 function SetBundleType(type: EBundleType = EBundleType.BLUEPRINT) {
   const fn = 'SetBundleType:';
   const bdl = m_HasCurrentBundle(fn);
-  if (bdl.type !== type)
-    console.warn(`${fn} ${bdl.name} type changed from ${bdl.type} to ${type}`);
+  if (bdl.type !== type) {
+    if (DBG)
+      console.warn(`${fn} ${bdl.name} type changed from ${bdl.type} to ${type}`);
+  }
   bdl.setType(type);
   if (DBG) console.log(...PR(`${fn} setting bundleType ${type}`));
 }
@@ -236,13 +244,20 @@ function AddSymbols(symdata: TSymbolData) {
   }
   if (symdata.error) console.log('symbol error:', symdata.error);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Save a script to the bundle */
+function SaveScript(script: TScriptUnit[]) {
+  const fn = 'SaveScript:';
+  const bdl = m_HasCurrentBundle(fn);
+  bdl.saveScript(script);
+}
 
 /// CURRENT BUNDLE INSPECTORS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function IsValidBundle() {
   const fn = 'IsValidBundle:';
   const bdl = m_HasCurrentBundle(fn);
-  CHECK.IsValidBundle(bdl);
+  return CHECK.IsValidBundle(bdl);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function HasBundleName() {
@@ -279,6 +294,7 @@ export {
   SetBundleTags,
   AddProgram,
   AddSymbols,
+  SaveScript,
   //
   LogKeywordError,
   //

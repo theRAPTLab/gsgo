@@ -52,10 +52,11 @@ class GEM_ProjectData {
    *  and load the manifest file which contains projects/.gemprj
    */
   async loadManifest(assetUrl: string): Promise<void> {
-    const fn = '.loadManifest:';
+    const fn = 'loadManifest:';
     // if manifest was provided on construct, use it
     // otherwise fetch it from the assetURL provided
-    if (this.manifest) console.warn(`${fn} overwriting saved manifest`);
+    if (this.manifest && DBG)
+      console.warn(`${fn} reloading manifest from '${assetUrl}'`);
     const manifest = await ProjectLoader.PromiseManifest(assetUrl);
     this.manifest = manifest;
     this.asset_url = assetUrl;
@@ -66,11 +67,11 @@ class GEM_ProjectData {
    *  assetUrl
    */
   async loadProjectData(assetUrl?: string): Promise<void> {
-    const fn = '.loadProjectData:';
+    const fn = 'loadProjectData:';
     if (typeof assetUrl === 'string') {
-      if (this.manifest)
-        console.warn(`${fn} is overwriting existing manifest from ${assetUrl}`);
-      await this.loadManifest(assetUrl);
+      await this.loadManifest(assetUrl).then(() => {
+        if (DBG) console.warn(`${fn} reloading data from '${assetUrl}'`);
+      });
     } else console.warn(`${fn} called before loadManifest`);
 
     const { projects } = this.manifest;
@@ -86,7 +87,7 @@ class GEM_ProjectData {
    *  label
    */
   getProjectList(filterString?: string): TProjectList[] {
-    const fn = '.getProjectList:';
+    const fn = 'getProjectList:';
     if (this.loader === undefined)
       throw Error('GetProjectList: no projects loaded');
     const list = this.loader.getProjectsList(); // Array{ id, label }
@@ -98,7 +99,7 @@ class GEM_ProjectData {
    *  for the given project id (.gemprj files)
    */
   getProject(prjId: string): TProject {
-    const fn = '.getProject:';
+    const fn = 'getProject:';
     if (this.loader === undefined) throw Error('GetProject: no projects loaded');
     const project = this.loader.getProjectByProjId(prjId);
     return project;
@@ -108,7 +109,7 @@ class GEM_ProjectData {
    *  given projectId and blueprintId
    */
   getProjectBlueprint(prjId: string, bpName: string): TBlueprint {
-    const fn = '.getProjectBlueprint:';
+    const fn = 'getProjectBlueprint:';
     const project = this.getProject(prjId);
     if (project === undefined) throw Error(`no asset project with id ${prjId}`);
     const { blueprints } = project;

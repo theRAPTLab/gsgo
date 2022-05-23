@@ -823,9 +823,12 @@ function DecodeKeywordToken(tok: any): string {
   const fn = 'DecodeKeywordToken:';
   const [type, value] = UnpackToken(tok);
   if (type === 'directive') return '_pragma';
-  if (type === 'line') return '';
-  if (type === 'comment') return '';
-  if (type !== 'identifier') throw Error(`${fn} tok wrong type`);
+  if (type === 'comment') return '_comment';
+  if (type === 'line') return '_line';
+  if (type !== 'identifier') {
+    const err = `${fn} tok '${type}' is not decodeable as a keyword`;
+    throw Error(err);
+  }
   return value;
 }
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
