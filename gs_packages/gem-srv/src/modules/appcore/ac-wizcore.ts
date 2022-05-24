@@ -31,7 +31,7 @@ import {
   UnpackViewData,
   UnpackSymbolType
 } from 'script/tools/symbol-helpers';
-import { DEV_PRJID, DEV_BPID } from 'config/gem-settings';
+import { ASSETDIR, DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 import { GetTextBuffer } from 'lib/class-textbuffer';
 
 // load state
@@ -117,7 +117,7 @@ UR.HookPhase('UR/LOAD_ASSETS', async () => {
     'color:gray'
   );
   // return promise to hold LOAD_ASSETS until done
-  return PROJ_v2.LoadAssetDirectory('/assets/art-assets/');
+  return PROJ_v2.LoadAssetDirectory(`/assets/${ASSETDIR}/`);
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// DEFERRED CALL: APP_CONFIGURE fires after LOAD_ASSETS (above) completes
@@ -565,7 +565,7 @@ function LoadProjectBlueprint(prjId, bpName) {
 /** testing the bundler + symbolizer code */
 UR.AddConsoleTool('bundle', (bpName: string) => {
   //
-  const assetDir = 'assets/art-assets';
+  const assetDir = `assets/${ASSETDIR}`;
   const projectId = 'aquatic_energy';
 
   // PROJECT LOADER - GET A BLUEPRINT SCRIPT TEXT
