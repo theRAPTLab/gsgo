@@ -66,8 +66,9 @@ function m_GetFirstErrorInfo(vTokens) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestValidate() {
   const fn = 'TestValidate:';
+  const mode = USE_TEST_SCRIPT ? 'internal test bp' : `${DEV_PRJID}/${DEV_BPID}`;
 
-  group(fn);
+  group(fn, mode);
   const script = m_GetTestScript();
   // GENERATE A BUNDLE that does not get saved into the
   let bdl: SM_Bundle = new SM_Bundle('test-validate');
