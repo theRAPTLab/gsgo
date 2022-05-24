@@ -81,6 +81,8 @@ _initializeState({
   sel_linepos: -1, // select index into line. If < 0 it is not set
   error: '', // used for displaying error messages
 
+  sel_slot: -1, // selected slot currently being edited.  If < 0 it is not set
+
   // project context
   proj_list: [], // project list
   cur_prjid: null, // current project id
@@ -204,13 +206,27 @@ function DispatchClick(event) {
     newState.sel_linepos = Number(pos); // STATE UPDATE: selected pos
     SendState(newState);
 
+    // REVIEW
+    // Deselect Slot?
+
     const { sel_linenum, sel_linepos } = State();
     if (sel_linenum > 0 && sel_linepos > 0) {
       return;
     }
   }
 
-  /** (2) ChoiceToken was clicked? ******************************************/
+  /** (2) GSlotToken was clicked? ************************************************/
+  const slotKey = event.target.getAttribute('slot-key');
+  if (slotKey !== null) {
+    newState.sel_slot = Number(slotKey); // STATE UPDATE: selected line
+    SendState(newState);
+    const { sel_slot } = State();
+    if (sel_slot > 0) {
+      return;
+    }
+  }
+
+  /** (3) ChoiceToken was clicked? ******************************************/
   const choiceKey = event.target.getAttribute('data-choice');
   if (choiceKey !== null) {
     const {
@@ -415,6 +431,7 @@ function SelectedTokenInfo() {
   const {
     sel_linenum,
     sel_linepos,
+    sel_slot,
     script_page,
     sel_validation: validation
   } = State();
@@ -424,6 +441,7 @@ function SelectedTokenInfo() {
       scriptToken, // the actual script token (not vmToken)
       sel_linenum, // line number in VMPage
       sel_linepos, // line position in VMPage[lineNum]
+      sel_slot, // slot position
       context, // the memory context for this token
       validation, // validation tokens in this line
       vmPageLine // all the VMTokens in this line
