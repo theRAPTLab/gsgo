@@ -216,7 +216,7 @@ function DispatchClick(event) {
   }
 
   /** (2) GSlotToken was clicked? ************************************************/
-  const slotKey = event.target.getAttribute('slot-key');
+  const slotKey = event.target.getAttribute('data-slotkey');
   if (slotKey !== null) {
     newState.sel_slot = Number(slotKey); // STATE UPDATE: selected line
     SendState(newState);

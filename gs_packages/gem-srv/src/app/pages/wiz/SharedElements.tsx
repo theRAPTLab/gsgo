@@ -341,7 +341,7 @@ export function GSlotToken(props) {
   if (viewState === VIEWSTATE.UNEXPECTED)
     classes += ' styleFlagInvalid styleFlagOverflow';
   return (
-    <div className={classes} slot-key={dataSelectKey}>
+    <div className={classes} data-slotkey={dataSelectKey}>
       {label}
     </div>
   );
