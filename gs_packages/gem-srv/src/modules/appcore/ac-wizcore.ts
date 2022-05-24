@@ -227,6 +227,9 @@ function DispatchClick(event) {
   }
 
   /** (3) ChoiceToken was clicked? ******************************************/
+  // BEN TO DO
+  // Currently when a choice is selected, the selection automatically replaces
+  // the `sel_linepos` item in the slot editor, rather then the `sel_slot` item
   const choiceKey = event.target.getAttribute('data-choice');
   if (choiceKey !== null) {
     const {
