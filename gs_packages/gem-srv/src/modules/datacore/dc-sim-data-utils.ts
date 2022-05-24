@@ -90,6 +90,7 @@ function AreValidArgs(args: TSymArg[]): boolean {
  *  string meets type requirements, [undefined, undefined] otherwise
  */
 function UnpackArg(arg: TSymArg): TSymUnpackedArg {
+  if (Array.isArray(arg)) return ['{...}', '{list}']; // when keyword uses weird array of args that needs to be fixed
   if (typeof arg !== 'string') return [undefined, undefined];
   let [name, type, ...xtra] = arg.split(':') as TSymUnpackedArg;
   // if there are multiple :, then that is an error
