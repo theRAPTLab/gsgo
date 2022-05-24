@@ -310,13 +310,19 @@ declare global {
     validationTokens: TSymbolData[];
     validationLog?: string[];
   };
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** tag types used by ben's extensions */
   type TBundleTags = Map<string, any>;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** store directives in the bundle as raw scriptunits*/
   type TBundleDirectives = Map<string, IToken[]>;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** datatype returned by ExtractBlueprintMeta() */
+  type TBlueprintMeta = {
+    BLUEPRINT: [bpName: string, bpBase: string];
+    PROGRAMS: { [programType: string]: true };
+    TAGS: { [tagName: string]: any };
+  };
 
   /// PROGRAM BUNDLES /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

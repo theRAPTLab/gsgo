@@ -100,8 +100,8 @@ function DecodeStatement(statement: TScriptUnit): any[] {
 /** API: given an array of scriptunits, scan the top-level statements for _pragma
  *  directives and return what it finds
  */
-function ExtractBlueprintDirectives(script: TScriptUnit[]) {
-  const fn = 'ExtractBlueprintDirectives:';
+function ExtractBlueprintMeta(script: TScriptUnit[]): TBlueprintMeta {
+  const fn = 'ExtractBlueprintMeta:';
   let bpName: string;
   let bpBase: string;
   let programs = new Set();
@@ -257,7 +257,7 @@ function SymbolizeBlueprint(script: TScriptUnit[], bdl?: SM_Bundle) {
   // open provided bundle or look it up in DCSIM by bpName
   if (bdl instanceof SM_Bundle) DCBUNDLER.OpenBundle(bdl);
   else {
-    const { BLUEPRINT, TAGS } = ExtractBlueprintDirectives(script);
+    const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
     const [bpName] = BLUEPRINT;
     DCBUNDLER.OpenBundle(bpName);
   }
@@ -288,7 +288,7 @@ function CompileBlueprint(script: TScriptUnit[], bdl?: SM_Bundle): SM_Bundle {
   // open provided bundle or look it up in DCSIM by bpName
   if (bdl instanceof SM_Bundle) DCBUNDLER.OpenBundle(bdl);
   else {
-    const { BLUEPRINT, TAGS } = ExtractBlueprintDirectives(script);
+    const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
     const [bpName] = BLUEPRINT;
     DCBUNDLER.OpenBundle(bpName);
   }
@@ -312,7 +312,7 @@ function CompileBlueprint(script: TScriptUnit[], bdl?: SM_Bundle): SM_Bundle {
 function BundleBlueprint(script: TScriptUnit[]): SM_Bundle {
   const fn = 'BundleBlueprint:';
   // get blueprint metadata
-  const { BLUEPRINT, TAGS } = ExtractBlueprintDirectives(script);
+  const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
   const [bpName] = BLUEPRINT;
   // get the bundle to work on
   DCBUNDLER.OpenBundle(bpName);
@@ -346,7 +346,7 @@ export {
   SymbolizeBlueprint
 };
 /// UTILITIES
-export { ExtractBlueprintDirectives, CompileScript };
+export { ExtractBlueprintMeta, CompileScript };
 export {
   DecodeToken,
   DecodeTokenPrimitive,

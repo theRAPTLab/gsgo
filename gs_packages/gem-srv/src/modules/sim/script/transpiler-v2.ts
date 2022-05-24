@@ -120,7 +120,7 @@ export {
   ValidateStatement, // utility: check script tokens against symbols
   //
   CompileScript, // API: return a TSMCProgram from a script text
-  ExtractBlueprintDirectives, // API: return directives from script text
+  ExtractBlueprintMeta, // API: return directives from script text
   //
   CompileBlueprint, // API: save a blueprint script as a bundle with program output
   SymbolizeBlueprint, // API: save blueprint symbols to a bundle
