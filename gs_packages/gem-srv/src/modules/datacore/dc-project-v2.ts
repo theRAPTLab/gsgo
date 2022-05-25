@@ -10,7 +10,8 @@ import GEM_ProjectData from 'modules/datacore/class-gemprj-data';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = true;
-const PR = UR.PrefixUtil('PROJ-V2', 'TagGreen');
+const PR = UR.LogUtil('PROJ-V2', 'TagGreen');
+const ERR = UR.ErrorUtil();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROJECT_DATA = new GEM_ProjectData();
 let CUR_PRJ: TProject;
@@ -25,7 +26,14 @@ let ASSET_DIR;
  *  and load all the project definitions into a PROJECTS dictionary.
  */
 async function LoadAssetDirectory(assetUrl: string): Promise<void> {
-  await PROJECT_DATA.loadProjectData(assetUrl);
+  const fn = 'LoadAssetDirectory';
+  await PROJECT_DATA.loadProjectData(assetUrl).catch(error => {
+    console.log(...ERR(`${fn} failed to load '${assetUrl}'`));
+    console.log(
+      'Make sure that your local-settings.json file overrides ASSET_DIR to point to your local asset directory'
+    );
+    console.log(error);
+  });
   ASSET_DIR = assetUrl;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

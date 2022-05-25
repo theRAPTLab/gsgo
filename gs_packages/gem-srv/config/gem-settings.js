@@ -32,6 +32,7 @@ const RUNTIME_PATH = Path.join(__dirname, `../${RUNTIME_DIRNAME}`);
 /// configs
 
 const MQTT_URL = 'localhost';
+const ASSETDIR = 'local';
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -40,6 +41,7 @@ const compositeSettings = {
   // overrides for GEM
   PACKAGE_NAME,
   RUNTIME_DIRNAME,
+  ASSETDIR,
   RUNTIME_PATH, // used only by servers
   MQTT_URL,
   // overrides from local-settings.json
