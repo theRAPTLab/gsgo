@@ -29,7 +29,7 @@ const PR = UR.PrefixUtil('SymbolSelector');
 export function EditSymbol(props) {
   // we need the current selection
   const { selection = {} } = props;
-  const { sel_linenum, sel_linepos } = selection;
+  const { sel_linenum, sel_linepos, sel_slot } = selection;
   const label = `options for token ${sel_linenum}:${sel_linepos}`;
   // this is a managed TextBuffer with name "ScriptContextor"
 
@@ -40,7 +40,14 @@ export function EditSymbol(props) {
   if (sel_linenum > 0 && sel_linepos > 0) {
     // const vdata = WIZCORE.ValidateSelectedLine();
     // console.log(vdata);
-    const vIndex = sel_linepos - 1;
+
+    // ORIG
+    // const vIndex = sel_linepos - 1;
+    // BL: Use slot position instead of lineposition (sel_linepos)
+    //     so that we display the currently selected slot type?
+    if (sel_slot < 0) return 'Click on a word above to edit it.'; // clicked ScriptView, not SelectEditorLineSlot
+    const vIndex = sel_slot - 1;
+
     const { validationTokens } = sel_validation;
     const symbolData = validationTokens[vIndex]; // indx into line
     /* symbolData has the current symbol data to convert into viewdata
@@ -105,13 +112,13 @@ export function EditSymbol(props) {
         // so the left will be the same height as the right
         // REVIEW: The <> needs a key.
         categoryDicts.push(
-          <>
+          <div key={rowKey} style={{ display: 'contents' }}>
             <GLabelToken
               key={rowKey}
               name={parentLabel ? `${parentLabel}\n${symbolType}` : symbolType}
             />
             <div style={{ display: 'flex', flexWrap: 'wrap' }}>{[...inner]}</div>
-          </>
+          </div>
         );
       });
       return categoryDicts;

@@ -31,7 +31,7 @@ import {
   UnpackViewData,
   UnpackSymbolType
 } from 'script/tools/symbol-helpers';
-import { DEV_PRJID, DEV_BPID } from 'config/gem-settings';
+import { ASSETDIR, DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 import { GetTextBuffer } from 'lib/class-textbuffer';
 
 // load state
@@ -81,6 +81,8 @@ _initializeState({
   sel_linepos: -1, // select index into line. If < 0 it is not set
   error: '', // used for displaying error messages
 
+  sel_slot: -1, // selected slot currently being edited.  If < 0 it is not set
+
   // project context
   proj_list: [], // project list
   cur_prjid: null, // current project id
@@ -106,23 +108,30 @@ _initializeState({
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// DEFERRED CALL: LOAD_ASSETS will fire after module loaded (and above code)
 UR.HookPhase('UR/LOAD_ASSETS', async () => {
-  console.log(
-    `%cFORCE LOADING ${DEV_PRJID}:${DEV_BPID} into GUI TESTBED`,
-    'background-color:red;color:white;padding:2px 4px'
-  );
-  console.log(
-    '%cvalues are hardcoded as DEV_PRJID and DEV_BPID in ac-wizcore',
-    'color:gray'
-  );
   // return promise to hold LOAD_ASSETS until done
-  return PROJ_v2.LoadAssetDirectory('/assets/art-assets/');
+  console.log(
+    `%cInitializing 'assets/${ASSETDIR}' as project source...`,
+    'background-color:rgba(255,0,0,0.15);color:red;padding:2px 4px'
+  );
+  return PROJ_v2.LoadAssetDirectory(`/assets/${ASSETDIR}/`);
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// DEFERRED CALL: APP_CONFIGURE fires after LOAD_ASSETS (above) completes
 UR.HookPhase('UR/APP_CONFIGURE', () => {
   const cur_prjid = DEV_PRJID;
   const cur_bpid = DEV_BPID;
+  let out = `%cLooking for '${DEV_PRJID}.prj' with blueprint name '${DEV_BPID}' `;
+  out += `in 'assets/${ASSETDIR}'...`;
+  out += '%c\n\n';
+  out += `If you see an error, check that ASSETDIR, DEV_PRJID, and DEV_BPID `;
+  out += `are correctly defined in local-settings.json`;
   // This retrieves the uncompiled/unbundled bpDef object {name, scriptText} from gem proj
+  console.log(
+    out,
+    'background-color:rgba(255,0,0,0.15);color:red;padding:2px 4px',
+    'color:maroon',
+    '\n\n'
+  );
   const bp = PROJ_v2.GetProjectBlueprint(cur_prjid, cur_bpid);
   const { scriptText: script_text } = bp;
   const vmState = { cur_prjid, cur_bpid, script_text };
@@ -204,13 +213,30 @@ function DispatchClick(event) {
     newState.sel_linepos = Number(pos); // STATE UPDATE: selected pos
     SendState(newState);
 
+    // REVIEW
+    // Deselect Slot?
+
     const { sel_linenum, sel_linepos } = State();
     if (sel_linenum > 0 && sel_linepos > 0) {
       return;
     }
   }
 
-  /** (2) ChoiceToken was clicked? ******************************************/
+  /** (2) GSlotToken was clicked? ************************************************/
+  const slotKey = event.target.getAttribute('data-slotkey');
+  if (slotKey !== null) {
+    newState.sel_slot = Number(slotKey); // STATE UPDATE: selected line
+    SendState(newState);
+    const { sel_slot } = State();
+    if (sel_slot > 0) {
+      return;
+    }
+  }
+
+  /** (3) ChoiceToken was clicked? ******************************************/
+  // BEN TO DO
+  // Currently when a choice is selected, the selection automatically replaces
+  // the `sel_linepos` item in the slot editor, rather then the `sel_slot` item
   const choiceKey = event.target.getAttribute('data-choice');
   if (choiceKey !== null) {
     const {
@@ -415,6 +441,7 @@ function SelectedTokenInfo() {
   const {
     sel_linenum,
     sel_linepos,
+    sel_slot,
     script_page,
     sel_validation: validation
   } = State();
@@ -424,6 +451,7 @@ function SelectedTokenInfo() {
       scriptToken, // the actual script token (not vmToken)
       sel_linenum, // line number in VMPage
       sel_linepos, // line position in VMPage[lineNum]
+      sel_slot, // slot position
       context, // the memory context for this token
       validation, // validation tokens in this line
       vmPageLine // all the VMTokens in this line
@@ -544,7 +572,7 @@ function LoadProjectBlueprint(prjId, bpName) {
 /** testing the bundler + symbolizer code */
 UR.AddConsoleTool('bundle', (bpName: string) => {
   //
-  const assetDir = 'assets/art-assets';
+  const assetDir = `assets/${ASSETDIR}`;
   const projectId = 'aquatic_energy';
 
   // PROJECT LOADER - GET A BLUEPRINT SCRIPT TEXT

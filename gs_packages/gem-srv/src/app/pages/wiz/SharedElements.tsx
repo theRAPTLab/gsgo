@@ -27,6 +27,13 @@ const SPECIAL_IDENTS = [
   'UPDATE',
   'CONDITION'
 ];
+export const VIEWSTATE = {
+  VALID: 'valid',
+  EMPTY: 'empty',
+  ERROR: 'error',
+  UNEXPECTED: 'unexpected',
+  VAGUE: 'vague'
+};
 const SPECIAL_KEYWORDS = ['useFeature', 'addFeature', 'addProp'];
 const CONDITION_KEYWORDS = ['every', 'when'];
 const INFO_TYPES = {
@@ -306,6 +313,35 @@ export function GToken(props) {
   // if not, emit the token element
   return (
     <div className={classes} data-key={tokenKey}>
+      {label}
+    </div>
+  );
+}
+
+/** tokens displayed in the SelectEditorLineSlot */
+export function GSlotToken(props) {
+  const { dataSelectKey, selected, type, label, viewState } = props;
+  let classes = selected
+    ? 'gwiz gtoken styleOpen selected'
+    : 'gwiz gtoken styleOpen';
+  // special types? use additional classes
+  if (type === 'identifier' && dataSelectKey === 0) classes += ' styleKey';
+  if (type === 'comment') classes += ' styleComment';
+  if (type === 'directive') classes += ' stylePragma';
+  if (SPECIAL_IDENTS.includes(label)) classes += ' stylePragma';
+  if (SPECIAL_KEYWORDS.includes(label)) classes += ' styleDefine';
+  if (CONDITION_KEYWORDS.includes(label)) classes += ' styleCond';
+  // set expected data type color, but overriden by viewState
+  classes += ` ${type}Type`;
+  // slot-specific viewState overrides
+  if (viewState === VIEWSTATE.VALID) classes += ''; // no style change
+  if (viewState === VIEWSTATE.ERROR) classes += ' styleFlagInvalid';
+  if (viewState === VIEWSTATE.EMPTY) classes += ' styleFlagEmpty';
+  if (viewState === VIEWSTATE.VAGUE) classes += ' styleFlagDisabled';
+  if (viewState === VIEWSTATE.UNEXPECTED)
+    classes += ' styleFlagInvalid styleFlagOverflow';
+  return (
+    <div className={classes} data-slotkey={dataSelectKey}>
       {label}
     </div>
   );

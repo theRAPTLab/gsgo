@@ -191,7 +191,10 @@ const UR = {
   SendControlFrame: DEVICES.SendControlFrame,
   LinkSubsToDevices: DEVICES.LinkSubsToDevices,
   // FORWARDED CONSOLE UTILITY
-  PrefixUtil: PROMPTS.makeStyleFormatter,
+  PrefixUtil: PROMPTS.makeStyleFormatter, // deprecate
+  LogUtil: PROMPTS.makeStyleFormatter,
+  ErrorUtil: PROMPTS.makeErrorFormatter,
+  WarnUtil: PROMPTS.makeWarningFormatter,
   DPR: PROMPTS.dbgPrint,
   ColorTagUtil: PROMPTS.colorTagString,
   SetPromptColor: PROMPTS.setPromptColor,
