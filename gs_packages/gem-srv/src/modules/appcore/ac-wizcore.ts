@@ -157,9 +157,13 @@ STORE._interceptState(state => {
   }
 });
 
+/// UI-DRIVEN STATE UPDATES ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** hack test poc */
-export function ScriptChanged() {
+/** API: Recreates text, script_page when the underlying script tokens
+ *  have changed. Use after writing a change to individual tokens
+ *  by the UI to force an update
+ */
+function ScriptChanged() {
   const { script_tokens } = State(); // we changed this elsewhere
   try {
     const script_text = TRANSPILER.ScriptToText(script_tokens);
@@ -170,8 +174,41 @@ export function ScriptChanged() {
     console.error(`wizcore_interceptState tokens: ${e.toString()}`);
   }
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Recreates script_page, etc structure when the script text has been
+ *  modifie by the UI. Since this is called while text is being entered
+ *  character-by-character, it purposefully waits for a few hundred milliseconds
+ *  before performing the update.
+ */
+function WizardTextChanged(text) {
+  let script_tokens: TScriptUnit[];
+  let cur_bdl: ISMCBundle;
+  try {
+    // compile the next text from the scriptText editor
+    // and update the state WITHOUT broadcasting the changes
+    // to avoid retriggering the scriptText editor
+    script_tokens = TRANSPILER.TextToScript(text); // can throw error
+    cur_bdl = TRANSPILER.BundleBlueprint(script_tokens); // can throw error
+    STORE._setState({ script_text: text, script_tokens, cur_bdl });
+    // since the script tokens have changed, need to redo the viewmodels for
+    // the scriptWizard and tell it to update
+    const [script_page, key_to_token] = TRANSPILER.ScriptToLines(script_tokens);
+    STORE.SendState({ script_page, key_to_token });
+  } catch (e) {
+    STORE.SendState({ error: e.toString() });
+    // eslint-disable-next-line no-useless-return
+    return;
+  }
+  // if there was no error above, then everything was ok
+  // so erase the error state!
+  STORE.SendState({ error: '' });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function UIToggleRunEditMode() {
+  STORE.SendState({ dev_or_user: 1 - STORE.State().dev_or_user });
+}
 
-/// EVENT DISPATCHERS ("REDUCERS") ////////////////////////////////////////////
+/// UI EVENT DISPATCHERS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Called by the document handler set in DevWizard. There are no other
  *  click handlers. Note that event is a React synthetic event which wraps
@@ -181,12 +218,9 @@ export function ScriptChanged() {
 function DispatchClick(event) {
   const fn = 'DC:';
   const newState: TStateObject = {};
-
   /** (1) GToken was clicked? ************************************************/
   const tokenKey = event.target.getAttribute('data-key');
   if (tokenKey !== null) {
-    // if (DBG) console.log(...PR(`${fn} clicked ${JSON.stringify(tokenKey)}`));
-
     // notify subscribers of new current line and token index
     const [line, pos] = tokenKey.split(',');
     newState.sel_linenum = Number(line); // STATE UPDATE: selected line
@@ -198,7 +232,6 @@ function DispatchClick(event) {
       return;
     }
   }
-
   /** (2) ChoiceToken was clicked? ******************************************/
   const choiceKey = event.target.getAttribute('data-choice');
   if (choiceKey !== null) {
@@ -231,14 +264,12 @@ function DispatchClick(event) {
     /** end hack test **/
     return;
   }
-
   /** (3) ScriptContextor clicks ********************************************/
   const sc = document.getElementById('ScriptContextor');
   if (m_ChildOf(event.target, sc)) {
     // console.log('click inside ScriptContextor', event.target);
     return;
   }
-
   /** (4) DESELECT IF NON-TOKEN *********************************************/
   const sv = document.getElementById('ScriptWizardView');
   if (m_ChildOf(event.target, sv)) {
@@ -246,7 +277,6 @@ function DispatchClick(event) {
     SendState({ sel_linenum: -1, sel_linepos: -1 });
     return;
   }
-
   /** (N) unhandled click oops **********************************************/
   const err = 'unhandled click in';
   // console.log(err, event.target);
@@ -261,76 +291,8 @@ function DispatchEditorClick(event) {
   event.stopPropagation();
   console.log(`${fn}`, event);
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Called after text editing in CodeJar has stopped and there has been no
- *  input for a few hundred milliseconds. Updates the script_page (token)
- *  display and also updates the text/script privately without sending the
- *  changes bak out
- */
-function WizardTextChanged(text) {
-  let script_tokens;
-  let cur_bdl;
-  try {
-    // compile the next text from the scriptText editor
-    // and update the state WITHOUT broadcasting the changes
-    // to avoid retriggering the scriptText editor
-    script_tokens = TRANSPILER.TextToScript(text); // can throw error
-    cur_bdl = TRANSPILER.BundleBlueprint(script_tokens); // can throw error
-    STORE._setState({ script_text: text, script_tokens, cur_bdl });
-    // since the script tokens have changed, need to redo the viewmodels for
-    // the scriptWizard and tell it to update
-    const [script_page, key_to_token] = TRANSPILER.ScriptToLines(script_tokens);
-    STORE.SendState({ script_page, key_to_token });
-  } catch (e) {
-    STORE.SendState({ error: e.toString() });
-    // eslint-disable-next-line no-useless-return
-    return;
-  }
-  // if there was no error above, then everything was ok
-  // so erase the error state!
-  STORE.SendState({ error: '' });
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a scriptText consiting of a single line, return the validation
- *  data for testing. Note that this will nuke the PAGE and MAP structures
- *  for the rest of the script because script-to-lines doesn't handle multiple
- *  instances
- */
-function WizardTestLine(text) {
-  try {
-    const script = TRANSPILER.TextToScript(text);
-    const [vmPage] = TRANSPILER.ScriptToLines(script); // note: use different instance
-    const [vmPageLine] = vmPage; // get the first line
-    const { vmTokens, lineScript } = vmPageLine;
-    const { validationTokens: vtoks, validationLog } =
-      ValidatePageLine(vmPageLine);
-    return { validTokens: vtoks, vmTokens, lineScript };
-  } catch (e) {
-    const error = e.toString();
-    const re = /(.*)@(\d+):(\d+).*/;
-    let matches = re.exec(error);
-    if (matches) {
-      const [, errMsg, line, pos] = matches;
-      const col = Number(pos);
-      const errLine = `${text.slice(0, col)}***ERROR***`;
-      // eslint-disable-next-line no-alert
-      alert(
-        `LineTester Error in position ${col}:\n\n${errLine}\n${text}\n\n${errMsg}`
-      );
-    } else console.log(error);
-  } // try-catch
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function PrintDBGConsole(str: string) {
-  const buf = GetTextBuffer(STORE.State().dbg_console);
-  buf.printLine(str);
-  console.log(str);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function UpdateDBGConsole(validationLog: string[]) {
-  const buf = GetTextBuffer(STORE.State().dbg_console);
-  buf.set(validationLog);
-}
+
+/// UI SCREEN HELPERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a line number, scroll that line into view. to be used
  *  when clicking an element that is covered-up by the edit box
@@ -355,22 +317,7 @@ function ScrollLineIntoView(lineNum: number) {
   }
 }
 
-/// WIZCORE HELPER METHODS ////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Return a flat array of all token objects for refence comparison purposes */
-function GetAllTokenObjects(statements) {
-  const allToks = [];
-  statements.forEach(stm => {
-    const stmToks = [...stm];
-    stmToks.forEach(stok => {
-      const { block } = stok;
-      if (Array.isArray(block)) {
-        allToks.push(...GetAllTokenObjects(block));
-      } else allToks.push(stok);
-    });
-  });
-  return allToks;
-}
+/// UI SELECTION HELPERS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return the string of form '1,2', which is the line number and line position
  *  with 1 being the first element. This string is used as a hash.
@@ -386,21 +333,6 @@ function SelectedTokenId() {
 function SelectedLineNum() {
   const { sel_linenum } = STORE.State();
   return Number(sel_linenum);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return the token by tokenKey 'line,pos'
- */
-function GetTokenById(key) {
-  const scriptToken = STORE.State('key_to_token').get(key);
-  // this can happen if script-to-lines ScriptToLines() is called on another body
-  // of text that isn't what you're clicking on
-  return scriptToken;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Return the script_page line, taking the 1-index into account */
-function GetVMPageLine(line: number) {
-  const { script_page } = STORE.State();
-  return script_page[line - TRANSPILER.LINE_START_NUM];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return selection information, used for interactive lookup */
@@ -422,28 +354,29 @@ function SelectedTokenInfo() {
   }
   return undefined;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return the token by tokenKey 'line,pos' */
+function GetTokenById(key) {
+  const scriptToken = STORE.State('key_to_token').get(key);
+  // this can happen if script-to-lines ScriptToLines() is called on another body
+  // of text that isn't what you're clicking on
+  return scriptToken;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Return the script_page line, taking the 1-index into account */
+function GetVMPageLine(line: number) {
+  const { script_page } = STORE.State();
+  return script_page[line - TRANSPILER.LINE_START_NUM];
+}
 
+/// DATA CONVERSION HELPERS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return a string version of a ScriptUnit */
 function GetLineScriptText(lineScript) {
   return TRANSPILER.StatementToText(lineScript);
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a lineVM, ensure that the scriptUnit is (1) valid and (2) return
- *  TValidationToken objects
- *  @param {VMPageLine} vmPageLine - entry from VMPage[linenum]
- */
-function ValidateLine(lineNum: number): TValidatedScriptUnit {
-  // ERRORS AND DEBUG STUFF
-  const fn = 'ValidateLine:';
-  const vmPageLine = GetVMPageLine(lineNum);
-  const { lineScript, globalRefs } = vmPageLine;
-  const { cur_bdl } = STORE.State();
-  return TRANSPILER.ValidateStatement(lineScript, {
-    bundle: cur_bdl,
-    globals: globalRefs
-  });
-}
+
+/// DATA VALIDATION HELPERS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** if you don't want to rely on sel_validation, use this call, but you probably
  *  don't need to worry as it's updated everytime something is clicked
@@ -453,41 +386,35 @@ function ValidateSelectedLine(): TValidatedScriptUnit {
   return ValidateLine(sel_linepos);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given a line number, return the Validation Tokens for it */
+function ValidateLine(lineNum: number): TValidatedScriptUnit {
+  const vmPageLine = GetVMPageLine(lineNum);
+  return ValidatePageLine(vmPageLine);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** if you have a stand-alone vmPageLine structure that isn't related to the
  *  current script or selected line, use this! It will validate it in context
  *  of the current bundle
  */
-function ValidatePageLine(pageLine): TValidatedScriptUnit {
-  const { lineScript, globalRefs } = pageLine;
+function ValidatePageLine(vmLine: VMPageLine): TValidatedScriptUnit {
+  const { lineScript, globalRefs } = vmLine;
   const { cur_bdl } = STORE.State();
   return TRANSPILER.ValidateStatement(lineScript, {
     bundle: cur_bdl,
     globals: globalRefs
   });
 }
+
+/// UI LIST HELPERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** PLACEHOLDER: retrieve bundle information. prob should be in dc-bundle */
-function GetBundleSymbol(symbolType: keyof TSymbolData) {
-  if (symbolType === 'keywords') {
-    return DCSIM.GetAllKeywords() || {};
-  }
-  const bdl: ISMCBundle = STORE.State().cur_bdl; // returns null
-  if (!bdl) return {};
-  if (!bdl.symbols === undefined) return {};
-  return bdl.symbols[symbolType];
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** PLACEHOLDER: retrieve bundle information. prob should be in dc-bundle */
-function GetBundleSymbolNames(symbolType: keyof TSymbolData): string[] {
-  const symbols = GetBundleSymbol(symbolType);
-  if (Array.isArray(symbols)) return symbols;
-  if (typeof symbols !== 'object') return [`error retrieving ${symbolType}`];
-  const keys = [...Object.keys(symbols)];
-  if (keys.length === 0) return [];
-  return keys;
+/** return the names of symbolData object keys as an array of strings  */
+function GetSymbolNames(symbolType: keyof TSymbolData): string[] {
+  if (symbolType === 'keywords') return DCSIM.GetAllKeywords();
+  const bdl = STORE.State().cur_bdl; // returns null
+  return bdl.GetSymbolDataNames(symbolType);
 }
 
-/// MODULE METHODS ////////////////////////////////////////////////////////////
+/// DATA QUERY HELPERS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a token object, return true if the object reference is found anywhere
  *  in the current script_token state object. Used to debug whether we are
@@ -506,30 +433,67 @@ function IsTokenInMaster(tok) {
   }
   return found;
 }
-
-/// UI-to-APP STATE AND MODES /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function UIToggleRunEditMode() {
-  STORE.SendState({ dev_or_user: 1 - STORE.State().dev_or_user });
+/** Return a flat array of all token objects for comparison purposes */
+function GetAllTokenObjects(statements: TScriptUnit[]) {
+  const allToks = [];
+  statements.forEach(stm => {
+    const stmToks = [...stm];
+    stmToks.forEach(stok => {
+      const { block } = stok;
+      if (Array.isArray(block)) {
+        allToks.push(...GetAllTokenObjects(block));
+      } else allToks.push(stok);
+    });
+  });
+  return allToks;
+}
+
+/// DEBUGGING + PROTOTYPING ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given a scriptText consiting of a single line, return the validation
+ *  data for testing. Note that this will nuke the PAGE and MAP structures
+ *  for the rest of the script because script-to-lines doesn't handle multiple
+ *  instances
+ */
+function WizardTestLine(text: string) {
+  try {
+    const script = TRANSPILER.TextToScript(text);
+    const [vmPage] = TRANSPILER.ScriptToLines(script); // note: use different instance
+    const [vmPageLine] = vmPage; // get the first line
+    const { vmTokens, lineScript } = vmPageLine;
+    const { validationTokens: vtoks, validationLog } =
+      ValidatePageLine(vmPageLine);
+    return { validTokens: vtoks, vmTokens, lineScript };
+  } catch (e) {
+    const error = e.toString();
+    const re = /(.*)@(\d+):(\d+).*/;
+    let matches = re.exec(error);
+    if (matches) {
+      const [, errMsg, line, pos] = matches;
+      const col = Number(pos);
+      const errLine = `${text.slice(0, col)}***ERROR***`;
+      // eslint-disable-next-line no-alert
+      alert(
+        `LineTester Error in position ${col}:\n\n${errLine}\n${text}\n\n${errMsg}`
+      );
+    } else console.log(error);
+  } // try-catch
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function PrintDBGConsole(str: string) {
+  const buf = GetTextBuffer(STORE.State().dbg_console);
+  buf.printLine(str);
+  console.log(str);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: return the blueprint of the given project,
- *  { id, label, scriptText, ... }
- *  object or undefined if no exist
- */
-function LoadProjectBlueprint(prjId, bpName) {
-  const { blueprints } = PROJ_v2.GetProject(prjId);
-  if (!blueprints) return `no projectId '${prjId}'`;
-  const found = blueprints.find(bp => bp.name === bpName);
-  if (!found) return `no blueprint '${bpName}' found in '${bpName}'`;
-  const { scriptText } = found;
-  const scriptToks = TRANSPILER.TextToScript(scriptText);
-  let cur_bdl = TRANSPILER.BundleBlueprint(scriptToks);
-  STORE.SendState({ script_text: scriptText, cur_bdl }, () => {});
+export function UpdateDBGConsole(validationLog: string[]) {
+  const buf = GetTextBuffer(STORE.State().dbg_console);
+  buf.set(validationLog);
 }
 
 /// PROTOTYPING ///////////////////////////////////////////////////////////////
-/// script-compiler CompileBlueprintBundle
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** testing the bundler + symbolizer code */
 UR.AddConsoleTool('bundle', (bpName: string) => {
@@ -565,6 +529,7 @@ export { State, SendState, SubscribeState, UnsubscribeState, QueueEffect };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
   DispatchClick, // handles clicks on Wizard document
+  ScriptChanged, // handles change of script_page lineScript tokens
   WizardTextChanged, // handle incoming change of text
   WizardTestLine, // handle test line for WizardTextLine tester
   DispatchEditorClick // handle clicks on editing box
@@ -575,7 +540,8 @@ export {
 export {
   IsTokenInMaster, // does tok exist inside the script_page? (for ref debug)
   GetAllTokenObjects, // return a flat array of all tokens (for ref debugging)
-  ScrollLineIntoView
+  ScrollLineIntoView,
+  UIToggleRunEditMode
 };
 export {
   SelectedTokenId, // return current selected token identifier
@@ -587,11 +553,8 @@ export {
   ValidatePageLine // test compile line relative to current blueprint
 };
 export {
-  GetBundleSymbol, // return symbolType from bundle
-  GetBundleSymbolNames, // return the names
+  GetSymbolNames, // return the names
   DecodeSymbolViewData, // forward utilities from symbol-helpers
   UnpackViewData, // forward convert ViewData to an hybrid format
   UnpackSymbolType // forward unpack symbol into [unit,type, ...param]
 };
-
-export { LoadProjectBlueprint };

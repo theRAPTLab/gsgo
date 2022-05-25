@@ -43,9 +43,9 @@ function u_Key(prefix = '') {
 /// NOTES AND STUFF ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function DevStuffToAdd(props) {
-  const features = WIZCORE.GetBundleSymbolNames('features');
-  const properties = WIZCORE.GetBundleSymbolNames('props');
-  const keywords = WIZCORE.GetBundleSymbolNames('keywords');
+  const keywords = WIZCORE.GetSymbolNames('keywords');
+  const features = WIZCORE.GetSymbolNames('features');
+  const properties = WIZCORE.GetSymbolNames('props');
   return (
     <StackUnit label="DEV: BLUEPRINT REF GOES HERE">
       <StackUnit label="BUILDING PIECES">
