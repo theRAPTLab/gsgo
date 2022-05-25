@@ -41,6 +41,7 @@ const compositeSettings = {
   // overrides for GEM
   PACKAGE_NAME,
   RUNTIME_DIRNAME,
+  ASSETDIR,
   RUNTIME_PATH, // used only by servers
   MQTT_URL,
   // overrides from local-settings.json

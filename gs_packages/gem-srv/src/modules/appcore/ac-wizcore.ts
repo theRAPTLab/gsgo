@@ -108,15 +108,11 @@ _initializeState({
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// DEFERRED CALL: LOAD_ASSETS will fire after module loaded (and above code)
 UR.HookPhase('UR/LOAD_ASSETS', async () => {
-  console.log(
-    `%cFORCE LOADING ${DEV_PRJID}:${DEV_BPID} into GUI TESTBED`,
-    'background-color:red;color:white;padding:2px 4px'
-  );
-  console.log(
-    '%cvalues are hardcoded as DEV_PRJID and DEV_BPID in ac-wizcore',
-    'color:gray'
-  );
   // return promise to hold LOAD_ASSETS until done
+  console.log(
+    `%cInitializing 'assets/${ASSETDIR}' as project source...`,
+    'background-color:rgba(255,0,0,0.15);color:red;padding:2px 4px'
+  );
   return PROJ_v2.LoadAssetDirectory(`/assets/${ASSETDIR}/`);
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -124,7 +120,18 @@ UR.HookPhase('UR/LOAD_ASSETS', async () => {
 UR.HookPhase('UR/APP_CONFIGURE', () => {
   const cur_prjid = DEV_PRJID;
   const cur_bpid = DEV_BPID;
+  let out = `%cLooking for '${DEV_PRJID}.prj' with blueprint name '${DEV_BPID}' `;
+  out += `in 'assets/${ASSETDIR}'...`;
+  out += '%c\n\n';
+  out += `If you see an error, check that ASSETDIR, DEV_PRJID, and DEV_BPID `;
+  out += `are correctly defined in local-settings.json`;
   // This retrieves the uncompiled/unbundled bpDef object {name, scriptText} from gem proj
+  console.log(
+    out,
+    'background-color:rgba(255,0,0,0.15);color:red;padding:2px 4px',
+    'color:maroon',
+    '\n\n'
+  );
   const bp = PROJ_v2.GetProjectBlueprint(cur_prjid, cur_bpid);
   const { scriptText: script_text } = bp;
   const vmState = { cur_prjid, cur_bpid, script_text };
