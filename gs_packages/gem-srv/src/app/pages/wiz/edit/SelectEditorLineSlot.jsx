@@ -46,6 +46,103 @@ import {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const KEY_BITS = -1 + 2 ** 16;
 let KEY_COUNTER = 0;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// FAKE DATA
+let TEST_SLOTS = [];
+let TEST_NUM = 0;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// FAKE DATA
+// This is the "syntax" expected based on the current keyword
+// selected (and any relevant props and methods)
+// HOW TO USE IT: Uncomment just ONE of the example slots definitions
+//                evaluate the selected vmTokens against the slot definition
+
+// EXAMPLE: 'prop' - propName is empty, so method is vague
+TEST_SLOTS.push([
+  {
+    expectedType: 'identifier',
+    dataSelectKey: 1,
+    viewState: VIEWSTATE.VALID,
+    unitText: 'prop'
+  },
+  {
+    expectedType: 'objref',
+    dataSelectKey: 2,
+    viewState: VIEWSTATE.EMPTY,
+    unitText: 'propName'
+  },
+  {
+    expectedType: 'method',
+    dataSelectKey: 3,
+    viewState: VIEWSTATE.VAGUE,
+    unitText: 'method'
+  },
+  {
+    expectedType: 'value',
+    dataSelectKey: 4,
+    viewState: VIEWSTATE.VAGUE,
+    unitText: 'value'
+  }
+]);
+
+// EXAMPLE: 'prop x' - method is empty, so value is vague
+TEST_SLOTS.push([
+  {
+    expectedType: 'identifier',
+    dataSelectKey: 1,
+    viewState: VIEWSTATE.VALID,
+    unitText: 'prop'
+  },
+  {
+    expectedType: 'objref',
+    dataSelectKey: 2,
+    viewState: VIEWSTATE.VALID,
+    unitText: 'propName'
+  },
+  {
+    expectedType: 'method',
+    dataSelectKey: 3,
+    viewState: VIEWSTATE.EMPTY,
+    unitText: 'method'
+  },
+  {
+    expectedType: 'value',
+    dataSelectKey: 4,
+    viewState: VIEWSTATE.VAGUE,
+    unitText: 'value'
+  }
+]);
+
+// EXAMPLE: 'prop x setTo' - method is selected, but value is empty but expected to be number
+TEST_SLOTS.push([
+  {
+    expectedType: 'identifier',
+    dataSelectKey: 1,
+    viewState: VIEWSTATE.VALID,
+    unitText: 'prop'
+  },
+  {
+    expectedType: 'objref',
+    dataSelectKey: 2,
+    viewState: VIEWSTATE.VALID,
+    unitText: 'propName'
+  },
+  {
+    expectedType: 'method',
+    dataSelectKey: 3,
+    viewState: VIEWSTATE.VALID,
+    unitText: 'method'
+  },
+  {
+    expectedType: 'number',
+    dataSelectKey: 4,
+    viewState: VIEWSTATE.EMPTY,
+    unitText: 'number'
+  }
+]);
+
+// END FAKE DATA
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Generates a sequential key index for React lists that increments and wraps
  *  back to 0 after 16 bits exceeded. The output is a 4-digit hex string.
@@ -103,100 +200,9 @@ function SelectEditorLineSlot(props) {
   // const { lineScript } = pageLine;
   // const slots = WIZCORE.GetSlotViewData(lineScript);
   const { sel_slot } = WIZCORE.State();
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // FAKE DATA
-  // This is the "syntax" expected based on the current keyword
-  // selected (and any relevant props and methods)
-  // HOW TO USE IT: Uncomment just ONE of the example slots definitions
-  //                evaluate the selected vmTokens against the slot definition
-
-  // EXAMPLE: 'prop' - propName is empty, so method is vague
-  // const slots = [
-  //   {
-  //     expectedType: 'identifier',
-  //     dataSelectKey: 1,
-  //     viewState: VIEWSTATE.VALID,
-  //     unitText: 'prop'
-  //   },
-  //   {
-  //     expectedType: 'objref',
-  //     dataSelectKey: 2,
-  //     viewState: VIEWSTATE.EMPTY,
-  //     unitText: 'propName'
-  //   },
-  //   {
-  //     expectedType: 'method',
-  //     dataSelectKey: 3,
-  //     viewState: VIEWSTATE.VAGUE,
-  //     unitText: 'method'
-  //   },
-  //   {
-  //     expectedType: 'value',
-  //     dataSelectKey: 4,
-  //     viewState: VIEWSTATE.VAGUE,
-  //     unitText: 'value'
-  //   }
-  // ];
-
-  // EXAMPLE: 'prop x' - method is empty, so value is vague
-  // const slots = [
-  //   {
-  //     expectedType: 'identifier',
-  //     dataSelectKey: 1,
-  //     viewState: VIEWSTATE.VALID,
-  //     unitText: 'prop'
-  //   },
-  //   {
-  //     expectedType: 'objref',
-  //     dataSelectKey: 2,
-  //     viewState: VIEWSTATE.VALID,
-  //     unitText: 'propName'
-  //   },
-  //   {
-  //     expectedType: 'method',
-  //     dataSelectKey: 3,
-  //     viewState: VIEWSTATE.EMPTY,
-  //     unitText: 'method'
-  //   },
-  //   {
-  //     expectedType: 'value',
-  //     dataSelectKey: 4,
-  //     viewState: VIEWSTATE.VAGUE,
-  //     unitText: 'value'
-  //   }
-  // ];
-
-  // EXAMPLE: 'prop x setTo' - method is selected, but value is empty but expected to be number
-  const slots = [
-    {
-      expectedType: 'identifier',
-      dataSelectKey: 1,
-      viewState: VIEWSTATE.VALID,
-      unitText: 'prop'
-    },
-    {
-      expectedType: 'objref',
-      dataSelectKey: 2,
-      viewState: VIEWSTATE.VALID,
-      unitText: 'propName'
-    },
-    {
-      expectedType: 'method',
-      dataSelectKey: 3,
-      viewState: VIEWSTATE.VALID,
-      unitText: 'method'
-    },
-    {
-      expectedType: 'number',
-      dataSelectKey: 4,
-      viewState: VIEWSTATE.EMPTY,
-      unitText: 'number'
-    }
-  ];
-
-  // END FAKE DATA
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// SRI HACK
+  const slots = TEST_SLOTS[TEST_NUM];
 
   // 2. Get Current Line Item Definition
 
@@ -257,7 +263,11 @@ function SelectEditorLineSlot(props) {
       />
     );
   }
-  return <div>{tokenList}</div>;
+  return (
+    <div>
+      (test {TEST_NUM}) {tokenList}
+    </div>
+  );
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
