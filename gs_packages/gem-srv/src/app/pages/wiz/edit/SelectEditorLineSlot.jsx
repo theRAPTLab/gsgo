@@ -28,6 +28,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
 import React from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as TRANSPILER from 'script/transpiler-v2';
@@ -269,6 +270,16 @@ function SelectEditorLineSlot(props) {
     </div>
   );
 }
+
+/// DEBUG COMMANDS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.AddConsoleTool('test_slot', test => {
+  // increment
+  if (typeof test !== 'number') {
+    TEST_NUM = TEST_NUM++ >= TEST_SLOTS.length - 1 ? 0 : TEST_NUM;
+  } else if (test >= 0 && test < TEST_SLOTS.length) TEST_NUM = test;
+  return `setting slot test data to ${TEST_NUM}`;
+});
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
