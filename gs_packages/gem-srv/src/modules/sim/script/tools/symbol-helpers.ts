@@ -59,7 +59,7 @@ class VSymError extends VSymToken {
    *  @param {string} err_info description of what causes the error
    */
   constructor(
-    err_code: TValidationErrorCodes = 'oops',
+    err_code: TValidationErrorCodes = 'debug',
     err_info: string = '<none provided>',
     symbols?: TSymbolData,
     unitText?: string
@@ -466,7 +466,7 @@ class SymbolHelper {
     // is this an enumeration list match token???
     // NOT IMPLEMENTED
     if (gsType === 'enum') {
-      symData = new VSymError('oops', `${fn} enum is unimplemented`);
+      symData = new VSymError('debug', `${fn} enum is unimplemented`);
     }
 
     // all symbols available in current bundle match token.objref
@@ -538,7 +538,7 @@ class SymbolHelper {
     // }
 
     if (symData === undefined) {
-      return new VSymError('oops', `${fn} ${gsType} has no token mapper`, {
+      return new VSymError('debug', `${fn} ${gsType} has no token mapper`, {
         arg
       });
     }

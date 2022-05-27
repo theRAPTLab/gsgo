@@ -228,10 +228,10 @@ declare global {
    *  rendered in the GUI */
   /// `valid | empty | error | unexpected | vague`
   type TValidationErrorCodes =
-    | 'oops' // a debug message
-    | 'badtok' // token incorrect type, or nomatch
+    | 'debug' // a debug placeholder
+    | 'invalid' // token incorrect type, or invalid value
     | 'empty' // missing token
-    | 'unexpected' // extra token
+    | 'extra' // extra token
     | 'vague'; // indeterminate token need
 
   /// MAIN SYMBOL DATA DECLARATION ////////////////////////////////////////////
