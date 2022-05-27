@@ -26,6 +26,7 @@ import * as TRANSPILER from 'script/transpiler-v2';
 import ScriptLiner from 'script/tools/script-to-lines';
 import * as DCENGINE from 'modules/datacore/dc-sim-data';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
+import * as TOKENIZER from 'script/tools/class-gscript-tokenizer-v2';
 import {
   DecodeSymbolViewData,
   UnpackViewData,
@@ -81,7 +82,9 @@ _initializeState({
   sel_linepos: -1, // select index into line. If < 0 it is not set
   error: '', // used for displaying error messages
 
-  sel_slot: -1, // selected slot currently being edited.  If < 0 it is not set
+  sel_slotpos: -1, // selected slot currently being edited.  If < 0 it is not set
+  sel_slotlinescript: [], // lineScript being edited in slot
+  sel_slotvalidation: [], // validation tokens for the current slot line being edited
 
   // project context
   proj_list: [], // project list
@@ -143,7 +146,13 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// spy on incoming SendState events and modify/add events as needed
 _interceptState(state => {
-  const { script_text, script_tokens, sel_linenum } = state;
+  const {
+    script_text,
+    script_tokens,
+    sel_linenum,
+    sel_slotpos,
+    sel_slotlinescript
+  } = state;
   // if script_text is changing, we also want to emit new script_token
   if (!script_tokens && script_text) {
     const toks = TRANSPILER.TextToScript(script_text);
@@ -173,6 +182,18 @@ _interceptState(state => {
       state.sel_validation = ValidateLine(sel_linenum);
     } else {
       state.sel_validation = null;
+    }
+  }
+  // run validation and save result if new selected slot token
+  if (sel_slotpos && sel_slotlinescript) {
+    if (sel_slotpos > 0) {
+      const pageLine = {
+        lineScript: sel_slotlinescript,
+        global: []
+      };
+      state.sel_slotvalidation = ValidatePageLine(pageLine);
+    } else {
+      state.sel_slotvalidation = null;
     }
   }
 });
@@ -211,10 +232,31 @@ function DispatchClick(event) {
     const [line, pos] = tokenKey.split(',');
     newState.sel_linenum = Number(line); // STATE UPDATE: selected line
     newState.sel_linepos = Number(pos); // STATE UPDATE: selected pos
+
+    // HACK FOR NOW
+    // If slot was previously clicked, then we have edited the slot
+    // so do what???
+    const { sel_slotpos } = State();
+    if (sel_slotpos > 0) {
+      // slot is currently selected, so save off the old one?
+      console.warn('Slot already edited but not saved!!!');
+    }
+
+    // Select the slot also!
+    newState.sel_slotpos = Number(pos); // STATE UPDATE: selected slot
+
+    // NOTE: Have to set state here before we can retrieve the selectedToeknInfo below
+    // REVIEW: Is there a better way to update token info without setting the state?
+    //         Probably not since SElectedTokenInfo relies on current state to get selection info
+    //         OTOH, all we neeed is vmPageLine?
     SendState(newState);
 
-    // REVIEW
-    // Deselect Slot?
+    // Make a local copy of the currently selected lineScript
+    const { vmPageLine } = SelectedTokenInfo();
+    // REVIEW: Save data before overwriting it with the new selection?
+    newState.sel_slotlinescript = vmPageLine.lineScript.map(o => ({ ...o }));
+    // REVIEW: Seems weird to send it again...
+    SendState(newState);
 
     const { sel_linenum, sel_linepos } = State();
     if (sel_linenum > 0 && sel_linepos > 0) {
@@ -225,18 +267,15 @@ function DispatchClick(event) {
   /** (2) GSlotToken was clicked? ************************************************/
   const slotKey = event.target.getAttribute('data-slotkey');
   if (slotKey !== null) {
-    newState.sel_slot = Number(slotKey); // STATE UPDATE: selected line
+    newState.sel_slotpos = Number(slotKey); // STATE UPDATE: selected line
     SendState(newState);
-    const { sel_slot } = State();
-    if (sel_slot > 0) {
+    const { sel_slotpos } = State();
+    if (sel_slotpos > 0) {
       return;
     }
   }
 
   /** (3) ChoiceToken was clicked? ******************************************/
-  // BEN TO DO
-  // Currently when a choice is selected, the selection automatically replaces
-  // the `sel_linepos` item in the slot editor, rather then the `sel_slot` item
   const choiceKey = event.target.getAttribute('data-choice');
   if (choiceKey !== null) {
     const {
@@ -247,19 +286,64 @@ function DispatchClick(event) {
       validation,
       vmPageLine // all the VMTokens in this line
     } = SelectedTokenInfo();
-    // here we want to map the selected symbolType/symbolValue to the
-    // scriptToken which has its own type. We also need to know the
-    // This is that TYPE MATCHING challenge again...
+
+    // Deconstruct the selected choice
+    // The selected choice item is symbolValue
+
     const [symbolType, symbolValue] = choiceKey.split('-');
+    // symbolType = 'props' or 'methods'
+    // symbolValue = the text label of the selected choice
+
+    // figure out what it is
+    const [type, value] = TOKENIZER.UnpackToken(scriptToken);
+    // if type is token...
+    // look up iTokenType declaration
+    // use to inspect, should match gsarg type
+
+    // REVIEW: Use replacement by ref?
+
+    // Replace the token in the current line script
+    const { sel_slotpos } = State(); // sel_slotpos is 1-based
+    const slotIdx = sel_slotpos - 1;
+    // linescript = [ {identifier: 'prop'}, {identifier: 'x'} ]
+    const sel_slotlinescript = State('sel_slotlinescript');
+
+    // REVIEW: Can this be anythign other than 'identifier'?
+    let newScriptToken = { identifier: undefined };
+    if (slotIdx < sel_slotlinescript.length) {
+      // replace existing slot data?
+      newScriptToken = sel_slotlinescript[slotIdx];
+      newScriptToken.identifier = symbolValue;
+    } else {
+      // add new slot data
+      newScriptToken.identifier = symbolValue;
+    }
+    sel_slotlinescript.splice(slotIdx, 1, newScriptToken);
+    newState.sel_slotlinescript = sel_slotlinescript;
+
+    // advance the slot selector to the next slot
+    newState.sel_slotpos = sel_slotpos + 1;
+
+    SendState(newState);
+
+    // lineScript
+    // script_page an index by line number is main data
+    // each hold vm_page_line
+    // line_script is array of script tokens
+    // so keep a local copy of linescript
+    // when modify, modify the linescript
+    // wizcore mostly uses tokens by reference!!!
 
     /** hack test **/
     // just change identifier tokens
-    if (scriptToken.identifier) {
-      scriptToken.identifier = symbolValue;
-      const script_tokens = State('script_tokens');
-      const script_text = TRANSPILER.ScriptToText(script_tokens);
-      SendState({ script_text });
-    }
+    // BL NOTE: Keep this for reference
+    // if (scriptToken.identifier) {
+    //   scriptToken.identifier = symbolValue;
+    //   const script_tokens = State('script_tokens');
+    //   const script_text = TRANSPILER.ScriptToText(script_tokens);
+    //   SendState({ script_text });
+    // }
+
     PrintDBGConsole(
       `${fn} clicked ${JSON.stringify(choiceKey)}\nscriptToken ${JSON.stringify(
         scriptToken
@@ -441,9 +525,10 @@ function SelectedTokenInfo() {
   const {
     sel_linenum,
     sel_linepos,
-    sel_slot,
     script_page,
-    sel_validation: validation
+    sel_validation: validation,
+    sel_slotpos,
+    sel_slotvalidation
   } = State();
   if (sel_linenum > 0 && sel_linepos > 0) {
     const vmPageLine = script_page[sel_linenum - TRANSPILER.LINE_START_NUM];
@@ -451,10 +536,11 @@ function SelectedTokenInfo() {
       scriptToken, // the actual script token (not vmToken)
       sel_linenum, // line number in VMPage
       sel_linepos, // line position in VMPage[lineNum]
-      sel_slot, // slot position
       context, // the memory context for this token
       validation, // validation tokens in this line
-      vmPageLine // all the VMTokens in this line
+      vmPageLine, // all the VMTokens in this line
+      sel_slotpos, // slot position
+      sel_slotvalidation // validation tokens for line being edited
     };
     return selInfo;
   }
@@ -564,6 +650,17 @@ function LoadProjectBlueprint(prjId, bpName) {
   const scriptToks = TRANSPILER.TextToScript(scriptText);
   let cur_bdl = TRANSPILER.BundleBlueprint(scriptToks);
   SendState({ script_text: scriptText, cur_bdl }, () => {});
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: saves the currently edited slot linescript into the current script_tokens
+ *  Called by SelectEditorLineSlot
+ */
+export function SaveSlotLineScript() {
+  const { sel_slotlinescript, script_tokens, sel_linenum } = State();
+  const lineIdx = sel_linenum - TRANSPILER.LINE_START_NUM; // 1-based
+  script_tokens.splice(lineIdx, 1, sel_slotlinescript);
+  const script_text = TRANSPILER.ScriptToText(script_tokens);
+  SendState({ script_text });
 }
 
 /// PROTOTYPING ///////////////////////////////////////////////////////////////
