@@ -50,7 +50,7 @@ let KEY_COUNTER = 0;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // FAKE DATA
 let TEST_SLOTS = [];
-let TEST_NUM = 0;
+let TEST_NUM = 2;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // FAKE DATA
 // This is the "syntax" expected based on the current keyword
@@ -58,7 +58,7 @@ let TEST_NUM = 0;
 // HOW TO USE IT: Uncomment just ONE of the example slots definitions
 //                evaluate the selected vmTokens against the slot definition
 
-// EXAMPLE: 'prop' - propName is empty, so method is vague
+// EXAMPLE 0: 'prop' - propName is empty, so method is vague
 TEST_SLOTS.push([
   {
     expectedType: 'identifier',
@@ -86,7 +86,7 @@ TEST_SLOTS.push([
   }
 ]);
 
-// EXAMPLE: 'prop x' - method is empty, so value is vague
+// EXAMPLE 1: 'prop x' - method is empty, so value is vague
 TEST_SLOTS.push([
   {
     expectedType: 'identifier',
@@ -114,7 +114,7 @@ TEST_SLOTS.push([
   }
 ]);
 
-// EXAMPLE: 'prop x setTo' - method is selected, but value is empty but expected to be number
+// EXAMPLE 2: 'prop x setTo' - method is selected, but value is empty but expected to be number
 TEST_SLOTS.push([
   {
     expectedType: 'identifier',
@@ -200,7 +200,7 @@ function SelectEditorLineSlot(props) {
   // const pageLine = WIZCORE.GetVMPageLine(line);
   // const { lineScript } = pageLine;
   // const slots = WIZCORE.GetSlotViewData(lineScript);
-  const { sel_slot } = WIZCORE.State();
+  const { sel_slotpos, sel_slotlinescript } = WIZCORE.State();
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// SRI HACK
   const slots = TEST_SLOTS[TEST_NUM];
@@ -214,18 +214,33 @@ function SelectEditorLineSlot(props) {
   // vTokens display the validity of the parsed line
   // e.g. vTokens for 'prop x' would have vTokens[2] = VSymError( gsType: "method" )
 
-  // todo: redundancy of data truths?
-  const { selection } = props;
-  const { vmPageLine } = selection || {};
-  const { vmTokens } = vmPageLine || {}; // vmTokens are
+  // TEMP
+  // Read the current slot line from sel_slotlinescript
+  // REVIEW: This probably should be a token array instead?
+
+  // ORIG vmTokens approach
+  // // todo: redundancy of data truths?
+  // const { selection } = props;
+  // const { vmPageLine } = selection || {};
+  // const { vmTokens } = vmPageLine || {}; // vmTokens [{lineNum,linePos,tokenKey,scriptToken}]
+  // console.error('vmTokens', vmTokens);
 
   // 3. Render Slots and Line Items
   //    Use the vmToken value if present, otherwise, use the slot value
-  const count = Math.max(slots.length, vmTokens.length);
+
+  const count = Math.max(slots.length, sel_slotlinescript.length);
+  // ORIG vmTokens appraoch
+  // const count = Math.max(slots.length, vmTokens.length);
+
   const tokenList = [];
   for (let i = 0; i < count; i++) {
     const slot = i < slots.length ? slots[i] : undefined;
-    const vmToken = i < vmTokens.length ? vmTokens[i] : undefined;
+
+    // TEMP Try reading slots from sel_slotlinescript
+    const scriptToken =
+      i < sel_slotlinescript.length ? sel_slotlinescript[i] : undefined;
+    // ORIG vmTokens appraoch
+    // const vmToken = i < vmTokens.length ? vmTokens[i] : undefined;
 
     // a. default to unexpected slot if the slot is not defined
     let dataSelectKey = i + 1; // token count starts at 1
@@ -240,18 +255,24 @@ function SelectEditorLineSlot(props) {
       type = slot.expectedType;
       viewState = slot.viewState;
     }
-    const selected = sel_slot === dataSelectKey;
+    const selected = sel_slotpos === dataSelectKey;
 
-    // c. ...OTOH if the slot item has been defined (vmToken), use the defined values
-    if (vmToken) {
-      const { scriptToken, tokenKey } = vmToken;
-      if (scriptToken) {
-        const dtok = TRANSPILER.DecodeTokenPrimitive(scriptToken);
-        label =
-          typeof dtok !== 'object' ? dtok : TRANSPILER.TokenToString(scriptToken);
-        type = scriptToken.type;
-      }
+    // TEMP Try reading slots from sel_slotlinescript
+    if (scriptToken) {
+      label = TRANSPILER.TokenToString(scriptToken);
+      type = '###';
     }
+    // ORIG vmTokens approach
+    // // c. ...OTOH if the slot item has been defined (vmToken), use the defined values
+    // if (vmToken) {
+    //   const { scriptToken, tokenKey } = vmToken;
+    //   if (scriptToken) {
+    //     const dtok = TRANSPILER.DecodeTokenPrimitive(scriptToken);
+    //     label =
+    //       typeof dtok !== 'object' ? dtok : TRANSPILER.TokenToString(scriptToken);
+    //     type = scriptToken.type;
+    //   }
+    // }
 
     tokenList.push(
       <GSlotToken
@@ -267,6 +288,12 @@ function SelectEditorLineSlot(props) {
   return (
     <div>
       (test {TEST_NUM}) {tokenList}
+      <button type="button" onClick={WIZCORE.ScriptChanged}>
+        Cancel (not implemented)
+      </button>
+      <button type="button" onClick={WIZCORE.SaveSlotLineScript}>
+        Save
+      </button>
     </div>
   );
 }
