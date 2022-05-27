@@ -200,18 +200,20 @@ declare global {
   type TSLit = `${'boolean' | 'string' | 'number' | 'enum'}`;
   type TSSMObj = `${'prop' | 'method' | 'gvar' | 'block'}`;
   type TSDeferred = `${'objref' | 'expr' | '{value}'}`;
-  type TSDict = `${'pragma' | 'test' | 'program' | 'event'}`;
+  type TSDict = `${'keyword' | 'pragma' | 'test' | 'program' | 'event'}`;
   type TSAgent = `${'blueprint' | 'feature'}`;
-  type TSArg = `${'{...}'}`; // multiple arg token marker
+  type TSMultiArg = `${'{...}'}`; // multiple arg token marker
   type TSList = `${'{list}'}`; // forbidden type!!! don't use!!!
+  type TSUnknown = `${'{?}'}`; // forbidden type!!! don't use!!!
   type TGSType = `${
     | TSLit
     | TSSMObj
     | TSDeferred
     | TSDict
     | TSAgent
-    | TSArg
-    | TSList}`;
+    | TSMultiArg
+    | TSList
+    | TSUnknown}`;
   type TSEnum = { enum: string[] }; // special format for enum args (future)
   type TGSArg = `${string}:${TGSType}` | TSEnum;
   type TGSMethodSig = {

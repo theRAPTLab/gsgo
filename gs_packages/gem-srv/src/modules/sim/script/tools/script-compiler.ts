@@ -35,7 +35,7 @@ import * as DCSIM from 'modules/datacore/dc-sim-data';
 import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import GAgent from 'lib/class-gagent';
-import { VSymError } from './symbol-helpers';
+import { VSDToken } from './symbol-helpers';
 import { ParseExpression } from './class-expr-parser-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -194,9 +194,14 @@ function ValidateStatement(
   }
   // if got this far, the keyword was unrecognized
   const keywords = DCSIM.GetAllKeywords();
-  const err = new VSymError('invalid', `invalid keyword '${kw}'`, {
-    keywords
-  });
+  const err = new VSDToken(
+    { keywords },
+    {
+      gsType: 'keyword',
+      err_code: 'invalid',
+      err_info: `invalid keyword '${kw}'`
+    }
+  );
   return {
     validationTokens: [err],
     validationLog: [`unrecognized keyword '${kw}'`]

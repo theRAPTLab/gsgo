@@ -19,7 +19,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
-import { SymbolHelper, VSymError } from 'script/tools/symbol-helpers';
+import { SymbolHelper, VSDToken } from 'script/tools/symbol-helpers';
 import { UnpackToken, UnpackArg } from 'modules/datacore/dc-sim-data-utils';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -242,7 +242,11 @@ class Keyword implements IKeyword {
    *  add valid symbols
    */
   newSymbolError(code: TValidationErrorCodes, info, symbols?) {
-    return new VSymError(code, info, symbols);
+    return new VSDToken(symbols, {
+      gsType: '{?}',
+      err_code: code,
+      err_info: info
+    });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** DEPRECATED. The jsx() call was used for the old prototype gui wizard */

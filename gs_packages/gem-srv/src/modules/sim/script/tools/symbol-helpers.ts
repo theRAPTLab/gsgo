@@ -20,7 +20,6 @@ import UR from '@gemstep/ursys/client';
 
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as ENGINE from 'modules/datacore/dc-sim-data';
-import * as BUNDLER from 'modules/datacore/dc-sim-bundler';
 import * as TOKENIZER from 'script/tools/class-gscript-tokenizer-v2';
 
 // uses types defined in t-script.d
@@ -32,15 +31,29 @@ const PR = UR.PrefixUtil('SYMUTIL', 'TagTest');
 
 /// TSYMBOLDATA UTILITY CLASSES ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class VSymToken implements TSymbolData {
+type VSDOpts = {
+  gsType: TGSType;
+  unitText?: string;
+  err_code?: TValidationErrorCodes;
+  err_info?: string;
+};
+class VSDToken implements TSymbolData {
   // implement a subset of TSymbolData fields
   /** @constructor
    *  @param {TSymbolData} symbols optional set of symbols that were available
    *  @param {string} info optional tag, useful for adding context for errors
    */
-  constructor(symbols?: TSymbolData, unitText?: string) {
+  constructor(symbols?: TSymbolData, opt?: VSDOpts) {
     // if we want to remember the original scriptText word
-    if (unitText !== undefined) (this as any).unitText = unitText;
+    const { unitText, gsType, err_code, err_info } = opt || {};
+    if (unitText) (this as any).unitText = unitText;
+    if (gsType) (this as any).gsType = gsType;
+    if (err_code || err_info) {
+      (this as any).error = {
+        code: err_code,
+        info: err_info
+      };
+    }
     // add symbol data
     if (symbols) {
       const symbolKeys = [...Object.keys(symbols)];
@@ -48,28 +61,6 @@ class VSymToken implements TSymbolData {
         this[key] = symbols[key];
       });
     }
-  }
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class VSymError extends VSymToken {
-  // add error-related TSymbolData fields
-  error: { code: TValidationErrorCodes; info: string };
-  /** @constructor
-   *  @param {TSymbolData} err_code specific code type
-   *  @param {string} err_info description of what causes the error
-   */
-  constructor(
-    err_code: TValidationErrorCodes = 'debug',
-    err_info: string = '<none provided>',
-    symbols?: TSymbolData,
-    unitText?: string
-  ) {
-    super(symbols, unitText);
-    // always deliver error
-    this.error = {
-      code: err_code,
-      info: err_info
-    };
   }
 }
 
@@ -172,16 +163,18 @@ class SymbolHelper {
   allKeywords(token: IToken): TSymbolData {
     const [type, value] = TOKENIZER.UnpackToken(token);
     const keywords = ENGINE.GetAllKeywords();
+    const gsType = 'keyword';
     if (type === 'comment' || type === 'line') {
-      return new VSymToken({ keywords }, value);
+      return new VSDToken({ keywords }, { gsType, unitText: value });
     }
     if (type !== 'identifier' && type !== 'directive') {
       this.scan_error = true;
-      return new VSymError('invalid', 'no keyword token', {
-        keywords
-      });
+      return new VSDToken(
+        { keywords },
+        { gsType, err_code: 'invalid', err_info: 'no keyword token' }
+      );
     }
-    return new VSymToken({ keywords }, value);
+    return new VSDToken({ keywords }, { gsType: 'keyword', unitText: value });
   }
 
   /// STRING-BASED DICT SEARCHES ////////////////////////////////////////////
@@ -252,21 +245,31 @@ class SymbolHelper {
   objRef(token: IToken): TSymbolData {
     // error checking & type overrides
     const fn = 'objRef:';
+    const gsType = 'objref';
     this.resetScope();
     let [matchType, parts] = TOKENIZER.UnpackToken(token);
     if (DBG) console.log(...PR(`${fn}: ${matchType}:${parts}`));
     // was there a previous scope-breaking error?
     if (this.scanError())
-      return new VSymError('vague', `${fn} error in previous token(s)`);
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText: parts,
+          err_code: 'vague',
+          err_info: `${fn} error in previous token(s)`
+        }
+      );
     // is the token a valid identifier or objref token?
     if (matchType === 'identifier') parts = [parts];
     else if (matchType !== 'objref') {
       this.scanError(true);
-      return new VSymError(
-        'invalid',
-        `${fn} not an objref`,
-        this.getBundleScope()
-      );
+      return new VSDToken(this.getBundleScope(), {
+        gsType,
+        unitText: parts,
+        err_code: 'invalid',
+        err_info: `${fn} not an objref`
+      });
     }
     // OBJREF PART 1: what kind of object are we referencing?
     // these calls will update cur_scope SymbolData appropriately
@@ -279,13 +282,21 @@ class SymbolHelper {
     let terminal = parts.length === 1;
     // does the objref terminate in a method-bearing reference?
     if (terminal) {
-      if (prop) return new VSymToken(prop, part); // return agent scope {props}
-      if (feature) return new VSymToken(feature, part); // return feature scope {features,props}
+      if (prop) return new VSDToken(prop, { gsType, unitText: part }); // return agent scope {props}
+      if (feature) return new VSDToken(feature, { gsType, unitText: part }); // return feature scope {features,props}
     }
     // did any agent, feature, prop, or blueprint resolve?
     if (!(agent || feature || prop || blueprint)) {
       this.scanError(true);
-      return new VSymError('invalid', `${fn} invalid objref '${part}`);
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText: 'tok.toString',
+          err_code: 'invalid',
+          err_info: `${fn} invalid objref '${part}`
+        }
+      );
     }
 
     // OBJREF PART 2: are the remaining parts valid?
@@ -303,8 +314,8 @@ class SymbolHelper {
       terminal = ii >= parts.length - 1;
       if (terminal) {
         const unitText = parts.join('.');
-        if (prop) return new VSymToken(prop, unitText); // return agent scope {props}
-        if (feature) return new VSymToken(feature, unitText); // return feature scope {features,props}
+        if (prop) return new VSDToken(prop, { gsType, unitText }); // return agent scope {props}
+        if (feature) return new VSDToken(feature, { gsType, unitText }); // return feature scope {features,props}
       }
     } /** END OF LOOP **/
 
@@ -313,68 +324,110 @@ class SymbolHelper {
     // example: 'prop agent'
     this.scanError(true);
     const orStr = parts.join('.');
-    return new VSymError(
-      'invalid',
-      `${fn} '${orStr}' not found or invalid`,
-      this.cur_scope
-    );
+    return new VSDToken(this.cur_scope, {
+      gsType,
+      unitText: orStr,
+      err_code: 'invalid',
+      err_info: `${fn} '${orStr}' not found or invalid`
+    });
   }
 
   /** given an existing symboldata scope set in this.cur_scope, looks for a method.
    */
   methodName(token: IToken): TSymbolData {
     const fn = 'methodName:';
+    const gsType = 'method';
     let [matchType, methodName] = TOKENIZER.UnpackToken(token);
     if (DBG) console.log(...PR(`${fn}: ${matchType}:${methodName}`));
 
     // was there a previous scope-breaking error?
     if (this.scanError())
-      return new VSymError('vague', `${fn} error in previous token(s)`);
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText: 'tok.toString',
+          err_code: 'vague',
+          err_info: `${fn} error in previous token(s)`
+        }
+      );
     // is scope set?
     if (this.cur_scope === null)
-      return new VSymError('invalid', `${fn} unexpected invalid scope`);
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText: 'tok.toString',
+          err_code: 'invalid',
+          err_info: `${fn} unexpected invalid scope`
+        }
+      );
     // is there a token?
     if (token === undefined) {
       this.scanError(true);
       const { methods } = this.cur_scope;
-      return new VSymError('empty', `${fn} missing token`, { methods });
+      return new VSDToken(
+        { methods },
+        { gsType, err_code: 'empty', err_info: `${fn} missing token` }
+      );
     }
     // is the token an identifier?
     if (matchType !== 'identifier') {
       this.scanError(true);
       const symbols = this.cur_scope;
-      return new VSymError(
-        'invalid',
-        `${fn} expects identifier, not ${matchType}`,
-        symbols
-      );
+      return new VSDToken(symbols, {
+        gsType,
+        unitText: 'tok.toString',
+        err_code: 'invalid',
+        err_info: `${fn} expects identifier, not ${matchType}`
+      });
     }
     // is the indentifier defined?
     if (typeof methodName !== 'string') {
       this.scanError(true);
-      return new VSymError('invalid', `${fn} invalid identifier`);
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText: 'tok.toString',
+          err_code: 'invalid',
+          err_info: `${fn} invalid identifier`
+        }
+      );
     }
     // is there a methods dictionary in scope
     const { methods } = this.cur_scope;
     if (methods === undefined) {
       this.scanError(true);
-      return new VSymError('invalid', `${fn} scope has no method dict`);
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText: 'tok.toString',
+          err_code: 'invalid',
+          err_info: `${fn} scope has no method dict`
+        }
+      );
     }
     // does methodName exist in the methods dict?
     const methodSig = methods[methodName]; //
     if (methodSig === undefined) {
       this.scanError(true);
-      return new VSymError(
-        'invalid',
-        `${fn} '${methodName}' is not in method dict`,
+      return new VSDToken(
         {
           methods
+        },
+        {
+          gsType,
+          unitText: 'tok.toString',
+          err_code: 'invalid',
+          err_info: `${fn} '${methodName}' is not in method dict`
         }
       );
     }
     // all good!
     this.cur_scope = { [methodName]: methodSig }; // advance scope pointer
-    return new VSymToken({ methods }, methodName); // valid scope is parent of cur_scope
+    return new VSDToken({ methods }, { gsType, unitText: methodName }); // valid scope is parent of cur_scope
   }
 
   /// METHOD ARGUMENT SYMBOLS /////////////////////////////////////////////////
@@ -389,7 +442,17 @@ class SymbolHelper {
     const methodNames = [...Object.keys(this.cur_scope)];
     if (methodNames.length !== 1) {
       for (let i = 0; i < tokens.length; i++)
-        vtoks.push(new VSymError('invalid', `${fn} invalid methodArgs dict`));
+        vtoks.push(
+          new VSDToken(
+            {},
+            {
+              gsType: 'method',
+              unitText: 'tok.toString',
+              err_code: 'invalid',
+              err_info: `${fn} invalid methodArgs dict`
+            }
+          )
+        );
       return vtoks;
     }
     // SCOPE ARGS 1: retrieve the method's argument symbol data
@@ -406,7 +469,17 @@ class SymbolHelper {
     for (tokenIndex; tokenIndex < tokens.length; tokenIndex++) {
       // is the tokenIndex greater than the number of argument definitions?
       if (tokenIndex >= args.length) {
-        vtoks.push(new VSymError('extra', `${fn} method ignores extra arg`));
+        vtoks.push(
+          new VSDToken(
+            {},
+            {
+              gsType: '{?}',
+              unitText: 'tok.toString',
+              err_code: 'extra',
+              err_info: `${fn} method ignores extra arg`
+            }
+          )
+        );
         continue;
       }
       // SCOPE ARGS 3: validate current token against matching argument definition
@@ -419,11 +492,19 @@ class SymbolHelper {
     // check for underflow
     if (tokenIndex < args.length)
       for (let ii = tokenIndex; ii < args.length; ii++) {
+        const [argName, gsType] = CHECK.UnpackArg(args[ii]);
         vtoks.push(
-          new VSymError('empty', `${fn} method requires ${args.length} arg(s)`)
+          new VSDToken(
+            {},
+            {
+              gsType,
+              unitText: 'tok.toString',
+              err_code: 'empty',
+              err_info: `${fn} method arg${ii} requires ${argName}:${gsType}`
+            }
+          )
         );
       }
-
     return vtoks;
   }
 
@@ -445,45 +526,64 @@ class SymbolHelper {
     if (gsType === 'boolean') {
       let value = TOKENIZER.TokenValue(tok, 'value');
       if (typeof value === 'boolean')
-        symData = new VSymToken({ arg }, value.toString());
+        symData = new VSDToken({ arg }, { gsType, unitText: value.toString() });
       else
-        symData = new VSymError('invalid', `${tokType}:${tokVal} not a boolean`);
+        symData = new VSDToken(
+          {},
+          {
+            gsType,
+            unitText: 'tok.toString',
+            err_code: 'invalid',
+            err_info: `${tokType}:${tokVal} not a boolean`
+          }
+        );
     }
     // is this a literal number value from token.value
     if (gsType === 'number') {
       let value = TOKENIZER.TokenValue(tok, 'value');
       if (typeof value === 'number')
-        symData = new VSymToken({ arg }, value.toString());
+        symData = new VSDToken({ arg }, { gsType, unitText: value.toString() });
       else
-        symData = new VSymError('invalid', `${tokType}:${tokVal} not a number`);
+        symData = new VSDToken(
+          {},
+          {
+            gsType,
+            unitText: 'tok.toString',
+            err_code: 'invalid',
+            err_info: `${tokType}:${tokVal} not a number`
+          }
+        );
     }
 
     // is this a literal string from token.string
     if (gsType === 'string' && TOKENIZER.TokenValue(tok, 'string')) {
-      symData = new VSymToken({ arg }, tokVal);
+      symData = new VSDToken({ arg }, tokVal);
     }
 
     // is this an enumeration list match token???
     // NOT IMPLEMENTED
     if (gsType === 'enum') {
-      symData = new VSymError('debug', `${fn} enum is unimplemented`);
+      symData = new VSDToken(
+        {},
+        { gsType, err_code: 'debug', err_info: `${fn} enum is unimplemented` }
+      );
     }
 
     // all symbols available in current bundle match token.objref
     if (gsType === 'objref' && TOKENIZER.TokenValue(tok, 'objref')) {
-      symData = new VSymToken(this.bdl_scope, argName);
+      symData = new VSDToken(this.bdl_scope, { gsType, unitText: argName });
     }
 
     // all props, feature props in bundle match token.identifier
     if (gsType === 'prop' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      symData = new VSymToken(this.bdl_scope, argName);
+      symData = new VSDToken(this.bdl_scope, { gsType, unitText: argName });
     }
 
     // is this a method name? current scope is pointing to
     // the method dict, we hope...
     // all methods in bundle match token.identifier
     if (gsType === 'method' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      symData = new VSymToken(this.cur_scope, argName);
+      symData = new VSDToken(this.cur_scope, { gsType, unitText: argName });
     }
 
     // is this any gvar type?
@@ -495,7 +595,7 @@ class SymbolHelper {
       list.forEach(ctorName => {
         ctors[ctorName] = map.get(ctorName).Symbols;
       });
-      symData = new VSymToken({ ctors }, argName);
+      symData = new VSDToken({ ctors }, { gsType, unitText: argName });
     }
 
     // is this a feature module name?
@@ -508,7 +608,7 @@ class SymbolHelper {
       list.forEach(featName => {
         features[featName] = ENGINE.GetFeature(featName).symbolize();
       });
-      symData = new VSymToken({ features }, argName);
+      symData = new VSDToken({ features }, { gsType, unitText: argName });
     }
 
     // is this a blueprint name? We allow any blueprint name in the dictionary
@@ -520,7 +620,7 @@ class SymbolHelper {
       list.forEach(bundle => {
         blueprints[bundle.name] = bundle.symbols;
       });
-      symData = new VSymToken({ blueprints }, argName);
+      symData = new VSDToken({ blueprints }, { gsType, unitText: argName });
     }
 
     // if (gsType === 'test') {
@@ -538,12 +638,18 @@ class SymbolHelper {
     // }
 
     if (symData === undefined) {
-      return new VSymError('debug', `${fn} ${gsType} has no token mapper`, {
-        arg
-      });
+      return new VSDToken(
+        {
+          arg
+        },
+        {
+          gsType,
+          err_code: 'debug',
+          err_info: `${fn} ${gsType} has no token mapper`
+        }
+      );
     }
-    // hack in the gsType
-    symData.gsType = gsType;
+    // return valid symdata/validation
     return symData;
   }
 } // end of SymbolHelper class
@@ -632,7 +738,7 @@ function UnpackSymbolType(symbolData: TSymbolData): any[] {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
   SymbolHelper, // symbol decoder
-  VSymError, // create a TSymbolData error object
+  VSDToken,
   DecodeSymbolViewData,
   UnpackViewData,
   UnpackSymbolType
