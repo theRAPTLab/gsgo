@@ -56,9 +56,9 @@ STATE GROUP MGR
   .bpidList
   .bpBundles
   .defaultPozyxBpid
-  .charControlBpidList
+  .GetCharControlBpNames
   .ptrackControlBpidList
-  .pozyxControlBpidList
+  .pozyxControlBpNames
   function hook_Filter
   function hook_Effect
 
@@ -71,13 +71,13 @@ function GetBlueprint
 function GetBlueprintIDsList
 function CompileBlueprintBundles
 function GenerateCharControlBpidList
-function GetCharControlBpidList
+function GetCharControlBpNames
 function GeneratePTrackControlBpidList
 function GetPTrackControlBpidList
-function GetPTrackControlDefaultBpid
+function GetPTrackControlDefaultBpName
 function GeneratePozyxControlBpidList
-function GetPozyxControlBpidList
-function GetPozyxControlDefaultBpid
+function GetPozyxControlBpNames
+function GetPozyxControlDefaultBpName
 function GetBlueprintProperties
 function GetBlueprintPropertiesMap
 
