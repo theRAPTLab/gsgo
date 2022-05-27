@@ -37,7 +37,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////xa///////////////////*/
 
-// import { IToken, TScriptUnit, TArguments } from 'lib/t-script.d';
+// import { IToken, TScriptUnit, TKWArguments } from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -724,7 +724,7 @@ function Tokenize(text: string): IToken[] {
  *  returns [ token_type, token_value ] if it is a valid token,
  *  [undefined, errstring] otherwise
  */
-function UnpackToken(tok: IToken): [type: string, value: any] {
+function UnpackToken(tok: IToken): TUnpackedToken {
   // null tokens return error
   if (typeof tok !== 'object') return [undefined, 'not an object'];
   // count number of valid types in the token
@@ -763,7 +763,7 @@ function IsNonCodeToken(tok: IToken): boolean {
  *  does a similar unpacking except it doesn't compile blocks, instead
  *  recursively unpacking them. Skips line and comment tokens.
  */
-function UnpackStatement(unit: TScriptUnit): TArguments {
+function UnpackStatement(unit: TScriptUnit): TKWArguments {
   const ustatement = [];
   unit.forEach(tok => {
     const [type, value] = UnpackToken(tok);
@@ -782,7 +782,7 @@ function UnpackStatement(unit: TScriptUnit): TArguments {
  *  and blank lines.
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function UnpackScript(script: TScriptUnit[]): TArguments[] {
+function UnpackScript(script: TScriptUnit[]): TKWArguments[] {
   const uscript = [];
   script.forEach(stm => {
     const ustm = UnpackStatement(stm);
@@ -823,9 +823,12 @@ function DecodeKeywordToken(tok: any): string {
   const fn = 'DecodeKeywordToken:';
   const [type, value] = UnpackToken(tok);
   if (type === 'directive') return '_pragma';
-  if (type === 'line') return '';
-  if (type === 'comment') return '';
-  if (type !== 'identifier') throw Error(`${fn} tok wrong type`);
+  if (type === 'comment') return '_comment';
+  if (type === 'line') return '_line';
+  if (type !== 'identifier') {
+    const err = `${fn} tok '${type}' is not decodeable as a keyword`;
+    throw Error(err);
+  }
   return value;
 }
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////

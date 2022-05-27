@@ -13,16 +13,17 @@
   A kwTok is a scriptToken that follows the keyword. They are of type IToken,
   an object with properties.
   A mArg is an argument passed to an SMObject method. They are of type
-  TSymArg, a formatted string.
+  TGSArg, a formatted string.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import { EBundleType, EBundleTag } from 'modules/../types/t-script.d'; // workaround to import as obj
+import { SCRIPT_PAGE_INDEX_OFFSET } from 'modules/datacore/dc-constants';
 
 const DBG = false;
-const VALID_ARGTYPES: TSValidType[] = [
+const GEMSTEP_TYPES: TGSType[] = [
   // see t-script.d "SYMBOL DATA AND TYPES"
   // these are used both for keyword args and method signature args
   'boolean',
@@ -49,13 +50,20 @@ const VALID_ARGTYPES: TSValidType[] = [
   '{...}'
 ];
 
+/// LINE AND POSITION NUMBERING UTILITIES /////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** convert a zero-based index to 1-indexing if SCRIPT_PAGE_INDEX_OFFSET is set */
+function LineNumIndex(num: number): number {
+  return num + SCRIPT_PAGE_INDEX_OFFSET;
+}
+
 /// METHOD ARGUMENT UTILITIES /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given an array of TSymbolArgType (or array of arrays TSymbolArgType)
  *  iterate through all the argument definitions and make sure they are
  *  valid syntax
  */
-function AreValidArgs(args: TSymArg[]): boolean {
+function AreValidArgs(args: TGSArg[]): boolean {
   const fn = 'AreValidArgs';
   if (!Array.isArray(args)) {
     console.warn(`${fn}: invalid argtype array`);
@@ -73,13 +81,13 @@ function AreValidArgs(args: TSymArg[]): boolean {
         'font-weight:bold',
         'font-weight:normal'
       );
-    const [argName, argType] = arg.split(':');
+    const [argName, gsType] = arg.split(':');
     if (argName.length === 0) {
       console.warn(`${fn}: missing argName in '${arg}'`);
       return false;
     }
-    if (!VALID_ARGTYPES.includes(argType as TSValidType)) {
-      console.warn(`${fn}: '${arg}' has invalid argtype`);
+    if (!GEMSTEP_TYPES.includes(gsType as TGSType)) {
+      console.warn(`${fn}: '${arg}' has invalid gsType`);
       return false;
     }
   }
@@ -89,20 +97,21 @@ function AreValidArgs(args: TSymArg[]): boolean {
 /** given a string 'arg' of form 'name:argType', return [name, argType] if the
  *  string meets type requirements, [undefined, undefined] otherwise
  */
-function UnpackArg(arg: TSymArg): TSymUnpackedArg {
+function UnpackArg(arg: TGSArg): TSymUnpackedArg {
+  if (Array.isArray(arg)) return ['{...}', '{list}']; // when keyword uses weird array of args that needs to be fixed
   if (typeof arg !== 'string') return [undefined, undefined];
-  let [name, type, ...xtra] = arg.split(':') as TSymUnpackedArg;
+  let [name, gsType, ...xtra] = arg.split(':') as TSymUnpackedArg;
   // if there are multiple :, then that is an error
   if (xtra.length > 0) return [undefined, undefined];
-  if (!VALID_ARGTYPES.includes(type)) return [undefined, undefined];
+  if (!GEMSTEP_TYPES.includes(gsType)) return [undefined, undefined];
   // a zero-length name is an error except for the
   // multi-argument {args} glob type
   if (name.length === 0) {
-    if (type === '{...}') name = '**';
+    if (gsType === '{...}') name = '**';
     else return [undefined, undefined];
   }
   // name and type are good, so return valid unpacked arg
-  return [name, type];
+  return [name, gsType];
 }
 
 /// BUNDLE UTILITIES //////////////////////////////////////////////////////////
@@ -160,6 +169,9 @@ function IsValidBundle(bundle: ISMCBundle) {
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// data check utitlities
+export { LineNumIndex };
+
 /// token check utilities
 export {
   // type checks
@@ -170,6 +182,7 @@ export {
   DecodePragmaToken,
   DecodeKeywordToken,
   UnpackToken,
+  UnpackStatement,
   TokenValue
 } from 'script/tools/class-gscript-tokenizer-v2';
 export {

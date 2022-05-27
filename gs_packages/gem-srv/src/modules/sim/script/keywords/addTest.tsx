@@ -12,7 +12,7 @@ import React from 'react';
 import Keyword from '../../../../lib/class-keyword';
 import {
   IAgent,
-  TArguments,
+  TKWArguments,
   TOpcode,
   TScriptUnit,
   TMethod
@@ -32,7 +32,7 @@ export class addTest extends Keyword {
    *  NOTE: when compile is called, all arguments have already been expanded
    *  from {{ }} to a ParseTree
    */
-  compile(dtoks: TArguments): TOpcode[] {
+  compile(dtoks: TKWArguments): TOpcode[] {
     const [kw, testName, block] = dtoks;
     const conds = [
       (agent: IAgent) => {

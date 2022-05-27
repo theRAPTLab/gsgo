@@ -31,7 +31,7 @@ import UR from '@gemstep/ursys/client';
 import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 import SM_Bundle from 'lib/class-sm-bundle';
 
-import * as DCENGINE from 'modules/datacore/dc-sim-data';
+import * as DCSIM from 'modules/datacore/dc-sim-data';
 import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import GAgent from 'lib/class-gagent';
@@ -77,12 +77,13 @@ function DecodeToken(tok: IToken): any {
   if (type === 'directive') return '_pragma';
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   if (type === 'block') return CompileScript(value);
-  if (type === 'program') return DCENGINE.GetProgram(value);
+  if (type === 'program') return DCSIM.GetProgram(value);
   throw Error(`DecodeToken unhandled type ${type}`);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given a ScriptUnit, return the 'decoded' tokens as usable valuables when
- *  it is time to invoke a compiler function
+ *  it is time to invoke a compiler function. See also UnpackStatement() for
+ *  a similar function that returns [type,value] (in dc-sim-data-utils)
  */
 function DecodeStatement(statement: TScriptUnit): any[] {
   const dUnit: TScriptUnit = statement.map((tok, line) => {
@@ -99,8 +100,8 @@ function DecodeStatement(statement: TScriptUnit): any[] {
 /** API: given an array of scriptunits, scan the top-level statements for _pragma
  *  directives and return what it finds
  */
-function ExtractBlueprintDirectives(script: TScriptUnit[]) {
-  const fn = 'ExtractBlueprintDirectives:';
+function ExtractBlueprintMeta(script: TScriptUnit[]): TBlueprintMeta {
+  const fn = 'ExtractBlueprintMeta:';
   let bpName: string;
   let bpBase: string;
   let programs = new Set();
@@ -145,16 +146,20 @@ function ExtractBlueprintDirectives(script: TScriptUnit[]) {
  *  code. Note that this does not recurse into statement blocks, because the
  *  only keywords in a statement that add symbol data are `addProp` and `when`
  *  which are always level 0 (not nested)
+ *  @param {TScriptUnit} statement - a line of script tokens to validate
+ *  @param {number} [line] - current line being symbolized metadata
+ *  @returns TSymbolData
+ *  @returns TValidatedScriptUnit
  */
 function SymbolizeStatement(statement: TScriptUnit, line?: number): TSymbolData {
   const fn = 'SymbolizeStatement:';
   const kw = CHECK.DecodeKeywordToken(statement[0]);
   if (!kw) return {}; // blank lines emit no symbol info
-  const kwp = DCENGINE.GetKeyword(kw);
+  const kwp = DCSIM.GetKeyword(kw);
   if (!kwp) {
     console.warn(`${fn} keyword processor ${kw} bad`);
     return {
-      error: { code: 'errExist', info: `missing kwProcessor for: '${kw}'` }
+      error: { code: 'invalid', info: `missing kwProcessor for: '${kw}'` }
     };
   }
   // ***NOTE***
@@ -164,48 +169,32 @@ function SymbolizeStatement(statement: TScriptUnit, line?: number): TSymbolData 
   const symbols = kwp.symbolize(kwArgs, line); // these are new objects
   return symbols;
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Given a blueprint script, extract all the symbol information inside
- *  and populate the current bundle .symbols property
- */
-function SymbolizeBlueprint(script: TScriptUnit[]) {
-  const fn = 'SymbolizeBlueprint:';
-  // get blueprint metadata
-  const { BLUEPRINT } = ExtractBlueprintDirectives(script);
-  const [bpName] = BLUEPRINT;
-  // get the bundle to work on
-  const bdl = DCENGINE.GetBlueprintBundle(bpName);
-  DCBUNDLER.OpenBundle(bdl);
-  DCBUNDLER.SetBundleType(EBundleType.BLUEPRINT);
-  // add symbols
-  DCBUNDLER.AddSymbols(GAgent.Symbols);
-  script.forEach((stm, line) => {
-    const symbols = SymbolizeStatement(stm, line);
-    DCBUNDLER.AddSymbols(symbols);
-  }); // script forEach
-  return DCBUNDLER.CloseBundle();
-}
 
 /// VALIDATION API ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Given statement, return the associated validation data structure
  *  consisting of an array of ValidationTokens and a validationLog with
  *  debug information for each token in the array.
+ *  @param {TScriptUnit} statement - a line of script tokens to validate
+ *  @param {TSymbolRefs} refs - bundle, global references context to use
+ *  @returns TValidatedScriptUnit
  */
 function ValidateStatement(
   statement: TScriptUnit,
   refs: TSymbolRefs
 ): TValidatedScriptUnit {
+  // check for zero-length statements and blank statements comments or lines)
+  if (statement.length === 0) return { validationTokens: [] };
   const { bundle, globals } = refs || {};
   const kw = CHECK.DecodeKeywordToken(statement[0]);
-  const kwp = DCENGINE.GetKeyword(kw);
+  const kwp = DCSIM.GetKeyword(kw);
   if (kwp !== undefined) {
     kwp.validateInit({ bundle, globals });
     return kwp.validate(statement);
   }
   // if got this far, the keyword was unrecognized
-  const keywords = DCENGINE.GetAllKeywords();
-  const err = new VSymError('errExist', `invalid keyword '${kw}'`, {
+  const keywords = DCSIM.GetAllKeywords();
+  const err = new VSymError('invalid', `invalid keyword '${kw}'`, {
     keywords
   });
   return {
@@ -226,12 +215,15 @@ function ValidateBlueprint(script: TScriptUnit[]) {
 /** API: Compile a single ScriptUnit, which invokes the Keyord Processor
  *  to generate a TSMCProgram consisting of TOpcodes. This skips directives
  *  and comments, generating no code.
+ *  @param {TScriptUnit} statement - array of ScriptToken
+ *  @param {number} [line] - current "line" of script metadata
+ *  @returns TSMCProgram
  */
 function CompileStatement(stm: TScriptUnit, line?: number): TCompiledStatement {
   const fn = 'CompileStatement:';
   const kw = CHECK.DecodeKeywordToken(stm[0]);
   if (!kw) return []; // skips comments, blank lines
-  const kwp = DCENGINE.GetKeyword(kw) || DCENGINE.GetKeyword('keywordErr');
+  const kwp = DCSIM.GetKeyword(kw) || DCSIM.GetKeyword('keywordErr');
   if (!kwp) throw Error(`${fn} bad keyword ${kw}`);
   const kwArgs = DecodeStatement(stm);
   const compiledStatement = kwp.compile(kwArgs, line);
@@ -240,6 +232,8 @@ function CompileStatement(stm: TScriptUnit, line?: number): TCompiledStatement {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Compile ScriptUnits into a TSMCProgram (TOpcode[]). It ignores
  *  directives. Use CompileBlueprint() to handle directives.
+ *  @param {TScriptUnit[]} script - tokenized scriptText
+ *  @returns TSMCProgram
  */
 function CompileScript(script: TScriptUnit[]): TSMCProgram {
   const program: TSMCProgram = [];
@@ -252,38 +246,76 @@ function CompileScript(script: TScriptUnit[]): TSMCProgram {
   return program;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Given a blueprint script, extract all the symbol information inside
+ *  and populate the current bundle .symbols property
+ *  @param {TScriptUnit[]} script - tokenized scriptText
+ *  @param {SM_Bundle} [bdl] - bundle to use rather than retrieve simdata dict
+ *  @returns SM_Bundle
+ */
+function SymbolizeBlueprint(script: TScriptUnit[], bdl?: SM_Bundle) {
+  const fn = 'SymbolizeBlueprint:';
+  // open provided bundle or look it up in DCSIM by bpName
+  if (bdl instanceof SM_Bundle) DCBUNDLER.OpenBundle(bdl);
+  else {
+    const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
+    const [bpName] = BLUEPRINT;
+    DCBUNDLER.OpenBundle(bpName);
+  }
+  // setup bundle type
+  DCBUNDLER.SetBundleType(EBundleType.BLUEPRINT);
+  // add default agent symbols
+  DCBUNDLER.AddSymbols(GAgent.Symbols);
+  // symbolize statement-by-statement
+  script.forEach((stm, line) => {
+    const symbols = SymbolizeStatement(stm, line);
+    DCBUNDLER.AddSymbols(symbols);
+  }); // script forEach
+  // store script in bundle
+  DCBUNDLER.SaveScript(script);
+  // return bundle
+  return DCBUNDLER.CloseBundle();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Given a blueprint script, extract the name and save it to the
  *  simulation blueprint dictionary, and returns the bundle.
- *  Does not symbolize.
+ *  DOES NOT CALL SYMBOLIZE()
+ *  @param {TScriptUnit[]} script - tokenized scriptText
+ *  @param {SM_Bundle} [bdl] - bundle to use rather than retrieve simdata dict
+ *  @returns SM_Bundle
  */
-function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
+function CompileBlueprint(script: TScriptUnit[], bdl?: SM_Bundle): SM_Bundle {
   const fn = 'CompileBlueprintScript:';
-  // get blueprint metadata
-  const { BLUEPRINT, TAGS } = ExtractBlueprintDirectives(script);
-  const [bpName] = BLUEPRINT;
-  // get the bundle to work on
-  const bdl = DCENGINE.GetBlueprintBundle(bpName);
-  DCBUNDLER.OpenBundle(bdl);
+  // open provided bundle or look it up in DCSIM by bpName
+  if (bdl instanceof SM_Bundle) DCBUNDLER.OpenBundle(bdl);
+  else {
+    const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
+    const [bpName] = BLUEPRINT;
+    DCBUNDLER.OpenBundle(bpName);
+  }
+  // setup bundle type
   DCBUNDLER.SetBundleType(EBundleType.BLUEPRINT);
-  // compile unit-by-unit
+  // compile statement-by-statement
   script.forEach((stm, line) => {
     const objcode = CompileStatement(stm, line);
     DCBUNDLER.AddProgram(objcode);
   });
+  // store script in bundle
+  DCBUNDLER.SaveScript(script);
+  // return bundle
   return DCBUNDLER.CloseBundle();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: To create a complete bundle with symbol data and blueprint data,
  *  use this call (replaces the old CompileBlueprint()
+ *  WARNING: This doesn't work for blueprints that refer to other blueprints
  */
 function BundleBlueprint(script: TScriptUnit[]): SM_Bundle {
   const fn = 'BundleBlueprint:';
   // get blueprint metadata
-  const { BLUEPRINT, TAGS } = ExtractBlueprintDirectives(script);
+  const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
   const [bpName] = BLUEPRINT;
   // get the bundle to work on
-  const bdl = DCENGINE.GetBlueprintBundle(bpName);
-  DCBUNDLER.OpenBundle(bdl);
+  DCBUNDLER.OpenBundle(bpName);
   DCBUNDLER.SetBundleType(EBundleType.BLUEPRINT);
   DCBUNDLER.AddSymbols(GAgent.Symbols);
 
@@ -298,6 +330,9 @@ function BundleBlueprint(script: TScriptUnit[]): SM_Bundle {
     DCBUNDLER.AddSymbols(symbols);
   }); // script forEach
   if (!DCBUNDLER.HasBundleName) throw Error(`${fn} missing BLUEPRINT directive`);
+  // store script in bundle
+  DCBUNDLER.SaveScript(script);
+  // return bundle
   return DCBUNDLER.CloseBundle();
 }
 
@@ -311,7 +346,7 @@ export {
   SymbolizeBlueprint
 };
 /// UTILITIES
-export { ExtractBlueprintDirectives, CompileScript };
+export { ExtractBlueprintMeta, CompileScript };
 export {
   DecodeToken,
   DecodeTokenPrimitive,

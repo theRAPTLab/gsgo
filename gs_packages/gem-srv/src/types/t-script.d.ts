@@ -163,13 +163,16 @@ declare global {
     comment?: string; // gobbleComment()
     line?: string; // as-is line insertion
   }
-  // CODE REVIEW: @Sri 'decoded' script tokens like TArg should be rewritten to work as
-  // 'unpacked' tokens, which always return [type, value]
   type TScriptUnit = IToken[]; // tokens from script-parser
-  type TArg = number | string | IToken;
-  type TArguments = TArg[]; // decoded tokens provided to compile functions
+  /*  @SRI: this conflation of args and tokens continues to bite us in the ass
+      perhaps instead of having a DecodeStatement method, we push the decoding
+      down to use const [value,type] = UnpackToken(tok) in the compiler
+      statements themselves */
+  type TKWArg = number | string | IToken; // "decoded" tokens
+  type TKWArguments = TKWArg[]; // decoded tokens provided to compile functions
   type TScript = TScriptUnit[]; // We use TScriptUnit[] in code
   type TCompiledStatement = (TOpcode | TOpcodeErr)[];
+  type TUnpackedToken = [type: string, value: any];
 
   /// COMPILER OUPUT //////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -199,29 +202,37 @@ declare global {
   type TSDeferred = `${'objref' | 'expr' | '{value}'}`;
   type TSDict = `${'pragma' | 'test' | 'program' | 'event'}`;
   type TSAgent = `${'blueprint' | 'feature'}`;
-  type TSEnum = { enum: string[] }; // special format for enums
   type TSArg = `${'{...}'}`; // multiple arg token marker
-  type TSValidType = `${TSLit | TSSMObj | TSDeferred | TSDict | TSAgent | TSArg}`;
-  type TSymUnpackedArg = [name: string, type: TSValidType];
-  type TSymArg = `${string}:${TSValidType}` | TSEnum;
-  type TSymMethodSig = {
+  type TSList = `${'{list}'}`; // forbidden type!!! don't use!!!
+  type TGSType = `${
+    | TSLit
+    | TSSMObj
+    | TSDeferred
+    | TSDict
+    | TSAgent
+    | TSArg
+    | TSList}`;
+  type TSEnum = { enum: string[] }; // special format for enum args (future)
+  type TGSArg = `${string}:${TGSType}` | TSEnum;
+  type TGSMethodSig = {
     name?: string;
-    args?: TSymArg[];
-    returns?: TSymArg;
+    args?: TGSArg[];
+    returns?: TGSArg;
     info?: string;
   };
   type TNameSet = Set<string>;
+  type TSymUnpackedArg = [name: string, type: TGSType];
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  type TSymbolErrorCodes =
-    | 'errOops' // a debug message
-    | 'errParse' // bad or unexpected token format
-    | 'errScope' // valid scope could not be found or inferred
-    | 'errExist' // reference doesn't exist in available scope
-    | 'errType' // invalid type received
-    | 'errOver' // more arguments than required by keyword
-    | 'errUnder' // less arguments than required by keyword
-    | 'errRange'; // argument out of range
+  /** describes the type of error that occurred during parsing so it can be
+   *  rendered in the GUI */
+  /// `valid | empty | error | unexpected | vague`
+  type TValidationErrorCodes =
+    | 'debug' // a debug placeholder
+    | 'invalid' // token incorrect type, or invalid value
+    | 'empty' // missing token
+    | 'extra' // extra token
+    | 'vague'; // indeterminate token need
 
   /// MAIN SYMBOL DATA DECLARATION ////////////////////////////////////////////
   /** data description of symbols for features, props. returned from anything
@@ -239,15 +250,15 @@ declare global {
     ctors?: { [ctorName: string]: TSymbolData }; // constructor object if needed (used by var- props)
     blueprints?: { [bpName: string]: TSymbolData }; // blueprints
     props?: { [propName: string]: TSymbolData };
-    methods?: { [methodName: string]: TSymMethodSig };
+    methods?: { [methodName: string]: TGSMethodSig };
     features?: { [featureName: string]: TSymbolData };
     context?: { [line: number]: any }; // line number for a root statement
-    methodSig?: TSymMethodSig; // arg choices
-    arg?: TSymArg; // arg definition string 'name:type'
+    methodSig?: TGSMethodSig; // arg choices
+    arg?: TGSArg; // arg definition string 'name:type'
     // ok to change or add, as these are not defined in the reference dictionaries
     error?: TSymbolError; // debugging if error
     unitText?: string; // the scriptText word associated with symbol
-    gsType?: string; // the gemscript meaning of this token
+    gsType?: TGSType; // the gemscript meaning of this token
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** TSymbolViewData is the "GUI-friendly" data structure derived from
@@ -286,7 +297,7 @@ declare global {
    *  by symbol utilities!
    */
   type TSymbolError = {
-    code: TSymbolErrorCodes;
+    code: TValidationErrorCodes;
     info: string;
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -299,27 +310,34 @@ declare global {
     validationTokens: TSymbolData[];
     validationLog?: string[];
   };
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** tag types used by ben's extensions */
   type TBundleTags = Map<string, any>;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** store directives in the bundle as raw scriptunits*/
   type TBundleDirectives = Map<string, IToken[]>;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** datatype returned by ExtractBlueprintMeta() */
+  type TBlueprintMeta = {
+    BLUEPRINT: [bpName: string, bpBase: string];
+    PROGRAMS: { [programType: string]: true };
+    TAGS: { [tagName: string]: any };
+  };
 
   /// PROGRAM BUNDLES /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** An ISMCBundle is a dictionary of TSCMPrograms. See also dc-script-bundle for
-   *  the BUNDLE_OUTS definition, which maps the bundle props to a particular
-   *  runtime context (e.g. BLUEPRINT) A TSMCProgram is just TOpcode[] A
-   *  TSMCGlobalProgram is just TRegcode[]
+  /** An ISMCBundle is a collection of compiled elements. This is the minimum
+   *  metadata; see class-sm-bundle for the list of possible entities
    */
   interface ISMCBundle extends ISMCPrograms {
     name?: string; // the blueprint name of the bundle, if any
     parent?: string; // the parent bundle, if any
     type?: EBundleType; // enum type (see below)
+    script?: TScriptUnit[]; // saved script
+    text?: string; // saved text
     symbols?: TBundleSymbols;
     tags?: TBundleTags; // ben's hack for 'character controlable' blueprints
+    directives?: TBundleDirectives;
   }
 
   /// SCRIPT UNIT TRANSPILER //////////////////////////////////////////////////
@@ -327,7 +345,7 @@ declare global {
   /** related keyword interface  */
   interface IKeyword {
     keyword: string;
-    args: TSymArg[] | TSymArg[][]; // multiple signatures
+    args: TGSArg[] | TGSArg[][]; // multiple signatures
     compile(unit: TScriptUnit, lineIdx?: number): (TOpcode | TOpcodeErr)[];
     jsx(index: number, unit: TScriptUnit, jsxOpt?: {}): any[] /* deprecated */;
     symbolize(unit: TScriptUnit, lineIdx?: number): TSymbolData;

@@ -96,14 +96,15 @@ function GEMSRV_Start(opt) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GEMSRV_Kill() {
-  const { error, stdout } = Shell.exec(
-    `ps ax | grep "node --trace-warnings gem_run.js" | awk '{ print $1 }'`,
+  let result;
+  result = Shell.exec(
+    `ps ax | grep "[n]ode --trace-warnings gem_run.js" | awk '{ print $1 }'`,
     {
       silent: true
     }
   );
-  if (error) TOUT('...ERR:', error);
-  const job = stdout.trim();
+  if (result.error) TOUT('...ERR:', result.error);
+  const job = result.stdout.trim();
   if (job) {
     TOUT(`KILL: PID '${job}' appears to be a GEMSRV instance...killing PID!`);
     Shell.exec(`kill -9 ${stdout}`);

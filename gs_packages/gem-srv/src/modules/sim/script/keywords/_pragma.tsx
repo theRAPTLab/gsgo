@@ -12,7 +12,7 @@
 
 import Keyword from 'lib/class-keyword';
 import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
-import * as DCENGINE from 'modules/datacore/dc-sim-data';
+import * as DCSIM from 'modules/datacore/dc-sim-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,7 +46,7 @@ export class _pragma extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(params: TArguments): TOpcode[] {
+  compile(params: TKWArguments): TOpcode[] {
     // don't do anything if the bundler is inactive, as it is for the
     // case when compiling a script outside of a blueprint
     if (!DCBUNDLER.BundlerActive()) return [];
@@ -69,4 +69,4 @@ export class _pragma extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-DCENGINE.RegisterKeyword(_pragma);
+DCSIM.RegisterKeyword(_pragma);

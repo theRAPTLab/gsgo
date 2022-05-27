@@ -11,15 +11,12 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-// uses types defined in t-script.d and t-ui.d
+import {
+  SHOW_EMPTY_STATEMENTS,
+  SCRIPT_PAGE_INDEX_OFFSET
+} from 'modules/datacore/dc-constants';
 
-/// CONSTANT & DECLARATIONS ///////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-
-// whether to count blank lines or not
-const COUNT_ALL_LINES = true; // see WizardView RENDER_BLOCK_CLOSE
-const LINE_START_NUM = 1; // set to 1 for no 0 indexes
 
 /// LINE PRINTING MACHINE //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,8 +39,8 @@ class ScriptLiner {
     this.LINE_BUF = [];
     this.PAGE = [];
     this.MAP = new Map<string, IToken>(); // reverse lookup from tokenIdstring to token
-    this.LINE_NUM = LINE_START_NUM;
-    this.LINE_POS = LINE_START_NUM;
+    this.LINE_NUM = SCRIPT_PAGE_INDEX_OFFSET;
+    this.LINE_POS = SCRIPT_PAGE_INDEX_OFFSET;
     this.REFS = { bundles: new Set() };
     this.INDENT = 0;
     this.DBGTEXT = '';
@@ -64,8 +61,8 @@ class ScriptLiner {
   }
   clearData() {
     this.LINE_BUF = [];
-    this.LINE_POS = LINE_START_NUM;
-    this.LINE_NUM = LINE_START_NUM;
+    this.LINE_POS = SCRIPT_PAGE_INDEX_OFFSET;
+    this.LINE_NUM = SCRIPT_PAGE_INDEX_OFFSET;
     this.STM_STACK = [];
     this.PAGE = [];
     this.MAP.clear();
@@ -108,19 +105,18 @@ class ScriptLiner {
     this.LINE_BUF.push(tokInfo);
     this.nextPos();
     if (DBG) {
-      if (this.LINE_POS === LINE_START_NUM)
+      if (this.LINE_POS === SCRIPT_PAGE_INDEX_OFFSET)
         this.DBGTEXT += `${level} {${lineNum}:${linePos}} `;
       else this.DBGTEXT += `{${lineNum}:${linePos}} `;
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   lineOut(): void {
-    // don't export zero buffer lines which happens when this.statementToLines
-    // has no statement tokens
-
+    // Don't export zero buffer lines which happens when this.statementToLines
+    // has no statement tokens...
     // ALTERNATIVELY, we can assume it is a CLOSING ]] and render that instead
     // for consistent numbering between scriptText and scriptWizard views
-    if (this.LINE_BUF.length === 0 && !COUNT_ALL_LINES) return;
+    if (this.LINE_BUF.length === 0 && !SHOW_EMPTY_STATEMENTS) return;
 
     // otherwise do the thing
     const { level, lineNum, globalRefs } = this.currentContext();
@@ -137,7 +133,7 @@ class ScriptLiner {
     };
     this.PAGE.push(line);
     this.LINE_BUF = [];
-    this.LINE_POS = LINE_START_NUM;
+    this.LINE_POS = SCRIPT_PAGE_INDEX_OFFSET;
     this.nextLine();
     if (DBG) this.DBGTEXT += '\n';
   }
@@ -205,12 +201,14 @@ class ScriptLiner {
 const LINER = new ScriptLiner();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: given a program, return a page of vmlines and line-to-token map */
-function ScriptToLines(program: TScriptUnit[]) {
-  const [script_page, line_tokmap] = LINER.scriptToLines(program);
-  return [script_page, line_tokmap];
+function ScriptToLines(
+  program: TScriptUnit[]
+): [VMPageLine[], Map<string, IToken>] {
+  const [script_page, key_to_token] = LINER.scriptToLines(program);
+  return [script_page, key_to_token];
 }
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default ScriptLiner;
-export { LINE_START_NUM, ScriptToLines };
+export { SCRIPT_PAGE_INDEX_OFFSET, ScriptToLines };
