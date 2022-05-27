@@ -159,7 +159,7 @@ function SymbolizeStatement(statement: TScriptUnit, line?: number): TSymbolData 
   if (!kwp) {
     console.warn(`${fn} keyword processor ${kw} bad`);
     return {
-      error: { code: 'errExist', info: `missing kwProcessor for: '${kw}'` }
+      error: { code: 'invalid', info: `missing kwProcessor for: '${kw}'` }
     };
   }
   // ***NOTE***
@@ -194,14 +194,13 @@ function ValidateStatement(
   }
   // if got this far, the keyword was unrecognized
   const keywords = DCSIM.GetAllKeywords();
-  const err = new VSymError('errExist', `invalid keyword '${kw}'`, {
+  const err = new VSymError('invalid', `invalid keyword '${kw}'`, {
     keywords
   });
   return {
     validationTokens: [err]
   };
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Given a blueprint script, create a "page" of "lines" of ValidationTokens
  */

@@ -224,15 +224,15 @@ declare global {
   type TSymUnpackedArg = [name: string, type: TGSType];
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** describes the type of error that occurred during parsing so it can be
+   *  rendered in the GUI */
+  /// `valid | empty | error | unexpected | vague`
   type TValidationErrorCodes =
-    | 'errOops' // a debug message
-    | 'errParse' // bad or unexpected token format
-    | 'errScope' // valid scope could not be found or inferred
-    | 'errExist' // reference doesn't exist in available scope
-    | 'errType' // invalid type received
-    | 'errOver' // more arguments than required by keyword
-    | 'errUnder' // less arguments than required by keyword
-    | 'errRange'; // argument out of range
+    | 'oops' // a debug message
+    | 'badtok' // token incorrect type, or nomatch
+    | 'empty' // missing token
+    | 'unexpected' // extra token
+    | 'vague'; // indeterminate token need
 
   /// MAIN SYMBOL DATA DECLARATION ////////////////////////////////////////////
   /** data description of symbols for features, props. returned from anything
