@@ -2,7 +2,8 @@
 
   SelectEditor
 
-  given the current selection which is a token on the left side,
+  ~~given the current selection which is a token on the left side,~~
+  given the current selection which is a slot token on the RIGHT side,
   determine what kind of token it is, and what the appropriator
   editor is for it. It looks at the validation token array to infer
   what it is from the simple token types
@@ -50,11 +51,67 @@ function SelectEditor(props) {
 
   // TODO: this manipulation should all be moved to a WIZCORE method
   // as much as possible
-  const { sel_linepos: pos, validation, scriptToken } = selection;
+
+  // ORIG use selected line validation
+  // const { sel_linepos: pos, validation, scriptToken } = selection;
+  // NEW use selected slot validation
+  const {
+    // ORIG selected line position
+    // sel_linepos: pos,
+    // NEW use selected slot
+    sel_slotpos: pos,
+    sel_slotvalidation: validation,
+    scriptToken
+  } = selection;
   const { validationTokens: vtoks, validationLog } = validation;
-  const vtok = vtoks[pos - 1];
-  const { arg, gsType, methodSig, unitText } = vtok; // we want to SWITCH ON THIS
-  const { name, args: methodArgs, info } = methodSig || {}; // HACK FOR TESTING and not breaking other tokens
+
+  // HACK
+  // syntaxTokens for 'prop' keyword
+  const syntaxTokens = [
+    {
+      // prop
+      gsType: 'identifier',
+      unitText: 'keyword' // placeholder help text
+    },
+    {
+      // objref
+      gsType: 'objref',
+      unitText: 'propName'
+    },
+    {
+      // method
+      gsType: 'method',
+      unitText: 'method'
+    },
+    {
+      // value
+      gsType: 'number', // or string
+      unitText: 'number'
+    }
+  ];
+
+  // REVIEW
+  let gsType;
+  let unitText;
+  let methodSig;
+  let methodArgs = [];
+  let name;
+  let info;
+  // if we run out of validation tokens, we should switch to using
+  // keyword syntax tokens, not yet defined.  For now, just use a blank.
+  if (pos > vtoks.length) {
+    // override with syntaxTokens?
+    const syntaxToken = syntaxTokens[pos - 1];
+    ({ gsType, unitText } = syntaxToken);
+  } else {
+    // const vtok = vtoks[pos - 1] || {}; // if out of tokens use blank
+    // const { arg, gsType, methodSig, unitText } = vtok; // we want to SWITCH ON THIS
+    // const { name, args: methodArgs, info } = methodSig || {}; // HACK FOR TESTING and not breaking other tokens
+    const vtok = vtoks[pos - 1];
+    ({ gsType, methodSig, unitText } = vtok);
+    ({ name, args: methodArgs, info } = methodSig || {});
+  }
+
   // end TODO
   const processNumberInput = e => {
     e.preventDefault();
