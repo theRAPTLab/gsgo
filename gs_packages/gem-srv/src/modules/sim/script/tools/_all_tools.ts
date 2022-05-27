@@ -9,8 +9,7 @@ export {
   DecodeToken,
   DecodeStatement
 } from './script-compiler';
-export { ScriptToText, TokenToString } from './script-to-text';
-export { TextToScript } from './text-to-script';
+export { TextToScript, ScriptToText, TokenToString } from './script-tokenizer';
 /// CLASSES
 export { ScriptTokenizer, Tokenize };
 export { ExpressionEvaluator, Evaluate };

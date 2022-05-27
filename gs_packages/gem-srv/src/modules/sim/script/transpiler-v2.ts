@@ -20,7 +20,7 @@ import * as DCSIM from 'modules/datacore/dc-sim-data';
 import 'script/keywords/_all_keywords';
 
 // tooling imports
-import * as DECOMPILER from 'script/tools/text-to-script';
+import * as TOKENIZER from 'script/tools/script-tokenizer';
 import * as COMPILER from 'script/tools/script-compiler';
 import * as SYMBOLHELPERS from 'script/tools/symbol-helpers';
 
@@ -67,13 +67,13 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
  *  scripts, or anything that isn't part of the
  */
 function CompileText(text: string = ''): TSMCProgram {
-  const script = DECOMPILER.TextToScript(text);
+  const script = TOKENIZER.TextToScript(text);
   return COMPILER.CompileScript(script);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Given a lineScript in text form and a bundle with symbols, validate it */
 function ValidateLineText(line: string, bdl: SM_Bundle): TValidatedScriptUnit {
-  const [lineScript] = DECOMPILER.TextToScript(line);
+  const [lineScript] = TOKENIZER.TextToScript(line);
   const vtoks = COMPILER.ValidateStatement(lineScript, {
     bundle: bdl,
     globals: {}
@@ -145,14 +145,11 @@ export {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// FORWARDED API: convert text to tokenized scripts
 export {
-  TextToScript // text w/ newlines => TScriptUnit[]
-} from 'script/tools/text-to-script';
-/// FORWARDED API: converts tokenized scripts, scriptTokens to text representation
-export {
+  TextToScript, // text w/ newlines => TScriptUnit[]
   ScriptToText, // TScriptUnit[] => produce source text from units
   TokenToString, // for converting a token to its text representation
   StatementToText // convert scriptUnit[] to text
-} from 'script/tools/script-to-text';
+} from 'script/tools/script-tokenizer';
 /// DEPRCECATED API: convert tokenized script into a React representation
 export {
   ScriptToJSX // TScriptUnit[] => jsx
