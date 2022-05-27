@@ -198,7 +198,8 @@ function ValidateStatement(
     keywords
   });
   return {
-    validationTokens: [err]
+    validationTokens: [err],
+    validationLog: [`unrecognized keyword '${kw}'`]
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

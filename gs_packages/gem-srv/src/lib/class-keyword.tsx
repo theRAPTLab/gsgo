@@ -139,9 +139,7 @@ class Keyword implements IKeyword {
       for (tokIndex; tokIndex < unit.length; tokIndex++) {
         tok = unit[tokIndex];
         const tokInfo = UnpackToken(tok).join(':');
-        vtoks.push(
-          this.newSymbolError('errOver', `unexpected token {${tokInfo}}`)
-        );
+        vtoks.push(this.newSymbolError('extra', `unexpected token {${tokInfo}}`));
       }
     }
 
@@ -166,7 +164,7 @@ class Keyword implements IKeyword {
 
     // error checking
     if (argType === undefined)
-      vtok = this.newSymbolError('errParse', `bad arg def ${arg}`);
+      vtok = this.newSymbolError('invalid', `bad arg def ${arg}`);
     // handle argType conversion
     switch (argType) {
       case 'objref': // value is string[] of parts
@@ -182,7 +180,7 @@ class Keyword implements IKeyword {
       // TODO: handle other argTypes
       case 'prop': // a prop reference
         vtok = this.newSymbolError(
-          'errType',
+          'debug',
           "'prop' typehandler should be objref?"
         );
         break;
@@ -193,7 +191,7 @@ class Keyword implements IKeyword {
       case 'pragma': // a directive
       default:
         vtok = this.newSymbolError(
-          'errOops',
+          'debug',
           `'${argType}' typehandler not implemented`
         );
     }
