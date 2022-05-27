@@ -1,5 +1,13 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+
+  DEPRECATED
+  The global agent is now accessible directly via script, so the Global
+  Feature is really no longer necessary.
+  e.g. `prop global.sparkCounter add 1`
+  See: https://gitlab.com/stepsys/gem-step/gsgo/-/wikis/Scripting/Global
+
+
   Global is a special-case feature that is accessible to ALL agents in
   the simulation
 
