@@ -53,13 +53,13 @@ class VSymToken implements TSymbolData {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class VSymError extends VSymToken {
   // add error-related TSymbolData fields
-  error: { code: TSymbolErrorCodes; info: string };
+  error: { code: TValidationErrorCodes; info: string };
   /** @constructor
    *  @param {TSymbolData} err_code specific code type
    *  @param {string} err_info description of what causes the error
    */
   constructor(
-    err_code: TSymbolErrorCodes = 'errOops',
+    err_code: TValidationErrorCodes = 'errOops',
     err_info: string = '<none provided>',
     symbols?: TSymbolData,
     unitText?: string
@@ -184,10 +184,16 @@ class SymbolHelper {
     return new VSymToken({ keywords }, value);
   }
 
+  /// STRING-BASED DICT SEARCHES ////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// These accessors use the refs.globals object which contains foreign
+  /// blueprints to the current bundle. The when keyword for example has to add
+  /// the blueprint name
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** If part is 'agent', return the bundle symbols or undefined. This is only
    *  used for objref check of first part
    */
-  agentLiteral(part: string, scope?: TSymbolData) {
+  strAgentLiteral(part: string, scope?: TSymbolData) {
     const fn = 'agentLiteral:';
     if (scope)
       throw Error(`${fn} works only on bdl_scope, so don't try to override`);
@@ -195,18 +201,13 @@ class SymbolHelper {
     this.cur_scope = this.bdl_scope;
     return this.bdl_scope; // valid scope is parent of cur_scope
   }
-
-  /// CONTEXT-DEPENDENT ACCESSORS /////////////////////////////////////////////
-  /// These accessors use the refs.globals object which contains foreign
-  /// blueprints to the current bundle. The when keyword for example has to add
-  /// the blueprint name
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** search the refs.globals context object to see if there is a defined
    *  blueprint module in it; use the blueprint symbols to set the current scope
    *  and return symbols
    */
-  blueprintName(part: string, scope?: TSymbolData) {
-    const fn = 'blueprintName:';
+  strBlueprintName(part: string, scope?: TSymbolData) {
+    const fn = 'strBlueprintName:';
     if (scope)
       throw Error(`${fn} works on context, so don't provide scope override`);
     if (part === 'agent') return undefined; // skip agent prop in refs.globals
@@ -217,11 +218,9 @@ class SymbolHelper {
     this.cur_scope = bp.symbols; // advance scope pointer
     return bp; // valid scope is parent of cur_scope
   }
-
-  /// SCOPE-DEPENDENT ACCESSOR/MODIFIERS //////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** search the current scope for a matching featureName */
-  featureName(part: string) {
+  /** search the current scope for a matching strFeatureName */
+  strFeatureName(part: string) {
     const features = this.cur_scope.features;
     if (features === undefined) return undefined; // no match
     const feature = features[part];
@@ -229,22 +228,24 @@ class SymbolHelper {
     this.cur_scope = feature; // advance scope
     return features; // valid scope is parent of cur_scope
   }
-
-  /** check the current scope or bundle for propName matches or undefined. Use
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** check the current scope or bundle for strPropName matches or undefined. Use
    *  this in the cases where you DO NOT WANT an objectref instead, as you would
    *  for the addProp keyword */
-  propName(propName: string) {
+  strPropName(strPropName: string) {
     const ctx = this.cur_scope || {};
     // is there a props dictionary in scope?
     const propDict = this.cur_scope.props;
     if (!propDict) return undefined; // no props found
-    // does the propName exist?
-    const prop = propDict[propName];
+    // does the strPropName exist?
+    const prop = propDict[strPropName];
     if (!prop) return undefined; // no matching prop
     this.cur_scope = prop; // advance scope pointer
     return ctx; // valid scope is parent of cur_scope
   }
 
+  /// SCOPE-BASED DICT SEARCHES ///////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** scans the current scope for a terminal property or feature, after
    *  which a methodName would be expected in the next tokens
    */
@@ -270,10 +271,10 @@ class SymbolHelper {
     // OBJREF PART 1: what kind of object are we referencing?
     // these calls will update cur_scope SymbolData appropriately
     let part = parts[0];
-    let agent = this.agentLiteral(part);
-    let feature = this.featureName(part);
-    let prop = this.propName(part);
-    let blueprint = this.blueprintName(part);
+    let agent = this.strAgentLiteral(part);
+    let feature = this.strFeatureName(part);
+    let prop = this.strPropName(part);
+    let blueprint = this.strBlueprintName(part);
     // is there only one part in this objref?
     let terminal = parts.length === 1;
     // does the objref terminate in a method-bearing reference?
@@ -295,9 +296,9 @@ class SymbolHelper {
       // are there any prop, feature, or blueprint references?
       // these calls drill-down into the scope for each part, starting in the
       // scope set in OBJREF PART 1
-      prop = this.propName(part);
-      feature = this.featureName(part);
-      blueprint = this.blueprintName(part);
+      prop = this.strPropName(part);
+      feature = this.strFeatureName(part);
+      blueprint = this.strBlueprintName(part);
       // is this part of the objref the last part?
       terminal = ii >= parts.length - 1;
       if (terminal) {
@@ -391,7 +392,7 @@ class SymbolHelper {
     }
     // SCOPE ARGS 1: retrieve the method's argument symbol data
     const methodName = methodNames[0];
-    const methodSignature: TSymMethodSig = this.cur_scope[methodName];
+    const methodSignature: TGSMethodSig = this.cur_scope[methodName];
     // TODO: some keywords (e.g. 'when') may have multiple arrays
     const { args } = methodSignature;
     methodSignature.name = methodName; // add optional methodName to TSymbolData
@@ -412,7 +413,7 @@ class SymbolHelper {
       const vtok = this.argSymbol(arg, tok);
       vtok.methodSig = methodSignature;
       vtoks.push(vtok);
-    }
+    } // end for
     // check for underflow
     if (tokenIndex < args.length)
       for (let ii = tokenIndex; ii < args.length; ii++) {
@@ -427,22 +428,27 @@ class SymbolHelper {
   /** Return the symbols for an methodSig argType entry. Does NOT change scope
    *  because the scope is always the same methodSig symbol data
    */
-  argSymbol(arg, tok): TSymbolData {
+  argSymbol(methodArg, scriptToken): TSymbolData {
     const fn = 'argSymbol:';
-    const [argName, argType] = CHECK.UnpackArg(arg);
-    const [tokType, tokVal] = TOKENIZER.UnpackToken(tok);
-    let symData;
 
-    // a literal boolean value from token.value
-    if (argType === 'boolean') {
+    const [argName, gsType] = CHECK.UnpackArg(methodArg);
+    const [tokType, tokVal] = TOKENIZER.UnpackToken(scriptToken);
+
+    // data structures
+    let symData;
+    const arg = methodArg;
+    const tok = scriptToken;
+
+    // is this a literal boolean value from token.value
+    if (gsType === 'boolean') {
       let value = TOKENIZER.TokenValue(tok, 'value');
       if (typeof value === 'boolean')
         symData = new VSymToken({ arg }, value.toString());
       else
         symData = new VSymError('errType', `${tokType}:${tokVal} not a boolean`);
     }
-    // a literal number value from token.value
-    if (argType === 'number') {
+    // is this a literal number value from token.value
+    if (gsType === 'number') {
       let value = TOKENIZER.TokenValue(tok, 'value');
       if (typeof value === 'number')
         symData = new VSymToken({ arg }, value.toString());
@@ -450,34 +456,37 @@ class SymbolHelper {
         symData = new VSymError('errType', `${tokType}:${tokVal} not a number`);
     }
 
-    // a literal string from token.string
-    if (argType === 'string' && TOKENIZER.TokenValue(tok, 'string')) {
+    // is this a literal string from token.string
+    if (gsType === 'string' && TOKENIZER.TokenValue(tok, 'string')) {
       symData = new VSymToken({ arg }, tokVal);
     }
 
-    // an enumeration list match token???
+    // is this an enumeration list match token???
     // NOT IMPLEMENTED
-    if (argType === 'enum') {
+    if (gsType === 'enum') {
       symData = new VSymError('errParse', `${fn} enum is unimplemented`);
     }
 
     // all symbols available in current bundle match token.objref
-    if (argType === 'objref' && TOKENIZER.TokenValue(tok, 'objref')) {
+    if (gsType === 'objref' && TOKENIZER.TokenValue(tok, 'objref')) {
       symData = new VSymToken(this.bdl_scope, argName);
     }
 
     // all props, feature props in bundle match token.identifier
-    if (argType === 'prop' && TOKENIZER.TokenValue(tok, 'identifier')) {
+    if (gsType === 'prop' && TOKENIZER.TokenValue(tok, 'identifier')) {
       symData = new VSymToken(this.bdl_scope, argName);
     }
 
+    // is this a method name? current scope is pointing to
+    // the method dict, we hope...
     // all methods in bundle match token.identifier
-    if (argType === 'method' && TOKENIZER.TokenValue(tok, 'identifier')) {
+    if (gsType === 'method' && TOKENIZER.TokenValue(tok, 'identifier')) {
       symData = new VSymToken(this.cur_scope, argName);
     }
 
+    // is this any gvar type?
     // all gvars available in system match token.identifier
-    if (argType === 'gvar' && TOKENIZER.TokenValue(tok, 'identifier')) {
+    if (gsType === 'gvar' && TOKENIZER.TokenValue(tok, 'identifier')) {
       const map = ENGINE.GetPropTypesDict();
       const ctors = {};
       const list = [...map.keys()];
@@ -487,11 +496,12 @@ class SymbolHelper {
       symData = new VSymToken({ ctors }, argName);
     }
 
+    // is this a feature module name?
     // all feature symbols in system match token.identifier
     // e.g. addFeature
-    if (argType === 'feature' && TOKENIZER.TokenValue(tok, 'identifier')) {
+    if (gsType === 'feature' && TOKENIZER.TokenValue(tok, 'identifier')) {
       const map = ENGINE.GetAllFeatures();
-      const features = {}; // { [featureName: string]: TSymbolData };
+      const features = {}; // { [strFeatureName: string]: TSymbolData };
       const list = [...map.keys()];
       list.forEach(featName => {
         features[featName] = ENGINE.GetFeature(featName).symbolize();
@@ -499,9 +509,10 @@ class SymbolHelper {
       symData = new VSymToken({ features }, argName);
     }
 
+    // is this a blueprint name? We allow any blueprint name in the dictionary
     // all blueprint symbols in project match token.identifier
     // e.g. when agent test, when agentA test agentB
-    if (argType === 'blueprint' && TOKENIZER.TokenValue(tok, 'identifier')) {
+    if (gsType === 'blueprint' && TOKENIZER.TokenValue(tok, 'identifier')) {
       const list = ENGINE.GetAllBlueprintBundles();
       const blueprints = {};
       list.forEach(bundle => {
@@ -510,27 +521,27 @@ class SymbolHelper {
       symData = new VSymToken({ blueprints }, argName);
     }
 
-    // if (argType === 'test') {
+    // if (gsType === 'test') {
     // }
-    // if (argType === 'program') {
+    // if (gsType === 'program') {
     // }
-    // if (argType === 'event') {
+    // if (gsType === 'event') {
     // }
 
-    // if (argType === 'expr') {
+    // if (gsType === 'expr') {
     // }
-    // if (argType === 'block') {
+    // if (gsType === 'block') {
     // }
-    // if (argType === '{value}') {
+    // if (gsType === '{value}') {
     // }
 
     if (symData === undefined) {
-      return new VSymError('errOops', `${fn} ${argType} has no token mapper`, {
+      return new VSymError('errOops', `${fn} ${gsType} has no token mapper`, {
         arg
       });
     }
     // hack in the gsType
-    symData.gsType = argType;
+    symData.gsType = gsType;
     return symData;
   }
 } // end of SymbolHelper class

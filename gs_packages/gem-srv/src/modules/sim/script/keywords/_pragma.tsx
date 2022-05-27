@@ -46,7 +46,7 @@ export class _pragma extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(params: TArguments): TOpcode[] {
+  compile(params: TKWArguments): TOpcode[] {
     // don't do anything if the bundler is inactive, as it is for the
     // case when compiling a script outside of a blueprint
     if (!DCBUNDLER.BundlerActive()) return [];

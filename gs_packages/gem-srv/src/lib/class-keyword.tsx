@@ -30,7 +30,7 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Keyword implements IKeyword {
   keyword: string;
-  args: TSymArg[] | TSymArg[][]; // for symbol validation
+  args: TGSArg[] | TGSArg[][]; // for symbol validation
   shelper: SymbolHelper; // helper for extracting line data
   //
   constructor(keyword: string) {
@@ -103,7 +103,7 @@ class Keyword implements IKeyword {
     //
     let tok: IToken; // hold reference to current dtoken for each pass through arglist
     let vtok: TSymbolData; // hold vtok reference for each pass through arglist
-    let arg: TSymArg; // hold current argument
+    let arg: TGSArg; // hold current argument
 
     /* new */
     // let argCount = this.shelper.countArgs(unit);
@@ -119,7 +119,7 @@ class Keyword implements IKeyword {
     while (tokIndex < unit.length) {
       // (2A) is this arg a special {args} marker?
       tok = unit[tokIndex];
-      arg = this.args[tokIndex - 1] as TSymArg; // this.args also be TSymArg[]
+      arg = this.args[tokIndex - 1] as TGSArg; // this.args also be TGSArg[]
       const [, argType] = UnpackArg(arg);
       // (2B) NOT an arglist? (a regular argument)?
       if (argType !== '{...}') {
@@ -146,7 +146,7 @@ class Keyword implements IKeyword {
     }
 
     // return the validation data array
-    const log = this._dbgValidationLog(vtoks);
+    const log = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: log };
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -159,7 +159,7 @@ class Keyword implements IKeyword {
    *  You can also write your own costume validation() for clarity;
    *  see props.tsx for an example
    */
-  validateToken(arg: TSymArg, token?: IToken): TSymbolData {
+  validateToken(arg: TGSArg, token?: IToken): TSymbolData {
     let vtok;
     const [argName, argType] = UnpackArg(arg);
     const [tokType, value] = UnpackToken(token);
@@ -205,7 +205,7 @@ class Keyword implements IKeyword {
   /** provide annotated log of validationTokens
    *  the log tries to produce well-formatted output
    */
-  _dbgValidationLog(vtoks: TSymbolData[]): string[] {
+  makeValidationLog(vtoks: TSymbolData[]): string[] {
     let max = 0;
     const BAD_UNIT = 'NO_TOK';
     const log = [];
@@ -243,7 +243,7 @@ class Keyword implements IKeyword {
   /** utility to create a TSymbolData object with errors, with option to
    *  add valid symbols
    */
-  newSymbolError(code: TSymbolErrorCodes, info, symbols?) {
+  newSymbolError(code: TValidationErrorCodes, info, symbols?) {
     return new VSymError(code, info, symbols);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

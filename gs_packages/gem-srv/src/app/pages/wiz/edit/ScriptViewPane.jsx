@@ -23,7 +23,7 @@ const DBG = false;
 // Whether to render blank lines that come from a ]] block, which has
 // no visual equivalent. This will cause line numbers to be discontinuous, but
 // will match the script_text line numbers
-// See also COUNT_ALL_LINES for related behaviors
+// See also SHOW_EMPTY_STATEMENTS for related behaviors
 const DRAW_CLOSING_LINES = false;
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
@@ -64,7 +64,7 @@ export function ScriptViewPane(props) {
   // the line has token viewmodel data plus line metdata
   script_page.forEach(line => {
     const { lineNum, level, vmTokens } = line;
-    // console.log('DRAWING LINE', lineNum, script_page[lineNum - LINE_START_NUM]);
+    // console.log('DRAWING LINE', lineNum, script_page[lineNum - SCRIPT_PAGE_INDEX_OFFSET]);
 
     const lineBuffer = [];
     const hasTokens = vmTokens.length > 0;

@@ -366,7 +366,7 @@ function GetTokenById(key) {
 /** Return the script_page line, taking the 1-index into account */
 function GetVMPageLine(line: number) {
   const { script_page } = STORE.State();
-  return script_page[line - TRANSPILER.LINE_START_NUM];
+  return script_page[line - TRANSPILER.SCRIPT_PAGE_INDEX_OFFSET];
 }
 
 /// DATA CONVERSION HELPERS ///////////////////////////////////////////////////

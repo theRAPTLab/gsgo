@@ -37,7 +37,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////xa///////////////////*/
 
-// import { IToken, TScriptUnit, TArguments } from 'lib/t-script.d';
+// import { IToken, TScriptUnit, TKWArguments } from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -763,7 +763,7 @@ function IsNonCodeToken(tok: IToken): boolean {
  *  does a similar unpacking except it doesn't compile blocks, instead
  *  recursively unpacking them. Skips line and comment tokens.
  */
-function UnpackStatement(unit: TScriptUnit): TArguments {
+function UnpackStatement(unit: TScriptUnit): TKWArguments {
   const ustatement = [];
   unit.forEach(tok => {
     const [type, value] = UnpackToken(tok);
@@ -782,7 +782,7 @@ function UnpackStatement(unit: TScriptUnit): TArguments {
  *  and blank lines.
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function UnpackScript(script: TScriptUnit[]): TArguments[] {
+function UnpackScript(script: TScriptUnit[]): TKWArguments[] {
   const uscript = [];
   script.forEach(stm => {
     const ustm = UnpackStatement(stm);

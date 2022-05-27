@@ -30,22 +30,13 @@ SYMBOLHELPERS.BindModule();
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRANSPILE', 'TagDebug');
-//
 const DBG = false;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Compile a source text and return compiled TMethod. Similar to
- *  CompileBlueprint but does not handle directives or build a bundle. Used
- *  for generating code snippets from any GEMSCRIPT text (e.g. for init
- *  scripts, or anything that isn't part of the
- */
-function CompileText(text: string = ''): TSMCProgram {
-  const script = DECOMPILER.TextToScript(text);
-  return COMPILER.CompileScript(script);
-}
 
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: */
+/** API: Given a bundle, ensure it's the right type and save it to the
+ *  bundle dictionary
+ */
 function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
   // ensure that bundle has at least a define and name
   if (bdl.type === EBundleType.INIT) {
@@ -66,6 +57,28 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
   }
   console.log(bdl);
   throw Error('not blueprint');
+}
+
+/// SCRIPT TEXT UTILITIES /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Compile a source text and return compiled TMethod. Similar to
+ *  CompileBlueprint but does not handle directives or build a bundle. Used
+ *  for generating code snippets from any GEMSCRIPT text (e.g. for init
+ *  scripts, or anything that isn't part of the
+ */
+function CompileText(text: string = ''): TSMCProgram {
+  const script = DECOMPILER.TextToScript(text);
+  return COMPILER.CompileScript(script);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Given a lineScript in text form and a bundle with symbols, validate it */
+function ValidateLineText(line: string, bdl: SM_Bundle): TValidatedScriptUnit {
+  const [lineScript] = DECOMPILER.TextToScript(line);
+  const vtoks = COMPILER.ValidateStatement(lineScript, {
+    bundle: bdl,
+    globals: {}
+  });
+  return vtoks;
 }
 
 /// AGENT UTILITIES ///////////////////////////////////////////////////////////
@@ -110,7 +123,8 @@ export {
 /// API: These methods are related to transpiling GEMSCRIPT
 /// from source text and
 export {
-  CompileText // compile a script text that IS NOT a blueprint
+  CompileText, // compile a script text that IS NOT a blueprint
+  ValidateLineText // return validation tokens for line
 };
 export {
   DecodeTokenPrimitive, // utility: to convert a scriptToken into runtime data
@@ -146,7 +160,7 @@ export {
 /// FORWARDED API: convert tokenized script to React-renderable data structures
 export {
   ScriptToLines, // converts script into a viewmodel suitable for rendering as lines
-  LINE_START_NUM // either 0 or 1, read to modify index
+  SCRIPT_PAGE_INDEX_OFFSET // either 0 or 1, read to modify index
 } from 'script/tools/script-to-lines';
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

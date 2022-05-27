@@ -138,7 +138,7 @@ class SymbolValidator {
   /** If part is 'agent', return the bundle symbols or undefined. This is only
    *  used for objref check of first part
    */
-  agentLiteral(part: string, scope?: TSymbolData) {
+  strAgentLiteral(part: string, scope?: TSymbolData) {
     const fn = 'agentLiteral:';
     if (scope)
       throw Error(`${fn} works only on bdl_scope, so don't try to override`);
@@ -151,7 +151,7 @@ class SymbolValidator {
    *  blueprint module in it; use the blueprint symbols to set the current scope
    *  and return symbols
    */
-  blueprintName(part: string, scope?: TSymbolData) {
+  strBlueprintName(part: string, scope?: TSymbolData) {
     const fn = 'blueprintName:';
     if (scope)
       throw Error(`${fn} works on context, so don't provide scope override`);
@@ -165,7 +165,7 @@ class SymbolValidator {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** search the current scope for a matching featureName */
-  featureName(part: string) {
+  strFeatureName(part: string) {
     const features = this.cur_scope.features;
     if (features === undefined) return undefined; // no match
     const feature = features[part];
@@ -177,7 +177,7 @@ class SymbolValidator {
   /** check the current scope or bundle for propName matches or undefined. Use
    *  this in the cases where you DO NOT WANT an objectref instead, as you would
    *  for the addProp keyword */
-  propName(propName: string) {
+  strPropName(propName: string) {
     const ctx = this.cur_scope || {};
     // is there a props dictionary in scope?
     const propDict = this.cur_scope.props;
@@ -216,10 +216,10 @@ class SymbolValidator {
     // OBJREF PART 1: what kind of object are we referencing?
     // these calls will update cur_scope SymbolData appropriately
     let part = parts[0];
-    let agent = this.agentLiteral(part);
-    let feature = this.featureName(part);
-    let prop = this.propName(part);
-    let blueprint = this.blueprintName(part);
+    let agent = this.strAgentLiteral(part);
+    let feature = this.strFeatureName(part);
+    let prop = this.strPropName(part);
+    let blueprint = this.strBlueprintName(part);
     // is there only one part in this objref?
     let terminal = parts.length === 1;
     // does the objref terminate in a method-bearing reference?
@@ -241,9 +241,9 @@ class SymbolValidator {
       // are there any prop, feature, or blueprint references?
       // these calls drill-down into the scope for each part, starting in the
       // scope set in OBJREF PART 1
-      prop = this.propName(part);
-      feature = this.featureName(part);
-      blueprint = this.blueprintName(part);
+      prop = this.strPropName(part);
+      feature = this.strFeatureName(part);
+      blueprint = this.strBlueprintName(part);
       // is this part of the objref the last part?
       terminal = ii >= parts.length - 1;
       if (terminal) {
@@ -338,7 +338,7 @@ class SymbolValidator {
     }
     // SCOPE ARGS 1: retrieve the method's argument symbol data
     const methodName = methodNames[0];
-    const methodSignature: TSymMethodSig = this.cur_scope[methodName];
+    const methodSignature: TGSMethodSig = this.cur_scope[methodName];
     // TODO: some keywords (e.g. 'when') may have multiple arrays
     const { args: mArgs } = methodSignature;
     methodSignature.name = methodName; // add optional methodName to TSymbolData
@@ -375,7 +375,7 @@ class SymbolValidator {
   /** Return the symbols for an methodSig argType entry. Does NOT change scope
    *  because the scope is always the same methodSig symbol data
    */
-  argSymbol(mArg: TSymArg, rawTok: IToken): SymbolToken {
+  argSymbol(mArg: TGSArg, rawTok: IToken): SymbolToken {
     const fn = 'argSymbol:';
     const [argName, argType] = CHECK.UnpackArg(mArg);
     const [tokType, tokVal] = TOKENIZER.UnpackToken(rawTok);

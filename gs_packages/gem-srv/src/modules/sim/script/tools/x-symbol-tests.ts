@@ -9,6 +9,7 @@
 import SM_Bundle from 'lib/class-sm-bundle';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
+import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import { DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 import { SymbolValidator } from './x-symbol-validator';
 
@@ -16,7 +17,7 @@ const { warn, log, group, groupEnd } = console;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const USE_TEST_SCRIPT = true;
+const USE_TEST_SCRIPT = false;
 const TEST_SCRIPT = `# blueprint Boo
 # TAG isCharControllable false
 # PROGRAM DEFINE
@@ -84,6 +85,7 @@ function TestValidate() {
   // validate script line by line
   //
   script_page.forEach((line, num) => {
+    num = CHECK.LineNumIndex(num);
     const { lineScript, globalRefs } = line;
     const vtoks = TRANSPILER.ValidateStatement(lineScript, {
       bundle: bdl,

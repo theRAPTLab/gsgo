@@ -63,7 +63,7 @@ export class prop extends Keyword {
     vtoks.push(this.shelper.objRef(objrefTok));
     vtoks.push(this.shelper.methodName(methodTok));
     vtoks.push(...this.shelper.argsList(argToks));
-    const log = this._dbgValidationLog(vtoks);
+    const log = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: log };
   }
 } // end of keyword definition

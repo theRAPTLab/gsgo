@@ -33,17 +33,17 @@ class SymbolToken {
     });
     return this;
   }
-  setError(err_code: TSymbolErrorCodes, err_info: string): SymbolToken {
+  setError(err_code: TValidationErrorCodes, err_info: string): SymbolToken {
     this.symbols.error = {
       code: err_code || 'errOops',
       info: err_info || '<unknown>'
     };
     return this;
   }
-  setType(gsType: TSValidType) {
+  setType(gsType: TGSType) {
     this.symbols.gsType = gsType;
   }
-  setMethodSig(mSig: TSymMethodSig) {
+  setMethodSig(mSig: TGSMethodSig) {
     this.symbols.methodSig = mSig;
   }
 
@@ -65,7 +65,7 @@ function ValidToken(symbols?: TSymbolData, unitText?: string) {
  *  with additional error information
  */
 function InvalidToken(
-  err_code: TSymbolErrorCodes,
+  err_code: TValidationErrorCodes,
   err_info: string,
   symbols?: TSymbolData,
   unitText?: string

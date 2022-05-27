@@ -140,7 +140,7 @@ function RegisterKeyword(Ctor: IKeywordCtor, alias?: string): void {
   const fn = 'RegisterKeyword:';
   alias = m_EnsureLowerCase(alias);
   const kobj = new Ctor();
-  if (!CHECK.AreValidArgs(kobj.args as TSymArg[]))
+  if (!CHECK.AreValidArgs(kobj.args as TGSArg[]))
     throw Error(`${fn} invalid argDef in keyword '${kobj.keyword}'`);
   KEYWORDS.set(alias || m_EnsureLowerCase(kobj.keyword), kobj);
 }
