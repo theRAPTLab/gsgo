@@ -297,6 +297,9 @@ function DispatchClick(event) {
   /** (2) GSlotToken was clicked? ************************************************/
   const slotKey = event.target.getAttribute('data-slotkey');
   if (slotKey !== null) {
+    // If the slot was disabled, don't let it be clicked
+    if (event.target.className.includes('styleFlagDisabled')) return;
+    // Else, select the slot
     newState.sel_slotpos = Number(slotKey); // STATE UPDATE: selected line
     SendState(newState);
     const { sel_slotpos } = State();
