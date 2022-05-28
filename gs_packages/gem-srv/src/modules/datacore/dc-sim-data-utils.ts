@@ -177,7 +177,7 @@ export {
   // type checks
   IsNonCodeToken,
   IsValidToken,
-  IsValidTokenType,
+  IsValidTokenKey,
   // token evaluation
   DecodePragmaToken,
   DecodeKeywordToken,

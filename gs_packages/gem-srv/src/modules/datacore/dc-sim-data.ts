@@ -343,7 +343,7 @@ export { BLUEPRINTS, KEYWORDS, SCRIPTS, SCRIPT_EVENTS };
 export {
   UnpackToken,
   IsValidToken,
-  IsValidTokenType,
+  IsValidTokenKey,
   TokenValue
 } from 'script/tools/class-gscript-tokenizer-v2';
 */

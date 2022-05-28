@@ -94,18 +94,26 @@ function StatementToText(statement: TScriptUnit, indent: number = 0): string {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// main api
-export { TextToScript, ScriptToText };
+export {
+  TextToScript, // convert provided multi-line text to script of TScriptUnit[]
+  ScriptToText // convert provided script to multi-line text
+};
 /// support
-export { StatementToText, TokenToString };
+export {
+  StatementToText, // convert a line of script TScriptUnit to a line of text
+  TokenToString // convert a token to its string version
+};
 /// forward gscript-tokenizer utilities
 export {
-  UnpackScript,
-  UnpackStatement,
-  UnpackToken,
-  DecodeKeywordToken,
-  DecodePragmaToken,
-  TokenValue,
-  IsNonCodeToken,
-  IsValidToken,
-  IsValidTokenType
+  UnpackToken, // return [type, value] of token
+  UnpackScript, // unroll a script of statements
+  UnpackStatement, // unroll a statement containing block tokens into multiple statements
+  //
+  TokenValue, // return the 'value' of the token, optionally test against type
+  DecodeKeywordToken, // if it's a keyword token, return keyword
+  DecodePragmaToken, // if it's a pragma token, return directive
+  //
+  IsNonCodeToken, // return true if it's whitespace or comment
+  IsValidToken, // return true if it's a recognized token object
+  IsValidTokenKey // return true if string it's a recognized token key
 } from 'script/tools/class-gscript-tokenizer-v2';
