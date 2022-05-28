@@ -623,7 +623,7 @@ function LoadProjectBlueprint(prjId, bpName) {
  */
 export function SaveSlotLineScript() {
   const { sel_slotlinescript, script_tokens, sel_linenum } = State();
-  const lineIdx = sel_linenum - TRANSPILER.LINE_START_NUM; // 1-based
+  const lineIdx = sel_linenum - TRANSPILER.SCRIPT_PAGE_INDEX_OFFSET; // 1-based
   script_tokens.splice(lineIdx, 1, sel_slotlinescript);
   const script_text = TRANSPILER.ScriptToText(script_tokens);
   SendState({ script_text });

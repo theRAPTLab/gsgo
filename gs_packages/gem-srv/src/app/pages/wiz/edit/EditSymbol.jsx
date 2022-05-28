@@ -47,7 +47,7 @@ export function EditSymbol(props) {
     // BL: Use slot position instead of lineposition (sel_linepos)
     //     so that we display the currently selected slot type?
     if (sel_slotpos < 0) return 'Click on a word above to edit it.'; // clicked ScriptView, not SelectEditorLineSlot
-    const vIndex = sel_slotpos - TRANSPILER.LINE_START_NUM;
+    const vIndex = sel_slotpos - TRANSPILER.SCRIPT_PAGE_INDEX_OFFSET;
 
     const { validationTokens } = sel_slotvalidation;
 
