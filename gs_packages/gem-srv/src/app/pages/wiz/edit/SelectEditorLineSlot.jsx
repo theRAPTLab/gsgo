@@ -242,6 +242,7 @@ function SelectEditorLineSlot(props) {
   const tokenList = [];
   const syntaxTokenCount = SYNTAX_TOKENS.length;
   const validationTokenCount = validationTokens.length;
+  // if validationTokens exceed the expected syntax, make sure we show the overflow
   const slotCount = Math.max(syntaxTokenCount, validationTokenCount);
   for (let i = 0; i < slotCount; i++) {
     let label;
@@ -268,7 +269,7 @@ function SelectEditorLineSlot(props) {
       const t = validationTokens[i];
       if (t.error) {
         // if there's an error in the token, show the current unitText value
-        // if there is not current value, show the syntax label
+        // if there is not current value, show the expected gsType, else show syntax label
         // REVIEW VSymError doesn't return the original text, just
         // {error: {code, info}}.  Might be nice to have the orig text
         label = t.unitText || t.gsType || label;
