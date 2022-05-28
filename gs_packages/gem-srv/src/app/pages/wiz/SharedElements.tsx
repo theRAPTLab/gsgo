@@ -30,7 +30,7 @@ const SPECIAL_IDENTS = [
 export const VIEWSTATE = {
   VALID: 'valid',
   EMPTY: 'empty',
-  ERROR: 'error',
+  INVALID: 'invalid',
   UNEXPECTED: 'unexpected',
   VAGUE: 'vague'
 };
@@ -335,7 +335,7 @@ export function GSlotToken(props) {
   classes += ` ${type}Type`;
   // slot-specific viewState overrides
   if (viewState === VIEWSTATE.VALID) classes += ''; // no style change
-  if (viewState === VIEWSTATE.ERROR) classes += ' styleFlagInvalid';
+  if (viewState === VIEWSTATE.INVALID) classes += ' styleFlagInvalid';
   if (viewState === VIEWSTATE.EMPTY) classes += ' styleFlagEmpty';
   if (viewState === VIEWSTATE.VAGUE) classes += ' styleFlagDisabled';
   if (viewState === VIEWSTATE.UNEXPECTED)
