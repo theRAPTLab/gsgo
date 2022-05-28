@@ -101,7 +101,8 @@ export {
 /// support
 export {
   StatementToText, // convert a line of script TScriptUnit to a line of text
-  TokenToString // convert a token to its string version
+  TokenToString, // convert a token to its string ver
+  TokenToString as TokenToUnitText // alias
 };
 /// forward gscript-tokenizer utilities
 export {
