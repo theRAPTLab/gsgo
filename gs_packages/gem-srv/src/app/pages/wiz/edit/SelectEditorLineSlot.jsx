@@ -223,13 +223,13 @@ function SelectEditorLineSlot(props) {
       expectedType: 'method',
       dataSelectKey: 3,
       label: 'method',
-      viewState: VIEWSTATE.EMPTY
+      viewState: VIEWSTATE.VAGUE
     },
     {
-      expectedType: 'number',
+      expectedType: 'value',
       dataSelectKey: 4,
-      label: 'number',
-      viewState: VIEWSTATE.EMPTY
+      label: 'value',
+      viewState: VIEWSTATE.VAGUE
     }
   ];
 
