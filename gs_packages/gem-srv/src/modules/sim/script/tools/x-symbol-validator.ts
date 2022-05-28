@@ -16,7 +16,7 @@ import UR from '@gemstep/ursys/client';
 
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as DCSIM from 'modules/datacore/dc-sim-data';
-import * as TOKENIZER from 'script/tools/class-gscript-tokenizer-v2';
+import * as TOKENIZER from 'script/tools/script-tokenizer';
 
 import { SymbolToken, ValidToken, InvalidToken } from './x-symbol-tokens';
 

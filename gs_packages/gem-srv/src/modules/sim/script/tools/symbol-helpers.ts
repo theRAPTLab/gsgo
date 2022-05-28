@@ -20,7 +20,7 @@ import UR from '@gemstep/ursys/client';
 
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as ENGINE from 'modules/datacore/dc-sim-data';
-import * as TOKENIZER from 'script/tools/class-gscript-tokenizer-v2';
+import * as TOKENIZER from 'script/tools/script-tokenizer';
 
 // uses types defined in t-script.d
 
@@ -292,7 +292,7 @@ class SymbolHelper {
         {},
         {
           gsType,
-          unitText: 'tok.toString',
+          unitText: TOKENIZER.TokenToUnitText(token),
           err_code: 'invalid',
           err_info: `${fn} invalid objref '${part}`
         }
@@ -346,7 +346,7 @@ class SymbolHelper {
         {},
         {
           gsType,
-          unitText: 'tok.toString',
+          unitText: TOKENIZER.TokenToUnitText(token),
           err_code: 'vague',
           err_info: `${fn} error in previous token(s)`
         }
@@ -357,7 +357,7 @@ class SymbolHelper {
         {},
         {
           gsType,
-          unitText: 'tok.toString',
+          unitText: TOKENIZER.TokenToUnitText(token),
           err_code: 'invalid',
           err_info: `${fn} unexpected invalid scope`
         }
@@ -377,7 +377,7 @@ class SymbolHelper {
       const symbols = this.cur_scope;
       return new VSDToken(symbols, {
         gsType,
-        unitText: 'tok.toString',
+        unitText: TOKENIZER.TokenToUnitText(token),
         err_code: 'invalid',
         err_info: `${fn} expects identifier, not ${matchType}`
       });
@@ -389,7 +389,7 @@ class SymbolHelper {
         {},
         {
           gsType,
-          unitText: 'tok.toString',
+          unitText: TOKENIZER.TokenToUnitText(token),
           err_code: 'invalid',
           err_info: `${fn} invalid identifier`
         }
@@ -403,7 +403,7 @@ class SymbolHelper {
         {},
         {
           gsType,
-          unitText: 'tok.toString',
+          unitText: TOKENIZER.TokenToUnitText(token),
           err_code: 'invalid',
           err_info: `${fn} scope has no method dict`
         }
@@ -419,7 +419,7 @@ class SymbolHelper {
         },
         {
           gsType,
-          unitText: 'tok.toString',
+          unitText: TOKENIZER.TokenToUnitText(token),
           err_code: 'invalid',
           err_info: `${fn} '${methodName}' is not in method dict`
         }
@@ -447,7 +447,7 @@ class SymbolHelper {
             {},
             {
               gsType: 'method',
-              unitText: 'tok.toString',
+              unitText: TOKENIZER.TokenToUnitText(tokens[i]),
               err_code: 'invalid',
               err_info: `${fn} invalid methodArgs dict`
             }
@@ -474,7 +474,7 @@ class SymbolHelper {
             {},
             {
               gsType: '{?}',
-              unitText: 'tok.toString',
+              unitText: TOKENIZER.TokenToUnitText(tokens[tokenIndex]),
               err_code: 'extra',
               err_info: `${fn} method ignores extra arg`
             }
@@ -498,7 +498,7 @@ class SymbolHelper {
             {},
             {
               gsType,
-              unitText: 'tok.toString',
+              unitText: TOKENIZER.TokenToUnitText(tokens[tokenIndex]),
               err_code: 'empty',
               err_info: `${fn} method arg${ii} requires ${argName}:${gsType}`
             }
@@ -532,7 +532,7 @@ class SymbolHelper {
           {},
           {
             gsType,
-            unitText: 'tok.toString',
+            unitText: TOKENIZER.TokenToUnitText(tok),
             err_code: 'invalid',
             err_info: `${tokType}:${tokVal} not a boolean`
           }
@@ -548,7 +548,7 @@ class SymbolHelper {
           {},
           {
             gsType,
-            unitText: 'tok.toString',
+            unitText: TOKENIZER.TokenToUnitText(tok),
             err_code: 'invalid',
             err_info: `${tokType}:${tokVal} not a number`
           }
