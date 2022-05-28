@@ -143,7 +143,8 @@ function SelectEditor(props) {
         <div>
           <SelectEditorLineSlot selection={selection} />
           <p>
-            <b>arguments for {name}</b> {methodArgs.join(',')}
+            <b>arguments for {name}</b>{' '}
+            {methodArgs ? methodArgs.join(',') : 'n/a'}
             <br />
             <b>helpful</b> {info}
           </p>
@@ -163,7 +164,8 @@ function SelectEditor(props) {
         <div>
           <SelectEditorLineSlot selection={selection} />
           <p>
-            <b>arguments for {name}</b> {methodArgs.join(',')}
+            <b>arguments for {name}</b>{' '}
+            {methodArgs ? methodArgs.join(',') : 'n/a'}
             <br />
             <b>helpful</b> {info}
           </p>
