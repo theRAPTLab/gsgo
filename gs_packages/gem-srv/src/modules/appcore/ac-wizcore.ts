@@ -173,12 +173,18 @@ STORE._interceptState(state => {
       state.sel_validation = null;
     }
   }
+
   // run validation and save result if new selected slot token
   if (sel_slotpos && sel_slotlinescript) {
     if (sel_slotpos > 0) {
+      // HACK to make this a VMPageLine object
       const pageLine = {
+        // key data
         lineScript: sel_slotlinescript,
-        global: []
+        // hacked data
+        vmTokens: [],
+        lineNum: -1,
+        level: -1
       };
       state.sel_slotvalidation = ValidatePageLine(pageLine);
     } else {
