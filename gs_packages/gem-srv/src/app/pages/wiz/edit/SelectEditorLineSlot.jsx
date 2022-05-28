@@ -273,6 +273,8 @@ function SelectEditorLineSlot(props) {
         // {error: {code, info}}.  Might be nice to have the orig text
         label = t.unitText || t.gsType || label;
         type = t.gsType;
+        // can we use the error code for the viewstate?
+        viewState = t.error.code;
         // and force type
       } else {
         // Show token
