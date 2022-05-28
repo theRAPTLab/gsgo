@@ -800,13 +800,13 @@ function IsValidToken(tok: IToken): boolean {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to check string is a known token type */
-function IsValidTokenType(tokType: string): boolean {
+function IsValidTokenKey(tokType: string): boolean {
   return validTokenTypes[tokType] !== undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to return tokenValue if it optionally matches expected type */
 function TokenValue(tok, matchType?: string) {
-  if (matchType && !IsValidTokenType(matchType)) return undefined;
+  if (matchType && !IsValidTokenKey(matchType)) return undefined;
   const [type, tokenValue] = UnpackToken(tok); // note: only unpacks valid tokens
   if (matchType && matchType !== type) return undefined;
   return tokenValue;
@@ -840,7 +840,12 @@ export default ScriptTokenizer;
 export { Tokenize };
 /// converts a tokenized script into a data structure that can be used for
 /// UI or analytical purposes. UnpackToken is the method that's most used.
-export { UnpackScript, UnpackStatement, UnpackToken };
+export {
+  UnpackScript, // unrolls statements containing blocks
+  UnpackStatement, // used by UnpackScript to unroll block tokens
+  //
+  UnpackToken // return [type, value]
+};
 export { DecodeKeywordToken, DecodePragmaToken, TokenValue };
 /// utilities to return whether a particular token is of a particular type
-export { IsNonCodeToken, IsValidToken, IsValidTokenType };
+export { IsNonCodeToken, IsValidToken, IsValidTokenKey };
