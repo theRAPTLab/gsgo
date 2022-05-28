@@ -271,7 +271,7 @@ function SelectEditorLineSlot(props) {
         // if there is not current value, show the syntax label
         // REVIEW VSymError doesn't return the original text, just
         // {error: {code, info}}.  Might be nice to have the orig text
-        label = t.unitText || label;
+        label = t.unitText || t.gsType || label;
         type = t.gsType;
         // and force type
       } else {
