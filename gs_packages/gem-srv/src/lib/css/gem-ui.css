@@ -148,6 +148,7 @@
 }
 .gwiz.styleFlagDisabled:hover {
   background-color: rgba(0, 0, 0, 0.05);
+  cursor: not-allowed;
 }
 .gwiz.styleFlagOverflow {
   color: rgba(255, 0, 0, 0.2);
@@ -174,6 +175,7 @@
 }
 .gtoken:hover {
   background-color: rgba(255, 166, 0, 0.5);
+  cursor: pointer;
 }
 .gline.selected {
   border-bottom: 1px solid rgba(255, 166, 0, 1) !important; /* orange */
