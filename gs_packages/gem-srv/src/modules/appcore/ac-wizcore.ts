@@ -636,6 +636,14 @@ export function SaveSlotLineScript() {
   script_tokens.splice(lineIdx, 1, sel_slotlinescript);
   const script_text = TRANSPILER.ScriptToText(script_tokens);
   SendState({ script_text });
+  // deselect the slot
+  const sel_slotpos = -1;
+  SendState({
+    script_text,
+    sel_slotpos,
+    sel_slotlinescript: [], // clear slot linescript
+    sel_slotvalidation: [] // clear slot validation
+  });
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
