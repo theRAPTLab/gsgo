@@ -13,7 +13,7 @@ import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import { DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 import { SymbolValidator } from './x-symbol-validator';
 
-const { warn, log, group, groupCollapsed, groupEnd } = console;
+const { warn, log, table, group, groupCollapsed, groupEnd } = console;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -124,8 +124,16 @@ function TestValidate() {
     'prop energyLevel',
     'prop energyLevel setTo',
     'prop energyLevel setTo 0',
-    'prop energyLevel setTo 0 a b c'
+    'prop energyLevel setTo 0 a b c',
+    'poop energyLevel into bucket',
+    'prop bucketCount',
+    'prop bucketCount divideBy "fish"',
+    'prop energyLevel setTo "banana"',
+    'prop energyLevel setTo energyLevel',
+    'prop energyLevel divideBy 200',
+    'prop energyLevel setTo bananaEnergy'
   ];
+
   group('TEST VALIDATE LINE SCRIPTS');
   log(`%cusing bundle '${bdl.name}'`, 'font-style:italic;color:maroon');
   type Slot = {
@@ -134,18 +142,46 @@ function TestValidate() {
     unitText: string;
     dataSelectKey: number;
   };
-  tests.forEach(line => {
+  tests.forEach((line, testNum) => {
     const { validationTokens } = TRANSPILER.ValidateLineText(line, bdl);
-    let errorIndex = 0;
-    const slots = validationTokens.map((valTok, index) => {
+    const ut = [];
+    const gs = [];
+    const vs = [];
+    const dsk = [];
+    let errInfo = '';
+
+    validationTokens.forEach((valTok, index) => {
       const dataSelectKey = CHECK.LineNumIndex(index);
-      const { gsType: expectedType, unitText, error } = valTok;
+      const { gsType, unitText, error } = valTok;
       let viewState = 'valid';
-      if (error) viewState = error.code;
-      return { expectedType, viewState, unitText, dataSelectKey };
+      if (error) {
+        viewState = error.code;
+        if (!errInfo) errInfo = ` - error at tok[${index}]\n   ${error.info}`;
+      }
+      ut.push(unitText);
+      gs.push(gsType);
+      vs.push(viewState);
+      dsk.push(dataSelectKey);
     });
-    const results = slots.map(s => `${s.viewState}`);
-    log(`%c${line}`, 'color:blue', `\n${results.join(',')}`);
+    const resultcss = errInfo
+      ? 'color:red;font-weight:bold'
+      : 'color:black;font-weight:bold';
+    const errcss = 'color:maroon;font-weight:normal';
+    const normcss = 'font-weight:normal;color:gray';
+    const prefix = `${testNum}`.padStart(2, '0');
+    groupCollapsed(
+      `%c${prefix} %c${line}%c${errInfo}`,
+      normcss,
+      resultcss,
+      errcss
+    );
+    table({
+      unitText: ut,
+      gsType: gs,
+      viewState: vs,
+      dataKey: dsk
+    });
+    groupEnd();
   });
 
   groupEnd();
