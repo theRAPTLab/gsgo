@@ -41,6 +41,7 @@ function ScriptToText(units: TScriptUnit[]): string {
  *  array of nested tokens in a 'block' token, it converts those recursively
  */
 function TokenToString(tok: IToken, indent: number = 0) {
+  if (tok === undefined) return '';
   const { directive, comment, line } = tok; // meta information
   const { identifier, value, string } = tok; // primitive values
   const { objref, program, block, expr } = tok; // req runtime eval

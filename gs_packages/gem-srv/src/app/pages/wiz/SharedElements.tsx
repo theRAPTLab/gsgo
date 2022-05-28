@@ -12,7 +12,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { UnpackToken, TokenValue } from 'script/tools/class-gscript-tokenizer-v2';
+import { UnpackToken, TokenValue } from 'script/tools/script-tokenizer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -9,7 +9,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
-import { UnpackToken } from 'script/tools/class-gscript-tokenizer-v2';
+import { UnpackToken } from 'script/tools/script-tokenizer';
 import { sError } from '../SharedElements';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
