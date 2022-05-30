@@ -1,18 +1,47 @@
 /* eslint-disable @typescript-eslint/dot-notation */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Convert ScriptUnits to Text
+  Script Token Utilities
+
+  * Convert Text to ScriptTokens
+  * Convert ScriptTokens back to Text
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import GScriptTokenizer from 'script/tools/class-gscript-tokenizer-v2';
 // uses types defined in t-script.d
 
-/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a token, return the text representation of it. If it encounters an
+const gstDBG = new GScriptTokenizer();
+
+/// API ///////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: given a text, return the parsed ScriptUnit[] representation */
+function TextToScript(text: string = ''): TScriptUnit[] {
+  // this will throw an error string of '{err} @row:col'
+  const script = gstDBG.tokenize(text.trim());
+  return script;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: given a TScriptUnit[], return text version */
+function ScriptToText(units: TScriptUnit[]): string {
+  const text = [];
+  let indent = 0;
+  units.forEach((unit: TScriptUnit, idx: number) => {
+    const lines = StatementToText(unit, indent);
+    text.push(lines);
+  });
+  return text.join('\n');
+}
+
+/// SUPPORT API ///////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: given a token, return the text representation of it. If it encounters an
  *  array of nested tokens in a 'block' token, it converts those recursively
  */
 function TokenToString(tok: IToken, indent: number = 0) {
+  if (tok === undefined) return '';
   const { directive, comment, line } = tok; // meta information
   const { identifier, value, string } = tok; // primitive values
   const { objref, program, block, expr } = tok; // req runtime eval
@@ -42,7 +71,7 @@ function TokenToString(tok: IToken, indent: number = 0) {
   throw Error('unknown argument type');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Given a single statement, extract text representation. Since statements can
+/** API: Given a single statement, extract text representation. Since statements can
  *  include blocks, it may return more than one line.
  */
 function StatementToText(statement: TScriptUnit, indent: number = 0): string {
@@ -63,19 +92,30 @@ function StatementToText(statement: TScriptUnit, indent: number = 0): string {
   return '';
 }
 
-/// API ///////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a TScriptUnit[], return text version */
-function ScriptToText(units: TScriptUnit[]): string {
-  const text = [];
-  let indent = 0;
-  units.forEach((unit: TScriptUnit, idx: number) => {
-    const lines = StatementToText(unit, indent);
-    text.push(lines);
-  });
-  return text.join('\n');
-}
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { TokenToString, StatementToText, ScriptToText };
+/// main api
+export {
+  TextToScript, // convert provided multi-line text to script of TScriptUnit[]
+  ScriptToText // convert provided script to multi-line text
+};
+/// support
+export {
+  StatementToText, // convert a line of script TScriptUnit to a line of text
+  TokenToString, // convert a token to its string ver
+  TokenToString as TokenToUnitText // alias
+};
+/// forward gscript-tokenizer utilities
+export {
+  UnpackToken, // return [type, value] of token
+  UnpackScript, // unroll a script of statements
+  UnpackStatement, // unroll a statement containing block tokens into multiple statements
+  //
+  TokenValue, // return the 'value' of the token, optionally test against type
+  DecodeKeywordToken, // if it's a keyword token, return keyword
+  DecodePragmaToken, // if it's a pragma token, return directive
+  //
+  IsNonCodeToken, // return true if it's whitespace or comment
+  IsValidToken, // return true if it's a recognized token object
+  IsValidTokenKey // return true if string it's a recognized token key
+} from 'script/tools/class-gscript-tokenizer-v2';

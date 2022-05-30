@@ -37,7 +37,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////xa///////////////////*/
 
-// import { IToken, TScriptUnit, TArguments } from 'lib/t-script.d';
+// import { IToken, TScriptUnit, TKWArguments } from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -724,7 +724,7 @@ function Tokenize(text: string): IToken[] {
  *  returns [ token_type, token_value ] if it is a valid token,
  *  [undefined, errstring] otherwise
  */
-function UnpackToken(tok: IToken): [type: string, value: any] {
+function UnpackToken(tok: IToken): TUnpackedToken {
   // null tokens return error
   if (typeof tok !== 'object') return [undefined, 'not an object'];
   // count number of valid types in the token
@@ -763,7 +763,7 @@ function IsNonCodeToken(tok: IToken): boolean {
  *  does a similar unpacking except it doesn't compile blocks, instead
  *  recursively unpacking them. Skips line and comment tokens.
  */
-function UnpackStatement(unit: TScriptUnit): TArguments {
+function UnpackStatement(unit: TScriptUnit): TKWArguments {
   const ustatement = [];
   unit.forEach(tok => {
     const [type, value] = UnpackToken(tok);
@@ -782,7 +782,7 @@ function UnpackStatement(unit: TScriptUnit): TArguments {
  *  and blank lines.
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function UnpackScript(script: TScriptUnit[]): TArguments[] {
+function UnpackScript(script: TScriptUnit[]): TKWArguments[] {
   const uscript = [];
   script.forEach(stm => {
     const ustm = UnpackStatement(stm);
@@ -800,13 +800,13 @@ function IsValidToken(tok: IToken): boolean {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to check string is a known token type */
-function IsValidTokenType(tokType: string): boolean {
+function IsValidTokenKey(tokType: string): boolean {
   return validTokenTypes[tokType] !== undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to return tokenValue if it optionally matches expected type */
 function TokenValue(tok, matchType?: string) {
-  if (matchType && !IsValidTokenType(matchType)) return undefined;
+  if (matchType && !IsValidTokenKey(matchType)) return undefined;
   const [type, tokenValue] = UnpackToken(tok); // note: only unpacks valid tokens
   if (matchType && matchType !== type) return undefined;
   return tokenValue;
@@ -823,9 +823,12 @@ function DecodeKeywordToken(tok: any): string {
   const fn = 'DecodeKeywordToken:';
   const [type, value] = UnpackToken(tok);
   if (type === 'directive') return '_pragma';
-  if (type === 'line') return '';
-  if (type === 'comment') return '';
-  if (type !== 'identifier') throw Error(`${fn} tok wrong type`);
+  if (type === 'comment') return '_comment';
+  if (type === 'line') return '_line';
+  if (type !== 'identifier') {
+    const err = `${fn} tok '${type}' is not decodeable as a keyword`;
+    throw Error(err);
+  }
   return value;
 }
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
@@ -837,7 +840,12 @@ export default ScriptTokenizer;
 export { Tokenize };
 /// converts a tokenized script into a data structure that can be used for
 /// UI or analytical purposes. UnpackToken is the method that's most used.
-export { UnpackScript, UnpackStatement, UnpackToken };
+export {
+  UnpackScript, // unrolls statements containing blocks
+  UnpackStatement, // used by UnpackScript to unroll block tokens
+  //
+  UnpackToken // return [type, value]
+};
 export { DecodeKeywordToken, DecodePragmaToken, TokenValue };
 /// utilities to return whether a particular token is of a particular type
-export { IsNonCodeToken, IsValidToken, IsValidTokenType };
+export { IsNonCodeToken, IsValidToken, IsValidTokenKey };

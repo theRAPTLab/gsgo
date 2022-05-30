@@ -13,7 +13,7 @@ import {
   GVarString
 } from 'script/vars/_all_vars';
 import GAgent from 'lib/class-gagent';
-import { TextToScript } from './text-to-script';
+import { TextToScript } from './script-tokenizer';
 import * as COMPILER from './script-compiler';
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
