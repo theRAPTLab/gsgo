@@ -49,7 +49,7 @@
 import UR from '@gemstep/ursys/client';
 import React from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
-import * as TRANSPILER from 'script/transpiler-v2';
+import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 
 import {
   VIEWSTATE,
@@ -111,7 +111,7 @@ function SelectEditorSlots(props) {
     let label;
     let type;
     let viewState;
-    const dataSelectKey = i + TRANSPILER.SCRIPT_PAGE_INDEX_OFFSET;
+    const dataSelectKey = CHECK.OffsetLineNum(i);
     const selected = sel_slotpos === dataSelectKey;
 
     const t = validationTokens[i];

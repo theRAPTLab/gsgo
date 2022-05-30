@@ -18,6 +18,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as TRANSPILER from 'script/transpiler-v2';
+import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import { GLabelToken, GSymbolToken, StackUnit } from '../SharedElements';
 
@@ -47,7 +48,7 @@ export function EditSymbol(props) {
     // BL: Use slot position instead of lineposition (sel_linepos)
     //     so that we display the currently selected slot type?
     if (sel_slotpos < 0) return 'Click on a word above to edit it.'; // clicked ScriptView, not SelectEditorLineSlot
-    const vIndex = sel_slotpos - TRANSPILER.SCRIPT_PAGE_INDEX_OFFSET;
+    const vIndex = CHECK.UnOffsetLineNum(sel_slotpos);
 
     const { validationTokens } = slots_validation;
 

@@ -169,8 +169,7 @@ STORE._interceptState(state => {
   if (sel_linenum) {
     if (sel_linenum > 0) {
       const { script_page } = State();
-      const { lineScript } =
-        script_page[sel_linenum - TRANSPILER.SCRIPT_PAGE_INDEX_OFFSET];
+      const { lineScript } = script_page[CHECK.UnOffsetLineNum(sel_linenum)];
       // FIXME: IF the slot is currently being edited, don't allow selection?
       // clone the current linescript
       state.slots_linescript = lineScript.map(t => ({ ...t }));
@@ -255,7 +254,7 @@ export function UpdateSlotValue(val) {
   const { slots_linescript, sel_slotpos } = State();
   // if the scriptToken already exists, update it byRef
   const slotScriptToken =
-    slots_linescript[sel_slotpos - TRANSPILER.SCRIPT_PAGE_INDEX_OFFSET] || // existing token
+    slots_linescript[CHECK.UnOffsetLineNum(sel_slotpos)] || // existing token
     {}; // or new object if this is creating a new slot
   slotScriptToken.value = val; // We know the scriptToken is a value
   if (sel_slotpos > slots_linescript.length) {
@@ -336,7 +335,7 @@ function DispatchClick(event) {
 
     // if the scriptToken already exists, update it byRef
     const slotScriptToken =
-      slots_linescript[sel_slotpos - TRANSPILER.SCRIPT_PAGE_INDEX_OFFSET] || // existing token
+      slots_linescript[CHECK.UnOffsetLineNum(sel_slotpos)] || // existing token
       {}; // or new object if this is creating a new slot
     // Assume it's an identifier
     slotScriptToken.identifier = symbolValue;
@@ -475,7 +474,7 @@ function GetTokenById(key) {
 /** Return the script_page line, taking the 1-index into account */
 function GetVMPageLine(line: number) {
   const { script_page } = STORE.State();
-  return script_page[CHECK.OffsetLineNum(line)];
+  return script_page[CHECK.UnOffsetLineNum(line)];
 }
 
 /// DATA CONVERSION HELPERS ///////////////////////////////////////////////////

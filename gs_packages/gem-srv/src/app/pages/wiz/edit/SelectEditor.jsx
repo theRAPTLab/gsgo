@@ -22,6 +22,7 @@
 
 import React from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 
 import { EditSymbol } from './EditSymbol';
 import { SelectEditorSlots } from './SelectEditorSlots';
@@ -55,7 +56,7 @@ function SelectEditor(props) {
 
   const { validationTokens: vtoks, validationLog } = validation;
 
-  const vtok = vtoks[pos - 1];
+  const vtok = vtoks[CHECK.UnOffsetLineNum(pos)];
   const { gsType, methodSig, unitText } = vtok;
   const { name, args: methodArgs, info } = methodSig || {}; // gracefully fail if not defined
 
