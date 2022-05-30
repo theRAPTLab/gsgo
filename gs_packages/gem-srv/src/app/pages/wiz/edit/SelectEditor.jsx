@@ -52,12 +52,12 @@ function SelectEditor(props) {
 
   const { sel_slotpos: pos, slots_validation: validation } = selection;
 
-  if (!validation) return 'Nothing selected';
+  if (pos < 0) return 'Nothing selected';
 
   const { validationTokens: vtoks, validationLog } = validation;
 
   const vtok = vtoks[CHECK.UnOffsetLineNum(pos)];
-  const { gsType, methodSig, unitText } = vtok;
+  const { gsType, methodSig, unitText } = vtok || {}; // gracefully fail if not defined
   const { name, args: methodArgs, info } = methodSig || {}; // gracefully fail if not defined
 
   const processNumberInput = e => {
