@@ -15,7 +15,8 @@ declare global {
     vmTokens: VMToken[]; // the VMTokens in this VMLine (see below)
     lineNum: number; // the line number
     level: number; // the nesting level of this line
-    lineScript?: TScriptUnit; // parent statement
+    block?: VMLineScriptType; // set if this line starts or ends a block
+    lineScript?: TScriptUnit; // editable line script
     globalRefs?: { bundles?: TNameSet }; // set of globals to look-up (currently just blueprints)
     domRef?: { current: any }; // React DOM reference in current
   };
@@ -28,10 +29,25 @@ declare global {
     scriptToken: IToken; // the actual token object e.g. { string:'foo' }
     lineNum: number; // the line that this token is appearing in
     linePos: number; // the position of this token in the line
-    tokenKey: string; // hash key '{lineNum},{linePos}'
+    tokenKey: VMTokenKey; // hash key '{lineNum},{linePos}'
     symbols?: TSymbolData; // added by keyword validator
     error?: TSymbolError; // if not present, no error
   };
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** a flattened representation of a script:TScriptUnit[], which is a "page
+   *  of numbered lines */
+  type VMPage = VMPageLine[];
+  /** string key designating a particular token in the VMPage */
+  type VMTokenKey = `${number},${number}`;
+  type VMTokenMap = Map<VMTokenKey, IToken>;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** used by VMLineScriptSource in recreating. flattened linescript block data  */
+  type VMLineScriptLine = {
+    lineScript: TScriptUnit; // master source of lineScript in VMPageLine
+    block?: VMLineScriptType;
+  };
+  type VMLineScripts = VMLineScriptLine[];
+  type VMLineScriptType = 'start' | 'end';
 }
 
 /// EXPORT AS MODULE FOR GLOBALS //////////////////////////////////////////////

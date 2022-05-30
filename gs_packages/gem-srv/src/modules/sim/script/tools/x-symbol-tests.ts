@@ -89,7 +89,7 @@ function TestValidate() {
   // validate script line by line
   //
   script_page.forEach((line, num) => {
-    num = CHECK.LineNumIndex(num);
+    num = CHECK.OffsetLineNum(num);
     const { lineScript, globalRefs } = line;
     const vtoks = TRANSPILER.ValidateStatement(lineScript, {
       bundle: bdl,
@@ -151,7 +151,7 @@ function TestValidate() {
     let errInfo = '';
 
     validationTokens.forEach((valTok, index) => {
-      const dataSelectKey = CHECK.LineNumIndex(index);
+      const dataSelectKey = CHECK.OffsetLineNum(index);
       const { gsType, unitText, error } = valTok;
       let viewState = 'valid';
       if (error) {

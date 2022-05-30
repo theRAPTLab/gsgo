@@ -23,10 +23,11 @@
 import UR from '@gemstep/ursys/client';
 import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
+import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as TEST_SYMBOLS from 'script/tools/x-symbol-tests';
 import * as DCSIM from 'modules/datacore/dc-sim-data';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
-import * as TOKENIZER from 'script/tools/class-gscript-tokenizer-v2';
+import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
 import {
   DecodeSymbolViewData,
   UnpackViewData,
@@ -272,6 +273,10 @@ export function UpdateSlotValue(val) {
 function DispatchClick(event) {
   const fn = 'DC:';
   const newState: TStateObject = {};
+
+  /*** hacky test ***/
+  WIZUTIL.ForceImportHack();
+
   /** (1) GToken was clicked? ************************************************
    *      a. set `sel_linenum` and `sel_linepos`
    *      b. set the slot as a secondary action
@@ -353,13 +358,14 @@ function DispatchClick(event) {
         scriptToken
       )}`
     );
+
     /** end hack test **/
     return;
   }
   /** (3) ScriptContextor clicks ********************************************/
   const sc = document.getElementById('ScriptContextor');
   if (m_ChildOf(event.target, sc)) {
-    console.log('click inside ScriptContextor', event.target);
+    // console.log('click inside ScriptContextor', event.target);
     return;
   }
   /** (4) DESELECT IF NON-TOKEN *********************************************/
@@ -469,7 +475,7 @@ function GetTokenById(key) {
 /** Return the script_page line, taking the 1-index into account */
 function GetVMPageLine(line: number) {
   const { script_page } = STORE.State();
-  return script_page[line - TRANSPILER.SCRIPT_PAGE_INDEX_OFFSET];
+  return script_page[CHECK.OffsetLineNum(line)];
 }
 
 /// DATA CONVERSION HELPERS ///////////////////////////////////////////////////
@@ -582,21 +588,6 @@ function WizardTestLine(text: string) {
       );
     } else console.log(error);
   } // try-catch
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: return the blueprint of the given project,
- *  { id, label, scriptText, ... }
- *  object or undefined if no exist
- */
-function LoadProjectBlueprint(prjId, bpName) {
-  const { blueprints } = PROJ_v2.GetProject(prjId);
-  if (!blueprints) return `no projectId '${prjId}'`;
-  const found = blueprints.find(bp => bp.name === bpName);
-  if (!found) return `no blueprint '${bpName}' found in '${bpName}'`;
-  const { scriptText } = found;
-  const scriptToks = TRANSPILER.TextToScript(scriptText);
-  let cur_bdl = TRANSPILER.BundleBlueprint(scriptToks);
-  SendState({ script_text: scriptText, cur_bdl }, () => {});
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: saves the currently edited slot linescript into the current script_tokens

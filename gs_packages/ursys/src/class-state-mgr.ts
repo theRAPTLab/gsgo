@@ -32,7 +32,7 @@ const PROMPT = require('./util/prompts');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = PROMPT.makeStyleFormatter('USTATE', 'TagPink');
+const PR = PROMPT.makeStyleFormatter('StateMgr', 'TagPink');
 ///
 const VM_STATE = {}; // global viewstate
 const GROUPS = new Map();
@@ -51,15 +51,24 @@ class StateMgr {
   /// CONSTRUCTOR /////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   constructor(groupName) {
-    if (GROUPS.has(groupName)) throw Error('duplicate clonedEvent name');
-    this.name = groupName.trim().toUpperCase();
+    groupName = groupName.trim().toUpperCase();
+    // return an existing instance if it exists
+    if (GROUPS.has(groupName)) {
+      console.warn(
+        ...PR(
+          `'${groupName}' construction duplicate, returning existing instance`
+        )
+      );
+      return GROUPS.get(groupName);
+    }
+    // otherwise create a new instance and save it
+    this.name = groupName;
     this.init = false;
     this.subs = new Set();
     this.queue = [];
     this.taps = [];
     this.effects = [];
     VM_STATE[this.name] = {};
-    GROUPS.set(this.name, this);
     // bind 'this' for use with async code
     // if you don't do this, events will probably not have instance context
     this.State = this.State.bind(this);
@@ -77,6 +86,8 @@ class StateMgr {
     this._enqueue = this._enqueue.bind(this);
     this._dequeue = this._dequeue.bind(this);
     this._doEffect = this._doEffect.bind(this);
+    // save the instance
+    GROUPS.set(this.name, this);
   }
 
   /// DEBUG UTILITIES /////////////////////////////////////////////////////////
@@ -323,7 +334,21 @@ class StateMgr {
 
   /// STATIC METHODS //////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  static RO_GetStateGroupByName(groupName) {
+  /** Return a state manager instance if it exists, undefined if not. Throws
+   *  errors if there are issues with the name */
+  static GetStateManager(groupName: string): StateMgr {
+    if (typeof groupName !== 'string')
+      throw Error(`${groupName} is not a string`);
+    const bucket = groupName.trim().toUpperCase();
+    if (bucket !== groupName)
+      throw Error(`groupNames should be all uppercase, not ${bucket}`);
+    return GROUPS[bucket];
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** return a locked copy of the state of a particular named state group.
+   *  Unlike GetStateManager, this returns just the data object.
+   */
+  static GetStateGroup(groupName: string) {
     if (typeof groupName !== 'string')
       throw Error(`${groupName} is not a string`);
     const bucket = groupName.trim().toUpperCase();
@@ -341,6 +366,14 @@ class StateMgr {
       });
     }
     return readOnlyState;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** return a Stage Manager instance. This just hides the new operator that
+   *  purposefully always returns an instance of an existing group if it
+   *  already exists
+   */
+  static GetInstance(groupName: string) {
+    return new StateMgr(groupName);
   }
 }
 
