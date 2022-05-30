@@ -593,19 +593,17 @@ function WizardTestLine(text: string) {
  *  Called by SelectEditorLineSlot
  */
 export function SaveSlotLineScript() {
-  const { slots_linescript, script_tokens, sel_linenum } = State();
-  const lineIdx = sel_linenum - TRANSPILER.SCRIPT_PAGE_INDEX_OFFSET; // 1-based
-  script_tokens.splice(lineIdx, 1, sel_slotlinescript);
-  const script_text = TRANSPILER.ScriptToText(script_tokens);
-  SendState({ script_text });
-  // deselect the slot
-  const sel_slotpos = -1;
-  SendState({
+  const {
     script_text,
-    sel_slotpos,
-    slots_linescript: [], // clear slot linescript
-    slots_validation: null // clear slot validation
-  });
+    slots_linescript,
+    script_page,
+    script_tokens,
+    sel_linenum
+  } = STORE.State();
+  const lineIdx = CHECK.UnOffsetLineNum(sel_linenum); // 1-based
+  // Update script_tokens, since they are the main store?
+  script_tokens.splice(lineIdx, 1, slots_linescript);
+  STORE.SendState({ script_tokens });
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

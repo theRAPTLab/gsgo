@@ -142,6 +142,13 @@ function SelectEditorSlots(props) {
     );
   }
 
+  function SaveSlot(e) {
+    WIZCORE.SaveSlotLineScript(e);
+  }
+  function CancelSlotEdit(e) {
+    WIZCORE.ScriptChanged(e);
+  }
+
   return (
     <div>
       <div style={{ backgroundColor: '#eee', padding: '10px' }}>{tokenList}</div>
@@ -153,11 +160,11 @@ function SelectEditorSlots(props) {
           gridTemplateColumns: '45% 10% 45%'
         }}
       >
-        <button type="button" onClick={WIZCORE.ScriptChanged}>
-          Cancel (not implemented)
+        <button type="button" onClick={CancelSlotEdit}>
+          Cancel
         </button>
         &nbsp;
-        <button type="button" onClick={WIZCORE.SaveSlotLineScript}>
+        <button type="button" onClick={SaveSlot}>
           Save
         </button>
       </div>
