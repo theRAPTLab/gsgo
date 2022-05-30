@@ -199,21 +199,49 @@ STORE._interceptState(state => {
 
 /// UI-DRIVEN STATE UPDATES ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Recreates text, script_page when the underlying script tokens
- *  have changed. Use after writing a change to individual tokens
- *  by the UI to force an update
- */
-function ScriptChanged() {
-  const { script_tokens } = State(); // we changed this elsewhere
-  try {
-    const script_text = TRANSPILER.ScriptToText(script_tokens);
-    const [script_page, key_to_token] = TRANSPILER.ScriptToLines(script_tokens);
-    STORE.SendState({ script_tokens, script_text, script_page, key_to_token });
-  } catch (e) {
-    // ignore TextTpScript compiler errors during live typing
-    console.error(`wizcore_interceptState tokens: ${e.toString()}`);
-  }
-}
+/// DEPRECATED.  UpdateSlotValue handels validation on each keystroke.
+///              If someone else needs to use this, the update routines need to be rewitten
+///
+// /** API: Recreates text, script_page when the underlying script tokens
+//  *  have changed. Use after writing a change to individual tokens
+//  *  by the UI to force an update
+//  */
+// function ScriptChanged() {
+//   const { script_tokens, sel_slotpos, slots_linescript } = State(); // we changed this elsewhere
+//   try {
+//     const script_text = TRANSPILER.ScriptToText(script_tokens);
+
+//     // Update Slot Editor
+//     // Replace the token in the current line script
+//     const slotIdx = CHECK.UnOffsetLineNum(sel_slotpos);
+
+//     let newScriptToken = script_tokens[slotIdx];
+//     if (slotIdx < slots_linescript.length) {
+//       // replace existing slot data?
+//       newScriptToken = slots_linescript[slotIdx];
+//       newScriptToken.identifier = symbolValue;
+//     } else {
+//       // add new slot data
+//       newScriptToken.identifier = symbolValue;
+//     }
+//     slots_linescript.splice(slotIdx, 1, newScriptToken);
+//     newState.slots_linescript = slots_linescript;
+//     console.warn('newline!', slots_linescript, 'sel_slotpos', sel_slotpos);
+
+//     // advance the slot selector to the next slot
+//     newState.sel_slotpos = sel_slotpos + 1;
+
+//     SendState(newState);
+
+//     // OLD CODE
+//     // REVIEW: This is handling changs to the LEFT side, not to slots?
+//     // const [script_page, key_to_token] = TRANSPILER.ScriptToLines(script_tokens);
+//     // STORE.SendState({ script_tokens, script_text, script_page, key_to_token });
+//   } catch (e) {
+//     // ignore TextToScript compiler errors during live typing
+//     console.log(`wizcore_interceptState tokens: ${e.toString()}`);
+//   }
+// }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Recreates script_page, etc structure when the script text has been
  *  modifie by the UI. Since this is called while text is being entered
@@ -655,7 +683,8 @@ export { State, SendState, SubscribeState, UnsubscribeState, QueueEffect };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
   DispatchClick, // handles clicks on Wizard document
-  ScriptChanged, // handles change of script_page lineScript tokens
+  // DEPRECATED
+  // ScriptChanged, // handles change of script_page lineScript tokens
   WizardTextChanged, // handle incoming change of text
   WizardTestLine, // handle test line for WizardTextLine tester
   DispatchEditorClick // handle clicks on editing box

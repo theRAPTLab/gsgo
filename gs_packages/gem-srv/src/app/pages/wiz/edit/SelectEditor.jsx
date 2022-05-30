@@ -71,14 +71,12 @@ function SelectEditor(props) {
   const handleNumberKeypress = e => {
     if (e.key === 'Enter') {
       processNumberInput(e);
-      WIZCORE.ScriptChanged();
       e.target.select();
     }
   };
   const handleStringKeypress = e => {
     if (e.key === 'Enter') {
       processStringInput(e);
-      WIZCORE.ScriptChanged();
       e.target.select();
     }
   };
