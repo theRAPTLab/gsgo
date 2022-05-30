@@ -620,7 +620,7 @@ function WizardTestLine(text: string) {
 /** API: saves the currently edited slot linescript into the current script_tokens
  *  Called by SelectEditorLineSlot
  */
-export function SaveSlotLineScript() {
+export function SaveSlotLineScript(e) {
   const {
     script_text,
     slots_linescript,
@@ -633,9 +633,16 @@ export function SaveSlotLineScript() {
   script_tokens.splice(lineIdx, 1, slots_linescript);
   STORE.SendState({ script_tokens });
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+export function CancelSlotEdit(e) {
+  // deselect slot
+  STORE.SendState({
+    sel_slotpos: -1,
+    slots_linescript: [],
+    slots_validation: null
+  });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function PrintDBGConsole(str: string) {
   const buf = GetTextBuffer(STORE.State().dbg_console);
   buf.printLine(str);

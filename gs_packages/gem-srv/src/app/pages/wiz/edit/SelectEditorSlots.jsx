@@ -146,7 +146,7 @@ function SelectEditorSlots(props) {
     WIZCORE.SaveSlotLineScript(e);
   }
   function CancelSlotEdit(e) {
-    WIZCORE.ScriptChanged(e);
+    WIZCORE.CancelSlotEdit(e);
   }
 
   return (
