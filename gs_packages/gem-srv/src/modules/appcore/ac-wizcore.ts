@@ -642,7 +642,7 @@ export function PrintDBGConsole(str: string) {
   console.log(str);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function UpdateDBGConsole(validationLog: string[]) {
+export function UpdateDBGConsole(validationLog: string[] = []) {
   const buf = GetTextBuffer(STORE.State().dbg_console);
   buf.set(validationLog);
 }
