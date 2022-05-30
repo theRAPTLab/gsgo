@@ -71,9 +71,13 @@ STORE._initializeState({
   sel_linepos: -1, // select index into line. If < 0 it is not set
   error: '', // used for displaying error messages
 
+  // slot data
+  // -- current selected slot
   sel_slotpos: -1, // selected slot currently being edited.  If < 0 it is not set
-  sel_slotlinescript: [], // lineScript being edited in slot
-  sel_slotvalidation: [], // validation tokens for the current slot line being edited
+  sel_slotvalidationtoken: null, // currently selected validationToken being edited in the slot
+  // -- the whole linet of slots
+  slots_linescript: [], // lineScript being edited in slot editor -- the whole line
+  slots_validation: null, // validation object for the current slot line being edited { validationTokens, validationLog }
 
   // project context
   proj_list: [], // project list
@@ -315,6 +319,9 @@ function DispatchClick(event) {
       scriptToken, // the actual script token (not vmToken)
       sel_linenum, // line number in VMPage
       sel_linepos, // line position in VMPage[lineNum]
+      sel_slotpos,
+      slots_linescript,
+      slots_validation,
       context, // the memory context for this token
       validation,
       vmPageLine // all the VMTokens in this line
@@ -467,7 +474,8 @@ function SelectedTokenInfo() {
     script_page,
     sel_validation: validation,
     sel_slotpos,
-    sel_slotvalidation
+    slots_linescript,
+    slots_validation,
   } = State();
   if (sel_linenum > 0 && sel_linepos > 0) {
     const vmPageLine = GetVMPageLine(sel_linenum);
@@ -479,7 +487,8 @@ function SelectedTokenInfo() {
       validation, // validation tokens in this line
       vmPageLine, // all the VMTokens in this line
       sel_slotpos, // slot position
-      sel_slotvalidation // validation tokens for line being edited
+      slots_linescript, // current scriptTokens for line being editee
+      slots_validation, // validation tokens for line being edited
     };
     return selInfo;
   }
@@ -631,7 +640,7 @@ function LoadProjectBlueprint(prjId, bpName) {
  *  Called by SelectEditorLineSlot
  */
 export function SaveSlotLineScript() {
-  const { sel_slotlinescript, script_tokens, sel_linenum } = State();
+  const { slots_linescript, script_tokens, sel_linenum } = State();
   const lineIdx = sel_linenum - TRANSPILER.SCRIPT_PAGE_INDEX_OFFSET; // 1-based
   script_tokens.splice(lineIdx, 1, sel_slotlinescript);
   const script_text = TRANSPILER.ScriptToText(script_tokens);
@@ -641,8 +650,8 @@ export function SaveSlotLineScript() {
   SendState({
     script_text,
     sel_slotpos,
-    sel_slotlinescript: [], // clear slot linescript
-    sel_slotvalidation: [] // clear slot validation
+    slots_linescript: [], // clear slot linescript
+    slots_validation: null // clear slot validation
   });
 }
 

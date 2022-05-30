@@ -60,7 +60,8 @@ function SelectEditor(props) {
     // sel_linepos: pos,
     // NEW use selected slot
     sel_slotpos: pos,
-    sel_slotvalidation: validation,
+    slots_validation: validation,
+    sel_slotvalidationtoken,
     scriptToken
   } = selection;
   const { validationTokens: vtoks, validationLog } = validation;

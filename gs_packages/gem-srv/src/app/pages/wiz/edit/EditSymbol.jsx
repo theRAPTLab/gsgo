@@ -36,7 +36,7 @@ export function EditSymbol(props) {
 
   const allDicts = [];
 
-  const { sel_slotvalidation } = WIZCORE.State();
+  const { slots_validation } = WIZCORE.State();
   // test clause
   if (sel_linenum > 0 && sel_linepos > 0) {
     // const vdata = WIZCORE.ValidateSelectedLine();
@@ -49,7 +49,7 @@ export function EditSymbol(props) {
     if (sel_slotpos < 0) return 'Click on a word above to edit it.'; // clicked ScriptView, not SelectEditorLineSlot
     const vIndex = sel_slotpos - TRANSPILER.SCRIPT_PAGE_INDEX_OFFSET;
 
-    const { validationTokens } = sel_slotvalidation;
+    const { validationTokens } = slots_validation;
 
     // no more validation tokens
     if (vIndex >= validationTokens.length) return 'nothing to render';
