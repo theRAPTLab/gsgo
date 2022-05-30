@@ -24,7 +24,7 @@ import React from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 
 import { EditSymbol } from './EditSymbol';
-import { SelectEditorLineSlot } from './SelectEditorLineSlot';
+import { SelectEditorSlots } from './SelectEditorSlots';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -49,78 +49,23 @@ function SelectEditor(props) {
   const { selection } = props;
   if (selection === undefined) return null;
 
-  // TODO: this manipulation should all be moved to a WIZCORE method
-  // as much as possible
+  const { sel_slotpos: pos, slots_validation: validation } = selection;
 
-  // ORIG use selected line validation
-  // const { sel_linepos: pos, validation, scriptToken } = selection;
-  // NEW use selected slot validation
-  const {
-    // ORIG selected line position
-    // sel_linepos: pos,
-    // NEW use selected slot
-    sel_slotpos: pos,
-    slots_validation: validation,
-    sel_slotvalidationtoken,
-    scriptToken
-  } = selection;
+  if (!validation) return 'Nothing selected';
+
   const { validationTokens: vtoks, validationLog } = validation;
 
-  // HACK
-  // syntaxTokens for 'prop' keyword
-  const syntaxTokens = [
-    {
-      // prop
-      gsType: 'identifier',
-      unitText: 'keyword' // placeholder help text
-    },
-    {
-      // objref
-      gsType: 'objref',
-      unitText: 'propName'
-    },
-    {
-      // method
-      gsType: 'method',
-      unitText: 'method'
-    },
-    {
-      // value
-      gsType: 'number', // or string
-      unitText: 'number'
-    }
-  ];
+  const vtok = vtoks[pos - 1];
+  const { gsType, methodSig, unitText } = vtok;
+  const { name, args: methodArgs, info } = methodSig || {}; // gracefully fail if not defined
 
-  // REVIEW
-  let gsType;
-  let unitText;
-  let methodSig;
-  let methodArgs = [];
-  let name;
-  let info;
-  // if we run out of validation tokens, we should switch to using
-  // keyword syntax tokens, not yet defined.  For now, just use a blank.
-  if (pos > vtoks.length) {
-    // override with syntaxTokens?
-    const syntaxToken = syntaxTokens[pos - 1];
-    ({ gsType, unitText } = syntaxToken);
-  } else {
-    // const vtok = vtoks[pos - 1] || {}; // if out of tokens use blank
-    // const { arg, gsType, methodSig, unitText } = vtok; // we want to SWITCH ON THIS
-    // const { name, args: methodArgs, info } = methodSig || {}; // HACK FOR TESTING and not breaking other tokens
-    const vtok = vtoks[pos - 1];
-    ({ gsType, methodSig, unitText } = vtok);
-    ({ name, args: methodArgs, info } = methodSig || {});
-  }
-
-  // end TODO
   const processNumberInput = e => {
     e.preventDefault();
-    scriptToken.value = Number(e.target.value);
+    WIZCORE.UpdateSlotValue(Number(e.target.value));
   };
   const processStringInput = e => {
     e.preventDefault();
-    scriptToken.string = String(e.target.value);
+    WIZCORE.UpdateSlotValue(String(e.target.value));
   };
   const handleNumberKeypress = e => {
     if (e.key === 'Enter') {
@@ -142,7 +87,7 @@ function SelectEditor(props) {
     case 'number':
       editor = (
         <div>
-          <SelectEditorLineSlot selection={selection} />
+          <SelectEditorSlots selection={selection} />
           <p>
             <b>arguments for {name}</b>{' '}
             {methodArgs ? methodArgs.join(',') : 'n/a'}
@@ -163,7 +108,7 @@ function SelectEditor(props) {
     case 'string':
       editor = (
         <div>
-          <SelectEditorLineSlot selection={selection} />
+          <SelectEditorSlots selection={selection} />
           <p>
             <b>arguments for {name}</b>{' '}
             {methodArgs ? methodArgs.join(',') : 'n/a'}
@@ -184,7 +129,7 @@ function SelectEditor(props) {
     default:
       editor = (
         <div>
-          <SelectEditorLineSlot selection={selection} />
+          <SelectEditorSlots selection={selection} />
           <EditSymbol selection={selection} />
         </div>
       );
