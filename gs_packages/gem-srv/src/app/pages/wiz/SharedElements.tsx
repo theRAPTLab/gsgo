@@ -27,13 +27,6 @@ const SPECIAL_IDENTS = [
   'UPDATE',
   'CONDITION'
 ];
-export const VIEWSTATE = {
-  VALID: 'valid',
-  EMPTY: 'empty',
-  INVALID: 'invalid',
-  UNEXPECTED: 'unexpected',
-  VAGUE: 'vague'
-};
 const SPECIAL_KEYWORDS = ['useFeature', 'addFeature', 'addProp'];
 const CONDITION_KEYWORDS = ['every', 'when'];
 const INFO_TYPES = {
@@ -333,12 +326,13 @@ export function GSlotToken(props) {
   if (CONDITION_KEYWORDS.includes(label)) classes += ' styleCond';
   // set expected data type color, but overriden by viewState
   classes += ` ${type}Type`;
-  // slot-specific viewState overrides
-  if (viewState === VIEWSTATE.VALID) classes += ''; // no style change
-  if (viewState === VIEWSTATE.INVALID) classes += ' styleFlagInvalid';
-  if (viewState === VIEWSTATE.EMPTY) classes += ' styleFlagEmpty';
-  if (viewState === VIEWSTATE.VAGUE) classes += ' styleFlagDisabled';
-  if (viewState === VIEWSTATE.UNEXPECTED)
+  // slot-specific viewState overrides TValidationErrorCodes
+  if (viewState === 'valid') classes += ''; // no style change
+  if (viewState === 'invalid') classes += ' styleFlagInvalid';
+  if (viewState === 'extra') classes += ' styleFlagInvalid';
+  if (viewState === 'empty') classes += ' styleFlagEmpty';
+  if (viewState === 'vague') classes += ' styleFlagDisabled';
+  if (viewState === 'unexpected')
     classes += ' styleFlagInvalid styleFlagOverflow';
   return (
     <div className={classes} data-slotkey={dataSelectKey}>

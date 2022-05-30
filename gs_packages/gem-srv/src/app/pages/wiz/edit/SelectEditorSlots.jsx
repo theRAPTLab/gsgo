@@ -52,7 +52,6 @@ import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 
 import {
-  VIEWSTATE,
   GridStack,
   FlexStack,
   StackUnit,
