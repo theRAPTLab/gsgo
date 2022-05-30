@@ -23,9 +23,11 @@
 import UR from '@gemstep/ursys/client';
 import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
+import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as TEST_SYMBOLS from 'script/tools/x-symbol-tests';
 import * as DCSIM from 'modules/datacore/dc-sim-data';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
+import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
 import {
   DecodeSymbolViewData,
   UnpackViewData,
@@ -227,6 +229,10 @@ function UIToggleRunEditMode() {
 function DispatchClick(event) {
   const fn = 'DC:';
   const newState: TStateObject = {};
+
+  /*** hacky test ***/
+  WIZUTIL.ForceImportHack();
+
   /** (1) GToken was clicked? ************************************************/
   const tokenKey = event.target.getAttribute('data-key');
   if (tokenKey !== null) {
@@ -288,6 +294,7 @@ function DispatchClick(event) {
         scriptToken
       )}`
     );
+
     /** end hack test **/
     return;
   }
@@ -400,7 +407,7 @@ function GetTokenById(key) {
 /** Return the script_page line, taking the 1-index into account */
 function GetVMPageLine(line: number) {
   const { script_page } = STORE.State();
-  return script_page[line - TRANSPILER.SCRIPT_PAGE_INDEX_OFFSET];
+  return script_page[CHECK.OffsetLineNum(line)];
 }
 
 /// DATA CONVERSION HELPERS ///////////////////////////////////////////////////

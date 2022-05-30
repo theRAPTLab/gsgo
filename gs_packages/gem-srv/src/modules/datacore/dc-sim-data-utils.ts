@@ -53,7 +53,7 @@ const GEMSTEP_TYPES: TGSType[] = [
 /// LINE AND POSITION NUMBERING UTILITIES /////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** convert a zero-based index to 1-indexing if SCRIPT_PAGE_INDEX_OFFSET is set */
-function LineNumIndex(num: number): number {
+function OffsetLineNum(num: number): number {
   return num + SCRIPT_PAGE_INDEX_OFFSET;
 }
 
@@ -170,7 +170,7 @@ function IsValidBundle(bundle: ISMCBundle) {
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// data check utitlities
-export { LineNumIndex };
+export { OffsetLineNum };
 
 /// token check utilities
 export {

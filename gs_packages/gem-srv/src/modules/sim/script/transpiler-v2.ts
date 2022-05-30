@@ -157,7 +157,9 @@ export {
 /// FORWARDED API: convert tokenized script to React-renderable data structures
 export {
   ScriptToLines, // converts script into a viewmodel suitable for rendering as lines
-  SCRIPT_PAGE_INDEX_OFFSET // either 0 or 1, read to modify index
+  ScriptToEditableTokens, // script to editable token list
+  ScriptPageToEditableTokens, // script_page to editable token list
+  EditableTokensToScript // pack editable token list back into script
 } from 'script/tools/script-to-lines';
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
