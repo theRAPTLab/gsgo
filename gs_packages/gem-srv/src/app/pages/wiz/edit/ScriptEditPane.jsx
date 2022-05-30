@@ -122,7 +122,7 @@ export function ScriptEditPane(props) {
   // we need the current selection if there is one
   let selection = WIZCORE.SelectedTokenInfo();
   if (selection !== undefined) {
-    const { sel_linepos: pos, validation } = selection;
+    const { sel_linepos: pos, slots_validation: validation } = selection;
     const { validationTokens: vtoks, validationLog } = validation;
     WIZCORE.UpdateDBGConsole(validationLog);
     const vtok = vtoks[pos - 1];
