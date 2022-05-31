@@ -294,7 +294,7 @@ class SymbolHelper {
           gsType,
           unitText: TOKENIZER.TokenToUnitText(token),
           err_code: 'invalid',
-          err_info: `${fn} invalid objref '${part}`
+          err_info: `${fn} invalid objref '${part}'`
         }
       );
     }
