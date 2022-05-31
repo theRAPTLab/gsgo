@@ -9,7 +9,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Keyword from 'lib/class-keyword';
-import * as DCENGINE from 'modules/datacore/dc-sim-data';
+import * as DCSIM from 'modules/datacore/dc-sim-data';
 import * as DCCOND from 'modules/datacore/dc-sim-conditions';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -100,4 +100,4 @@ export class when extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-DCENGINE.RegisterKeyword(when);
+DCSIM.RegisterKeyword(when);

@@ -47,7 +47,7 @@ export class featProp extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(dtoks: TArguments): TOpcode[] {
+  compile(dtoks: TKWArguments): TOpcode[] {
     const [kw, refArg, featPropName, methodName, ...args] = dtoks;
     // ref is an array of strings that are fields in dot addressing
     // like agent.x

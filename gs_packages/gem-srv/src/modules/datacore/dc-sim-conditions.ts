@@ -14,7 +14,7 @@
 
 import RNG from 'modules/sim/sequencer';
 import * as DCAGENTS from './dc-sim-agents';
-import * as DCENGINE from './dc-sim-data';
+import * as DCSIM from './dc-sim-data';
 
 /// INTERACTION UPDATE TESTS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -93,7 +93,7 @@ function ShuffleArray(array) {
  */
 function SingleAgentFilter(type: string, testA: string, ...args: any) {
   const agents = DCAGENTS.GetAgentsByType(type);
-  const testFunc = DCENGINE.GetFunction(testA);
+  const testFunc = DCSIM.GetFunction(testA);
   ShuffleArray(agents);
   const pass = [];
   const fail = [];
@@ -110,7 +110,7 @@ function SingleAgentFilter(type: string, testA: string, ...args: any) {
 function PairAgentFilter(A: string, testAB: string, B: string, ...args: any) {
   const setA = DCAGENTS.GetAgentsByType(A);
   const setB = DCAGENTS.GetAgentsByType(B);
-  const testFunc = DCENGINE.GetFunction(testAB);
+  const testFunc = DCSIM.GetFunction(testAB);
   ShuffleArray(setA);
   ShuffleArray(setB);
   const pass = [];

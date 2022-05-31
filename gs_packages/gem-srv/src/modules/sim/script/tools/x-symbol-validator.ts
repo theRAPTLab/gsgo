@@ -1,14 +1,10 @@
-/* eslint-disable react/static-property-placement */
-/* eslint-disable max-classes-per-file */
-/* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable consistent-return */
-/* eslint-disable no-cond-assign */
 /* eslint-disable no-continue */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+  SymbolValidator
   A collection of symbol utilities
 
-  The intent of SymbolHelper is to lookup symbol data from a token.
+  The intent of  is to lookup symbol data from a rawTok.
   Your provide a bundle and context
   It knows how to lookup features, programs, and blueprints.
   It knows how to dig into props.
@@ -19,56 +15,21 @@
 import UR from '@gemstep/ursys/client';
 
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-import * as ENGINE from 'modules/datacore/dc-sim-data';
+import * as DCSIM from 'modules/datacore/dc-sim-data';
 import * as TOKENIZER from 'script/tools/script-tokenizer';
+
+import { SymbolToken, ValidToken, InvalidToken } from './x-symbol-tokens';
 
 // uses types defined in t-script.d
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-const PR = UR.PrefixUtil('SYMUTIL', 'TagTest');
+const PR = UR.PrefixUtil('SYMVALD', 'TagTest');
 
-/// TSYMBOLDATA UTILITY CLASSES ///////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-type VSDOpts = {
-  gsType: TGSType;
-  unitText?: string;
-  err_code?: TValidationErrorCodes;
-  err_info?: string;
-};
-class VSDToken implements TSymbolData {
-  // implement a subset of TSymbolData fields
-  /** @constructor
-   *  @param {TSymbolData} symbols optional set of symbols that were available
-   *  @param {string} info optional tag, useful for adding context for errors
-   */
-  constructor(symbols?: TSymbolData, opt?: VSDOpts) {
-    // if we want to remember the original scriptText word
-    const { unitText, gsType, err_code, err_info } = opt || {};
-    if (unitText) (this as any).unitText = unitText;
-    if (gsType) (this as any).gsType = gsType;
-    if (err_code || err_info) {
-      (this as any).error = {
-        code: err_code,
-        info: err_info
-      };
-    }
-    // add symbol data
-    if (symbols) {
-      const symbolKeys = [...Object.keys(symbols)];
-      symbolKeys.forEach(key => {
-        this[key] = symbols[key];
-      });
-    }
-  }
-}
-
-/// SYMBOL HELPER CLASS ///////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** This class helps maintain a "current context" of symbols depending on
- *  a series of tokens that affect what is "current". The use case is for
- *  a scriptUnit of keyword tokens that establishes an initial context
+ *  a series of rawToks that affect what is "current". The use case is for
+ *  a scriptUnit of keyword rawToks that establishes an initial context
  *  like a property that is 'drilled into' to retrieve props, methods,
  *  and method arguments.
  *
@@ -78,15 +39,15 @@ class VSDToken implements TSymbolData {
  *  USAGE:
  *    const shelper = new SymbolHelper('label')
  *    shelper.setRefs({ bundle, globals })
- *    // tokens is a single scriptUnit for a statement
- *    const symbols = shelper.getKeywords(tokens[0]);
+ *    // rawToks is a single scriptUnit for a statement
+ *    const symbols = shelper.getKeywords(rawToks[0]);
  */
-class SymbolHelper {
-  refs: TSymbolRefs; // replaces token, bundle, xtx_obj, symscope
+class SymbolValidator {
+  refs: TSymbolRefs; // replaces rawTok, bundle, xtx_obj, symscope
   cur_scope: TSymbolData; // current scope as drilling down into objref
   bdl_scope: TSymbolData; // pointer to the top scope (blueprint bundle)
   keyword: string; // store the name of the keyword that created this instance
-  scan_error: boolean; // set if a invalid token was encountered during scoping
+  scan_error: boolean; // set if a bad rawTok was encountered during scoping
   arg_index: number; // reset to 0 when a methodSig is set
 
   /// CONSTRUCTOR + INITIALIZERS //////////////////////////////////////////////
@@ -160,28 +121,19 @@ class SymbolHelper {
   /// and are used for the very first units parsed in a line
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** returns a list of valid keywords for the script engine */
-  allKeywords(token: IToken): TSymbolData {
-    const [type, value] = TOKENIZER.UnpackToken(token);
-    const keywords = ENGINE.GetAllKeywords();
-    const gsType = 'keyword';
-    if (type === 'comment' || type === 'line') {
-      return new VSDToken({ keywords }, { gsType, unitText: value });
-    }
+  allKeywords(rawTok: IToken): SymbolToken {
+    const [type, value] = TOKENIZER.UnpackToken(rawTok);
+    const keywords = DCSIM.GetAllKeywords();
     if (type !== 'identifier' && type !== 'directive') {
       this.scan_error = true;
-      return new VSDToken(
-        { keywords },
-        { gsType, err_code: 'invalid', err_info: 'no keyword token' }
-      );
+      return InvalidToken('errParse', 'no keyword rawTok', {
+        keywords
+      });
     }
-    return new VSDToken({ keywords }, { gsType: 'keyword', unitText: value });
+    return ValidToken({ keywords }, value);
   }
 
-  /// STRING-BASED DICT SEARCHES ////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// These accessors use the refs.globals object which contains foreign
-  /// blueprints to the current bundle. The when keyword for example has to add
-  /// the blueprint name
+  /// OBJECT-REFERENCE SORTERS ////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** If part is 'agent', return the bundle symbols or undefined. This is only
    *  used for objref check of first part
@@ -200,7 +152,7 @@ class SymbolHelper {
    *  and return symbols
    */
   strBlueprintName(part: string, scope?: TSymbolData) {
-    const fn = 'strBlueprintName:';
+    const fn = 'blueprintName:';
     if (scope)
       throw Error(`${fn} works on context, so don't provide scope override`);
     if (part === 'agent') return undefined; // skip agent prop in refs.globals
@@ -212,7 +164,7 @@ class SymbolHelper {
     return bp; // valid scope is parent of cur_scope
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** search the current scope for a matching strFeatureName */
+  /** search the current scope for a matching featureName */
   strFeatureName(part: string) {
     const features = this.cur_scope.features;
     if (features === undefined) return undefined; // no match
@@ -222,54 +174,44 @@ class SymbolHelper {
     return features; // valid scope is parent of cur_scope
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** check the current scope or bundle for strPropName matches or undefined. Use
+  /** check the current scope or bundle for propName matches or undefined. Use
    *  this in the cases where you DO NOT WANT an objectref instead, as you would
    *  for the addProp keyword */
-  strPropName(strPropName: string) {
+  strPropName(propName: string) {
     const ctx = this.cur_scope || {};
     // is there a props dictionary in scope?
     const propDict = this.cur_scope.props;
     if (!propDict) return undefined; // no props found
-    // does the strPropName exist?
-    const prop = propDict[strPropName];
+    // does the propName exist?
+    const prop = propDict[propName];
     if (!prop) return undefined; // no matching prop
     this.cur_scope = prop; // advance scope pointer
     return ctx; // valid scope is parent of cur_scope
   }
 
-  /// SCOPE-BASED DICT SEARCHES ///////////////////////////////////////////////
+  /// PARSER: OBJECT REFERENCE ////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** scans the current scope for a terminal property or feature, after
-   *  which a methodName would be expected in the next tokens
+   *  which a methodName would be expected in the next rawToks
    */
-  objRef(token: IToken): TSymbolData {
+  objRef(rawTok: IToken): SymbolToken {
     // error checking & type overrides
     const fn = 'objRef:';
-    const gsType = 'objref';
     this.resetScope();
-    let [matchType, parts] = TOKENIZER.UnpackToken(token);
+    let [matchType, parts] = TOKENIZER.UnpackToken(rawTok);
     if (DBG) console.log(...PR(`${fn}: ${matchType}:${parts}`));
     // was there a previous scope-breaking error?
     if (this.scanError())
-      return new VSDToken(
-        {},
-        {
-          gsType,
-          unitText: parts,
-          err_code: 'vague',
-          err_info: `${fn} error in previous token(s)`
-        }
-      );
-    // is the token a valid identifier or objref token?
+      return InvalidToken('errScope', `${fn} error in previous rawTok(s)`);
+    // is the rawTok a valid identifier or objref rawTok?
     if (matchType === 'identifier') parts = [parts];
     else if (matchType !== 'objref') {
       this.scanError(true);
-      return new VSDToken(this.getBundleScope(), {
-        gsType,
-        unitText: parts,
-        err_code: 'invalid',
-        err_info: `${fn} not an objref`
-      });
+      return InvalidToken(
+        'errParse',
+        `${fn} improper or missing rawTok`,
+        this.getBundleScope()
+      );
     }
     // OBJREF PART 1: what kind of object are we referencing?
     // these calls will update cur_scope SymbolData appropriately
@@ -282,21 +224,13 @@ class SymbolHelper {
     let terminal = parts.length === 1;
     // does the objref terminate in a method-bearing reference?
     if (terminal) {
-      if (prop) return new VSDToken(prop, { gsType, unitText: part }); // return agent scope {props}
-      if (feature) return new VSDToken(feature, { gsType, unitText: part }); // return feature scope {features,props}
+      if (prop) return ValidToken(prop, part); // return agent scope {props}
+      if (feature) return ValidToken(feature, part); // return feature scope {features,props}
     }
     // did any agent, feature, prop, or blueprint resolve?
     if (!(agent || feature || prop || blueprint)) {
       this.scanError(true);
-      return new VSDToken(
-        {},
-        {
-          gsType,
-          unitText: TOKENIZER.TokenToUnitText(token),
-          err_code: 'invalid',
-          err_info: `${fn} invalid objref '${part}`
-        }
-      );
+      return InvalidToken('errScope', `${fn} invalid objref '${part}`);
     }
 
     // OBJREF PART 2: are the remaining parts valid?
@@ -314,8 +248,8 @@ class SymbolHelper {
       terminal = ii >= parts.length - 1;
       if (terminal) {
         const unitText = parts.join('.');
-        if (prop) return new VSDToken(prop, { gsType, unitText }); // return agent scope {props}
-        if (feature) return new VSDToken(feature, { gsType, unitText }); // return feature scope {features,props}
+        if (prop) return ValidToken(prop, unitText); // return agent scope {props}
+        if (feature) return ValidToken(feature, unitText); // return feature scope {features,props}
       }
     } /** END OF LOOP **/
 
@@ -324,333 +258,230 @@ class SymbolHelper {
     // example: 'prop agent'
     this.scanError(true);
     const orStr = parts.join('.');
-    return new VSDToken(this.cur_scope, {
-      gsType,
-      unitText: orStr,
-      err_code: 'invalid',
-      err_info: `${fn} '${orStr}' not found or invalid`
-    });
+    return InvalidToken(
+      'errParse',
+      `${fn} '${orStr}' not found or invalid`,
+      this.cur_scope
+    );
   }
 
-  /** given an existing symboldata scope set in this.cur_scope, looks for a method.
-   */
-  methodName(token: IToken): TSymbolData {
+  /// PARSER: METHOD NAME /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** search current scope for a method dict with the method names */
+  methodName(rawTok: IToken): SymbolToken {
     const fn = 'methodName:';
-    const gsType = 'method';
-    let [matchType, methodName] = TOKENIZER.UnpackToken(token);
+    let [matchType, methodName] = TOKENIZER.UnpackToken(rawTok);
     if (DBG) console.log(...PR(`${fn}: ${matchType}:${methodName}`));
 
     // was there a previous scope-breaking error?
     if (this.scanError())
-      return new VSDToken(
-        {},
-        {
-          gsType,
-          unitText: TOKENIZER.TokenToUnitText(token),
-          err_code: 'vague',
-          err_info: `${fn} error in previous token(s)`
-        }
-      );
+      return InvalidToken('errScope', `${fn} error in previous rawTok(s)`);
     // is scope set?
     if (this.cur_scope === null)
-      return new VSDToken(
-        {},
-        {
-          gsType,
-          unitText: TOKENIZER.TokenToUnitText(token),
-          err_code: 'invalid',
-          err_info: `${fn} unexpected invalid scope`
-        }
-      );
-    // is there a token?
-    if (token === undefined) {
+      return InvalidToken('errScope', `${fn} unexpected invalid scope`);
+    // is there a rawTok?
+    if (rawTok === undefined) {
       this.scanError(true);
       const { methods } = this.cur_scope;
-      return new VSDToken(
-        { methods },
-        { gsType, err_code: 'empty', err_info: `${fn} missing token` }
-      );
+      return InvalidToken('errParse', `${fn} missing rawTok`, { methods });
     }
-    // is the token an identifier?
+    // is the rawTok an identifier?
     if (matchType !== 'identifier') {
       this.scanError(true);
       const symbols = this.cur_scope;
-      return new VSDToken(symbols, {
-        gsType,
-        unitText: TOKENIZER.TokenToUnitText(token),
-        err_code: 'invalid',
-        err_info: `${fn} expects identifier, not ${matchType}`
-      });
+      return InvalidToken(
+        'errParse',
+        `${fn} expects identifier, not ${matchType}`,
+        symbols
+      );
     }
     // is the indentifier defined?
     if (typeof methodName !== 'string') {
       this.scanError(true);
-      return new VSDToken(
-        {},
-        {
-          gsType,
-          unitText: TOKENIZER.TokenToUnitText(token),
-          err_code: 'invalid',
-          err_info: `${fn} invalid identifier`
-        }
-      );
+      return InvalidToken('errParse', `${fn} bad identifier`);
     }
     // is there a methods dictionary in scope
     const { methods } = this.cur_scope;
     if (methods === undefined) {
       this.scanError(true);
-      return new VSDToken(
-        {},
-        {
-          gsType,
-          unitText: TOKENIZER.TokenToUnitText(token),
-          err_code: 'invalid',
-          err_info: `${fn} scope has no method dict`
-        }
-      );
+      return InvalidToken('errExist', `${fn} scope has no method dict`);
     }
     // does methodName exist in the methods dict?
     const methodSig = methods[methodName]; //
     if (methodSig === undefined) {
       this.scanError(true);
-      return new VSDToken(
-        {
-          methods
-        },
-        {
-          gsType,
-          unitText: TOKENIZER.TokenToUnitText(token),
-          err_code: 'invalid',
-          err_info: `${fn} '${methodName}' is not in method dict`
-        }
+      return InvalidToken(
+        'errExist',
+        `${fn} '${methodName}' is not in method dict`,
+        { methods }
       );
     }
     // all good!
     this.cur_scope = { [methodName]: methodSig }; // advance scope pointer
-    return new VSDToken({ methods }, { gsType, unitText: methodName }); // valid scope is parent of cur_scope
+    return ValidToken({ methods }, methodName); // valid scope is parent of cur_scope
   }
 
-  /// METHOD ARGUMENT SYMBOLS /////////////////////////////////////////////////
+  /// PARSER: METHOD ARGUMENTS ////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** process the argument list that follows a methodName in GEMSCRIPT
    */
-  argsList(tokens: IToken[]): TSymbolData[] {
+  argsList(rawToks: IToken[]): SymbolToken[] {
     const fn = 'argsList:';
     const vtoks = [];
 
     // is the current scope single-entry dictionary containing a method array?
     const methodNames = [...Object.keys(this.cur_scope)];
     if (methodNames.length !== 1) {
-      for (let i = 0; i < tokens.length; i++)
-        vtoks.push(
-          new VSDToken(
-            {},
-            {
-              gsType: 'method',
-              unitText: TOKENIZER.TokenToUnitText(tokens[i]),
-              err_code: 'invalid',
-              err_info: `${fn} invalid methodArgs dict`
-            }
-          )
-        );
+      for (let i = 0; i < rawToks.length; i++)
+        vtoks.push(InvalidToken('errScope', `${fn} invalid methodArgs dict`));
       return vtoks;
     }
     // SCOPE ARGS 1: retrieve the method's argument symbol data
     const methodName = methodNames[0];
     const methodSignature: TGSMethodSig = this.cur_scope[methodName];
     // TODO: some keywords (e.g. 'when') may have multiple arrays
-    const { args } = methodSignature;
+    const { args: mArgs } = methodSignature;
     methodSignature.name = methodName; // add optional methodName to TSymbolData
 
-    // SCOPE ARGS 2: general validation tokens for each argument
+    // SCOPE ARGS 2: general validation rawToks for each argument
     // this loop structure is weird because we have to handle overflow
     // and underflow conditionss
     let tokenIndex = 0;
-    for (tokenIndex; tokenIndex < tokens.length; tokenIndex++) {
+    for (tokenIndex; tokenIndex < rawToks.length; tokenIndex++) {
       // is the tokenIndex greater than the number of argument definitions?
-      if (tokenIndex >= args.length) {
-        vtoks.push(
-          new VSDToken(
-            {},
-            {
-              gsType: '{?}',
-              unitText: TOKENIZER.TokenToUnitText(tokens[tokenIndex]),
-              err_code: 'extra',
-              err_info: `${fn} method ignores extra arg`
-            }
-          )
-        );
+      if (tokenIndex >= mArgs.length) {
+        vtoks.push(InvalidToken('errOver', `${fn} method ignores extra arg`));
         continue;
       }
-      // SCOPE ARGS 3: validate current token against matching argument definition
-      const tok = tokens[tokenIndex];
-      const arg = args[tokenIndex];
-      const vtok = this.argSymbol(arg, tok);
-      vtok.methodSig = methodSignature;
+      // SCOPE ARGS 3: validate current rawTok against matching argument definition
+      const rawTok = rawToks[tokenIndex];
+      const kwArg = mArgs[tokenIndex];
+      const vtok = this.argSymbol(kwArg, rawTok);
+      vtok.setMethodSig(methodSignature);
       vtoks.push(vtok);
-    } // end for
+    }
     // check for underflow
-    if (tokenIndex < args.length)
-      for (let ii = tokenIndex; ii < args.length; ii++) {
-        const [argName, gsType] = CHECK.UnpackArg(args[ii]);
+    if (tokenIndex < mArgs.length)
+      for (let ii = tokenIndex; ii < mArgs.length; ii++) {
         vtoks.push(
-          new VSDToken(
-            {},
-            {
-              gsType,
-              unitText: TOKENIZER.TokenToUnitText(tokens[tokenIndex]),
-              err_code: 'empty',
-              err_info: `${fn} method arg${ii} requires ${argName}:${gsType}`
-            }
-          )
+          InvalidToken('errUnder', `${fn} method requires ${mArgs.length} arg(s)`)
         );
       }
     return vtoks;
   }
 
+  /// PARSER: METHOD ARGUMENT ////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Return the symbols for an methodSig argType entry. Does NOT change scope
    *  because the scope is always the same methodSig symbol data
    */
-  argSymbol(methodArg, scriptToken): TSymbolData {
+  argSymbol(mArg: TGSArg, rawTok: IToken): SymbolToken {
     const fn = 'argSymbol:';
+    const [argName, argType] = CHECK.UnpackArg(mArg);
+    const [tokType, tokVal] = TOKENIZER.UnpackToken(rawTok);
+    let symToken: SymbolToken;
 
-    const [argName, gsType] = CHECK.UnpackArg(methodArg);
-    const [tokType, tokVal] = TOKENIZER.UnpackToken(scriptToken);
-
-    // data structures
-    let symData;
-    const arg = methodArg;
-    const tok = scriptToken;
-
-    // is this a literal boolean value from token.value
-    if (gsType === 'boolean') {
-      let value = TOKENIZER.TokenValue(tok, 'value');
+    // a literal boolean value from rawTok.value
+    if (argType === 'boolean') {
+      let value = TOKENIZER.TokenValue(rawTok, 'value');
       if (typeof value === 'boolean')
-        symData = new VSDToken({ arg }, { gsType, unitText: value.toString() });
+        symToken = ValidToken({ arg: mArg }, value.toString());
       else
-        symData = new VSDToken(
-          {},
-          {
-            gsType,
-            unitText: TOKENIZER.TokenToUnitText(tok),
-            err_code: 'invalid',
-            err_info: `${tokType}:${tokVal} not a boolean`
-          }
-        );
+        symToken = InvalidToken('errType', `${tokType}:${tokVal} not a boolean`);
     }
-    // is this a literal number value from token.value
-    if (gsType === 'number') {
-      let value = TOKENIZER.TokenValue(tok, 'value');
+    // a literal number value from rawTok.value
+    if (argType === 'number') {
+      let value = TOKENIZER.TokenValue(rawTok, 'value');
       if (typeof value === 'number')
-        symData = new VSDToken({ arg }, { gsType, unitText: value.toString() });
+        symToken = ValidToken({ arg: mArg }, value.toString());
       else
-        symData = new VSDToken(
-          {},
-          {
-            gsType,
-            unitText: TOKENIZER.TokenToUnitText(tok),
-            err_code: 'invalid',
-            err_info: `${tokType}:${tokVal} not a number`
-          }
-        );
+        symToken = InvalidToken('errType', `${tokType}:${tokVal} not a number`);
     }
 
-    // is this a literal string from token.string
-    if (gsType === 'string' && TOKENIZER.TokenValue(tok, 'string')) {
-      symData = new VSDToken({ arg }, tokVal);
+    // a literal string from rawTok.string
+    if (argType === 'string' && TOKENIZER.TokenValue(rawTok, 'string')) {
+      symToken = ValidToken({ arg: mArg }, tokVal);
     }
 
-    // is this an enumeration list match token???
+    // an enumeration list match rawTok???
     // NOT IMPLEMENTED
-    if (gsType === 'enum') {
-      symData = new VSDToken(
-        {},
-        { gsType, err_code: 'debug', err_info: `${fn} enum is unimplemented` }
-      );
+    if (argType === 'enum') {
+      symToken = InvalidToken('errParse', `${fn} enum is unimplemented`);
     }
 
-    // all symbols available in current bundle match token.objref
-    if (gsType === 'objref' && TOKENIZER.TokenValue(tok, 'objref')) {
-      symData = new VSDToken(this.bdl_scope, { gsType, unitText: argName });
+    // all symbols available in current bundle match rawTok.objref
+    if (argType === 'objref' && TOKENIZER.TokenValue(rawTok, 'objref')) {
+      symToken = ValidToken(this.bdl_scope, argName);
     }
 
-    // all props, feature props in bundle match token.identifier
-    if (gsType === 'prop' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      symData = new VSDToken(this.bdl_scope, { gsType, unitText: argName });
+    // all props, feature props in bundle match rawTok.identifier
+    if (argType === 'prop' && TOKENIZER.TokenValue(rawTok, 'identifier')) {
+      symToken = ValidToken(this.bdl_scope, argName);
     }
 
-    // is this a method name? current scope is pointing to
-    // the method dict, we hope...
-    // all methods in bundle match token.identifier
-    if (gsType === 'method' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      symData = new VSDToken(this.cur_scope, { gsType, unitText: argName });
+    // all methods in bundle match rawTok.identifier
+    if (argType === 'method' && TOKENIZER.TokenValue(rawTok, 'identifier')) {
+      symToken = ValidToken(this.cur_scope, argName);
     }
 
-    // is this any gvar type?
-    // all gvars available in system match token.identifier
-    if (gsType === 'gvar' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const map = ENGINE.GetPropTypesDict();
+    // all gvars available in system match rawTok.identifier
+    if (argType === 'gvar' && TOKENIZER.TokenValue(rawTok, 'identifier')) {
+      const map = DCSIM.GetPropTypesDict();
       const ctors = {};
       const list = [...map.keys()];
       list.forEach(ctorName => {
         ctors[ctorName] = map.get(ctorName).Symbols;
       });
-      symData = new VSDToken({ ctors }, { gsType, unitText: argName });
+      symToken = ValidToken({ ctors }, argName);
     }
 
-    // is this a feature module name?
-    // all feature symbols in system match token.identifier
+    // all feature symbols in system match rawTok.identifier
     // e.g. addFeature
-    if (gsType === 'feature' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const map = ENGINE.GetAllFeatures();
-      const features = {}; // { [strFeatureName: string]: TSymbolData };
+    if (argType === 'feature' && TOKENIZER.TokenValue(rawTok, 'identifier')) {
+      const map = DCSIM.GetAllFeatures();
+      const features = {}; // { [featureName: string]: TSymbolData };
       const list = [...map.keys()];
       list.forEach(featName => {
-        features[featName] = ENGINE.GetFeature(featName).symbolize();
+        features[featName] = DCSIM.GetFeature(featName).symbolize();
       });
-      symData = new VSDToken({ features }, { gsType, unitText: argName });
+      symToken = ValidToken({ features }, argName);
     }
 
-    // is this a blueprint name? We allow any blueprint name in the dictionary
-    // all blueprint symbols in project match token.identifier
+    // all blueprint symbols in project match rawTok.identifier
     // e.g. when agent test, when agentA test agentB
-    if (gsType === 'blueprint' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const list = ENGINE.GetAllBlueprintBundles();
+    if (argType === 'blueprint' && TOKENIZER.TokenValue(rawTok, 'identifier')) {
+      const list = DCSIM.GetAllBlueprintBundles();
       const blueprints = {};
       list.forEach(bundle => {
         blueprints[bundle.name] = bundle.symbols;
       });
-      symData = new VSDToken({ blueprints }, { gsType, unitText: argName });
+      symToken = ValidToken({ blueprints }, argName);
     }
 
-    // if (gsType === 'test') {
+    // if (argType === 'test') {
     // }
-    // if (gsType === 'program') {
+    // if (argType === 'program') {
     // }
-    // if (gsType === 'event') {
-    // }
-
-    // if (gsType === 'expr') {
-    // }
-    // if (gsType === 'block') {
-    // }
-    // if (gsType === '{value}') {
+    // if (argType === 'event') {
     // }
 
-    if (symData === undefined) {
-      return new VSDToken(
-        {
-          arg
-        },
-        {
-          gsType,
-          err_code: 'debug',
-          err_info: `${fn} ${gsType} has no token mapper`
-        }
-      );
+    // if (argType === 'expr') {
+    // }
+    // if (argType === 'block') {
+    // }
+    // if (argType === '{value}') {
+    // }
+
+    if (symToken === undefined) {
+      console.group(...PR('UNHANDLED ARGTYPE'));
+      console.groupEnd();
+      return InvalidToken('errOops', `${fn} ${argType} has no token mapper`, {
+        arg: mArg
+      });
     }
-    // return valid symdata/validation
-    return symData;
+    // hack in the gsType
+    symToken.setType(argType);
+    return symToken;
   }
 } // end of SymbolHelper class
 
@@ -737,8 +568,7 @@ function UnpackSymbolType(symbolData: TSymbolData): any[] {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
-  SymbolHelper, // symbol decoder
-  VSDToken,
+  SymbolValidator, // symbol decoder
   DecodeSymbolViewData,
   UnpackViewData,
   UnpackSymbolType

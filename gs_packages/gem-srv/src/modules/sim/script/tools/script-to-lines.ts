@@ -11,15 +11,12 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-// uses types defined in t-script.d and t-ui.d
+import {
+  SHOW_EMPTY_STATEMENTS,
+  SCRIPT_PAGE_INDEX_OFFSET
+} from 'modules/datacore/dc-constants';
 
-/// CONSTANT & DECLARATIONS ///////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-
-// whether to count blank lines or not
-const COUNT_ALL_LINES = true; // see WizardView RENDER_BLOCK_CLOSE
-const LINE_START_NUM = 1; // set to 1 for no 0 indexes
 
 /// LINE PRINTING MACHINE //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -29,30 +26,36 @@ const LINE_START_NUM = 1; // set to 1 for no 0 indexes
 /// equivalent
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class ScriptLiner {
-  LINE_BUF;
-  PAGE;
-  MAP;
-  LINE_NUM;
-  LINE_POS;
-  INDENT;
-  STM_STACK;
+  LINE_BUF: VMToken[];
+  PAGE: VMPage;
+  TOKMAP: VMTokenMap;
+  LSMAP: VMLineScripts;
+  LINE_NUM: number;
+  LINE_POS: number;
+  INDENT: number;
+  BLOCK_FLAG: VMLineScriptType;
+  STM_STACK: TScriptUnit[];
   DBGTEXT: string;
   REFS: { bundles: TNameSet };
   constructor() {
     this.LINE_BUF = [];
     this.PAGE = [];
-    this.MAP = new Map<string, IToken>(); // reverse lookup from tokenIdstring to token
-    this.LINE_NUM = LINE_START_NUM;
-    this.LINE_POS = LINE_START_NUM;
+    this.TOKMAP = new Map<VMTokenKey, IToken>(); // reverse lookup from tokenIdstring to token
+    this.LSMAP = [];
+    this.LINE_NUM = SCRIPT_PAGE_INDEX_OFFSET;
+    this.LINE_POS = SCRIPT_PAGE_INDEX_OFFSET;
     this.REFS = { bundles: new Set() };
     this.INDENT = 0;
     this.DBGTEXT = '';
+    this.BLOCK_FLAG = null; // set to string, cleared immediately in lineOut
   }
   indent() {
     ++this.INDENT;
+    this.BLOCK_FLAG = 'start'; //
   }
   outdent() {
     --this.INDENT;
+    this.BLOCK_FLAG = 'end';
   }
   currentContext(): any {
     return {
@@ -64,26 +67,30 @@ class ScriptLiner {
   }
   clearData() {
     this.LINE_BUF = [];
-    this.LINE_POS = LINE_START_NUM;
-    this.LINE_NUM = LINE_START_NUM;
+    this.LINE_POS = SCRIPT_PAGE_INDEX_OFFSET;
+    this.LINE_NUM = SCRIPT_PAGE_INDEX_OFFSET;
     this.STM_STACK = [];
     this.PAGE = [];
-    this.MAP.clear();
+    this.TOKMAP.clear();
+    this.BLOCK_FLAG = null;
+    this.LSMAP = [];
     this.DBGTEXT = '';
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** used to save the current statement for the token, though this information
-   *  can also be pulled from the this.PAGE data structure by lineNum
-   */
-  pushStatement(stm: TScriptUnit): void {
-    this.STM_STACK.push(stm); // save statement on stack
+  /** used to save the current statement array for the tokens being processed
+   *  in it, so we can copy it into the PAGE array. Filters out blocks because
+   *  are processed as different lines */
+  pushStatementLine(stm: TScriptUnit): void {
+    const copied_toks = stm.filter(tok => !tok.block);
+    this.STM_STACK.push(copied_toks); // save statement on stack
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  popStatement(): TScriptUnit[] {
+  /** remove the saved statement, without { block } tokens */
+  popStatementLine(): TScriptUnit {
     return this.STM_STACK.pop(); // save statement on stack
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  peekStatement(): TScriptUnit[] {
+  peekStatementLine(): TScriptUnit {
     return this.STM_STACK[this.STM_STACK.length - 1];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -97,8 +104,7 @@ class ScriptLiner {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   tokenOut(tok: IToken): void {
     const { lineNum, linePos, level } = this.currentContext();
-    const tokenKey = `${lineNum},${linePos}`;
-
+    const tokenKey: VMTokenKey = `${lineNum},${linePos}`;
     const tokInfo: VMToken = {
       scriptToken: tok,
       lineNum,
@@ -108,26 +114,23 @@ class ScriptLiner {
     this.LINE_BUF.push(tokInfo);
     this.nextPos();
     if (DBG) {
-      if (this.LINE_POS === LINE_START_NUM)
+      if (this.LINE_POS === SCRIPT_PAGE_INDEX_OFFSET)
         this.DBGTEXT += `${level} {${lineNum}:${linePos}} `;
       else this.DBGTEXT += `{${lineNum}:${linePos}} `;
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   lineOut(): void {
-    // don't export zero buffer lines which happens when this.statementToLines
-    // has no statement tokens
-
+    // Don't export zero buffer lines which happens when this.statementToLines
+    // has no statement tokens...
     // ALTERNATIVELY, we can assume it is a CLOSING ]] and render that instead
     // for consistent numbering between scriptText and scriptWizard views
-    if (this.LINE_BUF.length === 0 && !COUNT_ALL_LINES) return;
-
+    if (this.LINE_BUF.length === 0 && !SHOW_EMPTY_STATEMENTS) return;
     // otherwise do the thing
     const { level, lineNum, globalRefs } = this.currentContext();
-    const lineScript = this.LINE_BUF.map(t => {
-      return t.scriptToken;
-    });
+    const lineScript = this.peekStatementLine();
     const vmTokens = [...this.LINE_BUF];
+
     const line: VMPageLine = {
       lineScript,
       vmTokens, // a new array of vmToken refs
@@ -135,21 +138,28 @@ class ScriptLiner {
       level,
       lineNum
     };
+    if (this.BLOCK_FLAG) line.block = this.BLOCK_FLAG;
     this.PAGE.push(line);
+    // also update the VMLineScripts structure
+    const lso: VMLineScriptLine = { lineScript };
+    if (this.BLOCK_FLAG) lso.block = this.BLOCK_FLAG;
+    this.LSMAP.push(lso);
+    this.BLOCK_FLAG = null; // always clear the flag
+    // reset buffer and prepare for next line
     this.LINE_BUF = [];
-    this.LINE_POS = LINE_START_NUM;
+    this.LINE_POS = SCRIPT_PAGE_INDEX_OFFSET;
     this.nextLine();
     if (DBG) this.DBGTEXT += '\n';
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** given a page of lines of tokens, create the reverse lookup map */
   mapLinesToTokens(vmPage: VMPageLine[]) {
-    this.MAP.clear();
+    this.TOKMAP.clear();
     vmPage.forEach(vmTokLine => {
       const { vmTokens } = vmTokLine;
       vmTokens.forEach(vmTok => {
         const { tokenKey, scriptToken } = vmTok;
-        this.MAP.set(tokenKey, scriptToken);
+        this.TOKMAP.set(tokenKey, scriptToken);
       });
     });
   }
@@ -160,23 +170,24 @@ class ScriptLiner {
       if (DBG) console.log('Empty Statement', statement);
       return;
     }
-    this.pushStatement(statement); // set current statement context
+    this.pushStatementLine(statement); // set current statement context
     statement.forEach((tok: IToken) => {
       // (1) if it's a block token then nested print
       if (Array.isArray(tok.block)) {
         if (DBG) this.DBGTEXT += 'BLOCK ';
-        this.lineOut();
+        this.lineOut(); // flush line before processing the block
+        // process statements in the block...
         this.indent();
         tok.block.forEach(bstm => this.statementToLines(bstm));
         this.outdent();
+        // ...done!
         return;
       }
       // (3) "print" the token to the line buffer
       this.tokenOut(tok);
     });
-    this.popStatement(); // remove current statement context
-    // flush buffer after statement is printed, increment line
-    this.lineOut();
+    this.lineOut(); // flush buffer after statement is printed, increment line
+    this.popStatementLine(); // remove current statement context
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Main Entry Point: Convert a tokenized script into a "page" of "lines" of
@@ -191,12 +202,14 @@ class ScriptLiner {
   /** API: given a script of ScriptUnit statements, return VMPageLine[] and
    *  a map of "line:pos" to its source scriptToken
    */
-  scriptToLines(program: TScriptUnit[]): [VMPageLine[], Map<string, IToken>] {
+  scriptToLines(
+    program: TScriptUnit[]
+  ): [VMPageLine[], Map<string, IToken>, VMLineScripts] {
     this.clearData();
     this.programToLines(program); // updates this.PAGE
-    this.mapLinesToTokens(this.PAGE); // updates this.MAP
+    this.mapLinesToTokens(this.PAGE); // updates this.TOKMAP
     if (DBG) console.log(this.DBGTEXT);
-    return [this.PAGE, this.MAP];
+    return [this.PAGE, this.TOKMAP, this.LSMAP];
   }
 } // end of ScriptLiner
 
@@ -204,13 +217,70 @@ class ScriptLiner {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const LINER = new ScriptLiner();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: given a program, return a page of vmlines and line-to-token map */
-function ScriptToLines(program: TScriptUnit[]) {
-  const [script_page, line_tokmap] = LINER.scriptToLines(program);
-  return [script_page, line_tokmap];
+/** API: given a program, return a page of vmlines and line-to-token map,
+ *  as well as a new line-to-linescript.
+ */
+function ScriptToLines(
+  script: TScriptUnit[]
+): [VMPageLine[], Map<string, IToken>, VMLineScripts] {
+  const [script_page, key_to_token, line_to_scriptunit] =
+    LINER.scriptToLines(script);
+  return [script_page, key_to_token, line_to_scriptunit];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: given a script of ScriptUnit statements, return an array of objects
+ *  0-indexed by line. Editing the lineScript array inside  */
+function ScriptToEditableTokens(script: TScriptUnit[]): VMLineScripts {
+  const [, , line_to_scriptunit] = LINER.scriptToLines(script);
+  return line_to_scriptunit;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: given a script_page structure, return the editable line tokens */
+function ScriptPageToEditableTokens(scriptPage: VMPageLine[]): VMLineScripts {
+  const line_to_scriptunit = [];
+  scriptPage.forEach(vmline => {
+    const { lineScript, block } = vmline;
+    const lso: VMLineScriptLine = { lineScript };
+    if (block) lso.block = block;
+    line_to_scriptunit.push(lso);
+  });
+  return line_to_scriptunit;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: given an array of VMLineScripts, reconstruct the script and return it */
+function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
+  const fn = 'EditableTokensToScript:';
+  if (!Array.isArray(lineScripts)) throw Error(`${fn} arg should be array`);
+  const script_tokens = [];
+  const stack = [];
+  let current = script_tokens;
+
+  lineScripts.forEach(lso => {
+    const { lineScript, block } = lso;
+    if (block === 'start') {
+      const arr = [];
+      stack.push(arr);
+      current = arr;
+      current.push(lineScript);
+      return;
+    }
+    if (block === 'end') {
+      current.push(lineScript);
+      current = stack.pop();
+      return;
+    }
+    current.push(lineScript);
+  });
+  return script_tokens;
 }
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default ScriptLiner;
-export { LINE_START_NUM, ScriptToLines };
+export {
+  ScriptToLines, // script to indexed data structures for GUI
+  ScriptPageToEditableTokens,
+  ScriptToEditableTokens, // script to editable token list
+  EditableTokensToScript // pack editable token list back into script
+};

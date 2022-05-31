@@ -18,22 +18,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  IKeyword,
-  IScopeable,
-  IAgent,
-  TCompiledStatement,
-  IToken,
-  TScriptUnit,
-  TSymbolData,
-  TSymbolRefs,
-  TSymArg,
-  TSymbolErrorCodes,
-  DerefMethod,
-  TValidatedScriptUnit
-} from 'lib/t-script';
 import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
-import { SymbolHelper, VSymError } from 'script/tools/symbol-helpers';
+import { SymbolHelper, VSDToken } from 'script/tools/symbol-helpers';
 import { UnpackToken, UnpackArg } from 'modules/datacore/dc-sim-data-utils';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -44,7 +30,7 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Keyword implements IKeyword {
   keyword: string;
-  args: TSymArg[] | TSymArg[][]; // for symbol validation
+  args: TGSArg[] | TGSArg[][]; // for symbol validation
   shelper: SymbolHelper; // helper for extracting line data
   //
   constructor(keyword: string) {
@@ -117,23 +103,27 @@ class Keyword implements IKeyword {
     //
     let tok: IToken; // hold reference to current dtoken for each pass through arglist
     let vtok: TSymbolData; // hold vtok reference for each pass through arglist
-    let arg: TSymArg; // hold current argument
+    let arg: TGSArg; // hold current argument
+
+    /* new */
+    // let argCount = this.shelper.countArgs(unit);
+
     const vtoks: TSymbolData[] = [];
 
     // (1) first token is keyword
     tok = unit[0];
     vtoks.push(this.shelper.allKeywords(tok));
+
     // (2) loop through keyword argument signature in this.args
     let tokIndex = 1; // start dtok[1] after keyword
     while (tokIndex < unit.length) {
       // (2A) is this arg a special {args} marker?
       tok = unit[tokIndex];
-      arg = this.args[tokIndex - 1] as TSymArg; // this.args also be TSymArg[]
+      arg = this.args[tokIndex - 1] as TGSArg; // this.args also be TGSArg[]
       const [, argType] = UnpackArg(arg);
       // (2B) NOT an arglist? (a regular argument)?
       if (argType !== '{...}') {
         vtok = this.validateToken(arg, tok);
-        console.log(arg, vtok);
         vtoks.push(vtok); // save the vtok and do the next token
         tokIndex++;
         continue;
@@ -149,14 +139,12 @@ class Keyword implements IKeyword {
       for (tokIndex; tokIndex < unit.length; tokIndex++) {
         tok = unit[tokIndex];
         const tokInfo = UnpackToken(tok).join(':');
-        vtoks.push(
-          this.newSymbolError('errOver', `unexpected token {${tokInfo}}`)
-        );
+        vtoks.push(this.newSymbolError('extra', `unexpected token {${tokInfo}}`));
       }
     }
 
     // return the validation data array
-    const log = this._dbgValidationLog(vtoks);
+    const log = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: log };
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -169,15 +157,14 @@ class Keyword implements IKeyword {
    *  You can also write your own costume validation() for clarity;
    *  see props.tsx for an example
    */
-  validateToken(arg: TSymArg, token?: IToken): TSymbolData {
-    const fn = 'validateToken:';
+  validateToken(arg: TGSArg, token?: IToken): TSymbolData {
     let vtok;
     const [argName, argType] = UnpackArg(arg);
     const [tokType, value] = UnpackToken(token);
 
     // error checking
     if (argType === undefined)
-      vtok = this.newSymbolError('errParse', `bad arg def ${arg}`);
+      vtok = this.newSymbolError('invalid', `bad arg def ${arg}`);
     // handle argType conversion
     switch (argType) {
       case 'objref': // value is string[] of parts
@@ -190,23 +177,22 @@ class Keyword implements IKeyword {
         // PROTOTYPE: add gsType to the token
         vtok.gsType = argType;
         break;
-      case 'number': // value is
-        console.log(`${fn} got a number`);
-        break;
-      case 'string': // value is
-        console.log(`${fn} got a string`);
-        break;
-      case 'boolean': // value is
-        console.log(`${fn} got a string`);
-        break;
-      //
       // TODO: handle other argTypes
-      //
-      default:
-        console.log('unhandled', argType);
+      case 'prop': // a prop reference
         vtok = this.newSymbolError(
-          'errOops',
-          `Keyword.${fn} '${argType}' handler not implemented`
+          'debug',
+          "'prop' typehandler should be objref?"
+        );
+        break;
+      case 'blueprint': // a blueprint name
+      case 'number': // value is
+      case 'string': // value is
+      case 'boolean': // value is
+      case 'pragma': // a directive
+      default:
+        vtok = this.newSymbolError(
+          'debug',
+          `'${argType}' typehandler not implemented`
         );
     }
     // validation token symbols
@@ -217,7 +203,7 @@ class Keyword implements IKeyword {
   /** provide annotated log of validationTokens
    *  the log tries to produce well-formatted output
    */
-  _dbgValidationLog(vtoks: TSymbolData[]): string[] {
+  makeValidationLog(vtoks: TSymbolData[]): string[] {
     let max = 0;
     const BAD_UNIT = 'NO_TOK';
     const log = [];
@@ -255,8 +241,12 @@ class Keyword implements IKeyword {
   /** utility to create a TSymbolData object with errors, with option to
    *  add valid symbols
    */
-  newSymbolError(code: TSymbolErrorCodes, info, symbols?) {
-    return new VSymError(code, info, symbols);
+  newSymbolError(code: TValidationErrorCodes, info, symbols?) {
+    return new VSDToken(symbols, {
+      gsType: '{?}',
+      err_code: code,
+      err_info: info
+    });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** DEPRECATED. The jsx() call was used for the old prototype gui wizard */

@@ -6,7 +6,7 @@
 
 import Keyword from 'lib/class-keyword';
 import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
-import * as DCENGINE from 'modules/datacore/dc-sim-data';
+import * as DCSIM from 'modules/datacore/dc-sim-data';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,11 +22,7 @@ export class onEvent extends Keyword {
     let [kw, eventName, consq] = unit;
     consq = this.utilFirstValue(consq); // a program name possibly?
     const { bpName } = DCBUNDLER.BundlerState();
-    DCENGINE.SubscribeToScriptEvent(
-      String(eventName),
-      bpName,
-      consq as TSMCProgram
-    );
+    DCSIM.SubscribeToScriptEvent(String(eventName), bpName, consq as TSMCProgram);
     // this runs in global context inside sim-conditions
     return []; // subscriptions don't need to return any compiled code
   }
@@ -35,4 +31,4 @@ export class onEvent extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-DCENGINE.RegisterKeyword(onEvent);
+DCSIM.RegisterKeyword(onEvent);

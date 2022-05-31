@@ -14,13 +14,13 @@ import { EBundleType } from 'modules/../types/t-script.d'; // workaround to impo
 
 import GAgent from 'lib/class-gagent';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCENGINE from 'modules/datacore/dc-sim-data';
+import * as DCSIM from 'modules/datacore/dc-sim-data';
 
 // critical imports
 import 'script/keywords/_all_keywords';
 
 // tooling imports
-import * as DECOMPILER from 'script/tools/text-to-script';
+import * as TOKENIZER from 'script/tools/script-tokenizer';
 import * as COMPILER from 'script/tools/script-compiler';
 import * as SYMBOLHELPERS from 'script/tools/symbol-helpers';
 
@@ -30,22 +30,13 @@ SYMBOLHELPERS.BindModule();
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRANSPILE', 'TagDebug');
-//
 const DBG = false;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Compile a source text and return compiled TMethod. Similar to
- *  CompileBlueprint but does not handle directives or build a bundle. Used
- *  for generating code snippets from any GEMSCRIPT text (e.g. for init
- *  scripts, or anything that isn't part of the
- */
-function CompileText(text: string = ''): TSMCProgram {
-  const script = DECOMPILER.TextToScript(text);
-  return COMPILER.CompileScript(script);
-}
 
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: */
+/** API: Given a bundle, ensure it's the right type and save it to the
+ *  bundle dictionary
+ */
 function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
   // ensure that bundle has at least a define and name
   if (bdl.type === EBundleType.INIT) {
@@ -55,7 +46,7 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
     if (DBG) console.group(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
     // First deregister the blueprint if it exists
     // RemoveGlobalCondition(bdl.name); // deprecatd in script-xp
-    DCENGINE.SaveBlueprintBundle(bdl);
+    DCSIM.SaveBlueprintBundle(bdl);
     // run conditional programming in template
     // this is a stack of functions that run in global context
     // initialize global programs in the bundle
@@ -66,6 +57,28 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
   }
   console.log(bdl);
   throw Error('not blueprint');
+}
+
+/// SCRIPT TEXT UTILITIES /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Compile a source text and return compiled TMethod. Similar to
+ *  CompileBlueprint but does not handle directives or build a bundle. Used
+ *  for generating code snippets from any GEMSCRIPT text (e.g. for init
+ *  scripts, or anything that isn't part of the
+ */
+function CompileText(text: string = ''): TSMCProgram {
+  const script = TOKENIZER.TextToScript(text);
+  return COMPILER.CompileScript(script);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Given a lineScript in text form and a bundle with symbols, validate it */
+function ValidateLineText(line: string, bdl: SM_Bundle): TValidatedScriptUnit {
+  const [lineScript] = TOKENIZER.TextToScript(line);
+  const vtoks = COMPILER.ValidateStatement(lineScript, {
+    bundle: bdl,
+    globals: {}
+  });
+  return vtoks;
 }
 
 /// AGENT UTILITIES ///////////////////////////////////////////////////////////
@@ -80,7 +93,7 @@ function MakeAgent(instanceDef: TInstance) {
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
   if (typeof bpid === 'string') {
-    const bdl = DCENGINE.GetBlueprintBundle(bpid);
+    const bdl = DCSIM.GetBlueprintBundle(bpid);
     if (!bdl) throw Error(`agent blueprint for '${bpid}' not defined`);
     // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
     agent.setBlueprint(bdl);
@@ -110,7 +123,8 @@ export {
 /// API: These methods are related to transpiling GEMSCRIPT
 /// from source text and
 export {
-  CompileText // compile a script text that IS NOT a blueprint
+  CompileText, // compile a script text that IS NOT a blueprint
+  ValidateLineText // return validation tokens for line
 };
 export {
   DecodeTokenPrimitive, // utility: to convert a scriptToken into runtime data
@@ -120,7 +134,7 @@ export {
   ValidateStatement, // utility: check script tokens against symbols
   //
   CompileScript, // API: return a TSMCProgram from a script text
-  ExtractBlueprintDirectives, // API: return directives from script text
+  ExtractBlueprintMeta, // API: return directives from script text
   //
   CompileBlueprint, // API: save a blueprint script as a bundle with program output
   SymbolizeBlueprint, // API: save blueprint symbols to a bundle
@@ -131,14 +145,11 @@ export {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// FORWARDED API: convert text to tokenized scripts
 export {
-  TextToScript // text w/ newlines => TScriptUnit[]
-} from 'script/tools/text-to-script';
-/// FORWARDED API: converts tokenized scripts, scriptTokens to text representation
-export {
+  TextToScript, // text w/ newlines => TScriptUnit[]
   ScriptToText, // TScriptUnit[] => produce source text from units
   TokenToString, // for converting a token to its text representation
   StatementToText // convert scriptUnit[] to text
-} from 'script/tools/script-to-text';
+} from 'script/tools/script-tokenizer';
 /// DEPRCECATED API: convert tokenized script into a React representation
 export {
   ScriptToJSX // TScriptUnit[] => jsx
@@ -146,7 +157,9 @@ export {
 /// FORWARDED API: convert tokenized script to React-renderable data structures
 export {
   ScriptToLines, // converts script into a viewmodel suitable for rendering as lines
-  LINE_START_NUM // either 0 or 1, read to modify index
+  ScriptToEditableTokens, // script to editable token list
+  ScriptPageToEditableTokens, // script_page to editable token list
+  EditableTokensToScript // pack editable token list back into script
 } from 'script/tools/script-to-lines';
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
