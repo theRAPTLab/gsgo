@@ -124,9 +124,33 @@
 .gwiz.styleSolid {
   background-color: black;
 }
-/* viewState Flags -- needs to override *Type like .gwiz.valueType */
+.gwiz.lineLead {
+  min-height: 1em;
+  display: inline-block;
+}
+.gwiz.newline {
+  display: block;
+}
+.gtoken.selected,
+.gtoken.chosen {
+  background-color: rgba(255, 166, 0, 1) !important; /* orange */
+}
+.gtoken:hover {
+  background-color: rgba(255, 166, 0, 0.5);
+  cursor: pointer;
+}
+.gline.selected {
+  border-bottom: 1px solid rgba(255, 166, 0, 1) !important; /* orange */
+}
+.gtoken.selected:hover {
+  background-color: rgba(255, 166, 0, 0.8) !important;
+}
+/* viewState Flags -- needs to override *Type like .gwiz.valueType and .gtoken.selected */
 .gwiz.styleFlagInvalid {
   background-color: rgba(255, 0, 0, 0.3);
+}
+.gtoken.styleFlagInvalid.selected {
+  background-color: rgba(255, 100, 0, 1) !important;
 }
 .gwiz.styleFlagEmpty {
   color: rgba(0, 0, 255, 0.2);
@@ -136,7 +160,7 @@
   box-sizing: border-box;
 }
 .gwiz.styleFlagEmpty.selected {
-  outline-color: rgba(0, 0, 255, 1);
+  outline-color: rgba(0, 0, 255, 1) !important;
 }
 .gwiz.styleFlagDisabled {
   color: rgba(0, 0, 0, 0.1);
@@ -160,29 +184,9 @@
 .gwiz.styleFlagOverflow.selected {
   color: rgba(255, 0, 0, 1);
   outline: dashed 2px rgba(255, 0, 0, 1);
+  background-color: rgba(255, 100, 0, 1) !important;
 }
 /* end viewState Flags */
-.gwiz.lineLead {
-  min-height: 1em;
-  display: inline-block;
-}
-.gwiz.newline {
-  display: block;
-}
-.gtoken.selected,
-.gtoken.chosen {
-  background-color: rgba(255, 166, 0, 1) !important; /* orange */
-}
-.gtoken:hover {
-  background-color: rgba(255, 166, 0, 0.5);
-  cursor: pointer;
-}
-.gline.selected {
-  border-bottom: 1px solid rgba(255, 166, 0, 1) !important; /* orange */
-}
-.gtoken.selected:hover {
-  background-color: rgba(255, 166, 0, 0.8) !important;
-}
 
 /*
  * Pico overrides
