@@ -285,18 +285,16 @@ class SymbolHelper {
       if (prop) return new VSDToken(prop, { gsType, unitText: part }); // return agent scope {props}
       if (feature) return new VSDToken(feature, { gsType, unitText: part }); // return feature scope {features,props}
     }
+
     // did any agent, feature, prop, or blueprint resolve?
     if (!(agent || feature || prop || blueprint)) {
       this.scanError(true);
-      return new VSDToken(
-        {},
-        {
-          gsType,
-          unitText: TOKENIZER.TokenToUnitText(token),
-          err_code: 'invalid',
-          err_info: `${fn} invalid objref '${part}`
-        }
-      );
+      return new VSDToken(this.getBundleScope(), {
+        gsType,
+        unitText: TOKENIZER.TokenToUnitText(token),
+        err_code: 'invalid',
+        err_info: `${fn} invalid objref '${part}'`
+      });
     }
 
     // OBJREF PART 2: are the remaining parts valid?
@@ -556,8 +554,21 @@ class SymbolHelper {
     }
 
     // is this a literal string from token.string
-    if (gsType === 'string' && TOKENIZER.TokenValue(tok, 'string')) {
-      symData = new VSDToken({ arg }, tokVal);
+    if (gsType === 'string') {
+      let value = TOKENIZER.TokenValue(tok, 'string');
+      if (typeof value === 'string')
+        // symData = new VSDToken({ arg }, tokVal);
+        symData = new VSDToken({ arg }, { gsType, unitText: value.toString() });
+      else
+        symData = new VSDToken(
+          {},
+          {
+            gsType,
+            unitText: TOKENIZER.TokenToUnitText(tok),
+            err_code: 'invalid',
+            err_info: `${tokType}:${tokVal} not a string`
+          }
+        );
     }
 
     // is this an enumeration list match token???

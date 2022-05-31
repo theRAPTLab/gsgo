@@ -29,7 +29,8 @@ export function StatusFooter(/* props */) {
   if (num < 0) {
     selInfo = 'no selection';
   } else {
-    const { scriptToken, validation } = WIZCORE.SelectedTokenInfo();
+    const { scriptToken, slots_validation: validation } =
+      WIZCORE.SelectedTokenInfo();
     let [type, value] = UnpackToken(scriptToken);
     const { validationTokens: vtoks, validationLog } = validation;
     const vtok = vtoks[pos - 1];

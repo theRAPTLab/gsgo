@@ -17,6 +17,8 @@
 
 import React from 'react';
 import UR from '@gemstep/ursys/client';
+import * as TRANSPILER from 'script/transpiler-v2';
+import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import { GLabelToken, GSymbolToken, StackUnit } from '../SharedElements';
 
@@ -29,13 +31,13 @@ const PR = UR.PrefixUtil('SymbolSelector');
 export function EditSymbol(props) {
   // we need the current selection
   const { selection = {} } = props;
-  const { sel_linenum, sel_linepos, sel_slot } = selection;
+  const { sel_linenum, sel_linepos, sel_slotpos } = selection;
   const label = `options for token ${sel_linenum}:${sel_linepos}`;
   // this is a managed TextBuffer with name "ScriptContextor"
 
   const allDicts = [];
 
-  const { sel_validation } = WIZCORE.State();
+  const { slots_validation } = WIZCORE.State();
   // test clause
   if (sel_linenum > 0 && sel_linepos > 0) {
     // const vdata = WIZCORE.ValidateSelectedLine();
@@ -45,10 +47,14 @@ export function EditSymbol(props) {
     // const vIndex = sel_linepos - 1;
     // BL: Use slot position instead of lineposition (sel_linepos)
     //     so that we display the currently selected slot type?
-    if (sel_slot < 0) return 'Click on a word above to edit it.'; // clicked ScriptView, not SelectEditorLineSlot
-    const vIndex = sel_slot - 1;
+    if (sel_slotpos < 0) return 'Click on a word above to edit it.'; // clicked ScriptView, not SelectEditorLineSlot
+    const vIndex = CHECK.UnOffsetLineNum(sel_slotpos);
 
-    const { validationTokens } = sel_validation;
+    const { validationTokens } = slots_validation;
+
+    // no more validation tokens
+    if (vIndex >= validationTokens.length) return 'nothing to render';
+
     const symbolData = validationTokens[vIndex]; // indx into line
     /* symbolData has the current symbol data to convert into viewdata
        `symbolData` looks like this: {

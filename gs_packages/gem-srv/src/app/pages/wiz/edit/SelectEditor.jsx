@@ -2,7 +2,8 @@
 
   SelectEditor
 
-  given the current selection which is a token on the left side,
+  ~~given the current selection which is a token on the left side,~~
+  given the current selection which is a slot token on the RIGHT side,
   determine what kind of token it is, and what the appropriator
   editor is for it. It looks at the validation token array to infer
   what it is from the simple token types
@@ -21,9 +22,10 @@
 
 import React from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 
 import { EditSymbol } from './EditSymbol';
-import { SelectEditorLineSlot } from './SelectEditorLineSlot';
+import { SelectEditorSlots } from './SelectEditorSlots';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -48,50 +50,56 @@ function SelectEditor(props) {
   const { selection } = props;
   if (selection === undefined) return null;
 
-  // TODO: this manipulation should all be moved to a WIZCORE method
-  // as much as possible
-  const { sel_linepos: pos, validation, scriptToken } = selection;
+  const { sel_slotpos: pos, slots_validation: validation } = selection;
+
+  if (pos < 0) return 'Nothing selected';
+
   const { validationTokens: vtoks, validationLog } = validation;
-  const vtok = vtoks[pos - 1];
-  const { arg, gsType, methodSig, unitText } = vtok; // we want to SWITCH ON THIS
-  const { name, args: methodArgs, info } = methodSig || {}; // HACK FOR TESTING and not breaking other tokens
-  // end TODO
+
+  const vtok = vtoks[CHECK.UnOffsetLineNum(pos)];
+  const { gsType, methodSig, unitText } = vtok || {}; // gracefully fail if not defined
+  const { name, args: methodArgs, info } = methodSig || {}; // gracefully fail if not defined
+
   const processNumberInput = e => {
     e.preventDefault();
-    scriptToken.value = Number(e.target.value);
+    WIZCORE.UpdateSlotValue(Number(e.target.value));
   };
   const processStringInput = e => {
     e.preventDefault();
-    scriptToken.string = String(e.target.value);
+    WIZCORE.UpdateSlotString(String(e.target.value));
   };
   const handleNumberKeypress = e => {
     if (e.key === 'Enter') {
       processNumberInput(e);
-      WIZCORE.ScriptChanged();
       e.target.select();
     }
   };
   const handleStringKeypress = e => {
     if (e.key === 'Enter') {
       processStringInput(e);
-      WIZCORE.ScriptChanged();
       e.target.select();
     }
   };
 
   let editor;
+
+  // necessary so input form defaultValue changes with each change
+  const tkey = `${selection.sel_linenum},${selection.sel_slotpos}`;
+
   switch (gsType) {
     case 'number':
       editor = (
         <div>
-          <SelectEditorLineSlot selection={selection} />
+          <SelectEditorSlots selection={selection} />
           <p>
-            <b>arguments for {name}</b> {methodArgs.join(',')}
+            <b>arguments for {name}</b>{' '}
+            {methodArgs ? methodArgs.join(',') : 'n/a'}
             <br />
             <b>helpful</b> {info}
           </p>
           <label>enter {gsType}</label>
           <input
+            key={tkey}
             defaultValue={Number(unitText)}
             type="number"
             onChange={processNumberInput}
@@ -104,14 +112,16 @@ function SelectEditor(props) {
     case 'string':
       editor = (
         <div>
-          <SelectEditorLineSlot selection={selection} />
+          <SelectEditorSlots selection={selection} />
           <p>
-            <b>arguments for {name}</b> {methodArgs.join(',')}
+            <b>arguments for {name}</b>{' '}
+            {methodArgs ? methodArgs.join(',') : 'n/a'}
             <br />
             <b>helpful</b> {info}
           </p>
           <label>enter {gsType}</label>
           <input
+            key={tkey}
             defaultValue={unitText}
             type="text"
             onChange={processStringInput}
@@ -124,7 +134,7 @@ function SelectEditor(props) {
     default:
       editor = (
         <div>
-          <SelectEditorLineSlot selection={selection} />
+          <SelectEditorSlots selection={selection} />
           <EditSymbol selection={selection} />
         </div>
       );
