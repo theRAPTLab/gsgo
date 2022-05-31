@@ -82,6 +82,10 @@ function SelectEditor(props) {
   };
 
   let editor;
+
+  // necessary so input form defaultValue changes with each change
+  const tkey = `${selection.sel_linenum},${selection.sel_slotpos}`;
+
   switch (gsType) {
     case 'number':
       editor = (
@@ -95,6 +99,7 @@ function SelectEditor(props) {
           </p>
           <label>enter {gsType}</label>
           <input
+            key={tkey}
             defaultValue={Number(unitText)}
             type="number"
             onChange={processNumberInput}
@@ -116,6 +121,7 @@ function SelectEditor(props) {
           </p>
           <label>enter {gsType}</label>
           <input
+            key={tkey}
             defaultValue={unitText}
             type="text"
             onChange={processStringInput}
