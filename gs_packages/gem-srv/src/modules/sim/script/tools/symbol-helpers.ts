@@ -556,8 +556,21 @@ class SymbolHelper {
     }
 
     // is this a literal string from token.string
-    if (gsType === 'string' && TOKENIZER.TokenValue(tok, 'string')) {
-      symData = new VSDToken({ arg }, tokVal);
+    if (gsType === 'string') {
+      let value = TOKENIZER.TokenValue(tok, 'string');
+      if (typeof value === 'string')
+        // symData = new VSDToken({ arg }, tokVal);
+        symData = new VSDToken({ arg }, { gsType, unitText: value.toString() });
+      else
+        symData = new VSDToken(
+          {},
+          {
+            gsType,
+            unitText: TOKENIZER.TokenToUnitText(tok),
+            err_code: 'invalid',
+            err_info: `${tokType}:${tokVal} not a string`
+          }
+        );
     }
 
     // is this an enumeration list match token???
