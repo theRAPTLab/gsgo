@@ -24,7 +24,6 @@ import UR from '@gemstep/ursys/client';
 import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-import * as TEST_SYMBOLS from 'script/tools/x-symbol-tests';
 import * as DCSIM from 'modules/datacore/dc-sim-data';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
@@ -127,7 +126,6 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
   const vmState = { cur_prjid, cur_bpid, script_text };
   STORE.SendState(vmState);
   console.log(...PR(`loaded blueprint '${DEV_BPID}' from '${DEV_PRJID}'`));
-  TEST_SYMBOLS.TestValidate();
 });
 
 /// DERIVED STATE LOGIC ///////////////////////////////////////////////////////
