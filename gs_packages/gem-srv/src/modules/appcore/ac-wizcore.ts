@@ -277,7 +277,7 @@ function UIToggleRunEditMode() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
-export function UpdateSlotValue(val) {
+function UpdateSlotValue(val) {
   // Update slots_linescript
   const { slots_linescript, sel_slotpos } = State();
   // if the scriptToken already exists, update it byRef
@@ -285,6 +285,21 @@ export function UpdateSlotValue(val) {
     slots_linescript[CHECK.UnOffsetLineNum(sel_slotpos)] || // existing token
     {}; // or new object if this is creating a new slot
   slotScriptToken.value = val; // We know the scriptToken is a value
+  if (sel_slotpos > slots_linescript.length) {
+    slots_linescript.push(slotScriptToken); // it's a new token so add it
+  }
+  SendState({ slots_linescript }); // Update state to trigger validation rerun
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
+function UpdateSlotString(val) {
+  // Update slots_linescript
+  const { slots_linescript, sel_slotpos } = State();
+  // if the scriptToken already exists, update it byRef
+  const slotScriptToken =
+    slots_linescript[CHECK.UnOffsetLineNum(sel_slotpos)] || // existing token
+    {}; // or new object if this is creating a new slot
+  slotScriptToken.string = val; // We know the scriptToken is a value
   if (sel_slotpos > slots_linescript.length) {
     slots_linescript.push(slotScriptToken); // it's a new token so add it
   }
@@ -693,6 +708,8 @@ export {
   // DEPRECATED
   // ScriptChanged, // handles change of script_page lineScript tokens
   WizardTextChanged, // handle incoming change of text
+  UpdateSlotValue, // handle income change of slot value (input)
+  UpdateSlotString, // handle income change of slot string (input)
   WizardTestLine, // handle test line for WizardTextLine tester
   DispatchEditorClick // handle clicks on editing box
 };

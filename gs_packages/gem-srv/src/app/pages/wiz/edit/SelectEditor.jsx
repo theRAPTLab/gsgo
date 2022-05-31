@@ -66,7 +66,7 @@ function SelectEditor(props) {
   };
   const processStringInput = e => {
     e.preventDefault();
-    WIZCORE.UpdateSlotValue(String(e.target.value));
+    WIZCORE.UpdateSlotString(String(e.target.value));
   };
   const handleNumberKeypress = e => {
     if (e.key === 'Enter') {
