@@ -285,18 +285,16 @@ class SymbolHelper {
       if (prop) return new VSDToken(prop, { gsType, unitText: part }); // return agent scope {props}
       if (feature) return new VSDToken(feature, { gsType, unitText: part }); // return feature scope {features,props}
     }
+
     // did any agent, feature, prop, or blueprint resolve?
     if (!(agent || feature || prop || blueprint)) {
       this.scanError(true);
-      return new VSDToken(
-        {},
-        {
-          gsType,
-          unitText: TOKENIZER.TokenToUnitText(token),
-          err_code: 'invalid',
-          err_info: `${fn} invalid objref '${part}'`
-        }
-      );
+      return new VSDToken(this.getBundleScope(), {
+        gsType,
+        unitText: TOKENIZER.TokenToUnitText(token),
+        err_code: 'invalid',
+        err_info: `${fn} invalid objref '${part}'`
+      });
     }
 
     // OBJREF PART 2: are the remaining parts valid?
