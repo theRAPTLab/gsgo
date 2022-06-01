@@ -312,8 +312,8 @@ export function GToken(props) {
 }
 
 /** tokens displayed in the SelectEditorLineSlot */
-export function GSlotToken(props) {
-  const { dataSelectKey, selected, type, label, viewState } = props;
+export function GValidationToken(props) {
+  const { tokenKey, position, selected, type, label, viewState, isSlot } = props;
   let classes = selected
     ? 'gwiz gtoken styleOpen selected'
     : 'gwiz gtoken styleOpen';

@@ -56,7 +56,7 @@ import {
   FlexStack,
   StackUnit,
   GToken,
-  GSlotToken,
+  GValidationToken,
   StackText
 } from '../SharedElements';
 
@@ -130,9 +130,9 @@ function SelectEditorSlots(props) {
     }
 
     tokenList.push(
-      <GSlotToken
         key={dataSelectKey}
         dataSelectKey={dataSelectKey}
+      <GValidationToken
         selected={selected}
         type={type}
         label={label}
