@@ -122,6 +122,7 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
     );
     const script_text = TEST_SYMBOLS.GetTestScriptText();
     STORE.SendState({ script_text });
+    TEST_SYMBOLS.TestValidate();
     return;
   }
   // normal load
@@ -135,7 +136,7 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
   // This retrieves the uncompiled/unbundled bpDef object {name, scriptText} from gem proj
   console.log(
     out,
-    'background-color:rgba(255,0,0,0.15);color:red;padding:2px 4px',
+    'background-color:rgba(255,0,0,0.15);color:red;padding:1em 2em',
     'color:maroon',
     '\n\n'
   );
@@ -144,7 +145,7 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
   const vmState = { cur_prjid, cur_bpid, script_text };
   STORE.SendState(vmState);
   console.log(...PR(`loaded blueprint '${DEV_BPID}' from '${DEV_PRJID}'`));
-  TEST_SYMBOLS.TestValidate();
+  // TEST_SYMBOLS.TestValidate();
 });
 
 /// DERIVED STATE LOGIC ///////////////////////////////////////////////////////
