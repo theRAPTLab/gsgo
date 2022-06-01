@@ -346,7 +346,8 @@ function DispatchClick(event) {
     // If the slot was disabled, don't let it be clicked
     if (event.target.className.includes('styleFlagDisabled')) return;
     // Else, select the slot
-    newState.sel_slotpos = Number(slotKey); // STATE UPDATE: selected line
+    const [line, pos] = slotKey.split(',');
+    newState.sel_slotpos = Number(pos); // STATE UPDATE: selected line
     SendState(newState);
     const { sel_slotpos } = State();
     if (sel_slotpos > 0) {
