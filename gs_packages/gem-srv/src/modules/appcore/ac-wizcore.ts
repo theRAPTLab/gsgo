@@ -28,6 +28,7 @@ import * as TEST_SYMBOLS from 'script/tools/x-symbol-tests';
 import * as DCSIM from 'modules/datacore/dc-sim-data';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
+import { ENABLE_SYMBOL_TEST_BLUEPRINT } from 'modules/datacore/dc-constants';
 import {
   DecodeSymbolViewData,
   UnpackViewData,
@@ -106,13 +107,24 @@ UR.HookPhase('UR/LOAD_ASSETS', async () => {
   // return promise to hold LOAD_ASSETS until done
   console.log(
     `%cInitializing 'assets/${ASSETDIR}' as project source...`,
-    'background-color:rgba(255,0,0,0.15);color:red;padding:2px 4px'
+    'background-color:rgba(255,0,0,0.15);color:red;padding:1em 2em'
   );
   return PROJ_v2.LoadAssetDirectory(`/assets/${ASSETDIR}/`);
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// DEFERRED CALL: APP_CONFIGURE fires after LOAD_ASSETS (above) completes
 UR.HookPhase('UR/APP_CONFIGURE', () => {
+  // check for override load to use built-in test script
+  if (ENABLE_SYMBOL_TEST_BLUEPRINT) {
+    console.log(
+      `%cUsing TEST_SCRIPT because ENABLE_SYMBOL_TEST_BLUEPRINT is true...`,
+      'background-color:rgba(255,255,0,0.15);color:red;padding:1em 2em'
+    );
+    const script_text = TEST_SYMBOLS.GetTestScriptText();
+    STORE.SendState({ script_text });
+    return;
+  }
+  // normal load
   const cur_prjid = DEV_PRJID;
   const cur_bpid = DEV_BPID;
   let out = `%cLooking for '${DEV_PRJID}.prj' with blueprint name '${DEV_BPID}' `;

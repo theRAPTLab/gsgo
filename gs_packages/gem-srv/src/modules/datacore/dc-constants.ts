@@ -13,3 +13,7 @@
 export const SHOW_EMPTY_STATEMENTS = true;
 /** whether to index the first entry as 0 or 1 in the GUI */
 export const SCRIPT_PAGE_INDEX_OFFSET = 1; // set to 1 for no 0 indexes
+
+/// GUI WIZARD TEST BLUEPRINT /////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const ENABLE_SYMBOL_TEST_BLUEPRINT = true;
