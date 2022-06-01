@@ -324,8 +324,12 @@ function K_DerefProp(refArg): DerefMethod {
   // ref is an array of strings that are fields in dot addressing
   // like agent.x
   if (refArg === undefined)
-    throw Error(`${fn} objref arg is undefined (bad scriptText?)`);
-  const ref = refArg.objref || [refArg];
+    // HACK
+    // TEMPORARY DEV Testing OVERRIDE -- don't throw error, just console log it
+    // throw Error(`${fn} objref arg is undefined (bad scriptText?)`);
+    // FIXME: We meed to properly deref this.
+    console.error(`${fn} objref arg is undefined (bad scriptText?)`);
+  const ref = refArg ? refArg.objref || [refArg] : 'badref';
   const len = ref.length;
   // create a function that will be used to dereferences the objref
   // into an actual call

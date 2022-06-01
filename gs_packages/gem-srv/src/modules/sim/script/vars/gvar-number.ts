@@ -193,7 +193,6 @@ export class GVarNumber extends SM_Object implements IScopeable {
 GVarNumber.Symbols = {
   ctors: { Number: GVarNumber.Symbols },
   methods: {
-    value: { returns: 'value:number' },
     setMin: { args: ['nvalue:number'], info: 'minimum value' },
     setMax: { args: ['nvalue:number'], info: 'maximum value' },
     setTo: { args: ['nvalue:number'], info: 'assign value' },

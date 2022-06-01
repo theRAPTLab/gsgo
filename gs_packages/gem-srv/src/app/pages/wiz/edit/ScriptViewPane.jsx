@@ -64,7 +64,6 @@ export function ScriptViewPane(props) {
   // the line has token viewmodel data plus line metdata
   script_page.forEach(line => {
     const { lineNum, level, vmTokens } = line;
-    // console.log('DRAWING LINE', lineNum, script_page[lineNum - SCRIPT_PAGE_INDEX_OFFSET]);
 
     const lineBuffer = [];
     const hasTokens = vmTokens.length > 0;

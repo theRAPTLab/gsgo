@@ -56,6 +56,9 @@ const GEMSTEP_TYPES: TGSType[] = [
 function OffsetLineNum(num: number): number {
   return num + SCRIPT_PAGE_INDEX_OFFSET;
 }
+function UnOffsetLineNum(num: number): number {
+  return num - SCRIPT_PAGE_INDEX_OFFSET;
+}
 
 /// METHOD ARGUMENT UTILITIES /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -170,7 +173,7 @@ function IsValidBundle(bundle: ISMCBundle) {
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// data check utitlities
-export { OffsetLineNum };
+export { OffsetLineNum, UnOffsetLineNum };
 
 /// token check utilities
 export {
