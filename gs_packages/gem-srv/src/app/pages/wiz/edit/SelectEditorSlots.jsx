@@ -56,7 +56,7 @@ import {
   FlexStack,
   StackUnit,
   GToken,
-  GSlotToken,
+  GValidationToken,
   StackText
 } from '../SharedElements';
 
@@ -100,7 +100,7 @@ function u_Key(prefix = '') {
 
 function SelectEditorSlots(props) {
   // 1. Get Slot Definitions
-  const { slots_validation, sel_slotpos } = WIZCORE.State();
+  const { slots_validation, sel_slotpos, sel_linenum } = WIZCORE.State();
 
   // 2. Process each validation token
   const { validationTokens } = slots_validation;
@@ -110,8 +110,9 @@ function SelectEditorSlots(props) {
     let label;
     let type;
     let viewState;
-    const dataSelectKey = CHECK.OffsetLineNum(i);
-    const selected = sel_slotpos === dataSelectKey;
+    const position = CHECK.OffsetLineNum(i);
+    const tokenKey = `${sel_linenum},${position}`;
+    const selected = sel_slotpos === position;
 
     const t = validationTokens[i];
     if (t.error) {
@@ -122,6 +123,10 @@ function SelectEditorSlots(props) {
       label = t.unitText || t.gsType || label;
       type = t.gsType;
       viewState = t.error.code;
+      // REVIEW: While editing, we show empty slots as empty so there isn't so much red?
+      // but in regular displays, we show empty slots as invalid
+      // or should they always show as invalid?
+      viewState = viewState === 'empty' ? 'empty-editing' : viewState;
     } else {
       // No error, just show token
       label = t.unitText;
@@ -130,13 +135,15 @@ function SelectEditorSlots(props) {
     }
 
     tokenList.push(
-      <GSlotToken
-        key={dataSelectKey}
-        dataSelectKey={dataSelectKey}
+      <GValidationToken
+        key={tokenKey}
+        tokenKey={tokenKey}
+        position={position}
         selected={selected}
         type={type}
         label={label}
         viewState={viewState}
+        isSlot
       />
     );
   }
