@@ -286,6 +286,8 @@ function UpdateSlotValue(val) {
     slots_linescript[CHECK.UnOffsetLineNum(sel_slotpos)] || // existing token
     {}; // or new object if this is creating a new slot
   slotScriptToken.value = val; // We know the scriptToken is a value
+  // if the token was previously used to as a string token, remove the old string key
+  delete slotScriptToken.string;
   if (sel_slotpos > slots_linescript.length) {
     slots_linescript.push(slotScriptToken); // it's a new token so add it
   }
@@ -301,6 +303,8 @@ function UpdateSlotString(val) {
     slots_linescript[CHECK.UnOffsetLineNum(sel_slotpos)] || // existing token
     {}; // or new object if this is creating a new slot
   slotScriptToken.string = val; // We know the scriptToken is a value
+  // if the token was previously used to as a value token, remove the old value key
+  delete slotScriptToken.value;
   if (sel_slotpos > slots_linescript.length) {
     slots_linescript.push(slotScriptToken); // it's a new token so add it
   }
