@@ -31,6 +31,21 @@ prop energyLevel setTo 0
 prop agent.energyLevel setTo 0
 prop energyLevel setTo 'foo'
 prop energyLevel
+prop
+prop x
+prop x setTo
+prop x setTo 400
+prop x setTo 400 'too' 'many' 'parms'
+prop energyType setMin
+prop energyType setTo
+prop energyType setTo 'help'
+prop unknownPropName setTo 400
+prop x badMethod 400
+prop x setTo 'wrongType'
+prop agent.x setTo
+prop Costume.costumeName
+prop x setToRnd -400 400 true
+prop y setTo -400
 
 # ProgRam ConDition
 when Boo centerFirstTouches Boo [[
