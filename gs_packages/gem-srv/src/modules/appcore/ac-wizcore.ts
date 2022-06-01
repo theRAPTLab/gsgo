@@ -148,6 +148,7 @@ STORE._interceptState(state => {
     state.script_tokens = toks;
     state.cur_bdl = TRANSPILER.BundleBlueprint(toks);
     const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
+    // INSERT validation tokens to script_page
     state.script_page = vmPage;
     state.key_to_token = tokMap;
   }
@@ -339,7 +340,7 @@ function DispatchClick(event) {
     }
   }
 
-  /** (2) GSlotToken was clicked? ************************************************/
+  /** (2) GValidationToken was clicked? ************************************************/
   const slotKey = event.target.getAttribute('data-slotkey');
   if (slotKey !== null) {
     // If the slot was disabled, don't let it be clicked
@@ -658,7 +659,6 @@ export function SaveSlotLineScript(e) {
     sel_linenum
   } = STORE.State();
   const lineIdx = CHECK.UnOffsetLineNum(sel_linenum); // 1-based
-  // Update script_tokens, since they are the main store?
   script_tokens.splice(lineIdx, 1, slots_linescript);
   STORE.SendState({ script_tokens });
 }
