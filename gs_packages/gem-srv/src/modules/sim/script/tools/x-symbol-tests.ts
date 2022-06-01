@@ -10,6 +10,7 @@ import SM_Bundle from 'lib/class-sm-bundle';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
+import { ENABLE_SYMBOL_TEST_BLUEPRINT } from 'modules/datacore/dc-constants';
 import { DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 import { SymbolValidator } from './x-symbol-validator';
 
@@ -17,7 +18,7 @@ const { warn, log, table, group, groupCollapsed, groupEnd } = console;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const USE_TEST_SCRIPT = false;
+const USE_TEST_SCRIPT = ENABLE_SYMBOL_TEST_BLUEPRINT;
 const TEST_SCRIPT = `# blueprint Boo
 # TAG isCharControllable false
 # PROGRAM DEFINE
@@ -64,6 +65,14 @@ function m_GetFirstErrorInfo(vTokens) {
 }
 
 /// TESTS /////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetTestScriptText() {
+  if (USE_TEST_SCRIPT) return TEST_SCRIPT;
+  // else
+  const bp = PROJ_v2.GetProjectBlueprint(DEV_PRJID, DEV_BPID);
+  const { scriptText } = bp;
+  return scriptText;
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestValidate() {
   const fn = 'TestValidate:';
@@ -189,4 +198,4 @@ function TestValidate() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { TestValidate };
+export { GetTestScriptText, TestValidate };
