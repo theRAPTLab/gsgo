@@ -555,6 +555,20 @@ function ValidatePageLine(vmLine: VMPageLine): TValidatedScriptUnit {
     globals: globalRefs
   });
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Validate all the lines in the script_page and return the validation
+ *  tokens. `validationTokens` are 1-based.
+ */
+function ValidateScriptPage(): TValidatedScriptUnit[] {
+  const { script_page } = STORE.State();
+  const validationTokens = []; // default to one-based
+  const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
+  script_page.forEach(l => {
+    const { lineNum } = l;
+    validationTokens[lineNum] = ValidatePageLine(l);
+  });
+  return validationTokens;
+}
 
 /// UI LIST HELPERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -729,7 +743,8 @@ export {
   GetLineScriptText, // return string version of a scriptUnit
   ValidateLine, // return TValidationResult for passed linenum
   ValidateSelectedLine, // return TValidationResult for current select line
-  ValidatePageLine // test compile line relative to current blueprint
+  ValidatePageLine, // test compile line relative to current blueprint
+  ValidateScriptPage // return TValidationResult[] for script_page
 };
 export {
   GetSymbolNames, // return the names
