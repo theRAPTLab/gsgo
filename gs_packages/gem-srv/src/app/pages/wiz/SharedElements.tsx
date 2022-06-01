@@ -334,6 +334,8 @@ export function GValidationToken(props) {
   if (viewState === 'vague') classes += ' styleFlagDisabled';
   if (viewState === 'unexpected')
     classes += ' styleFlagInvalid styleFlagOverflow';
+  // special custom combination viewStates
+  if (viewState === 'empty-editing') classes += ' styleFlagEmpty';
   const jsx = isSlot ? (
     <div className={classes} data-slotkey={tokenKey}>
       {label}

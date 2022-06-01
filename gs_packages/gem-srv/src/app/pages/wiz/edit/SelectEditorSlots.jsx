@@ -123,6 +123,10 @@ function SelectEditorSlots(props) {
       label = t.unitText || t.gsType || label;
       type = t.gsType;
       viewState = t.error.code;
+      // REVIEW: While editing, we show empty slots as empty so there isn't so much red?
+      // but in regular displays, we show empty slots as invalid
+      // or should they always show as invalid?
+      viewState = viewState === 'empty' ? 'empty-editing' : viewState;
     } else {
       // No error, just show token
       label = t.unitText;
