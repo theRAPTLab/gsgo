@@ -27,6 +27,7 @@ import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as DCSIM from 'modules/datacore/dc-sim-data';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
+import * as TEST_SYMBOLS from 'script/tools/x-symbol-tests';
 import { ENABLE_SYMBOL_TEST_BLUEPRINT } from 'modules/datacore/dc-constants';
 import {
   DecodeSymbolViewData,
