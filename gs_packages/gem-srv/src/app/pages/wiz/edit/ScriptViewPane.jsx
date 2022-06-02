@@ -88,7 +88,6 @@ export function ScriptViewPane(props) {
         if (scriptToken) {
           const dtok = DecodeTokenPrimitive(scriptToken);
           label = typeof dtok !== 'object' ? dtok : TokenToString(scriptToken);
-          selected = tokenKey === selTokId;
           viewState =
             validationToken && validationToken.error
               ? validationToken.error.code
@@ -99,6 +98,7 @@ export function ScriptViewPane(props) {
           viewState = 'empty';
           tokenKey = `${lineNum},${idx + 1}`; // generate tokenKey
         }
+        selected = tokenKey === selTokId;
         lineBuffer.push(
           <GValidationToken
             key={u_Key()}
