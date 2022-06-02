@@ -31,8 +31,8 @@ const RUNTIME_PATH = Path.join(__dirname, `../${RUNTIME_DIRNAME}`);
 /// it can be customized per installation and not overwrite other people's
 /// configs
 
-const MQTT_URL = 'localhost';
-const ASSETDIR = 'local';
+const MQTT_URL = 'localhost'; // override in local-settings.json
+const ASSETDIR = 'local'; // override in local-settings.json
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -44,7 +44,7 @@ const compositeSettings = {
   ASSETDIR,
   RUNTIME_PATH, // used only by servers
   MQTT_URL,
-  // overrides from local-settings.json
+  // apply overrides from local-settings.json if it exists
   ...OVERRIDES
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

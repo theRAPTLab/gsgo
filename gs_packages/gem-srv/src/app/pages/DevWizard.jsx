@@ -119,8 +119,9 @@ class DevWizard extends React.Component {
         </div>
         <div style={sRight}>{RightSide}</div>
         <footer style={sFoot}>
-          <StatusFooter />
-          <DBGValidateLine />
+          &lt; Insert "Submit to Server" button here &gt;
+          {/* <StatusFooter /> */}
+          {/* <DBGValidateLine /> */}
         </footer>
         <ButtonConsole />
       </div>
