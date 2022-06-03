@@ -99,12 +99,16 @@ const WebpackLoaders = () => {
           // note: applies only to "imported" images in source code. Doesn't affect
           // static assets copied as-is (see wp.pack.* configs)
           include: DIR_INCLUDES
+        },
+        {
+          test: /\.gemscript$/i,
+          use: 'raw-loader'
         }
       ]
     },
     resolve: {
       // make require() handle both .js and .jsx files (default only .js)
-      extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      extensions: ['.js', '.jsx', '.ts', '.tsx', '.gemscript'],
       // create webapp path aliases for module imports
       // for visual studio code live linting, update eslintrc
       alias: {
@@ -113,7 +117,8 @@ const WebpackLoaders = () => {
         script: Path.resolve(__dirname, '../src/modules/sim/script'),
         app: Path.resolve(__dirname, '../src/app'),
         lib: Path.resolve(__dirname, '../src/lib'),
-        modules: Path.resolve(__dirname, '../src/modules')
+        modules: Path.resolve(__dirname, '../src/modules'),
+        tests: Path.resolve(__dirname, '../src/modules/tests')
       }
     }
   };
