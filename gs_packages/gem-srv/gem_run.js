@@ -96,23 +96,24 @@ function GEMSRV_Start(opt) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GEMSRV_Kill() {
+  let pskill = `ps ax | grep "[n]ode --trace-warnings gem_run.js" | awk '{ print $1 }'`;
+  TOUT(pskill);
   let result;
-  result = Shell.exec(
-    `ps ax | grep "[n]ode --trace-warnings gem_run.js" | awk '{ print $1 }'`,
-    {
-      silent: true
-    }
-  );
+  result = Shell.exec(pskill, {
+    silent: true
+  });
   if (result.error) TOUT('...ERR:', result.error);
   const job = result.stdout.trim();
   if (job) {
-    TOUT(`KILL: PID '${job}' appears to be a GEMSRV instance...killing PID!`);
-    Shell.exec(`kill -9 ${stdout}`);
+    TOUT(`PID '${job}' appears to be a GEMSRV instance...killing PID!`);
+    pskill = `kill -9 ${job}`;
+    TOUT(pskill);
+    Shell.exec(pskill);
     TOUT('Hopefully that worked');
   } else {
     TOUT('---');
-    TOUT("npm run kill: Couldn't find process matching 'node gem_run.js'");
-    TOUT("try using 'ps' command to find node processes running gemstep\n");
+    TOUT("Couldn't find process matching 'node gem_run.js' to kill -9");
+    TOUT("Try using 'ps' or 'ps ax' to find node processes running gemstep\n");
   }
 }
 
