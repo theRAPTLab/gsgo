@@ -12,9 +12,9 @@
       "static/*": ["./app/static/*"],
       "app/*": ["./app/*"],
       "script/*": ["./modules/sim/script/*"],
-      "tests/*": ["./modules/tests/*"],
       "modules/*": ["./modules/*"],
-      "lib/*": ["./lib/*"]
+      "lib/*": ["./lib/*"],
+      "test/*": ["./test/*"]
     },
     "jsx": "preserve",
     "esModuleInterop": true,

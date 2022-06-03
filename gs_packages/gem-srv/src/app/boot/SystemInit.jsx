@@ -35,11 +35,11 @@ import SystemShell from './SystemShell';
 
 /// RUN UNIT TESTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// import '../../modules/tests/test-expr-parser'; // test parser evaluation
-// import '../../modules/tests/test-script-parser'; // test script parser
-// import '../../modules/tests/test-compiler'; // test compiler
-// import '../../modules/tests/test-script-runtime'; // test runtime keyword functions
-// import '../../modules/tests/test-keywords'; // test individual keywords
+// import 'test/unit-expr-parser'; // test parser evaluation
+// import 'test/unit-script-parser'; // test script parser
+// import 'test/unit-compiler'; // test compiler
+// import 'test/unit-script-runtime'; // test runtime keyword functions
+// import 'test/unit-keywords'; // test individual keywords
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

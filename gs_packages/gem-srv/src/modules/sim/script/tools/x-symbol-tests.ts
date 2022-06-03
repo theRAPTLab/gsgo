@@ -12,7 +12,7 @@ import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import { ENABLE_SYMBOL_TEST_BLUEPRINT } from 'modules/datacore/dc-constants';
 import { DEV_PRJID, DEV_BPID } from 'config/gem-settings';
-import TEST_SCRIPT from 'modules/tests/scripts/gui-wizard-slots.gemscript';
+import TEST_SCRIPT from 'test/gemscript/gui-wizard-slots.gemscript';
 
 const { warn, log, table, group, groupCollapsed, groupEnd } = console;
 

@@ -115,10 +115,10 @@ const WebpackLoaders = () => {
         // make sure to check tsconfig.json as well
         config: Path.resolve(__dirname, '../config'),
         script: Path.resolve(__dirname, '../src/modules/sim/script'),
+        modules: Path.resolve(__dirname, '../src/modules'),
         app: Path.resolve(__dirname, '../src/app'),
         lib: Path.resolve(__dirname, '../src/lib'),
-        modules: Path.resolve(__dirname, '../src/modules'),
-        tests: Path.resolve(__dirname, '../src/modules/tests')
+        test: Path.resolve(__dirname, '../src/test')
       }
     }
   };

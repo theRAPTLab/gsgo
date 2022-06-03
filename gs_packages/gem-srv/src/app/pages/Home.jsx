@@ -15,11 +15,11 @@ import { useStylesHOC } from './helpers/page-styles';
 /// RUN UNIT TESTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Tests Lasted Reviewed: Dec 1, 2021
-// import '../../modules/tests/test-expr-parser'; // test parser evaluation PASS
-// import '../../modules/tests/test-script-parser'; // test script parser PASS
-// import '../../modules/tests/test-compiler'; // test compiler (needs update)
-// import '../../modules/tests/test-script-runtime'; // test instances (needs update)
-// import '../../modules/tests/test-keywords'; // test keywords (needs update)
+// import 'test/unit-expr-parser'; // test parser evaluation PASS
+// import 'test/unit-script-parser'; // test script parser PASS
+// import 'test/unit-compiler'; // test compiler (needs update)
+// import 'test/unit-script-runtime'; // test instances (needs update)
+// import 'test/unit-keywords'; // test keywords (needs update)
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
