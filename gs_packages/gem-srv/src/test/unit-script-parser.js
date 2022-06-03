@@ -4,7 +4,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
 import ScriptTokenizer from 'script/tools/class-gscript-tokenizer-v2';
+import TESTS from './jsdata/script-parser-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -25,7 +27,7 @@ function TokenizeTest(testName, test) {
   const { text, expect } = test;
   const lines = text.split('\n');
 
-  const script = tokenizer.tokenize(lines);
+  const script = tokenizer.tokenize(text);
   const passed = JSON.stringify(expect) === JSON.stringify(script);
   if (passed) console.groupCollapsed(`%cTEST PASSED: '${testName}'`, cssOK);
   else console.groupCollapsed(`%cTEST FAILED: '${testName}'`, cssFail);
@@ -50,370 +52,23 @@ function TokenizeTest(testName, test) {
   });
   console.groupEnd();
   console.group('script tokenize');
-  tokenizer.tokenize(lines, 'show');
+  tokenizer.tokenize(text, 'show');
   console.groupEnd();
   console.groupEnd();
 }
 
-/** format of these tests:
- *  'text': is literal scripttext
- *  'expect': is an array of scriptunits, which are themselves arrays
- */
-const TESTS = {
-  'inline-block': {
-    text: `
-    K [[ NAME ]] [[
-      A
-    ]]`,
-    expect: [
-      [
-        {
-          'line': ''
-        }
-      ],
-      [
-        {
-          'identifier': 'K'
-        },
-        {
-          'program': 'NAME'
-        },
-        {
-          'block': [
-            [
-              {
-                'identifier': 'A'
-              }
-            ]
-          ]
-        }
-      ]
-    ]
-  },
-  'multiLine': {
-    text: `
-    K A B C
-    if [[
-      D
-    ]]`,
-    expect: [
-      [
-        {
-          'line': ''
-        }
-      ],
-      [
-        {
-          'identifier': 'K'
-        },
-        {
-          'identifier': 'A'
-        },
-        {
-          'identifier': 'B'
-        },
-        {
-          'identifier': 'C'
-        }
-      ],
-      [
-        {
-          'identifier': 'if'
-        },
-        {
-          'block': [
-            [
-              {
-                'identifier': 'D'
-              }
-            ]
-          ]
-        }
-      ]
-    ]
-  },
-  'block': {
-    text: `
-    [[
-      K A B C
-      K D E F
-    ]]`,
-    expect: [
-      [
-        {
-          'line': ''
-        }
-      ],
-      [
-        {
-          'block': [
-            [
-              {
-                'identifier': 'K'
-              },
-              {
-                'identifier': 'A'
-              },
-              {
-                'identifier': 'B'
-              },
-              {
-                'identifier': 'C'
-              }
-            ],
-            [
-              {
-                'identifier': 'K'
-              },
-              {
-                'identifier': 'D'
-              },
-              {
-                'identifier': 'E'
-              },
-              {
-                'identifier': 'F'
-              }
-            ]
-          ]
-        }
-      ]
-    ]
-  },
-  'if-then': {
-    text: `
-    if [[
-      X
-    ]]`,
-    expect: [
-      [
-        {
-          'line': ''
-        }
-      ],
-      [
-        {
-          'identifier': 'if'
-        },
-        {
-          'block': [
-            [
-              {
-                'identifier': 'X'
-              }
-            ]
-          ]
-        }
-      ]
-    ]
-  },
-  // test:
-  'if-then-else': {
-    text: `
-    if [[
-      Y
-    ]] [[
-      Z
-    ]]`,
-    expect: [
-      [
-        {
-          'line': ''
-        }
-      ],
-      [
-        {
-          'identifier': 'if'
-        },
-        {
-          'block': [
-            [
-              {
-                'identifier': 'Y'
-              }
-            ]
-          ]
-        },
-        {
-          'block': [
-            [
-              {
-                'identifier': 'Z'
-              }
-            ]
-          ]
-        }
-      ]
-    ]
-  },
-  // test:
-  'when[[if-then]]': {
-    text: `
-    when [[
-      if [[
-        A
-      ]]
-    ]]`,
-    expect: [
-      [
-        {
-          'line': ''
-        }
-      ],
-      [
-        {
-          'identifier': 'when'
-        },
-        {
-          'block': [
-            [
-              {
-                'identifier': 'if'
-              },
-              {
-                'block': [
-                  [
-                    {
-                      'identifier': 'A'
-                    }
-                  ]
-                ]
-              }
-            ]
-          ]
-        }
-      ]
-    ]
-  },
-  // test:
-  'when[[if-then-else]]': {
-    text: `
-    when [[
-      if [[
-        B
-      ]] [[
-        C
-      ]]
-    ]]`,
-    expect: [
-      [
-        {
-          'line': ''
-        }
-      ],
-      [
-        {
-          'identifier': 'when'
-        },
-        {
-          'block': [
-            [
-              {
-                'identifier': 'if'
-              },
-              {
-                'block': [
-                  [
-                    {
-                      'identifier': 'B'
-                    }
-                  ]
-                ]
-              },
-              {
-                'block': [
-                  [
-                    {
-                      'identifier': 'C'
-                    }
-                  ]
-                ]
-              }
-            ]
-          ]
-        }
-      ]
-    ]
-  },
-  'bee-when-ifexpr': {
-    text: `
-    when Bee touches Bee [[
-      ifExpr {{ true }} [[
-        dbgOut 'true'
-      ]] [[
-        dbgOut 'false'
-      ]]
-    ]]`,
-    expect: [
-      [
-        {
-          'line': ''
-        }
-      ],
-      [
-        {
-          'identifier': 'when'
-        },
-        {
-          'identifier': 'Bee'
-        },
-        {
-          'identifier': 'touches'
-        },
-        {
-          'identifier': 'Bee'
-        },
-        {
-          'block': [
-            [
-              {
-                'identifier': 'ifExpr'
-              },
-              {
-                'expr': 'true'
-              },
-              {
-                'block': [
-                  [
-                    {
-                      'identifier': 'dbgOut'
-                    },
-                    {
-                      'string': 'true'
-                    }
-                  ]
-                ]
-              },
-              {
-                'block': [
-                  [
-                    {
-                      'identifier': 'dbgOut'
-                    },
-                    {
-                      'string': 'false'
-                    }
-                  ]
-                ]
-              }
-            ]
-          ]
-        }
-      ]
-    ]
-  }
-};
-
 /// RUN TESTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// RUN ALL TESTS
-Object.keys(TESTS).forEach(testName => {
-  const test = TESTS[testName];
-  TokenizeTest(testName, test);
+UR.HookPhase('UR/APP_CONFIGURE', () => {
+  Object.keys(TESTS).forEach(testName => {
+    const test = TESTS[testName];
+    TokenizeTest(testName, test);
+  });
+  /// RUN ONE TEST
+  // const testName = 'if-then-else';
+  // TokenizeTest(testName, TESTS[testName]);
 });
-/// RUN ONE TEST
-// const testName = 'if-then-else';
-// TokenizeTest(testName, TESTS[testName]);
 
 /// CONSOLE TESTS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

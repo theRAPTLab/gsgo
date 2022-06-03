@@ -33,14 +33,6 @@ import { PACKAGE_NAME } from '../../../config/gem-settings';
 import theme from '../../modules/style/theme';
 import SystemShell from './SystemShell';
 
-/// RUN UNIT TESTS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// import 'test/unit-expr-parser'; // test parser evaluation
-// import 'test/unit-script-parser'; // test script parser
-// import 'test/unit-compiler'; // test compiler
-// import 'test/unit-script-runtime'; // test runtime keyword functions
-// import 'test/unit-keywords'; // test individual keywords
-
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SYSTEM');

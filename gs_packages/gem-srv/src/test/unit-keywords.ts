@@ -1,16 +1,18 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  test keywords
+  test keywords - this test doesn't really work
+
+  *** NEEDS UPDATING ***
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import TESTS from 'test/jsdata/keyword-data';
 import { TextToScript, BundleBlueprint } from 'script/transpiler-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('KWTEST', 'TagTest');
-const TT = [];
 const TESTNUM = undefined; // undefined for all tests
 
 /// FUNCTIONS /////////////////////////////////////////////////////////////////
@@ -18,12 +20,14 @@ const TESTNUM = undefined; // undefined for all tests
 function TestKeywords(index?: number) {
   const singleTest = typeof index === 'number';
   if (singleTest) console.log(...PR('running test #', index));
-  else console.log(...PR('running', TT.length, 'tests'));
-  TT.forEach((test, idx) => {
+  else console.log(...PR('running', TESTS.length, 'tests'));
+  TESTS.forEach((test, idx) => {
+    console.log('test', test);
     if (!singleTest || index === idx) {
       const { desc, text } = test;
       const script = TextToScript(text);
       const bundle = BundleBlueprint(script);
+
       const lead = `${idx}`.padStart(2, '0');
       if (singleTest) console.group('test', lead, '-', desc);
       else console.groupCollapsed('test', lead, '-', desc);
@@ -35,20 +39,10 @@ function TestKeywords(index?: number) {
   });
 }
 
-/// TESTS /////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-TT.push([
-  {
-    desc: 'all current keywords to test',
-    text: `
-  # BLUEPRINT Bee
-  # PROGRAM TEST
-  `.trim(),
-    expect: ``
-  }
-]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// TEST CODE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-TestKeywords(TESTNUM);
+UR.HookPhase('UR/APP_CONFIGURE', () => {
+  console.log(...PR('Testing Keywords...'));
+  TestKeywords(TESTNUM);
+});

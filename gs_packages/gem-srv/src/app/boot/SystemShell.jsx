@@ -24,7 +24,8 @@ import {
   LazyScriptEditor,
   LazyViewer,
   LazyTrackerSetup,
-  LazyHome
+  LazyHome,
+  LazyCodeTester
 } from './SystemRoutes';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -92,6 +93,10 @@ class SystemShell extends React.Component {
         <Route path="/app/dev-wizard">
           <LazyWizard />
         </Route>
+        <Route path="/app/dev-codetester">
+          <LazyCodeTester />
+        </Route>
+
         {/* catchall routes */}
         <Route exact path="/app">
           <LazyHome />
