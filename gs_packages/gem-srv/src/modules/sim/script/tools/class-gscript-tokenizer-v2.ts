@@ -826,6 +826,7 @@ function DecodeKeywordToken(tok: any): string {
   if (type === 'comment') return '_comment';
   if (type === 'line') return '_line';
   if (type !== 'identifier') {
+    console.warn(`${fn} bad token`, tok);
     const err = `${fn} tok '${type}' is not decodeable as a keyword`;
     throw Error(err);
   }

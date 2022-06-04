@@ -1,42 +1,4 @@
-/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
-
-  test compiler
-
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-
-import UR from '@gemstep/ursys/client';
-import { TextToScript, BundleBlueprint } from 'script/transpiler-v2';
-
-/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('T-COMPILER', 'TagTest');
 const TT = [];
-const TESTNUM = undefined; // undefined for all tests
-
-/// FUNCTIONS /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestCompiler(index?: number) {
-  const singleTest = typeof index === 'number';
-  if (singleTest) console.log(...PR('running test #', index));
-  else console.log(...PR('running', TT.length, 'tests'));
-  TT.forEach((test, idx) => {
-    if (!singleTest || index === idx) {
-      const [desc, text] = test;
-      const script = TextToScript(text);
-      const bundle = BundleBlueprint(script);
-      const lead = `${idx}`.padStart(2, '0');
-      if (singleTest) console.group('test', lead, '-', desc);
-      else console.groupCollapsed('test', lead, '-', desc);
-      console.log(`TEXT:\n${text}`);
-      console.log('---\nSCRIPT:');
-      script.forEach((unit, unitLine) =>
-        console.log(`${unitLine}`.padStart(3, '0'), JSON.stringify(unit))
-      );
-      console.log('---\nBUNDLE:', bundle);
-      console.groupEnd();
-    }
-  });
-}
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -176,7 +138,7 @@ TT.push([
   'if [inline] [inline] [inline]',
   `
   # BLUEPRINT HorseNuts1
-    ifTest [[ A ]] [[ B ]] [[ C ]]
+    if [[ A ]] [[ B ]] [[ C ]]
 `.trim()
 ]);
 
@@ -185,7 +147,7 @@ TT.push([
   'if [inline] [inline] [block]',
   `
   # BLUEPRINT HorseNuts2
-    ifTest [[ A ]] [[ B ]] [[
+    if [[ A ]] [[ B ]] [[
       C {{ D }}
       E
     ]]
@@ -197,7 +159,7 @@ TT.push([
   'if [inline] [block] [inline]',
   `
   # BLUEPRINT HorseNuts3
-    ifTest [[ A ]] [[
+    if [[ A ]] [[
       B
       C
     ]] [[ D ]]
@@ -208,7 +170,7 @@ TT.push([
   'if [block] [inline] [inline]',
   `
   # BLUEPRINT HorseNuts4
-    ifTest [[
+    if [[
       A
     ]] [[ B ]] [[ C ]]
 `.trim()
@@ -218,7 +180,7 @@ TT.push([
   'if [block] [block] [inline]',
   `
   # BLUEPRINT HorseNuts5
-    ifTest [[
+    if [[
       prop y greaterThan 100
     ]] [[
       prop skin setTo 'ok.png'
@@ -230,7 +192,7 @@ TT.push([
   'if [block] [inline] [block]',
   `
   # BLUEPRINT HorseNuts6
-    ifTest [[
+    if [[
       prop y greaterThan 100
     ]] [[ prop skin setTo 'ok.png' ]] [[
       prop skin setTo 'boo.png'
@@ -243,7 +205,7 @@ TT.push([
   `
   # BLUEPRINT HorseNuts7
     addProp altitude Number 10000
-    ifTest [[ prop y greaterThan 100 ]] [[
+    if [[ prop y greaterThan 100 ]] [[
       setProp y 100
       setProp altitude 10000
       setProp skin 'bonk.png'
@@ -259,7 +221,7 @@ TT.push([
   `
   # BLUEPRINT HorseNuts8
     addProp altitude Number 10000
-    ifTest [[
+    if [[
       prop y greaterThan 100
     ]] [[
       setProp y 100
@@ -276,7 +238,7 @@ TT.push([
   '[block]',
   `
   # BLUEPRINT Icicle1
-    [[
+  if {{ true }} [[
       A
     ]]
 `.trim()
@@ -286,67 +248,12 @@ TT.push([
   '[block] [block]',
   `
   # BLUEPRINT Icicle2
-    [[
+  if {{ true }} [[
       A
-    ]]
-    [[
+  ]] [[
       B
-    ]]
-`.trim()
-]);
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-TT.push([
-  'aquatic example',
-  `
-# BLUEPRINT JackFish
-  addProp foodLevel Number 50
-  prop foodLevel setMin 0
-  prop foodLevel setMax 100
-  setProp skin 'alive.png'
-  useFeature Movement
-  featureProp inputType setTo 'runtime'
-
-  // runtime program (runs only for runtime mode?)
-  featureCall Movement randomWalk 15 2
-
-  // condition programs
-  // every second decrement foodlevel
-  when Interval 1000 [[
-    prop foodLevel increment
-    defCondition "memo:dead" [[
-      {{ prop foodLevel < 1 }}
-      setProp isActive false
-      setProp skin "dead.png"
-      featureProp inputType setTo 'static'
-    ]]
-    defCondition "memo:worldtimer" [[
-      globalAgentProp World daytime
-      {{ globalAgentProp World daytime === true}}
-      setProp skin  "happy.png"
-    ]]
-  ]]
-`.trim()
-]);
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-TT.push([
-  'global agent with timer',
-  `
-  # BLUEPRINT Klugelhorn
-  defGlobalAgent Klugelhorn
-  addProp time Number 10
-  addProp daytime Boolean true
-  // runtime
-  // condition
-  when Interval 1000 [[
-    prop time decrement
-    defCondition "memo:switch"
-    {{ prop time < 0 }}
-    prop time setTo 10
-    prop daytime invert
   ]]
 `.trim()
 ]);
 
-/// TEST CODE /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-TestCompiler(TESTNUM);
+export default TT;
