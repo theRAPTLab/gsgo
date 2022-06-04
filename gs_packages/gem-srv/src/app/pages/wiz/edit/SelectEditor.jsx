@@ -87,7 +87,8 @@ function SelectEditor(props) {
   const tkey = `${selection.sel_linenum},${selection.sel_slotpos}`;
 
   // necessary to prevent NaN error if unitText is undefined
-  const defaultNumber = unitText ? Number(unitText) : '';
+  let defaultNumber = Number(unitText);
+  defaultNumber = Number.isNaN(defaultNumber) ? '' : defaultNumber; // make sure it's number
 
   switch (gsType) {
     case 'number':
