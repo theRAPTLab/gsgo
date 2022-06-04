@@ -7,7 +7,6 @@
 
 import UR from '@gemstep/ursys/client';
 import Keyword, { K_EvalRuntimeUnitArgs } from 'lib/class-keyword';
-import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
 /// KEYWORD STATIC DECLARATIONS ///////////////////////////////////////////////
