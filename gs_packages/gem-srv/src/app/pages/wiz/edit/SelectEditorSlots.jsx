@@ -100,7 +100,8 @@ function u_Key(prefix = '') {
 
 function SelectEditorSlots(props) {
   // 1. Get Slot Definitions
-  const { slots_validation, sel_slotpos, sel_linenum } = WIZCORE.State();
+  const { slots_linescript, slots_validation, sel_slotpos, sel_linenum } =
+    WIZCORE.State();
 
   // 2. Process each validation token
   const { validationTokens } = slots_validation;
@@ -110,29 +111,47 @@ function SelectEditorSlots(props) {
     let label;
     let type;
     let viewState;
+    let error;
+    let help;
     const position = CHECK.OffsetLineNum(i);
     const tokenKey = `${sel_linenum},${position}`;
     const selected = sel_slotpos === position;
+    const scriptToken = slots_linescript[i];
+
+    /*
+        Slot Help
+        RATIONALE: This should be a secondary help system, the primary one being for the
+                   main "Keyword Help".  But in addition to the general keyword help,
+                   as studenters data for individual slots, they'll need help understanding
+                   what each individual slot piece is.
+        REVIEW: Retrive from validation token?
+    */
+    // const { gsType, methodSig, unitText } = scriptToken || {}; // gracefully fail if not defined
+    // const { name, args: methodArgs, info } = methodSig || {}; // gracefully fail if not defined
+    help = `HELP: xxx`;
 
     const t = validationTokens[i];
-    if (t.error) {
-      // if there's an error in the token, show the current unitText value
-      // if there is not current value, show the expected gsType, else show syntax label
-      // REVIEW VSymError doesn't return the original text, just
-      // {error: {code, info}}.  Might be nice to have the orig text?
+    if (t.error && scriptToken) {
+      // 1. Error with an entered value
+      //    if there's an error in the token, show the current unitText value,
+      //    but fall back to gsType if there's no value
       label = t.unitText || t.gsType || label;
-      type = t.gsType;
       viewState = t.error.code;
-      // REVIEW: While editing, we show empty slots as empty so there isn't so much red?
-      // but in regular displays, we show empty slots as invalid
-      // or should they always show as invalid?
-      viewState = viewState === 'empty' ? 'empty-editing' : viewState;
+      error = t.error.info;
+    } else if (t.error) {
+      // 2. Error because no value
+      //    if there is not current value, show the expected gsType, else show syntax label
+      label = t.gsType || label;
+      // if the error is vague, use vague, else use empty
+      if (t.error.code === 'vague') viewState = 'vague';
+      else viewState = 'empty-editing';
+      error = t.error.info;
     } else {
-      // No error, just show token
+      // 3. No error, just show token
       label = t.unitText;
-      type = t.gsType;
       viewState = t.viewState;
     }
+    type = t.gsType;
 
     tokenList.push(
       <GValidationToken
@@ -142,6 +161,8 @@ function SelectEditorSlots(props) {
         selected={selected}
         type={type}
         label={label}
+        error={error}
+        help={help}
         viewState={viewState}
         isSlot
       />
@@ -155,18 +176,21 @@ function SelectEditorSlots(props) {
     WIZCORE.CancelSlotEdit(e);
   }
 
+
+  const num = String(sel_linenum).padStart(3, '0');
   return (
-    <div>
-      <div style={{ backgroundColor: '#eee', padding: '10px' }}>{tokenList}</div>
+    <div className="gslot-ed">
+      <div className="gslot-ed help">EDIT LINE {num}</div>
       <div
+        className="gslot-ed tokenList"
         style={{
-          display: 'grid',
-          padding: '10px',
-          backgroundColor: '#666',
-          gridTemplateColumns: '45% 10% 45%'
+          gridTemplateColumns: `repeat(${validationTokenCount},auto)`
         }}
       >
-        <button type="button" onClick={CancelSlotEdit}>
+        {tokenList}
+      </div>
+      <div className="gslot-ed button-bar">
+        <button type="button" className="secondary" onClick={CancelSlotEdit}>
           Cancel
         </button>
         &nbsp;

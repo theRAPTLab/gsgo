@@ -313,7 +313,17 @@ export function GToken(props) {
 
 /** tokens displayed in the SelectEditorLineSlot */
 export function GValidationToken(props) {
-  const { tokenKey, position, selected, type, label, viewState, isSlot } = props;
+  const {
+    tokenKey,
+    position,
+    selected,
+    type,
+    label,
+    viewState,
+    error,
+    help,
+    isSlot
+  } = props;
   let classes = selected
     ? 'gwiz gtoken styleOpen selected'
     : 'gwiz gtoken styleOpen';
@@ -337,9 +347,14 @@ export function GValidationToken(props) {
   // special custom combination viewStates
   if (viewState === 'empty-editing') classes += ' styleFlagEmpty';
   const jsx = isSlot ? (
-    <div className={classes} data-slotkey={tokenKey}>
-      {label}
-    </div>
+    <>
+      <div className="gwiz gslot-ed meta styleSyntax">{type}</div>
+      <div className={classes} data-slotkey={tokenKey}>
+        {label}
+      </div>
+      <div className="gwiz gslot-ed meta styleError">{error}</div>
+      <div className="gwiz gslot-ed meta styleHelp">{help}</div>
+    </>
   ) : (
     <div className={classes} data-key={tokenKey}>
       {label}

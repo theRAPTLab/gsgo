@@ -124,6 +124,25 @@
 .gwiz.styleSolid {
   background-color: black;
 }
+.gwiz.styleSyntax {
+  white-space: normal;
+  color: lightblue;
+  font-style: italic;
+}
+.gwiz.styleError {
+  white-space: normal;
+  color: red;
+  font-style: italic;
+}
+.gwiz.styleHelp {
+  white-space: normal;
+  color: transparent;
+}
+.gwiz.styleHelp:hover {
+  white-space: normal;
+  color: dimgray;
+  font-style: italic;
+}
 .gwiz.lineLead {
   min-height: 1em;
   display: inline-block;
@@ -187,7 +206,39 @@
   background-color: rgba(255, 100, 0, 1) !important;
 }
 /* end viewState Flags */
-
+/*
+ * Slot Editor
+ */
+.gslot-ed {
+  /* main slot editor */
+  padding: 10px;
+  background-color: #666;
+}
+.gslot-ed .tokenList {
+  display: grid;
+  grid-template-rows: repeat(4, auto);
+  grid-auto-flow: column;
+  background-color: #eee;
+  padding: 10px;
+}
+.gslot-ed .meta {
+  /* help fields above and below slot */
+  display: inline-block;
+  background-color: transparent;
+  padding: 4px 12px;
+  margin: 1px 1px;
+  user-select: none;
+}
+.gslot-ed .button-bar {
+  display: grid;
+  grid-template-columns: 45% 10% 45%;
+  padding-top: 10px;
+}
+.gslot-ed .help {
+  color: #ccc;
+  font-style: italic;
+}
+/* end Slot Editor */
 /*
  * Pico overrides
  */
