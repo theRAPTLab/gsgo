@@ -131,11 +131,13 @@ export function ScriptEditPane(props) {
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
-    <FlexStack id="ScriptContextor">
+    <FlexStack id="ScriptContextor" style={{ height: '100%' }}>
       {/* <DevStuffToAdd /> */}
       {/* put some kind of chooser here */}
       <SelectEditor selection={selection} />
       {/* then back to business */}
+      {/* spacer to push Console down to bottom */}
+      <div style={{ flexGrow: 1 }}>&nbsp;</div>
       <Console
         title="DEV: AVAILABLE SYMBOL INFO"
         name={dbg_console}
