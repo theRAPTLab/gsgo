@@ -230,6 +230,11 @@
   user-select: none;
 }
 .gslot-ed .gwiz.gtoken {
+.gsled.meta.selected {
+  padding: 0;
+  margin: 0;
+  background-color: #ffd280;
+}
   margin-bottom: 0; /* choices abutt bottom */
 }
 .gslot-ed.styleChoices {

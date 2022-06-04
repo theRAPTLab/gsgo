@@ -348,9 +348,12 @@ export function GValidationToken(props) {
   if (viewState === 'empty-editing') classes += ' styleFlagEmpty';
   const jsx = isSlot ? (
     <>
-      <div className="gwiz gslot-ed meta styleSyntax">{type}</div>
+      <div className="gwiz gsled meta styleSyntax">{type}</div>
       <div className={classes} data-slotkey={tokenKey}>
         {label}
+      </div>
+      <div className={`gwiz gsled meta ${selected ? 'selected' : ''}`}>
+        &nbsp;
       </div>
       {/* <div className="gwiz gslot-ed meta styleError">{error}</div>
       <div className="gwiz gslot-ed meta styleHelp">{help}</div> */}
