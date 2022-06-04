@@ -94,13 +94,13 @@ function SelectEditor(props) {
       editor = (
         <div>
           <SelectEditorSlots selection={selection} />
-          <p>
+          {/* <p>
             <b>arguments for {name}</b>{' '}
             {methodArgs ? methodArgs.join(',') : 'n/a'}
             <br />
             <b>helpful</b> {info}
-          </p>
-          <label>enter {gsType}</label>
+          </p> */}
+          <label>Enter a {gsType}</label>
           <input
             key={tkey}
             defaultValue={defaultNumber}
@@ -116,13 +116,13 @@ function SelectEditor(props) {
       editor = (
         <div>
           <SelectEditorSlots selection={selection} />
-          <p>
+          {/* <p>
             <b>arguments for {name}</b>{' '}
             {methodArgs ? methodArgs.join(',') : 'n/a'}
             <br />
             <b>helpful</b> {info}
-          </p>
-          <label>enter {gsType}</label>
+          </p> */}
+          <label>Enter a {gsType}</label>
           <input
             key={tkey}
             defaultValue={unitText}
