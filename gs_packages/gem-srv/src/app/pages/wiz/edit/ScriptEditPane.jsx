@@ -12,8 +12,7 @@ import UR from '@gemstep/ursys/client';
 import { TokenToString, DecodeTokenPrimitive } from 'script/transpiler-v2';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import Console from '../stat/Console';
-import { EditSymbol } from './EditSymbol';
-import { SelectEditor } from './SelectEditor';
+import { SelectEditorSlots } from './SelectEditorSlots';
 import {
   GridStack,
   FlexStack,
@@ -134,7 +133,7 @@ export function ScriptEditPane(props) {
     <FlexStack id="ScriptContextor" style={{ height: '100%' }}>
       {/* <DevStuffToAdd /> */}
       {/* put some kind of chooser here */}
-      <SelectEditor selection={selection} />
+      <SelectEditorSlots selection={selection} />
       {/* then back to business */}
       {/* spacer to push Console down to bottom */}
       <div style={{ flexGrow: 1 }}>&nbsp;</div>

@@ -25,7 +25,6 @@ import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 
 import { EditSymbol } from './EditSymbol';
-import { SelectEditorSlots } from './SelectEditorSlots';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -93,14 +92,7 @@ function SelectEditor(props) {
   switch (gsType) {
     case 'number':
       editor = (
-        <div>
-          <SelectEditorSlots selection={selection} />
-          {/* <p>
-            <b>arguments for {name}</b>{' '}
-            {methodArgs ? methodArgs.join(',') : 'n/a'}
-            <br />
-            <b>helpful</b> {info}
-          </p> */}
+        <div className="gsled input">
           <label>Enter a {gsType}</label>
           <input
             key={tkey}
@@ -115,14 +107,7 @@ function SelectEditor(props) {
       break;
     case 'string':
       editor = (
-        <div>
-          <SelectEditorSlots selection={selection} />
-          {/* <p>
-            <b>arguments for {name}</b>{' '}
-            {methodArgs ? methodArgs.join(',') : 'n/a'}
-            <br />
-            <b>helpful</b> {info}
-          </p> */}
+        <div className="gsled input">
           <label>Enter a {gsType}</label>
           <input
             key={tkey}
@@ -138,8 +123,7 @@ function SelectEditor(props) {
     default:
       editor = (
         <div>
-          <SelectEditorSlots selection={selection} />
-          {/* <EditSymbol selection={selection} /> */}
+          <EditSymbol selection={selection} />
         </div>
       );
   }

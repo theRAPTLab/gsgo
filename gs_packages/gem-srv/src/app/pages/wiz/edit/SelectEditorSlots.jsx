@@ -50,7 +50,7 @@ import UR from '@gemstep/ursys/client';
 import React from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-import { EditSymbol } from './EditSymbol';
+import { SelectEditor } from './SelectEditor';
 import {
   GridStack,
   FlexStack,
@@ -229,26 +229,23 @@ function SelectEditorSlots(props) {
                         *  Test modeless edit and turn "Cancel" button into "REVERT"?
   */
   return (
-    <div className="gslot-ed">
+    <div className="gsled panel">
       {/* RATIONALE: Title bar to let you know you're editing and show which line you're editing */}
-      <div className="gslot-ed help">EDIT LINE: {num}</div>
+      <div className="gsled panelhelp">EDIT LINE: {num}</div>
       <div
-        className="gslot-ed tokenList"
+        className="gsled tokenList"
         style={{
           gridTemplateColumns: `repeat(${validationTokenCount},auto)`
         }}
       >
         {tokenList}
       </div>
-      <div className="gslot-ed styleChoices">
-        <div className="gwiz styleError" style={{ padding: '10px' }}>
-          {selectedError}
-        </div>
-        <EditSymbol selection={selection} />
-        {/* SelectEditor Input form elements should be moved here */}
+      <div className="gsled choices">
+        <div className="gsled choicesline gwiz styleError">{selectedError}</div>
+        <SelectEditor selection={selection} />
+        <div className="gsled choicesline choiceshelp">{selectedHelp}</div>
       </div>
-      {/* <div className="gwiz gslot-ed meta styleHelp">{selectedHelp}</div> */}
-      <div className="gslot-ed button-bar">
+      <div className="gsled button-bar">
         <button type="button" className="secondary" onClick={CancelSlotEdit}>
           Cancel
         </button>
