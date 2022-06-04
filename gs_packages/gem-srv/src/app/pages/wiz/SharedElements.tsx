@@ -312,13 +312,13 @@ export function GToken(props) {
 }
 
 /** tokens displayed in the SelectEditorLineSlot */
-export function GSlotToken(props) {
-  const { dataSelectKey, selected, type, label, viewState } = props;
+export function GValidationToken(props) {
+  const { tokenKey, position, selected, type, label, viewState, isSlot } = props;
   let classes = selected
     ? 'gwiz gtoken styleOpen selected'
     : 'gwiz gtoken styleOpen';
   // special types? use additional classes
-  if (type === 'identifier' && dataSelectKey === 0) classes += ' styleKey';
+  if (type === 'identifier' && position === 0) classes += ' styleKey';
   if (type === 'comment') classes += ' styleComment';
   if (type === 'directive') classes += ' stylePragma';
   if (SPECIAL_IDENTS.includes(label)) classes += ' stylePragma';
@@ -330,15 +330,22 @@ export function GSlotToken(props) {
   if (viewState === 'valid') classes += ''; // no style change
   if (viewState === 'invalid') classes += ' styleFlagInvalid';
   if (viewState === 'extra') classes += ' styleFlagInvalid';
-  if (viewState === 'empty') classes += ' styleFlagEmpty';
+  if (viewState === 'empty') classes += ' styleFlagInvalid styleFlagEmpty';
   if (viewState === 'vague') classes += ' styleFlagDisabled';
   if (viewState === 'unexpected')
     classes += ' styleFlagInvalid styleFlagOverflow';
-  return (
-    <div className={classes} data-slotkey={dataSelectKey}>
+  // special custom combination viewStates
+  if (viewState === 'empty-editing') classes += ' styleFlagEmpty';
+  const jsx = isSlot ? (
+    <div className={classes} data-slotkey={tokenKey}>
+      {label}
+    </div>
+  ) : (
+    <div className={classes} data-key={tokenKey}>
       {label}
     </div>
   );
+  return jsx;
 }
 
 /// LABEL TOKEN ////////////////////////////////////////////////////////////////

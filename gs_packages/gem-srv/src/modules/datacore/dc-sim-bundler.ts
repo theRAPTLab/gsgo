@@ -214,6 +214,8 @@ function AddSymbols(symdata: TSymbolData) {
   if (bdl.symbols === undefined) bdl.symbols = {};
   const _bdlsym = bdl.symbols;
 
+  if (symdata === undefined) console.warn('WHAT THE HELL');
+
   if (symdata.features) {
     // featureName --> featureModule
     if (_bdlsym.features === undefined) _bdlsym.features = {};

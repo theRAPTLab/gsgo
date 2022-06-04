@@ -66,7 +66,7 @@ import FormTransform from './components/FormTransform';
 import '../../lib/css/tracker.css';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
-// import 'modules/tests/test-parser'; // test parser evaluation
+// import 'test/unit-parser'; // test parser evaluation
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './helpers/page-xui-styles';

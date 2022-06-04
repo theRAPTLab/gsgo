@@ -24,10 +24,11 @@ import UR from '@gemstep/ursys/client';
 import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-import * as TEST_SYMBOLS from 'script/tools/x-symbol-tests';
 import * as DCSIM from 'modules/datacore/dc-sim-data';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
+import * as TEST_SYMBOLS from 'script/tools/x-symbol-tests';
+import { ENABLE_SYMBOL_TEST_BLUEPRINT } from 'modules/datacore/dc-constants';
 import {
   DecodeSymbolViewData,
   UnpackViewData,
@@ -106,13 +107,25 @@ UR.HookPhase('UR/LOAD_ASSETS', async () => {
   // return promise to hold LOAD_ASSETS until done
   console.log(
     `%cInitializing 'assets/${ASSETDIR}' as project source...`,
-    'background-color:rgba(255,0,0,0.15);color:red;padding:2px 4px'
+    'background-color:rgba(255,0,0,0.15);color:red;padding:1em 2em'
   );
   return PROJ_v2.LoadAssetDirectory(`/assets/${ASSETDIR}/`);
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// DEFERRED CALL: APP_CONFIGURE fires after LOAD_ASSETS (above) completes
 UR.HookPhase('UR/APP_CONFIGURE', () => {
+  // check for override load to use built-in test script
+  if (ENABLE_SYMBOL_TEST_BLUEPRINT) {
+    console.log(
+      `%cUsing TEST_SCRIPT because ENABLE_SYMBOL_TEST_BLUEPRINT is true...`,
+      'background-color:rgba(255,255,0,0.15);color:red;padding:1em 2em'
+    );
+    const script_text = TEST_SYMBOLS.GetTestScriptText();
+    STORE.SendState({ script_text });
+    TEST_SYMBOLS.TestValidate();
+    return;
+  }
+  // normal load
   const cur_prjid = DEV_PRJID;
   const cur_bpid = DEV_BPID;
   let out = `%cLooking for '${DEV_PRJID}.prj' with blueprint name '${DEV_BPID}' `;
@@ -123,7 +136,7 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
   // This retrieves the uncompiled/unbundled bpDef object {name, scriptText} from gem proj
   console.log(
     out,
-    'background-color:rgba(255,0,0,0.15);color:red;padding:2px 4px',
+    'background-color:rgba(255,0,0,0.15);color:red;padding:1em 2em',
     'color:maroon',
     '\n\n'
   );
@@ -132,7 +145,7 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
   const vmState = { cur_prjid, cur_bpid, script_text };
   STORE.SendState(vmState);
   console.log(...PR(`loaded blueprint '${DEV_BPID}' from '${DEV_PRJID}'`));
-  TEST_SYMBOLS.TestValidate();
+  // TEST_SYMBOLS.TestValidate();
 });
 
 /// DERIVED STATE LOGIC ///////////////////////////////////////////////////////
@@ -148,6 +161,7 @@ STORE._interceptState(state => {
     state.script_tokens = toks;
     state.cur_bdl = TRANSPILER.BundleBlueprint(toks);
     const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
+    // INSERT validation tokens to script_page
     state.script_page = vmPage;
     state.key_to_token = tokMap;
   }
@@ -285,6 +299,8 @@ function UpdateSlotValue(val) {
     slots_linescript[CHECK.UnOffsetLineNum(sel_slotpos)] || // existing token
     {}; // or new object if this is creating a new slot
   slotScriptToken.value = val; // We know the scriptToken is a value
+  // if the token was previously used to as a string token, remove the old string key
+  delete slotScriptToken.string;
   if (sel_slotpos > slots_linescript.length) {
     slots_linescript.push(slotScriptToken); // it's a new token so add it
   }
@@ -300,6 +316,8 @@ function UpdateSlotString(val) {
     slots_linescript[CHECK.UnOffsetLineNum(sel_slotpos)] || // existing token
     {}; // or new object if this is creating a new slot
   slotScriptToken.string = val; // We know the scriptToken is a value
+  // if the token was previously used to as a value token, remove the old value key
+  delete slotScriptToken.value;
   if (sel_slotpos > slots_linescript.length) {
     slots_linescript.push(slotScriptToken); // it's a new token so add it
   }
@@ -339,13 +357,14 @@ function DispatchClick(event) {
     }
   }
 
-  /** (2) GSlotToken was clicked? ************************************************/
+  /** (2) GValidationToken was clicked? ************************************************/
   const slotKey = event.target.getAttribute('data-slotkey');
   if (slotKey !== null) {
     // If the slot was disabled, don't let it be clicked
     if (event.target.className.includes('styleFlagDisabled')) return;
     // Else, select the slot
-    newState.sel_slotpos = Number(slotKey); // STATE UPDATE: selected line
+    const [line, pos] = slotKey.split(',');
+    newState.sel_slotpos = Number(pos); // STATE UPDATE: selected line
     SendState(newState);
     const { sel_slotpos } = State();
     if (sel_slotpos > 0) {
@@ -555,6 +574,20 @@ function ValidatePageLine(vmLine: VMPageLine): TValidatedScriptUnit {
     globals: globalRefs
   });
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Validate all the lines in the script_page and return the validation
+ *  tokens. `validationTokens` are 1-based.
+ */
+function ValidateScriptPage(): TValidatedScriptUnit[] {
+  const { script_page } = STORE.State();
+  const validationTokens = []; // default to one-based
+  const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
+  script_page.forEach(l => {
+    const { lineNum } = l;
+    validationTokens[lineNum] = ValidatePageLine(l);
+  });
+  return validationTokens;
+}
 
 /// UI LIST HELPERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -644,7 +677,6 @@ export function SaveSlotLineScript(e) {
     sel_linenum
   } = STORE.State();
   const lineIdx = CHECK.UnOffsetLineNum(sel_linenum); // 1-based
-  // Update script_tokens, since they are the main store?
   script_tokens.splice(lineIdx, 1, slots_linescript);
   STORE.SendState({ script_tokens });
 }
@@ -729,7 +761,8 @@ export {
   GetLineScriptText, // return string version of a scriptUnit
   ValidateLine, // return TValidationResult for passed linenum
   ValidateSelectedLine, // return TValidationResult for current select line
-  ValidatePageLine // test compile line relative to current blueprint
+  ValidatePageLine, // test compile line relative to current blueprint
+  ValidateScriptPage // return TValidationResult[] for script_page
 };
 export {
   GetSymbolNames, // return the names

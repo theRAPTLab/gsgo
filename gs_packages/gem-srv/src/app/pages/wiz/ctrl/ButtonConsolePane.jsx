@@ -56,7 +56,7 @@ export function ButtonConsole(/* props */) {
       <button type="button" style={sModeButtonC} onClick={() => toggleC()}>
         {modeLabelC}
       </button>
-      <button type="button" style={sModeButtonD} onClick={() => toggleD()}>
+      {/* <button type="button" style={sModeButtonD} onClick={() => toggleD()}>
         {modeLabelD}
       </button>
       <button type="button" style={buttonStyle}>
@@ -70,7 +70,7 @@ export function ButtonConsole(/* props */) {
       </button>
       <button type="button" style={buttonStyle}>
         Submit
-      </button>
+      </button> */}
     </div>
   );
 }
