@@ -74,6 +74,9 @@ export function EditSymbol(props) {
     */
     symbolType = gsType;
 
+    // Don't render choices if the current selection should be an input form
+    if (gsType === 'number' || gsType === 'string') return '';
+
     // See symbol-helpers.DecodeSymbolViewData
     const viewData = WIZCORE.DecodeSymbolViewData(symbolData); // returns the list of symbolnames for a particular symbol
     /* TODO: it would be nice to make unitText indicate it's the current value */
@@ -177,7 +180,6 @@ export function EditSymbol(props) {
       }
       // console.groupEnd();
     });
-
   }
 
   /// RENDER //////////////////////////////////////////////////////////////////
