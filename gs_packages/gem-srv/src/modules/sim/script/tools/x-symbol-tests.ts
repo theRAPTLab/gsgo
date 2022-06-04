@@ -42,6 +42,7 @@ prop energyType setTo 'help'
 prop unknownPropName setTo 400
 prop x badMethod 400
 prop x setTo 'wrongType'
+prop nameString setMin 400
 prop agent.x setTo
 prop Costume.costumeName
 prop x setToRnd -400 400 true
