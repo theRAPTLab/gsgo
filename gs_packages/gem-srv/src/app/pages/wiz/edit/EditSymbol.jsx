@@ -175,9 +175,6 @@ export function EditSymbol(props) {
       // console.groupEnd();
     });
 
-    if (error) {
-      allDicts.push(<p style={{ color: 'red' }}>{error.info}</p>);
-    }
   }
 
   /// RENDER //////////////////////////////////////////////////////////////////
