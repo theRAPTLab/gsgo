@@ -65,6 +65,12 @@ import {
 const KEY_BITS = -1 + 2 ** 16;
 let KEY_COUNTER = 0;
 
+/// LOCALIZATION
+const L10N = {};
+L10N.TOKEN = 'word'; // script word on script_page
+L10N.LINE = 'line'; // script line
+L10N.MSG_SELECT_TOKEN = `Click on a ${L10N.LINE} on the left to edit it.`;
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Generates a sequential key index for React lists that increments and wraps
  *  back to 0 after 16 bits exceeded. The output is a 4-digit hex string.
@@ -99,7 +105,10 @@ function u_Key(prefix = '') {
  */
 
 function SelectEditorSlots(props) {
-  const { selection } = props;
+  const { selection } = props; // sel_linenum, sel_linepos
+
+  if (!selection)
+    return <div className="gsled panel panelhelp">{L10N.MSG_SELECT_TOKEN}</div>;
 
   let selectedError = '';
   let selectedHelp = '';
@@ -254,7 +263,7 @@ function SelectEditorSlots(props) {
           Save
         </button>
       </div>
-      <div className="gslot-ed help">{keywordHelp}</div>
+      <div className="gsled panelhelp">{keywordHelp}</div>
     </div>
   );
 }
