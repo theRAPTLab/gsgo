@@ -86,6 +86,9 @@ function SelectEditor(props) {
   // necessary so input form defaultValue changes with each change
   const tkey = `${selection.sel_linenum},${selection.sel_slotpos}`;
 
+  // necessary to prevent NaN error if unitText is undefined
+  const defaultNumber = unitText ? Number(unitText) : '';
+
   switch (gsType) {
     case 'number':
       editor = (
@@ -100,7 +103,7 @@ function SelectEditor(props) {
           <label>enter {gsType}</label>
           <input
             key={tkey}
-            defaultValue={Number(unitText)}
+            defaultValue={defaultNumber}
             type="number"
             onChange={processNumberInput}
             onKeyPress={handleNumberKeypress}

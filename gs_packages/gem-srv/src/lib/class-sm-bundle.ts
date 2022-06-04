@@ -86,14 +86,14 @@ export default class SM_Bundle implements ISMCBundle {
     if (type === 'keywords')
       return {
         error: {
-          code: 'errScope',
+          code: 'invalid',
           info: 'bundles do not contain keyword symbols'
         }
       };
     if (!this.symbols)
       return {
         error: {
-          code: 'errExist',
+          code: 'invalid',
           info: 'symbols are not defined in this bundle'
         }
       };
@@ -102,7 +102,7 @@ export default class SM_Bundle implements ISMCBundle {
     if (!sdata)
       return {
         error: {
-          code: 'errExist',
+          code: 'invalid',
           info: `symbols.${type} does not exist in this bundle`
         }
       };

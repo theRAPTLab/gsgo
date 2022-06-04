@@ -50,6 +50,16 @@ let URSYS_ROUTE = '';
 let LocalNode;
 let NetNode;
 
+/// HELPERS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_EndpointInitialized() {
+  if (LocalNode === undefined || !URSYS_RUNNING) {
+    console.warn('URSYS was used before it was initialized, aborting');
+    return false;
+  }
+  return true;
+}
+
 /// SUPPORT API PART 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** register messages */
@@ -115,25 +125,27 @@ async function SystemStop() {
 
 /** wrap LocalNode functions so we can export them before LocalNode is valid */
 function DeclareMessage(mesgName, dataProps) {
-  return LocalNode.declareMessage(mesgName, dataProps);
+  if (m_EndpointInitialized())
+    return LocalNode.declareMessage(mesgName, dataProps);
 }
 function HasMessage(mesgName) {
-  return LocalNode.hasMessage(mesgName);
+  if (m_EndpointInitialized()) return LocalNode.hasMessage(mesgName);
 }
 function HandleMessage(mesgName, listener) {
-  LocalNode.handleMessage(mesgName, listener);
+  if (m_EndpointInitialized()) LocalNode.handleMessage(mesgName, listener);
 }
 function UnhandleMessage(mesgName, listener) {
-  LocalNode.unhandleMessage(mesgName, listener);
+  if (m_EndpointInitialized()) LocalNode.unhandleMessage(mesgName, listener);
 }
 function CallMessage(mesgName, inData, options) {
-  return LocalNode.callMessage(mesgName, inData, options);
+  if (m_EndpointInitialized())
+    return LocalNode.callMessage(mesgName, inData, options);
 }
 function RaiseMessage(mesgName, inData, options) {
-  LocalNode.raiseMessage(mesgName, inData, options);
+  if (m_EndpointInitialized()) LocalNode.raiseMessage(mesgName, inData, options);
 }
 function SendMessage(mesgName, inData, options) {
-  LocalNode.sendMessage(mesgName, inData, options);
+  if (m_EndpointInitialized()) LocalNode.sendMessage(mesgName, inData, options);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

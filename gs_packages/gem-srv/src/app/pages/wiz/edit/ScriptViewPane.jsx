@@ -88,17 +88,18 @@ export function ScriptViewPane(props) {
         if (scriptToken) {
           const dtok = DecodeTokenPrimitive(scriptToken);
           label = typeof dtok !== 'object' ? dtok : TokenToString(scriptToken);
-          selected = tokenKey === selTokId;
-          viewState =
-            validationToken && validationToken.error
-              ? validationToken.error.code
-              : '';
+          viewState = validationToken.error ? validationToken.error.code : '';
         } else {
           // no scriptToken, this is an empty slot -- user has not entered any data
           label = validationToken.gsType; // show missing type
-          viewState = 'empty';
+          // if the error is vague, use vague, else use empty
+          // Force 'empty' because validationToken will report 'invalid' for missing tokens
+          if (validationToken.error && validationToken.error.code === 'vague')
+            viewState = 'vague';
+          else viewState = 'empty';
           tokenKey = `${lineNum},${idx + 1}`; // generate tokenKey
         }
+        selected = tokenKey === selTokId;
         lineBuffer.push(
           <GValidationToken
             key={u_Key()}
