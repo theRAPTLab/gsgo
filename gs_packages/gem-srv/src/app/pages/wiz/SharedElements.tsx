@@ -197,7 +197,7 @@ export function StackUnit(props) {
   if (wrap) s.whiteSpace = 'normal';
   const classes = [];
   if (sticky) classes.push('sticky');
-  if (className) classes.push('className');
+  if (className) classes.push(className);
   return (
     <details
       className={classes.join(' ')}
