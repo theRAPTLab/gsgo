@@ -280,7 +280,7 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
 export default ScriptLiner;
 export {
   ScriptToLines, // script to indexed data structures for GUI
-  ScriptPageToEditableTokens,
+  ScriptPageToEditableTokens, // script_page to editable token list
   ScriptToEditableTokens, // script to editable token list
   EditableTokensToScript // pack editable token list back into script
 };

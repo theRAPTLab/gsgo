@@ -18,4 +18,4 @@ export const SCRIPT_PAGE_INDEX_OFFSET = 1; // set to 1 for no 0 indexes
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** when set to true, GUI WIZARD will load the test script defined in
  *  x-symbol-tests instead of the DEV_PRJID and BPID */
-export const ENABLE_SYMBOL_TEST_BLUEPRINT = false;
+export const ENABLE_SYMBOL_TEST_BLUEPRINT = true;

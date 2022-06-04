@@ -1,54 +1,48 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  test keywords
+  test compiler
+
+  *** NEEDS UPDATING ***
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
 import { TextToScript, BundleBlueprint } from 'script/transpiler-v2';
+import TEST_BPS from 'test/jsdata/script-compiler-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('KWTEST', 'TagTest');
-const TT = [];
+const PR = UR.PrefixUtil('T-COMPILER', 'TagTest');
 const TESTNUM = undefined; // undefined for all tests
 
 /// FUNCTIONS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestKeywords(index?: number) {
+function TestCompiler(index?: number) {
   const singleTest = typeof index === 'number';
   if (singleTest) console.log(...PR('running test #', index));
-  else console.log(...PR('running', TT.length, 'tests'));
-  TT.forEach((test, idx) => {
+  else console.log(...PR('running', TEST_BPS.length, 'tests'));
+  TEST_BPS.forEach((test, idx) => {
     if (!singleTest || index === idx) {
-      const { desc, text } = test;
+      const [desc, text] = test;
       const script = TextToScript(text);
       const bundle = BundleBlueprint(script);
       const lead = `${idx}`.padStart(2, '0');
       if (singleTest) console.group('test', lead, '-', desc);
       else console.groupCollapsed('test', lead, '-', desc);
       console.log(`TEXT:\n${text}`);
+      console.log('---\nSCRIPT:');
+      script.forEach((unit, unitLine) =>
+        console.log(`${unitLine}`.padStart(3, '0'), JSON.stringify(unit))
+      );
       console.log('---\nBUNDLE:', bundle);
-      console.log('...execute code here through some exec engine...');
       console.groupEnd();
     }
   });
 }
 
-/// TESTS /////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-TT.push([
-  {
-    desc: 'all current keywords to test',
-    text: `
-  # BLUEPRINT Bee
-  # PROGRAM TEST
-  `.trim(),
-    expect: ``
-  }
-]);
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// TEST CODE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-TestKeywords(TESTNUM);
+UR.HookPhase('UR/APP_CONFIGURE', () => {
+  console.log(...PR('Testing Compiler...'));
+  TestCompiler(TESTNUM);
+});

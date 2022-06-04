@@ -12,15 +12,6 @@ import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 import { useStylesHOC } from './helpers/page-styles';
 
-/// RUN UNIT TESTS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Tests Lasted Reviewed: Dec 1, 2021
-// import '../../modules/tests/test-expr-parser'; // test parser evaluation PASS
-// import '../../modules/tests/test-script-parser'; // test script parser PASS
-// import '../../modules/tests/test-compiler'; // test compiler (needs update)
-// import '../../modules/tests/test-script-runtime'; // test instances (needs update)
-// import '../../modules/tests/test-keywords'; // test keywords (needs update)
-
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('HOME');
@@ -142,6 +133,10 @@ class Home extends React.Component {
             <li>
               <a href="/app/dev-compiler">COMPILER V2</a> - ScriptText Compiler /
               Simulator / Renderer Source (version 2 full tokenization)
+            </li>
+            <li>
+              <a href="/app/dev-codetester">CODE TESTER</a> - Sri&#39;s Janky Unit
+              Tester Framework (non-functional)
             </li>
           </ol>
         </div>

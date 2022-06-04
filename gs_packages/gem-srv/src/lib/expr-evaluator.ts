@@ -21,7 +21,6 @@ import UR from '@gemstep/ursys/client';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
 const PR = UR.PrefixUtil('EVAL', 'TagDebug');
 const binops = {
   '||': (a, b) => a || b,

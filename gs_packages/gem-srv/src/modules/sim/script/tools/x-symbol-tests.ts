@@ -12,56 +12,13 @@ import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import { ENABLE_SYMBOL_TEST_BLUEPRINT } from 'modules/datacore/dc-constants';
 import { DEV_PRJID, DEV_BPID } from 'config/gem-settings';
-import { SymbolValidator } from './x-symbol-validator';
+import TEST_SCRIPT from 'test/gemscript/gui-wizard-slots.gemscript';
 
 const { warn, log, table, group, groupCollapsed, groupEnd } = console;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const USE_TEST_SCRIPT = ENABLE_SYMBOL_TEST_BLUEPRINT;
-const TEST_SCRIPT = `# blueprint Boo
-# TAG isCharControllable false
-# PROGRAM DEFINE
-useFeature Costume
-addProp energyType String 'producer'
-addProp energyLevel number 50
-
-# program init
-prop energyLevel setTo 0
-prop agent.energyLevel setTo 0
-prop energyLevel setTo 'foo'
-prop energyLevel
-prop
-prop x
-prop x setTo
-prop x setTo 400
-prop x setTo 400 'too' 'many' 'parms'
-prop energyType setMin
-prop energyType setTo
-prop energyType setTo 'help'
-prop unknownPropName setTo 400
-prop x badMethod 400
-prop x setTo 'wrongType'
-prop nameString setMin 400
-prop agent.x setTo
-prop Costume.costumeName
-prop x setToRnd -400 400 true
-prop y setTo -400
-
-# ProgRam ConDition
-when Boo centerFirstTouches Boo [[
-  prop Boo.energyType add 1
-]]
-
-# PROGRAM Update
-every 1 runAtStart [[
-  if {{ energyLevel > 1 }} [[
-    prop energyLevel sub 1
-  ]] [[
-    prop energyLevel setTo 50
-  ]]
-]]
-`.trim();
 
 /// TEST SUPPORT METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
