@@ -33,6 +33,8 @@ export function EditSymbol(props) {
   const { selection = {} } = props;
   const { sel_linenum, sel_linepos, sel_slotpos } = selection;
   const label = `options for token ${sel_linenum}:${sel_linepos}`;
+  let symbolType;
+
   // this is a managed TextBuffer with name "ScriptContextor"
 
   const allDicts = [];
@@ -70,6 +72,7 @@ export function EditSymbol(props) {
           props: {x: {…}, y: {…}, statusText: {…}, eType: {…}, energyLevel: {…}, …}
         }
     */
+    symbolType = gsType;
 
     // See symbol-helpers.DecodeSymbolViewData
     const viewData = WIZCORE.DecodeSymbolViewData(symbolData); // returns the list of symbolnames for a particular symbol
@@ -180,7 +183,7 @@ export function EditSymbol(props) {
   /// RENDER //////////////////////////////////////////////////////////////////
   /// drawn as "SCRIPT LINE EDITOR"
   /// [SYMBOL TYPE] symbol symbol symbol
-  const prompt = 'SYMBOL SELECTOR';
+  const prompt = `SELECT A ${symbolType}`;
   return (
     <StackUnit label={prompt} type="symbol" open sticky>
       {allDicts.map((row, i) => {
