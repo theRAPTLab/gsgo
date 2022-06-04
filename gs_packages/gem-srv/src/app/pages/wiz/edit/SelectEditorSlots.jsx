@@ -176,6 +176,18 @@ function SelectEditorSlots(props) {
     WIZCORE.CancelSlotEdit(e);
   }
 
+  /*
+      Keyword Help
+
+      RATIONALE: Provide general guidelines for the purpose of the keyword.
+      DESIGN: This should:
+      * always be visible while the student is working on the line
+      * be loaded from a dictionary
+
+      HACK for now.
+  */
+  const keywordHelp =
+    'Use the "prop" keyword to set properties to specific values and do simple arithmetic.';
 
   const num = String(sel_linenum).padStart(3, '0');
   return (
@@ -198,6 +210,7 @@ function SelectEditorSlots(props) {
           Save
         </button>
       </div>
+      <div className="gslot-ed help">{keywordHelp}</div>
     </div>
   );
 }
