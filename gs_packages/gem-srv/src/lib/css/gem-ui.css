@@ -216,10 +216,10 @@
 }
 .gslot-ed .tokenList {
   display: grid;
-  grid-template-rows: repeat(4, auto);
+  grid-template-rows: repeat(2, auto);
   grid-auto-flow: column;
   background-color: #eee;
-  padding: 10px;
+  padding: 10px 10px 0 10px;
 }
 .gslot-ed .meta {
   /* help fields above and below slot */
@@ -228,6 +228,12 @@
   padding: 4px 12px;
   margin: 1px 1px;
   user-select: none;
+}
+.gslot-ed .gwiz.gtoken {
+  margin-bottom: 0; /* choices abutt bottom */
+}
+.gslot-ed.styleChoices {
+  background-color: #ffd280;
 }
 .gslot-ed .button-bar {
   display: grid;

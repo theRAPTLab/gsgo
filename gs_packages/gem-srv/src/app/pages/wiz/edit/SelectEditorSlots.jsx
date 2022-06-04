@@ -50,7 +50,7 @@ import UR from '@gemstep/ursys/client';
 import React from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-
+import { EditSymbol } from './EditSymbol';
 import {
   GridStack,
   FlexStack,
@@ -99,6 +99,11 @@ function u_Key(prefix = '') {
  */
 
 function SelectEditorSlots(props) {
+  const { selection } = props;
+
+  let selectedError = '';
+  let selectedHelp = '';
+
   // 1. Get Slot Definitions
   const { slots_linescript, slots_validation, sel_slotpos, sel_linenum } =
     WIZCORE.State();
@@ -153,6 +158,9 @@ function SelectEditorSlots(props) {
     }
     type = t.gsType;
 
+    selectedError = selected ? error : selectedError;
+    selectedHelp = selected ? help : selectedHelp;
+
     tokenList.push(
       <GValidationToken
         key={tokenKey}
@@ -190,9 +198,40 @@ function SelectEditorSlots(props) {
     'Use the "prop" keyword to set properties to specific values and do simple arithmetic.';
 
   const num = String(sel_linenum).padStart(3, '0');
+
+  /*
+      GENERAL DESIGN CONSIDERATIONS
+
+      * Animate changes -- when selecting choices, the abrupt change of elements and
+                        shifting of the whole slot editor is confusing.  Is it possible
+                        to transition the sizes at least?
+      * Choices display -- where should the EditSymbol choices be displayed?
+                        Keeping the editted line at top makes sense because it's stable
+                        and anchors the editing.  But should the choices (e.g. prop name
+                        selection) be displayed above or below the "Save" button"
+                        In the mockups we "connected" the choices to the currently
+                        selected slot by proximity and color.  The current use of
+                        the error and help displays conflicts with this though.
+      * Errors on select -- Only show error message on the currently selected slot?
+                        That would allow the choices display to move up next to the
+                        slot.  And reduces the clutter of seeing too many error
+                        messages.  The invalid slots will still be marked red
+                        so you need to take care of it.
+      * Choice collapse -- research team wants to hide less-common choices.  How
+                        do we mark that?  How do we display that?  Especially if
+                        it means splitting the choices in one particular category
+                        (e.g. some Costume props are collapsed, others are highlighted)
+      * "Save" location -- Should "Save" always appear bottom justified?
+                        How do we handle short displays?  What should stay fixed
+                        and what should scroll?
+      * CLickaway       -- Should the current slot line be saved as soon as you click away?
+                        *  Add a "[ ] Save when I click away" option?
+                        *  Test modeless edit and turn "Cancel" button into "REVERT"?
+  */
   return (
     <div className="gslot-ed">
-      <div className="gslot-ed help">EDIT LINE {num}</div>
+      {/* RATIONALE: Title bar to let you know you're editing and show which line you're editing */}
+      <div className="gslot-ed help">EDIT LINE: {num}</div>
       <div
         className="gslot-ed tokenList"
         style={{
@@ -201,6 +240,13 @@ function SelectEditorSlots(props) {
       >
         {tokenList}
       </div>
+      <div className="gslot-ed styleChoices">
+        <div className="gwiz styleError" style={{ padding: '10px' }}>
+          {selectedError}
+        </div>
+        <EditSymbol selection={selection} />
+      </div>
+      {/* <div className="gwiz gslot-ed meta styleHelp">{selectedHelp}</div> */}
       <div className="gslot-ed button-bar">
         <button type="button" className="secondary" onClick={CancelSlotEdit}>
           Cancel

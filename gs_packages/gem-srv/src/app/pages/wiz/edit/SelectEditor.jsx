@@ -139,7 +139,7 @@ function SelectEditor(props) {
       editor = (
         <div>
           <SelectEditorSlots selection={selection} />
-          <EditSymbol selection={selection} />
+          {/* <EditSymbol selection={selection} /> */}
         </div>
       );
   }

@@ -352,8 +352,8 @@ export function GValidationToken(props) {
       <div className={classes} data-slotkey={tokenKey}>
         {label}
       </div>
-      <div className="gwiz gslot-ed meta styleError">{error}</div>
-      <div className="gwiz gslot-ed meta styleHelp">{help}</div>
+      {/* <div className="gwiz gslot-ed meta styleError">{error}</div>
+      <div className="gwiz gslot-ed meta styleHelp">{help}</div> */}
     </>
   ) : (
     <div className={classes} data-key={tokenKey}>
