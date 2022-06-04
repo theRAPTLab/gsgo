@@ -50,7 +50,7 @@ import UR from '@gemstep/ursys/client';
 import React from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-
+import { SelectEditor } from './SelectEditor';
 import {
   GridStack,
   FlexStack,
@@ -64,6 +64,12 @@ import {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const KEY_BITS = -1 + 2 ** 16;
 let KEY_COUNTER = 0;
+
+/// LOCALIZATION
+const L10N = {};
+L10N.TOKEN = 'word'; // script word on script_page
+L10N.LINE = 'line'; // script line
+L10N.MSG_SELECT_TOKEN = `Click on a ${L10N.LINE} on the left to edit it.`;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Generates a sequential key index for React lists that increments and wraps
@@ -99,8 +105,27 @@ function u_Key(prefix = '') {
  */
 
 function SelectEditorSlots(props) {
+  const { selection } = props; // sel_linenum, sel_linepos
+
+  if (!selection)
+    return <div className="gsled panel panelhelp">{L10N.MSG_SELECT_TOKEN}</div>;
+
+  let selectedError = '';
+  let selectedHelp = '';
+
   // 1. Get Slot Definitions
-  const { slots_validation, sel_slotpos, sel_linenum } = WIZCORE.State();
+  /* REVIEW
+              When should we use SelectedTokenInfo vs reading State directly?
+              NOTE that `selection` above comes from props and only contains
+              sel_linenum and sel_linepos, not the whole SelectedTokenInfo
+              object.
+              * We should probably remove use of the var `selection` elsewhere
+                if is not the selected token info.
+              * Is passing selection via props even necessary if everyone is
+                just reading it directly from wizcore anyway?
+  */
+  const { slots_linescript, slots_validation, sel_slotpos, sel_linenum } =
+    WIZCORE.State();
 
   // 2. Process each validation token
   const { validationTokens } = slots_validation;
@@ -110,29 +135,55 @@ function SelectEditorSlots(props) {
     let label;
     let type;
     let viewState;
+    let error;
+    let help;
     const position = CHECK.OffsetLineNum(i);
     const tokenKey = `${sel_linenum},${position}`;
     const selected = sel_slotpos === position;
+    const scriptToken = slots_linescript[i];
+
+    /*
+        Slot Help
+        RATIONALE: This should be a secondary help system, the primary one being for the
+                   main "Keyword Help".  But in addition to the general keyword help,
+                   as studenters data for individual slots, they'll need help understanding
+                   what each individual slot piece is.
+
+                   This should show either:
+                   a. The choice token being hovered over (e.g. x or energyType)
+                   b. If no hover, then it should show the currently selected choice
+
+        REVIEW: Retreive from validation token?
+    */
+    // const { gsType, methodSig, unitText } = scriptToken || {}; // gracefully fail if not defined
+    // const { name, args: methodArgs, info } = methodSig || {}; // gracefully fail if not defined
+    help = `HELP: xxx`;
 
     const t = validationTokens[i];
-    if (t.error) {
-      // if there's an error in the token, show the current unitText value
-      // if there is not current value, show the expected gsType, else show syntax label
-      // REVIEW VSymError doesn't return the original text, just
-      // {error: {code, info}}.  Might be nice to have the orig text?
+    if (t.error && scriptToken) {
+      // 1. Error with an entered value
+      //    if there's an error in the token, show the current unitText value,
+      //    but fall back to gsType if there's no value
       label = t.unitText || t.gsType || label;
-      type = t.gsType;
       viewState = t.error.code;
-      // REVIEW: While editing, we show empty slots as empty so there isn't so much red?
-      // but in regular displays, we show empty slots as invalid
-      // or should they always show as invalid?
-      viewState = viewState === 'empty' ? 'empty-editing' : viewState;
+      error = t.error.info;
+    } else if (t.error) {
+      // 2. Error because no value
+      //    if there is not current value, show the expected gsType, else show syntax label
+      label = t.gsType || label;
+      // if the error is vague, use vague, else use empty
+      if (t.error.code === 'vague') viewState = 'vague';
+      else viewState = 'empty-editing';
+      error = t.error.info;
     } else {
-      // No error, just show token
+      // 3. No error, just show token
       label = t.unitText;
-      type = t.gsType;
       viewState = t.viewState;
     }
+    type = t.gsType;
+
+    selectedError = selected ? error : selectedError;
+    selectedHelp = selected ? help : selectedHelp;
 
     tokenList.push(
       <GValidationToken
@@ -142,6 +193,8 @@ function SelectEditorSlots(props) {
         selected={selected}
         type={type}
         label={label}
+        error={error}
+        help={help}
         viewState={viewState}
         isSlot
       />
@@ -155,18 +208,69 @@ function SelectEditorSlots(props) {
     WIZCORE.CancelSlotEdit(e);
   }
 
+  /*
+      Keyword Help
+
+      RATIONALE: Provide general guidelines for the purpose of the keyword.
+      DESIGN: This should:
+      * always be visible while the student is working on the line
+      * be loaded from a dictionary
+
+      HACK for now.
+  */
+  const keywordHelp =
+    'Use the "prop" keyword to set properties to specific values and do simple arithmetic.';
+
+  const num = String(sel_linenum).padStart(3, '0');
+
+  /*
+      GENERAL DESIGN CONSIDERATIONS
+
+      * Animate changes -- when selecting choices, the abrupt change of elements and
+                        shifting of the whole slot editor is confusing.  Is it possible
+                        to transition the sizes at least?
+      * Choices display -- where should the EditSymbol choices be displayed?
+                        Keeping the editted line at top makes sense because it's stable
+                        and anchors the editing.  But should the choices (e.g. prop name
+                        selection) be displayed above or below the "Save" button"
+                        In the mockups we "connected" the choices to the currently
+                        selected slot by proximity and color.  The current use of
+                        the error and help displays conflicts with this though.
+      * Errors on select -- Only show error message on the currently selected slot?
+                        That would allow the choices display to move up next to the
+                        slot.  And reduces the clutter of seeing too many error
+                        messages.  The invalid slots will still be marked red
+                        so you need to take care of it.
+      * Choice collapse -- research team wants to hide less-common choices.  How
+                        do we mark that?  How do we display that?  Especially if
+                        it means splitting the choices in one particular category
+                        (e.g. some Costume props are collapsed, others are highlighted)
+      * "Save" location -- Should "Save" always appear bottom justified?
+                        How do we handle short displays?  What should stay fixed
+                        and what should scroll?
+      * CLickaway       -- Should the current slot line be saved as soon as you click away?
+                        *  Add a "[ ] Save when I click away" option?
+                        *  Test modeless edit and turn "Cancel" button into "REVERT"?
+  */
   return (
-    <div>
-      <div style={{ backgroundColor: '#eee', padding: '10px' }}>{tokenList}</div>
+    <div className="gsled panel">
+      {/* RATIONALE: Title bar to let you know you're editing and show which line you're editing */}
+      <div className="gsled panelhelp">EDIT LINE: {num}</div>
       <div
+        className="gsled tokenList"
         style={{
-          display: 'grid',
-          padding: '10px',
-          backgroundColor: '#666',
-          gridTemplateColumns: '45% 10% 45%'
+          gridTemplateColumns: `repeat(${validationTokenCount},auto)`
         }}
       >
-        <button type="button" onClick={CancelSlotEdit}>
+        {tokenList}
+      </div>
+      <div className="gsled choices">
+        <div className="gsled choicesline gwiz styleError">{selectedError}</div>
+        <SelectEditor selection={selection} />
+        <div className="gsled choicesline choiceshelp">{selectedHelp}</div>
+      </div>
+      <div className="gsled button-bar">
+        <button type="button" className="secondary" onClick={CancelSlotEdit}>
           Cancel
         </button>
         &nbsp;
@@ -174,6 +278,7 @@ function SelectEditorSlots(props) {
           Save
         </button>
       </div>
+      <div className="gsled panelhelp">{keywordHelp}</div>
     </div>
   );
 }
