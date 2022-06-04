@@ -245,6 +245,7 @@ function SelectEditorSlots(props) {
           {selectedError}
         </div>
         <EditSymbol selection={selection} />
+        {/* SelectEditor Input form elements should be moved here */}
       </div>
       {/* <div className="gwiz gslot-ed meta styleHelp">{selectedHelp}</div> */}
       <div className="gslot-ed button-bar">
