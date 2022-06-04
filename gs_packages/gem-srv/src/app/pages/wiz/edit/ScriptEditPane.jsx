@@ -119,9 +119,9 @@ function DevNotice(props) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ScriptEditPane(props) {
   // we need the current selection if there is one
-  let selection = WIZCORE.SelectedTokenInfo();
-  if (selection !== undefined) {
-    const { sel_linepos: pos, slots_validation: validation } = selection;
+  let selInfo = WIZCORE.SelectedTokenInfo();
+  if (selInfo !== undefined) {
+    const { sel_linepos: pos, slots_validation: validation } = selInfo;
     const { validationTokens: vtoks, validationLog } = validation;
     WIZCORE.UpdateDBGConsole(validationLog);
     const vtok = vtoks[pos - 1];
@@ -133,7 +133,7 @@ export function ScriptEditPane(props) {
     <FlexStack id="ScriptContextor" style={{ height: '100%' }}>
       {/* <DevStuffToAdd /> */}
       {/* put some kind of chooser here */}
-      <SelectEditorSlots selection={selection} />
+      <SelectEditorSlots selection={selInfo} />
       {/* then back to business */}
       {/* spacer to push Console down to bottom */}
       <div style={{ flexGrow: 1 }}>&nbsp;</div>

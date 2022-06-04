@@ -114,6 +114,16 @@ function SelectEditorSlots(props) {
   let selectedHelp = '';
 
   // 1. Get Slot Definitions
+  /* REVIEW
+              When should we use SelectedTokenInfo vs reading State directly?
+              NOTE that `selection` above comes from props and only contains
+              sel_linenum and sel_linepos, not the whole SelectedTokenInfo
+              object.
+              * We should probably remove use of the var `selection` elsewhere
+                if is not the selected token info.
+              * Is passing selection via props even necessary if everyone is
+                just reading it directly from wizcore anyway?
+  */
   const { slots_linescript, slots_validation, sel_slotpos, sel_linenum } =
     WIZCORE.State();
 
@@ -138,7 +148,12 @@ function SelectEditorSlots(props) {
                    main "Keyword Help".  But in addition to the general keyword help,
                    as studenters data for individual slots, they'll need help understanding
                    what each individual slot piece is.
-        REVIEW: Retrive from validation token?
+
+                   This should show either:
+                   a. The choice token being hovered over (e.g. x or energyType)
+                   b. If no hover, then it should show the currently selected choice
+
+        REVIEW: Retreive from validation token?
     */
     // const { gsType, methodSig, unitText } = scriptToken || {}; // gracefully fail if not defined
     // const { name, args: methodArgs, info } = methodSig || {}; // gracefully fail if not defined
