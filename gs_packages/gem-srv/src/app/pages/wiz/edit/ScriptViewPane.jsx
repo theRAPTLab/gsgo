@@ -15,7 +15,13 @@
 import React, { useEffect } from 'react';
 import { TokenToString, DecodeTokenPrimitive } from 'script/transpiler-v2';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
-import { GLine, GBlankLine, GToken, sScriptView } from '../SharedElements';
+import {
+  GLine,
+  GBlankLine,
+  GToken,
+  GValidationToken,
+  sScriptView
+} from '../SharedElements';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -56,6 +62,7 @@ export function ScriptViewPane(props) {
   // collect resources for rendering
   DBGTEXT = '';
   const { script_page } = props;
+  const script_page_Validation = WIZCORE.ValidateScriptPage();
   const pageBuffer = [];
   const selTokId = WIZCORE.SelectedTokenId();
   const selLineNum = WIZCORE.SelectedLineNum();
@@ -64,25 +71,43 @@ export function ScriptViewPane(props) {
   // the line has token viewmodel data plus line metdata
   script_page.forEach(line => {
     const { lineNum, level, vmTokens } = line;
-
     const lineBuffer = [];
     const hasTokens = vmTokens.length > 0;
     // iterate over vmTokens if it exists
     if (hasTokens) {
-      vmTokens.forEach((tokInfo, idx) => {
-        const { scriptToken, tokenKey } = tokInfo;
-        const dtok = DecodeTokenPrimitive(scriptToken);
-        const label =
-          typeof dtok !== 'object' ? dtok : TokenToString(scriptToken);
-        const selected = tokenKey === selTokId;
+      // Iterate over validation tokens so we can show errors
+      const lineValidationTokens =
+        script_page_Validation[lineNum].validationTokens;
+      lineValidationTokens.forEach((validationToken, idx) => {
+        const tokInfo = vmTokens[idx] || {};
+        let { tokenKey } = tokInfo;
+        const { scriptToken } = tokInfo;
+        let label;
+        let selected;
+        let viewState;
+        if (scriptToken) {
+          const dtok = DecodeTokenPrimitive(scriptToken);
+          label = typeof dtok !== 'object' ? dtok : TokenToString(scriptToken);
+          selected = tokenKey === selTokId;
+          viewState =
+            validationToken && validationToken.error
+              ? validationToken.error.code
+              : '';
+        } else {
+          // no scriptToken, this is an empty slot -- user has not entered any data
+          label = validationToken.gsType; // show missing type
+          viewState = 'empty';
+          tokenKey = `${lineNum},${idx + 1}`; // generate tokenKey
+        }
         lineBuffer.push(
-          <GToken
+          <GValidationToken
             key={u_Key()}
+            tokenKey={tokenKey}
             position={idx}
             selected={selected}
+            type="fixme"
             label={label}
-            tokenKey={tokenKey}
-            token={scriptToken}
+            viewState={viewState}
           />
         );
         DBGTEXT += `{${tokenKey}} `;
