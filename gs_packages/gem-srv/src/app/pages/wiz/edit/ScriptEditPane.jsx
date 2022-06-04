@@ -12,8 +12,7 @@ import UR from '@gemstep/ursys/client';
 import { TokenToString, DecodeTokenPrimitive } from 'script/transpiler-v2';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import Console from '../stat/Console';
-import { EditSymbol } from './EditSymbol';
-import { SelectEditor } from './SelectEditor';
+import { SelectEditorSlots } from './SelectEditorSlots';
 import {
   GridStack,
   FlexStack,
@@ -120,9 +119,9 @@ function DevNotice(props) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ScriptEditPane(props) {
   // we need the current selection if there is one
-  let selection = WIZCORE.SelectedTokenInfo();
-  if (selection !== undefined) {
-    const { sel_linepos: pos, slots_validation: validation } = selection;
+  let selInfo = WIZCORE.SelectedTokenInfo();
+  if (selInfo !== undefined) {
+    const { sel_linepos: pos, slots_validation: validation } = selInfo;
     const { validationTokens: vtoks, validationLog } = validation;
     WIZCORE.UpdateDBGConsole(validationLog);
     const vtok = vtoks[pos - 1];
@@ -131,11 +130,13 @@ export function ScriptEditPane(props) {
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
-    <FlexStack id="ScriptContextor">
+    <FlexStack id="ScriptContextor" style={{ height: '100%' }}>
       {/* <DevStuffToAdd /> */}
       {/* put some kind of chooser here */}
-      <SelectEditor selection={selection} />
+      <SelectEditorSlots selection={selInfo} />
       {/* then back to business */}
+      {/* spacer to push Console down to bottom */}
+      <div style={{ flexGrow: 1 }}>&nbsp;</div>
       <Console
         title="DEV: AVAILABLE SYMBOL INFO"
         name={dbg_console}
