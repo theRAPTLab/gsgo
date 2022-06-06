@@ -137,7 +137,7 @@ function SelectEditorSlots(props) {
     let viewState;
     let error;
     let help;
-    const position = CHECK.OffsetLineNum(i);
+    const position = CHECK.OffsetLineNum(i, 'add');
     const tokenKey = `${sel_linenum},${position}`;
     const selected = sel_slotpos === position;
     const scriptToken = slots_linescript[i];

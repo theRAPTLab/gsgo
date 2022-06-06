@@ -6,7 +6,8 @@
 
 import UR from '@gemstep/ursys/client';
 import SM_Bundle from 'lib/class-sm-bundle';
-import { EBundleType, EBundleTag } from 'modules/../types/t-script.d'; // workaround to import as obj
+// workaround to import enumeration types as objects requires dirpath hack
+import { EBundleType, EBundleTag } from 'modules/../types/t-script.d';
 import * as CHECK from './dc-sim-data-utils';
 import * as SIMDATA from './dc-sim-data';
 

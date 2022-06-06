@@ -55,7 +55,7 @@ function SelectEditor(props) {
 
   const { validationTokens: vtoks, validationLog } = validation;
 
-  const vtok = vtoks[CHECK.UnOffsetLineNum(pos)];
+  const vtok = vtoks[CHECK.OffsetLineNum(pos, 'sub')];
   const { gsType, methodSig, unitText } = vtok || {}; // gracefully fail if not defined
   const { name, args: methodArgs, info } = methodSig || {}; // gracefully fail if not defined
 

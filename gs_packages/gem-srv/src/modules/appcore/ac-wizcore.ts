@@ -183,7 +183,7 @@ STORE._interceptState(state => {
   if (sel_linenum) {
     if (sel_linenum > 0) {
       const { script_page } = State();
-      const { lineScript } = script_page[CHECK.UnOffsetLineNum(sel_linenum)];
+      const { lineScript } = script_page[CHECK.OffsetLineNum(sel_linenum, 'sub')];
       // FIXME: IF the slot is currently being edited, don't allow selection?
       // clone the current linescript
       state.slots_linescript = lineScript.map(t => ({ ...t }));
@@ -227,7 +227,7 @@ STORE._interceptState(state => {
 
 //     // Update Slot Editor
 //     // Replace the token in the current line script
-//     const slotIdx = CHECK.UnOffsetLineNum(sel_slotpos);
+//     const slotIdx = CHECK.OffsetLineNum(sel_slotpos,'sub');
 
 //     let newScriptToken = script_tokens[slotIdx];
 //     if (slotIdx < slots_linescript.length) {
@@ -296,7 +296,7 @@ function UpdateSlotValue(val) {
   const { slots_linescript, sel_slotpos } = State();
   // if the scriptToken already exists, update it byRef
   const slotScriptToken =
-    slots_linescript[CHECK.UnOffsetLineNum(sel_slotpos)] || // existing token
+    slots_linescript[CHECK.OffsetLineNum(sel_slotpos, 'sub')] || // existing token
     {}; // or new object if this is creating a new slot
   slotScriptToken.value = val; // We know the scriptToken is a value
   // if the token was previously used to as a string token, remove the old string key
@@ -313,7 +313,7 @@ function UpdateSlotString(val) {
   const { slots_linescript, sel_slotpos } = State();
   // if the scriptToken already exists, update it byRef
   const slotScriptToken =
-    slots_linescript[CHECK.UnOffsetLineNum(sel_slotpos)] || // existing token
+    slots_linescript[CHECK.OffsetLineNum(sel_slotpos, 'sub')] || // existing token
     {}; // or new object if this is creating a new slot
   slotScriptToken.string = val; // We know the scriptToken is a value
   // if the token was previously used to as a value token, remove the old value key
@@ -397,7 +397,7 @@ function DispatchClick(event) {
 
     // if the scriptToken already exists, update it byRef
     const slotScriptToken =
-      slots_linescript[CHECK.UnOffsetLineNum(sel_slotpos)] || // existing token
+      slots_linescript[CHECK.OffsetLineNum(sel_slotpos, 'sub')] || // existing token
       {}; // or new object if this is creating a new slot
     // Assume it's an identifier
     slotScriptToken.identifier = symbolValue;
@@ -536,7 +536,7 @@ function GetTokenById(key) {
 /** Return the script_page line, taking the 1-index into account */
 function GetVMPageLine(line: number) {
   const { script_page } = STORE.State();
-  return script_page[CHECK.UnOffsetLineNum(line)];
+  return script_page[CHECK.OffsetLineNum(line, 'sub')];
 }
 
 /// DATA CONVERSION HELPERS ///////////////////////////////////////////////////
@@ -676,7 +676,7 @@ export function SaveSlotLineScript(e) {
     script_tokens,
     sel_linenum
   } = STORE.State();
-  const lineIdx = CHECK.UnOffsetLineNum(sel_linenum); // 1-based
+  const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
   script_tokens.splice(lineIdx, 1, slots_linescript);
   STORE.SendState({ script_tokens });
 }
