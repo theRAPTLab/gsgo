@@ -1,87 +1,39 @@
-/* eslint-disable react/static-property-placement */
-/* eslint-disable max-classes-per-file */
-/* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable consistent-return */
-/* eslint-disable no-cond-assign */
-/* eslint-disable no-continue */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  A collection of symbol utilities
+  The SymbolInterpreter class knows how to reference symbol tables and
+  "dig into them" as it interprets a ScriptUnit token-by-token, returning
+  a VSDToken. Every time a successful interpretation occurs (meaning that
+  the script token referenced a symbol table that exists) the symbol data
+  "scope" is updated; subsequent calls thus "drill down" deeper into the
+  symbol table data structure.
 
-  The intent of SymbolHelper is to lookup symbol data from a token.
-  Your provide a bundle and context
-  It knows how to lookup features, programs, and blueprints.
-  It knows how to dig into props.
+  Setup requires providing the symbol tables through setSymbolTables(),
+  then calling one of the interpreter methods with a scriptToken.
+  The interpreter methods will always return a VSDToken; check for the
+  presence of an `error` property to know whether there was a problem or not.
 
+  If you need to scan from the top of the symbol tables, use reset().
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as ENGINE from 'modules/datacore/dc-sim-data';
 import * as TOKENIZER from 'script/tools/script-tokenizer';
-
-// uses types defined in t-script.d
+import VSDToken from 'script/tools/class-validation-token';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-const PR = UR.PrefixUtil('SYMUTIL', 'TagTest');
+const PR = UR.PrefixUtil('SYMPRET', 'TagTest');
 
-/// TSYMBOLDATA UTILITY CLASSES ///////////////////////////////////////////////
+/// SYMBOL INTERPRETER CLASS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-type VSDOpts = {
-  gsType: TGSType;
-  unitText?: string;
-  err_code?: TValidationErrorCodes;
-  err_info?: string;
-};
-class VSDToken implements TSymbolData {
-  // implement a subset of TSymbolData fields
-  /** @constructor
-   *  @param {TSymbolData} symbols optional set of symbols that were available
-   *  @param {string} info optional tag, useful for adding context for errors
-   */
-  constructor(symbols?: TSymbolData, opt?: VSDOpts) {
-    // if we want to remember the original scriptText word
-    const { unitText, gsType, err_code, err_info } = opt || {};
-    if (unitText) (this as any).unitText = unitText;
-    if (gsType) (this as any).gsType = gsType;
-    if (err_code || err_info) {
-      (this as any).error = {
-        code: err_code,
-        info: err_info
-      };
-    }
-    // add symbol data
-    if (symbols) {
-      const symbolKeys = [...Object.keys(symbols)];
-      symbolKeys.forEach(key => {
-        this[key] = symbols[key];
-      });
-    }
-  }
-}
-
-/// SYMBOL HELPER CLASS ///////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** This class helps maintain a "current context" of symbols depending on
- *  a series of tokens that affect what is "current". The use case is for
- *  a scriptUnit of keyword tokens that establishes an initial context
- *  like a property that is 'drilled into' to retrieve props, methods,
- *  and method arguments.
- *
- *  It is used by the Keyword.validate() base method and its subclassers.
- *  First, set the parent contexts { bundle, globals }
- *
- *  USAGE:
- *    const shelper = new SymbolHelper('label')
- *    shelper.setRefs({ bundle, globals })
- *    // tokens is a single scriptUnit for a statement
- *    const symbols = shelper.getKeywords(tokens[0]);
+/** Interprets script tokens in the context of symbol data, returning a
+ *  validation token detailing if it is correct. Requires symboltables
+ *  to be passed as the data used to intepret a token.
  */
-class SymbolHelper {
+class SymbolInterpreter {
   refs: TSymbolRefs; // replaces token, bundle, xtx_obj, symscope
   cur_scope: TSymbolData; // current scope as drilling down into objref
   bdl_scope: TSymbolData; // pointer to the top scope (blueprint bundle)
@@ -105,8 +57,8 @@ class SymbolHelper {
   /** reference are the default lookup dictionaries. This is more than
    *  just the globals context, including the entire
    */
-  setReferences(refs: any) {
-    const fn = 'setReferences:';
+  setSymbolTables(refs: any) {
+    const fn = 'setSymbolTables:';
     const { bundle, globals } = refs || {};
     if (bundle) {
       if (CHECK.IsValidBundle(bundle)) this.refs.bundle = bundle;
@@ -237,7 +189,7 @@ class SymbolHelper {
     return ctx; // valid scope is parent of cur_scope
   }
 
-  /// SCOPE-BASED DICT SEARCHES ///////////////////////////////////////////////
+  /// SCOPE-BASED INTERPRETER METHODS /////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** scans the current scope for a terminal property or feature, after
    *  which a methodName would be expected in the next tokens
@@ -428,7 +380,7 @@ class SymbolHelper {
     return new VSDToken({ methods }, { gsType, unitText: methodName }); // valid scope is parent of cur_scope
   }
 
-  /// METHOD ARGUMENT SYMBOLS /////////////////////////////////////////////////
+  /// METHOD ARGUMENT INTERPRETER METHODS /////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** process the argument list that follows a methodName in GEMSCRIPT
    */
@@ -478,6 +430,7 @@ class SymbolHelper {
             }
           )
         );
+        // eslint-disable-next-line no-continue
         continue;
       }
       // SCOPE ARGS 3: validate current token against matching argument definition
@@ -663,98 +616,8 @@ class SymbolHelper {
     // return valid symdata/validation
     return symData;
   }
-} // end of SymbolHelper class
-
-/// UTILITY METHODS ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** UTILITY: convert symbol data into lists suitable for gui rendering. this is
- *  the entire list of ALLOWED CHOICES; if you want to just know what unitText
- *  is, then use UnpackSymbol
- */
-function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
-  let sv_data: any = {};
-
-  // check to see what
-  const { error, unitText, keywords, features, props, methods, arg } = symbolData;
-  if (unitText) sv_data.unitText = unitText;
-  if (error)
-    sv_data.error = {
-      info: `${error.code} - ${error.info}`
-    };
-  if (keywords)
-    sv_data.keywords = {
-      info: keywords.join(', '),
-      items: keywords
-    };
-  if (features) {
-    const items = [...Object.keys(features)];
-    sv_data.features = {
-      info: items.join(', '),
-      items
-    };
-  }
-  if (props) {
-    const items = [...Object.keys(props)];
-    sv_data.props = {
-      info: items.join(', '),
-      items
-    };
-  }
-  if (methods) {
-    const items = [...Object.keys(methods)];
-    sv_data.methods = {
-      info: items.join(', '),
-      items
-    };
-  }
-  if (arg) {
-    const [name, type] = CHECK.UnpackArg(arg);
-    sv_data.arg = { info: arg, items: [name, type] };
-  }
-  return sv_data;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** UTILITY: returns an array all symbolTypes associatd with unitText:
- *  [ unitText, [ symbolType, items ], [ symbolType, items ], ... ]
- */
-function UnpackViewData(svm_data: TSymbolViewData): any[] {
-  const list = [];
-  Object.keys(svm_data).forEach(key => {
-    let value = svm_data[key];
-    if (key === 'unitText') {
-      list.unshift(value);
-      return;
-    }
-    if (key === 'error') {
-      list.push([key, value.text]);
-      return;
-    }
-    if (key === 'arg') {
-      //
-    }
-    const { items } = value;
-    if (items) list.push([key, items]);
-  });
-  return list;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** UTILITY: Given a symbolData structure for unitText, return the SPECIFIC matching type
- *  instead of all allowed types
- */
-function UnpackSymbolType(symbolData: TSymbolData): any[] {
-  return [];
-}
+} // end of SymbolInterpreter class
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export {
-  SymbolHelper, // symbol decoder
-  VSDToken,
-  DecodeSymbolViewData,
-  UnpackViewData,
-  UnpackSymbolType
-};
-export function BindModule() {
-  // HACK to force import of this module in Transpiler, otherwise webpack treeshaking
-  // seems to cause it not to load
-}
+export default SymbolInterpreter;

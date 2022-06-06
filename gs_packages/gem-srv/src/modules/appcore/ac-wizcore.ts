@@ -27,13 +27,13 @@ import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as DCSIM from 'modules/datacore/dc-sim-data';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
-import * as TEST_SYMBOLS from 'script/tools/x-symbol-tests';
+import * as TEST_SYMBOLS from 'test/x-symbol-tests';
 import { ENABLE_SYMBOL_TEST_BLUEPRINT } from 'modules/datacore/dc-constants';
 import {
   DecodeSymbolViewData,
   UnpackViewData,
   UnpackSymbolType
-} from 'script/tools/symbol-helpers';
+} from 'script/tools/symbol-utilities';
 import { ASSETDIR, DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 import { GetTextBuffer } from 'lib/class-textbuffer';
 
@@ -766,7 +766,7 @@ export {
 };
 export {
   GetSymbolNames, // return the names
-  DecodeSymbolViewData, // forward utilities from symbol-helpers
+  DecodeSymbolViewData, // forward utilities from symbol-utilities
   UnpackViewData, // forward convert ViewData to an hybrid format
   UnpackSymbolType // forward unpack symbol into [unit,type, ...param]
 };

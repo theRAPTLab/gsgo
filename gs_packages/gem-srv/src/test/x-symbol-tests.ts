@@ -22,7 +22,7 @@ const USE_TEST_SCRIPT = ENABLE_SYMBOL_TEST_BLUEPRINT;
 
 /// TEST SUPPORT METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_GetTestScript() {
+function m_GetCurrentScriptTokens() {
   if (USE_TEST_SCRIPT) return TRANSPILER.TextToScript(TEST_SCRIPT);
   const bp = PROJ_v2.GetProjectBlueprint(DEV_PRJID, DEV_BPID);
   const { scriptText } = bp;
@@ -52,7 +52,7 @@ function TestValidate() {
   const mode = USE_TEST_SCRIPT ? 'internal test bp' : `${DEV_PRJID}/${DEV_BPID}`;
 
   groupCollapsed(fn, mode);
-  const script = m_GetTestScript();
+  const script = m_GetCurrentScriptTokens();
   // GENERATE A BUNDLE that does not get saved into the
   let bdl: SM_Bundle = new SM_Bundle('test-validate');
   bdl = TRANSPILER.SymbolizeBlueprint(script, bdl);
@@ -101,7 +101,7 @@ function TestValidate() {
   // RESULT
   // VALID_PAGE is an array of validation token arrays
   //
-  const tests = [
+  const testLines = [
     'prop',
     'prop energyLevel',
     'prop energyLevel setTo',
@@ -116,7 +116,7 @@ function TestValidate() {
     'prop energyLevel setTo bananaEnergy'
   ];
 
-  group('TEST VALIDATE LINE SCRIPTS');
+  groupCollapsed(fn, 'Testing special casesVALIDATE LINE SCRIPTS');
   log(`%cusing bundle '${bdl.name}'`, 'font-style:italic;color:maroon');
   type Slot = {
     expectedType: TGSArg;
@@ -124,8 +124,10 @@ function TestValidate() {
     unitText: string;
     dataSelectKey: number;
   };
-  tests.forEach((line, testNum) => {
+
+  testLines.forEach((line, testNum) => {
     const { validationTokens } = TRANSPILER.ValidateLineText(line, bdl);
+
     const ut = [];
     const gs = [];
     const vs = [];
@@ -145,6 +147,7 @@ function TestValidate() {
       vs.push(viewState);
       dsk.push(dataSelectKey);
     });
+
     const resultcss = errInfo
       ? 'color:red;font-weight:bold'
       : 'color:black;font-weight:bold';

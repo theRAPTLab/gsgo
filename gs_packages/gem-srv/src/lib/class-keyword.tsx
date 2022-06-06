@@ -19,7 +19,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
-import { SymbolHelper, VSDToken } from 'script/tools/symbol-helpers';
+import SymbolInterpreter from 'script/tools/class-symbol-interpreter';
+import VSDToken from 'script/tools/class-validation-token';
 import { UnpackToken, UnpackArg } from 'modules/datacore/dc-sim-data-utils';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -31,14 +32,14 @@ const DBG = false;
 class Keyword implements IKeyword {
   keyword: string;
   args: TGSArg[] | TGSArg[][]; // for symbol validation
-  shelper: SymbolHelper; // helper for extracting line data
+  shelper: SymbolInterpreter; // helper for extracting line data
   //
   constructor(keyword: string) {
     if (typeof keyword !== 'string')
       throw Error('Keyword requires string, not undefined');
     this.keyword = keyword;
     this.args = [];
-    this.shelper = new SymbolHelper(keyword);
+    this.shelper = new SymbolInterpreter(keyword);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,12 +88,12 @@ class Keyword implements IKeyword {
 
   /// SYMBOL OPERATIONS ///////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API utility to initialize parameters for SymbolHelper instance, which
+  /** API utility to initialize parameters for SymbolInterpreter instance, which
    *  must be done each time before validate() is called to ensure correct refs
    *  symbol data and global objects are set
    */
   validateInit(refs: TSymbolRefs) {
-    this.shelper.setReferences(refs);
+    this.shelper.setSymbolTables(refs);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API default method for validating scriptUnits against scriptData.

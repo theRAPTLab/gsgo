@@ -22,10 +22,10 @@ import 'script/keywords/_all_keywords';
 // tooling imports
 import * as TOKENIZER from 'script/tools/script-tokenizer';
 import * as COMPILER from 'script/tools/script-compiler';
-import * as SYMBOLHELPERS from 'script/tools/symbol-helpers';
+import * as SYMBOLUTILS from 'script/tools/symbol-utilities';
 
 // dummy to import symbol-utilities otherwise it gets treeshaken out
-SYMBOLHELPERS.BindModule();
+SYMBOLUTILS.BindModule();
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

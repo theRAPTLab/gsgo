@@ -77,7 +77,7 @@ export function EditSymbol(props) {
     // Don't render choices if the current selection should be an input form
     if (gsType === 'number' || gsType === 'string') return '';
 
-    // See symbol-helpers.DecodeSymbolViewData
+    // See symbol-utilities.DecodeSymbolViewData
     const viewData = WIZCORE.DecodeSymbolViewData(symbolData); // returns the list of symbolnames for a particular symbol
     /* TODO: it would be nice to make unitText indicate it's the current value */
     // VALIDATION TOKENS are stored by key in the dicts
@@ -137,7 +137,7 @@ export function EditSymbol(props) {
     }
 
     // Features need special handling.
-    // By default, symbol-helpers.DecodeSymbolViewData converts features into a shallow
+    // By default, symbol-utilities.DecodeSymbolViewData converts features into a shallow
     // list of Features available in the blueprint, e.g. "Costume", "AgentWidgets".
     // But what we actually want are a list of the methods and props for each
     // specific feature, e.g. 'Costume.costumeName'.  So we do some extra processing

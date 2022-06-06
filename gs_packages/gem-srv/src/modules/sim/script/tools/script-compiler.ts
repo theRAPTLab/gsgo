@@ -35,7 +35,7 @@ import * as DCSIM from 'modules/datacore/dc-sim-data';
 import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import GAgent from 'lib/class-gagent';
-import { VSDToken } from './symbol-helpers';
+import VSDToken from 'script/tools/class-validation-token';
 import { ParseExpression } from './class-expr-parser-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
