@@ -372,7 +372,7 @@ function m_BindPozyxListener(mqtturl) {
     if (jsonstr) m_ForwardTrackerData(jsonstr);
   });
   mtrack_ss.on('error', err => {
-    console.log(...PR("Can't connect", err));
+    console.log(...PR("MQTT Can't connect", err));
     mtrack_ss.end();
   });
   mtrack_ss.on('close', () => {
