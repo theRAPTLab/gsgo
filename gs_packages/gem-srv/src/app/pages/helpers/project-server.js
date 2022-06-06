@@ -31,7 +31,7 @@ import UR from '@gemstep/ursys/client';
 import RNG from 'modules/sim/sequencer';
 import * as TRANSPILER from 'script/transpiler-v2';
 import 'modules/datacore/dc-project'; // must import to load db
-import * as DCSIM from 'modules/datacore/dc-sim-data';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 import * as DCINPUTS from 'modules/datacore/dc-inputs';
 import * as ACProject from 'modules/appcore/ac-project';
@@ -447,7 +447,7 @@ function InstanceAdd(data, sendUpdate = true) {
 
   // If blueprint has `# PROGRAM INIT` we run that
   // otherwise we auto-place the agent around the center of the screen
-  const blueprint = DCSIM.GetBlueprintBundle(data.blueprintName);
+  const blueprint = SIMDATA.GetBlueprintBundle(data.blueprintName);
   const hasInit = blueprint.init && blueprint.init.length > 0;
   const SPREAD = 100;
   if (!hasInit && !instance.initScript) {

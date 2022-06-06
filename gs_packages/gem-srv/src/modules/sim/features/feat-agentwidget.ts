@@ -24,7 +24,7 @@ import {
 } from 'modules/sim/script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { GetAgentById } from 'modules/datacore/dc-sim-agents';
-import * as DCSIM from 'modules/datacore/dc-sim-data';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import GAgent from 'lib/class-gagent';
 import FLAGS from 'modules/flags';
 
@@ -346,4 +346,4 @@ class WidgetPack extends GFeature {
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new WidgetPack(FEATID);
-DCSIM.RegisterFeature(INSTANCE);
+SIMDATA.RegisterFeature(INSTANCE);

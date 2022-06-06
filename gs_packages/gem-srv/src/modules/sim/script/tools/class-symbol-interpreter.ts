@@ -18,7 +18,7 @@
 
 import UR from '@gemstep/ursys/client';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-import * as ENGINE from 'modules/datacore/dc-sim-data';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as TOKENIZER from 'script/tools/script-tokenizer';
 import VSDToken from 'script/tools/class-validation-token';
 
@@ -114,7 +114,7 @@ class SymbolInterpreter {
   /** returns a list of valid keywords for the script engine */
   allKeywords(token: IToken): TSymbolData {
     const [type, value] = TOKENIZER.UnpackToken(token);
-    const keywords = ENGINE.GetAllKeywords();
+    const keywords = SIMDATA.GetAllKeywords();
     const gsType = 'keyword';
     if (type === 'comment' || type === 'line') {
       return new VSDToken({ keywords }, { gsType, unitText: value });
@@ -524,15 +524,6 @@ class SymbolInterpreter {
         );
     }
 
-    // is this an enumeration list match token???
-    // NOT IMPLEMENTED
-    if (gsType === 'enum') {
-      symData = new VSDToken(
-        {},
-        { gsType, err_code: 'debug', err_info: `${fn} enum is unimplemented` }
-      );
-    }
-
     // all symbols available in current bundle match token.objref
     if (gsType === 'objref' && TOKENIZER.TokenValue(tok, 'objref')) {
       symData = new VSDToken(this.bdl_scope, { gsType, unitText: argName });
@@ -553,7 +544,7 @@ class SymbolInterpreter {
     // is this any gvar type?
     // all gvars available in system match token.identifier
     if (gsType === 'gvar' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const map = ENGINE.GetPropTypesDict();
+      const map = SIMDATA.GetPropTypesDict();
       const ctors = {};
       const list = [...map.keys()];
       list.forEach(ctorName => {
@@ -566,11 +557,11 @@ class SymbolInterpreter {
     // all feature symbols in system match token.identifier
     // e.g. addFeature
     if (gsType === 'feature' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const map = ENGINE.GetAllFeatures();
+      const map = SIMDATA.GetAllFeatures();
       const features = {}; // { [strFeatureName: string]: TSymbolData };
       const list = [...map.keys()];
       list.forEach(featName => {
-        features[featName] = ENGINE.GetFeature(featName).symbolize();
+        features[featName] = SIMDATA.GetFeature(featName).symbolize();
       });
       symData = new VSDToken({ features }, { gsType, unitText: argName });
     }
@@ -579,7 +570,7 @@ class SymbolInterpreter {
     // all blueprint symbols in project match token.identifier
     // e.g. when agent test, when agentA test agentB
     if (gsType === 'blueprint' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const list = ENGINE.GetAllBlueprintBundles();
+      const list = SIMDATA.GetAllBlueprintBundles();
       const blueprints = {};
       list.forEach(bundle => {
         blueprints[bundle.name] = bundle.symbols;
@@ -587,8 +578,8 @@ class SymbolInterpreter {
       symData = new VSDToken({ blueprints }, { gsType, unitText: argName });
     }
 
-    // if (gsType === 'test') {
-    // }
+    if (gsType === 'test') {
+    }
     // if (gsType === 'program') {
     // }
     // if (gsType === 'event') {

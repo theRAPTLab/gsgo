@@ -13,8 +13,8 @@ import SM_Bundle from 'lib/class-sm-bundle';
 import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 
 import GAgent from 'lib/class-gagent';
-import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCSIM from 'modules/datacore/dc-sim-data';
+import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 
 // critical imports
 import 'script/keywords/_all_keywords';
@@ -46,7 +46,7 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
     if (DBG) console.group(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
     // First deregister the blueprint if it exists
     // RemoveGlobalCondition(bdl.name); // deprecatd in script-xp
-    DCSIM.SaveBlueprintBundle(bdl);
+    SIMDATA.SaveBlueprintBundle(bdl);
     // run conditional programming in template
     // this is a stack of functions that run in global context
     // initialize global programs in the bundle
@@ -93,11 +93,11 @@ function MakeAgent(instanceDef: TInstance) {
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
   if (typeof bpid === 'string') {
-    const bdl = DCSIM.GetBlueprintBundle(bpid);
+    const bdl = SIMDATA.GetBlueprintBundle(bpid);
     if (!bdl) throw Error(`agent blueprint for '${bpid}' not defined`);
     // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
     agent.setBlueprint(bdl);
-    return DCAGENTS.SaveAgent(agent);
+    return SIMAGENTS.SaveAgent(agent);
   }
   throw Error(
     `${fn} bad blueprint name ${JSON.stringify(
@@ -107,7 +107,7 @@ function MakeAgent(instanceDef: TInstance) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RemoveAgent(instanceDef: TInstance) {
-  DCAGENTS.DeleteAgent(instanceDef);
+  SIMAGENTS.DeleteAgent(instanceDef);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

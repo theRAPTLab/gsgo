@@ -24,7 +24,7 @@ import UR from '@gemstep/ursys/client';
 import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-import * as DCSIM from 'modules/datacore/dc-sim-data';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
 import * as TEST_SYMBOLS from 'test/x-symbol-tests';
@@ -593,7 +593,7 @@ function ValidateScriptPage(): TValidatedScriptUnit[] {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return the names of symbolData object keys as an array of strings  */
 function GetSymbolNames(symbolType: keyof TSymbolData): string[] {
-  if (symbolType === 'keywords') return DCSIM.GetAllKeywords();
+  if (symbolType === 'keywords') return SIMDATA.GetAllKeywords();
   const bdl = STORE.State().cur_bdl; // returns null
   return bdl.GetSymbolDataNames(symbolType);
 }

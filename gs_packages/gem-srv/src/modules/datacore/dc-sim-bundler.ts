@@ -8,7 +8,7 @@ import UR from '@gemstep/ursys/client';
 import SM_Bundle from 'lib/class-sm-bundle';
 import { EBundleType, EBundleTag } from 'modules/../types/t-script.d'; // workaround to import as obj
 import * as CHECK from './dc-sim-data-utils';
-import * as DCSIM from './dc-sim-data';
+import * as SIMDATA from './dc-sim-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -62,7 +62,7 @@ function ClearBundlerState() {
 /// to maintain compatibility
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Sets the "working bundle" from either a provided bundle or bpName
- *  that is an index into the DCSIM Bundle Dictionary
+ *  that is an index into the SIMDATA Bundle Dictionary
  *  @param {(string|SM_Bundle)} bp - blueprintName or bundle to use for
  *  subsequent bundle operations
  *  @returns SM_Bundle
@@ -71,7 +71,7 @@ function OpenBundle(bp: string | SM_Bundle): SM_Bundle {
   const fn = 'BeginBundle:';
   m_CheckNoOpenBundle(fn);
   if (bp instanceof SM_Bundle) CUR_BUNDLE = bp;
-  if (typeof bp === 'string') CUR_BUNDLE = DCSIM.GetBlueprintBundle(bp);
+  if (typeof bp === 'string') CUR_BUNDLE = SIMDATA.GetBlueprintBundle(bp);
   if (CUR_BUNDLE instanceof SM_Bundle) return CUR_BUNDLE;
   throw Error(`${fn} arg1 was not a bundle or bundleName`);
 }

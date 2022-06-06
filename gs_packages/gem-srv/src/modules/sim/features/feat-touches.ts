@@ -69,9 +69,8 @@
 
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
-import { IAgent, TSymbolData } from 'lib/t-script';
-import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCSIM from 'modules/datacore/dc-sim-data';
+import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 
 import { DistanceTo } from 'lib/util-vector';
 
@@ -93,7 +92,7 @@ const AGENT_TOUCHTYPES = new Map(); // Touch-enabled Agents
  * @param agentId
  */
 function m_GetAgent(agentId): IAgent {
-  const a = DCAGENTS.GetAgentById(agentId);
+  const a = SIMAGENTS.GetAgentById(agentId);
   if (!a) AGENT_TOUCHTYPES.delete(agentId);
   return a;
 }
@@ -135,7 +134,7 @@ function m_Update(frame) {
     if (!agent) return;
 
     d_TouchTypes.forEach((touchTypes, bpname) => {
-      const targets = DCAGENTS.GetAgentsByType(bpname);
+      const targets = SIMAGENTS.GetAgentsByType(bpname);
       targets.forEach(t => {
         // skip self
         if (agentId === t.id) return;
@@ -218,7 +217,7 @@ class TouchPack extends GFeature {
     const touchingId = targetIds.find(id => agent.isTouching.get(id)[touchType]);
     if (touchingId) {
       // console.log(agent.id, 'isTouching', touchingId);
-      return DCAGENTS.GetAgentById(touchingId);
+      return SIMAGENTS.GetAgentById(touchingId);
     }
     return undefined;
   }
@@ -227,7 +226,7 @@ class TouchPack extends GFeature {
   /// Use when deleting an agent otherwise isTouching and lastTouched
   /// are never reset.  See feat-population.m_Delete
   clearTouches(agent: IAgent, targetId: string) {
-    const agents = DCAGENTS.GetAllAgents();
+    const agents = SIMAGENTS.GetAllAgents();
     agents.forEach(a => {
       // use `delete` not clear to prevent memory leak
       if (a.lastTouched) a.lastTouched.delete(targetId);
@@ -239,4 +238,4 @@ class TouchPack extends GFeature {
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new TouchPack(FEATID);
-DCSIM.RegisterFeature(INSTANCE);
+SIMDATA.RegisterFeature(INSTANCE);

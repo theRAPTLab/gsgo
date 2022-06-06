@@ -4,15 +4,15 @@
   by a leading # in scriptText
 
   It implements a number of compiler directives, which are defined in the
-  PRAGMA dictionary below. They tap directly into the DCBUNDLER, which
+  PRAGMA dictionary below. They tap directly into the BUNDLER, which
   is keeping track of the current bundle target, to set directives as they
   are encountered
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Keyword from 'lib/class-keyword';
-import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
-import * as DCSIM from 'modules/datacore/dc-sim-data';
+import * as BUNDLER from 'modules/datacore/dc-sim-bundler';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,15 +22,15 @@ import * as DCSIM from 'modules/datacore/dc-sim-data';
  */
 const PRAGMA = {
   'BLUEPRINT': (name, parent) => {
-    DCBUNDLER.SetBundleName(name, parent);
+    BUNDLER.SetBundleName(name, parent);
     return [];
   },
   'PROGRAM': libName => {
-    DCBUNDLER.SetProgramOut(libName);
+    BUNDLER.SetProgramOut(libName);
     return [];
   },
   'TAG': (tagName, value) => {
-    DCBUNDLER.SetBundleTag(tagName, value);
+    BUNDLER.SetBundleTag(tagName, value);
     return [];
   }
 };
@@ -49,13 +49,13 @@ export class _pragma extends Keyword {
   compile(params: TKWArguments): TOpcode[] {
     // don't do anything if the bundler is inactive, as it is for the
     // case when compiling a script outside of a blueprint
-    if (!DCBUNDLER.BundlerActive()) return [];
+    if (!BUNDLER.BundlerActive()) return [];
 
     // get a valid pragma
     const [, pragmaName, ...args] = params;
     const processor = PRAGMA[(pragmaName as string).toUpperCase()];
     if (processor === undefined) {
-      DCBUNDLER.LogKeywordError(this.keyword, params);
+      BUNDLER.LogKeywordError(this.keyword, params);
       return [];
     }
     // got this far, then it's a valid pragma and we run it
@@ -69,4 +69,4 @@ export class _pragma extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-DCSIM.RegisterKeyword(_pragma);
+SIMDATA.RegisterKeyword(_pragma);

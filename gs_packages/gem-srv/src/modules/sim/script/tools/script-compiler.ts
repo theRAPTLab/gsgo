@@ -31,8 +31,8 @@ import UR from '@gemstep/ursys/client';
 import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 import SM_Bundle from 'lib/class-sm-bundle';
 
-import * as DCSIM from 'modules/datacore/dc-sim-data';
-import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
+import * as BUNDLER from 'modules/datacore/dc-sim-bundler';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import GAgent from 'lib/class-gagent';
 import VSDToken from 'script/tools/class-validation-token';
@@ -77,7 +77,7 @@ function DecodeToken(tok: IToken): any {
   if (type === 'directive') return '_pragma';
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   if (type === 'block') return CompileScript(value);
-  if (type === 'program') return DCSIM.GetProgram(value);
+  if (type === 'program') return SIMDATA.GetProgram(value);
   throw Error(`DecodeToken unhandled type ${type}`);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -155,7 +155,7 @@ function SymbolizeStatement(statement: TScriptUnit, line?: number): TSymbolData 
   const fn = 'SymbolizeStatement:';
   const kw = CHECK.DecodeKeywordToken(statement[0]);
   if (!kw) return {}; // blank lines emit no symbol info
-  const kwp = DCSIM.GetKeyword(kw);
+  const kwp = SIMDATA.GetKeyword(kw);
   if (!kwp) {
     console.warn(`${fn} keyword processor ${kw} bad`);
     return {
@@ -187,13 +187,13 @@ function ValidateStatement(
   if (statement.length === 0) return { validationTokens: [] };
   const { bundle, globals } = refs || {};
   const kw = CHECK.DecodeKeywordToken(statement[0]);
-  const kwp = DCSIM.GetKeyword(kw);
+  const kwp = SIMDATA.GetKeyword(kw);
   if (kwp !== undefined) {
     kwp.validateInit({ bundle, globals });
     return kwp.validate(statement);
   }
   // if got this far, the keyword was unrecognized
-  const keywords = DCSIM.GetAllKeywords();
+  const keywords = SIMDATA.GetAllKeywords();
   const err = new VSDToken(
     { keywords },
     {
@@ -229,7 +229,7 @@ function CompileStatement(stm: TScriptUnit, line?: number): TCompiledStatement {
   const fn = 'CompileStatement:';
   const kw = CHECK.DecodeKeywordToken(stm[0]);
   if (!kw) return []; // skips comments, blank lines
-  const kwp = DCSIM.GetKeyword(kw) || DCSIM.GetKeyword('keywordErr');
+  const kwp = SIMDATA.GetKeyword(kw) || SIMDATA.GetKeyword('keywordErr');
   if (!kwp) throw Error(`${fn} bad keyword ${kw}`);
   const kwArgs = DecodeStatement(stm);
   const compiledStatement = kwp.compile(kwArgs, line);
@@ -260,26 +260,26 @@ function CompileScript(script: TScriptUnit[]): TSMCProgram {
  */
 function SymbolizeBlueprint(script: TScriptUnit[], bdl?: SM_Bundle) {
   const fn = 'SymbolizeBlueprint:';
-  // open provided bundle or look it up in DCSIM by bpName
-  if (bdl instanceof SM_Bundle) DCBUNDLER.OpenBundle(bdl);
+  // open provided bundle or look it up in SIMDATA by bpName
+  if (bdl instanceof SM_Bundle) BUNDLER.OpenBundle(bdl);
   else {
     const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
     const [bpName] = BLUEPRINT;
-    DCBUNDLER.OpenBundle(bpName);
+    BUNDLER.OpenBundle(bpName);
   }
   // setup bundle type
-  DCBUNDLER.SetBundleType(EBundleType.BLUEPRINT);
+  BUNDLER.SetBundleType(EBundleType.BLUEPRINT);
   // add default agent symbols
-  DCBUNDLER.AddSymbols(GAgent.Symbols);
+  BUNDLER.AddSymbols(GAgent.Symbols);
   // symbolize statement-by-statement
   script.forEach((stm, line) => {
     const symbols = SymbolizeStatement(stm, line);
-    DCBUNDLER.AddSymbols(symbols);
+    BUNDLER.AddSymbols(symbols);
   }); // script forEach
   // store script in bundle
-  DCBUNDLER.SaveScript(script);
+  BUNDLER.SaveScript(script);
   // return bundle
-  return DCBUNDLER.CloseBundle();
+  return BUNDLER.CloseBundle();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Given a blueprint script, extract the name and save it to the
@@ -291,24 +291,24 @@ function SymbolizeBlueprint(script: TScriptUnit[], bdl?: SM_Bundle) {
  */
 function CompileBlueprint(script: TScriptUnit[], bdl?: SM_Bundle): SM_Bundle {
   const fn = 'CompileBlueprintScript:';
-  // open provided bundle or look it up in DCSIM by bpName
-  if (bdl instanceof SM_Bundle) DCBUNDLER.OpenBundle(bdl);
+  // open provided bundle or look it up in SIMDATA by bpName
+  if (bdl instanceof SM_Bundle) BUNDLER.OpenBundle(bdl);
   else {
     const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
     const [bpName] = BLUEPRINT;
-    DCBUNDLER.OpenBundle(bpName);
+    BUNDLER.OpenBundle(bpName);
   }
   // setup bundle type
-  DCBUNDLER.SetBundleType(EBundleType.BLUEPRINT);
+  BUNDLER.SetBundleType(EBundleType.BLUEPRINT);
   // compile statement-by-statement
   script.forEach((stm, line) => {
     const objcode = CompileStatement(stm, line);
-    DCBUNDLER.AddProgram(objcode);
+    BUNDLER.AddProgram(objcode);
   });
   // store script in bundle
-  DCBUNDLER.SaveScript(script);
+  BUNDLER.SaveScript(script);
   // return bundle
-  return DCBUNDLER.CloseBundle();
+  return BUNDLER.CloseBundle();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: To create a complete bundle with symbol data and blueprint data,
@@ -321,9 +321,9 @@ function BundleBlueprint(script: TScriptUnit[]): SM_Bundle {
   const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
   const [bpName] = BLUEPRINT;
   // get the bundle to work on
-  DCBUNDLER.OpenBundle(bpName);
-  DCBUNDLER.SetBundleType(EBundleType.BLUEPRINT);
-  DCBUNDLER.AddSymbols(GAgent.Symbols);
+  BUNDLER.OpenBundle(bpName);
+  BUNDLER.SetBundleType(EBundleType.BLUEPRINT);
+  BUNDLER.AddSymbols(GAgent.Symbols);
 
   if (!Array.isArray(script))
     throw Error(`${fn} script should be array, not ${typeof script}`);
@@ -331,15 +331,15 @@ function BundleBlueprint(script: TScriptUnit[]): SM_Bundle {
   script.forEach((stm, line) => {
     // normal processing of statement
     const objcode = CompileStatement(stm, line);
-    DCBUNDLER.AddProgram(objcode);
+    BUNDLER.AddProgram(objcode);
     const symbols = SymbolizeStatement(stm, line);
-    DCBUNDLER.AddSymbols(symbols);
+    BUNDLER.AddSymbols(symbols);
   }); // script forEach
-  if (!DCBUNDLER.HasBundleName) throw Error(`${fn} missing BLUEPRINT directive`);
+  if (!BUNDLER.HasBundleName) throw Error(`${fn} missing BLUEPRINT directive`);
   // store script in bundle
-  DCBUNDLER.SaveScript(script);
+  BUNDLER.SaveScript(script);
   // return bundle
-  return DCBUNDLER.CloseBundle();
+  return BUNDLER.CloseBundle();
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

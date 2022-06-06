@@ -9,8 +9,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Keyword from 'lib/class-keyword';
-import * as DCSIM from 'modules/datacore/dc-sim-data';
-import * as DCCOND from 'modules/datacore/dc-sim-conditions';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
+import * as SIMCOND from 'modules/datacore/dc-sim-conditions';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -40,10 +40,10 @@ export class when extends Keyword {
       /** SINGLE AGENT WHEN TEST *********************************************/
       const [kw, A, testName, ...args] = unit;
       const consq = args.pop();
-      const key = DCCOND.RegisterSingleInteraction([A, testName, ...args]);
+      const key = SIMCOND.RegisterSingleInteraction([A, testName, ...args]);
       // return a function that will do all the things
       prog.push((agent, state) => {
-        const passed = DCCOND.GetInteractionResults(key);
+        const passed = SIMCOND.GetInteractionResults(key);
         passed.forEach(subject => {
           const ctx = { [A as string]: subject };
           agent.exec(consq, ctx);
@@ -53,9 +53,9 @@ export class when extends Keyword {
       /** PAIRED AGENTS WHEN TEST ********************************************/
       const [kw, A, testName, B, ...args] = unit;
       const consq = args.pop();
-      const key = DCCOND.RegisterPairInteraction([A, testName, B, ...args]);
+      const key = SIMCOND.RegisterPairInteraction([A, testName, B, ...args]);
       prog.push((agent, state) => {
-        const passed = DCCOND.GetInteractionResults(key);
+        const passed = SIMCOND.GetInteractionResults(key);
         passed.forEach(pairs => {
           const [aa, bb] = pairs;
 
@@ -100,4 +100,4 @@ export class when extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-DCSIM.RegisterKeyword(when);
+SIMDATA.RegisterKeyword(when);

@@ -12,7 +12,7 @@ import SyncMap from 'lib/class-syncmap';
 import GAgent from 'lib/class-gagent';
 import DisplayObject from 'lib/class-display-object';
 
-import * as DCSIM from 'modules/datacore/dc-sim-data';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler-v2';
@@ -182,11 +182,11 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
  * @param {string[]} namesToKeep array of blueprint names
  */
 function FilterBlueprints(namesToKeep) {
-  const blueprints = DCSIM.GetAllBlueprintBundles(); // Array of SM_Bundle
+  const blueprints = SIMDATA.GetAllBlueprintBundles(); // Array of SM_Bundle
   blueprints.forEach(b => {
     if (!namesToKeep.includes(b.name)) {
       // remove the blueprint
-      DCSIM.DeleteBlueprintBundle(b.name);
+      SIMDATA.DeleteBlueprintBundle(b.name);
 
       // [We can't rely on SyncMap to remove because it doesn't
       //  sync to blueprints, just to instanceDefs]

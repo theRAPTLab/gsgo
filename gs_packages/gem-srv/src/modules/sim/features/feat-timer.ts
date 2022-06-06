@@ -25,7 +25,6 @@ const TimerPack = {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
-import { IAgent, TSymbolData } from 'lib/t-script';
 import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

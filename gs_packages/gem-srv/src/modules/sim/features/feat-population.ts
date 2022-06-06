@@ -14,8 +14,8 @@ import {
   GVarNumber,
   GVarString
 } from 'script/vars/_all_vars';
-import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCSIM from 'modules/datacore/dc-sim-data';
+import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as TRANSPILER from 'modules/sim/script/transpiler-v2';
 import merge from 'deepmerge';
 
@@ -36,7 +36,7 @@ const AGENTS_TO_CREATE = []; // InstanceDef[]
 function m_Delete(frame) {
   while (AGENTS_TO_REMOVE.length > 0) {
     const id = AGENTS_TO_REMOVE.pop();
-    const agent = DCAGENTS.GetAgentById(id);
+    const agent = SIMAGENTS.GetAgentById(id);
     if (agent) {
       // Clear isTouching and lastTouched values here
       // because agent will be removed and touch update
@@ -44,7 +44,7 @@ function m_Delete(frame) {
       if (agent.hasFeature('Touches')) {
         agent.callFeatMethod('Touches', 'clearTouches', agent.id);
       }
-      DCAGENTS.DeleteAgent({
+      SIMAGENTS.DeleteAgent({
         id: agent.id,
         bpid: agent.blueprint.name
       });
@@ -55,11 +55,11 @@ function m_Create(frame) {
   while (AGENTS_TO_CREATE.length > 0) {
     const def = AGENTS_TO_CREATE.pop();
 
-    DCAGENTS.DefineInstance(def);
+    SIMAGENTS.DefineInstance(def);
     let agent = TRANSPILER.MakeAgent(def);
-    const parent = DCAGENTS.GetAgentById(def.parentId);
+    const parent = SIMAGENTS.GetAgentById(def.parentId);
     if (parent) {
-      if (def.doClone) DCAGENTS.CopyAgentProps(parent, agent);
+      if (def.doClone) SIMAGENTS.CopyAgentProps(parent, agent);
       else {
         // just copy x/y
         agent.x = parent.x + RNG() * 8 - 4;
@@ -273,7 +273,7 @@ class PopulationPack extends GFeature {
    * @param spawnScript
    */
   getRandomActiveAgent(agent: IAgent, bpname: string): IAgent {
-    const agents = DCAGENTS.GetAgentsByType(bpname);
+    const agents = SIMAGENTS.GetAgentsByType(bpname);
     if (agents.length < 1) {
       console.error(`Population:getRandomActiveAgent: No ${bpname} agents left!`);
       return undefined; // no agents
@@ -295,7 +295,7 @@ class PopulationPack extends GFeature {
    * Release cursors for ALL agents globally
    */
   releaseAllAgents(agent: IAgent) {
-    const agents = DCAGENTS.GetAllAgents();
+    const agents = SIMAGENTS.GetAllAgents();
     agents.forEach(a => {
       if (a.hasFeature('Cursor') && a.blueprint.name !== 'Cursor') {
         a.callFeatMethod('Cursor', 'releaseCursor');
@@ -307,7 +307,7 @@ class PopulationPack extends GFeature {
    * Release cursors for ALL inert agents globally
    */
   releaseInertAgents(agent: IAgent) {
-    const agents = DCAGENTS.GetAllAgents();
+    const agents = SIMAGENTS.GetAllAgents();
     agents.forEach(a => {
       if (a.isInert && a.hasFeature('Cursor'))
         a.callFeatMethod('Cursor', 'releaseCursor');
@@ -317,7 +317,7 @@ class PopulationPack extends GFeature {
    * Turn off visible property for ALL inert agents globally
    */
   hideInertAgents(agent: IAgent) {
-    const agents = DCAGENTS.GetAllAgents();
+    const agents = SIMAGENTS.GetAllAgents();
     agents.forEach(a => {
       if (a.isInert) {
         // console.error('hiding', a.id);
@@ -329,7 +329,7 @@ class PopulationPack extends GFeature {
    * Remove ALL inert agents globally
    */
   removeInertAgents(agent: IAgent) {
-    const agents = DCAGENTS.GetAllAgents();
+    const agents = SIMAGENTS.GetAllAgents();
     agents.forEach(a => {
       if (a.isInert) this.removeAgent(a);
     });
@@ -343,7 +343,7 @@ class PopulationPack extends GFeature {
    */
   agentsReproduce(agent: IAgent, bpname: string, spawnScript: string) {
     const deleteAfterSpawning = agent.prop.Population.deleteAfterSpawning.value;
-    const agents = DCAGENTS.GetAgentsByType(bpname);
+    const agents = SIMAGENTS.GetAgentsByType(bpname);
     const def = {
       mutationPropName: agent.prop.Population.spawnMutationProp.value,
       mutationPropFeature: agent.prop.Population.spawnMutationPropFeature.value,
@@ -393,7 +393,7 @@ class PopulationPack extends GFeature {
     const deleteAfterSpawning = agent.prop.Population.deleteAfterSpawning.value;
     let count = AGENTS_TO_CREATE.length;
     let agentIndex = 0;
-    const agents = DCAGENTS.GetAgentsByType(bpname);
+    const agents = SIMAGENTS.GetAgentsByType(bpname);
 
     if (agents.length < 1)
       throw Error(
@@ -447,7 +447,7 @@ class PopulationPack extends GFeature {
    * For all agents of type bpname, call program if not inert
    */
   agentsForEachActive(agent: IAgent, bpname: string, program: TSMCProgram) {
-    const agents = DCAGENTS.GetAgentsByType(bpname);
+    const agents = SIMAGENTS.GetAgentsByType(bpname);
     agents.forEach(a => {
       if (!a.isInert) a.exec(program, { agent: a });
     });
@@ -456,7 +456,7 @@ class PopulationPack extends GFeature {
    * For all agents of type bpname, call program regardless of inert state
    */
   agentsForEach(agent: IAgent, bpname: string, program: TSMCProgram) {
-    const agents = DCAGENTS.GetAgentsByType(bpname);
+    const agents = SIMAGENTS.GetAgentsByType(bpname);
     agents.forEach(a => a.exec(program, { agent: a }));
   }
 
@@ -471,7 +471,7 @@ class PopulationPack extends GFeature {
    * Returns the number of active (non-inert) agents of a particular blueprint type
    */
   getActiveAgentsCount(agent: IAgent, blueprintName: string) {
-    const agents = DCAGENTS.GetAgentsByType(blueprintName);
+    const agents = SIMAGENTS.GetAgentsByType(blueprintName);
     let count = 0;
     agents.forEach(a => {
       if (!a.isInert) count++;
@@ -480,7 +480,7 @@ class PopulationPack extends GFeature {
   }
 
   countAgents(agent: IAgent, blueprintName: string) {
-    const agents = DCAGENTS.GetAgentsByType(blueprintName);
+    const agents = SIMAGENTS.GetAgentsByType(blueprintName);
     let prop = agent.getFeatProp(this.name, 'count');
     (prop as GVarNumber).setTo(agents.length);
   }
@@ -505,7 +505,7 @@ class PopulationPack extends GFeature {
   countAgentProp(agent: IAgent, blueprintName: string, prop: string) {
     if (blueprintName === undefined)
       blueprintName = agent.prop.Population.monitoredAgent.value;
-    const agents = DCAGENTS.GetAgentsByType(blueprintName);
+    const agents = SIMAGENTS.GetAgentsByType(blueprintName);
     if (agents.length < 1) return;
     if (prop === undefined) prop = agent.prop.Population.monitoredAgentProp.value;
     const sum = agents
@@ -520,7 +520,7 @@ class PopulationPack extends GFeature {
   }
   /// Returns the minimum number of agents of type blueprintName
   minAgentProp(agent: IAgent, blueprintName: string, prop: string) {
-    const agents = DCAGENTS.GetAgentsByType(blueprintName);
+    const agents = SIMAGENTS.GetAgentsByType(blueprintName);
     if (agents.length < 1) return;
     const minimizer = (min, cur) => Math.min(min, cur);
     const min = agents
@@ -531,7 +531,7 @@ class PopulationPack extends GFeature {
   }
   /// Returns the maximum number of agents of type blueprintName
   maxAgentProp(agent: IAgent, blueprintName: string, prop: string) {
-    const agents = DCAGENTS.GetAgentsByType(blueprintName);
+    const agents = SIMAGENTS.GetAgentsByType(blueprintName);
     if (agents.length < 1) return;
     const maximizer = (max, cur) => Math.max(max, cur);
     const max = agents
@@ -570,7 +570,7 @@ class PopulationPack extends GFeature {
     prop: string,
     clear: boolean
   ) {
-    const agents = DCAGENTS.GetAgentsByType(blueprintName);
+    const agents = SIMAGENTS.GetAgentsByType(blueprintName);
     const countsByProp = agent.prop.Population._countsByProp;
 
     // reset count first?
@@ -667,7 +667,7 @@ class PopulationPack extends GFeature {
     const bpname = blueprintName || agent.prop.Population.monitoredAgent.value;
     const feat = feature || agent.prop.Population.monitoredAgentPropFeature.value;
     const prop = featprop || agent.prop.Population.monitoredAgentProp.value;
-    const agents = DCAGENTS.GetAgentsByType(bpname);
+    const agents = SIMAGENTS.GetAgentsByType(bpname);
     this.m_CountAgentsByFeatPropType(agent, agents, feat, prop, clear);
   }
 
@@ -703,4 +703,4 @@ class PopulationPack extends GFeature {
 /// REGISTER FEATURE SINGLETON ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new PopulationPack('Population');
-DCSIM.RegisterFeature(INSTANCE);
+SIMDATA.RegisterFeature(INSTANCE);
