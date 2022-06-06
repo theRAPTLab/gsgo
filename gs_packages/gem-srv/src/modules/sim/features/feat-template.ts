@@ -31,6 +31,12 @@ const DBG = false;
   for example
 /*/
 
+/// CLASS HELPERS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_StaticMethod() {
+  console.log('this is like a static class function in C++');
+}
+
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class MyFeature extends GFeature {
@@ -86,12 +92,6 @@ class MyFeature extends GFeature {
     m_StaticMethod();
   }
 } // end of feature class
-
-/// CLASS HELPERS /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_StaticMethod() {
-  console.log('this is like a static class function in C++');
-}
 
 /// REGISTER FEATURE SINGLETON ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

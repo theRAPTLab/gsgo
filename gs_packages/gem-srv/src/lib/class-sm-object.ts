@@ -12,8 +12,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IKeyObject, IAgent, IScopeable, TSymbolData, TMethod } from './t-script';
-
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const METHOD_ERR = 'sm-object does not support smc methods';

@@ -17,6 +17,27 @@ const gstDBG = new GScriptTokenizer();
 
 /// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Given a single statement, extract text representation. Since statements can
+ *  include blocks, it may return more than one line.
+ */
+function StatementToText(statement: TScriptUnit, indent: number = 0): string {
+  // process tokens from left to right, concat to make a line
+  let line = ''.padStart(indent, ' ');
+  if (!Array.isArray(statement)) {
+    console.warn('not a statement:', statement);
+    return JSON.stringify(statement).padStart(indent, ' ');
+  }
+  // process each token in the statement, which can contain statements
+  // of their own in nested blocks
+  statement.forEach((tok, ii) => {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    const txt = TokenToString(tok, indent);
+    line += txt;
+    if (ii !== statement.length - 1) line += ' ';
+  });
+  if (line.trim() !== '') return line;
+  return '';
+} /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: given a text, return the parsed ScriptUnit[] representation */
 function TextToScript(text: string = ''): TScriptUnit[] {
   // this will throw an error string of '{err} @row:col'
@@ -69,27 +90,6 @@ function TokenToString(tok: IToken, indent: number = 0) {
   if (line !== undefined) return '';
   console.warn('unknown argument type:', tok);
   throw Error('unknown argument type');
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Given a single statement, extract text representation. Since statements can
- *  include blocks, it may return more than one line.
- */
-function StatementToText(statement: TScriptUnit, indent: number = 0): string {
-  // process tokens from left to right, concat to make a line
-  let line = ''.padStart(indent, ' ');
-  if (!Array.isArray(statement)) {
-    console.warn('not a statement:', statement);
-    return JSON.stringify(statement).padStart(indent, ' ');
-  }
-  // process each token in the statement, which can contain statements
-  // of their own in nested blocks
-  statement.forEach((tok, ii) => {
-    const txt = TokenToString(tok, indent);
-    line += txt;
-    if (ii !== statement.length - 1) line += ' ';
-  });
-  if (line.trim() !== '') return line;
-  return '';
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

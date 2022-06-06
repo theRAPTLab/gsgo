@@ -263,8 +263,7 @@ function moveJitter(
   agent: IAgent,
   min: number = -5,
   max: number = 5,
-  round: boolean = true,
-  frame: number
+  round: boolean = true
 ) {
   const x = m_random(min, max, round);
   const y = m_random(min, max, round);
@@ -272,7 +271,7 @@ function moveJitter(
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// WANDER
-function moveWander(agent: IAgent, frame: number) {
+function moveWander(agent: IAgent) {
   // Mostly go in the same direction
   // but really change direction once in a while
   const distance = agent.prop.Movement.distance.value;
@@ -288,7 +287,7 @@ function moveWander(agent: IAgent, frame: number) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// EDGE to EDGE (of the entire tank / system)
 /// Go in the same direction most of the way across the space, then turn back and do similar
-function moveEdgeToEdge(agent: IAgent, frame: number) {
+function moveEdgeToEdge(agent: IAgent) {
   const bounds = BOUNDS;
   const pad = 5;
   let hwidth = pad; // half width -- default to some padding
@@ -362,7 +361,7 @@ function moveFloat(agent, y: number = -300) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Seek
-function seek(agent: IAgent, target: { x; y }, frame: number) {
+function seek(agent: IAgent, target: { x; y }) {
   // stop seeking if target was removed
   // For input agents, target might be defined, but x and y are not
   if (!target || target.x === undefined || target.y === undefined) return;
@@ -381,22 +380,22 @@ function seek(agent: IAgent, target: { x; y }, frame: number) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// SeekAgent
-function seekAgent(agent: IAgent, frame: number) {
+function seekAgent(agent: IAgent) {
   const targetId = agent.prop.Movement._targetId;
   if (!targetId) return; // no target, just idle
   const target = GetAgentById(targetId);
-  seek(agent, target, frame);
+  seek(agent, target);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// seekAgentOrWander
 function seekAgentOrWander(agent: IAgent, frame: number) {
   const targetId = agent.prop.Movement._targetId;
   if (!targetId) {
-    moveWander(agent, frame); // no target, wander instead
+    moveWander(agent); // no target, wander instead
     return;
   }
   const target = GetAgentById(targetId);
-  seek(agent, target, frame);
+  seek(agent, target);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// wanderUntilAgent
@@ -423,7 +422,7 @@ function wanderUntilAgent(agent: IAgent, frame: number) {
       isInside = true;
     }
   });
-  if (!isInside) moveWander(agent, frame); // no target, wander instead
+  if (!isInside) moveWander(agent); // no target, wander instead
   // else just sit
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

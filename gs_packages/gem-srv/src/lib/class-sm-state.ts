@@ -1,4 +1,3 @@
-import { IState, TStackable, IScopeable, IComparator } from './t-script';
 import SM_Comparator from './class-sm-comparator';
 
 export default class SM_State implements IState {
@@ -28,7 +27,6 @@ export default class SM_State implements IState {
   }
   reset(): void {
     this.stack = [];
-    this.scope = [];
     this.ctx = {};
     this.flags.reset();
   }

@@ -13,12 +13,11 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IAgent, IState, TOpWait } from 'lib/t-script';
-
 /// DEBUG OPCODES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// support util functions ////////////////////////////////////////////////////
-function u_dump(num: number = 0, stack: any[], prompt: string = '<dump>') {
+function u_dump(num: number, stack: any[], prompt: string) {
+  num = num || 0;
+  prompt = prompt || '<dump>';
   if (num === 0 || num > stack.length) {
     console.log(`${prompt}:`, stack);
     return;
