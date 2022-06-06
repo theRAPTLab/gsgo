@@ -11,7 +11,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Keyword from 'lib/class-keyword';
-import * as BUNDLER from 'modules/datacore/dc-sim-bundler';
+import * as BUNDLER from 'script/tools/script-bundler';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

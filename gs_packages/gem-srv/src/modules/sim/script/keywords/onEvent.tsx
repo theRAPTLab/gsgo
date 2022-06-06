@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Keyword from 'lib/class-keyword';
-import * as DCBUNDLER from 'modules/datacore/dc-sim-bundler';
+import * as BUNDLER from 'script/tools/script-bundler';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -21,7 +21,7 @@ export class onEvent extends Keyword {
   compile(unit: TScriptUnit, idx?: number): TOpcode[] {
     let [kw, eventName, consq] = unit;
     consq = this.utilFirstValue(consq); // a program name possibly?
-    const { bpName } = DCBUNDLER.BundlerState();
+    const { bpName } = BUNDLER.BundlerState();
     SIMDATA.SubscribeToScriptEvent(
       String(eventName),
       bpName,

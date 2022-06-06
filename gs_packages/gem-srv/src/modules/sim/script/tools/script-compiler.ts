@@ -32,7 +32,7 @@ import { EBundleType } from 'modules/../types/t-script.d'; // workaround to impo
 import SM_Bundle from 'lib/class-sm-bundle';
 
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
-import * as BUNDLER from 'modules/datacore/dc-sim-bundler';
+import * as BUNDLER from 'script/tools/script-bundler';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import GAgent from 'lib/class-gagent';
 import VSDToken from 'script/tools/class-validation-token';

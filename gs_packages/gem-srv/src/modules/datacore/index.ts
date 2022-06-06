@@ -19,6 +19,5 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export * from './dc-sim-agents';
 export * from './dc-sim-data';
-export * from './dc-sim-bundler';
 export * from './dc-sim-conditions';
 export * from './dc-render';
