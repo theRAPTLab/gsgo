@@ -1,6 +1,6 @@
 {
   "include": ["src/**/*.ts", "src/**/*.tsx", "gem_run.js"],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "assets-src", "built", "runtime"],
   "compilerOptions": {
     "module": "commonjs",
     "moduleResolution": "node",
