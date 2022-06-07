@@ -472,12 +472,13 @@ class SymbolInterpreter {
     let symData;
     const arg = methodArg;
     const tok = scriptToken;
-
+    // default unit text
+    const unitText = TOKENIZER.TokenToUnitText(tok);
     // is this a literal boolean value from token.value
     if (gsType === 'boolean') {
       let value = TOKENIZER.TokenValue(tok, 'value');
       if (typeof value === 'boolean')
-        symData = new VSDToken({ arg }, { gsType, unitText: value.toString() });
+        symData = new VSDToken({ arg }, { gsType, unitText });
       else
         symData = new VSDToken(
           {},
@@ -493,7 +494,7 @@ class SymbolInterpreter {
     if (gsType === 'number') {
       let value = TOKENIZER.TokenValue(tok, 'value');
       if (typeof value === 'number')
-        symData = new VSDToken({ arg }, { gsType, unitText: value.toString() });
+        symData = new VSDToken({ arg }, { gsType, unitText });
       else
         symData = new VSDToken(
           {},
@@ -511,7 +512,7 @@ class SymbolInterpreter {
       let value = TOKENIZER.TokenValue(tok, 'string');
       if (typeof value === 'string')
         // symData = new VSDToken({ arg }, tokVal);
-        symData = new VSDToken({ arg }, { gsType, unitText: value.toString() });
+        symData = new VSDToken({ arg }, { gsType, unitText });
       else
         symData = new VSDToken(
           {},
@@ -526,19 +527,19 @@ class SymbolInterpreter {
 
     // all symbols available in current bundle match token.objref
     if (gsType === 'objref' && TOKENIZER.TokenValue(tok, 'objref')) {
-      symData = new VSDToken(this.bdl_scope, { gsType, unitText: argName });
+      symData = new VSDToken(this.bdl_scope, { gsType, unitText });
     }
 
     // all props, feature props in bundle match token.identifier
     if (gsType === 'prop' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      symData = new VSDToken(this.bdl_scope, { gsType, unitText: argName });
+      symData = new VSDToken(this.bdl_scope, { gsType, unitText });
     }
 
     // is this a method name? current scope is pointing to
     // the method dict, we hope...
     // all methods in bundle match token.identifier
     if (gsType === 'method' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      symData = new VSDToken(this.cur_scope, { gsType, unitText: argName });
+      symData = new VSDToken(this.cur_scope, { gsType, unitText });
     }
 
     // is this any gvar type?
@@ -550,7 +551,7 @@ class SymbolInterpreter {
       list.forEach(ctorName => {
         ctors[ctorName] = map.get(ctorName).Symbols;
       });
-      symData = new VSDToken({ ctors }, { gsType, unitText: argName });
+      symData = new VSDToken({ ctors }, { gsType, unitText });
     }
 
     // is this a feature module name?
@@ -563,7 +564,7 @@ class SymbolInterpreter {
       list.forEach(featName => {
         features[featName] = SIMDATA.GetFeature(featName).symbolize();
       });
-      symData = new VSDToken({ features }, { gsType, unitText: argName });
+      symData = new VSDToken({ features }, { gsType, unitText });
     }
 
     // is this a blueprint name? We allow any blueprint name in the dictionary
@@ -575,22 +576,119 @@ class SymbolInterpreter {
       list.forEach(bundle => {
         blueprints[bundle.name] = bundle.symbols;
       });
-      symData = new VSDToken({ blueprints }, { gsType, unitText: argName });
+      symData = new VSDToken({ blueprints }, { gsType, unitText });
     }
 
+    // Named tests are TSMCPrograms which must return true/false
+    // This is a future GEMSCRIPT 2.0 feature, and are not implemented
     if (gsType === 'test') {
+      symData = new VSDToken(
+        {},
+        {
+          err_code: 'debug',
+          err_info: 'named programs are a gemscript 2.0 feature',
+          gsType,
+          unitText
+        }
+      );
     }
-    // if (gsType === 'program') {
-    // }
-    // if (gsType === 'event') {
-    // }
 
-    // if (gsType === 'expr') {
-    // }
-    // if (gsType === 'block') {
-    // }
-    // if (gsType === '{value}') {
-    // }
+    // Named programs are TSMCPrograms which can accept/return args on the stack
+    // This is a future GEMSCRIPT 2.0 feature, and are not implemented
+    if (gsType === 'program') {
+      symData = new VSDToken(
+        {},
+        {
+          err_code: 'debug',
+          err_info: 'named programs are a gemscript 2.0 feature',
+          gsType,
+          unitText
+        }
+      );
+    }
+
+    // Events are TSMCPrograms that are declared with the `onEvent` keyword
+    if (gsType === 'event') {
+      const list = SIMDATA.GetAllScriptEventNames();
+      const events = list.map(entry => {
+        const [eventName] = entry;
+        return eventName;
+      });
+      symData = new VSDToken(
+        { events },
+        {
+          gsType,
+          unitText
+        }
+      );
+    }
+
+    // expressions
+    if (gsType === 'expr') {
+      symData = new VSDToken(
+        {},
+        {
+          err_code: 'debug',
+          err_info: 'expr types todo',
+          gsType,
+          unitText
+        }
+      );
+    }
+
+    // blocks aka consequent, alternate
+    if (gsType === 'block') {
+      symData = new VSDToken(
+        {},
+        {
+          err_code: 'debug',
+          err_info: 'block types todo',
+          gsType,
+          unitText
+        }
+      );
+    }
+
+    // values can be one of anything
+    if (gsType === '{value}') {
+      if (tokType === 'expr') {
+        // determine if expr is valid
+        symData = new VSDToken(
+          {},
+          { err_code: 'debug', err_info: '{value} expr todo', gsType, unitText }
+        );
+      }
+      // determine if objref is valid
+      if (tokType === 'objref') {
+        symData = new VSDToken(
+          {},
+          { err_code: 'debug', err_info: '{value} objref todo', gsType, unitText }
+        );
+      }
+      if (tokType === 'string') {
+        symData = new VSDToken(
+          {},
+          { err_code: 'debug', err_info: '{value} string todo', gsType, unitText }
+        );
+      }
+      if (tokType === 'value') {
+        symData = new VSDToken(
+          {},
+          { err_code: 'debug', err_info: '{value} value todo', gsType, unitText }
+        );
+      }
+      if (symData === undefined) {
+        symData = new VSDToken(
+          {},
+          {
+            err_code: 'invalid',
+            err_info: '{value} unrecognized type',
+            gsType,
+            unitText
+          }
+        );
+      }
+    }
 
     if (symData === undefined) {
       return new VSDToken(
@@ -608,6 +706,17 @@ class SymbolInterpreter {
     return symData;
   }
 } // end of SymbolInterpreter class
+
+/// DEBUG TOOLS ///////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** inspection tool to see simdata defined at runtime */
+UR.AddConsoleTool('simdata', () => {
+  console.log('All Functions', SIMDATA.GetAllFunctions());
+  console.log('All Tests', SIMDATA.GetAllTests());
+  console.log('All Programs', SIMDATA.GetAllPrograms());
+  console.log('All Features', SIMDATA.GetAllFeatures());
+  console.log('All EventNames', SIMDATA.GetAllScriptEventNames());
+});
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -103,10 +103,12 @@ SIMDATA.RegisterFunction('dies', a => {
 // ];
 // b.debug = bpath;
 
+/// PROXIMITY TESTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Two centers are within `distance` of each other
-/// NOTE: This can be used without Physics or Touches
-///       This is functionally equivalent to 'centerTouchesCenter'
+/** Two centers are within `distance` of each other
+ * NOTE: This can be used without Physics or Touches
+ * This is functionally equivalent to 'centerTouchesCenter'
+ */
 SIMDATA.RegisterFunction('isCenteredOn', (a, b, distance = 5) => {
   // checks if distance between agents is less than distance
   return DistanceTo(a, b) <= distance;
@@ -117,6 +119,8 @@ SIMDATA.RegisterFunction('isCloseTo', (a, b, distance = 30) => {
   // Doesn't need Physics or Touch
   return DistanceTo(a, b) <= distance;
 });
+
+/// TOUCH TESTS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_TouchTest(a, b, touchType) {
   // make sure both objects have the Physics feature
@@ -189,6 +193,8 @@ SIMDATA.RegisterFunction('centerLastTouches', (a, b) => {
 SIMDATA.RegisterFunction('lastTouches', (a, b) => {
   return m_LastTouchTest(a, b, 'b2b');
 });
+
+/// VISION TESTS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 SIMDATA.RegisterFunction('sees', (a, b) => {
   // checks if b is within vision cone of a
@@ -210,15 +216,22 @@ SIMDATA.RegisterFunction('seesCamouflaged', (a, b) => {
   return canSeeCone && canSeeColor;
 });
 
-/// LIFECYCLE METHODS /////////////////////////////////////////////////////////
+/// end of test registration ///
+
+/// LIFECYCLE GAMELOOP METHODS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** invoked via UR/APP_CONFIGURE */
 function ModuleInit(/* gloop */) {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Update does two jobs:
+ *  (1) handle all the filtering tests once in the gameloop and cache the
+ *  resulting pairs of agents that passed. This is so agents don't run the
+ *  test over-and-over themselves.
+ *  (2) fire the event handler for all events that are currently queued,
+ *  then clear the event queue.
+ */
 function Update(frame) {
-  /** HANDLE GLOBAL FILTER TESTS ***************************************************/
-  /// run all the filtering tests and store results for use by Agents during
-  /// their subsequent SIM/AGENTS_UPDATE phase
+  // run all the filtering tests and cache the results
   GLOBAL_INTERACTIONS = [...SIMCOND.GetAllInteractions()]; // [ [k,v], [k,v] ]
   GLOBAL_INTERACTIONS.forEach(entry => {
     const { singleTestArgs, pairTestArgs } = entry;
@@ -236,17 +249,14 @@ function Update(frame) {
       throw Error('malformed global_interaction entry');
     }
   });
-  /** HANDLE SUBSCRIPTION EVENTS ***************************************************/
-  /// handle the registered events for 'onEvent' keywords that have registered a
-  /// consequent for an Agent Blueprint (the set of all Agents based on that
-  /// blueprint)
+
+  // if there any events queued, then invoke the event handler on all
+  // agents that registered for this event.
   EVENT_QUEUE.forEach((event, idx) => {
-    /*/
-    these are all the handlers for all the registered blueprint types
-    that are TOPcode[]. However, we need to get the context of each
-    blueprint and run them per-agent
-    /*/
-    const handlers = SIMDATA.GetScriptEventHandlers(event.type);
+    /// these are all the handlers for all the registered blueprint types
+    /// that are TOPcode[]. However, we need to get the context of each
+    /// blueprint and run them per-agent
+    const handlers = SIMDATA.GetHandlersForScriptEvent(event.type);
     handlers.forEach(h => {
       const { agentType, handler } = h;
       const agents = SIMAGENTS.GetAgentsByType(agentType);

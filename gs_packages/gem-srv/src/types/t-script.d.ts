@@ -199,7 +199,7 @@ declare global {
   // symbol type declarations
   type TSLit = `${'boolean' | 'string' | 'number' | 'enum'}`;
   type TSSMObj = `${'prop' | 'method' | 'gvar' | 'block'}`;
-  type TSDeferred = `${'objref' | 'expr' | '{value}'}`;
+  type TSDeferred = `${'objref' | 'expr' | '{value}' | '{string}'}`;
   type TSDict = `${'keyword' | 'pragma' | 'test' | 'program' | 'event'}`;
   type TSAgent = `${'blueprint' | 'feature'}`;
   type TSMultiArg = `${'{...}'}`; // multiple arg token marker
@@ -257,6 +257,9 @@ declare global {
     context?: { [line: number]: any }; // line number for a root statement
     methodSig?: TGSMethodSig; // arg choices
     arg?: TGSArg; // arg definition string 'name:type'
+    tests?: string[]; // unused in gemscript 1.0
+    programs?: string[]; // unused in gemscript 1.0
+    events?: string[];
     // ok to change or add, as these are not defined in the reference dictionaries
     error?: TSymbolError; // debugging if error
     unitText?: string; // the scriptText word associated with symbol

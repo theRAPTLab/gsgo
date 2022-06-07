@@ -25,7 +25,6 @@ const TEST_SCRIPTS: Map<string, TSMCProgram> = new Map();
 const NAMED_SCRIPTS: Map<string, TSMCProgram> = new Map();
 const NAMED_FUNCTIONS: Map<string, Function> = new Map();
 ///
-const { warn, log } = console;
 
 /// HELPER METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,31 +38,6 @@ function m_EnsureUpperCase(s: string, p?: string) {
   p = typeof p === 'string' ? p : '';
   if (typeof s !== 'string') return undefined;
   return s.toUpperCase();
-}
-
-/// FEATURES ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Retrieve a feature module by its name and return its instance */
-function GetFeature(fName: string): IFeature {
-  return FEATURES.get(fName);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetAllFeatures() {
-  return FEATURES;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** retrieve a method from a feature instance */
-function GetFeatureMethod(fName: string, mName: string) {
-  return GetFeature(fName)[mName];
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Register a feature module by name (as defined in the feature class */
-function RegisterFeature(fpack: IFeature) {
-  FEATURES.set(fpack.name, fpack);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function DeleteAllFeatures() {
-  FEATURES.clear();
 }
 
 /// BLUEPRINT /////////////////////////////////////////////////////////////////
@@ -181,11 +155,41 @@ function GetPropTypesDict(): Map<string, IScopeableCtor> {
   return VARS;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetAllVarCtors() {
+  const list = [...VARS.entries()];
+  return list;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: get symbol data for a named type (e.g. 'number') */
 function SymbolDefFor(propType: string): TSymbolData {
   propType = m_EnsureLowerCase(propType);
   const def = VARS.get(propType);
   if (def) return def.Symbols;
+}
+
+/// FEATURES ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Retrieve a feature module by its name and return its instance */
+function GetFeature(fName: string): IFeature {
+  return FEATURES.get(fName);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetAllFeatures() {
+  return FEATURES;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** retrieve a method from a feature instance */
+function GetFeatureMethod(fName: string, mName: string) {
+  return GetFeature(fName)[mName];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Register a feature module by name (as defined in the feature class */
+function RegisterFeature(fpack: IFeature) {
+  FEATURES.set(fpack.name, fpack);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function DeleteAllFeatures() {
+  FEATURES.clear();
 }
 
 /// TEST DICTIONARIES /////////////////////////////////////////////////////////
@@ -201,6 +205,12 @@ function RegisterTest(name: string, program: TSMCProgram): boolean {
 function GetTest(name: string): TSMCProgram {
   name = m_EnsureLowerCase(name);
   return TEST_SCRIPTS.get(name);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return array of [testName,TSMCProgram] */
+function GetAllTests() {
+  const list = [...TEST_SCRIPTS.entries()];
+  return list;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function DeleteAllTests() {
@@ -219,6 +229,11 @@ function GetProgram(name: string): TSMCProgram {
   name = m_EnsureLowerCase(name);
   return NAMED_SCRIPTS.get(name);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetAllPrograms() {
+  const list = [...NAMED_SCRIPTS.entries()];
+  return list;
+}
 
 /// NAMED FUNCTIONS DICTIONARIES //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -235,6 +250,11 @@ function GetFunction(name: string): Function {
   // return always random results if the test doesn't exist
   if (!f) f = () => Math.random() > 0.5;
   return f;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetAllFunctions() {
+  const list = [...NAMED_FUNCTIONS.entries()];
+  return list;
 }
 
 /// DEPRECATED - MOVE TO FEAT VISION //////////////////////////////////////////
@@ -265,7 +285,6 @@ export function GetAgentBoundingRect(agent) {
  *  SCRIPT_EVENTS: Map<string, Map<string,TSMCProgram[]>> = new Map();
  *                eventName->Map(blueprintName)->TSMCProgram[]
  */
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SubscribeToScriptEvent(
   evtName: string,
   bpName: string,
@@ -281,7 +300,7 @@ function SubscribeToScriptEvent(
   else codearr.push(...consq);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetScriptEventHandlers(evtName: string) {
+function GetHandlersForScriptEvent(evtName: string) {
   evtName = m_EnsureUpperCase(evtName);
   if (!EVENT_SCRIPTS.has(evtName)) EVENT_SCRIPTS.set(evtName, new Map());
   const subbedBPs = EVENT_SCRIPTS.get(evtName); // event->blueprint codearr
@@ -295,6 +314,15 @@ function GetScriptEventHandlers(evtName: string) {
 function DeleteAllScriptEvents() {
   EVENT_SCRIPTS.clear();
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetAllScriptEvents() {
+  const list = [...EVENT_SCRIPTS.entries()];
+  return list;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetAllScriptEventNames() {
+  return [...EVENT_SCRIPTS.keys()];
+}
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -307,17 +335,17 @@ export {
   DeleteBlueprintBundle,
   DeleteAllBlueprintBundles
 };
-/// scriptable properties are called "gvars" and have constructors for each type
-export { RegisterVarCTor, GetVarCtor, SymbolDefFor, GetPropTypesDict };
 /// the transpiler is extendable using "keyword' modules that implement
 /// symbolize, validate, and compile
 export { RegisterKeyword, GetKeyword, GetAllKeywords };
-/// engine maintains dicts of named Javascript functions
-export { RegisterFunction, GetFunction };
-/// engine maintain dicts of compiler script code (TSMCProgram)
-export { RegisterProgram, GetProgram };
-/// "when" conditions use programs that expect a certain input
-export { RegisterTest, GetTest, DeleteAllTests };
+/// scriptable properties are called "gvars" and have constructors for each type
+export {
+  RegisterVarCTor,
+  GetVarCtor,
+  SymbolDefFor,
+  GetPropTypesDict,
+  GetAllVarCtors
+};
 /// extensions to the script engine capabilities are handled with "feature" modules
 export {
   GetFeature,
@@ -326,24 +354,17 @@ export {
   RegisterFeature,
   DeleteAllFeatures
 };
+/// engine maintains dicts of named Javascript functions
+export { RegisterFunction, GetFunction, GetAllFunctions };
+/// engine maintain dicts of compiler script code (TSMCProgram)
+export { RegisterProgram, GetProgram, GetAllPrograms };
+/// "when" conditions use programs that expect a certain input
+export { RegisterTest, GetTest, GetAllTests, DeleteAllTests };
 /// simulation triggers are managed through "script event" dicts
-export { SubscribeToScriptEvent, GetScriptEventHandlers, DeleteAllScriptEvents };
-
-/* exports from dc-script-engine that are no longer exported
-export { BLUEPRINTS, KEYWORDS, SCRIPTS, SCRIPT_EVENTS };
-  SaveScript,
-  DeleteScript,
-  UpdateScriptIndex,
-  //
-  UnpackArg,
-  AreValidArgs,
-  UtilDerefArg,
-  UtilFirstValue
-};
 export {
-  UnpackToken,
-  IsValidToken,
-  IsValidTokenKey,
-  TokenValue
-} from 'script/tools/class-gscript-tokenizer-v2';
-*/
+  SubscribeToScriptEvent,
+  GetHandlersForScriptEvent,
+  DeleteAllScriptEvents,
+  GetAllScriptEvents,
+  GetAllScriptEventNames
+};
