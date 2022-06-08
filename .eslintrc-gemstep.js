@@ -6,7 +6,23 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+const LINT_LEVEL = process.env.GS_LINT_LEVEL || 1;
+
+/// EXTENSIONS ////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const EXTENDS = [
+  'plugin:react/recommended', // handle jsx syntax
+  'plugin:@typescript-eslint/eslint-recommended' // basic typescript rules
+];
+if (LINT_LEVEL > 0) {
+  EXTENDS.push('plugin:@typescript-eslint/recommended-requiring-type-checking'); // extra type checking
+}
+EXTENDS.push(
+  'airbnb-typescript', // add airbnb typescript rules
+  'prettier' // version 8.0.0 2021-02-21 change
+);
+
+/// RULE OVERRIDES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const URSYS_STYLE = {
   /* ursys style overrides */
@@ -16,6 +32,8 @@ const URSYS_STYLE = {
   'no-underscore-dangle': 'off',
   'lines-between-class-members': 'off',
   'no-bitwise': 'off',
+  'import/prefer-default-export': 'off',
+  'object-shorthand': 'off',
   '@typescript-eslint/camelcase': 'off',
   '@typescript-eslint/no-use-before-define': 1,
   '@typescript-eslint/no-unused-vars': 'off',
@@ -23,9 +41,7 @@ const URSYS_STYLE = {
   '@typescript-eslint/naming-convention': 'off',
   '@typescript-eslint/lines-between-class-members': 'off',
   '@typescript-eslint/quotes': 'off',
-  'import/prefer-default-export': 'off',
-  '@typescript-eslint/naming-convention': 'off',
-  'object-shorthand': 'off'
+  '@typescript-eslint/naming-convention': 'off'
 };
 /* allow classroom debugging by researchers */
 const CLASSROOM = {
@@ -35,7 +51,7 @@ const CLASSROOM = {
   'no-restricted-syntax': 'off'
 };
 /* turn off typescript recommendations */
-const YUCK_TS = {
+const HELP_TSJS = {
   'no-undef': 'off', // TS handles this better; works with global types
   'no-unused-vars': 'off',
   'no-shadow': 'off',
@@ -49,6 +65,21 @@ const YUCK_TS = {
   'class-methods-use-this': 'off',
   'jsx-a11y/label-has-associated-control': 'off'
 };
+/* turn off typescript unsafe checks (mixed code) */
+const MIXED_TSJS =
+  LINT_LEVEL < 2
+    ? {
+        // for linting with type checking on
+        '@typescript-eslint/no-unsafe-assignment': 'off',
+        '@typescript-eslint/no-unsafe-member-access': 'off',
+        '@typescript-eslint/no-unsafe-call': 'off',
+        '@typescript-eslint/no-unsafe-argument': 'off',
+        '@typescript-eslint/restrict-template-expressions': 'off',
+        '@typescript-eslint/no-unsafe-return': 'off',
+        '@typescript-eslint/restrict-plus-operands': 'off',
+        '@typescript-eslint/unbound-method': 'off'
+      }
+    : {};
 /* disable rules for material-ui sanity */
 const YUCK_MUI = {
   'react/forbid-prop-types': 'off',
@@ -67,14 +98,19 @@ const FORCE_OPTIONS = {
     }
   ]
 };
+const RULES = {
+  ...URSYS_STYLE,
+  ...CLASSROOM,
+  ...HELP_TSJS,
+  ...MIXED_TSJS,
+  ...YUCK_MUI,
+  ...YUCK_PRETTIER,
+  ...FORCE_OPTIONS
+};
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  ...URSYS_STYLE,
-  ...CLASSROOM,
-  ...YUCK_TS,
-  ...YUCK_MUI,
-  ...YUCK_PRETTIER,
-  ...FORCE_OPTIONS
+  EXTENDS,
+  RULES
 };

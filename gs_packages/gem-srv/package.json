@@ -12,7 +12,9 @@
     "..bootstrap": "cd ../../ && npm run bootstrap",
     "webpack:app": "npx webpack --config config/wp.pack.webapp.js --display-error-details",
     "test:app": "echo \"Error: no test specified\" && exit 1",
-    "lint": "FORCE_COLOR=1 npx eslint . --ext .ts || true"
+    "lint": "GS_LINT_LEVEL=1 FORCE_COLOR=1 npx eslint . --ext .ts || true",
+    "lint:safety": "GS_LINT_LEVEL=2 FORCE_COLOR=1 npx eslint . --ext .ts || true",
+    "lint:types": "FORCE_COLOR=1 npx tsc --project ./tsconfig.json --noemit || true"
   },
   "nodemonConfig": {
     "verbose": true,

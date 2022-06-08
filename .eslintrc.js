@@ -4,9 +4,11 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-const GS_RULES = require('./.eslintrc-gemstep');
+const { EXTENDS, RULES } = require('./.eslintrc-gemstep');
 
-module.exports = {
+/// BASE CONFIGURATION ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const config = {
   env: {
     browser: true,
     es2020: true,
@@ -45,22 +47,7 @@ module.exports = {
     compatible AST for ESLINT.
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   parser: '@typescript-eslint/parser',
-  /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
-    We now configure what rules ESLINT will apply, in order of declaration.
-
-    For more information using configuration, see:
-    eslint.org/docs/user-guide/configuring#using-the-configuration-from-a-plugin
-  :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-  extends: [
-    // OUR ESLINT STACK
-    // Note: Ideally, we would construct our own set of rules by carefully
-    // considering what's in each of these configurations, but this works
-    'plugin:react/recommended', // handle jsx syntax
-    'plugin:@typescript-eslint/eslint-recommended', // basic typescript rules
-    // 'plugin:@typescript-eslint/recommended-requiring-type-checking', // extra type checking
-    'airbnb-typescript', // add airbnb typescript rules
-    'prettier' // version 8.0.0 2021-02-21 change
-  ],
+  extends: EXTENDS,
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly'
@@ -91,5 +78,9 @@ module.exports = {
     I am turning off the rules that I find annoying or trigger false warnings
     in some code structures.
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-  rules: GS_RULES
+  rules: RULES
 };
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+module.exports = config;

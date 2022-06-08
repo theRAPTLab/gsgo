@@ -12,6 +12,8 @@
     "mcp": "cd gs_packages/mcp-srv/ && npm run local",
     "gem": "cd gs_packages/gem-srv/ && npm run local",
     "lint": "lerna run lint",
+    "lint:safety": "lerna run lint:safety",
+    "lint:types": "lerna run lint:types",
     "admin:multi": "lerna run dev:admin --stream --no-prefix",
     "mcp:multi": "lerna run dev:mcp --stream --no-prefix",
     "gem:multi": "lerna run dev:gem --stream --no-prefix",
