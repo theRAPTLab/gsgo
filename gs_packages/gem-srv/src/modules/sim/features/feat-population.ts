@@ -8,12 +8,7 @@
 import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
-import {
-  SM_Boolean,
-  SM_Dictionary,
-  SM_Number,
-  SM_String
-} from 'script/vars/_all_vars';
+import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as TRANSPILER from 'modules/sim/script/transpiler-v2';

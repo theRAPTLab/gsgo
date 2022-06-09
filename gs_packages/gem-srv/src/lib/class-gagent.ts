@@ -311,16 +311,13 @@ class GAgent extends SM_Object implements IAgent, IActable {
   /** Called from compiled code, execute a feature function with feature context
    *  as 'this' with signature (agent,...args)
    *  This is a variation of exec_program() with 'this' swapped for the feature
-   *  instance
-   */
+   *  instance */
   callFeatMethod(fName: string, mName: string, ...args): any {
     const [feat, featMethod] = this.getFeatMethod(fName, mName);
     return featMethod.call(feat, this, ...args);
   }
-  /** Return prop given the passed agent and key. This prop is stored
-   *  in the agent's props map as a SM_Dictionary, so this version
-   *  of prop returns the contents of the SM_Dictionary!
-   */
+  /** Return feature prop given the passed agent and key. Feature props are
+   *  stored in agent.props[featureName] in its on key-value object */
   getFeatProp(fName: string, pName: string): ISM_Object {
     const featProps = this.prop[fName];
     return featProps[pName];

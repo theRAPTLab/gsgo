@@ -6,12 +6,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  SM_Boolean,
-  SM_Dictionary,
-  SM_Number,
-  SM_String
-} from 'script/vars/_all_vars';
+import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import GAgent from 'lib/class-gagent';
 import { TextToScript } from './script-tokenizer';
 import * as COMPILER from './script-compiler';
@@ -177,7 +172,6 @@ function ExtractFeatPropMap(featureNames: string[]): Map<string, any[]> {
       // deconstruct GVarType
       let type;
       if (featProp instanceof SM_Boolean) type = 'boolean';
-      if (featProp instanceof SM_Dictionary) type = 'dictionary';
       if (featProp instanceof SM_Number) type = 'number';
       if (featProp instanceof SM_String) type = 'string';
       propMap.set(key, {
