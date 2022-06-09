@@ -17,8 +17,7 @@ declare global {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** A "scopeable" object is one that can represent the current execution
    *  context for ops using getMethod(), getProp() or value-related assignments.
-   *  The Agent, Prop, and Feature classes implement this interface.
-   */
+   *  The Agent, Prop, and Feature classes implement this interface. */
   interface IScopeable {
     id: any;
     refId?: any;
@@ -105,8 +104,7 @@ declare global {
 
   /// FEATURE DECLARATIONS ////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Features are very similar to IScopeable interface in method
-   */
+  /** Features are very similar to IScopeable interface in method */
   interface IFeature {
     meta: { name: string };
     get name(): string;
@@ -121,8 +119,7 @@ declare global {
   type FeatureMethod = (agent: IAgent, ...any) => any;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Weird Typescript syntax for declaring a Constructor of a IScopeable,
-   *  when these are passed to a class that manages instances of other classes
-   */
+   *  when these are passed to a class that manages instances of other classes */
   interface IScopeableCtor {
     new (value?: any, ...args: any[]): IScopeable;
     Symbols?: TSymbolData;
@@ -152,8 +149,7 @@ declare global {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Our "script" format is a serializeable format that can be converted to
    *  either compiled output (a TSMCProgram stored in a TSMCBundle) or to
-   *  renderable JSX for a UI.
-   */
+   *  renderable JSX for a UI. */
   interface IToken {
     // special types
     expr?: string; // gobbleExpression()
@@ -177,7 +173,7 @@ declare global {
   type TKWArg = number | string | IToken; // "decoded" tokens
   type TKWArguments = TKWArg[]; // decoded tokens provided to compile functions
   type TScript = TScriptUnit[]; // We use TScriptUnit[] in code
-  type TCompiledStatement = (TOpcode | TOpcodeErr)[];
+  type TCompiledStatement = TOpcode[];
   type TUnpackedToken = [type: string, value: any];
 
   /// COMPILER OUPUT //////////////////////////////////////////////////////////
@@ -249,8 +245,7 @@ declare global {
    *
    *  WARNING: this is a 'by reference' dictionary of dictionaries, so modifying
    *  a TSymbolData object property could corrupt multiple dictionaries! Consider
-   *  them read-only.
-   */
+   *  them read-only. */
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   type TSymbolData = {
     // read-only dictionaries
@@ -273,8 +268,7 @@ declare global {
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** TSymbolViewData is the "GUI-friendly" data structure derived from
-   *  a TSymbolData ditionary. This is what's used to draw a GUI
-   */
+   *  a TSymbolData ditionary. This is what's used to draw a GUI */
   type TSymbolViewData = {
     keywords?: { items: string[]; info: string };
     features?: { items: string[]; info: string };
@@ -296,8 +290,7 @@ declare global {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** a data structure used to iterate through a scriptunit token.
    *  it is updated and modified as a particular token is evaluated
-   *  in dtoks from left-to-right up to the index
-   */
+   *  in dtoks from left-to-right up to the index */
   type TSymbolRefs = {
     bundle: ISMCBundle; // blueprint bundle to use
     globals: TAnyObject; // global object context for expressions, blocks
@@ -306,8 +299,7 @@ declare global {
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** used by keyword validator function , used for individual token validation
-   *  by symbol utilities!
-   */
+   *  by symbol utilities! */
   type TSymbolError = {
     code: TValidationErrorCodes;
     info: string;
@@ -316,8 +308,7 @@ declare global {
   /** keyword.validate() returns an array of TSymbolData that
    *  the error state returns code and desc if a parse issue is detected
    *  if symbol information can be inferred despite an error, it will be
-   *  returned otherwise it is void.
-   */
+   *  returned otherwise it is void. */
   type TValidatedScriptUnit = {
     validationTokens: TSymbolData[];
     validationLog?: string[];
@@ -354,11 +345,11 @@ declare global {
 
   /// SCRIPT UNIT TRANSPILER //////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** related keyword interface  */
+  /** related keyword interface */
   interface IKeyword {
     keyword: string;
     args: TGSArg[] | TGSArg[][]; // multiple signatures
-    compile(unit: TScriptUnit, refs: TSymbolRefs): (TOpcode | TOpcodeErr)[];
+    compile(unit: TScriptUnit, refs: TSymbolRefs): TOpcode[];
     jsx(index: number, unit: TScriptUnit, jsxOpt?: {}): any[] /* deprecated */;
     symbolize(unit: TScriptUnit, line?: number): TSymbolData;
     setRefs(refs: TSymbolRefs): void;
@@ -367,15 +358,13 @@ declare global {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** weird Typescript constructor definition used by Transpiler
-   *  see fettblog.eu/typescript-interface-constructor-pattern/
-   */
+   *  see fettblog.eu/typescript-interface-constructor-pattern/ */
   interface IKeywordCtor {
     new (keyword?: string): IKeyword;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** A payload received from a Wizard UI component that has the reconstructed
-   *  ScriptUnit
-   */
+   *  ScriptUnit */
   interface IScriptUpdate {
     index: number;
     scriptUnit: TScriptUnit;
@@ -388,8 +377,7 @@ declare global {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** A stackmachine maintains state in form of a data stack, a scope stack,
    *  and a flags object. This state is passed, along with agent, to every
-   *  stackmachine opcode. The opcode is free to mutate the stacks and agent
-   */
+   *  stackmachine opcode. The opcode is free to mutate the stacks and agent */
   interface IState {
     stack: TStackable[]; // data stack (pass values in/out)
     ctx: {}; // a context object (dependent on caller)
@@ -401,15 +389,13 @@ declare global {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** A "stackable" object is one that can be pushed on the data stack in the
-   *  stack machine.
-   */
+   *  stack machine.   */
   type TStackable = IScopeable | TValue;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Allowed "literal values" on the data stack */
   type TValue = string | number | boolean;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** A stackmachine condition
-   */
+  /** A stackmachine condition */
   interface IComparator {
     VAZ: boolean; // true when zerocheck runs
     VAC: boolean; // true when condition runs
@@ -444,24 +430,17 @@ declare global {
    *  the memory context, and the stack is used to pass values in/out.
    *  TODO: We aren't using TOpcodeErr or TOpWait anymore...
    *  TODO: We don't have a good way to detect compile errors
-   *  TODO: May need to return a "ProgramBundle" that contains symbols...
-   */
+   *  TODO: May need to return a "ProgramBundle" that contains symbols... */
   type TOpcode = (
     agent?: IAgent, // memory context (an agent instance)
     sm_state?: IState // machine state
-  ) => TOpWait;
-  type TOpcodeErr = [error: string, line: number];
+  ) => void;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** At runtime, a function is needed to extract a property from a live
    *  agent instance, and this is generated at compile time. It's very similar
    *  to TOpcode's method signature because it's designed to be used inside
    *  of it, passing the original parameters to it  */
   type TDerefFunction = (agent?: IAgent, sm_state?: IState) => any;
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Stackmachine operations return a Promise if it is operating asynchronously
-   *  though this may not be necessary. I thought it might be cool
-   */
-  type TOpWait = Promise<any> | void;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** a shim for "Registration Code", which runs globally and has a
    *  different function signature than TOpcode. Used for code that runs outside
@@ -474,8 +453,7 @@ declare global {
   /** A stackmachine program is an array of opcodes that are read from the
    *  beginning and executed one-after-the-other. Each function is invoked
    *  with the current data and scope stacks, as well as flags object that
-   *  can be updated by conditional opcodes
-   */
+   *  can be updated by conditional opcodes */
   type TSMCProgram = TOpcode[];
   type TSMCGlobalProgram = TRegcode[];
   type TSMCFunction = TOpcode;
@@ -484,8 +462,7 @@ declare global {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** A stackmachine method can be either a stackmachine program OR a regular
-   *  function. The invocation method will check what it is
-   */
+   *  function. The invocation method will check what it is */
   type TMethod = TSMCProgram | TSMCFunction | TExpressionAST;
 
   /// INTERACTION TYPE DECLARATIONS ///////////////////////////////////////////
@@ -529,8 +506,7 @@ export enum EControlMode {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** defines the kinds of bundles. most of the time our bundles refer to
- *  blueprint bundles that contain a subset of possible keys.
- */
+ *  blueprint bundles that contain a subset of possible keys. */
 export enum EBundleType {
   INIT = 'init', // freshly created or empty bundle (set to another type)
   BLUEPRINT = 'blueprint' // blueprint for initializing agents

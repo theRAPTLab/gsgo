@@ -469,7 +469,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
    */
   exec_smc(program: TSMCProgram, ctx, ...args) {
     const state = new SM_State([...args], ctx);
-    program.forEach((op, index) => {
+    program.forEach(op => {
       if (typeof op !== 'function')
         console.warn(`op is not a function, got ${typeof op}`, op);
       op(this, state);
