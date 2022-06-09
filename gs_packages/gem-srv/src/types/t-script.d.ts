@@ -16,55 +16,87 @@ declare global {
     [any: string]: any;
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Declare an object with keys. Used by SM_Object (may need revision) for
-   *  prop and method dictionaries */
+  /** Declare an object with keys. Used by SM_Objects to store props or
+   *  methods. SM_Dict can also be nested, as in the case with Features */
   type SM_Dict = {
-    [key: string]: any;
+    [key: string]: any | SM_Dict;
   };
 
   /// BASE SIMULATION OBJECTS /////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** A "scopeable" object is one that can represent the current execution
-   *  context for ops using getMethod(), getProp() or value-related assignments.
-   *  The Agent, Prop, and Feature classes implement this interface. */
+  /** The fundamentable scriptable element is the SM_Object, which implement
+   *  the essential getMethod, getProp, and value methods.
+   *  Agent, Var, and Feature classes implement this interface. */
   interface ISM_Object {
     id: any;
     refId?: any;
     meta: { type: symbol; name?: string };
     prop?: SM_Dict;
     method?: SM_Dict;
-    addMethod: (name: String, callable: TMethod) => void;
+    addMethod: (name: String, callable: TSM_Method) => void;
     addProp: (name: string, gv: ISM_Object) => ISM_Object;
-    getMethod: (name: string) => TMethod;
+    getMethod: (name: string) => TSM_Method;
     getProp: (name: string) => ISM_Object;
     getPropValue: (name: string) => any;
     serialize?: () => any[];
     symbolize?: () => TSymbolData;
-    //  get value(): any; // works with typescript 3.6+
-    //  set value(val:any); // works with typescript 3.6+
+    get value(): any;
+    set value(val: any);
     value: any;
     name: string;
   }
 
+  /// INTERACTION TYPE DECLARATIONS ///////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** the interactable interface model an object that has state that can be
+   *  represented by a direct maniplation-style UI */
+  interface IActable {
+    isSelected: boolean;
+    isHovered: boolean;
+    isGrouped: boolean;
+    isCaptive: boolean;
+    setSelected: (mode: boolean) => boolean;
+    setHovered: (mode: boolean) => boolean;
+    setGrouped: (mode: boolean) => boolean;
+    setCaptive: (mode: boolean) => boolean;
+  }
+
+  /// AGENT MOVEMENT MODES ////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** the movement mode interface models an object that can be in one of
+   *  several 'controlled movement' modes */
+  interface IControllable {
+    mode: () => EControlMode;
+    setPreviousMode: () => EControlMode;
+    setModeStatic: () => EControlMode;
+    setModeDrag: () => EControlMode;
+    setModePuppet: () => EControlMode;
+    setModeAuto: () => EControlMode;
+    isModeStatic: () => boolean;
+    isModeDrag: () => boolean;
+    isModePuppet: () => boolean;
+    isModeAuto: () => boolean;
+  }
   /// AGENT TYPE DECLARATIONS /////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Agents have additional properties on top of ISM_Object */
-  interface IAgent extends ISM_Object, IActable, IMovementMode {
+  interface IAgent extends ISM_Object, IActable, IControllable {
     blueprint: any;
     featureMap: Map<string, IFeature>;
     execMethod: (name: string, ...args: any) => any;
     addFeature: (name: string) => void;
     hasFeature: (name: string) => boolean;
     getFeature: (name: string) => any;
-    updateQueue: TMethod[];
+
+    updateQueue: TSM_Method[];
+    thinkQueue: TSM_Method[];
+    execQueue: TSM_Method[];
     queueUpdateMessage: (msg: IMessage) => void;
-    thinkQueue: TMethod[];
     queueThinkMessage: (msg: IMessage) => void;
-    execQueue: TMethod[];
     queueExecMessage: (msg: IMessage) => void;
     evaluateArgs: (...args: any) => any;
-    exec: (prog: TMethod, ctx?: object, ...args) => any;
-    getFeatMethod: (fname: string, mName: string) => [IFeature, TMethod];
+    exec: (prog: TSM_Method, ctx?: object, ...args) => any;
+    getFeatMethod: (fname: string, mName: string) => [IFeature, TSM_Method];
     callFeatMethod: (fName: string, mName: string, ...args) => any;
     getFeatProp: (fName: string, pName: string) => ISM_Object;
     getFeatPropValue: (fName: string, pName: string) => any;
@@ -136,8 +168,8 @@ declare global {
     channel?: string;
     message?: string;
     context?: {}; // context object for expressions, programs
-    actions?: TMethod[];
-    conseq?: TMethod;
+    actions?: TSM_Method[];
+    conseq?: TSM_Method;
     inputs?: any;
   }
 
@@ -423,10 +455,7 @@ declare global {
   /** A stackmachine operation or "opcode" is a function that receives mutable
    *  agent, stack, scope, and condition flag objects. This is how agents
    *  and their props are changed by the scripting engine. The agent is
-   *  the memory context, and the stack is used to pass values in/out.
-   *  TODO: We aren't using TOpcodeErr or TOpWait anymore...
-   *  TODO: We don't have a good way to detect compile errors
-   *  TODO: May need to return a "ProgramBundle" that contains symbols... */
+   *  the memory context, and the stack is used to pass values in/out. */
   type TOpcode = (
     agent?: IAgent, // memory context (an agent instance)
     sm_state?: IState // machine state
@@ -459,36 +488,8 @@ declare global {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** A stackmachine method can be either a stackmachine program OR a regular
    *  function. The invocation method will check what it is */
-  type TMethod = TSMCProgram | TSMCFunction | TExpressionAST;
-
-  /// INTERACTION TYPE DECLARATIONS ///////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  interface IActable {
-    isSelected: boolean;
-    isHovered: boolean;
-    isGrouped: boolean;
-    isCaptive: boolean;
-    setSelected: (mode: boolean) => boolean;
-    setHovered: (mode: boolean) => boolean;
-    setGrouped: (mode: boolean) => boolean;
-    setCaptive: (mode: boolean) => boolean;
-  }
-
-  /// AGENT MOVEMENT MODES ////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  interface IMovementMode {
-    mode: () => EControlMode;
-    setPreviousMode: () => EControlMode;
-    setModeStatic: () => EControlMode;
-    setModeDrag: () => EControlMode;
-    setModePuppet: () => EControlMode;
-    setModeAuto: () => EControlMode;
-    isModeStatic: () => boolean;
-    isModeDrag: () => boolean;
-    isModePuppet: () => boolean;
-    isModeAuto: () => boolean;
-  }
-}
+  type TSM_Method = TSMCProgram | TSMCFunction | TExpressionAST;
+} // end of global type declaration
 
 /// EXPORT AS MODULE FOR GLOBALS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

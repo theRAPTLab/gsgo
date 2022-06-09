@@ -4,11 +4,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IPoolable } from './t-pool.d';
-
 class InputDef implements IPoolable {
   // poolable
-  id: string; // match instanceDef, GAgent
+  id: string; // match instanceDef, SM_Agent
   refId?: any;
   _pool_id: any;
   // inputDef

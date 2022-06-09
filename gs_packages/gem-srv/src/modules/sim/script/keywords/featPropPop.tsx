@@ -7,7 +7,7 @@
 
 import Keyword, { K_DerefFeatureProp } from 'lib/class-keyword';
 import { RegisterKeyword } from 'modules/datacore';
-import GAgent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-gagent';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,7 +37,7 @@ export class featPropPop extends Keyword {
         // eslint-disable-next-line @typescript-eslint/dot-notation
         let prop;
         if (ref[0] === 'Global') {
-          prop = GAgent.GetGlobalAgent().getProp(pName);
+          prop = SM_Agent.GetGlobalAgent().getProp(pName);
         } else {
           prop = agent.getFeatProp(ref[0] as string, pName);
         }
@@ -47,7 +47,7 @@ export class featPropPop extends Keyword {
       /** EXPLICIT REF *******************************************************/
       /// e.g. 'agent.Costume' or 'Bee.Costume'
       callRef = (agent: IAgent, context: any, pName: string, arg) => {
-        const c = context[ref[0] as string]; // GAgent context
+        const c = context[ref[0] as string]; // SM_Agent context
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         return c.getFeatProp(ref[1], pName).setTo(arg);
       };

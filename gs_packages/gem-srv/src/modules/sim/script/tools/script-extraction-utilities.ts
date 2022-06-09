@@ -7,7 +7,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
-import GAgent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-gagent';
 import { TextToScript } from './script-tokenizer';
 import * as COMPILER from './script-compiler';
 
@@ -162,7 +162,7 @@ function ExtractFeatPropMap(featureNames: string[]): Map<string, any[]> {
     // and adding it to the dummy agent is problematic
     if (fName === 'Cursor') return;
 
-    const dummy = new GAgent();
+    const dummy = new SM_Agent();
     dummy.addFeature(fName);
     const propMap = new Map();
     Object.keys(dummy.prop[fName]).forEach(key => {

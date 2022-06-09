@@ -6,7 +6,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-// import { IMessage, TMethod, TSMCProgram } from './t-script';
+// import { IMessage, TSM_Method, TSMCProgram } from './t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,9 +36,9 @@ export default class SM_Message implements IMessage {
   channel?: string;
   message?: string;
   inputs?: any;
-  actions?: TMethod[]; // array of array of topcodes!
+  actions?: TSM_Method[]; // array of array of topcodes!
   context?: any;
-  conseq?: TMethod;
+  conseq?: TSM_Method;
   data?: object;
   //
   constructor(msg: string, init: IMessage) {

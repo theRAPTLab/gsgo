@@ -9,7 +9,7 @@ import UR from '@gemstep/ursys/client';
 import InstanceDef from 'lib/class-instance-def';
 
 import SyncMap from 'lib/class-syncmap';
-import GAgent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-gagent';
 import DisplayObject from 'lib/class-display-object';
 
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
@@ -220,7 +220,7 @@ export function AllAgentsProgram(data) {
   if (!blueprintNames) return console.warn(...PR('no blueprint'));
 
   // 1. Reset Global Agent First
-  GAgent.ClearGlobalAgent();
+  SM_Agent.ClearGlobalAgent();
 
   // 2. Remove Unused Blueprints and Agents
   FilterBlueprints(blueprintNames);

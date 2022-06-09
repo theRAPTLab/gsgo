@@ -59,7 +59,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import GAgent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-gagent';
 import Blueprint from 'lib/class-project-blueprint';
 import SM_Bundle from 'lib/class-sm-bundle';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
@@ -139,7 +139,7 @@ function m_CompileBlueprints(bpDefs: TBlueprint[]): TBlueprint[] {
  * @returns {TBlueprint[]} - bpDefs that all use 'name', not 'id'
  */
 function m_ResetAndCompileBlueprints(blueprints: TBlueprint[]): TBlueprint[] {
-  GAgent.ClearGlobalAgent();
+  SM_Agent.ClearGlobalAgent();
   SIMAGENTS.ClearDOBJ();
   SIMDATA.DeleteAllScriptEvents();
   SIMDATA.DeleteAllBlueprintBundles();

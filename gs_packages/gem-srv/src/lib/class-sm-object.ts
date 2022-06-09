@@ -14,29 +14,12 @@
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const METHOD_ERR = 'sm-object does not support smc methods';
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let m_objcount = 100;
-function new_obj_id() {
-  return m_objcount++;
-}
+let m_objcount = 100; // smobject id creator
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Add a property to an agent's prop map by property name */
-function AddProp(agent: IAgent, pName: string, gvar: ISM_Object) {
-  if (!agent.prop[pName]) throw Error(`prop '${pName}' already added`);
-  agent.prop[pName] = gvar;
-  return gvar;
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Add a method to an agent's method map by method name */
-function AddMethod(agent: IAgent, mName: string, smc_or_f: TMethod): IAgent {
-  if (!agent.method[mName]) throw Error(`method '${mName}' already added`);
-  agent.method[mName] = smc_or_f;
-  agent[mName] = smc_or_f;
-  return agent;
+function new_obj_id() {
+  return m_objcount++;
 }
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -87,7 +70,7 @@ class SM_Object implements ISM_Object {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Add a named method to SMC_Object method map */
-  addMethod(mName: string, smc_or_f: TMethod): void {
+  addMethod(mName: string, smc_or_f: TSM_Method): void {
     const method = this.method[mName];
     if (method) throw Error(`method '${mName}' already added`);
     method[mName] = smc_or_f;
@@ -107,7 +90,7 @@ class SM_Object implements ISM_Object {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Call a named method function using javascript semantics */
-  getMethod(key: string): TMethod {
+  getMethod(key: string): TSM_Method {
     return this.method[key];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -122,59 +105,7 @@ class SM_Object implements ISM_Object {
   }
 }
 
-/// STATIC METHODS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given an array of mixed gbase and literals, return an array of
- *  pure values
- */
-function GetValues(mixedArray: any[]): any[] | SM_Object {
-  const values = mixedArray.map(smo => {
-    if (smo instanceof SM_Object) return smo.value;
-    return smo;
-  });
-  return values;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given an array of mixed gbase and literals, return an array of
- *  types
- */
-function GetTypes(mixedArray: any[]): string[] {
-  const types = mixedArray.map(smo => {
-    if (smo instanceof SM_Object) return 'SMOBJ'; // SM_Object
-    if (typeof smo === 'string') return 'STR'; // literal string
-    if (typeof smo === 'number') return 'NUM'; // literal number
-    if (typeof smo === 'boolean') return 'BOL'; // literal boolean
-    throw Error(`unknown variable type '${smo}'`);
-  });
-  return types;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** test for string keys that do not contain a . */
-function IsAgentString(str: string): boolean {
-  if (typeof str !== 'string') throw Error('arg must be string');
-  const len = str.split('.').length;
-  if (len === 1) return true; // agent = string without periods
-  return false; // dot is in name
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** test for string keys than begin with . */
-function IsPropString(str: string): boolean {
-  if (typeof str !== 'string') throw Error('arg must be string');
-  if (!str.startsWith('.')) return false; // not a .string
-  if (str.split('.').length !== 2) return false; // more than one .
-  return true;
-}
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export class
 export default SM_Object;
-export {
-  GetTypes,
-  GetValues,
-  IsAgentString,
-  IsPropString,
-  //
-  AddProp,
-  AddMethod
-};

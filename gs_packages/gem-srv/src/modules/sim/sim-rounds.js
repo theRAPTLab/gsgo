@@ -8,7 +8,7 @@ import { interval } from 'rxjs';
 import UR from '@gemstep/ursys/client';
 import * as ACRounds from 'modules/appcore/ac-rounds';
 import { SM_Number } from 'modules/sim/script/vars/_all_vars';
-import GAgent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-gagent';
 import SM_State from 'lib/class-sm-state';
 import * as TRANSPILER from './script/transpiler-v2';
 
@@ -73,7 +73,7 @@ function StopRoundTimer() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Called bya pi-sim during Stage() */
 export function StageInit() {
-  const GLOBAL_AGENT = GAgent.GetGlobalAgent();
+  const GLOBAL_AGENT = SM_Agent.GetGlobalAgent();
   if (!GLOBAL_AGENT.hasFeature('Population'))
     GLOBAL_AGENT.addFeature('Population');
   if (!GLOBAL_AGENT.getProp('roundTime')) {

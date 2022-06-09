@@ -12,7 +12,7 @@ import UR from '@gemstep/ursys/client';
 import SM_Bundle from 'lib/class-sm-bundle';
 import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 
-import GAgent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-gagent';
 import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 
@@ -61,7 +61,7 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
 
 /// SCRIPT TEXT UTILITIES /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Compile a source text and return compiled TMethod. Similar to
+/** Compile a source text and return compiled TSM_Method. Similar to
  *  CompileBlueprint but does not handle directives or build a bundle. Used
  *  for generating code snippets from any GEMSCRIPT text (e.g. for init
  *  scripts, or anything that isn't part of the
@@ -89,7 +89,7 @@ function ValidateLineText(line: string, bdl: SM_Bundle): TValidatedScriptUnit {
 function MakeAgent(instanceDef: TInstance) {
   const fn = 'MakeAgent:';
   const { bpid, label } = instanceDef;
-  const agent = new GAgent(label, String(instanceDef.id));
+  const agent = new SM_Agent(label, String(instanceDef.id));
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
   if (typeof bpid === 'string') {

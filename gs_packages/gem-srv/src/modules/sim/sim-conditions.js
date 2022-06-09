@@ -9,14 +9,14 @@ import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as SIMCOND from 'modules/datacore/dc-sim-conditions';
 import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
 
-import GAgent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-gagent';
 import { DistanceTo } from 'lib/util-vector';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM_CONDITIONS');
 const DBG = false;
-const GLOBAL_AGENT = GAgent.GetGlobalAgent();
+const GLOBAL_AGENT = SM_Agent.GetGlobalAgent();
 let EVENT_QUEUE = [];
 let GLOBAL_INTERACTIONS = [];
 

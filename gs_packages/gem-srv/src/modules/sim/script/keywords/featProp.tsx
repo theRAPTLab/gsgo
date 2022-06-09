@@ -80,7 +80,7 @@ export class featProp extends Keyword {
         mName: string,
         ...prms
       ) => {
-        const c = context[ref[0] as string]; // GAgent context
+        const c = context[ref[0] as string]; // SM_Agent context
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         return c.getFeatProp(ref[1], pName)[mName](...prms);
       };

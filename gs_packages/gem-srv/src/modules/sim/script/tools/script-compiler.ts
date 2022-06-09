@@ -34,7 +34,7 @@ import SM_Bundle from 'lib/class-sm-bundle';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as BUNDLER from 'script/tools/script-bundler';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-import GAgent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-gagent';
 import VSDToken from 'script/tools/class-validation-token';
 import { ParseExpression } from './class-expr-parser-v2';
 
@@ -274,7 +274,7 @@ function SymbolizeBlueprint(script: TScriptUnit[], bdl?: SM_Bundle) {
   // setup bundle type
   BUNDLER.SetBundleType(EBundleType.BLUEPRINT);
   // add default agent symbols
-  BUNDLER.AddSymbols(GAgent.Symbols);
+  BUNDLER.AddSymbols(SM_Agent.Symbols);
   // symbolize statement-by-statement
   script.forEach((stm, line) => {
     const symbols = SymbolizeStatement(stm, line);
@@ -331,7 +331,7 @@ function BundleBlueprint(script: TScriptUnit[]): SM_Bundle {
   // get the bundle to work on
   BUNDLER.OpenBundle(bpName);
   BUNDLER.SetBundleType(EBundleType.BLUEPRINT);
-  BUNDLER.AddSymbols(GAgent.Symbols);
+  BUNDLER.AddSymbols(SM_Agent.Symbols);
 
   if (!Array.isArray(script))
     throw Error(`${fn} script should be array, not ${typeof script}`);

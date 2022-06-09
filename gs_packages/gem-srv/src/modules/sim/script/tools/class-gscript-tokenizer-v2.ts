@@ -606,9 +606,9 @@ class ScriptTokenizer {
   }
 
   /** GEMSCRIPT HACK ** In GEMSCRIPT text, a [[ ]] on a single line designates a
-   *  'named TMethod' which is invoked like a co-routine. The name is used to
-   *  look-up a TMethod (either an SMC program or regular Javascript function)
-   *  from a Map<string,TMethod>. It is up to the keyword implementor that is
+   *  'named TSM_Method' which is invoked like a co-routine. The name is used to
+   *  look-up a TSM_Method (either an SMC program or regular Javascript function)
+   *  from a Map<string,TSM_Method>. It is up to the keyword implementor that is
    *  using inline blocks to know which dictionary to grab the method (e.g.
    *  the TESTS dictionary or PROGRAMS dictionary)
    */

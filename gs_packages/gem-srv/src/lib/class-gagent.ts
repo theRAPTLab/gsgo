@@ -26,7 +26,7 @@ let REF_ID_COUNT = 0;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class GAgent extends SM_Object implements IAgent, IActable {
+class SM_Agent extends SM_Object implements IAgent, IActable {
   blueprint: ISMCBundle;
   featureMap: Map<string, IFeature>;
   controlMode: EControlMode;
@@ -37,9 +37,9 @@ class GAgent extends SM_Object implements IAgent, IActable {
   isGrouped: boolean;
   isGlowing: boolean;
   isLargeGraphic: boolean;
-  updateQueue: TMethod[];
-  thinkQueue: TMethod[];
-  execQueue: TMethod[];
+  updateQueue: TSM_Method[];
+  thinkQueue: TSM_Method[];
+  execQueue: TSM_Method[];
   canSeeCone: any;
   canSeeColor: any;
   cursor: IAgent;
@@ -206,11 +206,11 @@ class GAgent extends SM_Object implements IAgent, IActable {
    *  data is stored as a static class variable.
    */
   symbolize(): TSymbolData {
-    if (GAgent.Symbols) return GAgent.Symbols;
+    if (SM_Agent.Symbols) return SM_Agent.Symbols;
     // create the symbol data for props since they don't exist yet
     const P = 'makeDefaultSymbols()';
     const sym = {};
-    // Only expose specific GAgent properties
+    // Only expose specific SM_Agent properties
     const props = ['x', 'y', 'statusText'];
     for (let prop of props) {
       if (sym[prop] !== undefined) throw Error(`${P}: ${prop} already exists`);
@@ -222,7 +222,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     //     throw Error(`${P}: ${propName} already exists`);
     //   sym[propName] = prop.symbolize();
     // }
-    GAgent.Symbols = { props: sym };
+    SM_Agent.Symbols = { props: sym };
     return sym;
   }
 
@@ -360,7 +360,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   /// hooks.
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Queue a message to be handled during AGENT_UPDATE. Currently, it extracts
-   *  the 'actions' property which is TMethod that can be executed. This is
+   *  the 'actions' property which is TSM_Method that can be executed. This is
    *  called from sim-conditions during update
    */
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -443,12 +443,12 @@ class GAgent extends SM_Object implements IAgent, IActable {
   /// can handle SMC code, regular Javascript functions, named programs in
   /// the global program store, and abstract syntax trees
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Run a TMethod with a variable list of arguments.
+  /** Run a TSM_Method with a variable list of arguments.
    */
-  exec(m: TMethod, context?, ...args): any {
+  exec(m: TSM_Method, context?, ...args): any {
     if (m === undefined) return undefined;
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    const ctx = { agent: this, global: GAgent.GLOBAL_AGENT };
+    const ctx = { agent: this, global: SM_Agent.GLOBAL_AGENT };
     Object.assign(ctx, context);
     if (Array.isArray(m)) return this.exec_smc(m, ctx, ...args);
     if (typeof m === 'object') {
@@ -549,25 +549,25 @@ class GAgent extends SM_Object implements IAgent, IActable {
   }
   /// STATIC METHODS AND MEMBERS //////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  static GLOBAL_AGENT: GAgent;
+  static GLOBAL_AGENT: SM_Agent;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   static ClearGlobalAgent() {
-    GAgent.GLOBAL_AGENT = new GAgent('GlobalAgent');
+    SM_Agent.GLOBAL_AGENT = new SM_Agent('GlobalAgent');
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   static GetGlobalAgent() {
-    if (GAgent.GLOBAL_AGENT === undefined)
-      GAgent.GLOBAL_AGENT = new GAgent('GlobalAgent');
-    return GAgent.GLOBAL_AGENT;
+    if (SM_Agent.GLOBAL_AGENT === undefined)
+      SM_Agent.GLOBAL_AGENT = new SM_Agent('GlobalAgent');
+    return SM_Agent.GLOBAL_AGENT;
   }
   // end of Agent class
 }
 
 /// STATIC VARIABLES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-GAgent.Symbols = undefined; // set by GAgent.makeDefaultSymbols()
+SM_Agent.Symbols = undefined; // set by SM_Agent.makeDefaultSymbols()
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export main Agent
-export default GAgent;
+export default SM_Agent;
