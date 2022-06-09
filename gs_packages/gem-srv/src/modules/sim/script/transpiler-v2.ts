@@ -47,11 +47,6 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
     // First deregister the blueprint if it exists
     // RemoveGlobalCondition(bdl.name); // deprecatd in script-xp
     SIMDATA.SaveBlueprintBundle(bdl);
-    // run conditional programming in template
-    // this is a stack of functions that run in global context
-    // initialize global programs in the bundle
-    // const { condition, event } = bdl.getPrograms();
-    // AddGlobalCondition(bdl.name, condition); // deprecated in script-xp branch
     if (DBG) console.groupEnd();
     return bdl;
   }

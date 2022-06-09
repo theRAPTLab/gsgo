@@ -126,8 +126,8 @@ declare global {
     isLargeGraphic: boolean;
     statusText: string;
     statusValue: number;
-
     // CODE REVIEW: @Ben these should be not hacked into the base agent. You can
+
     // instead the features themselves, using a private property within the
     // agent.props[featurename] dictionary
 
@@ -157,6 +157,7 @@ declare global {
     featGetMethod(mName: string): FeatureMethod;
     symbolize(): TSymbolData;
   }
+  /** Feature methods are either functions or TSMCPrograms */
   type FeatureMethod = (agent: IAgent, ...any) => any;
 
   /// SIMULATION RUNTIME //////////////////////////////////////////////////////
@@ -203,26 +204,6 @@ declare global {
   type TScript = TScriptUnit[]; // We use TScriptUnit[] in code
   type TCompiledStatement = TOpcode[];
   type TUnpackedToken = [type: string, value: any];
-
-  /// COMPILER OUPUT //////////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** These are the kind of programs  */
-  interface ISMCPrograms {
-    // blueprint
-    define?: TSMCProgram; // def blueprint, props, features
-    init?: TSMCProgram; // allocate mem/define default values for instance
-    update?: TSMCProgram; // run during instance update cycle
-    think?: TSMCProgram; // run during instance think phase
-    exec?: TSMCProgram; // run during instance exec phase
-    // global conditions
-    condition?: TSMCProgram; // condition handlers to run
-    // global script events
-    event?: TSMCProgram; // event handlers to run
-    // local condition (one per bundle)
-    test?: TSMCProgram; // program returning true on stack
-    conseq?: TSMCProgram; // program to run on true
-    alter?: TSMCProgram; // program to run otherwise
-  }
 
   /// SYMBOL DATA AND TYPES ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -357,9 +338,26 @@ declare global {
 
   /// PROGRAM BUNDLES /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** These are the kind of programs  */
+  interface ISMCPrograms {
+    // blueprint
+    define?: TSMCProgram; // def blueprint, props, features
+    init?: TSMCProgram; // allocate mem/define default values for instance
+    update?: TSMCProgram; // run during instance update cycle
+    think?: TSMCProgram; // run during instance think phase
+    exec?: TSMCProgram; // run during instance exec phase
+    // global conditions
+    condition?: TSMCProgram; // condition handlers to run
+    // global script events
+    event?: TSMCProgram; // event handlers to run
+    // local condition (one per bundle)
+    test?: TSMCProgram; // program returning true on stack
+    conseq?: TSMCProgram; // program to run on true
+    alter?: TSMCProgram; // program to run otherwise
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** An ISMCBundle is a collection of compiled elements. This is the minimum
-   *  metadata; see class-sm-bundle for the list of possible entities
-   */
+   *  metadata; see class-sm-bundle for the list of possible entities */
   interface ISMCBundle extends ISMCPrograms {
     name?: string; // the blueprint name of the bundle, if any
     parent?: string; // the parent bundle, if any
