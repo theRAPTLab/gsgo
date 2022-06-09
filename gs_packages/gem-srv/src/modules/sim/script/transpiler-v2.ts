@@ -66,9 +66,9 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
  *  for generating code snippets from any GEMSCRIPT text (e.g. for init
  *  scripts, or anything that isn't part of the
  */
-function CompileText(text: string = ''): TSMCProgram {
+function CompileText(text: string = '', refs?: TSymbolRefs): TSMCProgram {
   const script = TOKENIZER.TextToScript(text);
-  return COMPILER.CompileScript(script);
+  return COMPILER.CompileScript(script, refs);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Given a lineScript in text form and a bundle with symbols, validate it */

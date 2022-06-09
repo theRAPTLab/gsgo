@@ -325,6 +325,11 @@ class GAgent extends SM_Object implements IAgent, IActable {
     const featProps = this.prop[fName];
     return featProps[pName];
   }
+  /** Return prop value given passed agent and key */
+  getFeatPropValue(fName: string, pName: string): any {
+    const featProps = this.prop[fName];
+    return featProps[pName].value;
+  }
   /** Return private feature variable. The variable name must begin with
    *  an _, and it holds a regular Javascript value
    */

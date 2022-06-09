@@ -189,7 +189,7 @@ function ValidateStatement(
   const kw = CHECK.DecodeKeywordToken(statement[0]);
   const kwp = SIMDATA.GetKeyword(kw);
   if (kwp !== undefined) {
-    kwp.validateInit({ bundle, globals });
+    kwp.setRefs({ bundle, globals });
     return kwp.validate(statement);
   }
   // if got this far, the keyword was unrecognized
@@ -225,14 +225,17 @@ function ValidateBlueprint(script: TScriptUnit[]) {
  *  @param {number} [line] - current "line" of script metadata
  *  @returns TSMCProgram
  */
-function CompileStatement(stm: TScriptUnit, line?: number): TCompiledStatement {
+function CompileStatement(
+  stm: TScriptUnit,
+  refs?: TSymbolRefs
+): TCompiledStatement {
   const fn = 'CompileStatement:';
   const kw = CHECK.DecodeKeywordToken(stm[0]);
   if (!kw) return []; // skips comments, blank lines
   const kwp = SIMDATA.GetKeyword(kw) || SIMDATA.GetKeyword('keywordErr');
   if (!kwp) throw Error(`${fn} bad keyword ${kw}`);
   const kwArgs = DecodeStatement(stm);
-  const compiledStatement = kwp.compile(kwArgs, line);
+  const compiledStatement = kwp.compile(kwArgs, refs);
   return compiledStatement;
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -241,12 +244,13 @@ function CompileStatement(stm: TScriptUnit, line?: number): TCompiledStatement {
  *  @param {TScriptUnit[]} script - tokenized scriptText
  *  @returns TSMCProgram
  */
-function CompileScript(script: TScriptUnit[]): TSMCProgram {
+function CompileScript(script: TScriptUnit[], refs?: TSymbolRefs): TSMCProgram {
   const program: TSMCProgram = [];
   if (script.length === 0) return [];
   // compile unit-by-unit
   script.forEach((statement, ii) => {
-    const objcode = CompileStatement(statement);
+    console.log(ii, 'compiling', statement);
+    const objcode = CompileStatement(statement, refs);
     program.push(...(objcode as TSMCProgram));
   });
   return program;
@@ -301,8 +305,11 @@ function CompileBlueprint(script: TScriptUnit[], bdl?: SM_Bundle): SM_Bundle {
   // setup bundle type
   BUNDLER.SetBundleType(EBundleType.BLUEPRINT);
   // compile statement-by-statement
+
+  const refs = BUNDLER.SymbolRefs();
   script.forEach((stm, line) => {
-    const objcode = CompileStatement(stm, line);
+    refs.line = line;
+    const objcode = CompileStatement(stm, refs);
     BUNDLER.AddProgram(objcode);
   });
   // store script in bundle
@@ -317,6 +324,7 @@ function CompileBlueprint(script: TScriptUnit[], bdl?: SM_Bundle): SM_Bundle {
  */
 function BundleBlueprint(script: TScriptUnit[]): SM_Bundle {
   const fn = 'BundleBlueprint:';
+  console.warn(`${fn} DEPRECATED`);
   // get blueprint metadata
   const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
   const [bpName] = BLUEPRINT;
@@ -328,12 +336,15 @@ function BundleBlueprint(script: TScriptUnit[]): SM_Bundle {
   if (!Array.isArray(script))
     throw Error(`${fn} script should be array, not ${typeof script}`);
 
+  const refs = BUNDLER.SymbolRefs();
+  console.log(`${fn} compiling ${bpName} w/ refs`, refs);
   script.forEach((stm, line) => {
     // normal processing of statement
-    const objcode = CompileStatement(stm, line);
-    BUNDLER.AddProgram(objcode);
     const symbols = SymbolizeStatement(stm, line);
     BUNDLER.AddSymbols(symbols);
+    refs.line = line;
+    const objcode = CompileStatement(stm, refs);
+    BUNDLER.AddProgram(objcode);
   }); // script forEach
   if (!BUNDLER.HasBundleName) throw Error(`${fn} missing BLUEPRINT directive`);
   // store script in bundle

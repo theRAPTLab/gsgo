@@ -21,6 +21,7 @@ const PR = UR.PrefixUtil('SYMBOL', 'TagPurple');
 let CUR_NAME: string; // the current compiling bundle name (blueprint)
 let CUR_PROGRAM: string; // the current compiler output track
 let CUR_BUNDLE: SM_Bundle;
+let CUR_GLOBALS: TAnyObject;
 
 /// MODULE HELPERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,14 +48,21 @@ function BundlerState() {
   return {
     bpName: CUR_NAME,
     programOut: CUR_PROGRAM,
-    bundle: CUR_BUNDLE
+    bundle: CUR_BUNDLE,
+    globals: CUR_GLOBALS
   };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: return data structure used by CompileStatement */
+function SymbolRefs(): TSymbolRefs {
+  return { bundle: CUR_BUNDLE, globals: CUR_GLOBALS };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ClearBundlerState() {
   CUR_NAME = undefined;
   CUR_PROGRAM = undefined;
   CUR_BUNDLE = undefined;
+  CUR_GLOBALS = {};
 }
 
 /// COMPILER BUNDLE GATEKEEPING ///////////////////////////////////////////////
@@ -71,6 +79,7 @@ function ClearBundlerState() {
 function OpenBundle(bp: string | SM_Bundle): SM_Bundle {
   const fn = 'BeginBundle:';
   m_CheckNoOpenBundle(fn);
+  if (CUR_GLOBALS === undefined) CUR_GLOBALS = {};
   if (bp instanceof SM_Bundle) CUR_BUNDLE = bp;
   if (typeof bp === 'string') CUR_BUNDLE = SIMDATA.GetBlueprintBundle(bp);
   if (CUR_BUNDLE instanceof SM_Bundle) return CUR_BUNDLE;
@@ -85,6 +94,7 @@ function CloseBundle(): SM_Bundle {
   const fn = 'EndBundle:';
   const bdl = m_HasCurrentBundle(fn);
   CUR_BUNDLE = undefined;
+  CUR_GLOBALS = undefined;
   return bdl;
 }
 
@@ -116,8 +126,8 @@ function SetProgramOut(str: string): boolean {
 function SetBundleName(bpName: string, bpParent?: string): boolean {
   const fn = 'SetBundleName:';
   const bdl = m_HasCurrentBundle(fn);
-  if (typeof bdl !== 'object') {
-    console.warn('arg1 is not a bundle, got:', bdl);
+  if (!(bdl instanceof SM_Bundle)) {
+    console.warn('no current bundle to name');
     return false;
   }
   if (typeof bpName !== 'string') {
@@ -134,6 +144,22 @@ function SetBundleName(bpName: string, bpParent?: string): boolean {
   if (DBG) console.log(...PR(`${fn} setting bundleName ${CUR_NAME}`));
   return true;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: set the globals object to use during current compiler operation */
+function AddGlobals(globals: TAnyObject): boolean {
+  const fn = 'AddGlobals:';
+  const bdl = m_HasCurrentBundle(fn);
+  if (!(bdl instanceof SM_Bundle)) {
+    console.warn('no current bundle active');
+    return false;
+  }
+  if (typeof globals !== 'object') {
+    console.warn('arg is not an object', globals);
+    return false;
+  }
+  CUR_GLOBALS = { ...CUR_GLOBALS, ...globals };
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: set the bundle type of current bundle */
 function SetBundleType(type: EBundleType = EBundleType.BLUEPRINT) {
@@ -291,6 +317,8 @@ export {
   CloseBundle,
   //
   SetBundleName,
+  AddGlobals,
+  SymbolRefs,
   SetBundleType,
   SetProgramOut,
   SetBundleTag,

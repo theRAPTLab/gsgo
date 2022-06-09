@@ -59,7 +59,11 @@ class SymbolInterpreter {
    */
   setSymbolTables(refs: any) {
     const fn = 'setSymbolTables:';
+    if (refs === undefined) {
+      console.warn(`${fn} skipping because might be recursive symbolize`);
+    }
     const { bundle, globals } = refs || {};
+    if (DBG) console.log(`${fn} setting from`, refs);
     if (bundle) {
       if (CHECK.IsValidBundle(bundle)) this.refs.bundle = bundle;
       else throw Error(`${fn} invalid bundle`);
@@ -77,6 +81,9 @@ class SymbolInterpreter {
   /// SCOPE ACCESSORS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   reset() {
+    const fn = 'reset:';
+    if (this.bdl_scope === undefined)
+      throw Error(`${fn} bdl_scope is undefined, so nothing to reset to`);
     this.cur_scope = this.bdl_scope;
     this.scan_error = false;
     this.arg_index = undefined;
@@ -201,7 +208,7 @@ class SymbolInterpreter {
     this.resetScope();
     let [matchType, parts] = TOKENIZER.UnpackToken(token);
     if (DBG) console.log(...PR(`${fn}: ${matchType}:${parts}`));
-    // was there a previous scope-breaking error?
+    // was there a previous scope-breaking error? bail!
     if (this.scanError())
       return new VSDToken(
         {},
@@ -212,7 +219,8 @@ class SymbolInterpreter {
           err_info: `${fn} error in previous token(s)`
         }
       );
-    // is the token a valid identifier or objref token?
+    // convert identifier to single-part objref
+    // and return error if it's not objref or identifier
     if (matchType === 'identifier') parts = [parts];
     else if (matchType !== 'objref') {
       this.scanError(true);
@@ -704,6 +712,77 @@ class SymbolInterpreter {
     }
     // return valid symdata/validation
     return symData;
+  }
+
+  /// DEREF FUNCTIONS /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** similar to objRef algorith, which we'll just rip off right now */
+  derefProp(token: IToken, refs: TSymbolRefs): TDerefFunction {
+    const fn = 'derefProp:';
+    console.group(fn);
+    this.setSymbolTables(refs);
+    let [matchType, parts] = TOKENIZER.UnpackToken(token);
+    // convert identifier to single-part objref
+    // and return error if it's not objref or identifier
+
+    if (matchType === 'identifier') parts = [parts];
+    else if (matchType !== 'objref') {
+      console.log('matchtype', matchType, parts, 'invalid...returning void');
+      console.groupEnd();
+      return undefined;
+    }
+
+    //
+    const unitText = parts.join('.');
+    let part = parts[0];
+    // look for a matching scope dictionary
+    let f = this.strFeatureName(part);
+    let b = this.strBlueprintName(part);
+    let a = this.strAgentLiteral(part);
+    let p = this.strPropName(part);
+    // check for single part property
+    let terminal = parts.length === 1;
+    //
+    if (f) console.log('** 0 ** feature', f);
+    if (b) console.log('** 0 ** blueprint', b);
+    if (a) console.log('** 0 ** agent', a);
+    if (p) console.log('** 0 ** prop', p);
+    //
+    if (terminal) {
+      if (p) {
+        console.groupEnd();
+        return agent => agent.getPropValue(part);
+      }
+      throw Error(`${fn} ${unitText} isn't a prop`);
+    }
+    // loop through subsequent scopes to make "dereference stack"
+    const dStack = [];
+    // first save the first scope that didn't terminate...
+    if (f) dStack.push({ ctx: 'feature', key: part });
+    else if (b) dStack.push({ ctx: 'blueprint', key: part });
+    else if (a) dStack.push({ ctx: 'agent', key: part });
+    else throw Error(`${fn} non-evaluable ${unitText}`);
+    //
+    // now loop through subsequent scopes to make "dereference stack"
+    //
+    for (let ii = 1; ii < parts.length; ii++) {
+      part = parts[ii];
+      f = this.strFeatureName(part);
+      b = this.strBlueprintName(part);
+      p = this.strPropName(part);
+      terminal = ii >= parts.length - 1;
+      //
+      if (f) console.log('**', ii, '** feature', f);
+      if (b) console.log('**', ii, '** blueprint', b);
+      if (p) console.log('**', ii, '** prop', p);
+      //
+      if (b) dStack.push({ ctx: 'blueprint', key: part });
+      else if (f) dStack.push({ ctx: 'feature', key: part });
+      else if (p) dStack.push({ ctx: 'prop', key: part });
+      else throw Error(`${fn} non-evaluable ${unitText}`);
+    }
+    console.log('dstack', dStack);
+    console.groupEnd();
   }
 } // end of SymbolInterpreter class
 

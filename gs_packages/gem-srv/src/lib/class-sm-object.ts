@@ -93,12 +93,17 @@ class SM_Object implements IScopeable {
     method[mName] = smc_or_f;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: return the gvar assocated with propName
+  /** API: return the gvar associated with propName
    *  @param {string} propName - name of property
    *  @returns {GVar} - value object
    */
   getProp(key: string): IScopeable {
     return this.prop[key];
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API: return the value of the gvar associated with propName */
+  getPropValue(key: string): IScopeable {
+    return this.prop[key].value;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Call a named method function using javascript semantics */

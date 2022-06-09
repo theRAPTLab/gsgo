@@ -39,11 +39,13 @@ export class prop extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(dtoks: TScriptUnit): TOpcode[] {
+  compile(dtoks: TScriptUnit, refs: TSymbolRefs): TOpcode[] {
     const [kw, objref, method, ...args] = dtoks;
     // create a function that will be used to dereferences the objref
     // into an actual call
     const deref = K_DerefProp(objref);
+    /* TEST */
+    const testRef = this.shelper.derefProp(objref, refs);
     return [
       (agent: IAgent, state: IState) => {
         const p = deref(agent, state.ctx);

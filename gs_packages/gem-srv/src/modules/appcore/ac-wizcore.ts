@@ -122,9 +122,10 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
     );
     const script_text = TEST_SYMBOLS.GetTestScriptText();
     STORE.SendState({ script_text });
-    TEST_SYMBOLS.TestValidate();
+    // TEST_SYMBOLS.TestValidate();
     return;
   }
+
   // normal load
   const cur_prjid = DEV_PRJID;
   const cur_bpid = DEV_BPID;
@@ -700,33 +701,6 @@ export function UpdateDBGConsole(validationLog: string[] = []) {
   const buf = GetTextBuffer(STORE.State().dbg_console);
   buf.set(validationLog);
 }
-
-/// PROTOTYPING ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** testing the bundler + symbolizer code */
-UR.AddConsoleTool('bundle', (bpName: string) => {
-  //
-  const assetDir = `assets/${ASSETDIR}`;
-  const projectId = 'aquatic_energy';
-
-  // PROJECT LOADER - GET A BLUEPRINT SCRIPT TEXT
-  PROJ_v2.LoadAssetDirectory(assetDir);
-  const { scriptText } = PROJ_v2.GetProjectBlueprint(projectId, bpName);
-  // CREATE SCRIPT
-  const script = TRANSPILER.TextToScript(scriptText);
-  // Make the bundle
-  const { symbols } = TRANSPILER.SymbolizeBlueprint(script);
-  const bdl = TRANSPILER.CompileBlueprint(script);
-  // const { page } = TRANSPILER.ValidateBlueprint(script)
-  TRANSPILER.RegisterBlueprint(bdl);
-  // RETURN SYMBOLIZE BLUEPRINT
-  return symbols;
-});
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** run bundler prototype test */
-UR.HookPhase('UR/APP_START', () => {
-  setTimeout(() => (window as any).bundle('Fish'), 1000);
-});
 
 /// EXPORTED STATE METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

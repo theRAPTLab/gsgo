@@ -22,7 +22,7 @@ export class AddFeature extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit, idx: number): (TOpcode | TOpcodeErr)[] {
+  compile(unit: TScriptUnit, idx: number): TOpcode[] {
     const [, featureName] = unit;
     const feat = GetFeature(featureName);
     if (feat === undefined) return [[`no feature '${featureName}'`, idx]];

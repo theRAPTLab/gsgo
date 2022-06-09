@@ -9,6 +9,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 declare global {
+  /// GENERIC OBJECTS /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  type TAnyObject = { [any: string]: any }; // an object with arbitrary keys
+
   /// BASE SIMULATION OBJECTS /////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** A "scopeable" object is one that can represent the current execution
@@ -23,6 +27,7 @@ declare global {
     method: IKeyObject;
     addProp: (name: string, gv: IScopeable) => IScopeable;
     getProp: (name: string) => IScopeable;
+    getPropValue: (name: string) => any;
     addMethod: (name: String, callable: TMethod) => void;
     getMethod: (name: string) => TMethod;
     serialize?: () => any[];
@@ -54,6 +59,7 @@ declare global {
     getFeatMethod: (fname: string, mName: string) => [IFeature, TMethod];
     callFeatMethod: (fName: string, mName: string, ...args) => any;
     getFeatProp: (fName: string, pName: string) => IScopeable;
+    getFeatPropValue: (fName: string, pName: string) => any;
 
     // these are the ONLY built-in agent properties
     skin: string; // logical 'appearance' descriptor
@@ -294,8 +300,9 @@ declare global {
    */
   type TSymbolRefs = {
     bundle: ISMCBundle; // blueprint bundle to use
-    globals: { [any: string]: any }; // global object context for expressions, blocks
+    globals: TAnyObject; // global object context for expressions, blocks
     symbols?: TSymbolData; // current scope
+    line?: number; // current line number
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** used by keyword validator function , used for individual token validation
@@ -351,10 +358,10 @@ declare global {
   interface IKeyword {
     keyword: string;
     args: TGSArg[] | TGSArg[][]; // multiple signatures
-    compile(unit: TScriptUnit, lineIdx?: number): (TOpcode | TOpcodeErr)[];
+    compile(unit: TScriptUnit, refs: TSymbolRefs): (TOpcode | TOpcodeErr)[];
     jsx(index: number, unit: TScriptUnit, jsxOpt?: {}): any[] /* deprecated */;
-    symbolize(unit: TScriptUnit, lineIdx?: number): TSymbolData;
-    validateInit(refs: TSymbolRefs): void;
+    symbolize(unit: TScriptUnit, line?: number): TSymbolData;
+    setRefs(refs: TSymbolRefs): void;
     validate(unit: TScriptUnit): TValidatedScriptUnit;
     getName(): string;
   }
@@ -435,15 +442,21 @@ declare global {
    *  agent, stack, scope, and condition flag objects. This is how agents
    *  and their props are changed by the scripting engine. The agent is
    *  the memory context, and the stack is used to pass values in/out.
-   *  It returns void, but we are also allowing Promise as a return type
-   *  in case we want to have asynchronous opcodes.
+   *  TODO: We aren't using TOpcodeErr or TOpWait anymore...
+   *  TODO: We don't have a good way to detect compile errors
+   *  TODO: May need to return a "ProgramBundle" that contains symbols...
    */
   type TOpcode = (
     agent?: IAgent, // memory context (an agent instance)
     sm_state?: IState // machine state
   ) => TOpWait;
   type TOpcodeErr = [error: string, line: number];
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** At runtime, a function is needed to extract a property from a live
+   *  agent instance, and this is generated at compile time. It's very similar
+   *  to TOpcode's method signature because it's designed to be used inside
+   *  of it, passing the original parameters to it  */
+  type TDerefFunction = (agent?: IAgent, sm_state?: IState) => any;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Stackmachine operations return a Promise if it is operating asynchronously
    *  though this may not be necessary. I thought it might be cool

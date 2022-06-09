@@ -44,7 +44,7 @@ class Keyword implements IKeyword {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** override in subclass */
-  compile(unit: TScriptUnit, idx?: number): TCompiledStatement {
+  compile(unit: TScriptUnit, refs?: TSymbolRefs): TCompiledStatement {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,7 +53,7 @@ class Keyword implements IKeyword {
    *  ones because they name properties and features that are used to lookup
    *  the available props and methods on them.
    */
-  symbolize(unit: TScriptUnit): TSymbolData {
+  symbolize(unit: TScriptUnit, line?: number): TSymbolData {
     return {}; // change to throw Error when ready to update all keywords
   }
 
@@ -90,9 +90,8 @@ class Keyword implements IKeyword {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API utility to initialize parameters for SymbolInterpreter instance, which
    *  must be done each time before validate() is called to ensure correct refs
-   *  symbol data and global objects are set
-   */
-  validateInit(refs: TSymbolRefs) {
+   *  symbol data and global objects are set */
+  setRefs(refs: TSymbolRefs) {
     this.shelper.setSymbolTables(refs);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -249,6 +248,8 @@ class Keyword implements IKeyword {
       err_info: info
     });
   }
+
+  /// JSX UTILITIES ///////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** DEPRECATED. The jsx() call was used for the old prototype gui wizard */
   jsx() {
@@ -266,18 +267,12 @@ class Keyword implements IKeyword {
   }
 } // end of Keyword Class
 
-/*/////////////////////////////////// * \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
-
-  STATIC UTILITY METHODS - for handling runtime arguments that need to be
-  evaluated in the context of the runtime agent, which can't be determined
-  at compile time.
-
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-
+/// STATIC UTILITY METHODS - for handling runtime arguments that need to be
+/// evaluated in the context of the runtime agent, which can't be determined
+/// at compile time.
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** checks a given argument, and if it's an object we'll assume it's an
- *  UnitToken and evaluate it. Otherwise, just return the value as-is
- */
+ *  UnitToken and evaluate it. Otherwise, just return the value as-is */
 function _evalRuntimeArg(arg: any, context): any {
   // return literals and arrays without changing
   // this is most objects

@@ -48,6 +48,14 @@ declare global {
   };
   type VMLineScripts = VMLineScriptLine[];
   type VMLineScriptType = 'start' | 'end';
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** returned by Validation Token Processor */
+  type VMSlot = {
+    gsType: TGSArg;
+    viewState: `${'valid'} | ${'empty'} | ${'invalid'}| ${'unexpected'} | ${'vague'}`;
+    unitText: string;
+    dataSelectKey: number;
+  };
 }
 
 /// EXPORT AS MODULE FOR GLOBALS //////////////////////////////////////////////
