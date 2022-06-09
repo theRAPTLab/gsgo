@@ -7,7 +7,7 @@
 
 import Keyword, { K_DerefFeatureProp } from 'lib/class-keyword';
 import { RegisterKeyword } from 'modules/datacore';
-import SM_Agent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-sm-agent';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

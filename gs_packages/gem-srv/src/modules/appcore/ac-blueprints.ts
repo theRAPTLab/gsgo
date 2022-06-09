@@ -59,7 +59,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import SM_Agent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-sm-agent';
 import Blueprint from 'lib/class-project-blueprint';
 import SM_Bundle from 'lib/class-sm-bundle';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';

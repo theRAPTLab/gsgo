@@ -14,7 +14,7 @@ import { Evaluate } from 'lib/expr-evaluator';
 // imports types from t-script.d
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import FLAGS from 'modules/flags';
-import { EControlMode } from '../types/t-script.d';
+import { EControlMode } from 'modules/../types/t-script.d';
 import SM_Message from './class-sm-message';
 import SM_Object from './class-sm-object';
 import SM_State from './class-sm-state';

@@ -19,7 +19,7 @@ import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
 import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
-import SM_Agent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-sm-agent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

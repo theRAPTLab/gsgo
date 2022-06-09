@@ -24,7 +24,7 @@ import { SetInputStageBounds } from 'modules/datacore/dc-inputs';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
 import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import * as ACInstances from 'modules/appcore/ac-instances';
-import * as SM_Agent from 'lib/class-gagent';
+import * as SM_Agent from 'lib/class-sm-agent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

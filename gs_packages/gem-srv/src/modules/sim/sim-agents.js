@@ -9,7 +9,7 @@ import UR from '@gemstep/ursys/client';
 import InstanceDef from 'lib/class-instance-def';
 
 import SyncMap from 'lib/class-syncmap';
-import SM_Agent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-sm-agent';
 import DisplayObject from 'lib/class-display-object';
 
 import * as SIMDATA from 'modules/datacore/dc-sim-data';

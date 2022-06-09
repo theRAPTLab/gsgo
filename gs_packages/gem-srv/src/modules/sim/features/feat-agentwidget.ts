@@ -25,7 +25,7 @@ import {
 import GFeature from 'lib/class-gfeature';
 import { GetAgentById } from 'modules/datacore/dc-sim-agents';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
-import SM_Agent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-sm-agent';
 import FLAGS from 'modules/flags';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

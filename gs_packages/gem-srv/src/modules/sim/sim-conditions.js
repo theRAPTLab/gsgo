@@ -9,7 +9,7 @@ import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as SIMCOND from 'modules/datacore/dc-sim-conditions';
 import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
 
-import SM_Agent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-sm-agent';
 import { DistanceTo } from 'lib/util-vector';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

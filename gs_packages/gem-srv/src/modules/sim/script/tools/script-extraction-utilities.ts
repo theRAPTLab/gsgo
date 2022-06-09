@@ -7,7 +7,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
-import SM_Agent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-sm-agent';
 import { TextToScript } from './script-tokenizer';
 import * as COMPILER from './script-compiler';
 

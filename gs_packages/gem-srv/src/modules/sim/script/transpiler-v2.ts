@@ -12,7 +12,7 @@ import UR from '@gemstep/ursys/client';
 import SM_Bundle from 'lib/class-sm-bundle';
 import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 
-import SM_Agent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-sm-agent';
 import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 

@@ -34,7 +34,7 @@ import SM_Bundle from 'lib/class-sm-bundle';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as BUNDLER from 'script/tools/script-bundler';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-import SM_Agent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-sm-agent';
 import VSDToken from 'script/tools/class-validation-token';
 import { ParseExpression } from './class-expr-parser-v2';
 
