@@ -1,5 +1,8 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+  NOTE: THESE ARE EARLY EXAMPLES USED TO DESIGN THE SCRIPT ENGINE
+  AND THEN IT TURNED OUT WE DIDN'T NEED THESE OPCODES AT ALL
+
   Stack Machine (SM) Debugging Opcodes
 
   These opcodes dare used to debug low level stack maching operations
@@ -32,21 +35,21 @@ function u_dump(num: number, stack: any[], prompt: string) {
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function dbgStack(num: number = 0, desc: string = 'stack') {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     const { stack } = STATE;
     u_dump(num, stack, desc);
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function dbgStackCount(num: number, desc: string = 'dbgStackCount') {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     const slen = STATE.stack.length;
     if (slen !== num) throw Error(`stack.length !== ()`);
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function dbgAgent(match?: string) {
-  return (agent: IAgent): TOpWait => {
+  return (agent: IAgent): void => {
     if ((match && agent.name === match) || !match)
       console.log(`agent[${agent.name}] serialize:`, agent.serialize());
   };
@@ -54,12 +57,12 @@ export function dbgAgent(match?: string) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** implement a pause */
 export function dbgOut(...args: any) {
-  return (): TOpWait => {
+  return (): void => {
     console.log(...args);
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** implement a pause */
 export function nop() {
-  return (): TOpWait => {};
+  return (): void => {};
 }

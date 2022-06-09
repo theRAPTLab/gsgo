@@ -8,7 +8,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Keyword from 'lib/class-keyword';
-import { addProp } from 'script/ops/agent-ops';
 import { RegisterKeyword, GetVarCtor } from 'modules/datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -24,8 +23,13 @@ export class AddProp extends Keyword {
   compile(unit: TScriptUnit): TOpcode[] {
     const [, propName, propType, initValue] = unit;
     const propCtor = GetVarCtor(propType as string);
-    const progout = [];
-    progout.push(addProp(propName as string, propCtor, initValue));
+    const progout = [
+      (agent: IAgent) =>
+        agent.addProp(
+          propName as string,
+          new propCtor(agent.evaluateArgs(initValue))
+        )
+    ];
     return progout;
   }
 
