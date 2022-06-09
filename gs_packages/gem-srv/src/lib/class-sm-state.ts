@@ -2,7 +2,7 @@ import SM_Comparator from './class-sm-comparator';
 
 export default class SM_State implements IState {
   stack: TStackable[]; // data stack (pass values in/out)
-  ctx: { agent?: IScopeable };
+  ctx: { agent?: ISM_Object };
   flags: IComparator; // comparison flags set by ALU operations
   //
   constructor(argStack: TStackable[] = [], ctx?: any) {

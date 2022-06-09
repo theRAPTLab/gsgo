@@ -7,10 +7,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import {
-  GVarBoolean,
-  GVarDictionary,
-  GVarNumber,
-  GVarString
+  SM_Boolean,
+  SM_Dictionary,
+  SM_Number,
+  SM_String
 } from 'script/vars/_all_vars';
 import GAgent from 'lib/class-gagent';
 import { TextToScript } from './script-tokenizer';
@@ -176,10 +176,10 @@ function ExtractFeatPropMap(featureNames: string[]): Map<string, any[]> {
       if (key.startsWith('_')) return;
       // deconstruct GVarType
       let type;
-      if (featProp instanceof GVarBoolean) type = 'boolean';
-      if (featProp instanceof GVarDictionary) type = 'dictionary';
-      if (featProp instanceof GVarNumber) type = 'number';
-      if (featProp instanceof GVarString) type = 'string';
+      if (featProp instanceof SM_Boolean) type = 'boolean';
+      if (featProp instanceof SM_Dictionary) type = 'dictionary';
+      if (featProp instanceof SM_Number) type = 'number';
+      if (featProp instanceof SM_String) type = 'string';
       propMap.set(key, {
         name: key,
         type,

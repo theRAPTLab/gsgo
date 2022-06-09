@@ -18,7 +18,7 @@
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
 import { RegisterFeature } from 'modules/datacore/dc-sim-data';
-import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
+import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import GAgent from 'lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -64,9 +64,9 @@ class GlobalPack extends GFeature {
   addGlobalProp(agent: IAgent, pName: string, type: string, value: any) {
     const global = GAgent.GetGlobalAgent();
     let gvar;
-    if (type === 'String') gvar = new GVarString();
-    if (type === 'Number') gvar = new GVarNumber();
-    if (type === 'Boolean') gvar = new GVarBoolean();
+    if (type === 'String') gvar = new SM_String();
+    if (type === 'Number') gvar = new SM_Number();
+    if (type === 'Boolean') gvar = new SM_Boolean();
     global.addProp(pName, gvar);
     global.prop[pName].setTo(value);
   }

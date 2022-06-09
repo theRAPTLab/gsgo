@@ -2,11 +2,11 @@ import SM_Object from 'lib/class-sm-object';
 // uses types defined in t-script.d
 import { RegisterVarCTor } from 'modules/datacore';
 
-export class GVarBoolean extends SM_Object implements IScopeable {
+export class SM_Boolean extends SM_Object {
   fuzzy: number;
   constructor(initial = true, fuzzy = 0) {
     super();
-    this.meta.type = Symbol.for('GVarBoolean');
+    this.meta.type = Symbol.for('SM_Boolean');
     this.value = initial;
     this.fuzzy = fuzzy;
   }
@@ -24,47 +24,47 @@ export class GVarBoolean extends SM_Object implements IScopeable {
     this.value = !this.value;
     return this.value;
   }
-  and(comparison: any): GVarBoolean {
+  and(comparison: any): SM_Boolean {
     if (!this.fuzzy) throw Error("'and' incompatible with fuzzy logic");
     this.value &= comparison;
     return this;
   }
-  or(comparison: any): GVarBoolean {
+  or(comparison: any): SM_Boolean {
     if (!this.fuzzy) throw Error("'or' incompatible with fuzzy logic");
     this.value |= comparison;
     return this;
   }
-  eq(comparison: any): GVarBoolean {
+  eq(comparison: any): SM_Boolean {
     if (!this.fuzzy) throw Error("'equal' incompatible with fuzzy logic");
     this.value = this.value === comparison;
     return this;
   }
-  slightlyTrue(): GVarBoolean {
+  slightlyTrue(): SM_Boolean {
     this.value = this.value && this.fuzzy > 0 && this.fuzzy < 0.25;
     return this;
   }
-  mostlyTrue(): GVarBoolean {
+  mostlyTrue(): SM_Boolean {
     this.value = this.value && this.fuzzy > 0.75;
     return this;
   }
-  slightlyFalse(): GVarBoolean {
+  slightlyFalse(): SM_Boolean {
     this.value = this.value && this.fuzzy < 0 && this.fuzzy > -0.25;
     return this;
   }
-  mostlyFalse(): GVarBoolean {
+  mostlyFalse(): SM_Boolean {
     this.value = this.value && this.fuzzy < -0.75;
     return this;
   }
 
   symbolize(): TSymbolData {
-    return GVarBoolean.Symbols;
+    return SM_Boolean.Symbols;
   }
 }
 
 /// SYMBOLS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-GVarBoolean.Symbols = {
-  ctors: { Boolean: GVarBoolean.Symbols },
+SM_Boolean.Symbols = {
+  ctors: { Boolean: SM_Boolean.Symbols },
   methods: {
     setTo: { args: ['value:boolean'] },
     true: { returns: 'value:boolean' },
@@ -83,4 +83,4 @@ GVarBoolean.Symbols = {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterVarCTor('Boolean', GVarBoolean);
+RegisterVarCTor('Boolean', SM_Boolean);

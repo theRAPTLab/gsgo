@@ -18,9 +18,9 @@
 
 import UR from '@gemstep/ursys/client';
 import {
-  GVarNumber,
-  GVarString,
-  GVarBoolean
+  SM_Number,
+  SM_String,
+  SM_Boolean
 } from 'modules/sim/script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { GetAgentById } from 'modules/datacore/dc-sim-agents';
@@ -224,24 +224,24 @@ class WidgetPack extends GFeature {
   decorate(agent) {
     super.decorate(agent);
     // Public Props
-    this.featAddProp(agent, 'text', new GVarString(agent.name)); // default to agent name
-    let prop = new GVarNumber();
+    this.featAddProp(agent, 'text', new SM_String(agent.name)); // default to agent name
+    let prop = new SM_Number();
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'meter', prop);
-    prop = new GVarNumber();
+    prop = new SM_Number();
     this.featAddProp(agent, 'meterColor', prop);
-    this.featAddProp(agent, 'isLargeGraphic', new GVarBoolean(false));
-    prop = new GVarNumber(0);
+    this.featAddProp(agent, 'isLargeGraphic', new SM_Boolean(false));
+    prop = new SM_Number(0);
     this.featAddProp(agent, 'graphValue', prop);
 
     // Bar Graph
-    this.featAddProp(agent, 'barGraphProp', new GVarString()); // this should be a dict prop
-    this.featAddProp(agent, 'barGraphPropFeature', new GVarString());
+    this.featAddProp(agent, 'barGraphProp', new SM_String()); // this should be a dict prop
+    this.featAddProp(agent, 'barGraphPropFeature', new SM_String());
 
     // Private Props
-    this.featAddProp(agent, 'textProp', new GVarString()); // agent prop name that text is bound to
-    this.featAddProp(agent, 'meterProp', new GVarString());
+    this.featAddProp(agent, 'textProp', new SM_String()); // agent prop name that text is bound to
+    this.featAddProp(agent, 'meterProp', new SM_String());
 
     agent.prop.AgentWidgets._graph = [0, 0];
     agent.prop.AgentWidgets._graphProp = undefined;
@@ -256,15 +256,15 @@ class WidgetPack extends GFeature {
   symbolize(): TSymbolData {
     return {
       props: {
-        text: GVarString.Symbols,
-        meter: GVarNumber.Symbols,
-        meterColor: GVarNumber.Symbols,
-        isLargeGraphic: GVarBoolean.Symbols,
-        graphValue: GVarNumber.Symbols,
-        barGraphProp: GVarString.Symbols,
-        barGraphPropFeature: GVarString.Symbols,
-        textProp: GVarString.Symbols,
-        meterProp: GVarString.Symbols
+        text: SM_String.Symbols,
+        meter: SM_Number.Symbols,
+        meterColor: SM_Number.Symbols,
+        isLargeGraphic: SM_Boolean.Symbols,
+        graphValue: SM_Number.Symbols,
+        barGraphProp: SM_String.Symbols,
+        barGraphPropFeature: SM_String.Symbols,
+        textProp: SM_String.Symbols,
+        meterProp: SM_String.Symbols
       },
       methods: {
         showMessage: { args: ['propname:string'] },

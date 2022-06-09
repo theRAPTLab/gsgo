@@ -18,7 +18,7 @@ import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
 import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 /*/ add your other libraries here /*/
-import { GVarNumber, GVarString } from 'script/vars/_all_vars';
+import { SM_Number, SM_String } from 'script/vars/_all_vars';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -62,9 +62,9 @@ class MyFeature extends GFeature {
   /*/
   decorate(agent) {
     super.decorate(agent);
-    this.featAddProp(agent, 'myString', new GVarString('defaultValue'));
-    this.featAddProp(agent, 'myNumber', new GVarNumber(0));
-    const fancyProp = new GVarNumber(0);
+    this.featAddProp(agent, 'myString', new SM_String('defaultValue'));
+    this.featAddProp(agent, 'myNumber', new SM_Number(0));
+    const fancyProp = new SM_Number(0);
     fancyProp.setMax(Math.PI * 2);
     fancyProp.setMin(0);
     fancyProp.setWrap();

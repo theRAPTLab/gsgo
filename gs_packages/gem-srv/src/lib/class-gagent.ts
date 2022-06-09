@@ -12,7 +12,7 @@
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import { Evaluate } from 'lib/expr-evaluator';
 // imports types from t-script.d
-import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
+import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import FLAGS from 'modules/flags';
 import { EControlMode } from '../types/t-script.d';
 import SM_Message from './class-sm-message';
@@ -61,8 +61,8 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.meta.type = Symbol.for('Agent');
     this.blueprint = undefined;
     this.featureMap = new Map();
-    // note: this.props defined in SM_Object of type IKeyObject
-    // note: this.methods defined in SM_Object of type IKeyObject
+    // note: this.props defined in SM_Object of type SM_Dict
+    // note: this.methods defined in SM_Object of type SM_Dict
     this.updateQueue = [];
     this.thinkQueue = [];
     this.execQueue = [];
@@ -70,32 +70,32 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.controlMode = EControlMode.auto;
     this.controlModeHistory = [];
     // shared basic props in props for conceptual symmetry
-    this.prop.x = new GVarNumber(0); // default to 0, otherwise it'll start out undefined
-    this.prop.y = new GVarNumber(0); // default to 0, otherwise it'll start out undefined
-    this.prop.zIndex = new GVarNumber();
-    this.prop.skin = new GVarString();
-    this.prop.color = new GVarNumber();
-    this.prop.scale = new GVarNumber();
+    this.prop.x = new SM_Number(0); // default to 0, otherwise it'll start out undefined
+    this.prop.y = new SM_Number(0); // default to 0, otherwise it'll start out undefined
+    this.prop.zIndex = new SM_Number();
+    this.prop.skin = new SM_String();
+    this.prop.color = new SM_Number();
+    this.prop.scale = new SM_Number();
     this.prop.scale.setMax(10);
     this.prop.scale.setMin(-10);
-    this.prop.scaleY = new GVarNumber();
+    this.prop.scaleY = new SM_Number();
     this.prop.scaleY.setMax(10);
     this.prop.scaleY.setMin(-10);
-    this.prop.orientation = new GVarNumber();
-    this.prop.visible = new GVarBoolean(true);
-    this.prop.alpha = new GVarNumber();
+    this.prop.orientation = new SM_Number();
+    this.prop.visible = new SM_Boolean(true);
+    this.prop.alpha = new SM_Number();
     this.prop.alpha.setMax(1);
     this.prop.alpha.setMin(0);
-    this.prop.isInert = new GVarBoolean(false);
-    this.prop.isInhabitingTarget = new GVarBoolean(false); // is not available to pick up agent
+    this.prop.isInert = new SM_Boolean(false);
+    this.prop.isInhabitingTarget = new SM_Boolean(false); // is not available to pick up agent
 
     // REVIEW: All of these status variables should be folded into statusObject
-    this.prop.statusText = new GVarString();
-    this.prop.statusValue = new GVarNumber();
+    this.prop.statusText = new SM_String();
+    this.prop.statusValue = new SM_Number();
     this.prop.statusValue.setMax(1);
     this.prop.statusValue.setMin(0);
-    this.prop.statusValueColor = new GVarNumber(); // color
-    this.prop.statusValueIsLarge = new GVarBoolean(false); // script accessible
+    this.prop.statusValueColor = new SM_Number(); // color
+    this.prop.statusValueIsLarge = new SM_Boolean(false); // script accessible
     // feature data -- only accessible via features, not directly
     this.statusObject = new StatusObject(this);
     // this.prop.name = () =>
@@ -318,10 +318,10 @@ class GAgent extends SM_Object implements IAgent, IActable {
     return featMethod.call(feat, this, ...args);
   }
   /** Return prop given the passed agent and key. This prop is stored
-   *  in the agent's props map as a GVarDictionary, so this version
-   *  of prop returns the contents of the GVarDictionary!
+   *  in the agent's props map as a SM_Dictionary, so this version
+   *  of prop returns the contents of the SM_Dictionary!
    */
-  getFeatProp(fName: string, pName: string): IScopeable {
+  getFeatProp(fName: string, pName: string): ISM_Object {
     const featProps = this.prop[fName];
     return featProps[pName];
   }
@@ -469,12 +469,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
    */
   exec_smc(program: TSMCProgram, ctx, ...args) {
     const state = new SM_State([...args], ctx);
-    program.forEach(op => {
-      if (typeof op !== 'function')
-        console.warn(`op is not a function, got ${typeof op}`, op);
-      op(this, state);
-    });
-    // return the stack as a result, though
+    program.forEach(op => op(this, state));
     return state.stack;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

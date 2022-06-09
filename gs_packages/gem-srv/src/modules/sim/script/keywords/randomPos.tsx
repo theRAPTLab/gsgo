@@ -7,7 +7,7 @@ implementation of keyword "randomPos" keyword object
 import RNG from 'modules/sim/sequencer';
 import React from 'react';
 import Keyword from 'lib/class-keyword';
-import { IScopeable, TOpcode, TScriptUnit } from 'lib/t-script';
+import { ISM_Object, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -32,7 +32,7 @@ export class randomPos extends Keyword {
   compile(unit: TScriptUnit): TOpcode[] {
     const [kw, min, max, floor] = unit;
     const progout = [];
-    progout.push((agent: IScopeable) => {
+    progout.push((agent: ISM_Object) => {
       const x = m_Random(Number(min), Number(max), Boolean(floor) || false);
       const y = m_Random(Number(min), Number(max), Boolean(floor) || false);
       agent.prop.x.value = x;

@@ -7,7 +7,7 @@
 import RNG from 'modules/sim/sequencer';
 import * as PIXI from 'pixi.js';
 import UR from '@gemstep/ursys/client';
-import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
+import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { GetAgentById } from 'modules/datacore/dc-sim-agents';
 import { RegisterFeature } from 'modules/datacore/dc-sim-data';
@@ -165,7 +165,7 @@ class CostumePack extends GFeature {
   decorate(agent) {
     super.decorate(agent);
     // add feature props here
-    let prop = new GVarNumber(0);
+    let prop = new SM_Number(0);
     // initialize a counter in the agent
     // it will be checked during 'thinkHook' when it's invoked via a
     // featureHook keyword
@@ -173,8 +173,8 @@ class CostumePack extends GFeature {
     prop.setMin(0);
     prop.setWrap();
     this.featAddProp(agent, 'counter', prop); // used by thinkhook example above
-    this.featAddProp(agent, 'costumeName', new GVarString('default'));
-    prop = new GVarNumber(0);
+    this.featAddProp(agent, 'costumeName', new SM_String('default'));
+    prop = new SM_Number(0);
     prop.setWrap();
     prop.setMin(0);
     prop.setMax(0);
@@ -186,37 +186,37 @@ class CostumePack extends GFeature {
     // that could be easily set rather than a method.
     // REVIEW: Implement FEATURES_UPDATE phase processing for Costume
     //         to enable applicaiton of flip?
-    this.featAddProp(agent, 'flipX', new GVarBoolean(false));
-    this.featAddProp(agent, 'flipY', new GVarBoolean(false));
+    this.featAddProp(agent, 'flipX', new SM_Boolean(false));
+    this.featAddProp(agent, 'flipY', new SM_Boolean(false));
     // Costume color will override agent color during m_Update
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorHue', prop);
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorSaturation', prop);
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorValue', prop);
-    prop = new GVarNumber();
+    prop = new SM_Number();
     this.featAddProp(agent, 'colorScaleIndex', prop);
-    prop = new GVarNumber(0);
+    prop = new SM_Number(0);
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorScaleHue', prop);
-    prop = new GVarNumber(0);
+    prop = new SM_Number(0);
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorScaleSaturation', prop);
-    prop = new GVarNumber(1);
+    prop = new SM_Number(1);
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorScaleValue', prop);
-    this.featAddProp(agent, 'colorScaleType', new GVarString('value'));
-    prop = new GVarNumber(5);
+    this.featAddProp(agent, 'colorScaleType', new SM_String('value'));
+    prop = new SM_Number(5);
     this.featAddProp(agent, 'colorScaleSteps', prop);
 
     COSTUME_AGENTS.set(agent.id, agent.id);
@@ -236,20 +236,20 @@ class CostumePack extends GFeature {
   symbolize(): TSymbolData {
     return {
       props: {
-        counter: GVarNumber.Symbols,
-        costumeName: GVarString.Symbols,
-        currentFrame: GVarNumber.Symbols,
-        flipX: GVarBoolean.Symbols,
-        flipY: GVarBoolean.Symbols,
-        colorHue: GVarNumber.Symbols,
-        colorSaturation: GVarNumber.Symbols,
-        colorValue: GVarNumber.Symbols,
-        colorScaleIndex: GVarNumber.Symbols,
-        colorScaleHue: GVarNumber.Symbols,
-        colorScaleSaturation: GVarNumber.Symbols,
-        colorScaleValue: GVarNumber.Symbols,
-        colorScaleType: GVarString.Symbols,
-        colorScaleSteps: GVarNumber.Symbols
+        counter: SM_Number.Symbols,
+        costumeName: SM_String.Symbols,
+        currentFrame: SM_Number.Symbols,
+        flipX: SM_Boolean.Symbols,
+        flipY: SM_Boolean.Symbols,
+        colorHue: SM_Number.Symbols,
+        colorSaturation: SM_Number.Symbols,
+        colorValue: SM_Number.Symbols,
+        colorScaleIndex: SM_Number.Symbols,
+        colorScaleHue: SM_Number.Symbols,
+        colorScaleSaturation: SM_Number.Symbols,
+        colorScaleValue: SM_Number.Symbols,
+        colorScaleType: SM_String.Symbols,
+        colorScaleSteps: SM_Number.Symbols
       },
       methods: {
         setCostume: { args: ['costumeName:string', 'poseName:string'] },
@@ -294,7 +294,7 @@ class CostumePack extends GFeature {
     agent.getFeatProp(this.name, 'costumeName').value = costumeName;
     const { frameCount } = SPRITE.getTextureInfo(costumeName);
     if (poseName !== undefined) {
-      const cf = agent.getFeatProp(this.name, 'currentFrame') as GVarNumber;
+      const cf = agent.getFeatProp(this.name, 'currentFrame') as SM_Number;
       cf.value = poseName;
       cf.setMax(frameCount - 1);
     }

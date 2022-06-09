@@ -334,7 +334,7 @@ function K_DerefProp(refArg): DerefMethod {
     /** IMPLICIT REF *******************************************************/
     /// e.g. 'x' is assumed to be 'agent.x'
     deref = (agent: IAgent, context: any) => {
-      const p: IScopeable = agent.getProp(ref[0]);
+      const p: ISM_Object = agent.getProp(ref[0]);
       if (p === undefined) {
         console.log('agent', agent);
         throw Error(`agent missing prop '${ref[0]}'`);
@@ -352,7 +352,7 @@ function K_DerefProp(refArg): DerefMethod {
             agent
           )} Context is ${JSON.stringify(context)}`
         );
-      const p: IScopeable = c.getProp(ref[1]);
+      const p: ISM_Object = c.getProp(ref[1]);
       if (p === undefined) throw Error(`missing prop '${ref[1]}'`);
       return p;
     };

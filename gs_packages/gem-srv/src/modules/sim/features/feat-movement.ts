@@ -16,7 +16,7 @@
 
 import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
-import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
+import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import {
   DeleteAgent,
@@ -636,16 +636,16 @@ class MovementPack extends GFeature {
   decorate(agent) {
     super.decorate(agent);
     MOVEMENT_AGENTS.set(agent.id, agent);
-    this.featAddProp(agent, 'movementType', new GVarString('static'));
-    this.featAddProp(agent, 'controller', new GVarString());
-    this.featAddProp(agent, 'direction', new GVarNumber(0)); // degrees
-    this.featAddProp(agent, 'compassDirection', new GVarString()); // readonly
-    this.featAddProp(agent, 'distance', new GVarNumber(0.5));
-    this.featAddProp(agent, 'bounceAngle', new GVarNumber(180));
-    this.featAddProp(agent, 'isMoving', new GVarBoolean());
-    this.featAddProp(agent, 'useAutoOrientation', new GVarBoolean(false));
-    this.featAddProp(agent, 'targetX', new GVarNumber(0)); // so that we can set a location in pieces and go to it
-    this.featAddProp(agent, 'targetY', new GVarNumber(0));
+    this.featAddProp(agent, 'movementType', new SM_String('static'));
+    this.featAddProp(agent, 'controller', new SM_String());
+    this.featAddProp(agent, 'direction', new SM_Number(0)); // degrees
+    this.featAddProp(agent, 'compassDirection', new SM_String()); // readonly
+    this.featAddProp(agent, 'distance', new SM_Number(0.5));
+    this.featAddProp(agent, 'bounceAngle', new SM_Number(180));
+    this.featAddProp(agent, 'isMoving', new SM_Boolean());
+    this.featAddProp(agent, 'useAutoOrientation', new SM_Boolean(false));
+    this.featAddProp(agent, 'targetX', new SM_Number(0)); // so that we can set a location in pieces and go to it
+    this.featAddProp(agent, 'targetY', new SM_Number(0));
 
     // Initialize internal properties
     agent.prop.Movement._lastMove = 0;
@@ -668,16 +668,16 @@ class MovementPack extends GFeature {
   symbolize(): TSymbolData {
     return {
       props: {
-        movementType: GVarNumber.Symbols,
-        controller: GVarString.Symbols,
-        direction: GVarNumber.Symbols,
-        compassDirection: GVarBoolean.Symbols,
-        distance: GVarBoolean.Symbols,
-        bounceAngle: GVarNumber.Symbols,
-        isMoving: GVarNumber.Symbols,
-        useAutoOrientation: GVarNumber.Symbols,
-        targetX: GVarNumber.Symbols,
-        targetY: GVarNumber.Symbols
+        movementType: SM_Number.Symbols,
+        controller: SM_String.Symbols,
+        direction: SM_Number.Symbols,
+        compassDirection: SM_Boolean.Symbols,
+        distance: SM_Boolean.Symbols,
+        bounceAngle: SM_Number.Symbols,
+        isMoving: SM_Number.Symbols,
+        useAutoOrientation: SM_Number.Symbols,
+        targetX: SM_Number.Symbols,
+        targetY: SM_Number.Symbols
       },
       methods: {
         setController: { args: ['x:number'] },

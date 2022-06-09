@@ -7,7 +7,7 @@
 import { interval } from 'rxjs';
 import UR from '@gemstep/ursys/client';
 import * as ACRounds from 'modules/appcore/ac-rounds';
-import { GVarNumber } from 'modules/sim/script/vars/_all_vars';
+import { SM_Number } from 'modules/sim/script/vars/_all_vars';
 import GAgent from 'lib/class-gagent';
 import SM_State from 'lib/class-sm-state';
 import * as TRANSPILER from './script/transpiler-v2';
@@ -77,7 +77,7 @@ export function StageInit() {
   if (!GLOBAL_AGENT.hasFeature('Population'))
     GLOBAL_AGENT.addFeature('Population');
   if (!GLOBAL_AGENT.getProp('roundTime')) {
-    const prop = new GVarNumber();
+    const prop = new SM_Number();
     GLOBAL_AGENT.addProp('roundTime', prop);
   }
 }

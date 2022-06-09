@@ -15,12 +15,12 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IScopeable, IAgent, IState, TOpcode, TOpWait } from 'lib/t-script';
+import { ISM_Object, IAgent, IState, TOpcode, TOpWait } from 'lib/t-script';
 import SM_Object from 'lib/class-sm-object';
 
 /// TYPE DEFINITIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-type SM_Ctor = { new (...args): IScopeable };
+type SM_Ctor = { new (...args): ISM_Object };
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

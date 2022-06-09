@@ -24,7 +24,7 @@ function new_obj_id() {
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Add a property to an agent's prop map by property name */
-function AddProp(agent: IAgent, pName: string, gvar: IScopeable) {
+function AddProp(agent: IAgent, pName: string, gvar: ISM_Object) {
   if (!agent.prop[pName]) throw Error(`prop '${pName}' already added`);
   agent.prop[pName] = gvar;
   return gvar;
@@ -41,13 +41,13 @@ function AddMethod(agent: IAgent, mName: string, smc_or_f: TMethod): IAgent {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class SM_Object implements IScopeable {
+class SM_Object implements ISM_Object {
   id: any; // unique within all stack machine objects
   refId?: any; // optional class specific id
   _value: any;
   meta: { type: symbol; name?: string };
-  prop: IKeyObject;
-  method: IKeyObject;
+  prop: SM_Dict;
+  method: SM_Dict;
   //
   static Symbols: TSymbolData; // symbol data
   //
@@ -79,7 +79,7 @@ class SM_Object implements IScopeable {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Add a named property to SMC_Object prop map */
-  addProp(pName: string, gvar: IScopeable): IScopeable {
+  addProp(pName: string, gvar: ISM_Object): ISM_Object {
     const prop = this.prop[pName];
     if (prop) throw Error(`prop '${pName}' already added`);
     this.prop[pName] = gvar;
@@ -97,12 +97,12 @@ class SM_Object implements IScopeable {
    *  @param {string} propName - name of property
    *  @returns {GVar} - value object
    */
-  getProp(key: string): IScopeable {
+  getProp(key: string): ISM_Object {
     return this.prop[key];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: return the value of the gvar associated with propName */
-  getPropValue(key: string): IScopeable {
+  getPropValue(key: string): ISM_Object {
     return this.prop[key].value;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

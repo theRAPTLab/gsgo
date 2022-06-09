@@ -9,10 +9,10 @@ import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
 import {
-  GVarBoolean,
-  GVarDictionary,
-  GVarNumber,
-  GVarString
+  SM_Boolean,
+  SM_Dictionary,
+  SM_Number,
+  SM_String
 } from 'script/vars/_all_vars';
 import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
@@ -143,26 +143,26 @@ class PopulationPack extends GFeature {
     super.decorate(agent);
 
     // statistics
-    this.featAddProp(agent, 'count', new GVarString());
-    this.featAddProp(agent, 'sum', new GVarString());
-    this.featAddProp(agent, 'avg', new GVarString());
-    this.featAddProp(agent, 'min', new GVarString());
-    this.featAddProp(agent, 'max', new GVarString());
+    this.featAddProp(agent, 'count', new SM_String());
+    this.featAddProp(agent, 'sum', new SM_String());
+    this.featAddProp(agent, 'avg', new SM_String());
+    this.featAddProp(agent, 'min', new SM_String());
+    this.featAddProp(agent, 'max', new SM_String());
 
     // used by countAgentProp without parameters
-    this.featAddProp(agent, 'monitoredAgent', new GVarString());
-    this.featAddProp(agent, 'monitoredAgentProp', new GVarString());
-    this.featAddProp(agent, 'monitoredAgentPropFeature', new GVarString());
+    this.featAddProp(agent, 'monitoredAgent', new SM_String());
+    this.featAddProp(agent, 'monitoredAgentProp', new SM_String());
+    this.featAddProp(agent, 'monitoredAgentPropFeature', new SM_String());
 
     // Used by spawnChild
-    this.featAddProp(agent, 'spawnMutationProp', new GVarString());
-    this.featAddProp(agent, 'spawnMutationPropFeature', new GVarString()); // if prop is a featProp, this is the feature
-    this.featAddProp(agent, 'spawnMutationMaxAdd', new GVarNumber());
-    this.featAddProp(agent, 'spawnMutationMaxSubtract', new GVarNumber());
+    this.featAddProp(agent, 'spawnMutationProp', new SM_String());
+    this.featAddProp(agent, 'spawnMutationPropFeature', new SM_String()); // if prop is a featProp, this is the feature
+    this.featAddProp(agent, 'spawnMutationMaxAdd', new SM_Number());
+    this.featAddProp(agent, 'spawnMutationMaxSubtract', new SM_Number());
 
     // Used by populateBySpawning to set target population levels
-    this.featAddProp(agent, 'targetPopulationSize', new GVarNumber(1));
-    this.featAddProp(agent, 'deleteAfterSpawning', new GVarBoolean(true));
+    this.featAddProp(agent, 'targetPopulationSize', new SM_Number(1));
+    this.featAddProp(agent, 'deleteAfterSpawning', new SM_Boolean(true));
 
     agent.prop.Population._countsByProp = new Map();
   }
@@ -170,20 +170,20 @@ class PopulationPack extends GFeature {
   symbolize(): TSymbolData {
     return {
       props: {
-        'count': GVarNumber.Symbols,
-        'sum': GVarNumber.Symbols,
-        'avg': GVarNumber.Symbols,
-        'min': GVarNumber.Symbols,
-        'max': GVarNumber.Symbols,
-        'monitoredAgent': GVarNumber.Symbols,
-        'monitoredAgentProp': GVarNumber.Symbols,
-        'monitoredAgentPropFeature': GVarNumber.Symbols,
-        'spawnMutationProp': GVarNumber.Symbols,
-        'spawnMutationPropFeature': GVarNumber.Symbols,
-        'spawnMutationMaxAdd': GVarNumber.Symbols,
-        'spawnMutationMaxSubtract': GVarNumber.Symbols,
-        'targetPopulationSize': GVarNumber.Symbols,
-        'deleteAfterSpawning': GVarNumber.Symbols
+        'count': SM_Number.Symbols,
+        'sum': SM_Number.Symbols,
+        'avg': SM_Number.Symbols,
+        'min': SM_Number.Symbols,
+        'max': SM_Number.Symbols,
+        'monitoredAgent': SM_Number.Symbols,
+        'monitoredAgentProp': SM_Number.Symbols,
+        'monitoredAgentPropFeature': SM_Number.Symbols,
+        'spawnMutationProp': SM_Number.Symbols,
+        'spawnMutationPropFeature': SM_Number.Symbols,
+        'spawnMutationMaxAdd': SM_Number.Symbols,
+        'spawnMutationMaxSubtract': SM_Number.Symbols,
+        'targetPopulationSize': SM_Number.Symbols,
+        'deleteAfterSpawning': SM_Number.Symbols
       },
       methods: {
         'createAgent': { args: ['blueprintName:string', 'initScript:string'] },
@@ -482,7 +482,7 @@ class PopulationPack extends GFeature {
   countAgents(agent: IAgent, blueprintName: string) {
     const agents = SIMAGENTS.GetAgentsByType(blueprintName);
     let prop = agent.getFeatProp(this.name, 'count');
-    (prop as GVarNumber).setTo(agents.length);
+    (prop as SM_Number).setTo(agents.length);
   }
   /**
    * Updates three featProp statistics:
@@ -512,11 +512,11 @@ class PopulationPack extends GFeature {
       .map(a => a.getProp(prop).value)
       .reduce((acc, cur) => acc + cur);
     let p = agent.getFeatProp(this.name, 'count');
-    (p as GVarNumber).setTo(agents.length);
+    (p as SM_Number).setTo(agents.length);
     p = agent.getFeatProp(this.name, 'sum');
-    (p as GVarNumber).setTo(sum);
+    (p as SM_Number).setTo(sum);
     p = agent.getFeatProp(this.name, 'avg');
-    (p as GVarString).setTo(Number(sum / agents.length).toFixed(2));
+    (p as SM_String).setTo(Number(sum / agents.length).toFixed(2));
   }
   /// Returns the minimum number of agents of type blueprintName
   minAgentProp(agent: IAgent, blueprintName: string, prop: string) {
@@ -527,7 +527,7 @@ class PopulationPack extends GFeature {
       .map(a => a.getProp(prop).value)
       .reduce(minimizer, Infinity);
     let p = agent.getFeatProp(this.name, 'min');
-    (p as GVarNumber).setTo(min);
+    (p as SM_Number).setTo(min);
   }
   /// Returns the maximum number of agents of type blueprintName
   maxAgentProp(agent: IAgent, blueprintName: string, prop: string) {
@@ -538,7 +538,7 @@ class PopulationPack extends GFeature {
       .map(a => a.getProp(prop).value)
       .reduce(maximizer, -Infinity);
     let p = agent.getFeatProp(this.name, 'max');
-    (p as GVarNumber).setTo(max);
+    (p as SM_Number).setTo(max);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -11,24 +11,33 @@
 declare global {
   /// GENERIC OBJECTS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  type TAnyObject = { [any: string]: any }; // an object with arbitrary keys
+  /** the generic object with arbitrary keys */
+  type TAnyObject = {
+    [any: string]: any;
+  };
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Declare an object with keys. Used by SM_Object (may need revision) for
+   *  prop and method dictionaries */
+  type SM_Dict = {
+    [key: string]: any;
+  };
 
   /// BASE SIMULATION OBJECTS /////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** A "scopeable" object is one that can represent the current execution
    *  context for ops using getMethod(), getProp() or value-related assignments.
    *  The Agent, Prop, and Feature classes implement this interface. */
-  interface IScopeable {
+  interface ISM_Object {
     id: any;
     refId?: any;
     meta: { type: symbol; name?: string };
-    prop: IKeyObject;
-    method: IKeyObject;
-    addProp: (name: string, gv: IScopeable) => IScopeable;
-    getProp: (name: string) => IScopeable;
-    getPropValue: (name: string) => any;
+    prop?: SM_Dict;
+    method?: SM_Dict;
     addMethod: (name: String, callable: TMethod) => void;
+    addProp: (name: string, gv: ISM_Object) => ISM_Object;
     getMethod: (name: string) => TMethod;
+    getProp: (name: string) => ISM_Object;
+    getPropValue: (name: string) => any;
     serialize?: () => any[];
     symbolize?: () => TSymbolData;
     //  get value(): any; // works with typescript 3.6+
@@ -39,8 +48,8 @@ declare global {
 
   /// AGENT TYPE DECLARATIONS /////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Agents have additional properties on top of IScopeable */
-  interface IAgent extends IScopeable, IActable, IMovementMode {
+  /** Agents have additional properties on top of ISM_Object */
+  interface IAgent extends ISM_Object, IActable, IMovementMode {
     blueprint: any;
     featureMap: Map<string, IFeature>;
     execMethod: (name: string, ...args: any) => any;
@@ -57,7 +66,7 @@ declare global {
     exec: (prog: TMethod, ctx?: object, ...args) => any;
     getFeatMethod: (fname: string, mName: string) => [IFeature, TMethod];
     callFeatMethod: (fName: string, mName: string, ...args) => any;
-    getFeatProp: (fName: string, pName: string) => IScopeable;
+    getFeatProp: (fName: string, pName: string) => ISM_Object;
     getFeatPropValue: (fName: string, pName: string) => any;
 
     // these are the ONLY built-in agent properties
@@ -104,32 +113,19 @@ declare global {
 
   /// FEATURE DECLARATIONS ////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Features are very similar to IScopeable interface in method */
+  /** Features are very similar to ISM_Object interface in method */
   interface IFeature {
     meta: { name: string };
     get name(): string;
-    method: IKeyObject;
+    method: SM_Dict;
     initialize(pm: any): void;
     decorate(agent: IAgent): void;
-    featAddProp(agent: IAgent, key: string, prop: IScopeable): void;
+    featAddProp(agent: IAgent, key: string, prop: ISM_Object): void;
     featAddMethod(mName: string, smc_or_f: FeatureMethod): void;
     featGetMethod(mName: string): FeatureMethod;
     symbolize(): TSymbolData;
   }
   type FeatureMethod = (agent: IAgent, ...any) => any;
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Weird Typescript syntax for declaring a Constructor of a IScopeable,
-   *  when these are passed to a class that manages instances of other classes */
-  interface IScopeableCtor {
-    new (value?: any, ...args: any[]): IScopeable;
-    Symbols?: TSymbolData;
-  }
-  /** Declare an object with keys. If you use just object, typescript will complain
-   *  every time you add an undeclared property name
-   */
-  interface IKeyObject {
-    [key: string]: any;
-  }
 
   /// SIMULATION RUNTIME //////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -371,7 +367,7 @@ declare global {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** function signatures for 'dereferencing' function in keyword compilers */
-  type DerefMethod = (agent: IAgent, context: object) => IScopeable;
+  type DerefMethod = (agent: IAgent, context: object) => ISM_Object;
 
   /// STACKMACHINE TYPE DECLARATIONS //////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -390,7 +386,7 @@ declare global {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** A "stackable" object is one that can be pushed on the data stack in the
    *  stack machine.   */
-  type TStackable = IScopeable | TValue;
+  type TStackable = ISM_Object | TValue;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Allowed "literal values" on the data stack */
   type TValue = string | number | boolean;

@@ -29,7 +29,7 @@
     decorate(agent:IAgent) {
       super.decorate(agent);
       // add feature props here
-      // e.g. this.featAddProp(agent,'propName',new GVarString('default'));
+      // e.g. this.featAddProp(agent,'propName',new SM_String('default'));
     }
 
     // ... add feature methods from constructor definitions ...
@@ -41,20 +41,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  IKeyObject,
-  IFeature,
-  FeatureMethod,
-  IAgent,
-  IScopeable,
-  TSymbolData,
-  TStackable
-} from 'lib/t-script';
-import { GVarDictionary } from 'script/vars/_all_vars';
-
 /// CONSTANTS & DECLARATIONS  /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const NOT_METHOD_ERR = 'retrieved method is not a method; got';
 const DBG = false;
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
@@ -64,7 +52,7 @@ const DBG = false;
  */
 class Feature implements IFeature {
   meta: { name: string };
-  method: IKeyObject;
+  method: SM_Dict;
   //
   static Symbols?: TSymbolData; // symbol data
   //
@@ -115,8 +103,8 @@ class Feature implements IFeature {
    *  This is a mirror implementation of SM_Object.prop, modified
    *  to store props in agent.prop.FeatureName
    */
-  featAddProp(agent: IAgent, pName: string, prop: IScopeable) {
-    // note: agent.props = Map<string, IScopeable>;
+  featAddProp(agent: IAgent, pName: string, prop: ISM_Object) {
+    // note: agent.props = Map<string, ISM_Object>;
     let dict = agent.prop[this.name];
     if (!dict) {
       dict = {};
@@ -131,7 +119,7 @@ class Feature implements IFeature {
    *  apart from student-scriptable vars
    */
   featAddVar(agent: IAgent, vName: string, literal: any) {
-    // note: agent.props = Map<string, IScopeable>;
+    // note: agent.props = Map<string, ISM_Object>;
     if (!vName.startsWith('_')) throw Error('feature var name must start with _');
     let dict = agent.prop[this.name];
     if (!dict) {

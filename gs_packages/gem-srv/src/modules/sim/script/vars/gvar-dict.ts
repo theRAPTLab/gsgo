@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The GVarDictionary class is a key/value store for other GVar properties
+  The SM_Dictionary class is a key/value store for other GVar properties
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -10,24 +10,24 @@ import { RegisterVarCTor } from 'modules/datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class GVarDictionary extends SM_Object implements IScopeable {
-  dict: Map<string, IScopeable>;
+export class SM_Dictionary extends SM_Object {
+  dict: Map<string, ISM_Object>;
   constructor(name: string) {
     super(name);
-    this.meta.type = Symbol.for('GVarDictionary');
+    this.meta.type = Symbol.for('SM_Dictionary');
     this.meta.name = name;
     this.dict = new Map();
   }
-  addItem(key: string, gvar: IScopeable) {
+  addItem(key: string, gvar: ISM_Object) {
     if (this.dict.has(key)) throw Error(`key ${key} already exists`);
     if (gvar instanceof SM_Object) this.dict.set(key, gvar);
     else throw Error(`value to set must be GVar, not typeof ${typeof gvar}`);
   }
-  updateItem(key: string, gvar: IScopeable) {
+  updateItem(key: string, gvar: ISM_Object) {
     if (gvar instanceof SM_Object) this.dict.set(key, gvar);
     else throw Error(`value to set must be GVar, not typeof ${typeof gvar}`);
   }
-  getItem(key: string): IScopeable {
+  getItem(key: string): ISM_Object {
     return this.dict.get(key);
   }
   has(key: string): boolean {
@@ -41,4 +41,4 @@ export class GVarDictionary extends SM_Object implements IScopeable {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterVarCTor('Dictionary', GVarDictionary);
+RegisterVarCTor('Dictionary', SM_Dictionary);
