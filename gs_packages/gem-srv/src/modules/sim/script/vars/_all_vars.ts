@@ -6,7 +6,6 @@
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export * from './gvar-boolean';
-export * from './gvar-number';
-export * from './gvar-string';
-export * from './gvar-dict';
+export * from './class-sm-boolean';
+export * from './class-sm-number';
+export * from './class-sm-string';

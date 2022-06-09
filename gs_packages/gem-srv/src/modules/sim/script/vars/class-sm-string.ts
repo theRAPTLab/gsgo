@@ -7,7 +7,7 @@
 import SM_Object from 'lib/class-sm-object';
 // uses types defined in t-script.d
 import { RegisterVarCTor } from 'modules/datacore';
-import { SM_Boolean } from './gvar-boolean';
+import { SM_Boolean } from './class-sm-boolean';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
