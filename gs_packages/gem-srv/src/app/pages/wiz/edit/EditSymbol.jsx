@@ -50,7 +50,7 @@ export function EditSymbol(props) {
     // BL: Use slot position instead of lineposition (sel_linepos)
     //     so that we display the currently selected slot type?
     if (sel_slotpos < 0) return 'Click on a word above to edit it.'; // clicked ScriptView, not SelectEditorLineSlot
-    const vIndex = CHECK.UnOffsetLineNum(sel_slotpos);
+    const vIndex = CHECK.OffsetLineNum(sel_slotpos, 'sub');
 
     const { validationTokens } = slots_validation;
 
@@ -77,7 +77,7 @@ export function EditSymbol(props) {
     // Don't render choices if the current selection should be an input form
     if (gsType === 'number' || gsType === 'string') return '';
 
-    // See symbol-helpers.DecodeSymbolViewData
+    // See symbol-utilities.DecodeSymbolViewData
     const viewData = WIZCORE.DecodeSymbolViewData(symbolData); // returns the list of symbolnames for a particular symbol
     /* TODO: it would be nice to make unitText indicate it's the current value */
     // VALIDATION TOKENS are stored by key in the dicts
@@ -98,22 +98,22 @@ export function EditSymbol(props) {
      * @param {string} parentLabel - extra label for features, e.g. "Costume"
      * @returns jsx
      */
-    function renderKeys(sd, vd, parentLabel = '') {
+    function f_render_keys(sd, vd, parentLabel = '') {
       const categoryDicts = [];
-      Object.keys(sd).forEach((symbolType, i) => {
+      Object.keys(sd).forEach((stype, i) => {
         const rowKey = `${sel_linenum}:${i}`;
         // NEW CODE: Look up from viewData specific to the recursive context
-        const { info, items } = vd[symbolType];
+        const { info, items } = vd[stype];
         // ORIG CODE: Look up from general viewData
-        // const { info, items } = viewData[symbolType];
+        // const { info, items } = viewData[stype];
         const inner = []; // this is the list of choices
         // get all the choices for this symbol type
         items.forEach(choice => {
-          const choiceKey = `${symbolType}:${choice}`;
+          const choiceKey = `${stype}:${choice}`;
           inner.push(
             <GSymbolToken
               key={choiceKey}
-              symbolType={symbolType}
+              symbolType={stype}
               unitText={unitText}
               choice={choice}
             />
@@ -137,7 +137,7 @@ export function EditSymbol(props) {
     }
 
     // Features need special handling.
-    // By default, symbol-helpers.DecodeSymbolViewData converts features into a shallow
+    // By default, symbol-utilities.DecodeSymbolViewData converts features into a shallow
     // list of Features available in the blueprint, e.g. "Costume", "AgentWidgets".
     // But what we actually want are a list of the methods and props for each
     // specific feature, e.g. 'Costume.costumeName'.  So we do some extra processing
@@ -159,7 +159,7 @@ export function EditSymbol(props) {
             // prop viewData
             const vd = WIZCORE.DecodeSymbolViewData(featureDict);
             // render it
-            allDicts.push(renderKeys(sd, vd, featureName));
+            allDicts.push(f_render_keys(sd, vd, featureName));
           } else if (gsType === 'method') {
             // method symbolData
             const sd = {};
@@ -167,7 +167,7 @@ export function EditSymbol(props) {
             // method viewData
             const vd = WIZCORE.DecodeSymbolViewData(featureDict);
             // render it
-            allDicts.push(renderKeys(sd, vd, featureName));
+            allDicts.push(f_render_keys(sd, vd, featureName));
           } else {
             // unspported gsType
           }
@@ -176,7 +176,7 @@ export function EditSymbol(props) {
         // 2. not a feature, just render the keys
         const sd = {};
         sd[k] = v;
-        allDicts.push(renderKeys(sd, viewData));
+        allDicts.push(f_render_keys(sd, viewData));
       }
       // console.groupEnd();
     });

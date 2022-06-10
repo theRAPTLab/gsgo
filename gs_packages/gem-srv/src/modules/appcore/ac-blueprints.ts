@@ -20,7 +20,7 @@
               The raw scriptText is needed for script editing via ScriptEditor
               and for saving blueprints to the gemproj project file.
 
-  2. DCSIM.BLUEPRINTS -- A map of compiled blueprint *bundles* indexed by bpName
+  2. SIMDATA.BLUEPRINTS -- A map of compiled blueprint *bundles* indexed by bpName
               The bundles are used to extract the name of blueprints, and
               the sim engine uses the bundles to run gemscript programs.
               The compiled blueprint bundles are stored in dc-sim-resources.
@@ -59,11 +59,11 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import GAgent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-sm-agent';
 import Blueprint from 'lib/class-project-blueprint';
 import SM_Bundle from 'lib/class-sm-bundle';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCSIM from 'modules/datacore/dc-sim-data';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as DCPROJECT from 'modules/datacore/dc-project';
 import * as SIMAGENTS from 'modules/sim/sim-agents';
 import * as TRANSPILER from '../sim/script/transpiler-v2';
@@ -105,10 +105,13 @@ function m_MergeBlueprint(bpDef: TBlueprint, bpDefs: TBlueprint[]): TBlueprint[]
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Blueprint symbols need to be extracted before they are compiled */
-function m_SymbolizeBlueprints(blueprints: TBlueprint[]) {
-  blueprints.forEach(b => {
-    // symbolizeBlueprintHelper in transpiler?
+function m_SymbolizeBlueprints(bpDefs: TBlueprint[]) {
+  console.warn('%cAC Symbolizing Blueprints', 'font-weight:bold');
+  bpDefs.forEach(b => {
+    const script = TRANSPILER.TextToScript(b.scriptText);
+    TRANSPILER.SymbolizeBlueprint(script);
   });
+  console.groupEnd();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Use this to compile and add additional blueprints to an already running sim
@@ -122,8 +125,11 @@ function m_SymbolizeBlueprints(blueprints: TBlueprint[]) {
  *  @returns {TBlueprint[]} - bpDefs that all use 'name', not 'id'
  */
 function m_CompileBlueprints(bpDefs: TBlueprint[]): TBlueprint[] {
+  console.warn('%cAC Compiling Blueprints', 'font-weight:bold');
+
   return bpDefs.map(b => {
     const script = TRANSPILER.TextToScript(b.scriptText);
+    TRANSPILER.SymbolizeBlueprint(script);
     const bundle = TRANSPILER.CompileBlueprint(script);
     TRANSPILER.RegisterBlueprint(bundle); // Save to datacore
     return { name: bundle.name, scriptText: b.scriptText };
@@ -139,10 +145,10 @@ function m_CompileBlueprints(bpDefs: TBlueprint[]): TBlueprint[] {
  * @returns {TBlueprint[]} - bpDefs that all use 'name', not 'id'
  */
 function m_ResetAndCompileBlueprints(blueprints: TBlueprint[]): TBlueprint[] {
-  GAgent.ClearGlobalAgent();
+  SM_Agent.ClearGlobalAgent();
   SIMAGENTS.ClearDOBJ();
-  DCSIM.DeleteAllScriptEvents();
-  DCSIM.DeleteAllBlueprintBundles();
+  SIMDATA.DeleteAllScriptEvents();
+  SIMDATA.DeleteAllBlueprintBundles();
   DCAGENTS.DeleteAllAgents();
   DCAGENTS.DeleteAllInstances();
   m_SymbolizeBlueprints(blueprints);
@@ -177,7 +183,7 @@ function GetBlueprint(bpName: string): TBlueprint {
  *  @returns {ISMCBundle} f
  */
 function GetBlueprintBundle(bpName: string): ISMCBundle {
-  return DCSIM.GetBlueprintBundle(bpName);
+  return SIMDATA.GetBlueprintBundle(bpName);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Returns a list of blueprints with names and scriptText.
@@ -317,12 +323,12 @@ function GetBlueprintPropertiesMap(bpName: string): Map<string, object> {
 
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Generate and publish derived blueprint lists from the bundles in DCSIM.
+/** Generate and publish derived blueprint lists from the bundles in SIMDATA.
  *  The derived blueprint lists are generally used to populate react UI
  *  controllers and components.
  */
 function m_UpdateAndPublishDerivedBpLists() {
-  const bundles = DCSIM.GetAllBlueprintBundles();
+  const bundles = SIMDATA.GetAllBlueprintBundles();
   const bpNamesList = m_ExtractBlueprintNamesList(bundles);
   const charControlBpNames = m_GenerateCharControlBpNames(bundles);
   const ptrackControlBpNames = m_GeneratePTrackControlBpNames(bundles);
@@ -443,7 +449,7 @@ function UpdateBlueprint(projId: string, bpName: string, scriptText: string) {
 /** API: */
 function DeleteBlueprint(bpName: string) {
   // 1. Remove from DCEngine
-  DCSIM.DeleteBlueprintBundle(bpName); // bpBndles
+  SIMDATA.DeleteBlueprintBundle(bpName); // bpBndles
 
   // 2. Update states and derived states
   const bpDefs = STATE._getKey('bpDefs').filter(b => b.name !== bpName);

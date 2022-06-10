@@ -9,51 +9,93 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 declare global {
+  /// GENERIC OBJECTS /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** the generic object with arbitrary keys */
+  type TAnyObject = {
+    [any: string]: any;
+  };
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Declare an object with keys. Used by SM_Objects to store props or
+   *  methods. SM_Dict can also be nested, as in the case with Features */
+  type SM_Dict = {
+    [key: string]: any | SM_Dict;
+  };
+
   /// BASE SIMULATION OBJECTS /////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** A "scopeable" object is one that can represent the current execution
-   *  context for ops using getMethod(), getProp() or value-related assignments.
-   *  The Agent, Prop, and Feature classes implement this interface.
-   */
-  interface IScopeable {
+  /** The fundamentable scriptable element is the SM_Object, which implement
+   *  the essential getMethod, getProp, and value methods.
+   *  SM_Agent, prop types, and SM_Feature classes implement this interface. */
+  interface ISM_Object {
     id: any;
     refId?: any;
     meta: { type: symbol; name?: string };
-    prop: IKeyObject;
-    method: IKeyObject;
-    addProp: (name: string, gv: IScopeable) => IScopeable;
-    getProp: (name: string) => IScopeable;
-    addMethod: (name: String, callable: TMethod) => void;
-    getMethod: (name: string) => TMethod;
-    serialize?: () => any[];
+    prop?: SM_Dict;
+    method?: SM_Dict;
+    addMethod: (name: String, callable: TSM_Method) => void;
+    addProp: (name: string, gv: ISM_Object) => ISM_Object;
+    getMethod: (name: string) => TSM_Method;
+    getProp: (name: string) => ISM_Object;
+    getPropValue: (name: string) => any;
     symbolize?: () => TSymbolData;
-    //  get value(): any; // works with typescript 3.6+
-    //  set value(val:any); // works with typescript 3.6+
+    get value(): any;
+    set value(val: any);
     value: any;
     name: string;
   }
 
+  /// INTERACTION TYPE DECLARATIONS ///////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** the interactable interface model an object that has state that can be
+   *  represented by a direct maniplation-style UI */
+  interface IActable {
+    isSelected: boolean;
+    isHovered: boolean;
+    isGrouped: boolean;
+    isCaptive: boolean;
+    setSelected: (mode: boolean) => boolean;
+    setHovered: (mode: boolean) => boolean;
+    setGrouped: (mode: boolean) => boolean;
+    setCaptive: (mode: boolean) => boolean;
+  }
+
+  /// AGENT MOVEMENT MODES ////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** the movement mode interface models an object that can be in one of
+   *  several 'controlled movement' modes */
+  interface IControllable {
+    mode: () => EControlMode;
+    setPreviousMode: () => EControlMode;
+    setModeStatic: () => EControlMode;
+    setModeDrag: () => EControlMode;
+    setModePuppet: () => EControlMode;
+    setModeAuto: () => EControlMode;
+    isModeStatic: () => boolean;
+    isModeDrag: () => boolean;
+    isModePuppet: () => boolean;
+    isModeAuto: () => boolean;
+  }
   /// AGENT TYPE DECLARATIONS /////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Agents have additional properties on top of IScopeable */
-  interface IAgent extends IScopeable, IActable, IMovementMode {
+  /** Agents have additional properties on top of ISM_Object */
+  interface IAgent extends ISM_Object, IActable, IControllable {
     blueprint: any;
     featureMap: Map<string, IFeature>;
-    execMethod: (name: string, ...args: any) => any;
     addFeature: (name: string) => void;
     hasFeature: (name: string) => boolean;
     getFeature: (name: string) => any;
-    updateQueue: TMethod[];
+    updateQueue: TSM_Method[];
+    thinkQueue: TSM_Method[];
+    execQueue: TSM_Method[];
     queueUpdateMessage: (msg: IMessage) => void;
-    thinkQueue: TMethod[];
     queueThinkMessage: (msg: IMessage) => void;
-    execQueue: TMethod[];
     queueExecMessage: (msg: IMessage) => void;
-    evaluateArgs: (...args: any) => any;
-    exec: (prog: TMethod, ctx?: object, ...args) => any;
-    getFeatMethod: (fname: string, mName: string) => [IFeature, TMethod];
+    exec: (prog: TSM_Method, ctx?: object, ...args) => any;
+    getFeatMethod: (fname: string, mName: string) => [IFeature, TSM_Method];
     callFeatMethod: (fName: string, mName: string, ...args) => any;
-    getFeatProp: (fName: string, pName: string) => IScopeable;
+    getFeatProp: (fName: string, pName: string) => ISM_Object;
+    getFeatPropValue: (fName: string, pName: string) => any;
 
     // these are the ONLY built-in agent properties
     skin: string; // logical 'appearance' descriptor
@@ -80,8 +122,8 @@ declare global {
     isLargeGraphic: boolean;
     statusText: string;
     statusValue: number;
-
     // CODE REVIEW: @Ben these should be not hacked into the base agent. You can
+
     // instead the features themselves, using a private property within the
     // agent.props[featurename] dictionary
 
@@ -99,46 +141,37 @@ declare global {
 
   /// FEATURE DECLARATIONS ////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Features are very similar to IScopeable interface in method
-   */
+  /** Features are very similar to ISM_Object interface, but they are
+   *  collections of methods, not simulator objects. The methods defined in
+   *  an IFeature are javascript functions instead of ASTs or TSMCProgram
+   *  as Features are intended to encapsulate high performance code that's
+   *  too difficult for students to write; methods expose this to GEMSCRIPT */
   interface IFeature {
     meta: { name: string };
     get name(): string;
-    method: IKeyObject;
+    method: SM_Dict;
     initialize(pm: any): void;
     decorate(agent: IAgent): void;
-    featAddProp(agent: IAgent, key: string, prop: IScopeable): void;
-    featAddMethod(mName: string, smc_or_f: FeatureMethod): void;
-    featGetMethod(mName: string): FeatureMethod;
+    featAddProp(agent: IAgent, key: string, prop: ISM_Object): void;
+    featAddMethod(mName: string, func: TSM_FeatureMethod): void;
+    featGetMethod(mName: string): TSM_FeatureMethod;
+    // compatibility with SM_Object
+    getMethod(mName: string): TSM_FeatureMethod;
     symbolize(): TSymbolData;
   }
-  type FeatureMethod = (agent: IAgent, ...any) => any;
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Weird Typescript syntax for declaring a Constructor of a IScopeable,
-   *  when these are passed to a class that manages instances of other classes
-   */
-  interface IScopeableCtor {
-    new (value?: any, ...args: any[]): IScopeable;
-    Symbols?: TSymbolData;
-  }
-  /** Declare an object with keys. If you use just object, typescript will complain
-   *  every time you add an undeclared property name
-   */
-  interface IKeyObject {
-    [key: string]: any;
-  }
+  /** SM_Feature methods are either functions or TSMCPrograms */
+  type TSM_FeatureMethod = (agent: IAgent, ...any: any[]) => any;
 
   /// SIMULATION RUNTIME //////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** A stackmachine Message, which consists of a message and an SMCProgram.
-   */
+  /** A stackmachine Message, which consists of a message and an SMCProgram */
   interface IMessage {
     id?: number;
     channel?: string;
     message?: string;
     context?: {}; // context object for expressions, programs
-    actions?: TMethod[];
-    conseq?: TMethod;
+    actions?: TSM_Method[];
+    conseq?: TSM_Method;
     inputs?: any;
   }
 
@@ -146,8 +179,7 @@ declare global {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Our "script" format is a serializeable format that can be converted to
    *  either compiled output (a TSMCProgram stored in a TSMCBundle) or to
-   *  renderable JSX for a UI.
-   */
+   *  renderable JSX for a UI. */
   interface IToken {
     // special types
     expr?: string; // gobbleExpression()
@@ -171,35 +203,15 @@ declare global {
   type TKWArg = number | string | IToken; // "decoded" tokens
   type TKWArguments = TKWArg[]; // decoded tokens provided to compile functions
   type TScript = TScriptUnit[]; // We use TScriptUnit[] in code
-  type TCompiledStatement = (TOpcode | TOpcodeErr)[];
+  type TCompiledStatement = TOpcode[];
   type TUnpackedToken = [type: string, value: any];
-
-  /// COMPILER OUPUT //////////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** These are the kind of programs  */
-  interface ISMCPrograms {
-    // blueprint
-    define?: TSMCProgram; // def blueprint, props, features
-    init?: TSMCProgram; // allocate mem/define default values for instance
-    update?: TSMCProgram; // run during instance update cycle
-    think?: TSMCProgram; // run during instance think phase
-    exec?: TSMCProgram; // run during instance exec phase
-    // global conditions
-    condition?: TSMCProgram; // condition handlers to run
-    // global script events
-    event?: TSMCProgram; // event handlers to run
-    // local condition (one per bundle)
-    test?: TSMCProgram; // program returning true on stack
-    conseq?: TSMCProgram; // program to run on true
-    alter?: TSMCProgram; // program to run otherwise
-  }
 
   /// SYMBOL DATA AND TYPES ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // symbol type declarations
   type TSLit = `${'boolean' | 'string' | 'number' | 'enum'}`;
   type TSSMObj = `${'prop' | 'method' | 'gvar' | 'block'}`;
-  type TSDeferred = `${'objref' | 'expr' | '{value}'}`;
+  type TSDeferred = `${'objref' | 'expr' | '{value}' | '{string}'}`;
   type TSDict = `${'keyword' | 'pragma' | 'test' | 'program' | 'event'}`;
   type TSAgent = `${'blueprint' | 'feature'}`;
   type TSMultiArg = `${'{...}'}`; // multiple arg token marker
@@ -225,26 +237,11 @@ declare global {
   type TNameSet = Set<string>;
   type TSymUnpackedArg = [name: string, type: TGSType];
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** describes the type of error that occurred during parsing so it can be
-   *  rendered in the GUI */
-  /// `valid | empty | error | unexpected | vague`
-  type TValidationErrorCodes =
-    | 'debug' // a debug placeholder
-    | 'invalid' // token incorrect type, or invalid value
-    | 'empty' // missing token
-    | 'extra' // extra token
-    | 'vague'; // indeterminate token need
-
   /// MAIN SYMBOL DATA DECLARATION ////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** data description of symbols for features, props. returned from anything
    *  that produces Symbol data: keywords with .symbolize(unit), gvars and feat
-   *  modules that implement a static .Symbols definition
-   *
-   *  WARNING: this is a 'by reference' dictionary of dictionaries, so modifying
-   *  a TSymbolData object property could corrupt multiple dictionaries! Consider
-   *  them read-only.
-   */
+   *  modules that implement a static Symbols definition */
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   type TSymbolData = {
     // read-only dictionaries
@@ -257,6 +254,9 @@ declare global {
     context?: { [line: number]: any }; // line number for a root statement
     methodSig?: TGSMethodSig; // arg choices
     arg?: TGSArg; // arg definition string 'name:type'
+    tests?: string[]; // unused in gemscript 1.0
+    programs?: string[]; // unused in gemscript 1.0
+    events?: string[];
     // ok to change or add, as these are not defined in the reference dictionaries
     error?: TSymbolError; // debugging if error
     unitText?: string; // the scriptText word associated with symbol
@@ -264,8 +264,7 @@ declare global {
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** TSymbolViewData is the "GUI-friendly" data structure derived from
-   *  a TSymbolData ditionary. This is what's used to draw a GUI
-   */
+   *  a TSymbolData ditionary. This is what's used to draw a GUI */
   type TSymbolViewData = {
     keywords?: { items: string[]; info: string };
     features?: { items: string[]; info: string };
@@ -287,31 +286,72 @@ declare global {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** a data structure used to iterate through a scriptunit token.
    *  it is updated and modified as a particular token is evaluated
-   *  in dtoks from left-to-right up to the index
-   */
+   *  in dtoks from left-to-right up to the index */
   type TSymbolRefs = {
     bundle: ISMCBundle; // blueprint bundle to use
-    globals: { [any: string]: any }; // global object context for expressions, blocks
+    globals: TAnyObject; // global object context for expressions, blocks
     symbols?: TSymbolData; // current scope
+    line?: number; // current line number
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** used by keyword validator function , used for individual token validation
-   *  by symbol utilities!
-   */
+   *  by symbol utilities! */
   type TSymbolError = {
     code: TValidationErrorCodes;
     info: string;
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** describes the type of error that occurred during parsing so it can be
+   *  rendered in the GUI */
+  /// `valid | empty | error | unexpected | vague`
+  type TValidationErrorCodes =
+    | 'debug' // a debug placeholder
+    | 'invalid' // token incorrect type, or invalid value
+    | 'empty' // missing token
+    | 'extra' // extra token
+    | 'vague'; // indeterminate token need
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** keyword.validate() returns an array of TSymbolData that
    *  the error state returns code and desc if a parse issue is detected
    *  if symbol information can be inferred despite an error, it will be
-   *  returned otherwise it is void.
-   */
+   *  returned otherwise it is void. */
   type TValidatedScriptUnit = {
     validationTokens: TSymbolData[];
     validationLog?: string[];
   };
+
+  /// PROGRAM BUNDLES /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** These are the kind of programs that the simulation engine knows about */
+  interface ISMCPrograms {
+    // blueprint
+    define?: TSMCProgram; // def blueprint, props, features
+    init?: TSMCProgram; // allocate mem/define default values for instance
+    update?: TSMCProgram; // run during instance update cycle
+    think?: TSMCProgram; // run during instance think phase
+    exec?: TSMCProgram; // run during instance exec phase
+    // global conditions
+    condition?: TSMCProgram; // condition handlers to run
+    // global script events
+    event?: TSMCProgram; // event handlers to run
+    // local condition (one per bundle)
+    test?: TSMCProgram; // program returning true on stack
+    conseq?: TSMCProgram; // program to run on true
+    alter?: TSMCProgram; // program to run otherwise
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** An ISMCBundle is a collection of compiled elements. This is the minimum
+   *  metadata; see class-sm-bundle for the list of possible entities */
+  interface ISMCBundle extends ISMCPrograms {
+    name?: string; // the blueprint name of the bundle, if any
+    parent?: string; // the parent bundle, if any
+    type?: EBundleType; // enum type (see below)
+    script?: TScriptUnit[]; // saved script
+    text?: string; // saved text
+    symbols?: TBundleSymbols;
+    tags?: TBundleTags; // ben's hack for 'character controlable' blueprints
+    directives?: TBundleDirectives;
+  }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** tag types used by ben's extensions */
   type TBundleTags = Map<string, any>;
@@ -326,60 +366,41 @@ declare global {
     TAGS: { [tagName: string]: any };
   };
 
-  /// PROGRAM BUNDLES /////////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** An ISMCBundle is a collection of compiled elements. This is the minimum
-   *  metadata; see class-sm-bundle for the list of possible entities
-   */
-  interface ISMCBundle extends ISMCPrograms {
-    name?: string; // the blueprint name of the bundle, if any
-    parent?: string; // the parent bundle, if any
-    type?: EBundleType; // enum type (see below)
-    script?: TScriptUnit[]; // saved script
-    text?: string; // saved text
-    symbols?: TBundleSymbols;
-    tags?: TBundleTags; // ben's hack for 'character controlable' blueprints
-    directives?: TBundleDirectives;
-  }
-
   /// SCRIPT UNIT TRANSPILER //////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** related keyword interface  */
+  /** related keyword interface */
   interface IKeyword {
     keyword: string;
     args: TGSArg[] | TGSArg[][]; // multiple signatures
-    compile(unit: TScriptUnit, lineIdx?: number): (TOpcode | TOpcodeErr)[];
+    compile(unit: TScriptUnit, refs: TSymbolRefs): TOpcode[];
     jsx(index: number, unit: TScriptUnit, jsxOpt?: {}): any[] /* deprecated */;
-    symbolize(unit: TScriptUnit, lineIdx?: number): TSymbolData;
-    validateInit(refs: TSymbolRefs): void;
+    symbolize(unit: TScriptUnit, line?: number): TSymbolData;
+    setRefs(refs: TSymbolRefs): void;
     validate(unit: TScriptUnit): TValidatedScriptUnit;
     getName(): string;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** weird Typescript constructor definition used by Transpiler
-   *  see fettblog.eu/typescript-interface-constructor-pattern/
-   */
+   *  see fettblog.eu/typescript-interface-constructor-pattern/ */
   interface IKeywordCtor {
     new (keyword?: string): IKeyword;
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** A payload received from a Wizard UI component that has the reconstructed
-   *  ScriptUnit
-   */
-  interface IScriptUpdate {
-    index: number;
-    scriptUnit: TScriptUnit;
-  }
+  /// SCRIPT COMPILER HELPERS /////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** function signatures for 'dereferencing' function in keyword compilers */
-  type DerefMethod = (agent: IAgent, context: object) => IScopeable;
+  type DerefMethod = (agent: IAgent, context: object) => ISM_Object;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** At runtime, a function is needed to extract a property from a live
+   *  agent instance, and this is generated at compile time. It's very similar
+   *  to TOpcode's method signature because it's designed to be used inside
+   *  of it, passing the original parameters to it  */
+  type TSM_PropFunction = (agent?: IAgent, sm_state?: IState) => any;
 
   /// STACKMACHINE TYPE DECLARATIONS //////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** A stackmachine maintains state in form of a data stack, a scope stack,
    *  and a flags object. This state is passed, along with agent, to every
-   *  stackmachine opcode. The opcode is free to mutate the stacks and agent
-   */
+   *  stackmachine opcode. The opcode is free to mutate the stacks and agent */
   interface IState {
     stack: TStackable[]; // data stack (pass values in/out)
     ctx: {}; // a context object (dependent on caller)
@@ -391,15 +412,13 @@ declare global {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** A "stackable" object is one that can be pushed on the data stack in the
-   *  stack machine.
-   */
-  type TStackable = IScopeable | TValue;
+   *  stack machine.   */
+  type TStackable = ISM_Object | TValue;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Allowed "literal values" on the data stack */
   type TValue = string | number | boolean;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** A stackmachine condition
-   */
+  /** A stackmachine condition */
   interface IComparator {
     VAZ: boolean; // true when zerocheck runs
     VAC: boolean; // true when condition runs
@@ -428,78 +447,35 @@ declare global {
     NZ(): boolean;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** A stackmachine operation or "opcode" is a function that receives mutable
+  /** SM_Agents use this "opcode" format, which receives mutable
    *  agent, stack, scope, and condition flag objects. This is how agents
    *  and their props are changed by the scripting engine. The agent is
-   *  the memory context, and the stack is used to pass values in/out.
-   *  It returns void, but we are also allowing Promise as a return type
-   *  in case we want to have asynchronous opcodes.
-   */
+   *  the memory context, and the stack is used to pass values in/out. */
   type TOpcode = (
     agent?: IAgent, // memory context (an agent instance)
     sm_state?: IState // machine state
-  ) => TOpWait;
-  type TOpcodeErr = [error: string, line: number];
-
+  ) => void;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Stackmachine operations return a Promise if it is operating asynchronously
-   *  though this may not be necessary. I thought it might be cool
-   */
-  type TOpWait = Promise<any> | void;
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** a shim for "Registration Code", which runs globally and has a
-   *  different function signature than TOpcode. Used for code that runs outside
-   *  of an instanced Agent.
-   */
+  /** Used for transpiler-generated code that runs outside of an instanced
+   *  SM_Agent, for example the code that runs during CONDITION phase */
   type TRegcode = (
     agent?: IAgent // OPTIONAL memory context
   ) => void;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** A stackmachine program is an array of opcodes that are read from the
-   *  beginning and executed one-after-the-other. Each function is invoked
-   *  with the current data and scope stacks, as well as flags object that
-   *  can be updated by conditional opcodes
-   */
+  /** A stackmachine program is an array of TOpcode function objects that
+   *  are invoked one-after-the-other with the same SM_Agent instance and
+   *  an optional memory context */
   type TSMCProgram = TOpcode[];
+  /** A global program is one that runs outside of SM_Agent, recieving only
+   *  optional memory context */
   type TSMCGlobalProgram = TRegcode[];
-  type TSMCFunction = TOpcode;
-  /** Also could be an AST, which is an object with a type property */
-  type TExpressionAST = { expr: object }; // expr is binary tre
-
+  /** An AST produced by expression-parser */
+  type TExpressionAST = { expr: any }; // expr is the top node of the AST
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** A stackmachine method can be either a stackmachine program OR a regular
-   *  function. The invocation method will check what it is
-   */
-  type TMethod = TSMCProgram | TSMCFunction | TExpressionAST;
-
-  /// INTERACTION TYPE DECLARATIONS ///////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  interface IActable {
-    isSelected: boolean;
-    isHovered: boolean;
-    isGrouped: boolean;
-    isCaptive: boolean;
-    setSelected: (mode: boolean) => boolean;
-    setHovered: (mode: boolean) => boolean;
-    setGrouped: (mode: boolean) => boolean;
-    setCaptive: (mode: boolean) => boolean;
-  }
-
-  /// AGENT MOVEMENT MODES ////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  interface IMovementMode {
-    mode: () => EControlMode;
-    setPreviousMode: () => EControlMode;
-    setModeStatic: () => EControlMode;
-    setModeDrag: () => EControlMode;
-    setModePuppet: () => EControlMode;
-    setModeAuto: () => EControlMode;
-    isModeStatic: () => boolean;
-    isModeDrag: () => boolean;
-    isModePuppet: () => boolean;
-    isModeAuto: () => boolean;
-  }
-}
+  /** A stackmachine method can a regular js function, a TSMCProgram, or an
+   *  AST expression. SM_Agent.exec() determines how to run it */
+  type TSM_Method = TSMCProgram | TExpressionAST;
+} // end of global type declaration
 
 /// EXPORT AS MODULE FOR GLOBALS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -513,8 +489,7 @@ export enum EControlMode {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** defines the kinds of bundles. most of the time our bundles refer to
- *  blueprint bundles that contain a subset of possible keys.
- */
+ *  blueprint bundles that contain a subset of possible keys. */
 export enum EBundleType {
   INIT = 'init', // freshly created or empty bundle (set to another type)
   BLUEPRINT = 'blueprint' // blueprint for initializing agents

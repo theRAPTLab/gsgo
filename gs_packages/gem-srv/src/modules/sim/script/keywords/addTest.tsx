@@ -8,16 +8,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
-import Keyword from '../../../../lib/class-keyword';
-import {
-  IAgent,
-  TKWArguments,
-  TOpcode,
-  TScriptUnit,
-  TMethod
-} from '../../../../lib/t-script';
-import { RegisterKeyword, RegisterTest } from '../../../datacore';
+import Keyword from 'lib/class-keyword';
+import { RegisterKeyword, RegisterTest } from 'modules/datacore/dc-sim-data';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -25,7 +17,7 @@ export class addTest extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('addTest');
-    this.args = ['testName:string', 'test:TMethod'];
+    this.args = ['testName:string', 'test:method'];
   }
 
   /** create smc blueprint code objects
@@ -36,15 +28,10 @@ export class addTest extends Keyword {
     const [kw, testName, block] = dtoks;
     const conds = [
       (agent: IAgent) => {
-        RegisterTest(testName as string, block);
+        RegisterTest(testName as string, block as TSMCProgram);
       }
     ];
     return conds;
-  }
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any): any {
-    const [keyword, testName, expr] = unit;
-    return <>{keyword}</>;
   }
 } // end of keyword definition
 

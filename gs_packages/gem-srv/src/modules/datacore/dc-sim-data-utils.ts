@@ -17,13 +17,27 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import { SCRIPT_PAGE_INDEX_OFFSET } from 'modules/datacore/dc-constants';
+// workaround to import enumeration types as objects requires dirpath hack
+import { EBundleType, EBundleTag } from 'modules/../types/t-script.d';
+
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import { EBundleType, EBundleTag } from 'modules/../types/t-script.d'; // workaround to import as obj
-import { SCRIPT_PAGE_INDEX_OFFSET } from 'modules/datacore/dc-constants';
-
 const DBG = false;
-const GEMSTEP_TYPES: TGSType[] = [
+
+/// LINE AND POSITION NUMBERING UTILITIES /////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** convert a zero-based index to 1-indexing if SCRIPT_PAGE_INDEX_OFFSET is set */
+function OffsetLineNum(num: number, inc: 'add' | 'sub'): number {
+  const fn = 'OffsetLineNum:';
+  if (inc === 'add') return num + SCRIPT_PAGE_INDEX_OFFSET;
+  if (inc === 'sub') return num - SCRIPT_PAGE_INDEX_OFFSET;
+  throw Error(`${fn} arg2 must be 'add' or 'sub'`);
+}
+
+/// METHOD ARGUMENT UTILITIES /////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const GSTYPES: TGSType[] = [
   // see t-script.d "SYMBOL DATA AND TYPES"
   // these are used both for keyword args and method signature args
   'boolean',
@@ -49,18 +63,6 @@ const GEMSTEP_TYPES: TGSType[] = [
   // placeholder keyword args for use in scriptunits
   '{...}'
 ];
-
-/// LINE AND POSITION NUMBERING UTILITIES /////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** convert a zero-based index to 1-indexing if SCRIPT_PAGE_INDEX_OFFSET is set */
-function OffsetLineNum(num: number): number {
-  return num + SCRIPT_PAGE_INDEX_OFFSET;
-}
-function UnOffsetLineNum(num: number): number {
-  return num - SCRIPT_PAGE_INDEX_OFFSET;
-}
-
-/// METHOD ARGUMENT UTILITIES /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given an array of TSymbolArgType (or array of arrays TSymbolArgType)
  *  iterate through all the argument definitions and make sure they are
@@ -89,7 +91,7 @@ function AreValidArgs(args: TGSArg[]): boolean {
       console.warn(`${fn}: missing argName in '${arg}'`);
       return false;
     }
-    if (!GEMSTEP_TYPES.includes(gsType as TGSType)) {
+    if (!GSTYPES.includes(gsType as TGSType)) {
       console.warn(`${fn}: '${arg}' has invalid gsType`);
       return false;
     }
@@ -106,7 +108,7 @@ function UnpackArg(arg: TGSArg): TSymUnpackedArg {
   let [name, gsType, ...xtra] = arg.split(':') as TSymUnpackedArg;
   // if there are multiple :, then that is an error
   if (xtra.length > 0) return [undefined, undefined];
-  if (!GEMSTEP_TYPES.includes(gsType)) return [undefined, undefined];
+  if (!GSTYPES.includes(gsType)) return [undefined, undefined];
   // a zero-length name is an error except for the
   // multi-argument {args} glob type
   if (name.length === 0) {
@@ -120,18 +122,20 @@ function UnpackArg(arg: TGSArg): TSymUnpackedArg {
 /// BUNDLE UTILITIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// valid keys are defined in ISMCBundle, and values indicate the
-/// context that these program
+/// simulation engine phase/context.
 const BUNDLE_CONTEXTS = [
-  'define',
-  'init',
-  'update',
-  'think',
-  'exec',
-  'condition',
-  'event',
-  'test',
-  'conseq',
-  'alter'
+  'define', // programs that run during SIM DEFINE for each agent
+  'init', // programs that run on SIM INITIALIZE the agent state
+  'update', // programs that run on every SIM UPDATE
+  'think', // programs that run during SIM AI thinking phase
+  'exec', // programs that run during SIM EXECUTION phase
+  //
+  'condition', // programs that define global triggers
+  'event', // programs that define event handlers
+  //
+  'test', // result of a conditional keyword
+  'conseq', // block of code to run if condition true
+  'alter' // block of code to run if condition false
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function IsValidBundleProgram(name: string): boolean {
@@ -173,7 +177,7 @@ function IsValidBundle(bundle: ISMCBundle) {
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// data check utitlities
-export { OffsetLineNum, UnOffsetLineNum };
+export { OffsetLineNum };
 
 /// token check utilities
 export {

@@ -19,10 +19,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { GVarNumber, GVarString } from 'script/vars/_all_vars';
-import GFeature from 'lib/class-gfeature';
-import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCSIM from 'modules/datacore/dc-sim-data';
+import { SM_Number, SM_String } from 'script/vars/_all_vars';
+import SM_Feature from 'lib/class-sm-feature';
+import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -44,7 +44,7 @@ const PHYSICS_AGENTS = new Map();
  * @param agentId
  */
 function m_getAgent(agentId): IAgent {
-  const a = DCAGENTS.GetAgentById(agentId);
+  const a = SIMAGENTS.GetAgentById(agentId);
   if (!a) PHYSICS_AGENTS.delete(agentId);
   return a;
 }
@@ -110,7 +110,7 @@ function m_Update(frame) {
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class PhysicsPack extends GFeature {
+class PhysicsPack extends SM_Feature {
   //
   constructor(name) {
     super(name);
@@ -139,47 +139,47 @@ class PhysicsPack extends GFeature {
   decorate(agent) {
     super.decorate(agent);
     // add feature props here
-    this.featAddProp(agent, 'shape', new GVarString(CIRCLE)); // default to small round body
+    this.featAddProp(agent, 'shape', new SM_String(CIRCLE)); // default to small round body
 
     // Student-settable Script Setting
-    let prop = new GVarNumber();
+    let prop = new SM_Number();
     prop.setMax(100);
     prop.setMin(0);
     this.featAddProp(agent, 'radius', prop);
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMin(0);
     this.featAddProp(agent, 'width', prop); // in general, use getWidth
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMin(0);
     this.featAddProp(agent, 'height', prop); // in general, use getHeight
 
     // Private Costume Defaults
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMin(0);
     this.featAddProp(agent, 'costumeWidth', prop); // intended internal use only
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMin(0);
     this.featAddProp(agent, 'costumeHeight', prop); // intended for internal use only
 
     // Private Physics Body
-    prop = new GVarNumber(1); // default to small round body
+    prop = new SM_Number(1); // default to small round body
     prop.setMax(100);
     prop.setMin(0);
     this.featAddProp(agent, 'bodyRadius', prop);
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMin(0);
     this.featAddProp(agent, 'bodyWidth', prop); // intended internal use only
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMin(0);
     this.featAddProp(agent, 'bodyHeight', prop); // intended for internal use only
 
     // shape = [ circle, rectangle ]
-    prop = new GVarNumber(1);
+    prop = new SM_Number(1);
     prop.setMax(100);
     prop.setMin(0);
     this.featAddProp(agent, 'scale', prop); // in general, set featProp directly rather than calling the method
     // scale is absolute scale relative to the base size of the Costume
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMax(100);
     prop.setMin(0);
     this.featAddProp(agent, 'scaleY', prop); // in general, set featProp directly rather than calling the method
@@ -211,16 +211,16 @@ class PhysicsPack extends GFeature {
   symbolize(): TSymbolData {
     return {
       props: {
-        'radius': GVarNumber.Symbols,
-        'width': GVarNumber.Symbols,
-        'height': GVarNumber.Symbols,
-        'costumeWidth': GVarNumber.Symbols,
-        'costumeHeight': GVarNumber.Symbols,
-        'bodyRadius': GVarNumber.Symbols,
-        'bodyWidth': GVarNumber.Symbols,
-        'bodyHeight': GVarNumber.Symbols,
-        'scale': GVarNumber.Symbols,
-        'scaleY': GVarNumber.Symbols
+        'radius': SM_Number.Symbols,
+        'width': SM_Number.Symbols,
+        'height': SM_Number.Symbols,
+        'costumeWidth': SM_Number.Symbols,
+        'costumeHeight': SM_Number.Symbols,
+        'bodyRadius': SM_Number.Symbols,
+        'bodyWidth': SM_Number.Symbols,
+        'bodyHeight': SM_Number.Symbols,
+        'scale': SM_Number.Symbols,
+        'scaleY': SM_Number.Symbols
       },
       methods: {
         'setShape': { args: ['shape:string'] },
@@ -399,4 +399,4 @@ class PhysicsPack extends GFeature {
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new PhysicsPack('Physics');
-DCSIM.RegisterFeature(INSTANCE);
+SIMDATA.RegisterFeature(INSTANCE);

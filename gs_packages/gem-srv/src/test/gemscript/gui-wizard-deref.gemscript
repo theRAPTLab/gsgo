@@ -1,0 +1,9 @@
+# blueprint GuiWizardDeref
+# PROGRAM DEFINE
+useFeature Costume
+addProp energyType String 'producer'
+addProp energyLevel number 50
+
+# program init
+prop energyLevel setTo 0
+prop Costume.costumeName setTo 'banana'

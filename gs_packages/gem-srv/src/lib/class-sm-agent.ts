@@ -9,12 +9,12 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import * as DCSIM from 'modules/datacore/dc-sim-data';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import { Evaluate } from 'lib/expr-evaluator';
 // imports types from t-script.d
-import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
+import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import FLAGS from 'modules/flags';
-import { EControlMode } from '../types/t-script.d';
+import { EControlMode } from 'modules/../types/t-script.d';
 import SM_Message from './class-sm-message';
 import SM_Object from './class-sm-object';
 import SM_State from './class-sm-state';
@@ -23,10 +23,25 @@ import StatusObject from './class-status-object';
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let REF_ID_COUNT = 0;
+const INTERNAL_PROPS = [
+  'zIndex',
+  'color',
+  'scale',
+  'scaleY',
+  'orientation',
+  'visible',
+  'alpha',
+  'isInert',
+  'isInhabitingTarget',
+  'statusValue',
+  'statusValueColor',
+  'statusValueIsLarge'
+];
+const UNIVERSAL_PROPS = ['x', 'y', 'skin', 'statusText'];
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class GAgent extends SM_Object implements IAgent, IActable {
+class SM_Agent extends SM_Object implements IAgent, IActable {
   blueprint: ISMCBundle;
   featureMap: Map<string, IFeature>;
   controlMode: EControlMode;
@@ -37,9 +52,9 @@ class GAgent extends SM_Object implements IAgent, IActable {
   isGrouped: boolean;
   isGlowing: boolean;
   isLargeGraphic: boolean;
-  updateQueue: TMethod[];
-  thinkQueue: TMethod[];
-  execQueue: TMethod[];
+  updateQueue: TSM_Method[];
+  thinkQueue: TSM_Method[];
+  execQueue: TSM_Method[];
   canSeeCone: any;
   canSeeColor: any;
   cursor: IAgent;
@@ -61,8 +76,8 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.meta.type = Symbol.for('Agent');
     this.blueprint = undefined;
     this.featureMap = new Map();
-    // note: this.props defined in SM_Object of type IKeyObject
-    // note: this.methods defined in SM_Object of type IKeyObject
+    // note: this.props defined in SM_Object of type SM_Dict
+    // note: this.methods defined in SM_Object of type SM_Dict
     this.updateQueue = [];
     this.thinkQueue = [];
     this.execQueue = [];
@@ -70,32 +85,32 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.controlMode = EControlMode.auto;
     this.controlModeHistory = [];
     // shared basic props in props for conceptual symmetry
-    this.prop.x = new GVarNumber(0); // default to 0, otherwise it'll start out undefined
-    this.prop.y = new GVarNumber(0); // default to 0, otherwise it'll start out undefined
-    this.prop.zIndex = new GVarNumber();
-    this.prop.skin = new GVarString();
-    this.prop.color = new GVarNumber();
-    this.prop.scale = new GVarNumber();
+    this.prop.x = new SM_Number(0); // default to 0, otherwise it'll start out undefined
+    this.prop.y = new SM_Number(0); // default to 0, otherwise it'll start out undefined
+    this.prop.zIndex = new SM_Number();
+    this.prop.skin = new SM_String();
+    this.prop.color = new SM_Number();
+    this.prop.scale = new SM_Number();
     this.prop.scale.setMax(10);
     this.prop.scale.setMin(-10);
-    this.prop.scaleY = new GVarNumber();
+    this.prop.scaleY = new SM_Number();
     this.prop.scaleY.setMax(10);
     this.prop.scaleY.setMin(-10);
-    this.prop.orientation = new GVarNumber();
-    this.prop.visible = new GVarBoolean(true);
-    this.prop.alpha = new GVarNumber();
+    this.prop.orientation = new SM_Number();
+    this.prop.visible = new SM_Boolean(true);
+    this.prop.alpha = new SM_Number();
     this.prop.alpha.setMax(1);
     this.prop.alpha.setMin(0);
-    this.prop.isInert = new GVarBoolean(false);
-    this.prop.isInhabitingTarget = new GVarBoolean(false); // is not available to pick up agent
+    this.prop.isInert = new SM_Boolean(false);
+    this.prop.isInhabitingTarget = new SM_Boolean(false); // is not available to pick up agent
 
     // REVIEW: All of these status variables should be folded into statusObject
-    this.prop.statusText = new GVarString();
-    this.prop.statusValue = new GVarNumber();
+    this.prop.statusText = new SM_String();
+    this.prop.statusValue = new SM_Number();
     this.prop.statusValue.setMax(1);
     this.prop.statusValue.setMin(0);
-    this.prop.statusValueColor = new GVarNumber(); // color
-    this.prop.statusValueIsLarge = new GVarBoolean(false); // script accessible
+    this.prop.statusValueColor = new SM_Number(); // color
+    this.prop.statusValueIsLarge = new SM_Boolean(false); // script accessible
     // feature data -- only accessible via features, not directly
     this.statusObject = new StatusObject(this);
     // this.prop.name = () =>
@@ -201,28 +216,22 @@ class GAgent extends SM_Object implements IAgent, IActable {
   set statusValueIsLarge(mode: boolean) {
     this.prop.statusValueIsLarge.setTo(mode);
   }
-
-  /** called right after constructor creates default props for all agents. The symbol
-   *  data is stored as a static class variable.
-   */
+  /** Returns symbol data. It's called right after constructor creates default
+   *  props for all agents. The symbol data is stored as a static class
+   *  variable. */
   symbolize(): TSymbolData {
-    if (GAgent.Symbols) return GAgent.Symbols;
+    if (SM_Agent.Symbols) return SM_Agent.Symbols;
     // create the symbol data for props since they don't exist yet
-    const P = 'makeDefaultSymbols()';
+    const fn = 'symbolize:';
     const sym = {};
-    // Only expose specific GAgent properties
-    const props = ['x', 'y', 'statusText'];
+    // Only expose specific SM_Agent properties
+    // however, ben's init scripts use the internal props so this a problem
+    const props = [...UNIVERSAL_PROPS, ...INTERNAL_PROPS];
     for (let prop of props) {
-      if (sym[prop] !== undefined) throw Error(`${P}: ${prop} already exists`);
+      if (sym[prop] !== undefined) throw Error(`${fn}: ${prop} already exists`);
       sym[prop] = this.getProp(prop).symbolize();
     }
-    // ORIG: symbolize ALL properties
-    // for (const [propName, prop] of Object.entries(this.prop)) {
-    //   if (sym[propName] !== undefined)
-    //     throw Error(`${P}: ${propName} already exists`);
-    //   sym[propName] = prop.symbolize();
-    // }
-    GAgent.Symbols = { props: sym };
+    SM_Agent.Symbols = { props: sym };
     return sym;
   }
 
@@ -254,29 +263,20 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.isSelected = !this.isSelected;
   };
 
-  /// PROPERTIES, METHODS, FEATURES ///////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// addProp, getProp is defined in SM_Object
-  /// addMethod, getMethod is defined in SM_Object
+  /// FEATURE SUPPORT ///////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Invoke method by name.
-   */
-  execMethod(mName: string, ...args: any): any {
-    const m = this.getMethod(mName);
-    return this.exec(m, {}, ...args);
-  }
+  /// Agents do not have their own methods. They are instead added as
+  /// "feature modules" that contain a single copy of the method code that
+  /// receives an agent instance as a memory context to work with.
+  /// All feature methods have the signature method(agentInstance, ...args)
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Add a featurepack to an agent's feature map by feature name featurepacks
-   *  store its own properties directly in agent.props featurepacks store method
-   *  pointers in agent.methods, and all methods have the signature
-   *  method(agentInstance, ...args)
-   */
+  /** SM_Feature modules are registered in a featureMap for each instance */
   addFeature(fName: string): void {
     // does key already exist in this agent? double define in blueprint!
     if (this.featureMap.has(fName))
       throw Error(`feature '${fName}' already in blueprint`);
     // save the FeaturePack object reference in agent.feature map
-    const fpack = DCSIM.GetFeature(fName);
+    const fpack = SIMDATA.GetFeature(fName);
     if (!fpack) throw Error(`'${fName}' is not an available feature`);
     this.featureMap.set(fName, fpack);
     fpack.decorate(this);
@@ -304,84 +304,105 @@ class GAgent extends SM_Object implements IAgent, IActable {
     const feat = this.getFeature(fName);
     const featMethod = feat[mName];
     if (!featMethod)
-      throw Error(`method '${mName}' not in Feature '${feat.name}'`);
+      throw Error(`method '${mName}' not in SM_Feature '${feat.name}'`);
     return [feat, featMethod];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Called from compiled code, execute a feature function with feature context
    *  as 'this' with signature (agent,...args)
    *  This is a variation of exec_program() with 'this' swapped for the feature
-   *  instance
-   */
+   *  instance */
   callFeatMethod(fName: string, mName: string, ...args): any {
     const [feat, featMethod] = this.getFeatMethod(fName, mName);
     return featMethod.call(feat, this, ...args);
   }
-  /** Return prop given the passed agent and key. This prop is stored
-   *  in the agent's props map as a GVarDictionary, so this version
-   *  of prop returns the contents of the GVarDictionary!
-   */
-  getFeatProp(fName: string, pName: string): IScopeable {
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Return feature prop given the passed agent and key. SM_Feature props are
+   *  stored in agent.props[featureName] in its on key-value object. Note
+   *  that the built-in SM_Object.getProp() can also handle dotted notation
+   *  so this method is superfluous but retained for compatibility */
+  getFeatProp(fName: string, pName: string): ISM_Object {
     const featProps = this.prop[fName];
     return featProps[pName];
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Return prop value given passed agent and key */
+  getFeatPropValue(fName: string, pName: string): any {
+    const featProps = this.prop[fName];
+    return featProps[pName].value;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Return private feature variable. The variable name must begin with
    *  an _, and it holds a regular Javascript value
    */
-  getFeatVar(fName: string, vName: string): any {
+  getFeatPrivateProp(fName: string, vName: string): any {
     if (!vName.startsWith('_')) throw Error('feature var name must begin with _');
     const featProps = this.prop[fName];
     return featProps[vName];
   }
-  /** Returns a bitflags for various selection states */
+
+  /// AGENT INTERACTION SUPPORT /////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Agents in the system may be actively 'selected' or 'grouped' or have some
+  /// other user-imposed UI status that is independence of the simulation. These
+  /// are encoded here as 'none-simulation' data. For the most part, they are
+  /// named not for their visual appearance, but for their logical status, because
+  /// the simulation's appearance should be "interpreted" by the visual layer
+  /// and not baked-into the simulation objects themselves.
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Returns a bitflags for various selection states (and more) */
   getFlags(): number {
-    // return Math.random() > 0.5 ? true : false;
+    // group membership as part of a selection set
     const selected = this.isSelected ? FLAGS.SELECTION.SELECTED : 0;
     const hovered = this.isHovered ? FLAGS.SELECTION.HOVERED : 0;
     const grouped = this.isGrouped ? FLAGS.SELECTION.GROUPED : 0;
     const captive = this.isCaptive ? FLAGS.SELECTION.CAPTIVE : 0;
+    // these are improperly named visual states and some kind of
+    // haciked meter system that shouldn't be here
     const glowing = this.isGlowing ? FLAGS.SELECTION.GLOWING : 0;
     const largeMeter = this.prop.statusValueIsLarge.value
       ? FLAGS.SELECTION.LARGEMETER
       : 0;
     return selected | hovered | grouped | captive | glowing | largeMeter;
   }
-  /** Returns a bitflags for various selection states */
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** I'm not sure what this does. Ben hacked it in and didn't comment it. */
   getMeterFlags(): number {
     return this.statusObject.position;
   }
+
   /// SIM LIFECYCLE QUEUES ////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// To change the behavior of an instance, inject a program into either
   /// the UPDATE, THINK, or EXEC queues. The queues are executed during
   /// the corresponding AGENT_UPDATE, AGENT_THINK, and AGENT_EXEC lifecycle
-  /// hooks.
+  /// hooks. Each 'action' contains a TSMCProgram.
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Queue a message to be handled during AGENT_UPDATE. Currently, it extracts
-   *  the 'actions' property which is TMethod that can be executed. This is
-   *  called from sim-conditions during update
-   */
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Queue a message action to run during AGENT_UPDATE */
   queueUpdateMessage(message: SM_Message) {
     const { actions } = message;
     this.updateQueue.push(...actions);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Queue a message action to run during AGENT_THINK */
   queueThinkMessage(message: SM_Message) {
     const { actions } = message;
     this.thinkQueue.push(...actions);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Queue a message action to run during AGENT_EXEC */
   queueExecMessage(message: SM_Message) {
     const { actions } = message;
     this.execQueue.push(...actions);
   }
-
+  /// SIM LIFECYCLE EXECUTION /////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** After running the blueprint update program, also run any programs that
-   *  are stored in the queue, then clear it. The algorithm is the same for
-   *  each queue type.
-   */
+  /// The agent's BLUEPRINT has the shared update, think, and exec programs
+  /// that are defined for all instance. Also, conditional code can
+  /// cause additional actions to be queued. These methods are directly called
+  /// by the simulator game loop for each agent instance in the system.
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Run the agent's UPDATE programs */
   agentUPDATE(frameTime: number) {
     const ctx = { agent: this, [this.blueprint.name]: this };
     if (this.blueprint && this.blueprint.update) {
@@ -394,6 +415,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.updateQueue = [];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Run the agent's THINK programs */
   agentTHINK(frameTime: number) {
     const ctx = { agent: this, [this.blueprint.name]: this };
     if (this.blueprint && this.blueprint.think) {
@@ -406,6 +428,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.thinkQueue = [];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Run the agent's EXEC programs */
   agentEXEC(frameTime: number) {
     const ctx = { agent: this, [this.blueprint.name]: this };
     if (this.blueprint && this.blueprint.exec) {
@@ -423,14 +446,15 @@ class GAgent extends SM_Object implements IAgent, IActable {
   /** After a blank agent is created via new Agent(), this method accepts a
    *  blueprint program bundle and executes the initialization programs that
    *  were compiled. All agent initialization, including assigning features,
-   *  are done through the scripting language interface.
-   */
+   *  are done through the scripting language interface. */
   setBlueprint(bdl: ISMCBundle) {
     if (!bdl) throw Error('setBlueprint expects an ISMCBundle');
     if (!bdl.name) throw Error('setBlueprint got bp without name');
     this.blueprint = bdl;
     // call initialization
+    console.log('setBlueprint: executing define');
     this.exec(bdl.define);
+    console.log('setBlueprint: executing init');
     this.exec(bdl.init);
   }
 
@@ -441,12 +465,11 @@ class GAgent extends SM_Object implements IAgent, IActable {
   /// can handle SMC code, regular Javascript functions, named programs in
   /// the global program store, and abstract syntax trees
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Run a TMethod with a variable list of arguments.
-   */
-  exec(m: TMethod, context?, ...args): any {
+  /** Run a TSM_Method with a variable list of arguments. */
+  exec(m: TSM_Method, context?: TAnyObject, ...args: any[]): any {
     if (m === undefined) return undefined;
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    const ctx = { agent: this, global: GAgent.GLOBAL_AGENT };
+    const ctx = { agent: this, global: SM_Agent.GLOBAL_AGENT };
     Object.assign(ctx, context);
     if (Array.isArray(m)) return this.exec_smc(m, ctx, ...args);
     if (typeof m === 'object') {
@@ -460,117 +483,54 @@ class GAgent extends SM_Object implements IAgent, IActable {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Execute agent stack machine program. Note that commander also
    *  implements ExecSMC to run arbitrary programs as well when
-   *  processing AgentSets. Optionally pass a stack to reuse.
-   */
-  exec_smc(program: TSMCProgram, ctx, ...args) {
+   *  processing AgentSets. Optionally pass a stack to reuse. */
+  exec_smc(program: TSMCProgram, ctx: TAnyObject, ...args: any[]) {
     const state = new SM_State([...args], ctx);
-    program.forEach((op, index) => {
-      if (typeof op !== 'function')
-        console.warn(`op is not a function, got ${typeof op}`, op);
-      op(this, state);
-    });
-    // return the stack as a result, though
+    program.forEach(op => op(this, state));
     return state.stack;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Execute a method that is a Javascript function with
-   *  agent as the execution context
-   */
+   *  agent as the execution context */
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   exec_func(program: Function, ctx, ...args: any[]): any {
     return program.call(this, ctx, ...args);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Execute a named program stored in global program store */
-  exec_program(progName: string, context, ...args) {
-    const prog = DCSIM.GetProgram(progName) || DCSIM.GetTest(progName);
+  exec_program(progName: string, context: TAnyObject, ...args: any[]) {
+    const prog = SIMDATA.GetProgram(progName) || SIMDATA.GetTest(progName);
     if (prog !== undefined) return this.exec(prog, context, ...args);
     throw Error(`program ${progName} not found in PROGRAMS or TESTS`);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Parse an abstract syntax tree through Evaluate */
-  exec_ast(exprAST: object, ctx, ...args) {
+  exec_ast(exprAST: object, ctx: TAnyObject, ...args: any[]) {
     ctx.args = args;
     return Evaluate(exprAST, ctx);
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Utility to evalute an AST or array of ASTs, replacing them with
-   *  the evaluated VALUES at runtime. The arguments are mutated and
-   *  returned to the caller. This is typically used by keyword implementors
-   *  during COMPILE, which must convert the ScriptUnit[] arguments of the
-   *  PROGRAM and EXPRESSION types into a runtime AST that is captured by
-   *  the produced function array.
-   */
-  evaluateArgs(args: any, context: object = this): any {
-    if (typeof args === 'object' && args.type !== undefined)
-      return Evaluate(args, this);
 
-    if (Array.isArray(args)) {
-      // mutate array if there are expressions
-      args.forEach((arg, index, arr) => {
-        if (typeof arg !== 'object') return;
-        if (arg.type === undefined) return;
-        arr[index] = Evaluate(arg, context);
-      });
-      return args;
-    }
-    // numbers, strings, booleans return as-is
-    return args;
-  }
-
-  /// OBJECT SERIALIZATION ////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Return a pure data object that represents the runtime state of this
-   *  agent instance, suitable for being deserialized back into an agent
-   *  instance when we need to.
-   */
-  serialize() {
-    // call serialize on all features
-    // call serialize on all props
-    return super
-      .serialize()
-      .concat([
-        'name',
-        this.name,
-        'x',
-        this.prop.x.value,
-        'y',
-        this.prop.y.value,
-        'skin',
-        this.prop.skin.value,
-        'scale',
-        this.prop.scale.value,
-        'scaleY',
-        this.prop.scaleY.value,
-        'alpha',
-        this.prop.alpha.value,
-        'isInert',
-        this.prop.isInert.value,
-        'feature',
-        this.featureMap.keys()
-      ]);
-  }
   /// STATIC METHODS AND MEMBERS //////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  static GLOBAL_AGENT: GAgent;
+  static GLOBAL_AGENT: SM_Agent;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   static ClearGlobalAgent() {
-    GAgent.GLOBAL_AGENT = new GAgent('GlobalAgent');
+    SM_Agent.GLOBAL_AGENT = new SM_Agent('GlobalAgent');
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   static GetGlobalAgent() {
-    if (GAgent.GLOBAL_AGENT === undefined)
-      GAgent.GLOBAL_AGENT = new GAgent('GlobalAgent');
-    return GAgent.GLOBAL_AGENT;
+    if (SM_Agent.GLOBAL_AGENT === undefined)
+      SM_Agent.GLOBAL_AGENT = new SM_Agent('GlobalAgent');
+    return SM_Agent.GLOBAL_AGENT;
   }
   // end of Agent class
 }
 
 /// STATIC VARIABLES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-GAgent.Symbols = undefined; // set by GAgent.makeDefaultSymbols()
+SM_Agent.Symbols = undefined; // set by SM_Agent.symbolize()
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export main Agent
-export default GAgent;
+export default SM_Agent;

@@ -1,5 +1,3 @@
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
 import React from 'react';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
@@ -12,7 +10,7 @@ const SIZE_MAX = 'max'; // all
 
 /**
  * InstanceInspector can display two types of data.
- *  * GAgent -- e.g. instance name is instance.meta.name
+ *  * SM_Agent -- e.g. instance name is instance.meta.name
  *  * Instance Spec -- e.g. instance name is instance.name
  *
  * We support both because
@@ -85,8 +83,8 @@ class InstanceInspector extends React.Component {
   }
 
   GetInstanceName() {
-    // Is `instance` a `GAgent` or an `instanceSpec`
-    // -- if instance.meta then instance is a GAgent, so get name via instance.meta.name
+    // Is `instance` a `SM_Agent` or an `instanceSpec`
+    // -- if instance.meta then instance is a SM_Agent, so get name via instance.meta.name
     // -- else instance is an instanceDef so get name via instance.name
     const { instance } = this.props;
     if (!instance) return '';

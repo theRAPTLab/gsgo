@@ -17,7 +17,7 @@
 
 import UR from '@gemstep/ursys/client';
 import Keyword from 'lib/class-keyword';
-import * as DCSIM from 'modules/datacore/dc-sim-data';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -107,4 +107,4 @@ export class every extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-DCSIM.RegisterKeyword(every);
+SIMDATA.RegisterKeyword(every);

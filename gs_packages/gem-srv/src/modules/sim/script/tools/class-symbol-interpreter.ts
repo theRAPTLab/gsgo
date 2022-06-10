@@ -1,87 +1,38 @@
-/* eslint-disable react/static-property-placement */
-/* eslint-disable max-classes-per-file */
-/* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable consistent-return */
-/* eslint-disable no-cond-assign */
-/* eslint-disable no-continue */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  A collection of symbol utilities
+  The SymbolInterpreter class knows how to reference symbol tables and
+  "dig into them" as it interprets a ScriptUnit token-by-token, returning
+  a VSDToken. Every time a successful interpretation occurs (meaning that
+  the script token referenced a symbol table that exists) the symbol data
+  "scope" is updated; subsequent calls thus "drill down" deeper into the
+  symbol table data structure.
 
-  The intent of SymbolHelper is to lookup symbol data from a token.
-  Your provide a bundle and context
-  It knows how to lookup features, programs, and blueprints.
-  It knows how to dig into props.
+  Setup requires providing the symbol tables through setSymbolTables(),
+  then calling one of the interpreter methods with a scriptToken.
+  The interpreter methods will always return a VSDToken; check for the
+  presence of an `error` property to know whether there was a problem or not.
 
+  If you need to scan from the top of the symbol tables, use reset().
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-import * as ENGINE from 'modules/datacore/dc-sim-data';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as TOKENIZER from 'script/tools/script-tokenizer';
-
-// uses types defined in t-script.d
+import VSDToken from 'script/tools/class-validation-token';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-const PR = UR.PrefixUtil('SYMUTIL', 'TagTest');
+const PR = UR.PrefixUtil('SYMPRET', 'TagTest');
 
-/// TSYMBOLDATA UTILITY CLASSES ///////////////////////////////////////////////
+/// SYMBOL INTERPRETER CLASS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-type VSDOpts = {
-  gsType: TGSType;
-  unitText?: string;
-  err_code?: TValidationErrorCodes;
-  err_info?: string;
-};
-class VSDToken implements TSymbolData {
-  // implement a subset of TSymbolData fields
-  /** @constructor
-   *  @param {TSymbolData} symbols optional set of symbols that were available
-   *  @param {string} info optional tag, useful for adding context for errors
-   */
-  constructor(symbols?: TSymbolData, opt?: VSDOpts) {
-    // if we want to remember the original scriptText word
-    const { unitText, gsType, err_code, err_info } = opt || {};
-    if (unitText) (this as any).unitText = unitText;
-    if (gsType) (this as any).gsType = gsType;
-    if (err_code || err_info) {
-      (this as any).error = {
-        code: err_code,
-        info: err_info
-      };
-    }
-    // add symbol data
-    if (symbols) {
-      const symbolKeys = [...Object.keys(symbols)];
-      symbolKeys.forEach(key => {
-        this[key] = symbols[key];
-      });
-    }
-  }
-}
-
-/// SYMBOL HELPER CLASS ///////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** This class helps maintain a "current context" of symbols depending on
- *  a series of tokens that affect what is "current". The use case is for
- *  a scriptUnit of keyword tokens that establishes an initial context
- *  like a property that is 'drilled into' to retrieve props, methods,
- *  and method arguments.
- *
- *  It is used by the Keyword.validate() base method and its subclassers.
- *  First, set the parent contexts { bundle, globals }
- *
- *  USAGE:
- *    const shelper = new SymbolHelper('label')
- *    shelper.setRefs({ bundle, globals })
- *    // tokens is a single scriptUnit for a statement
- *    const symbols = shelper.getKeywords(tokens[0]);
- */
-class SymbolHelper {
+/** Interprets script tokens in the context of symbol data, returning a
+ *  validation token detailing if it is correct. Requires symboltables
+ *  to be passed as the data used to intepret a token. */
+class SymbolInterpreter {
   refs: TSymbolRefs; // replaces token, bundle, xtx_obj, symscope
   cur_scope: TSymbolData; // current scope as drilling down into objref
   bdl_scope: TSymbolData; // pointer to the top scope (blueprint bundle)
@@ -103,11 +54,15 @@ class SymbolHelper {
   }
 
   /** reference are the default lookup dictionaries. This is more than
-   *  just the globals context, including the entire
-   */
-  setReferences(refs: any) {
-    const fn = 'setReferences:';
-    const { bundle, globals } = refs || {};
+   *  just the globals context, including the entire */
+  setSymbolTables(refs: any) {
+    const fn = 'setSymbolTables:';
+    if (refs === undefined) {
+      console.warn(`${fn} no refs passed in`);
+      throw Error(`${fn} refs are undefined`);
+    }
+    const { bundle, globals } = refs;
+    if (DBG) console.log(`${fn} setting from`, refs);
     if (bundle) {
       if (CHECK.IsValidBundle(bundle)) this.refs.bundle = bundle;
       else throw Error(`${fn} invalid bundle`);
@@ -125,6 +80,9 @@ class SymbolHelper {
   /// SCOPE ACCESSORS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   reset() {
+    const fn = 'reset:';
+    if (this.bdl_scope === undefined)
+      throw Error(`${fn} bdl_scope is undefined, so nothing to reset to`);
     this.cur_scope = this.bdl_scope;
     this.scan_error = false;
     this.arg_index = undefined;
@@ -162,7 +120,7 @@ class SymbolHelper {
   /** returns a list of valid keywords for the script engine */
   allKeywords(token: IToken): TSymbolData {
     const [type, value] = TOKENIZER.UnpackToken(token);
-    const keywords = ENGINE.GetAllKeywords();
+    const keywords = SIMDATA.GetAllKeywords();
     const gsType = 'keyword';
     if (type === 'comment' || type === 'line') {
       return new VSDToken({ keywords }, { gsType, unitText: value });
@@ -184,8 +142,7 @@ class SymbolHelper {
   /// the blueprint name
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** If part is 'agent', return the bundle symbols or undefined. This is only
-   *  used for objref check of first part
-   */
+   *  used for objref check of first part */
   strAgentLiteral(part: string, scope?: TSymbolData) {
     const fn = 'agentLiteral:';
     if (scope)
@@ -237,11 +194,10 @@ class SymbolHelper {
     return ctx; // valid scope is parent of cur_scope
   }
 
-  /// SCOPE-BASED DICT SEARCHES ///////////////////////////////////////////////
+  /// SCOPE-BASED INTERPRETER METHODS /////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** scans the current scope for a terminal property or feature, after
-   *  which a methodName would be expected in the next tokens
-   */
+   *  which a methodName would be expected in the next tokens */
   objRef(token: IToken): TSymbolData {
     // error checking & type overrides
     const fn = 'objRef:';
@@ -249,7 +205,7 @@ class SymbolHelper {
     this.resetScope();
     let [matchType, parts] = TOKENIZER.UnpackToken(token);
     if (DBG) console.log(...PR(`${fn}: ${matchType}:${parts}`));
-    // was there a previous scope-breaking error?
+    // was there a previous scope-breaking error? bail!
     if (this.scanError())
       return new VSDToken(
         {},
@@ -260,7 +216,8 @@ class SymbolHelper {
           err_info: `${fn} error in previous token(s)`
         }
       );
-    // is the token a valid identifier or objref token?
+    // convert identifier to single-part objref
+    // and return error if it's not objref or identifier
     if (matchType === 'identifier') parts = [parts];
     else if (matchType !== 'objref') {
       this.scanError(true);
@@ -330,8 +287,7 @@ class SymbolHelper {
     });
   }
 
-  /** given an existing symboldata scope set in this.cur_scope, looks for a method.
-   */
+  /** given an existing symboldata scope set in this.cur_scope, looks for a method. */
   methodName(token: IToken): TSymbolData {
     const fn = 'methodName:';
     const gsType = 'method';
@@ -428,10 +384,9 @@ class SymbolHelper {
     return new VSDToken({ methods }, { gsType, unitText: methodName }); // valid scope is parent of cur_scope
   }
 
-  /// METHOD ARGUMENT SYMBOLS /////////////////////////////////////////////////
+  /// METHOD ARGUMENT INTERPRETER METHODS /////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** process the argument list that follows a methodName in GEMSCRIPT
-   */
+  /** process the argument list that follows a methodName in GEMSCRIPT */
   argsList(tokens: IToken[]): TSymbolData[] {
     const fn = 'argsList:';
     const vtoks = [];
@@ -478,6 +433,7 @@ class SymbolHelper {
             }
           )
         );
+        // eslint-disable-next-line no-continue
         continue;
       }
       // SCOPE ARGS 3: validate current token against matching argument definition
@@ -507,8 +463,7 @@ class SymbolHelper {
   }
 
   /** Return the symbols for an methodSig argType entry. Does NOT change scope
-   *  because the scope is always the same methodSig symbol data
-   */
+   *  because the scope is always the same methodSig symbol data */
   argSymbol(methodArg, scriptToken): TSymbolData {
     const fn = 'argSymbol:';
 
@@ -519,12 +474,13 @@ class SymbolHelper {
     let symData;
     const arg = methodArg;
     const tok = scriptToken;
-
+    // default unit text
+    const unitText = TOKENIZER.TokenToUnitText(tok);
     // is this a literal boolean value from token.value
     if (gsType === 'boolean') {
       let value = TOKENIZER.TokenValue(tok, 'value');
       if (typeof value === 'boolean')
-        symData = new VSDToken({ arg }, { gsType, unitText: value.toString() });
+        symData = new VSDToken({ arg }, { gsType, unitText });
       else
         symData = new VSDToken(
           {},
@@ -540,7 +496,7 @@ class SymbolHelper {
     if (gsType === 'number') {
       let value = TOKENIZER.TokenValue(tok, 'value');
       if (typeof value === 'number')
-        symData = new VSDToken({ arg }, { gsType, unitText: value.toString() });
+        symData = new VSDToken({ arg }, { gsType, unitText });
       else
         symData = new VSDToken(
           {},
@@ -558,7 +514,7 @@ class SymbolHelper {
       let value = TOKENIZER.TokenValue(tok, 'string');
       if (typeof value === 'string')
         // symData = new VSDToken({ arg }, tokVal);
-        symData = new VSDToken({ arg }, { gsType, unitText: value.toString() });
+        symData = new VSDToken({ arg }, { gsType, unitText });
       else
         symData = new VSDToken(
           {},
@@ -571,82 +527,170 @@ class SymbolHelper {
         );
     }
 
-    // is this an enumeration list match token???
-    // NOT IMPLEMENTED
-    if (gsType === 'enum') {
-      symData = new VSDToken(
-        {},
-        { gsType, err_code: 'debug', err_info: `${fn} enum is unimplemented` }
-      );
-    }
-
     // all symbols available in current bundle match token.objref
     if (gsType === 'objref' && TOKENIZER.TokenValue(tok, 'objref')) {
-      symData = new VSDToken(this.bdl_scope, { gsType, unitText: argName });
+      symData = new VSDToken(this.bdl_scope, { gsType, unitText });
     }
 
     // all props, feature props in bundle match token.identifier
     if (gsType === 'prop' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      symData = new VSDToken(this.bdl_scope, { gsType, unitText: argName });
+      symData = new VSDToken(this.bdl_scope, { gsType, unitText });
     }
 
     // is this a method name? current scope is pointing to
     // the method dict, we hope...
     // all methods in bundle match token.identifier
     if (gsType === 'method' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      symData = new VSDToken(this.cur_scope, { gsType, unitText: argName });
+      symData = new VSDToken(this.cur_scope, { gsType, unitText });
     }
 
     // is this any gvar type?
     // all gvars available in system match token.identifier
     if (gsType === 'gvar' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const map = ENGINE.GetPropTypesDict();
+      const map = SIMDATA.GetPropTypesDict();
       const ctors = {};
       const list = [...map.keys()];
       list.forEach(ctorName => {
-        ctors[ctorName] = map.get(ctorName).Symbols;
+        ctors[ctorName] = SIMDATA.GetPropTypeSymbolsFor(ctorName);
       });
-      symData = new VSDToken({ ctors }, { gsType, unitText: argName });
+      symData = new VSDToken({ ctors }, { gsType, unitText });
     }
 
     // is this a feature module name?
     // all feature symbols in system match token.identifier
     // e.g. addFeature
     if (gsType === 'feature' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const map = ENGINE.GetAllFeatures();
+      const map = SIMDATA.GetAllFeatures();
       const features = {}; // { [strFeatureName: string]: TSymbolData };
       const list = [...map.keys()];
       list.forEach(featName => {
-        features[featName] = ENGINE.GetFeature(featName).symbolize();
+        features[featName] = SIMDATA.GetFeature(featName).symbolize();
       });
-      symData = new VSDToken({ features }, { gsType, unitText: argName });
+      symData = new VSDToken({ features }, { gsType, unitText });
     }
 
     // is this a blueprint name? We allow any blueprint name in the dictionary
     // all blueprint symbols in project match token.identifier
     // e.g. when agent test, when agentA test agentB
     if (gsType === 'blueprint' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const list = ENGINE.GetAllBlueprintBundles();
+      const list = SIMDATA.GetAllBlueprintBundles();
       const blueprints = {};
       list.forEach(bundle => {
         blueprints[bundle.name] = bundle.symbols;
       });
-      symData = new VSDToken({ blueprints }, { gsType, unitText: argName });
+      symData = new VSDToken({ blueprints }, { gsType, unitText });
     }
 
-    // if (gsType === 'test') {
-    // }
-    // if (gsType === 'program') {
-    // }
-    // if (gsType === 'event') {
-    // }
+    // Named tests are TSMCPrograms which must return true/false
+    // This is a future GEMSCRIPT 2.0 feature, and are not implemented
+    if (gsType === 'test') {
+      symData = new VSDToken(
+        {},
+        {
+          err_code: 'debug',
+          err_info: 'named programs are a gemscript 2.0 feature',
+          gsType,
+          unitText
+        }
+      );
+    }
 
-    // if (gsType === 'expr') {
-    // }
-    // if (gsType === 'block') {
-    // }
-    // if (gsType === '{value}') {
-    // }
+    // Named programs are TSMCPrograms which can accept/return args on the stack
+    // This is a future GEMSCRIPT 2.0 feature, and are not implemented
+    if (gsType === 'program') {
+      symData = new VSDToken(
+        {},
+        {
+          err_code: 'debug',
+          err_info: 'named programs are a gemscript 2.0 feature',
+          gsType,
+          unitText
+        }
+      );
+    }
+
+    // Events are TSMCPrograms that are declared with the `onEvent` keyword
+    if (gsType === 'event') {
+      const list = SIMDATA.GetAllScriptEventNames();
+      const events = list.map(entry => {
+        const [eventName] = entry;
+        return eventName;
+      });
+      symData = new VSDToken(
+        { events },
+        {
+          gsType,
+          unitText
+        }
+      );
+    }
+
+    // expressions
+    if (gsType === 'expr') {
+      symData = new VSDToken(
+        {},
+        {
+          err_code: 'debug',
+          err_info: 'expr types todo',
+          gsType,
+          unitText
+        }
+      );
+    }
+
+    // blocks aka consequent, alternate
+    if (gsType === 'block') {
+      symData = new VSDToken(
+        {},
+        {
+          err_code: 'debug',
+          err_info: 'block types todo',
+          gsType,
+          unitText
+        }
+      );
+    }
+
+    // values can be one of anything
+    if (gsType === '{value}') {
+      if (tokType === 'expr') {
+        // determine if expr is valid
+        symData = new VSDToken(
+          {},
+          { err_code: 'debug', err_info: '{value} expr todo', gsType, unitText }
+        );
+      }
+      // determine if objref is valid
+      if (tokType === 'objref') {
+        symData = new VSDToken(
+          {},
+          { err_code: 'debug', err_info: '{value} objref todo', gsType, unitText }
+        );
+      }
+      if (tokType === 'string') {
+        symData = new VSDToken(
+          {},
+          { err_code: 'debug', err_info: '{value} string todo', gsType, unitText }
+        );
+      }
+      if (tokType === 'value') {
+        symData = new VSDToken(
+          {},
+          { err_code: 'debug', err_info: '{value} value todo', gsType, unitText }
+        );
+      }
+      if (symData === undefined) {
+        symData = new VSDToken(
+          {},
+          {
+            err_code: 'invalid',
+            err_info: '{value} unrecognized type',
+            gsType,
+            unitText
+          }
+        );
+      }
+    }
 
     if (symData === undefined) {
       return new VSDToken(
@@ -663,98 +707,123 @@ class SymbolHelper {
     // return valid symdata/validation
     return symData;
   }
-} // end of SymbolHelper class
 
-/// UTILITY METHODS ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** UTILITY: convert symbol data into lists suitable for gui rendering. this is
- *  the entire list of ALLOWED CHOICES; if you want to just know what unitText
- *  is, then use UnpackSymbol
- */
-function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
-  let sv_data: any = {};
+  /// DEREF FUNCTIONS /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** similar to objRef algorith, which we'll just rip off right now */
+  derefProp(token: IToken, refs: TSymbolRefs): TSM_PropFunction {
+    const fn = 'derefProp:';
+    this.setSymbolTables(refs);
+    let [matchType, parts] = TOKENIZER.UnpackToken(token);
+    // convert identifier to single-part objref
+    // and return error if it's not objref or identifier
 
-  // check to see what
-  const { error, unitText, keywords, features, props, methods, arg } = symbolData;
-  if (unitText) sv_data.unitText = unitText;
-  if (error)
-    sv_data.error = {
-      info: `${error.code} - ${error.info}`
-    };
-  if (keywords)
-    sv_data.keywords = {
-      info: keywords.join(', '),
-      items: keywords
-    };
-  if (features) {
-    const items = [...Object.keys(features)];
-    sv_data.features = {
-      info: items.join(', '),
-      items
-    };
-  }
-  if (props) {
-    const items = [...Object.keys(props)];
-    sv_data.props = {
-      info: items.join(', '),
-      items
-    };
-  }
-  if (methods) {
-    const items = [...Object.keys(methods)];
-    sv_data.methods = {
-      info: items.join(', '),
-      items
-    };
-  }
-  if (arg) {
-    const [name, type] = CHECK.UnpackArg(arg);
-    sv_data.arg = { info: arg, items: [name, type] };
-  }
-  return sv_data;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** UTILITY: returns an array all symbolTypes associatd with unitText:
- *  [ unitText, [ symbolType, items ], [ symbolType, items ], ... ]
- */
-function UnpackViewData(svm_data: TSymbolViewData): any[] {
-  const list = [];
-  Object.keys(svm_data).forEach(key => {
-    let value = svm_data[key];
-    if (key === 'unitText') {
-      list.unshift(value);
-      return;
+    if (matchType === 'identifier') parts = [parts];
+    else if (matchType === 'jsString') parts = [parts];
+    else if (matchType !== 'objref') {
+      console.warn('matchtype', matchType, parts, 'invalid...returning void');
+      return undefined;
     }
-    if (key === 'error') {
-      list.push([key, value.text]);
-      return;
+
+    //
+    const unitText = parts.join('.');
+    let part = parts[0];
+    // look for a matching scope dictionary
+    let f = this.strFeatureName(part);
+    let b = this.strBlueprintName(part) || SIMDATA.GetBlueprintSymbolsFor(part);
+    let a = this.strAgentLiteral(part);
+    let p = this.strPropName(part);
+    // check for single part property
+    let terminal = parts.length === 1;
+    //
+    if (f) console.log('** 0 ** feature', f);
+    if (b) console.log('** 0 ** blueprint', b);
+    if (a) console.log('** 0 ** agent', a);
+    if (p) console.log('** 0 ** prop', p);
+    //
+    if (terminal) {
+      // single identifier objref (e.g. energyLevel)
+      if (p) {
+        const deref = (agent: IAgent, state: IState) => {
+          const prop = agent.getProp(part);
+          return prop;
+        };
+        return deref;
+      }
+      throw Error(`${fn} ${unitText} isn't a prop`);
     }
-    if (key === 'arg') {
+    // loop through subsequent scopes to make "dereference stack"
+    const dStack = [];
+    // first save the first scope that didn't terminate...
+    if (f) dStack.push({ ctx: 'feature', key: part });
+    else if (b) dStack.push({ ctx: 'blueprint', key: part });
+    else if (a) dStack.push({ ctx: 'agent', key: part });
+    else throw Error(`${fn} non-evaluable ${unitText}`);
+    //
+    // now loop through subsequent scopes to make "dereference stack"
+    //
+    for (let ii = 1; ii < parts.length; ii++) {
+      part = parts[ii];
+      f = this.strFeatureName(part);
+      b = this.strBlueprintName(part) || SIMDATA.GetBlueprintSymbolsFor(part);
+      p = this.strPropName(part);
+      terminal = ii >= parts.length - 1;
       //
+      if (f) console.log('**', ii, '** feature', f);
+      if (b) console.log('**', ii, '** blueprint', b);
+      if (p) console.log('**', ii, '** prop', p);
+      //
+      if (b) dStack.push({ ctx: 'blueprint', key: part });
+      else if (f) dStack.push({ ctx: 'feature', key: part });
+      else if (p) dStack.push({ ctx: 'prop', key: part });
+      else throw Error(`${fn} non-evaluable ${unitText}`);
     }
-    const { items } = value;
-    if (items) list.push([key, items]);
-  });
-  return list;
-}
+    console.log('dstack', dStack);
+    /*/
+    THIS IS WHERE THE CODE GOES EEEP
+    /*/
+    dStack.forEach(pass => {
+      const { ctx, key } = pass;
+      if (ctx === 'feature') {
+        // agent.getFeature(key)
+        // TERMINAL
+      }
+      if (ctx === 'blueprint') {
+        // const alien = globals[key];
+        // ?prop
+        // ?feature
+        // ?feature/prop
+      }
+      if (ctx === 'agent') {
+        // skip, can expect
+        // ?prop
+        // ?feature
+        // ?feature/prop
+      }
+      if (ctx === 'prop') {
+        // agent.getProp(key)
+        // TERMINAL
+      }
+    });
+
+    // 2 multi-part objref (e.g. Costume.costumeName)
+    return (agent, ...args) => {
+      console.log(agent.name);
+    };
+  }
+} // end of SymbolInterpreter class
+
+/// DEBUG TOOLS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** UTILITY: Given a symbolData structure for unitText, return the SPECIFIC matching type
- *  instead of all allowed types
- */
-function UnpackSymbolType(symbolData: TSymbolData): any[] {
-  return [];
-}
+/** inspection tool to see simdata defined at runtime */
+UR.AddConsoleTool('simdata', () => {
+  console.log('All Functions', SIMDATA.GetAllFunctions());
+  console.log('All Tests', SIMDATA.GetAllTests());
+  console.log('All Programs', SIMDATA.GetAllPrograms());
+  console.log('All Features', SIMDATA.GetAllFeatures());
+  console.log('All EventNames', SIMDATA.GetAllScriptEventNames());
+});
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export {
-  SymbolHelper, // symbol decoder
-  VSDToken,
-  DecodeSymbolViewData,
-  UnpackViewData,
-  UnpackSymbolType
-};
-export function BindModule() {
-  // HACK to force import of this module in Transpiler, otherwise webpack treeshaking
-  // seems to cause it not to load
-}
+export default SymbolInterpreter;

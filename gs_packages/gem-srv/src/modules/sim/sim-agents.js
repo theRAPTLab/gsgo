@@ -9,10 +9,10 @@ import UR from '@gemstep/ursys/client';
 import InstanceDef from 'lib/class-instance-def';
 
 import SyncMap from 'lib/class-syncmap';
-import GAgent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-sm-agent';
 import DisplayObject from 'lib/class-display-object';
 
-import * as DCSIM from 'modules/datacore/dc-sim-data';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler-v2';
@@ -106,6 +106,7 @@ function MakeAgent(def) {
   const initScript = TRANSPILER.CompileText(def.initScript);
   let agent = DCAGENTS.GetAgentById(def.id);
   if (!agent) agent = TRANSPILER.MakeAgent(def);
+  console.log('executing instance', agent.name, 'init');
   agent.exec(initScript, { agent });
 }
 
@@ -182,11 +183,11 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
  * @param {string[]} namesToKeep array of blueprint names
  */
 function FilterBlueprints(namesToKeep) {
-  const blueprints = DCSIM.GetAllBlueprintBundles(); // Array of SM_Bundle
+  const blueprints = SIMDATA.GetAllBlueprintBundles(); // Array of SM_Bundle
   blueprints.forEach(b => {
     if (!namesToKeep.includes(b.name)) {
       // remove the blueprint
-      DCSIM.DeleteBlueprintBundle(b.name);
+      SIMDATA.DeleteBlueprintBundle(b.name);
 
       // [We can't rely on SyncMap to remove because it doesn't
       //  sync to blueprints, just to instanceDefs]
@@ -220,7 +221,7 @@ export function AllAgentsProgram(data) {
   if (!blueprintNames) return console.warn(...PR('no blueprint'));
 
   // 1. Reset Global Agent First
-  GAgent.ClearGlobalAgent();
+  SM_Agent.ClearGlobalAgent();
 
   // 2. Remove Unused Blueprints and Agents
   FilterBlueprints(blueprintNames);

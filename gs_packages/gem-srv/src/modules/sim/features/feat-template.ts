@@ -15,10 +15,10 @@
 
 /*/ required libraries /*/
 import UR from '@gemstep/ursys/client';
-import GFeature from 'lib/class-gfeature';
+import SM_Feature from 'lib/class-sm-feature';
 import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 /*/ add your other libraries here /*/
-import { GVarNumber, GVarString } from 'script/vars/_all_vars';
+import { SM_Number, SM_String } from 'script/vars/_all_vars';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -31,9 +31,15 @@ const DBG = false;
   for example
 /*/
 
+/// CLASS HELPERS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_StaticMethod() {
+  console.log('this is like a static class function in C++');
+}
+
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class MyFeature extends GFeature {
+class MyFeature extends SM_Feature {
   /*/
     if your feature provides methods to the scripting engine, define them in the
     constructor. Method code is shared between all agents so it is defined only
@@ -56,9 +62,9 @@ class MyFeature extends GFeature {
   /*/
   decorate(agent) {
     super.decorate(agent);
-    this.featAddProp(agent, 'myString', new GVarString('defaultValue'));
-    this.featAddProp(agent, 'myNumber', new GVarNumber(0));
-    const fancyProp = new GVarNumber(0);
+    this.featAddProp(agent, 'myString', new SM_String('defaultValue'));
+    this.featAddProp(agent, 'myNumber', new SM_Number(0));
+    const fancyProp = new SM_Number(0);
     fancyProp.setMax(Math.PI * 2);
     fancyProp.setMin(0);
     fancyProp.setWrap();
@@ -86,12 +92,6 @@ class MyFeature extends GFeature {
     m_StaticMethod();
   }
 } // end of feature class
-
-/// CLASS HELPERS /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_StaticMethod() {
-  console.log('this is like a static class function in C++');
-}
 
 /// REGISTER FEATURE SINGLETON ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

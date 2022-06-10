@@ -7,8 +7,8 @@
 import { interval } from 'rxjs';
 import UR from '@gemstep/ursys/client';
 import * as ACRounds from 'modules/appcore/ac-rounds';
-import { GVarNumber } from 'modules/sim/script/vars/_all_vars';
-import GAgent from 'lib/class-gagent';
+import { SM_Number } from 'modules/sim/script/vars/_all_vars';
+import SM_Agent from 'lib/class-sm-agent';
 import SM_State from 'lib/class-sm-state';
 import * as TRANSPILER from './script/transpiler-v2';
 
@@ -31,7 +31,7 @@ let RSIMSTATUS; // mapped to api-sim's SIMSTATUS
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// CURRENTLY NOT USED: Using GlobalAgent exec instead.
-/** Copied from class-gagent.ts.
+/** Copied from class-sm-agent.ts.
  *  Execute agent stack machine program. Note that commander also
  *  implements ExecSMC to run arbitrary programs as well when
  *  processing AgentSets. Optionally pass a stack to reuse.
@@ -73,11 +73,11 @@ function StopRoundTimer() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Called bya pi-sim during Stage() */
 export function StageInit() {
-  const GLOBAL_AGENT = GAgent.GetGlobalAgent();
+  const GLOBAL_AGENT = SM_Agent.GetGlobalAgent();
   if (!GLOBAL_AGENT.hasFeature('Population'))
     GLOBAL_AGENT.addFeature('Population');
   if (!GLOBAL_AGENT.getProp('roundTime')) {
-    const prop = new GVarNumber();
+    const prop = new SM_Number();
     GLOBAL_AGENT.addProp('roundTime', prop);
   }
 }

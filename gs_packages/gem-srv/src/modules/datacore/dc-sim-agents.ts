@@ -23,7 +23,7 @@ let INSTANCE_COUNTER = INSTANCE_COUNTER_START_VAL;
 
 /// AGENT SUPPORT UTILITIES ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** UTILITY: Copies all `agent.prop` GVars.  Does not copy Feature GVars
+/** UTILITY: Copies all `agent.prop` GVars.  Does not copy SM_Feature props.
  *  Used by CopyAgentProps.
  */
 function m_CopyProps(props: object, targetProps: object) {
@@ -182,9 +182,9 @@ function SaveAgent(agent) {
 /** To delete the agent, we need to remove it from: AGENT and AGENT_DICT.
  *
  *  1. AGENT map values are a second map of `agents`.
- *     `agents` key is a GAgent.id, which is based on an sm-object counter.
+ *     `agents` key is a SM_Agent.id, which is based on an sm-object counter.
  *  2. AGENT_DICT values are also a map of `agents`
- *     with the same GAgent.id as the key.
+ *     with the same SM_Agent.id as the key.
  */
 function DeleteAgent(instancedef) {
   const { bpid, id } = instancedef;
@@ -211,7 +211,7 @@ function DeleteAgentByBlueprint(bpName) {
   if (agents) agents.forEach(a => AGENT_DICT.delete(a.id));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return GAgent array by type */
+/** return SM_Agent array by type */
 function GetAgentsByType(bpName) {
   const agentSet = AGENTS.get(bpName);
   if (!agentSet) {

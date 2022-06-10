@@ -24,8 +24,7 @@ const TimerPack = {
 /// URSYS PROMPT //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import UR from '@gemstep/ursys/client';
-import GFeature from 'lib/class-gfeature';
-import { IAgent, TSymbolData } from 'lib/t-script';
+import SM_Feature from 'lib/class-sm-feature';
 import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -37,7 +36,7 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  */
-class TimerPack extends GFeature {
+class TimerPack extends SM_Feature {
   constructor(name) {
     super(name);
     this.featAddMethod('setRoundTimer', this.setRoundTimer);

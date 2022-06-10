@@ -1,5 +1,8 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+  NOTE: THESE ARE EARLY EXAMPLES USED TO DESIGN THE SCRIPT ENGINE
+  AND THEN IT TURNED OUT WE DIDN'T NEED THESE OPCODES AT ALL
+
   Stack Machine (SM) Debugging Opcodes
 
   These opcodes dare used to debug low level stack maching operations
@@ -13,12 +16,11 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IAgent, IState, TOpWait } from 'lib/t-script';
-
 /// DEBUG OPCODES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// support util functions ////////////////////////////////////////////////////
-function u_dump(num: number = 0, stack: any[], prompt: string = '<dump>') {
+function u_dump(num: number, stack: any[], prompt: string) {
+  num = num || 0;
+  prompt = prompt || '<dump>';
   if (num === 0 || num > stack.length) {
     console.log(`${prompt}:`, stack);
     return;
@@ -33,34 +35,27 @@ function u_dump(num: number = 0, stack: any[], prompt: string = '<dump>') {
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function dbgStack(num: number = 0, desc: string = 'stack') {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     const { stack } = STATE;
     u_dump(num, stack, desc);
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function dbgStackCount(num: number, desc: string = 'dbgStackCount') {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     const slen = STATE.stack.length;
     if (slen !== num) throw Error(`stack.length !== ()`);
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function dbgAgent(match?: string) {
-  return (agent: IAgent): TOpWait => {
-    if ((match && agent.name === match) || !match)
-      console.log(`agent[${agent.name}] serialize:`, agent.serialize());
-  };
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** implement a pause */
 export function dbgOut(...args: any) {
-  return (): TOpWait => {
+  return (): void => {
     console.log(...args);
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** implement a pause */
 export function nop() {
-  return (): TOpWait => {};
+  return (): void => {};
 }

@@ -112,8 +112,9 @@ function GEMSRV_Kill() {
     TOUT('Hopefully that worked');
   } else {
     TOUT('---');
-    TOUT("Couldn't find process matching 'node gem_run.js' to kill -9");
-    TOUT("Try using 'ps' or 'ps ax' to find node processes running gemstep\n");
+    TOUT("Couldn't find process matching 'node gem_run.js' to kill");
+    TOUT("If you are still having problems, try using 'ps' to find ");
+    TOUR('processes that might be in conflict with GEMSTEP or ask the devs"\n');
   }
 }
 

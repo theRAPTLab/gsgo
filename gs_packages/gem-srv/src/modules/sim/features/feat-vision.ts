@@ -13,10 +13,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { GVarNumber, GVarBoolean } from 'script/vars/_all_vars';
-import GFeature from 'lib/class-gfeature';
-import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCSIM from 'modules/datacore/dc-sim-data';
+import { SM_Number, SM_Boolean } from 'script/vars/_all_vars';
+import SM_Feature from 'lib/class-sm-feature';
+import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';
 import { ProjectPoint } from 'lib/util-vector';
@@ -41,7 +41,7 @@ const VISION_AGENTS = new Map();
  * @param agentId
  */
 function m_getAgent(agentId): IAgent {
-  const a = DCAGENTS.GetAgentById(agentId);
+  const a = SIMAGENTS.GetAgentById(agentId);
   if (!a) VISION_AGENTS.delete(agentId);
   return a;
 }
@@ -99,7 +99,7 @@ function m_IsTargetWithinVisionCone(visionPoly, target): boolean {
   )
     return false;
 
-  const targetPoly = DCSIM.GetAgentBoundingRect(target);
+  const targetPoly = SIMDATA.GetAgentBoundingRect(target);
   // Returns array of intersecting objects, or [] if no intersects
   const result = intersect(visionPoly, targetPoly);
   return result.length > 0;
@@ -174,7 +174,7 @@ function m_update(frame) {
 
     const { visionPoly, visionPath } = m_updateVisionCone(agent);
 
-    const targets = DCAGENTS.GetAgentsByType(VISION_AGENTS.get(agentId));
+    const targets = SIMAGENTS.GetAgentsByType(VISION_AGENTS.get(agentId));
     targets.forEach(t => {
       if (agent.id === t.id) return; // skip self
 
@@ -222,7 +222,7 @@ function m_handleScriptEvent(data) {
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class VisionPack extends GFeature {
+class VisionPack extends SM_Feature {
   //
   constructor(name) {
     super(name);
@@ -237,9 +237,9 @@ class VisionPack extends GFeature {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
     super.decorate(agent);
-    this.featAddProp(agent, 'visionable', new GVarBoolean(true)); // can be seen by Vision feature
+    this.featAddProp(agent, 'visionable', new SM_Boolean(true)); // can be seen by Vision feature
 
-    let prop = new GVarNumber(250);
+    let prop = new SM_Number(250);
     prop.setMax(1000);
     prop.setMin(0);
     this.featAddProp(agent, 'viewDistance', prop);
@@ -249,7 +249,7 @@ class VisionPack extends GFeature {
     // the cone collapses.
     // 'viewAngle' is the measured as 1/2 of viewAngle to the right
     // and left of the orientation.
-    prop = new GVarNumber(45);
+    prop = new SM_Number(45);
     prop.setMax(180);
     prop.setMin(0);
     this.featAddProp(agent, 'viewAngle', prop);
@@ -265,15 +265,15 @@ class VisionPack extends GFeature {
     //      because the difference is 0.1, which is not outside
     //      the detectable range of 0.2
     // Set to 0 to always detect.
-    prop = new GVarNumber(0);
+    prop = new SM_Number(0);
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorHueDetectionThreshold', prop);
-    prop = new GVarNumber(0);
+    prop = new SM_Number(0);
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorSaturationDetectionThreshold', prop);
-    prop = new GVarNumber(0);
+    prop = new SM_Number(0);
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorValueDetectionThreshold', prop);
@@ -282,12 +282,12 @@ class VisionPack extends GFeature {
   symbolize(): TSymbolData {
     return {
       props: {
-        'visionable': GVarNumber.Symbols,
-        'viewDistance': GVarNumber.Symbols,
-        'viewAngle': GVarNumber.Symbols,
-        'colorHueDetectionThreshold': GVarNumber.Symbols,
-        'colorSaturationDetectionThreshold': GVarNumber.Symbols,
-        'colorValueDetectionThreshold': GVarNumber.Symbols
+        'visionable': SM_Number.Symbols,
+        'viewDistance': SM_Number.Symbols,
+        'viewAngle': SM_Number.Symbols,
+        'colorHueDetectionThreshold': SM_Number.Symbols,
+        'colorSaturationDetectionThreshold': SM_Number.Symbols,
+        'colorValueDetectionThreshold': SM_Number.Symbols
       },
       methods: {
         'monitor': { args: ['targetBlueprintName:string'] },
@@ -356,4 +356,4 @@ class VisionPack extends GFeature {
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new VisionPack(FEATID);
-DCSIM.RegisterFeature(INSTANCE);
+SIMDATA.RegisterFeature(INSTANCE);
