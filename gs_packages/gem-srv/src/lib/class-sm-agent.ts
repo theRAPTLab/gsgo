@@ -452,7 +452,9 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
     if (!bdl.name) throw Error('setBlueprint got bp without name');
     this.blueprint = bdl;
     // call initialization
+    console.log('setBlueprint: executing define');
     this.exec(bdl.define);
+    console.log('setBlueprint: executing init');
     this.exec(bdl.init);
   }
 

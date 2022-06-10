@@ -175,8 +175,10 @@ function SymbolizeBlueprint(script: TScriptUnit[], bdl?: SM_Bundle) {
   const fn = 'SymbolizeBlueprint:';
   let bpName;
   // open provided bundle or look it up in SIMDATA by bpName
-  if (bdl instanceof SM_Bundle) BUNDLER.OpenBundle(bdl);
-  else {
+  if (bdl instanceof SM_Bundle) {
+    BUNDLER.OpenBundle(bdl);
+    bpName = BUNDLER.BundlerState().bpName;
+  } else {
     const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
     [bpName] = BLUEPRINT;
     BUNDLER.OpenBundle(bpName);
@@ -291,14 +293,16 @@ function CompileScript(script: TScriptUnit[], refs: TSymbolRefs): TSMCProgram {
  *  @returns SM_Bundle
  */
 function CompileBlueprint(script: TScriptUnit[], bdl?: SM_Bundle): SM_Bundle {
-  const fn = 'CompileBlueprintScript:';
+  const fn = 'CompileBlueprint:';
+  let bpName;
   // open provided bundle or look it up in SIMDATA by bpName
   if (bdl instanceof SM_Bundle) BUNDLER.OpenBundle(bdl);
   else {
     const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
-    const [bpName] = BLUEPRINT;
+    [bpName] = BLUEPRINT;
     BUNDLER.OpenBundle(bpName);
   }
+  console.log(`${fn} ${bpName}`);
   // setup bundle type
   BUNDLER.SetBundleType(EBundleType.BLUEPRINT);
   // compile statement-by-statement

@@ -730,7 +730,7 @@ class SymbolInterpreter {
     let part = parts[0];
     // look for a matching scope dictionary
     let f = this.strFeatureName(part);
-    let b = this.strBlueprintName(part);
+    let b = this.strBlueprintName(part) || SIMDATA.GetBlueprintSymbolsFor(part);
     let a = this.strAgentLiteral(part);
     let p = this.strPropName(part);
     // check for single part property
@@ -743,7 +743,11 @@ class SymbolInterpreter {
     //
     if (terminal) {
       if (p) {
-        return agent => agent.getPropValue(part);
+        const deref = (agent: IAgent, state: IState) => {
+          const prop = agent.getProp(part);
+          return prop;
+        };
+        return deref;
       }
       throw Error(`${fn} ${unitText} isn't a prop`);
     }
@@ -760,7 +764,7 @@ class SymbolInterpreter {
     for (let ii = 1; ii < parts.length; ii++) {
       part = parts[ii];
       f = this.strFeatureName(part);
-      b = this.strBlueprintName(part);
+      b = this.strBlueprintName(part) || SIMDATA.GetBlueprintSymbolsFor(part);
       p = this.strPropName(part);
       terminal = ii >= parts.length - 1;
       //
@@ -800,7 +804,10 @@ class SymbolInterpreter {
         // TERMINAL
       }
     });
-    return (agent, ...args) => console.log('running');
+
+    return (agent, ...args) => {
+      console.log(agent.name);
+    };
   }
 } // end of SymbolInterpreter class
 

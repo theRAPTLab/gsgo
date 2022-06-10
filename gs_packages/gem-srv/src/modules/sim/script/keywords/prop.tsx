@@ -41,27 +41,31 @@ export class prop extends Keyword {
     // into an actual call
     const deref = K_DerefProp(objref);
     /*** TESTING CODE ***/
-    console.groupCollapsed(
-      `%cside-test deref of '${JSON.stringify(objref)}'`,
-      'font-weight:normal;color:lightgray'
-    );
-    const derefProp = this.shelper.derefProp(objref, refs);
-    console.groupEnd();
+    if (false) {
+      console.groupCollapsed(
+        `%cside-test deref of '${JSON.stringify(objref)}'`,
+        'font-weight:normal;color:lightgray'
+      );
+      const derefProp = this.shelper.derefProp(objref, refs);
+      console.groupEnd();
+    }
     /*** END of TESTING CODE ***/
-    // return [
-    //   (agent: IAgent, state: IState) => {
-    //     const p = deref(agent, state.ctx);
-    //     p[methodName as string](...args);
-    //   }
-    // ];
-
     return [
-      (agent: IAgent) => {
-        const smobj = derefProp(agent);
-        const method = smobj.getMethod(methodName as String);
-        method(agent, ...args);
+      (agent: IAgent, state: IState) => {
+        const p = deref(agent, state.ctx);
+        p[methodName as string](...args);
       }
     ];
+
+    // return [
+    //   (agent: IAgent, state: IState) => {
+    //     const smobj = derefProp(agent, state);
+    //     const method = smobj[methodName as string];
+    //     if (method) method.apply(agent, ...args);
+    //     // const method = smobj.getMethod(methodName as String);
+    //     // method(agent, ...args);
+    //   }
+    // ];
   }
 
   /** custom validation, overriding the generic validation() method of the

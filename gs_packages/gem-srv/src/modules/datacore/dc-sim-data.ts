@@ -9,7 +9,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import SM_Object from 'lib/class-sm-object';
+import SM_Feature from 'lib/class-sm-feature';
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import SM_Bundle from 'lib/class-sm-bundle';
 import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
@@ -18,7 +18,7 @@ import * as CHECK from './dc-sim-data-utils';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-const FEATURES: Map<string, IFeature> = new Map();
+const FEATURES: Map<string, SM_Feature> = new Map();
 const BLUEPRINTS: Map<string, SM_Bundle> = new Map();
 const KEYWORDS: Map<string, IKeyword> = new Map();
 const VARS: Map<string, TPropType> = new Map();
@@ -102,7 +102,13 @@ function DeleteBlueprintBundle(bpName: string): void {
 function DeleteAllBlueprintBundles(): void {
   BLUEPRINTS.clear();
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetBlueprintSymbolsFor(bpName: string): TSymbolData {
+  const { symbols } = GetBlueprintBundle(bpName);
+  if (symbols !== undefined) console.log('found', bpName, 'blueprint');
 
+  return symbols;
+}
 /// KEYWORDS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// The GEMSTEP transpiler script language is built from 'keyword' modules
@@ -171,7 +177,7 @@ function GetPropTypeSymbolsFor(propType: string): TSymbolData {
 /// FEATURES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Retrieve a feature module by its name and return its instance */
-function GetFeature(fName: string): IFeature {
+function GetFeature(fName: string): SM_Feature {
   return FEATURES.get(fName);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -191,6 +197,12 @@ function RegisterFeature(fpack: IFeature) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function DeleteAllFeatures() {
   FEATURES.clear();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetFeatureSymbolsFor(fName: string): TSymbolData {
+  console.log('getting', fName, 'feature');
+  const symbols = GetFeature(fName).symbolize();
+  return symbols;
 }
 
 /// TEST DICTIONARIES /////////////////////////////////////////////////////////
@@ -334,7 +346,8 @@ export {
   GetAllBlueprintBundles,
   GetBlueprintBundleList,
   DeleteBlueprintBundle,
-  DeleteAllBlueprintBundles
+  DeleteAllBlueprintBundles,
+  GetBlueprintSymbolsFor
 };
 /// the transpiler is extendable using "keyword' modules that implement
 /// symbolize, validate, and compile
@@ -353,7 +366,8 @@ export {
   GetAllFeatures,
   GetFeatureMethod,
   RegisterFeature,
-  DeleteAllFeatures
+  DeleteAllFeatures,
+  GetFeatureSymbolsFor
 };
 /// engine maintains dicts of named Javascript functions
 export { RegisterFunction, GetFunction, GetAllFunctions };

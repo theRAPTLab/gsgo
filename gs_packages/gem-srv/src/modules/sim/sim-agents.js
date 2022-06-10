@@ -106,6 +106,7 @@ function MakeAgent(def) {
   const initScript = TRANSPILER.CompileText(def.initScript);
   let agent = DCAGENTS.GetAgentById(def.id);
   if (!agent) agent = TRANSPILER.MakeAgent(def);
+  console.log('executing instance', agent.name, 'init');
   agent.exec(initScript, { agent });
 }
 
