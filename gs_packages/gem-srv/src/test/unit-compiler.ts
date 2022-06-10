@@ -7,7 +7,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { TextToScript, BundleBlueprint } from 'script/transpiler-v2';
+import { TextToScript, CompileBlueprint } from 'script/transpiler-v2';
 import TEST_BPS from 'test/jsdata/script-compiler-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -25,7 +25,7 @@ function TestCompiler(index?: number) {
     if (!singleTest || index === idx) {
       const [desc, text] = test;
       const script = TextToScript(text);
-      const bundle = BundleBlueprint(script);
+      const bundle = CompileBlueprint(script);
       const lead = `${idx}`.padStart(2, '0');
       if (singleTest) console.group('test', lead, '-', desc);
       else console.groupCollapsed('test', lead, '-', desc);

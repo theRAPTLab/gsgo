@@ -9,6 +9,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import SM_Object from 'lib/class-sm-object';
+import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import SM_Bundle from 'lib/class-sm-bundle';
 import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 import * as CHECK from './dc-sim-data-utils';
@@ -19,12 +21,13 @@ const DBG = false;
 const FEATURES: Map<string, IFeature> = new Map();
 const BLUEPRINTS: Map<string, SM_Bundle> = new Map();
 const KEYWORDS: Map<string, IKeyword> = new Map();
-const VARS: Map<string, IScopeableCtor> = new Map();
+const VARS: Map<string, TPropType> = new Map();
 const EVENT_SCRIPTS: Map<string, Map<string, TSMCProgram>> = new Map();
 const TEST_SCRIPTS: Map<string, TSMCProgram> = new Map();
 const NAMED_SCRIPTS: Map<string, TSMCProgram> = new Map();
 const NAMED_FUNCTIONS: Map<string, Function> = new Map();
-///
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+type TPropType = typeof SM_String | typeof SM_Number | typeof SM_Boolean;
 
 /// HELPER METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -137,34 +140,32 @@ function GetAllKeywords(): string[] {
 /// VALUE TYPE UTILITIES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a SMObject, store in VARS dict */
-function RegisterVarCTor(propType: string, ctor) {
+function RegisterPropType(propType: string, ctor: TPropType) {
   propType = m_EnsureLowerCase(propType);
-  if (VARS.has(propType)) throw Error(`RegisterVarCTor: ${propType} exists`);
+  if (VARS.has(propType)) throw Error(`RegisterPropType: ${propType} exists`);
   VARS.set(propType, ctor);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: get the registered SMObject constructor by name */
-function GetVarCtor(propType: string): IScopeableCtor {
+function GetPropTypeCtor(propType: string): TPropType {
   propType = m_EnsureLowerCase(propType);
-  if (!VARS.has(propType)) throw Error(`GetVarCtor: ${propType} `);
+  if (!VARS.has(propType)) throw Error(`GetPropTypeCtor: ${propType} `);
   return VARS.get(propType);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return the VAR ctor dictionary */
-function GetPropTypesDict(): Map<string, IScopeableCtor> {
+function GetPropTypesDict(): Map<string, TPropType> {
   return VARS;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetAllVarCtors() {
+function GetAllPropTypeCtors() {
   const list = [...VARS.entries()];
   return list;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: get symbol data for a named type (e.g. 'number') */
-function SymbolDefFor(propType: string): TSymbolData {
-  propType = m_EnsureLowerCase(propType);
-  const def = VARS.get(propType);
-  if (def) return def.Symbols;
+function GetPropTypeSymbolsFor(propType: string): TSymbolData {
+  const { Symbols } = VARS.get(propType);
+  return Symbols;
 }
 
 /// FEATURES ///////////////////////////////////////////////////////////////////
@@ -340,11 +341,11 @@ export {
 export { RegisterKeyword, GetKeyword, GetAllKeywords };
 /// scriptable properties are called "gvars" and have constructors for each type
 export {
-  RegisterVarCTor,
-  GetVarCtor,
-  SymbolDefFor,
+  RegisterPropType,
+  GetPropTypeCtor,
   GetPropTypesDict,
-  GetAllVarCtors
+  GetAllPropTypeCtors,
+  GetPropTypeSymbolsFor
 };
 /// extensions to the script engine capabilities are handled with "feature" modules
 export {

@@ -550,7 +550,8 @@ function m_RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
  */
 function ScriptUpdate(data) {
   const source = TRANSPILER.TextToScript(data.script);
-  const bundle = TRANSPILER.BundleBlueprint(source); // compile to get name
+  console.error('calling BundleBlueprint');
+  // const bundle = TRANSPILER.BundleBlueprint(source); // compile to get name
   const bpName = bundle.name;
 
   // 1. Did the blueprint name change?  Remove the old blueprint

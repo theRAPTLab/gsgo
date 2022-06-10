@@ -63,7 +63,9 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
  */
 function CompileText(text: string = '', refs?: TSymbolRefs): TSMCProgram {
   const script = TOKENIZER.TextToScript(text);
-  return COMPILER.CompileScript(script, refs);
+  let bundle: SM_Bundle = new SM_Bundle('test-validate');
+  bundle = COMPILER.SymbolizeBlueprint(script, bundle);
+  return COMPILER.CompileScript(script, { bundle, globals: {} });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Given a lineScript in text form and a bundle with symbols, validate it */
@@ -133,8 +135,7 @@ export {
   //
   CompileBlueprint, // API: save a blueprint script as a bundle with program output
   SymbolizeBlueprint, // API: save blueprint symbols to a bundle
-  ValidateBlueprint, // API: save validation tokens to a bundle
-  BundleBlueprint // API: Compile,Symbolize,Validate a blueprint script to a bundle
+  ValidateBlueprint // API: save validation tokens to a bundle
 } from 'script/tools/script-compiler';
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

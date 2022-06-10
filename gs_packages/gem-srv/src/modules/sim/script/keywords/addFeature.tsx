@@ -11,6 +11,7 @@ import Keyword from 'lib/class-keyword';
 import { addFeature } from 'script/ops/agent-ops';
 import { GetFeature } from 'modules/datacore/dc-sim-data';
 import { RegisterKeyword } from 'modules/datacore';
+import { TokenToString } from 'script/tools/script-tokenizer';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,17 +23,16 @@ export class AddFeature extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit, idx: number): TOpcode[] {
-    const [, featureName] = unit;
-    const feat = GetFeature(featureName);
-    if (feat === undefined) return [[`no feature '${featureName}'`, idx]];
+  compile(unit: TScriptUnit): TOpcode[] {
     const progout = [];
-    progout.push(addFeature(featureName as string));
+    const [, featureName] = unit;
+    const feat = GetFeature(featureName as string);
+    if (feat !== undefined) progout.push(addFeature(featureName as string));
     return progout;
   }
 
   symbolize(unit: TScriptUnit): TSymbolData {
-    const [, featureName] = unit;
+    const featureName = TokenToString(unit[1]);
     const feat = GetFeature(featureName);
     if (feat === undefined) {
       console.warn(`no feature named ${featureName}`);

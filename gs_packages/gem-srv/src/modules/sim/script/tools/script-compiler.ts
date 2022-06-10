@@ -63,7 +63,7 @@ function DecodeTokenPrimitive(arg) {
 /** Converts scriptToken to the runtime value pased to keyword methods
  *  like compiler(), symbolize(), and validate()
  */
-function DecodeToken(tok: IToken): any {
+function DecodeToken(tok: IToken, refs: TSymbolRefs): any {
   const [type, value] = CHECK.UnpackToken(tok);
   if (type === undefined)
     throw Error(`DecodeToken: invalid token ${JSON.stringify(tok)}`);
@@ -76,7 +76,7 @@ function DecodeToken(tok: IToken): any {
   if (type === 'comment') return { comment: value };
   if (type === 'directive') return '_pragma';
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  if (type === 'block') return CompileScript(value);
+  if (type === 'block') return CompileScript(value, refs);
   if (type === 'program') return SIMDATA.GetProgram(value);
   throw Error(`DecodeToken unhandled type ${type}`);
 }
@@ -85,14 +85,14 @@ function DecodeToken(tok: IToken): any {
  *  it is time to invoke a compiler function. See also UnpackStatement() for
  *  a similar function that returns [type,value] (in dc-sim-data-utils)
  */
-function DecodeStatement(statement: TScriptUnit): any[] {
+function DecodeStatement(statement: TScriptUnit, refs: TSymbolRefs): any[] {
   const dUnit: TScriptUnit = statement.map((tok, line) => {
     if (line === 0) {
-      const arg = DecodeToken(tok);
+      const arg = DecodeToken(tok, refs);
       if (typeof arg === 'object' && arg.comment) return '_comment';
       return arg;
     }
-    return DecodeToken(tok);
+    return DecodeToken(tok, refs);
   });
   return dUnit;
 }
@@ -102,24 +102,29 @@ function DecodeStatement(statement: TScriptUnit): any[] {
  */
 function ExtractBlueprintMeta(script: TScriptUnit[]): TBlueprintMeta {
   const fn = 'ExtractBlueprintMeta:';
+  const bundle = new SM_Bundle('ExtractBlueprintMeta');
+  const refs = { bundle, globals: {} };
   let bpName: string;
   let bpBase: string;
   let programs = new Set();
   let tags = new Map();
   script.forEach(stm => {
-    const [kw, directive, ...args] = DecodeStatement(stm);
-    if (kw !== '_pragma') return;
+    const [kwTok, dirTok, ...arg] = stm;
+    const [, kw] = CHECK.UnpackToken(kwTok);
+    if (kw !== '#') return;
+    const [, directive] = CHECK.UnpackToken(dirTok);
     switch (directive.toUpperCase()) {
       case 'BLUEPRINT':
         if (!bpName) {
-          [bpName, bpBase] = args;
+          bpName = DecodeToken(arg[0], refs);
+          if (arg[1]) bpBase = DecodeToken(arg[1], refs);
         } else throw Error(`${fn} blueprint name repeated`);
         break;
       case 'PROGRAM':
-        programs.add(args[0]);
+        programs.add(DecodeToken(arg[0], refs));
         break;
       case 'TAG':
-        tags.set(args[0], args[1]);
+        tags.set(DecodeToken(arg[0], refs), DecodeToken(arg[1], refs));
         break;
       default: // do nothing
     }
@@ -142,18 +147,11 @@ function ExtractBlueprintMeta(script: TScriptUnit[]): TBlueprintMeta {
 /// SYMBOLIZE API /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: A mirror of CompileStatement, extracts the symbol data as a separate
- *  pass so we don't have to rewrite the entire compiler and existing keyword
- *  code. Note that this does not recurse into statement blocks, because the
- *  only keywords in a statement that add symbol data are `addProp` and `when`
- *  which are always level 0 (not nested)
- *  @param {TScriptUnit} statement - a line of script tokens to validate
- *  @param {number} [line] - current line being symbolized metadata
- *  @returns TSymbolData
- *  @returns TValidatedScriptUnit
- */
-function SymbolizeStatement(statement: TScriptUnit, line?: number): TSymbolData {
+ *  pass. This only needs to handle the level 0 statements, as statements
+ *  inside of blocks do not have symbol data...I hope */
+function SymbolizeStatement(stm: TScriptUnit, line?: number): TSymbolData {
   const fn = 'SymbolizeStatement:';
-  const kw = CHECK.DecodeKeywordToken(statement[0]);
+  const kw = CHECK.DecodeKeywordToken(stm[0]);
   if (!kw) return {}; // blank lines emit no symbol info
   const kwp = SIMDATA.GetKeyword(kw);
   if (!kwp) {
@@ -162,12 +160,41 @@ function SymbolizeStatement(statement: TScriptUnit, line?: number): TSymbolData 
       error: { code: 'invalid', info: `missing kwProcessor for: '${kw}'` }
     };
   }
-  // ***NOTE***
-  // May return empty object, but that just means there are no symbols produced.
-  // keywords don't return symbols unless they are adding props or features.
-  const kwArgs = DecodeStatement(statement);
-  const symbols = kwp.symbolize(kwArgs, line); // these are new objects
+  // NOTE: most keywords don't return symbols because they don't add props
+  const symbols = kwp.symbolize(stm, line); // these are new objects
   return symbols;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Given a blueprint script, extract all the symbol information inside
+ *  and populate the current bundle .symbols property
+ *  @param {TScriptUnit[]} script - tokenized scriptText
+ *  @param {SM_Bundle} [bdl] - bundle to use rather than retrieve simdata dict
+ *  @returns SM_Bundle
+ */
+function SymbolizeBlueprint(script: TScriptUnit[], bdl?: SM_Bundle) {
+  const fn = 'SymbolizeBlueprint:';
+  let bpName;
+  // open provided bundle or look it up in SIMDATA by bpName
+  if (bdl instanceof SM_Bundle) BUNDLER.OpenBundle(bdl);
+  else {
+    const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
+    [bpName] = BLUEPRINT;
+    BUNDLER.OpenBundle(bpName);
+  }
+  console.log(`${fn} ${bpName}`);
+  // setup bundle type
+  BUNDLER.SetBundleType(EBundleType.BLUEPRINT);
+  // add default agent symbols
+  BUNDLER.AddSymbols(SM_Agent.Symbols);
+  // symbolize statement-by-statement
+  script.forEach((stm, line) => {
+    const symbols = SymbolizeStatement(stm, line);
+    BUNDLER.AddSymbols(symbols);
+  }); // script forEach
+  // store script in bundle
+  BUNDLER.SaveScript(script);
+  // return bundle
+  return BUNDLER.CloseBundle();
 }
 
 /// VALIDATION API ////////////////////////////////////////////////////////////
@@ -227,14 +254,14 @@ function ValidateBlueprint(script: TScriptUnit[]) {
  */
 function CompileStatement(
   stm: TScriptUnit,
-  refs?: TSymbolRefs
+  refs: TSymbolRefs
 ): TCompiledStatement {
   const fn = 'CompileStatement:';
   const kw = CHECK.DecodeKeywordToken(stm[0]);
   if (!kw) return []; // skips comments, blank lines
   const kwp = SIMDATA.GetKeyword(kw) || SIMDATA.GetKeyword('keywordErr');
   if (!kwp) throw Error(`${fn} bad keyword ${kw}`);
-  const kwArgs = DecodeStatement(stm);
+  const kwArgs = DecodeStatement(stm, refs);
   const compiledStatement = kwp.compile(kwArgs, refs);
   return compiledStatement;
 }
@@ -244,46 +271,16 @@ function CompileStatement(
  *  @param {TScriptUnit[]} script - tokenized scriptText
  *  @returns TSMCProgram
  */
-function CompileScript(script: TScriptUnit[], refs?: TSymbolRefs): TSMCProgram {
+function CompileScript(script: TScriptUnit[], refs: TSymbolRefs): TSMCProgram {
+  if (refs === undefined) throw Error(`CompileScript: No Refs`);
   const program: TSMCProgram = [];
   if (script.length === 0) return [];
   // compile unit-by-unit
   script.forEach((statement, ii) => {
-    console.log(ii, 'compiling', statement);
     const objcode = CompileStatement(statement, refs);
     program.push(...(objcode as TSMCProgram));
   });
   return program;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Given a blueprint script, extract all the symbol information inside
- *  and populate the current bundle .symbols property
- *  @param {TScriptUnit[]} script - tokenized scriptText
- *  @param {SM_Bundle} [bdl] - bundle to use rather than retrieve simdata dict
- *  @returns SM_Bundle
- */
-function SymbolizeBlueprint(script: TScriptUnit[], bdl?: SM_Bundle) {
-  const fn = 'SymbolizeBlueprint:';
-  // open provided bundle or look it up in SIMDATA by bpName
-  if (bdl instanceof SM_Bundle) BUNDLER.OpenBundle(bdl);
-  else {
-    const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
-    const [bpName] = BLUEPRINT;
-    BUNDLER.OpenBundle(bpName);
-  }
-  // setup bundle type
-  BUNDLER.SetBundleType(EBundleType.BLUEPRINT);
-  // add default agent symbols
-  BUNDLER.AddSymbols(SM_Agent.Symbols);
-  // symbolize statement-by-statement
-  script.forEach((stm, line) => {
-    const symbols = SymbolizeStatement(stm, line);
-    BUNDLER.AddSymbols(symbols);
-  }); // script forEach
-  // store script in bundle
-  BUNDLER.SaveScript(script);
-  // return bundle
-  return BUNDLER.CloseBundle();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Given a blueprint script, extract the name and save it to the
@@ -307,6 +304,7 @@ function CompileBlueprint(script: TScriptUnit[], bdl?: SM_Bundle): SM_Bundle {
   // compile statement-by-statement
 
   const refs = BUNDLER.SymbolRefs();
+  console.log('refs are', refs);
   script.forEach((stm, line) => {
     refs.line = line;
     const objcode = CompileStatement(stm, refs);
@@ -317,51 +315,11 @@ function CompileBlueprint(script: TScriptUnit[], bdl?: SM_Bundle): SM_Bundle {
   // return bundle
   return BUNDLER.CloseBundle();
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: To create a complete bundle with symbol data and blueprint data,
- *  use this call (replaces the old CompileBlueprint()
- *  WARNING: This doesn't work for blueprints that refer to other blueprints
- */
-function BundleBlueprint(script: TScriptUnit[]): SM_Bundle {
-  const fn = 'BundleBlueprint:';
-  console.warn(`${fn} DEPRECATED`);
-  // get blueprint metadata
-  const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
-  const [bpName] = BLUEPRINT;
-  // get the bundle to work on
-  BUNDLER.OpenBundle(bpName);
-  BUNDLER.SetBundleType(EBundleType.BLUEPRINT);
-  BUNDLER.AddSymbols(SM_Agent.Symbols);
-
-  if (!Array.isArray(script))
-    throw Error(`${fn} script should be array, not ${typeof script}`);
-
-  const refs = BUNDLER.SymbolRefs();
-  console.log(`${fn} compiling ${bpName} w/ refs`, refs);
-  script.forEach((stm, line) => {
-    // normal processing of statement
-    const symbols = SymbolizeStatement(stm, line);
-    BUNDLER.AddSymbols(symbols);
-    refs.line = line;
-    const objcode = CompileStatement(stm, refs);
-    BUNDLER.AddProgram(objcode);
-  }); // script forEach
-  if (!BUNDLER.HasBundleName) throw Error(`${fn} missing BLUEPRINT directive`);
-  // store script in bundle
-  BUNDLER.SaveScript(script);
-  // return bundle
-  return BUNDLER.CloseBundle();
-}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// MAIN API
-export {
-  BundleBlueprint,
-  CompileBlueprint,
-  ValidateBlueprint,
-  SymbolizeBlueprint
-};
+export { CompileBlueprint, ValidateBlueprint, SymbolizeBlueprint };
 /// UTILITIES
 export { ExtractBlueprintMeta, CompileScript };
 export {

@@ -10,7 +10,7 @@
 import RNG from 'modules/sim/sequencer';
 import SM_Object from 'lib/class-sm-object';
 // uses types defined in t-script.d
-import { RegisterVarCTor } from 'modules/datacore';
+import { RegisterPropType } from 'modules/datacore';
 import { SM_Boolean } from './class-sm-boolean';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -207,4 +207,4 @@ SM_Number.Symbols = {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterVarCTor('Number', SM_Number);
+RegisterPropType('Number', SM_Number);

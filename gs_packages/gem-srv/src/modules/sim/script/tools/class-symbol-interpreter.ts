@@ -31,8 +31,7 @@ const PR = UR.PrefixUtil('SYMPRET', 'TagTest');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Interprets script tokens in the context of symbol data, returning a
  *  validation token detailing if it is correct. Requires symboltables
- *  to be passed as the data used to intepret a token.
- */
+ *  to be passed as the data used to intepret a token. */
 class SymbolInterpreter {
   refs: TSymbolRefs; // replaces token, bundle, xtx_obj, symscope
   cur_scope: TSymbolData; // current scope as drilling down into objref
@@ -55,14 +54,14 @@ class SymbolInterpreter {
   }
 
   /** reference are the default lookup dictionaries. This is more than
-   *  just the globals context, including the entire
-   */
+   *  just the globals context, including the entire */
   setSymbolTables(refs: any) {
     const fn = 'setSymbolTables:';
     if (refs === undefined) {
-      console.warn(`${fn} skipping because might be recursive symbolize`);
+      console.warn(`${fn} no refs passed in`);
+      throw Error(`${fn} refs are undefined`);
     }
-    const { bundle, globals } = refs || {};
+    const { bundle, globals } = refs;
     if (DBG) console.log(`${fn} setting from`, refs);
     if (bundle) {
       if (CHECK.IsValidBundle(bundle)) this.refs.bundle = bundle;
@@ -143,8 +142,7 @@ class SymbolInterpreter {
   /// the blueprint name
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** If part is 'agent', return the bundle symbols or undefined. This is only
-   *  used for objref check of first part
-   */
+   *  used for objref check of first part */
   strAgentLiteral(part: string, scope?: TSymbolData) {
     const fn = 'agentLiteral:';
     if (scope)
@@ -199,8 +197,7 @@ class SymbolInterpreter {
   /// SCOPE-BASED INTERPRETER METHODS /////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** scans the current scope for a terminal property or feature, after
-   *  which a methodName would be expected in the next tokens
-   */
+   *  which a methodName would be expected in the next tokens */
   objRef(token: IToken): TSymbolData {
     // error checking & type overrides
     const fn = 'objRef:';
@@ -290,8 +287,7 @@ class SymbolInterpreter {
     });
   }
 
-  /** given an existing symboldata scope set in this.cur_scope, looks for a method.
-   */
+  /** given an existing symboldata scope set in this.cur_scope, looks for a method. */
   methodName(token: IToken): TSymbolData {
     const fn = 'methodName:';
     const gsType = 'method';
@@ -390,8 +386,7 @@ class SymbolInterpreter {
 
   /// METHOD ARGUMENT INTERPRETER METHODS /////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** process the argument list that follows a methodName in GEMSCRIPT
-   */
+  /** process the argument list that follows a methodName in GEMSCRIPT */
   argsList(tokens: IToken[]): TSymbolData[] {
     const fn = 'argsList:';
     const vtoks = [];
@@ -468,8 +463,7 @@ class SymbolInterpreter {
   }
 
   /** Return the symbols for an methodSig argType entry. Does NOT change scope
-   *  because the scope is always the same methodSig symbol data
-   */
+   *  because the scope is always the same methodSig symbol data */
   argSymbol(methodArg, scriptToken): TSymbolData {
     const fn = 'argSymbol:';
 
@@ -557,7 +551,7 @@ class SymbolInterpreter {
       const ctors = {};
       const list = [...map.keys()];
       list.forEach(ctorName => {
-        ctors[ctorName] = map.get(ctorName).Symbols;
+        ctors[ctorName] = SIMDATA.GetPropTypeSymbolsFor(ctorName);
       });
       symData = new VSDToken({ ctors }, { gsType, unitText });
     }
@@ -717,18 +711,17 @@ class SymbolInterpreter {
   /// DEREF FUNCTIONS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** similar to objRef algorith, which we'll just rip off right now */
-  derefProp(token: IToken, refs: TSymbolRefs): TDerefFunction {
+  derefProp(token: IToken, refs: TSymbolRefs): TSM_PropFunction {
     const fn = 'derefProp:';
-    console.group(fn);
     this.setSymbolTables(refs);
     let [matchType, parts] = TOKENIZER.UnpackToken(token);
     // convert identifier to single-part objref
     // and return error if it's not objref or identifier
 
     if (matchType === 'identifier') parts = [parts];
+    else if (matchType === 'jsString') parts = [parts];
     else if (matchType !== 'objref') {
-      console.log('matchtype', matchType, parts, 'invalid...returning void');
-      console.groupEnd();
+      console.warn('matchtype', matchType, parts, 'invalid...returning void');
       return undefined;
     }
 
@@ -750,7 +743,6 @@ class SymbolInterpreter {
     //
     if (terminal) {
       if (p) {
-        console.groupEnd();
         return agent => agent.getPropValue(part);
       }
       throw Error(`${fn} ${unitText} isn't a prop`);
@@ -782,7 +774,33 @@ class SymbolInterpreter {
       else throw Error(`${fn} non-evaluable ${unitText}`);
     }
     console.log('dstack', dStack);
-    console.groupEnd();
+    /*/
+    THIS IS WHERE THE CODE GOES EEEP
+    /*/
+    dStack.forEach(pass => {
+      const { ctx, key } = pass;
+      if (ctx === 'feature') {
+        // agent.getFeature(key)
+        // TERMINAL
+      }
+      if (ctx === 'blueprint') {
+        // const alien = globals[key];
+        // ?prop
+        // ?feature
+        // ?feature/prop
+      }
+      if (ctx === 'agent') {
+        // skip, can expect
+        // ?prop
+        // ?feature
+        // ?feature/prop
+      }
+      if (ctx === 'prop') {
+        // agent.getProp(key)
+        // TERMINAL
+      }
+    });
+    return (agent, ...args) => console.log('running');
   }
 } // end of SymbolInterpreter class
 

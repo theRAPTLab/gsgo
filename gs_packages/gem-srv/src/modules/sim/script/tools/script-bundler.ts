@@ -241,13 +241,14 @@ function AddSymbols(symdata: TSymbolData) {
   if (bdl.symbols === undefined) bdl.symbols = {};
   const _bdlsym = bdl.symbols;
 
-  if (symdata === undefined) console.warn('WHAT THE HELL');
+  if (symdata === undefined) console.error(`${fn} no symbol data provided`);
 
   if (symdata.features) {
     // featureName --> featureModule
     if (_bdlsym.features === undefined) _bdlsym.features = {};
     for (const [featName, featSymbols] of Object.entries(symdata.features)) {
-      if (_bdlsym.features[featName]) console.warn('feature', featName, 'exists');
+      if (_bdlsym.features[featName])
+        console.warn('overwriting feature', featName);
       if (DBG) {
         console.groupCollapsed(...PR(`AddSymbol: ${featName}`));
         console.log(featSymbols);
@@ -261,7 +262,7 @@ function AddSymbols(symdata: TSymbolData) {
     // propName --->
     if (_bdlsym.props === undefined) _bdlsym.props = {};
     for (const [propName, symbolData] of Object.entries(symdata.props)) {
-      if (_bdlsym.props[propName]) console.warn('prop', propName, 'exists');
+      if (_bdlsym.props[propName]) console.warn('overwriting prop', propName);
       if (DBG) {
         console.groupCollapsed(...PR(`AddSymbol: ${propName}`));
         console.log(symbolData);

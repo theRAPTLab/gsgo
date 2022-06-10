@@ -18,7 +18,7 @@ import * as COMPILER from './script-compiler';
  */
 function ExtractBlueprintName(bpText: string): string {
   const script = TextToScript(bpText);
-  const bundle = COMPILER.BundleBlueprint(script); // compile to get name
+  const bundle = COMPILER.CompileBlueprint(script); // compile to get name
   return bundle.name;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

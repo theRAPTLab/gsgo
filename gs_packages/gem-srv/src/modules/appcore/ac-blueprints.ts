@@ -105,10 +105,13 @@ function m_MergeBlueprint(bpDef: TBlueprint, bpDefs: TBlueprint[]): TBlueprint[]
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Blueprint symbols need to be extracted before they are compiled */
-function m_SymbolizeBlueprints(blueprints: TBlueprint[]) {
-  blueprints.forEach(b => {
-    // symbolizeBlueprintHelper in transpiler?
+function m_SymbolizeBlueprints(bpDefs: TBlueprint[]) {
+  console.groupCollapsed('Symbolizing Blueprints');
+  bpDefs.forEach(b => {
+    const script = TRANSPILER.TextToScript(b.scriptText);
+    TRANSPILER.SymbolizeBlueprint(script);
   });
+  console.groupEnd();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Use this to compile and add additional blueprints to an already running sim
@@ -124,6 +127,7 @@ function m_SymbolizeBlueprints(blueprints: TBlueprint[]) {
 function m_CompileBlueprints(bpDefs: TBlueprint[]): TBlueprint[] {
   return bpDefs.map(b => {
     const script = TRANSPILER.TextToScript(b.scriptText);
+    TRANSPILER.SymbolizeBlueprint(script);
     const bundle = TRANSPILER.CompileBlueprint(script);
     TRANSPILER.RegisterBlueprint(bundle); // Save to datacore
     return { name: bundle.name, scriptText: b.scriptText };

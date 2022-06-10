@@ -160,7 +160,8 @@ STORE._interceptState(state => {
   if (!script_tokens && script_text) {
     const toks = TRANSPILER.TextToScript(script_text);
     state.script_tokens = toks;
-    state.cur_bdl = TRANSPILER.BundleBlueprint(toks);
+    TRANSPILER.SymbolizeBlueprint(toks);
+    state.cur_bdl = TRANSPILER.CompileBlueprint(toks);
     const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
     // INSERT validation tokens to script_page
     state.script_page = vmPage;
@@ -271,7 +272,8 @@ function WizardTextChanged(text) {
     // and update the state WITHOUT broadcasting the changes
     // to avoid retriggering the scriptText editor
     script_tokens = TRANSPILER.TextToScript(text); // can throw error
-    cur_bdl = TRANSPILER.BundleBlueprint(script_tokens); // can throw error
+    TRANSPILER.SymbolizeBlueprint(script_tokens);
+    cur_bdl = TRANSPILER.CompileBlueprint(script_tokens); // can throw error
     STORE._setState({ script_text: text, script_tokens, cur_bdl });
     // since the script tokens have changed, need to redo the viewmodels for
     // the scriptWizard and tell it to update

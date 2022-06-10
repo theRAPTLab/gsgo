@@ -6,7 +6,7 @@
 
 import SM_Object from 'lib/class-sm-object';
 // uses types defined in t-script.d
-import { RegisterVarCTor } from 'modules/datacore';
+import { RegisterPropType } from 'modules/datacore';
 import { SM_Boolean } from './class-sm-boolean';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -46,4 +46,4 @@ SM_String.Symbols = {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterVarCTor('String', SM_String);
+RegisterPropType('String', SM_String);

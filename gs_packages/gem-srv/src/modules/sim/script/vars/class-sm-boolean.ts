@@ -1,6 +1,6 @@
 import SM_Object from 'lib/class-sm-object';
 // uses types defined in t-script.d
-import { RegisterVarCTor } from 'modules/datacore';
+import { RegisterPropType } from 'modules/datacore';
 
 export class SM_Boolean extends SM_Object {
   fuzzy: number;
@@ -83,4 +83,4 @@ SM_Boolean.Symbols = {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterVarCTor('Boolean', SM_Boolean);
+RegisterPropType('Boolean', SM_Boolean);

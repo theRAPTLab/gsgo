@@ -23,6 +23,21 @@ import StatusObject from './class-status-object';
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let REF_ID_COUNT = 0;
+const INTERNAL_PROPS = [
+  'zIndex',
+  'color',
+  'scale',
+  'scaleY',
+  'orientation',
+  'visible',
+  'alpha',
+  'isInert',
+  'isInhabitingTarget',
+  'statusValue',
+  'statusValueColor',
+  'statusValueIsLarge'
+];
+const UNIVERSAL_PROPS = ['x', 'y', 'skin', 'statusText'];
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -210,7 +225,8 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
     const fn = 'symbolize:';
     const sym = {};
     // Only expose specific SM_Agent properties
-    const props = ['x', 'y', 'statusText'];
+    // however, ben's init scripts use the internal props so this a problem
+    const props = [...UNIVERSAL_PROPS, ...INTERNAL_PROPS];
     for (let prop of props) {
       if (sym[prop] !== undefined) throw Error(`${fn}: ${prop} already exists`);
       sym[prop] = this.getProp(prop).symbolize();
@@ -510,7 +526,7 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
 
 /// STATIC VARIABLES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SM_Agent.Symbols = undefined; // set by SM_Agent.makeDefaultSymbols()
+SM_Agent.Symbols = undefined; // set by SM_Agent.symbolize()
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
