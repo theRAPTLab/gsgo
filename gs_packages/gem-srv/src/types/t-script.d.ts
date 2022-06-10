@@ -26,7 +26,7 @@ declare global {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** The fundamentable scriptable element is the SM_Object, which implement
    *  the essential getMethod, getProp, and value methods.
-   *  Agent, Var, and Feature classes implement this interface. */
+   *  SM_Agent, prop types, and SM_Feature classes implement this interface. */
   interface ISM_Object {
     id: any;
     refId?: any;
@@ -149,12 +149,12 @@ declare global {
     initialize(pm: any): void;
     decorate(agent: IAgent): void;
     featAddProp(agent: IAgent, key: string, prop: ISM_Object): void;
-    featAddMethod(mName: string, smc_or_f: FeatureMethod): void;
-    featGetMethod(mName: string): FeatureMethod;
+    featAddMethod(mName: string, smc_or_f: TSM_FeatureMethod): void;
+    featGetMethod(mName: string): TSM_FeatureMethod;
     symbolize(): TSymbolData;
   }
-  /** Feature methods are either functions or TSMCPrograms */
-  type FeatureMethod = (agent: IAgent, ...any) => any;
+  /** SM_Feature methods are either functions or TSMCPrograms */
+  type TSM_FeatureMethod = (agent: IAgent, ...any) => any;
 
   /// SIMULATION RUNTIME //////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -98,7 +98,7 @@ class SimControl {
 
     // 6. Update Cursor System
     //    This needs to happen AFTER instances are created
-    //    since that is when the Cursor Feature is loaded
+    //    since that is when the Cursor SM_Feature is loaded
     //    which in turn injects the Cursor blueprint.
     UR.RaiseMessage('COMPILE_CURSORS');
 

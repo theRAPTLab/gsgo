@@ -11,7 +11,7 @@
   Meters
   * Meters can be set directly via featProp 'meter', or
   * Meters can be bound to an agent property using the `bindMeterTo` method.
-  * If you bind to a property, the Feature will automatically calculate
+  * If you bind to a property, the SM_Feature will automatically calculate
     the meter value based on the min and max properties.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/

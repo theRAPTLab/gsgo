@@ -23,7 +23,7 @@ let INSTANCE_COUNTER = INSTANCE_COUNTER_START_VAL;
 
 /// AGENT SUPPORT UTILITIES ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** UTILITY: Copies all `agent.prop` GVars.  Does not copy Feature GVars
+/** UTILITY: Copies all `agent.prop` GVars.  Does not copy SM_Feature props.
  *  Used by CopyAgentProps.
  */
 function m_CopyProps(props: object, targetProps: object) {

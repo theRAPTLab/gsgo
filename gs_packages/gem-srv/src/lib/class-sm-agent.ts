@@ -254,7 +254,7 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
   /// receives an agent instance as a memory context to work with.
   /// All feature methods have the signature method(agentInstance, ...args)
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Feature modules are registered in a featureMap for each instance */
+  /** SM_Feature modules are registered in a featureMap for each instance */
   addFeature(fName: string): void {
     // does key already exist in this agent? double define in blueprint!
     if (this.featureMap.has(fName))
@@ -288,7 +288,7 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
     const feat = this.getFeature(fName);
     const featMethod = feat[mName];
     if (!featMethod)
-      throw Error(`method '${mName}' not in Feature '${feat.name}'`);
+      throw Error(`method '${mName}' not in SM_Feature '${feat.name}'`);
     return [feat, featMethod];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -301,7 +301,7 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
     return featMethod.call(feat, this, ...args);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Return feature prop given the passed agent and key. Feature props are
+  /** Return feature prop given the passed agent and key. SM_Feature props are
    *  stored in agent.props[featureName] in its on key-value object. Note
    *  that the built-in SM_Object.getProp() can also handle dotted notation
    *  so this method is superfluous but retained for compatibility */

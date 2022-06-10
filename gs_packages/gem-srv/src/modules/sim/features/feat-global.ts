@@ -3,7 +3,7 @@
 
   DEPRECATED
   The global agent is now accessible directly via script, so the Global
-  Feature is really no longer necessary.
+  SM_Feature is really no longer necessary.
   e.g. `prop global.sparkCounter add 1`
   See: https://gitlab.com/stepsys/gem-step/gsgo/-/wikis/Scripting/Global
 

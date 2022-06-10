@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The Feature Class!
+  The SM_Feature Class!
 
   This is the "FeaturePack" base class, which you can extend to implement
   your own features. It is "Scopeable" in that it understands SMObject
@@ -47,10 +47,10 @@ const DBG = false;
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Feature code uses agent objects for state and variable storage. When a
+/** SM_Feature code uses agent objects for state and variable storage. When a
  *  feature is invoked by an agent, it passes itself in the invocation.
  */
-class Feature implements IFeature {
+class SM_Feature implements IFeature {
   meta: { name: string };
   method: SM_Dict;
   //
@@ -129,21 +129,21 @@ class Feature implements IFeature {
     dict[vName] = literal;
   }
   /** Define a method to this feature instance. Note that there is only one
-   *  instance of a Feature at a time, so the code for instance methods
+   *  instance of a SM_Feature at a time, so the code for instance methods
    *  exist in only one place, and require that an agent instance is
    *  passed to it. This is a mirror of SM_Object.addMethod, modified
    *  to use the local method map
    */
-  featAddMethod(mName: string, smc_or_f: FeatureMethod) {
+  featAddMethod(mName: string, smc_or_f: TSM_FeatureMethod) {
     const { method } = this;
     if (method[mName]) {
       console.warn('method', method, mName);
-      throw Error(`method '${mName}' already in Feature.${this.name}`);
+      throw Error(`method '${mName}' already in SM_Feature.${this.name}`);
     }
     method[mName] = smc_or_f;
   }
   /** retrieve a defined method for shenanigans outside the agent context */
-  featGetMethod(mName: string): FeatureMethod {
+  featGetMethod(mName: string): TSM_FeatureMethod {
     const { method } = this;
     return method[mName];
   }
@@ -151,4 +151,4 @@ class Feature implements IFeature {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Feature;
+export default SM_Feature;
