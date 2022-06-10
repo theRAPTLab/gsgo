@@ -38,7 +38,6 @@ declare global {
     getMethod: (name: string) => TSM_Method;
     getProp: (name: string) => ISM_Object;
     getPropValue: (name: string) => any;
-    serialize?: () => any[];
     symbolize?: () => TSymbolData;
     get value(): any;
     set value(val: any);
@@ -83,18 +82,15 @@ declare global {
   interface IAgent extends ISM_Object, IActable, IControllable {
     blueprint: any;
     featureMap: Map<string, IFeature>;
-    execMethod: (name: string, ...args: any) => any;
     addFeature: (name: string) => void;
     hasFeature: (name: string) => boolean;
     getFeature: (name: string) => any;
-
     updateQueue: TSM_Method[];
     thinkQueue: TSM_Method[];
     execQueue: TSM_Method[];
     queueUpdateMessage: (msg: IMessage) => void;
     queueThinkMessage: (msg: IMessage) => void;
     queueExecMessage: (msg: IMessage) => void;
-    evaluateArgs: (...args: any) => any;
     exec: (prog: TSM_Method, ctx?: object, ...args) => any;
     getFeatMethod: (fname: string, mName: string) => [IFeature, TSM_Method];
     callFeatMethod: (fName: string, mName: string, ...args) => any;
@@ -162,8 +158,7 @@ declare global {
 
   /// SIMULATION RUNTIME //////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** A stackmachine Message, which consists of a message and an SMCProgram.
-   */
+  /** A stackmachine Message, which consists of a message and an SMCProgram */
   interface IMessage {
     id?: number;
     channel?: string;
@@ -236,25 +231,11 @@ declare global {
   type TNameSet = Set<string>;
   type TSymUnpackedArg = [name: string, type: TGSType];
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** describes the type of error that occurred during parsing so it can be
-   *  rendered in the GUI */
-  /// `valid | empty | error | unexpected | vague`
-  type TValidationErrorCodes =
-    | 'debug' // a debug placeholder
-    | 'invalid' // token incorrect type, or invalid value
-    | 'empty' // missing token
-    | 'extra' // extra token
-    | 'vague'; // indeterminate token need
-
   /// MAIN SYMBOL DATA DECLARATION ////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** data description of symbols for features, props. returned from anything
    *  that produces Symbol data: keywords with .symbolize(unit), gvars and feat
-   *  modules that implement a static .Symbols definition
-   *
-   *  WARNING: this is a 'by reference' dictionary of dictionaries, so modifying
-   *  a TSymbolData object property could corrupt multiple dictionaries! Consider
-   *  them read-only. */
+   *  modules that implement a static Symbols definition */
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   type TSymbolData = {
     // read-only dictionaries
@@ -314,6 +295,16 @@ declare global {
     info: string;
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** describes the type of error that occurred during parsing so it can be
+   *  rendered in the GUI */
+  /// `valid | empty | error | unexpected | vague`
+  type TValidationErrorCodes =
+    | 'debug' // a debug placeholder
+    | 'invalid' // token incorrect type, or invalid value
+    | 'empty' // missing token
+    | 'extra' // extra token
+    | 'vague'; // indeterminate token need
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** keyword.validate() returns an array of TSymbolData that
    *  the error state returns code and desc if a parse issue is detected
    *  if symbol information can be inferred despite an error, it will be
@@ -322,23 +313,10 @@ declare global {
     validationTokens: TSymbolData[];
     validationLog?: string[];
   };
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** tag types used by ben's extensions */
-  type TBundleTags = Map<string, any>;
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** store directives in the bundle as raw scriptunits*/
-  type TBundleDirectives = Map<string, IToken[]>;
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** datatype returned by ExtractBlueprintMeta() */
-  type TBlueprintMeta = {
-    BLUEPRINT: [bpName: string, bpBase: string];
-    PROGRAMS: { [programType: string]: true };
-    TAGS: { [tagName: string]: any };
-  };
 
   /// PROGRAM BUNDLES /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** These are the kind of programs  */
+  /** These are the kind of programs that the simulation engine knows about */
   interface ISMCPrograms {
     // blueprint
     define?: TSMCProgram; // def blueprint, props, features
@@ -368,6 +346,19 @@ declare global {
     tags?: TBundleTags; // ben's hack for 'character controlable' blueprints
     directives?: TBundleDirectives;
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** tag types used by ben's extensions */
+  type TBundleTags = Map<string, any>;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** store directives in the bundle as raw scriptunits*/
+  type TBundleDirectives = Map<string, IToken[]>;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** datatype returned by ExtractBlueprintMeta() */
+  type TBlueprintMeta = {
+    BLUEPRINT: [bpName: string, bpBase: string];
+    PROGRAMS: { [programType: string]: true };
+    TAGS: { [tagName: string]: any };
+  };
 
   /// SCRIPT UNIT TRANSPILER //////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -388,16 +379,16 @@ declare global {
   interface IKeywordCtor {
     new (keyword?: string): IKeyword;
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** A payload received from a Wizard UI component that has the reconstructed
-   *  ScriptUnit */
-  interface IScriptUpdate {
-    index: number;
-    scriptUnit: TScriptUnit;
-  }
+  /// SCRIPT COMPILER HELPERS /////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** function signatures for 'dereferencing' function in keyword compilers */
   type DerefMethod = (agent: IAgent, context: object) => ISM_Object;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** At runtime, a function is needed to extract a property from a live
+   *  agent instance, and this is generated at compile time. It's very similar
+   *  to TOpcode's method signature because it's designed to be used inside
+   *  of it, passing the original parameters to it  */
+  type TSM_PropFunction = (agent?: IAgent, sm_state?: IState) => any;
 
   /// STACKMACHINE TYPE DECLARATIONS //////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -450,7 +441,7 @@ declare global {
     NZ(): boolean;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** A stackmachine operation or "opcode" is a function that receives mutable
+  /** SM_Agents use this "opcode" format, which receives mutable
    *  agent, stack, scope, and condition flag objects. This is how agents
    *  and their props are changed by the scripting engine. The agent is
    *  the memory context, and the stack is used to pass values in/out. */
@@ -459,34 +450,25 @@ declare global {
     sm_state?: IState // machine state
   ) => void;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** At runtime, a function is needed to extract a property from a live
-   *  agent instance, and this is generated at compile time. It's very similar
-   *  to TOpcode's method signature because it's designed to be used inside
-   *  of it, passing the original parameters to it  */
-  type TDerefFunction = (agent?: IAgent, sm_state?: IState) => any;
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** a shim for "Registration Code", which runs globally and has a
-   *  different function signature than TOpcode. Used for code that runs outside
-   *  of an instanced Agent.
-   */
+  /** Used for transpiler-generated code that runs outside of an instanced
+   *  SM_Agent, for example the code that runs during CONDITION phase */
   type TRegcode = (
     agent?: IAgent // OPTIONAL memory context
   ) => void;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** A stackmachine program is an array of opcodes that are read from the
-   *  beginning and executed one-after-the-other. Each function is invoked
-   *  with the current data and scope stacks, as well as flags object that
-   *  can be updated by conditional opcodes */
+  /** A stackmachine program is an array of TOpcode function objects that
+   *  are invoked one-after-the-other with the same SM_Agent instance and
+   *  an optional memory context */
   type TSMCProgram = TOpcode[];
+  /** A global program is one that runs outside of SM_Agent, recieving only
+   *  optional memory context */
   type TSMCGlobalProgram = TRegcode[];
-  type TSMCFunction = TOpcode;
-  /** Also could be an AST, which is an object with a type property */
-  type TExpressionAST = { expr: object }; // expr is binary tre
-
+  /** An AST produced by expression-parser */
+  type TExpressionAST = { expr: any }; // expr is the top node of the AST
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** A stackmachine method can be either a stackmachine program OR a regular
-   *  function. The invocation method will check what it is */
-  type TSM_Method = TSMCProgram | TSMCFunction | TExpressionAST;
+  /** A stackmachine method can a regular js function, a TSMCProgram, or an
+   *  AST expression. SM_Agent.exec() determines how to run it */
+  type TSM_Method = TSMCProgram | TExpressionAST;
 } // end of global type declaration
 
 /// EXPORT AS MODULE FOR GLOBALS //////////////////////////////////////////////

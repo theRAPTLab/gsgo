@@ -48,13 +48,6 @@ export function dbgStackCount(num: number, desc: string = 'dbgStackCount') {
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function dbgAgent(match?: string) {
-  return (agent: IAgent): void => {
-    if ((match && agent.name === match) || !match)
-      console.log(`agent[${agent.name}] serialize:`, agent.serialize());
-  };
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** implement a pause */
 export function dbgOut(...args: any) {
   return (): void => {

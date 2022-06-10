@@ -1,7 +1,7 @@
 /* eslint-disable react/static-property-placement */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Scopeable Stack Machine Object
+  Simulator (Stack Machine) Object
 
   SM_Object is used for Agents and Agent Properties, as well as anything that
   has to work with StackMachineCode (SMC)
@@ -18,7 +18,10 @@ let m_objcount = 100; // smobject id creator
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function new_obj_id() {
+/** Create a unique id for every simulator object that's instanced into the
+ *  engine, which will be important for mapping these objects to derived
+ *  objects like for rendering sprites through display lists */
+function m_new_obj_id() {
   return m_objcount++;
 }
 
@@ -37,7 +40,7 @@ class SM_Object implements ISM_Object {
   constructor(initValue?: any) {
     // init is a literal value
     this._value = initValue;
-    this.id = new_obj_id();
+    this.id = m_new_obj_id();
     this.meta = {
       type: Symbol.for('SM_Object')
     };
@@ -45,21 +48,20 @@ class SM_Object implements ISM_Object {
     this.prop = {};
     this.method = {};
   }
-
-  /// GETTER/SETTER
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   get value() {
     return this._value;
   }
   set value(value) {
     this._value = value;
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   get name() {
     return this.meta.name;
   }
   set name(value) {
     this.meta.name = value;
   }
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Add a named property to SMC_Object prop map */
   addProp(pName: string, gvar: ISM_Object): ISM_Object {
@@ -76,20 +78,23 @@ class SM_Object implements ISM_Object {
     method[mName] = smc_or_f;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: return the gvar associated with propName
-   *  @param {string} propName - name of property
-   *  @returns {GVar} - value object
-   */
-  getProp(key: string): ISM_Object {
-    return this.prop[key];
+  /** API: return the gvar associated with propName, which could be in objref
+   *  (dotted) format indicating a nested prop (Features use this) */
+  getProp(pName: string): ISM_Object {
+    const parts = pName.split('.');
+    let propDict = parts.length === 1 ? undefined : parts[0];
+    let prop = parts.length === 1 ? parts[0] : parts[1];
+    if (propDict) return this.prop[propDict][prop];
+    return this.prop[prop];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: return the value of the gvar associated with propName */
-  getPropValue(key: string): ISM_Object {
-    return this.prop[key].value;
+  getPropValue(pName: string): ISM_Object {
+    return this.getProp(pName).value;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Call a named method function using javascript semantics */
+  /** Call a named method function using javascript semantics. Agents will
+   *  have to override this method to search for objref-style notation */
   getMethod(key: string): TSM_Method {
     return this.method[key];
   }
@@ -98,14 +103,8 @@ class SM_Object implements ISM_Object {
   symbolize(): TSymbolData {
     return {};
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Return a serializer array */
-  serialize(): any {
-    return ['value', this._value];
-  }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// export class
 export default SM_Object;

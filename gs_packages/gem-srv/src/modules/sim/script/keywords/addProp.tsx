@@ -23,14 +23,10 @@ export class AddProp extends Keyword {
   compile(unit: TScriptUnit): TOpcode[] {
     const [, propName, propType, initValue] = unit;
     const propCtor = GetVarCtor(propType as string);
-    const progout = [
+    return [
       (agent: IAgent) =>
-        agent.addProp(
-          propName as string,
-          new propCtor(agent.evaluateArgs(initValue))
-        )
+        agent.addProp(propName as string, new propCtor(initValue))
     ];
-    return progout;
   }
 
   /** return symbol structure for this keyword */

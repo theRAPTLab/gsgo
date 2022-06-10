@@ -32,7 +32,7 @@ export function addProp(
   initValue: any
 ): TOpcode {
   return (agent: IAgent): void => {
-    agent.addProp(name, new PropTypeCTor(agent.evaluateArgs(initValue)));
+    agent.addProp(name, new PropTypeCTor(initValue));
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

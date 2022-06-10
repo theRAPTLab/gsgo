@@ -122,18 +122,20 @@ function UnpackArg(arg: TGSArg): TSymUnpackedArg {
 /// BUNDLE UTILITIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// valid keys are defined in ISMCBundle, and values indicate the
-/// context that these program
+/// simulation engine phase/context.
 const BUNDLE_CONTEXTS = [
-  'define',
-  'init',
-  'update',
-  'think',
-  'exec',
-  'condition',
-  'event',
-  'test',
-  'conseq',
-  'alter'
+  'define', // programs that run during SIM DEFINE for each agent
+  'init', // programs that run on SIM INITIALIZE the agent state
+  'update', // programs that run on every SIM UPDATE
+  'think', // programs that run during SIM AI thinking phase
+  'exec', // programs that run during SIM EXECUTION phase
+  //
+  'condition', // programs that define global triggers
+  'event', // programs that define event handlers
+  //
+  'test', // result of a conditional keyword
+  'conseq', // block of code to run if condition true
+  'alter' // block of code to run if condition false
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function IsValidBundleProgram(name: string): boolean {
