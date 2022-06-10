@@ -16,8 +16,8 @@
 
 import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
-import { GVarBoolean, GVarNumber, GVarString } from 'script/vars/_all_vars';
-import GFeature from 'lib/class-gfeature';
+import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
+import SM_Feature from 'lib/class-sm-feature';
 import {
   DeleteAgent,
   GetAgentsByType,
@@ -263,8 +263,7 @@ function moveJitter(
   agent: IAgent,
   min: number = -5,
   max: number = 5,
-  round: boolean = true,
-  frame: number
+  round: boolean = true
 ) {
   const x = m_random(min, max, round);
   const y = m_random(min, max, round);
@@ -272,7 +271,7 @@ function moveJitter(
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// WANDER
-function moveWander(agent: IAgent, frame: number) {
+function moveWander(agent: IAgent) {
   // Mostly go in the same direction
   // but really change direction once in a while
   const distance = agent.prop.Movement.distance.value;
@@ -288,7 +287,7 @@ function moveWander(agent: IAgent, frame: number) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// EDGE to EDGE (of the entire tank / system)
 /// Go in the same direction most of the way across the space, then turn back and do similar
-function moveEdgeToEdge(agent: IAgent, frame: number) {
+function moveEdgeToEdge(agent: IAgent) {
   const bounds = BOUNDS;
   const pad = 5;
   let hwidth = pad; // half width -- default to some padding
@@ -362,7 +361,7 @@ function moveFloat(agent, y: number = -300) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Seek
-function seek(agent: IAgent, target: { x; y }, frame: number) {
+function seek(agent: IAgent, target: { x; y }) {
   // stop seeking if target was removed
   // For input agents, target might be defined, but x and y are not
   if (!target || target.x === undefined || target.y === undefined) return;
@@ -381,22 +380,22 @@ function seek(agent: IAgent, target: { x; y }, frame: number) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// SeekAgent
-function seekAgent(agent: IAgent, frame: number) {
+function seekAgent(agent: IAgent) {
   const targetId = agent.prop.Movement._targetId;
   if (!targetId) return; // no target, just idle
   const target = GetAgentById(targetId);
-  seek(agent, target, frame);
+  seek(agent, target);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// seekAgentOrWander
 function seekAgentOrWander(agent: IAgent, frame: number) {
   const targetId = agent.prop.Movement._targetId;
   if (!targetId) {
-    moveWander(agent, frame); // no target, wander instead
+    moveWander(agent); // no target, wander instead
     return;
   }
   const target = GetAgentById(targetId);
-  seek(agent, target, frame);
+  seek(agent, target);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// wanderUntilAgent
@@ -423,7 +422,7 @@ function wanderUntilAgent(agent: IAgent, frame: number) {
       isInside = true;
     }
   });
-  if (!isInside) moveWander(agent, frame); // no target, wander instead
+  if (!isInside) moveWander(agent); // no target, wander instead
   // else just sit
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -604,7 +603,7 @@ UR.HookPhase('SIM/VIS_UPDATE', m_VizUpdate);
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class MovementPack extends GFeature {
+class MovementPack extends SM_Feature {
   constructor(name) {
     super(name);
     if (DBG) console.log(...PR('construct'));
@@ -637,16 +636,16 @@ class MovementPack extends GFeature {
   decorate(agent) {
     super.decorate(agent);
     MOVEMENT_AGENTS.set(agent.id, agent);
-    this.featAddProp(agent, 'movementType', new GVarString('static'));
-    this.featAddProp(agent, 'controller', new GVarString());
-    this.featAddProp(agent, 'direction', new GVarNumber(0)); // degrees
-    this.featAddProp(agent, 'compassDirection', new GVarString()); // readonly
-    this.featAddProp(agent, 'distance', new GVarNumber(0.5));
-    this.featAddProp(agent, 'bounceAngle', new GVarNumber(180));
-    this.featAddProp(agent, 'isMoving', new GVarBoolean());
-    this.featAddProp(agent, 'useAutoOrientation', new GVarBoolean(false));
-    this.featAddProp(agent, 'targetX', new GVarNumber(0)); // so that we can set a location in pieces and go to it
-    this.featAddProp(agent, 'targetY', new GVarNumber(0));
+    this.featAddProp(agent, 'movementType', new SM_String('static'));
+    this.featAddProp(agent, 'controller', new SM_String());
+    this.featAddProp(agent, 'direction', new SM_Number(0)); // degrees
+    this.featAddProp(agent, 'compassDirection', new SM_String()); // readonly
+    this.featAddProp(agent, 'distance', new SM_Number(0.5));
+    this.featAddProp(agent, 'bounceAngle', new SM_Number(180));
+    this.featAddProp(agent, 'isMoving', new SM_Boolean());
+    this.featAddProp(agent, 'useAutoOrientation', new SM_Boolean(false));
+    this.featAddProp(agent, 'targetX', new SM_Number(0)); // so that we can set a location in pieces and go to it
+    this.featAddProp(agent, 'targetY', new SM_Number(0));
 
     // Initialize internal properties
     agent.prop.Movement._lastMove = 0;
@@ -669,16 +668,16 @@ class MovementPack extends GFeature {
   symbolize(): TSymbolData {
     return {
       props: {
-        movementType: GVarNumber.Symbols,
-        controller: GVarString.Symbols,
-        direction: GVarNumber.Symbols,
-        compassDirection: GVarBoolean.Symbols,
-        distance: GVarBoolean.Symbols,
-        bounceAngle: GVarNumber.Symbols,
-        isMoving: GVarNumber.Symbols,
-        useAutoOrientation: GVarNumber.Symbols,
-        targetX: GVarNumber.Symbols,
-        targetY: GVarNumber.Symbols
+        movementType: SM_Number.Symbols,
+        controller: SM_String.Symbols,
+        direction: SM_Number.Symbols,
+        compassDirection: SM_Boolean.Symbols,
+        distance: SM_Boolean.Symbols,
+        bounceAngle: SM_Number.Symbols,
+        isMoving: SM_Number.Symbols,
+        useAutoOrientation: SM_Number.Symbols,
+        targetX: SM_Number.Symbols,
+        targetY: SM_Number.Symbols
       },
       methods: {
         setController: { args: ['x:number'] },

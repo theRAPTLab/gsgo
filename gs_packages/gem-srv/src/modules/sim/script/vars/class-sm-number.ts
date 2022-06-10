@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The GVarNumber class can do simple arithmetic and logical comparisons
+  The SM_Number class can do simple arithmetic and logical comparisons
   with literal numbers.
 
   In our first prototype, we do not support arbitrary expressions.
@@ -10,8 +10,8 @@
 import RNG from 'modules/sim/sequencer';
 import SM_Object from 'lib/class-sm-object';
 // uses types defined in t-script.d
-import { RegisterVarCTor } from 'modules/datacore';
-import { GVarBoolean } from './gvar-boolean';
+import { RegisterPropType } from 'modules/datacore';
+import { SM_Boolean } from './class-sm-boolean';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -19,7 +19,6 @@ const DBG = false;
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 function u_CheckMinMax(vobj) {
   // REVIEW: Algorithm is problematic
   // If min is 0, but max is not set,
@@ -71,14 +70,14 @@ function u_RND(min: number, max: number, integer: boolean): number {
 }
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class GVarNumber extends SM_Object implements IScopeable {
+export class SM_Number extends SM_Object {
   nvalue: number;
   min: number;
   max: number;
   wrap: boolean;
   constructor(initial = undefined) {
     super(initial);
-    this.meta.type = Symbol.for('GVarNumber');
+    this.meta.type = Symbol.for('SM_Number');
     this.value = initial;
     this.nvalue = undefined;
     // Orig Code
@@ -166,32 +165,32 @@ export class GVarNumber extends SM_Object implements IScopeable {
     return this;
   }
   eq(num: number) {
-    return new GVarBoolean(this.value === num);
+    return new SM_Boolean(this.value === num);
   }
   gt(num: number) {
-    return new GVarBoolean(this.value > num);
+    return new SM_Boolean(this.value > num);
   }
   lt(num: number) {
-    return new GVarBoolean(this.value < num);
+    return new SM_Boolean(this.value < num);
   }
   gte(num: number) {
-    return new GVarBoolean(this.value >= num);
+    return new SM_Boolean(this.value >= num);
   }
   lte(num: number) {
-    return new GVarBoolean(this.value <= num);
+    return new SM_Boolean(this.value <= num);
   }
   clear() {
     this.value = null;
   }
   symbolize(): TSymbolData {
-    return GVarNumber.Symbols;
+    return SM_Number.Symbols;
   }
 }
 
 /// SYMBOLS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-GVarNumber.Symbols = {
-  ctors: { Number: GVarNumber.Symbols },
+SM_Number.Symbols = {
+  ctors: { Number: SM_Number.Symbols },
   methods: {
     setMin: { args: ['nvalue:number'], info: 'minimum value' },
     setMax: { args: ['nvalue:number'], info: 'maximum value' },
@@ -208,4 +207,4 @@ GVarNumber.Symbols = {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterVarCTor('Number', GVarNumber);
+RegisterPropType('Number', SM_Number);

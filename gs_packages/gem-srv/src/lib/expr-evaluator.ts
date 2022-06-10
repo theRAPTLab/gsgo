@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable no-return-await */
 /* eslint-disable one-var */
 /* eslint-disable eqeqeq */

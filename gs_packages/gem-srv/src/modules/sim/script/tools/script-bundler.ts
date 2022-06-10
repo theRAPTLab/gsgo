@@ -6,9 +6,10 @@
 
 import UR from '@gemstep/ursys/client';
 import SM_Bundle from 'lib/class-sm-bundle';
-import { EBundleType, EBundleTag } from 'modules/../types/t-script.d'; // workaround to import as obj
-import * as CHECK from './dc-sim-data-utils';
-import * as DCSIM from './dc-sim-data';
+// workaround to import enumeration types as objects requires dirpath hack
+import { EBundleType, EBundleTag } from 'modules/../types/t-script.d';
+import * as CHECK from '../../../datacore/dc-sim-data-utils';
+import * as SIMDATA from '../../../datacore/dc-sim-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -20,6 +21,7 @@ const PR = UR.PrefixUtil('SYMBOL', 'TagPurple');
 let CUR_NAME: string; // the current compiling bundle name (blueprint)
 let CUR_PROGRAM: string; // the current compiler output track
 let CUR_BUNDLE: SM_Bundle;
+let CUR_GLOBALS: TAnyObject;
 
 /// MODULE HELPERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,14 +48,21 @@ function BundlerState() {
   return {
     bpName: CUR_NAME,
     programOut: CUR_PROGRAM,
-    bundle: CUR_BUNDLE
+    bundle: CUR_BUNDLE,
+    globals: CUR_GLOBALS
   };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: return data structure used by CompileStatement */
+function SymbolRefs(): TSymbolRefs {
+  return { bundle: CUR_BUNDLE, globals: CUR_GLOBALS };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ClearBundlerState() {
   CUR_NAME = undefined;
   CUR_PROGRAM = undefined;
   CUR_BUNDLE = undefined;
+  CUR_GLOBALS = {};
 }
 
 /// COMPILER BUNDLE GATEKEEPING ///////////////////////////////////////////////
@@ -62,7 +71,7 @@ function ClearBundlerState() {
 /// to maintain compatibility
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Sets the "working bundle" from either a provided bundle or bpName
- *  that is an index into the DCSIM Bundle Dictionary
+ *  that is an index into the SIMDATA Bundle Dictionary
  *  @param {(string|SM_Bundle)} bp - blueprintName or bundle to use for
  *  subsequent bundle operations
  *  @returns SM_Bundle
@@ -70,8 +79,9 @@ function ClearBundlerState() {
 function OpenBundle(bp: string | SM_Bundle): SM_Bundle {
   const fn = 'BeginBundle:';
   m_CheckNoOpenBundle(fn);
+  if (CUR_GLOBALS === undefined) CUR_GLOBALS = {};
   if (bp instanceof SM_Bundle) CUR_BUNDLE = bp;
-  if (typeof bp === 'string') CUR_BUNDLE = DCSIM.GetBlueprintBundle(bp);
+  if (typeof bp === 'string') CUR_BUNDLE = SIMDATA.GetBlueprintBundle(bp);
   if (CUR_BUNDLE instanceof SM_Bundle) return CUR_BUNDLE;
   throw Error(`${fn} arg1 was not a bundle or bundleName`);
 }
@@ -84,6 +94,7 @@ function CloseBundle(): SM_Bundle {
   const fn = 'EndBundle:';
   const bdl = m_HasCurrentBundle(fn);
   CUR_BUNDLE = undefined;
+  CUR_GLOBALS = undefined;
   return bdl;
 }
 
@@ -115,8 +126,8 @@ function SetProgramOut(str: string): boolean {
 function SetBundleName(bpName: string, bpParent?: string): boolean {
   const fn = 'SetBundleName:';
   const bdl = m_HasCurrentBundle(fn);
-  if (typeof bdl !== 'object') {
-    console.warn('arg1 is not a bundle, got:', bdl);
+  if (!(bdl instanceof SM_Bundle)) {
+    console.warn('no current bundle to name');
     return false;
   }
   if (typeof bpName !== 'string') {
@@ -133,6 +144,22 @@ function SetBundleName(bpName: string, bpParent?: string): boolean {
   if (DBG) console.log(...PR(`${fn} setting bundleName ${CUR_NAME}`));
   return true;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: set the globals object to use during current compiler operation */
+function AddGlobals(globals: TAnyObject): boolean {
+  const fn = 'AddGlobals:';
+  const bdl = m_HasCurrentBundle(fn);
+  if (!(bdl instanceof SM_Bundle)) {
+    console.warn('no current bundle active');
+    return false;
+  }
+  if (typeof globals !== 'object') {
+    console.warn('arg is not an object', globals);
+    return false;
+  }
+  CUR_GLOBALS = { ...CUR_GLOBALS, ...globals };
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: set the bundle type of current bundle */
 function SetBundleType(type: EBundleType = EBundleType.BLUEPRINT) {
@@ -214,13 +241,17 @@ function AddSymbols(symdata: TSymbolData) {
   if (bdl.symbols === undefined) bdl.symbols = {};
   const _bdlsym = bdl.symbols;
 
-  if (symdata === undefined) console.warn('WHAT THE HELL');
+  if (symdata === undefined) console.error(`${fn} no symbol data provided`);
 
   if (symdata.features) {
     // featureName --> featureModule
     if (_bdlsym.features === undefined) _bdlsym.features = {};
     for (const [featName, featSymbols] of Object.entries(symdata.features)) {
-      if (_bdlsym.features[featName]) console.warn('feature', featName, 'exists');
+      if (_bdlsym.features[featName])
+        console.log(
+          `%coverwriting feature ${featName}`,
+          'color:rgba(0,0,0,0.25)'
+        );
       if (DBG) {
         console.groupCollapsed(...PR(`AddSymbol: ${featName}`));
         console.log(featSymbols);
@@ -234,7 +265,8 @@ function AddSymbols(symdata: TSymbolData) {
     // propName --->
     if (_bdlsym.props === undefined) _bdlsym.props = {};
     for (const [propName, symbolData] of Object.entries(symdata.props)) {
-      if (_bdlsym.props[propName]) console.warn('prop', propName, 'exists');
+      if (_bdlsym.props[propName])
+        console.log(`%coverwriting prop ${propName}`, 'color:rgba(0,0,0,0.25)');
       if (DBG) {
         console.groupCollapsed(...PR(`AddSymbol: ${propName}`));
         console.log(symbolData);
@@ -290,6 +322,8 @@ export {
   CloseBundle,
   //
   SetBundleName,
+  AddGlobals,
+  SymbolRefs,
   SetBundleType,
   SetProgramOut,
   SetBundleTag,

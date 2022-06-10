@@ -606,9 +606,9 @@ class ScriptTokenizer {
   }
 
   /** GEMSCRIPT HACK ** In GEMSCRIPT text, a [[ ]] on a single line designates a
-   *  'named TMethod' which is invoked like a co-routine. The name is used to
-   *  look-up a TMethod (either an SMC program or regular Javascript function)
-   *  from a Map<string,TMethod>. It is up to the keyword implementor that is
+   *  'named TSM_Method' which is invoked like a co-routine. The name is used to
+   *  look-up a TSM_Method (either an SMC program or regular Javascript function)
+   *  from a Map<string,TSM_Method>. It is up to the keyword implementor that is
    *  using inline blocks to know which dictionary to grab the method (e.g.
    *  the TESTS dictionary or PROGRAMS dictionary)
    */
@@ -723,10 +723,18 @@ function Tokenize(text: string): IToken[] {
 /** Utility to validate token types
  *  returns [ token_type, token_value ] if it is a valid token,
  *  [undefined, errstring] otherwise
+ *  If the tok is actually a javascript literal, as it might be with
+ *  a decoded token in keyword.compile(), it returns the `'jsType' format
+ *  like 'jsString', 'jsNumber', etc.
  */
 function UnpackToken(tok: IToken): TUnpackedToken {
   // null tokens return error
-  if (typeof tok !== 'object') return [undefined, 'not an object'];
+  if (tok === undefined) return [undefined, 'undefined'];
+  if (Array.isArray(tok)) return ['jsArray', tok];
+  const tok_type = typeof tok;
+  if (tok_type === 'number') return ['jsNumber', tok];
+  else if (tok_type === 'string') return ['jsString', tok];
+  else if (tok_type === 'boolean') return ['jsBoolean', tok];
   // count number of valid types in the token
   // we allow only one of these, but ignore other
   // properties

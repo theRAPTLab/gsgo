@@ -24,7 +24,7 @@ import { SetInputStageBounds } from 'modules/datacore/dc-inputs';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
 import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import * as ACInstances from 'modules/appcore/ac-instances';
-import * as GAgent from 'lib/class-gagent';
+import * as SM_Agent from 'lib/class-sm-agent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -98,7 +98,7 @@ class SimControl {
 
     // 6. Update Cursor System
     //    This needs to happen AFTER instances are created
-    //    since that is when the Cursor Feature is loaded
+    //    since that is when the Cursor SM_Feature is loaded
     //    which in turn injects the Cursor blueprint.
     UR.RaiseMessage('COMPILE_CURSORS');
 

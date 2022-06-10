@@ -5,24 +5,24 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as DCSIM from 'modules/datacore/dc-sim-data';
-import * as DCCONDS from 'modules/datacore/dc-sim-conditions';
-import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
+import * as SIMCOND from 'modules/datacore/dc-sim-conditions';
+import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
 
-import GAgent from 'lib/class-gagent';
+import SM_Agent from 'lib/class-sm-agent';
 import { DistanceTo } from 'lib/util-vector';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM_CONDITIONS');
 const DBG = false;
-const GLOBAL_AGENT = GAgent.GetGlobalAgent();
+const GLOBAL_AGENT = SM_Agent.GetGlobalAgent();
 let EVENT_QUEUE = [];
 let GLOBAL_INTERACTIONS = [];
 
 /// REGISTER NAMED METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DCSIM.RegisterFunction('dies', a => {
+SIMDATA.RegisterFunction('dies', a => {
   if (a.prop.foodLevel.value < 1) {
     console.log('dead!');
     return true;
@@ -103,20 +103,24 @@ DCSIM.RegisterFunction('dies', a => {
 // ];
 // b.debug = bpath;
 
+/// PROXIMITY TESTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Two centers are within `distance` of each other
-/// NOTE: This can be used without Physics or Touches
-///       This is functionally equivalent to 'centerTouchesCenter'
-DCSIM.RegisterFunction('isCenteredOn', (a, b, distance = 5) => {
+/** Two centers are within `distance` of each other
+ * NOTE: This can be used without Physics or Touches
+ * This is functionally equivalent to 'centerTouchesCenter'
+ */
+SIMDATA.RegisterFunction('isCenteredOn', (a, b, distance = 5) => {
   // checks if distance between agents is less than distance
   return DistanceTo(a, b) <= distance;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DCSIM.RegisterFunction('isCloseTo', (a, b, distance = 30) => {
+SIMDATA.RegisterFunction('isCloseTo', (a, b, distance = 30) => {
   // checks if distance between agents is less than distance
   // Doesn't need Physics or Touch
   return DistanceTo(a, b) <= distance;
 });
+
+/// TOUCH TESTS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_TouchTest(a, b, touchType) {
   // make sure both objects have the Physics feature
@@ -127,19 +131,19 @@ function m_TouchTest(a, b, touchType) {
 }
 /// a center touches b center
 /// This is the Physics equivalent of `isCenteredOn`
-DCSIM.RegisterFunction('centerTouchesCenter', (a, b) => {
+SIMDATA.RegisterFunction('centerTouchesCenter', (a, b) => {
   return m_TouchTest(a, b, 'c2c');
 });
 /// a center touches b bounds
-DCSIM.RegisterFunction('centerTouches', (a, b) => {
+SIMDATA.RegisterFunction('centerTouches', (a, b) => {
   return m_TouchTest(a, b, 'c2b');
 });
 /// a bounds touches b bounds
-DCSIM.RegisterFunction('touches', (a, b) => {
+SIMDATA.RegisterFunction('touches', (a, b) => {
   return m_TouchTest(a, b, 'b2b');
 });
 /// a bounds touches b bounds
-DCSIM.RegisterFunction('isInside', (a, b) => {
+SIMDATA.RegisterFunction('isInside', (a, b) => {
   return m_TouchTest(a, b, 'binb');
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -155,15 +159,15 @@ function m_FirstTouchTest(a, b, touchType) {
   );
 }
 /// a center first touches b center
-DCSIM.RegisterFunction('centerFirstTouchesCenter', (a, b) => {
+SIMDATA.RegisterFunction('centerFirstTouchesCenter', (a, b) => {
   return m_FirstTouchTest(a, b, 'c2c');
 });
 /// a center first touches b bounds
-DCSIM.RegisterFunction('centerFirstTouches', (a, b) => {
+SIMDATA.RegisterFunction('centerFirstTouches', (a, b) => {
   return m_FirstTouchTest(a, b, 'c2b');
 });
 /// a bounds first touches b bounds
-DCSIM.RegisterFunction('firstTouches', (a, b) => {
+SIMDATA.RegisterFunction('firstTouches', (a, b) => {
   return m_FirstTouchTest(a, b, 'b2b');
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -178,31 +182,33 @@ function m_LastTouchTest(a, b, touchType) {
   );
 }
 /// a center last touches b center
-DCSIM.RegisterFunction('centerLastTouchesCenter', (a, b) => {
+SIMDATA.RegisterFunction('centerLastTouchesCenter', (a, b) => {
   return m_LastTouchTest(a, b, 'c2c');
 });
 /// a center last touches b bounds
-DCSIM.RegisterFunction('centerLastTouches', (a, b) => {
+SIMDATA.RegisterFunction('centerLastTouches', (a, b) => {
   return m_LastTouchTest(a, b, 'c2b');
 });
 /// a bounds last touches b bounds
-DCSIM.RegisterFunction('lastTouches', (a, b) => {
+SIMDATA.RegisterFunction('lastTouches', (a, b) => {
   return m_LastTouchTest(a, b, 'b2b');
 });
+
+/// VISION TESTS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DCSIM.RegisterFunction('sees', (a, b) => {
+SIMDATA.RegisterFunction('sees', (a, b) => {
   // checks if b is within vision cone of a
   if (!a.hasFeature('Vision') || !b.hasFeature('Costume')) return false;
   return a.canSeeCone ? a.canSeeCone.get(b.id) : false;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DCSIM.RegisterFunction('doesNotSee', (a, b) => {
+SIMDATA.RegisterFunction('doesNotSee', (a, b) => {
   // checks if b is NOT within vision cone of a
   if (!a.hasFeature('Vision') || !b.hasFeature('Costume')) return false;
   return a.canSeeCone ? !a.canSeeCone.get(b.id) : true;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DCSIM.RegisterFunction('seesCamouflaged', (a, b) => {
+SIMDATA.RegisterFunction('seesCamouflaged', (a, b) => {
   // checks if b's color relative to its background is visible to a
   // AND the color range is outside of the detectableRange
   const canSeeCone = a.canSeeCone ? !a.canSeeCone.get(b.id) : true;
@@ -210,46 +216,50 @@ DCSIM.RegisterFunction('seesCamouflaged', (a, b) => {
   return canSeeCone && canSeeColor;
 });
 
-/// LIFECYCLE METHODS /////////////////////////////////////////////////////////
+/// end of test registration ///
+
+/// LIFECYCLE GAMELOOP METHODS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** invoked via UR/APP_CONFIGURE */
 function ModuleInit(/* gloop */) {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Update does two jobs:
+ *  (1) handle all the filtering tests once in the gameloop and cache the
+ *  resulting pairs of agents that passed. This is so agents don't run the
+ *  test over-and-over themselves.
+ *  (2) fire the event handler for all events that are currently queued,
+ *  then clear the event queue.
+ */
 function Update(frame) {
-  /** HANDLE GLOBAL FILTER TESTS ***************************************************/
-  /// run all the filtering tests and store results for use by Agents during
-  /// their subsequent SIM/AGENTS_UPDATE phase
-  GLOBAL_INTERACTIONS = [...DCCONDS.GetAllInteractions()]; // [ [k,v], [k,v] ]
+  // run all the filtering tests and cache the results
+  GLOBAL_INTERACTIONS = [...SIMCOND.GetAllInteractions()]; // [ [k,v], [k,v] ]
   GLOBAL_INTERACTIONS.forEach(entry => {
     const { singleTestArgs, pairTestArgs } = entry;
     if (singleTestArgs !== undefined) {
       // SINGLE AGENT TEST FILTER
       const [A, testName, ...args] = singleTestArgs;
-      const [passed] = DCCONDS.SingleAgentFilter(A, testName, ...args);
+      const [passed] = SIMCOND.SingleAgentFilter(A, testName, ...args);
       entry.passed = passed;
     } else if (pairTestArgs !== undefined) {
       // PAIR AGENT TEST FILTER
       const [A, testName, B, ...args] = pairTestArgs;
-      const [passed] = DCCONDS.PairAgentFilter(A, testName, B, ...args);
+      const [passed] = SIMCOND.PairAgentFilter(A, testName, B, ...args);
       entry.passed = passed;
     } else {
       throw Error('malformed global_interaction entry');
     }
   });
-  /** HANDLE SUBSCRIPTION EVENTS ***************************************************/
-  /// handle the registered events for 'onEvent' keywords that have registered a
-  /// consequent for an Agent Blueprint (the set of all Agents based on that
-  /// blueprint)
+
+  // if there any events queued, then invoke the event handler on all
+  // agents that registered for this event.
   EVENT_QUEUE.forEach((event, idx) => {
-    /*/
-    these are all the handlers for all the registered blueprint types
-    that are TOPcode[]. However, we need to get the context of each
-    blueprint and run them per-agent
-    /*/
-    const handlers = DCSIM.GetScriptEventHandlers(event.type);
+    /// these are all the handlers for all the registered blueprint types
+    /// that are TOPcode[]. However, we need to get the context of each
+    /// blueprint and run them per-agent
+    const handlers = SIMDATA.GetHandlersForScriptEvent(event.type);
     handlers.forEach(h => {
       const { agentType, handler } = h;
-      const agents = DCAGENTS.GetAgentsByType(agentType);
+      const agents = SIMAGENTS.GetAgentsByType(agentType);
       agents.forEach(agent => {
         const ctx = { agent, [agentType]: agent };
         agent.exec(handler, ctx);

@@ -19,7 +19,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
-import { SymbolHelper, VSDToken } from 'script/tools/symbol-helpers';
+import SymbolInterpreter from 'script/tools/class-symbol-interpreter';
+import VSDToken from 'script/tools/class-validation-token';
 import { UnpackToken, UnpackArg } from 'modules/datacore/dc-sim-data-utils';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -31,19 +32,19 @@ const DBG = false;
 class Keyword implements IKeyword {
   keyword: string;
   args: TGSArg[] | TGSArg[][]; // for symbol validation
-  shelper: SymbolHelper; // helper for extracting line data
+  shelper: SymbolInterpreter; // helper for extracting line data
   //
   constructor(keyword: string) {
     if (typeof keyword !== 'string')
       throw Error('Keyword requires string, not undefined');
     this.keyword = keyword;
     this.args = [];
-    this.shelper = new SymbolHelper(keyword);
+    this.shelper = new SymbolInterpreter(keyword);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** override in subclass */
-  compile(unit: TScriptUnit, idx?: number): TCompiledStatement {
+  compile(unit: TScriptUnit, refs?: TSymbolRefs): TCompiledStatement {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -52,7 +53,7 @@ class Keyword implements IKeyword {
    *  ones because they name properties and features that are used to lookup
    *  the available props and methods on them.
    */
-  symbolize(unit: TScriptUnit): TSymbolData {
+  symbolize(unit: TScriptUnit, line?: number): TSymbolData {
     return {}; // change to throw Error when ready to update all keywords
   }
 
@@ -87,12 +88,11 @@ class Keyword implements IKeyword {
 
   /// SYMBOL OPERATIONS ///////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API utility to initialize parameters for SymbolHelper instance, which
+  /** API utility to initialize parameters for SymbolInterpreter instance, which
    *  must be done each time before validate() is called to ensure correct refs
-   *  symbol data and global objects are set
-   */
-  validateInit(refs: TSymbolRefs) {
-    this.shelper.setReferences(refs);
+   *  symbol data and global objects are set */
+  setRefs(refs: TSymbolRefs) {
+    this.shelper.setSymbolTables(refs);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API default method for validating scriptUnits against scriptData.
@@ -248,6 +248,8 @@ class Keyword implements IKeyword {
       err_info: info
     });
   }
+
+  /// JSX UTILITIES ///////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** DEPRECATED. The jsx() call was used for the old prototype gui wizard */
   jsx() {
@@ -265,18 +267,12 @@ class Keyword implements IKeyword {
   }
 } // end of Keyword Class
 
-/*/////////////////////////////////// * \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
-
-  STATIC UTILITY METHODS - for handling runtime arguments that need to be
-  evaluated in the context of the runtime agent, which can't be determined
-  at compile time.
-
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-
+/// STATIC UTILITY METHODS - for handling runtime arguments that need to be
+/// evaluated in the context of the runtime agent, which can't be determined
+/// at compile time.
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** checks a given argument, and if it's an object we'll assume it's an
- *  UnitToken and evaluate it. Otherwise, just return the value as-is
- */
+ *  UnitToken and evaluate it. Otherwise, just return the value as-is */
 function _evalRuntimeArg(arg: any, context): any {
   // return literals and arrays without changing
   // this is most objects
@@ -338,7 +334,7 @@ function K_DerefProp(refArg): DerefMethod {
     /** IMPLICIT REF *******************************************************/
     /// e.g. 'x' is assumed to be 'agent.x'
     deref = (agent: IAgent, context: any) => {
-      const p: IScopeable = agent.getProp(ref[0]);
+      const p: ISM_Object = agent.getProp(ref[0]);
       if (p === undefined) {
         console.log('agent', agent);
         throw Error(`agent missing prop '${ref[0]}'`);
@@ -356,7 +352,7 @@ function K_DerefProp(refArg): DerefMethod {
             agent
           )} Context is ${JSON.stringify(context)}`
         );
-      const p: IScopeable = c.getProp(ref[1]);
+      const p: ISM_Object = c.getProp(ref[1]);
       if (p === undefined) throw Error(`missing prop '${ref[1]}'`);
       return p;
     };

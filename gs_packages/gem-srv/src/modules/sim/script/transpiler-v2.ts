@@ -12,9 +12,9 @@ import UR from '@gemstep/ursys/client';
 import SM_Bundle from 'lib/class-sm-bundle';
 import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 
-import GAgent from 'lib/class-gagent';
-import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
-import * as DCSIM from 'modules/datacore/dc-sim-data';
+import SM_Agent from 'lib/class-sm-agent';
+import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 
 // critical imports
 import 'script/keywords/_all_keywords';
@@ -22,10 +22,10 @@ import 'script/keywords/_all_keywords';
 // tooling imports
 import * as TOKENIZER from 'script/tools/script-tokenizer';
 import * as COMPILER from 'script/tools/script-compiler';
-import * as SYMBOLHELPERS from 'script/tools/symbol-helpers';
+import * as SYMBOLUTILS from 'script/tools/symbol-utilities';
 
 // dummy to import symbol-utilities otherwise it gets treeshaken out
-SYMBOLHELPERS.BindModule();
+SYMBOLUTILS.BindModule();
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,12 +46,7 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
     if (DBG) console.group(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
     // First deregister the blueprint if it exists
     // RemoveGlobalCondition(bdl.name); // deprecatd in script-xp
-    DCSIM.SaveBlueprintBundle(bdl);
-    // run conditional programming in template
-    // this is a stack of functions that run in global context
-    // initialize global programs in the bundle
-    // const { condition, event } = bdl.getPrograms();
-    // AddGlobalCondition(bdl.name, condition); // deprecated in script-xp branch
+    SIMDATA.SaveBlueprintBundle(bdl);
     if (DBG) console.groupEnd();
     return bdl;
   }
@@ -61,14 +56,16 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
 
 /// SCRIPT TEXT UTILITIES /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Compile a source text and return compiled TMethod. Similar to
+/** Compile a source text and return compiled TSM_Method. Similar to
  *  CompileBlueprint but does not handle directives or build a bundle. Used
  *  for generating code snippets from any GEMSCRIPT text (e.g. for init
  *  scripts, or anything that isn't part of the
  */
-function CompileText(text: string = ''): TSMCProgram {
+function CompileText(text: string = '', refs?: TSymbolRefs): TSMCProgram {
   const script = TOKENIZER.TextToScript(text);
-  return COMPILER.CompileScript(script);
+  let bundle: SM_Bundle = new SM_Bundle('test-validate');
+  bundle = COMPILER.SymbolizeBlueprint(script, bundle);
+  return COMPILER.CompileScript(script, { bundle, globals: {} });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Given a lineScript in text form and a bundle with symbols, validate it */
@@ -88,16 +85,20 @@ function ValidateLineText(line: string, bdl: SM_Bundle): TValidatedScriptUnit {
  */
 function MakeAgent(instanceDef: TInstance) {
   const fn = 'MakeAgent:';
-  const { bpid, label } = instanceDef;
-  const agent = new GAgent(label, String(instanceDef.id));
+  const { id, bpid, label } = instanceDef;
+  const agent = new SM_Agent(label, String(id));
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
   if (typeof bpid === 'string') {
-    const bdl = DCSIM.GetBlueprintBundle(bpid);
+    console.warn(
+      `${fn} making %c${bpid} id:${id} `,
+      'font-style:bold;color:black'
+    );
+    const bdl = SIMDATA.GetBlueprintBundle(bpid);
     if (!bdl) throw Error(`agent blueprint for '${bpid}' not defined`);
     // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
     agent.setBlueprint(bdl);
-    return DCAGENTS.SaveAgent(agent);
+    return SIMAGENTS.SaveAgent(agent);
   }
   throw Error(
     `${fn} bad blueprint name ${JSON.stringify(
@@ -107,7 +108,7 @@ function MakeAgent(instanceDef: TInstance) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RemoveAgent(instanceDef: TInstance) {
-  DCAGENTS.DeleteAgent(instanceDef);
+  SIMAGENTS.DeleteAgent(instanceDef);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -138,8 +139,7 @@ export {
   //
   CompileBlueprint, // API: save a blueprint script as a bundle with program output
   SymbolizeBlueprint, // API: save blueprint symbols to a bundle
-  ValidateBlueprint, // API: save validation tokens to a bundle
-  BundleBlueprint // API: Compile,Symbolize,Validate a blueprint script to a bundle
+  ValidateBlueprint // API: save validation tokens to a bundle
 } from 'script/tools/script-compiler';
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -3,7 +3,12 @@
   ESLINT CONFIGURATION for URSYS/STEPSYS with VISUAL STUDIO CODE
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-module.exports = {
+
+const { EXTENDS, RULES } = require('./.eslintrc-gemstep');
+
+/// BASE CONFIGURATION ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const config = {
   env: {
     browser: true,
     es2020: true,
@@ -42,27 +47,23 @@ module.exports = {
     compatible AST for ESLINT.
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   parser: '@typescript-eslint/parser',
-  /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
-    We now configure what rules ESLINT will apply, in order of declaration.
-
-    For more information using configuration, see:
-    eslint.org/docs/user-guide/configuring#using-the-configuration-from-a-plugin
-  :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-  extends: [
-    // OUR ESLINT STACK
-    // Note: Ideally, we would construct our own set of rules by carefully
-    // considering what's in each of these configurations, but this works
-    'plugin:react/recommended', // handle jsx syntax
-    'plugin:@typescript-eslint/eslint-recommended', // transform typescript rules
-    'airbnb-typescript', // add airbnb typescript rules
-    'prettier',
-    'prettier/@typescript-eslint',
-    'prettier/react'
-  ],
+  extends: EXTENDS,
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly'
   },
+  settings: {
+    'react': {
+      'version': 'detect'
+    }
+  },
+  ignorePatterns: [
+    '**/runtime',
+    '**/built',
+    '**/assets-src',
+    '**/node_modules',
+    '**/vendor/*.js'
+  ],
   parserOptions: {
     ecmaFeatures: {
       jsx: true // enable jsx parsing (plugin:react/recommended)
@@ -77,53 +78,9 @@ module.exports = {
     I am turning off the rules that I find annoying or trigger false warnings
     in some code structures.
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-  rules: {
-    /* allow classroom debugging by researchers */
-    'no-console': 'off',
-    'no-debugger': 'warn',
-    'no-alert': 'warn',
-    'no-restricted-syntax': 'off',
-    /* typescript recommendations */
-    'no-undef': 'off', // TS handles this better; works with global types
-    'no-unused-vars': 'off',
-    'no-shadow': 'off',
-    'no-param-reassign': 'off',
-    'object-curly-newline': 'off',
-    'react/jsx-props-no-spreading': 'off',
-    'arrow-body-style': 'off',
-    'no-plusplus': 'off',
-    'prefer-const': 'off',
-    'prefer-destructuring': 'off',
-    'class-methods-use-this': 'off',
-    'jsx-a11y/label-has-associated-control': 'off',
-    /* ursys style overrides */
-    'spaced-comment': 'off',
-    'camelcase': 'off',
-    'comma-dangle': ['error', 'never'],
-    'no-underscore-dangle': 'off',
-    'lines-between-class-members': 'off',
-    'no-bitwise': 'off',
-    '@typescript-eslint/camelcase': 'off',
-    '@typescript-eslint/no-use-before-define': 1,
-    '@typescript-eslint/no-unused-vars': 'off',
-    '@typescript-eslint/quotes': 'warn',
-    '@typescript-eslint/naming-convention': 'off',
-    '@typescript-eslint/lines-between-class-members': 'off',
-    '@typescript-eslint/quotes': 'off',
-    'import/prefer-default-export': 'off',
-    '@typescript-eslint/naming-convention': 'off',
-    'object-shorthand': 'off',
-    /* check for dependencies */
-    'import/no-extraneous-dependencies': [
-      'error',
-      {
-        'devDependencies': true
-      }
-    ],
-    /* disable rules for material-ui sanity */
-    'react/forbid-prop-types': 'off',
-    'react/prop-types': 'off',
-    /* disable prettier conflicts manually */
-    'arrow-parens': 'off'
-  }
+  rules: RULES
 };
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+module.exports = config;

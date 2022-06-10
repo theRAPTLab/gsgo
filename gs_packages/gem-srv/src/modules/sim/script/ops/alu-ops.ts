@@ -1,5 +1,8 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+  NOTE: THESE ARE EARLY EXAMPLES USED TO DESIGN THE SCRIPT ENGINE
+  AND THEN IT TURNED OUT WE DIDN'T NEED THESE OPCODES AT ALL
+
   Stack Machine (SM) Arithmetic/Logical Opcodes
 
   These opcodes emulate a simple stack-based microprocessor that can
@@ -27,15 +30,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  IAgent,
-  IState,
-  TOpcode,
-  TOpWait,
-  TSMCProgram,
-  TStackable
-} from 'lib/t-script';
-
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
@@ -43,13 +37,13 @@ const DBG = false;
 /// STATE FLAG OPERATIONS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function clearCondition(): TOpcode {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     STATE.flags.reset();
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function compareNumbers(): TOpcode {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     const [a, b] = STATE.pop(2);
     // if (b === 10) console.log(`${agent.name()} a:${a} b:${b}`);
     STATE.flags.compareNumbers(a as number, b as number);
@@ -58,7 +52,7 @@ export function compareNumbers(): TOpcode {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function compareStrings(): TOpcode {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     const [s1, s2] = STATE.pop(2);
     STATE.flags.compareStrings(s1.toString(), s2.toString());
   };
@@ -68,19 +62,19 @@ export function compareStrings(): TOpcode {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** push object (usually a prop or agent) on stack */
 export function push(gv: TStackable) {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     STATE.stack.push(gv);
   };
 }
 /** discard values from stack (default 1) */
 export function pop(num: Number = 1) {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     for (let i = 0; i < num; i++) STATE.stack.pop();
   };
 }
 /** duplicate top of stack */
 export function dupe() {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     STATE.stack.push(STATE.peek());
   };
 }
@@ -88,7 +82,7 @@ export function dupe() {
 /// CONDITIONAL ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ifLT(program: TSMCProgram): TOpcode {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     if (STATE.flags.LT()) {
       // pass current stack as vars to program
       const results: TStackable[] = agent.exec(program, STATE.ctx);
@@ -98,7 +92,7 @@ export function ifLT(program: TSMCProgram): TOpcode {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ifGT(program: TSMCProgram): TOpcode {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     if (STATE.flags.GT()) {
       // alternate way to use a substack instead of passing existing
       const results: TStackable[] = agent.exec(program, STATE.stack);
@@ -108,7 +102,7 @@ export function ifGT(program: TSMCProgram): TOpcode {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ifLTE(program: TSMCProgram): TOpcode {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     if (STATE.flags.LTE()) {
       const results: TStackable[] = agent.exec(program, STATE.stack);
       if (DBG) console.log('lte stack return', results);
@@ -117,7 +111,7 @@ export function ifLTE(program: TSMCProgram): TOpcode {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ifGTE(program: TSMCProgram): TOpcode {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     if (STATE.flags.GTE()) {
       const results: TStackable[] = agent.exec(program, STATE.stack);
       if (DBG) console.log('gte stack return', results);
@@ -126,7 +120,7 @@ export function ifGTE(program: TSMCProgram): TOpcode {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ifEQ(program: TSMCProgram): TOpcode {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     if (STATE.flags.EQ()) {
       const results: TStackable[] = agent.exec(program, STATE.stack);
       if (DBG) console.log('eq stack return', results);
@@ -135,7 +129,7 @@ export function ifEQ(program: TSMCProgram): TOpcode {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ifNEQ(program: TSMCProgram): TOpcode {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     if (STATE.flags.NEQ()) {
       const results: TStackable[] = agent.exec(program, STATE.stack);
       if (DBG) console.log('neq stack return', results);
@@ -146,41 +140,41 @@ export function ifNEQ(program: TSMCProgram): TOpcode {
 /// ARITHMETIC OPERATIONS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function add() {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     const [a, b] = STATE.pop(2);
     STATE.push((a as number) + (b as number));
   };
 }
 export function addImmediate(num: number) {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     const [a] = STATE.pop(1);
     STATE.push((a as number) + num);
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function sub() {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     const [a, b] = STATE.pop(2);
     STATE.push((b as number) - (a as number));
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function subImmediate(num: number) {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     const [a] = STATE.pop(1);
     STATE.push((a as number) - num);
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function mul() {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     const [a, b] = STATE.pop(2);
     STATE.push((a as number) * (b as number));
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function mulImmediate(num: number) {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     const [a] = STATE.pop(1);
     STATE.push((a as number) * num);
   };
@@ -194,7 +188,7 @@ export const div = (): TOpcode => {
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function divImmediate(num: number) {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     const [a] = STATE.pop(1);
     STATE.push((a as number) / num);
   };
@@ -203,7 +197,7 @@ export function divImmediate(num: number) {
 /// BOUNDING OPERATIONS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function abs() {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+  return (agent: IAgent, STATE: IState): void => {
     const [a] = STATE.pop(1);
     STATE.push(Math.abs(a as number));
   };

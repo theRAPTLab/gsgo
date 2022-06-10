@@ -122,23 +122,6 @@ export default class SM_Bundle implements ISMCBundle {
       throw Error(`not a script`);
     this.script = script;
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** return an object with non-empty program arrays
-   *  note this is returning the actual program arrays, not a copy
-   */
-  getPrograms(): ISMCPrograms {
-    let progs: ISMCPrograms = {};
-    if (this.define.length) progs.define = this.define;
-    if (this.init.length) progs.init = this.init;
-    if (this.update.length) progs.update = this.update;
-    if (this.think.length) progs.think = this.think;
-    if (this.exec.length) progs.exec = this.exec;
-    if (this.condition.length) progs.condition = this.condition;
-    if (this.test.length) progs.test = this.test;
-    if (this.conseq.length) progs.conseq = this.conseq;
-    if (this.alter.length) progs.alter = this.alter;
-    return progs;
-  }
 
   /// BUNDLE INITIALIZERS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

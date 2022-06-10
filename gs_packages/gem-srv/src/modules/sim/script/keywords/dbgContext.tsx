@@ -7,7 +7,6 @@
 
 import React from 'react';
 import Keyword from 'lib/class-keyword';
-import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
@@ -27,12 +26,6 @@ export class dbgContext extends Keyword {
       console.log(`agent '${agent.name}' context`, state.ctx);
     });
     return progout;
-  }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [keyword] = unit;
-    return <>{keyword}</>;
   }
 } // end of keyword definition
 

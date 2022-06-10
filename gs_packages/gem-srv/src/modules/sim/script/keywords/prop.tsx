@@ -26,10 +26,6 @@
 import Keyword, { K_DerefProp } from 'lib/class-keyword';
 import { RegisterKeyword } from 'modules/datacore';
 
-/// CLASS HELPERS /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
-
 /// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export class prop extends Keyword {
@@ -39,17 +35,37 @@ export class prop extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(dtoks: TScriptUnit): TOpcode[] {
-    const [kw, objref, method, ...args] = dtoks;
+  compile(dtoks: TScriptUnit, refs: TSymbolRefs): TOpcode[] {
+    const [kw, objref, methodName, ...args] = dtoks;
     // create a function that will be used to dereferences the objref
     // into an actual call
-    const deref = K_DerefProp(objref);
-    return [
-      (agent: IAgent, state: IState) => {
-        const p = deref(agent, state.ctx);
-        p[method as string](...args);
-      }
-    ];
+    if (true) {
+      /*** TESTING CODE ***/
+      console.groupCollapsed(
+        `%cside-test deref of '${JSON.stringify(objref)}'`,
+        'font-weight:normal;color:rgba(0,0,0,0.25)'
+      );
+      const derefProp = this.shelper.derefProp(objref, refs);
+      console.groupEnd();
+      return [
+        (agent: IAgent, state: IState) => {
+          const smobj = derefProp(agent, state);
+          const method = smobj[methodName as string];
+          if (method) method.apply(agent, ...args);
+          // const method = smobj.getMethod(methodName as String);
+          // method(agent, ...args);
+        }
+      ];
+      /*** END of TESTING CODE ***/
+    } else {
+      const deref = K_DerefProp(objref);
+      return [
+        (agent: IAgent, state: IState) => {
+          const p = deref(agent, state.ctx);
+          p[methodName as string](...args);
+        }
+      ];
+    }
   }
 
   /** custom validation, overriding the generic validation() method of the

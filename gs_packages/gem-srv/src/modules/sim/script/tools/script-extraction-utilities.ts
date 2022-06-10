@@ -6,13 +6,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  GVarBoolean,
-  GVarDictionary,
-  GVarNumber,
-  GVarString
-} from 'script/vars/_all_vars';
-import GAgent from 'lib/class-gagent';
+import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
+import SM_Agent from 'lib/class-sm-agent';
 import { TextToScript } from './script-tokenizer';
 import * as COMPILER from './script-compiler';
 
@@ -23,7 +18,7 @@ import * as COMPILER from './script-compiler';
  */
 function ExtractBlueprintName(bpText: string): string {
   const script = TextToScript(bpText);
-  const bundle = COMPILER.BundleBlueprint(script); // compile to get name
+  const bundle = COMPILER.CompileBlueprint(script); // compile to get name
   return bundle.name;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -167,7 +162,7 @@ function ExtractFeatPropMap(featureNames: string[]): Map<string, any[]> {
     // and adding it to the dummy agent is problematic
     if (fName === 'Cursor') return;
 
-    const dummy = new GAgent();
+    const dummy = new SM_Agent();
     dummy.addFeature(fName);
     const propMap = new Map();
     Object.keys(dummy.prop[fName]).forEach(key => {
@@ -176,10 +171,9 @@ function ExtractFeatPropMap(featureNames: string[]): Map<string, any[]> {
       if (key.startsWith('_')) return;
       // deconstruct GVarType
       let type;
-      if (featProp instanceof GVarBoolean) type = 'boolean';
-      if (featProp instanceof GVarDictionary) type = 'dictionary';
-      if (featProp instanceof GVarNumber) type = 'number';
-      if (featProp instanceof GVarString) type = 'string';
+      if (featProp instanceof SM_Boolean) type = 'boolean';
+      if (featProp instanceof SM_Number) type = 'number';
+      if (featProp instanceof SM_String) type = 'string';
       propMap.set(key, {
         name: key,
         type,

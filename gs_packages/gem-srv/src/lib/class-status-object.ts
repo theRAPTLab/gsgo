@@ -1,9 +1,9 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Status Object for defining custom GAgent parameters
+  Status Object for defining custom SM_Agent parameters
 
   Used by:
-  * GAgent
+  * SM_Agent
   * AgentWidgets for barGraph
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/

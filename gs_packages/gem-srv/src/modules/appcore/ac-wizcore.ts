@@ -24,16 +24,16 @@ import UR from '@gemstep/ursys/client';
 import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-import * as DCSIM from 'modules/datacore/dc-sim-data';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
-import * as TEST_SYMBOLS from 'script/tools/x-symbol-tests';
+import * as TEST_SYMBOLS from 'test/x-symbol-tests';
 import { ENABLE_SYMBOL_TEST_BLUEPRINT } from 'modules/datacore/dc-constants';
 import {
   DecodeSymbolViewData,
   UnpackViewData,
   UnpackSymbolType
-} from 'script/tools/symbol-helpers';
+} from 'script/tools/symbol-utilities';
 import { ASSETDIR, DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 import { GetTextBuffer } from 'lib/class-textbuffer';
 
@@ -122,9 +122,10 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
     );
     const script_text = TEST_SYMBOLS.GetTestScriptText();
     STORE.SendState({ script_text });
-    TEST_SYMBOLS.TestValidate();
+    // TEST_SYMBOLS.TestValidate();
     return;
   }
+
   // normal load
   const cur_prjid = DEV_PRJID;
   const cur_bpid = DEV_BPID;
@@ -159,7 +160,8 @@ STORE._interceptState(state => {
   if (!script_tokens && script_text) {
     const toks = TRANSPILER.TextToScript(script_text);
     state.script_tokens = toks;
-    state.cur_bdl = TRANSPILER.BundleBlueprint(toks);
+    TRANSPILER.SymbolizeBlueprint(toks);
+    state.cur_bdl = TRANSPILER.CompileBlueprint(toks);
     const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
     // INSERT validation tokens to script_page
     state.script_page = vmPage;
@@ -183,7 +185,7 @@ STORE._interceptState(state => {
   if (sel_linenum) {
     if (sel_linenum > 0) {
       const { script_page } = State();
-      const { lineScript } = script_page[CHECK.UnOffsetLineNum(sel_linenum)];
+      const { lineScript } = script_page[CHECK.OffsetLineNum(sel_linenum, 'sub')];
       // FIXME: IF the slot is currently being edited, don't allow selection?
       // clone the current linescript
       state.slots_linescript = lineScript.map(t => ({ ...t }));
@@ -227,7 +229,7 @@ STORE._interceptState(state => {
 
 //     // Update Slot Editor
 //     // Replace the token in the current line script
-//     const slotIdx = CHECK.UnOffsetLineNum(sel_slotpos);
+//     const slotIdx = CHECK.OffsetLineNum(sel_slotpos,'sub');
 
 //     let newScriptToken = script_tokens[slotIdx];
 //     if (slotIdx < slots_linescript.length) {
@@ -270,7 +272,8 @@ function WizardTextChanged(text) {
     // and update the state WITHOUT broadcasting the changes
     // to avoid retriggering the scriptText editor
     script_tokens = TRANSPILER.TextToScript(text); // can throw error
-    cur_bdl = TRANSPILER.BundleBlueprint(script_tokens); // can throw error
+    TRANSPILER.SymbolizeBlueprint(script_tokens);
+    cur_bdl = TRANSPILER.CompileBlueprint(script_tokens); // can throw error
     STORE._setState({ script_text: text, script_tokens, cur_bdl });
     // since the script tokens have changed, need to redo the viewmodels for
     // the scriptWizard and tell it to update
@@ -296,7 +299,7 @@ function UpdateSlotValue(val) {
   const { slots_linescript, sel_slotpos } = State();
   // if the scriptToken already exists, update it byRef
   const slotScriptToken =
-    slots_linescript[CHECK.UnOffsetLineNum(sel_slotpos)] || // existing token
+    slots_linescript[CHECK.OffsetLineNum(sel_slotpos, 'sub')] || // existing token
     {}; // or new object if this is creating a new slot
   slotScriptToken.value = val; // We know the scriptToken is a value
   // if the token was previously used to as a string token, remove the old string key
@@ -313,7 +316,7 @@ function UpdateSlotString(val) {
   const { slots_linescript, sel_slotpos } = State();
   // if the scriptToken already exists, update it byRef
   const slotScriptToken =
-    slots_linescript[CHECK.UnOffsetLineNum(sel_slotpos)] || // existing token
+    slots_linescript[CHECK.OffsetLineNum(sel_slotpos, 'sub')] || // existing token
     {}; // or new object if this is creating a new slot
   slotScriptToken.string = val; // We know the scriptToken is a value
   // if the token was previously used to as a value token, remove the old value key
@@ -397,7 +400,7 @@ function DispatchClick(event) {
 
     // if the scriptToken already exists, update it byRef
     const slotScriptToken =
-      slots_linescript[CHECK.UnOffsetLineNum(sel_slotpos)] || // existing token
+      slots_linescript[CHECK.OffsetLineNum(sel_slotpos, 'sub')] || // existing token
       {}; // or new object if this is creating a new slot
     // Assume it's an identifier
     slotScriptToken.identifier = symbolValue;
@@ -536,7 +539,7 @@ function GetTokenById(key) {
 /** Return the script_page line, taking the 1-index into account */
 function GetVMPageLine(line: number) {
   const { script_page } = STORE.State();
-  return script_page[CHECK.UnOffsetLineNum(line)];
+  return script_page[CHECK.OffsetLineNum(line, 'sub')];
 }
 
 /// DATA CONVERSION HELPERS ///////////////////////////////////////////////////
@@ -593,7 +596,7 @@ function ValidateScriptPage(): TValidatedScriptUnit[] {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return the names of symbolData object keys as an array of strings  */
 function GetSymbolNames(symbolType: keyof TSymbolData): string[] {
-  if (symbolType === 'keywords') return DCSIM.GetAllKeywords();
+  if (symbolType === 'keywords') return SIMDATA.GetAllKeywords();
   const bdl = STORE.State().cur_bdl; // returns null
   return bdl.GetSymbolDataNames(symbolType);
 }
@@ -676,7 +679,7 @@ export function SaveSlotLineScript(e) {
     script_tokens,
     sel_linenum
   } = STORE.State();
-  const lineIdx = CHECK.UnOffsetLineNum(sel_linenum); // 1-based
+  const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
   script_tokens.splice(lineIdx, 1, slots_linescript);
   STORE.SendState({ script_tokens });
 }
@@ -700,33 +703,6 @@ export function UpdateDBGConsole(validationLog: string[] = []) {
   const buf = GetTextBuffer(STORE.State().dbg_console);
   buf.set(validationLog);
 }
-
-/// PROTOTYPING ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** testing the bundler + symbolizer code */
-UR.AddConsoleTool('bundle', (bpName: string) => {
-  //
-  const assetDir = `assets/${ASSETDIR}`;
-  const projectId = 'aquatic_energy';
-
-  // PROJECT LOADER - GET A BLUEPRINT SCRIPT TEXT
-  PROJ_v2.LoadAssetDirectory(assetDir);
-  const { scriptText } = PROJ_v2.GetProjectBlueprint(projectId, bpName);
-  // CREATE SCRIPT
-  const script = TRANSPILER.TextToScript(scriptText);
-  // Make the bundle
-  const { symbols } = TRANSPILER.SymbolizeBlueprint(script);
-  const bdl = TRANSPILER.CompileBlueprint(script);
-  // const { page } = TRANSPILER.ValidateBlueprint(script)
-  TRANSPILER.RegisterBlueprint(bdl);
-  // RETURN SYMBOLIZE BLUEPRINT
-  return symbols;
-});
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** run bundler prototype test */
-UR.HookPhase('UR/APP_START', () => {
-  setTimeout(() => (window as any).bundle('Fish'), 1000);
-});
 
 /// EXPORTED STATE METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -766,7 +742,7 @@ export {
 };
 export {
   GetSymbolNames, // return the names
-  DecodeSymbolViewData, // forward utilities from symbol-helpers
+  DecodeSymbolViewData, // forward utilities from symbol-utilities
   UnpackViewData, // forward convert ViewData to an hybrid format
   UnpackSymbolType // forward unpack symbol into [unit,type, ...param]
 };

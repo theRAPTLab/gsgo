@@ -1,41 +1,41 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The GVarString class does simple comparisons
+  The SM_String class does simple comparisons
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import SM_Object from 'lib/class-sm-object';
 // uses types defined in t-script.d
-import { RegisterVarCTor } from 'modules/datacore';
-import { GVarBoolean } from './gvar-boolean';
+import { RegisterPropType } from 'modules/datacore';
+import { SM_Boolean } from './class-sm-boolean';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class GVarString extends SM_Object implements IScopeable {
+export class SM_String extends SM_Object {
   constructor(initial?: string) {
     super();
-    this.meta.type = Symbol.for('GVarString');
+    this.meta.type = Symbol.for('SM_String');
     this.value = initial;
   }
-  setTo(str: string): GVarString {
+  setTo(str: string): SM_String {
     this.value = str;
     return this;
   }
   eq(str: string) {
-    return new GVarBoolean(this.value === str);
+    return new SM_Boolean(this.value === str);
   }
   clear() {
     this.value = '';
   }
   symbolize(): TSymbolData {
-    return GVarString.Symbols;
+    return SM_String.Symbols;
   }
 }
 
 /// SYMBOLS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-GVarString.Symbols = {
-  ctors: { String: GVarString.Symbols },
+SM_String.Symbols = {
+  ctors: { String: SM_String.Symbols },
   methods: {
     setTo: { args: ['value:string'] },
     eq: { args: ['str:string'], returns: 'isEqual:boolean' },
@@ -46,4 +46,4 @@ GVarString.Symbols = {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterVarCTor('String', GVarString);
+RegisterPropType('String', SM_String);

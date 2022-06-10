@@ -20,6 +20,7 @@
       ".gitlab": true,
       ".prettierrc.js": true,
       ".vscode": true,
+      "gs_packages/gem-srv/assets-src": true,
       "docs": true,
       "gs_packages/gem-srv/gem_srv.code-workspace": true,
       "gs_packages/gem-srv/LICENSE": true,

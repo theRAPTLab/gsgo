@@ -8,8 +8,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Keyword from 'lib/class-keyword';
-import { addProp } from 'script/ops/agent-ops';
-import { RegisterKeyword, GetVarCtor } from 'modules/datacore';
+import { RegisterKeyword, GetPropTypeCtor } from 'modules/datacore';
+import { TokenToString } from 'script/tools/script-tokenizer';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -23,16 +23,18 @@ export class AddProp extends Keyword {
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
     const [, propName, propType, initValue] = unit;
-    const propCtor = GetVarCtor(propType as string);
-    const progout = [];
-    progout.push(addProp(propName as string, propCtor, initValue));
-    return progout;
+    const propCtor = GetPropTypeCtor(propType as string);
+    return [
+      (agent: IAgent) =>
+        agent.addProp(propName as string, new propCtor(initValue))
+    ];
   }
 
   /** return symbol structure for this keyword */
   symbolize(unit: TScriptUnit): TSymbolData {
-    const [, propName, propType] = unit;
-    const propCtor = GetVarCtor(propType as string);
+    const propName = TokenToString(unit[1]);
+    const propType = TokenToString(unit[2]);
+    const propCtor = GetPropTypeCtor(propType as string);
     return { props: { [propName as string]: propCtor.Symbols } };
   }
 } // end of keyword definition

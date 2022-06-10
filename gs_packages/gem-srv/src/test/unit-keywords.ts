@@ -8,7 +8,7 @@
 
 import UR from '@gemstep/ursys/client';
 import TESTS from 'test/jsdata/keyword-data';
-import { TextToScript, BundleBlueprint } from 'script/transpiler-v2';
+import { TextToScript, CompileBlueprint } from 'script/transpiler-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,7 +26,7 @@ function TestKeywords(index?: number) {
     if (!singleTest || index === idx) {
       const { desc, text } = test;
       const script = TextToScript(text);
-      const bundle = BundleBlueprint(script);
+      const bundle = CompileBlueprint(script);
 
       const lead = `${idx}`.padStart(2, '0');
       if (singleTest) console.group('test', lead, '-', desc);
