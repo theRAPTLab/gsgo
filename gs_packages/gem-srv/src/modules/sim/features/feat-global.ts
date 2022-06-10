@@ -16,7 +16,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import GFeature from 'lib/class-gfeature';
+import SM_Feature from 'lib/class-sm-feature';
 import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import SM_Agent from 'lib/class-sm-agent';
@@ -29,7 +29,7 @@ const DBG = true;
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class GlobalPack extends GFeature {
+class GlobalPack extends SM_Feature {
   constructor(name) {
     super(name);
     this.featAddMethod('addGlobalProp', this.addGlobalProp);

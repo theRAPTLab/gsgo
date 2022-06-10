@@ -8,7 +8,7 @@ import RNG from 'modules/sim/sequencer';
 import * as PIXI from 'pixi.js';
 import UR from '@gemstep/ursys/client';
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
-import GFeature from 'lib/class-gfeature';
+import SM_Feature from 'lib/class-sm-feature';
 import { GetAgentById } from 'modules/datacore/dc-sim-agents';
 import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 import { GetLoader } from 'modules/asset_core/asset-mgr';
@@ -128,7 +128,7 @@ UR.HookPhase('SIM/FEATURES_EXEC', m_Animate);
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class CostumePack extends GFeature {
+class CostumePack extends SM_Feature {
   //
   constructor(name) {
     super(name);

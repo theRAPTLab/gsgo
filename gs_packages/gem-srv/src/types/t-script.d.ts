@@ -141,7 +141,11 @@ declare global {
 
   /// FEATURE DECLARATIONS ////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Features are very similar to ISM_Object interface in method */
+  /** Features are very similar to ISM_Object interface, but they are
+   *  collections of methods, not simulator objects. The methods defined in
+   *  an IFeature are javascript functions instead of ASTs or TSMCProgram
+   *  as Features are intended to encapsulate high performance code that's
+   *  too difficult for students to write; methods expose this to GEMSCRIPT */
   interface IFeature {
     meta: { name: string };
     get name(): string;
@@ -149,12 +153,14 @@ declare global {
     initialize(pm: any): void;
     decorate(agent: IAgent): void;
     featAddProp(agent: IAgent, key: string, prop: ISM_Object): void;
-    featAddMethod(mName: string, smc_or_f: TSM_FeatureMethod): void;
+    featAddMethod(mName: string, func: TSM_FeatureMethod): void;
     featGetMethod(mName: string): TSM_FeatureMethod;
+    // compatibility with SM_Object
+    getMethod(mName: string): TSM_FeatureMethod;
     symbolize(): TSymbolData;
   }
   /** SM_Feature methods are either functions or TSMCPrograms */
-  type TSM_FeatureMethod = (agent: IAgent, ...any) => any;
+  type TSM_FeatureMethod = (agent: IAgent, ...any: any[]) => any;
 
   /// SIMULATION RUNTIME //////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

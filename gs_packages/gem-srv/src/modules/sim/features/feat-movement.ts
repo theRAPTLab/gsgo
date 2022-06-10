@@ -17,7 +17,7 @@
 import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
-import GFeature from 'lib/class-gfeature';
+import SM_Feature from 'lib/class-sm-feature';
 import {
   DeleteAgent,
   GetAgentsByType,
@@ -603,7 +603,7 @@ UR.HookPhase('SIM/VIS_UPDATE', m_VizUpdate);
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class MovementPack extends GFeature {
+class MovementPack extends SM_Feature {
   constructor(name) {
     super(name);
     if (DBG) console.log(...PR('construct'));

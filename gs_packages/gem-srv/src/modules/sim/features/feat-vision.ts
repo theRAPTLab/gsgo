@@ -14,7 +14,7 @@
 
 import UR from '@gemstep/ursys/client';
 import { SM_Number, SM_Boolean } from 'script/vars/_all_vars';
-import GFeature from 'lib/class-gfeature';
+import SM_Feature from 'lib/class-sm-feature';
 import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import { intersect } from 'lib/vendor/js-intersect';
@@ -222,7 +222,7 @@ function m_handleScriptEvent(data) {
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class VisionPack extends GFeature {
+class VisionPack extends SM_Feature {
   //
   constructor(name) {
     super(name);

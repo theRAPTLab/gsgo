@@ -7,7 +7,7 @@
 /*/ required libraries /*/
 import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
-import GFeature from 'lib/class-gfeature';
+import SM_Feature from 'lib/class-sm-feature';
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
@@ -85,7 +85,7 @@ function m_Create(frame) {
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class PopulationPack extends GFeature {
+class PopulationPack extends SM_Feature {
   constructor(name) {
     super(name);
     // Population Management

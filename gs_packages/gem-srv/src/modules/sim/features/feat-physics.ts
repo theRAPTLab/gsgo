@@ -20,7 +20,7 @@
 
 import UR from '@gemstep/ursys/client';
 import { SM_Number, SM_String } from 'script/vars/_all_vars';
-import GFeature from 'lib/class-gfeature';
+import SM_Feature from 'lib/class-sm-feature';
 import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 
@@ -110,7 +110,7 @@ function m_Update(frame) {
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class PhysicsPack extends GFeature {
+class PhysicsPack extends SM_Feature {
   //
   constructor(name) {
     super(name);

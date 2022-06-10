@@ -22,7 +22,7 @@ import {
   SM_String,
   SM_Boolean
 } from 'modules/sim/script/vars/_all_vars';
-import GFeature from 'lib/class-gfeature';
+import SM_Feature from 'lib/class-sm-feature';
 import { GetAgentById } from 'modules/datacore/dc-sim-agents';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import SM_Agent from 'lib/class-sm-agent';
@@ -202,7 +202,7 @@ function m_UIUpdate(frame) {
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class WidgetPack extends GFeature {
+class WidgetPack extends SM_Feature {
   //
   constructor(name) {
     super(name);

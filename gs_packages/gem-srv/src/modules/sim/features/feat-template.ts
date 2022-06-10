@@ -15,7 +15,7 @@
 
 /*/ required libraries /*/
 import UR from '@gemstep/ursys/client';
-import GFeature from 'lib/class-gfeature';
+import SM_Feature from 'lib/class-sm-feature';
 import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 /*/ add your other libraries here /*/
 import { SM_Number, SM_String } from 'script/vars/_all_vars';
@@ -39,7 +39,7 @@ function m_StaticMethod() {
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class MyFeature extends GFeature {
+class MyFeature extends SM_Feature {
   /*/
     if your feature provides methods to the scripting engine, define them in the
     constructor. Method code is shared between all agents so it is defined only

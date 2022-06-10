@@ -11,7 +11,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import GFeature from 'lib/class-gfeature';
+import SM_Feature from 'lib/class-sm-feature';
 import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 import { SM_String } from 'script/vars/_all_vars';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
@@ -151,7 +151,7 @@ function m_UpdateInhabitAgent(frametime) {
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class CursorPack extends GFeature {
+class CursorPack extends SM_Feature {
   constructor(name) {
     super(name);
     this.featAddMethod('releaseCursor', this.releaseCursor);

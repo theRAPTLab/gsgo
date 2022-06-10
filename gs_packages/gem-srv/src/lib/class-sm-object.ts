@@ -72,10 +72,10 @@ class SM_Object implements ISM_Object {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Add a named method to SMC_Object method map */
-  addMethod(mName: string, smc_or_f: TSM_Method): void {
+  addMethod(mName: string, code: TSM_Method): void {
     const method = this.method[mName];
     if (method) throw Error(`method '${mName}' already added`);
-    method[mName] = smc_or_f;
+    method[mName] = code;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: return the gvar associated with propName, which could be in objref
