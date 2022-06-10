@@ -39,33 +39,33 @@ export class prop extends Keyword {
     const [kw, objref, methodName, ...args] = dtoks;
     // create a function that will be used to dereferences the objref
     // into an actual call
-    const deref = K_DerefProp(objref);
-    /*** TESTING CODE ***/
-    if (false) {
+    if (true) {
+      /*** TESTING CODE ***/
       console.groupCollapsed(
         `%cside-test deref of '${JSON.stringify(objref)}'`,
-        'font-weight:normal;color:lightgray'
+        'font-weight:normal;color:rgba(0,0,0,0.25)'
       );
       const derefProp = this.shelper.derefProp(objref, refs);
       console.groupEnd();
+      return [
+        (agent: IAgent, state: IState) => {
+          const smobj = derefProp(agent, state);
+          const method = smobj[methodName as string];
+          if (method) method.apply(agent, ...args);
+          // const method = smobj.getMethod(methodName as String);
+          // method(agent, ...args);
+        }
+      ];
+      /*** END of TESTING CODE ***/
+    } else {
+      const deref = K_DerefProp(objref);
+      return [
+        (agent: IAgent, state: IState) => {
+          const p = deref(agent, state.ctx);
+          p[methodName as string](...args);
+        }
+      ];
     }
-    /*** END of TESTING CODE ***/
-    return [
-      (agent: IAgent, state: IState) => {
-        const p = deref(agent, state.ctx);
-        p[methodName as string](...args);
-      }
-    ];
-
-    // return [
-    //   (agent: IAgent, state: IState) => {
-    //     const smobj = derefProp(agent, state);
-    //     const method = smobj[methodName as string];
-    //     if (method) method.apply(agent, ...args);
-    //     // const method = smobj.getMethod(methodName as String);
-    //     // method(agent, ...args);
-    //   }
-    // ];
   }
 
   /** custom validation, overriding the generic validation() method of the

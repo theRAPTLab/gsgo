@@ -550,7 +550,8 @@ function m_RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
  */
 function ScriptUpdate(data) {
   const source = TRANSPILER.TextToScript(data.script);
-  console.error('calling BundleBlueprint');
+  console.error('@BEN calling BundleBlueprint has to be replaced');
+  // the old call
   // const bundle = TRANSPILER.BundleBlueprint(source); // compile to get name
   const bpName = bundle.name;
 

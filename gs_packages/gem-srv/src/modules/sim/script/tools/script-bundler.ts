@@ -248,7 +248,10 @@ function AddSymbols(symdata: TSymbolData) {
     if (_bdlsym.features === undefined) _bdlsym.features = {};
     for (const [featName, featSymbols] of Object.entries(symdata.features)) {
       if (_bdlsym.features[featName])
-        console.warn('overwriting feature', featName);
+        console.log(
+          `%coverwriting feature ${featName}`,
+          'color:rgba(0,0,0,0.25)'
+        );
       if (DBG) {
         console.groupCollapsed(...PR(`AddSymbol: ${featName}`));
         console.log(featSymbols);
@@ -262,7 +265,8 @@ function AddSymbols(symdata: TSymbolData) {
     // propName --->
     if (_bdlsym.props === undefined) _bdlsym.props = {};
     for (const [propName, symbolData] of Object.entries(symdata.props)) {
-      if (_bdlsym.props[propName]) console.warn('overwriting prop', propName);
+      if (_bdlsym.props[propName])
+        console.log(`%coverwriting prop ${propName}`, 'color:rgba(0,0,0,0.25)');
       if (DBG) {
         console.groupCollapsed(...PR(`AddSymbol: ${propName}`));
         console.log(symbolData);

@@ -178,12 +178,13 @@ function SymbolizeBlueprint(script: TScriptUnit[], bdl?: SM_Bundle) {
   if (bdl instanceof SM_Bundle) {
     BUNDLER.OpenBundle(bdl);
     bpName = BUNDLER.BundlerState().bpName;
+    console.warn(`${fn} xxxbdl %c${bpName}`, 'font-style:bold;color:green');
   } else {
     const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
     [bpName] = BLUEPRINT;
     BUNDLER.OpenBundle(bpName);
+    console.warn(`${fn} sysbdl %c${bpName}`, 'font-style:bold;color:green');
   }
-  console.log(`${fn} ${bpName}`);
   // setup bundle type
   BUNDLER.SetBundleType(EBundleType.BLUEPRINT);
   // add default agent symbols
@@ -296,13 +297,16 @@ function CompileBlueprint(script: TScriptUnit[], bdl?: SM_Bundle): SM_Bundle {
   const fn = 'CompileBlueprint:';
   let bpName;
   // open provided bundle or look it up in SIMDATA by bpName
-  if (bdl instanceof SM_Bundle) BUNDLER.OpenBundle(bdl);
-  else {
+  if (bdl instanceof SM_Bundle) {
+    BUNDLER.OpenBundle(bdl);
+    bpName = BUNDLER.BundlerState().bpName;
+    console.warn(`${fn} xxxbdl %c${bpName}`, 'font-style:bold;color:blue');
+  } else {
     const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
     [bpName] = BLUEPRINT;
     BUNDLER.OpenBundle(bpName);
+    console.warn(`${fn} sysbdl %c${bpName}`, 'font-style:bold;color:blue');
   }
-  console.log(`${fn} ${bpName}`);
   // setup bundle type
   BUNDLER.SetBundleType(EBundleType.BLUEPRINT);
   // compile statement-by-statement

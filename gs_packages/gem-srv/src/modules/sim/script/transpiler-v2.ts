@@ -85,11 +85,15 @@ function ValidateLineText(line: string, bdl: SM_Bundle): TValidatedScriptUnit {
  */
 function MakeAgent(instanceDef: TInstance) {
   const fn = 'MakeAgent:';
-  const { bpid, label } = instanceDef;
-  const agent = new SM_Agent(label, String(instanceDef.id));
+  const { id, bpid, label } = instanceDef;
+  const agent = new SM_Agent(label, String(id));
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
   if (typeof bpid === 'string') {
+    console.warn(
+      `${fn} making %c${bpid} id:${id} `,
+      'font-style:bold;color:black'
+    );
     const bdl = SIMDATA.GetBlueprintBundle(bpid);
     if (!bdl) throw Error(`agent blueprint for '${bpid}' not defined`);
     // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));

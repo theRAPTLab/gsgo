@@ -742,6 +742,7 @@ class SymbolInterpreter {
     if (p) console.log('** 0 ** prop', p);
     //
     if (terminal) {
+      // single identifier objref (e.g. energyLevel)
       if (p) {
         const deref = (agent: IAgent, state: IState) => {
           const prop = agent.getProp(part);
@@ -805,6 +806,7 @@ class SymbolInterpreter {
       }
     });
 
+    // 2 multi-part objref (e.g. Costume.costumeName)
     return (agent, ...args) => {
       console.log(agent.name);
     };

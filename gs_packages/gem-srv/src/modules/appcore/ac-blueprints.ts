@@ -106,7 +106,7 @@ function m_MergeBlueprint(bpDef: TBlueprint, bpDefs: TBlueprint[]): TBlueprint[]
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Blueprint symbols need to be extracted before they are compiled */
 function m_SymbolizeBlueprints(bpDefs: TBlueprint[]) {
-  console.groupCollapsed('Symbolizing Blueprints');
+  console.warn('%cAC Symbolizing Blueprints', 'font-weight:bold');
   bpDefs.forEach(b => {
     const script = TRANSPILER.TextToScript(b.scriptText);
     TRANSPILER.SymbolizeBlueprint(script);
@@ -125,6 +125,8 @@ function m_SymbolizeBlueprints(bpDefs: TBlueprint[]) {
  *  @returns {TBlueprint[]} - bpDefs that all use 'name', not 'id'
  */
 function m_CompileBlueprints(bpDefs: TBlueprint[]): TBlueprint[] {
+  console.warn('%cAC Compiling Blueprints', 'font-weight:bold');
+
   return bpDefs.map(b => {
     const script = TRANSPILER.TextToScript(b.scriptText);
     TRANSPILER.SymbolizeBlueprint(script);
