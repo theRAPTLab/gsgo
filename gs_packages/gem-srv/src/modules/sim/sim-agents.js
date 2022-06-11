@@ -103,10 +103,11 @@ const SCRIPT_TO_INSTANCE = new SyncMap({
  * @param {InstanceDef} def
  */
 function MakeAgent(def) {
-  const initScript = TRANSPILER.CompileText(def.initScript);
+  const bundle = SIMDATA.GetBlueprintBundle(def.id);
+  const refs = { bundle, globals: {} };
+  const initScript = TRANSPILER.CompileText(def.initScript, refs);
   let agent = DCAGENTS.GetAgentById(def.id);
   if (!agent) agent = TRANSPILER.MakeAgent(def);
-  console.log('executing instance', agent.name, 'init');
   agent.exec(initScript, { agent });
 }
 
