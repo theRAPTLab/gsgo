@@ -151,7 +151,6 @@ function m_ResetAndCompileBlueprints(blueprints: TBlueprint[]): TBlueprint[] {
   SIMDATA.DeleteAllBlueprintBundles();
   DCAGENTS.DeleteAllAgents();
   DCAGENTS.DeleteAllInstances();
-  m_SymbolizeBlueprints(blueprints);
   return m_CompileBlueprints(blueprints);
 }
 
