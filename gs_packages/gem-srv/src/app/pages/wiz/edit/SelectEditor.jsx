@@ -69,8 +69,8 @@ function SelectEditor(props) {
   };
   const processBooleanInput = e => {
     e.preventDefault();
-    // e.target.value is a string
-    WIZCORE.UpdateSlotBoolean(Boolean(Number(e.target.value)));
+    const toggled = unitText === 'true' ? false : true;
+    WIZCORE.UpdateSlotBoolean(toggled);
   };
   const handleNumberKeypress = e => {
     if (e.key === 'Enter') {
@@ -144,12 +144,10 @@ function SelectEditor(props) {
           </label>
           <input
             key={tkey}
-            defaultValue={unitText === 'false' ? 0 : 1}
-            type="range"
-            min="0"
-            max="1"
-            step="1"
-            onChange={processBooleanInput}
+            defaultChecked={unitText === 'true' ? 'checked' : undefined}
+            type="checkbox"
+            role="switch"
+            onInput={processBooleanInput}
           />
           <label style={{ textAlign: 'left', paddingLeft: '10px' }}>true</label>
         </div>
