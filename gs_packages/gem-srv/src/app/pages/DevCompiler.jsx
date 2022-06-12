@@ -38,30 +38,18 @@ const defaultText = `# blueprint DevCompiler`;
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HookPhase(
-  'UR/LOAD_ASSETS',
-  () =>
-    new Promise((resolve, reject) => {
-      if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
-      (async () => {
-        // (1) The old asset manager routine
-        // let map = await GLOBAL.LoadAssetsSync('00-manifest.json');
-        if (DBG) console.log(...PR('ASSETS LOADED'));
-        console.log(...PR('Waiting for user input'));
-        // (2) the new asset manager routine
-        try {
-          await ASSETS.PromiseLoadAssets('dev');
-        } catch (err) {
-          let shortErr = err.toString().split('\n')[0];
-          console.log(
-            `WARNING: %c${shortErr}`,
-            'color:red;background-color:yellow'
-          );
-        }
-        resolve();
-      })();
-    })
-);
+UR.HookPhase('UR/LOAD_ASSETS', async () => {
+  if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
+  // (1) The old asset manager routine
+  // let map = await GLOBAL.LoadAssetsSync('00-manifest.json');
+  if (DBG) console.log(...PR('ASSETS LOADED'));
+  console.log(...PR('Waiting for user input'));
+  // (2) the new asset manager routine
+  await ASSETS.PromiseLoadAssets('dev').catch(err => {
+    let shortErr = err.toString().split('\n')[0];
+    console.log(`WARNING: %c${shortErr}`, 'color:red;background-color:yellow');
+  });
+});
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -92,7 +80,7 @@ class Compiler extends React.Component {
     UR.HandleMessage('SCRIPT_SRC_CHANGED', this.updateScript);
     // temp: make sure the blueprint
     // eventually this needs to be part of application startup
-    const bdl = TRANSPILER.BundleBlueprint(this.source);
+    const bdl = TRANSPILER.CompileBlueprint(this.source);
     TRANSPILER.RegisterBlueprint(bdl);
     // codejar
     this.jarRef = React.createRef();
@@ -192,7 +180,7 @@ class Compiler extends React.Component {
     DATACORE.DeleteAllScriptEvents();
     DATACORE.DeleteAllAgents();
     DATACORE.DeleteAllInstances();
-    const bdl = TRANSPILER.BundleBlueprint(this.source);
+    const bdl = TRANSPILER.CompileBlueprint(this.source);
     const bp = TRANSPILER.RegisterBlueprint(bdl);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
     // update local jsx render
@@ -301,6 +289,7 @@ class Compiler extends React.Component {
     );
   }
 }
+
 /// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.HandleMessage('NET:GEM_COMPILERAPP', data => {
