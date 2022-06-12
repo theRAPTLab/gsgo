@@ -67,6 +67,8 @@ import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as DCPROJECT from 'modules/datacore/dc-project';
 import * as SIMAGENTS from 'modules/sim/sim-agents';
 import * as TRANSPILER from '../sim/script/transpiler-v2';
+import { DEBUG_FLAGS } from 'config/dev-settings';
+const { SYMBOLIZE_CALLS: DBG_SC } = DEBUG_FLAGS;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -125,7 +127,7 @@ function m_SymbolizeBlueprints(bpDefs: TBlueprint[]) {
  *  @returns {TBlueprint[]} - bpDefs that all use 'name', not 'id'
  */
 function m_CompileBlueprints(bpDefs: TBlueprint[]): TBlueprint[] {
-  console.warn('%cAC Compiling Blueprints', 'font-weight:bold');
+  if (DBG_SC) console.warn('%cAC Compiling Blueprints', 'font-weight:bold');
 
   return bpDefs.map(b => {
     const script = TRANSPILER.TextToScript(b.scriptText);
