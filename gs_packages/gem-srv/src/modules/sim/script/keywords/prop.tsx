@@ -26,6 +26,8 @@
 import Keyword, { K_DerefProp } from 'lib/class-keyword';
 import { RegisterKeyword } from 'modules/datacore';
 
+const USE_NEW_DEREF = false;
+
 /// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export class prop extends Keyword {
@@ -39,7 +41,7 @@ export class prop extends Keyword {
     const [kw, objref, methodName, ...args] = dtoks;
     // create a function that will be used to dereferences the objref
     // into an actual call
-    if (true) {
+    if (USE_NEW_DEREF) {
       /*** TESTING CODE ***/
       console.groupCollapsed(
         `%cside-test deref of '${JSON.stringify(objref)}'`,
