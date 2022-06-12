@@ -4,8 +4,14 @@
 useFeature Costume
 addProp energyType String 'producer'
 addProp energyLevel number 50
+addProp isAlive Boolean true
 
 # program init
+prop isAlive setTo true
+prop isAlive setTo false
+prop unknownPropName setTo
+prop energyLevel setTo 0
+prop Costume.costumeName setTo 'banana'
 prop energyLevel setTo 0
 prop agent.energyLevel setTo 0
 prop energyLevel setTo 'foo'
