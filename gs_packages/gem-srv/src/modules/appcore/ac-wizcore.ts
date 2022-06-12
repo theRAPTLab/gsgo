@@ -671,7 +671,7 @@ function WizardTestLine(text: string) {
 /** API: saves the currently edited slot linescript into the current script_tokens
  *  Called by SelectEditorLineSlot
  */
-export function SaveSlotLineScript(e) {
+function SaveSlotLineScript(event) {
   const {
     script_text,
     slots_linescript,
@@ -684,7 +684,8 @@ export function SaveSlotLineScript(e) {
   STORE.SendState({ script_tokens });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function CancelSlotEdit(e) {
+/** API */
+function CancelSlotEdit(event) {
   // deselect slot
   STORE.SendState({
     sel_slotpos: -1,
@@ -693,7 +694,7 @@ export function CancelSlotEdit(e) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API Slot editor remove extraneous slot*/
+/** API Slot editor remove extraneous slot */
 function DeleteSlot(event) {
   const { slots_linescript, script_tokens, sel_linenum, sel_slotpos } =
     STORE.State();
@@ -730,8 +731,10 @@ export {
   UpdateSlotString, // handle incoming change of slot string (input)
   UpdateSlotBoolean, // handle incoming change of slot boolean (input)
   WizardTestLine, // handle test line for WizardTextLine tester
-  DispatchEditorClick // handle clicks on editing box
-  DeleteSlot
+  DispatchEditorClick, // handle clicks on editing box
+  SaveSlotLineScript, // handle slot editor save request
+  CancelSlotEdit, // handle slot editor cancel edit
+  DeleteSlot // handle slot editor delete extraneous slot
 };
 
 /// EXPORTED VIEWMODEL INFO UTILS //////////////////////////////////////////////
