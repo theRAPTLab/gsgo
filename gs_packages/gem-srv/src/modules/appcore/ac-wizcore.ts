@@ -355,7 +355,8 @@ function DispatchClick(event) {
     newState.sel_slotpos = Number(pos); // STATE UPDATE: selected slot
     STORE.SendState(newState);
     const { sel_linenum, sel_linepos } = State();
-    if (sel_linenum > 0 && sel_linepos > 0) {
+    if (sel_linenum > 0 && sel_linepos >= 0) {
+      // sel_linepos = 0 if user clicked on line number
       return;
     }
   }
