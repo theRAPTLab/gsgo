@@ -131,6 +131,7 @@ function SelectEditorSlots(props) {
   const { validationTokens } = slots_validation;
   const tokenList = [];
   const validationTokenCount = validationTokens.length;
+  let extraTokenName;
   for (let i = 0; i < validationTokenCount; i++) {
     let label;
     let type;
@@ -185,6 +186,10 @@ function SelectEditorSlots(props) {
     selectedError = selected ? error : selectedError;
     selectedHelp = selected ? help : selectedHelp;
 
+    // show Delete button if this is the currently selected token
+    if (selected && t.error && t.error.code === 'extra')
+      extraTokenName = t.unitText;
+
     tokenList.push(
       <GValidationToken
         key={tokenKey}
@@ -206,6 +211,9 @@ function SelectEditorSlots(props) {
   }
   function CancelSlotEdit(e) {
     WIZCORE.CancelSlotEdit(e);
+  }
+  function DeleteSlot(e) {
+    WIZCORE.DeleteSlot(e);
   }
 
   /*
@@ -266,6 +274,11 @@ function SelectEditorSlots(props) {
       </div>
       <div className="gsled choices">
         <div className="gsled choicesline gwiz styleError">{selectedError}</div>
+        {extraTokenName && (
+          <div className="gsled choicesline gwiz styleError">
+            <button onClick={DeleteSlot}>DELETE {extraTokenName}</button>
+          </div>
+        )}
         <SelectEditor selection={selection} />
         <div className="gsled choicesline choiceshelp">{selectedHelp}</div>
       </div>
