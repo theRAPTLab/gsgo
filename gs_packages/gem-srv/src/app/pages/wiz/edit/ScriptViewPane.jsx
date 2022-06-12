@@ -121,10 +121,35 @@ export function ScriptViewPane(props) {
     //
     if (hasTokens || DRAW_CLOSING_LINES) {
       const selected = selLineNum === lineNum;
-
+      let lineJSX = lineBuffer;
+      if (selected) {
+        lineJSX = (
+          <>
+            <button
+              className="outline btnAddBefore"
+              onClick={e => WIZCORE.AddLine('before')}
+            >
+              +
+            </button>
+            <button
+              className="outline btnAddAfter"
+              onClick={e => WIZCORE.AddLine('after')}
+            >
+              +
+            </button>
+            {lineBuffer}
+            <button
+              className="outline btnDelete"
+              onClick={WIZCORE.DeleteSelectedLine}
+            >
+              DELETE
+            </button>
+          </>
+        );
+      }
       pageBuffer.push(
         <GLine key={u_Key()} selected={selected} lineNum={num} level={level}>
-          {lineBuffer}
+          {lineJSX}
         </GLine>
       );
 

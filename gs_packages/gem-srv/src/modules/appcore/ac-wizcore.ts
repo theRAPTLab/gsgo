@@ -704,6 +704,27 @@ function DeleteSlot(event) {
   STORE.SendState({ slots_linescript });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API ScriptViewPane add line before/after selected line */
+function AddLine(position) {
+  const { script_tokens, sel_linenum } = STORE.State();
+  const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
+  const newLine = [{ line: '' }];
+  if (position === 'before') {
+    script_tokens.splice(lineIdx, 0, newLine);
+  } else {
+    script_tokens.splice(lineIdx + 1, 0, newLine);
+  }
+  STORE.SendState({ script_tokens });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API ScriptViewPane delete selected line */
+function DeleteSelectedLine(event) {
+  const { script_tokens, sel_linenum } = STORE.State();
+  const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
+  script_tokens.splice(lineIdx, 1);
+  STORE.SendState({ script_tokens });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function PrintDBGConsole(str: string) {
   const buf = GetTextBuffer(STORE.State().dbg_console);
   buf.printLine(str);
@@ -734,7 +755,9 @@ export {
   DispatchEditorClick, // handle clicks on editing box
   SaveSlotLineScript, // handle slot editor save request
   CancelSlotEdit, // handle slot editor cancel edit
-  DeleteSlot // handle slot editor delete extraneous slot
+  DeleteSlot, // handle slot editor delete extraneous slot
+  AddLine, // handle ScriptViewPane request to add a new script line
+  DeleteSelectedLine // handle ScriptViewPane request to delete currently selected script line
 };
 
 /// EXPORTED VIEWMODEL INFO UTILS //////////////////////////////////////////////
