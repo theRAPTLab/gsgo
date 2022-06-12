@@ -268,6 +268,13 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
       return;
     }
     if (block === 'end') {
+      // REVIEW
+      // This currently only works for single-level blocks such as
+      // `when` and `every` blocks.
+      // It does NOT handle:
+      // * `if` statements which have two blocks
+      // * Nested block statements
+      //
       // At this point, `lineScript` is the block parent so don't add it!
       // current.push(lineScript);
       current = script_tokens;
