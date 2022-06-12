@@ -268,8 +268,14 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
       return;
     }
     if (block === 'end') {
-      current.push(lineScript);
-      current = stack.pop();
+      // At this point, `lineScript` is the block parent so don't add it!
+      // current.push(lineScript);
+      current = script_tokens;
+      // The block code is the last element in the block parent line,
+      // so we need to add the block code to the parent line
+      const blockParent = current.pop(); // last converted script_tokens line
+      blockParent.push({ block: stack.pop() });
+      current.push(blockParent);
       return;
     }
     current.push(lineScript);
