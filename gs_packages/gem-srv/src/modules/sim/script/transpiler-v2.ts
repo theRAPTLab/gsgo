@@ -23,6 +23,7 @@ import 'script/keywords/_all_keywords';
 import * as TOKENIZER from 'script/tools/script-tokenizer';
 import * as COMPILER from 'script/tools/script-compiler';
 import * as SYMBOLUTILS from 'script/tools/symbol-utilities';
+import { DEBUG_FLAGS } from 'config/dev-settings';
 
 // dummy to import symbol-utilities otherwise it gets treeshaken out
 SYMBOLUTILS.BindModule();
@@ -30,6 +31,7 @@ SYMBOLUTILS.BindModule();
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRANSPILE', 'TagDebug');
+const { SYMBOLIZE_CALLS: DBG_SC } = DEBUG_FLAGS;
 const DBG = false;
 
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
@@ -88,10 +90,11 @@ function MakeAgent(instanceDef: TInstance) {
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
   if (typeof bpid === 'string') {
-    console.warn(
-      `${fn} making %c${bpid} id:${id} `,
-      'font-style:bold;color:black'
-    );
+    if (DBG_SC)
+      console.warn(
+        `${fn} making %c${bpid} id:${id} `,
+        'font-style:bold;color:black'
+      );
     const bdl = SIMDATA.GetBlueprintBundle(bpid);
     if (!bdl) throw Error(`agent blueprint for '${bpid}' not defined`);
     // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));

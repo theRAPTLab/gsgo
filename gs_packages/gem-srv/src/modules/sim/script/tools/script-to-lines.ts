@@ -14,8 +14,10 @@
 import {
   SHOW_EMPTY_STATEMENTS,
   SCRIPT_PAGE_INDEX_OFFSET
-} from 'modules/datacore/dc-constants';
+} from 'config/dev-settings';
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 
 /// LINE PRINTING MACHINE //////////////////////////////////////////////////////

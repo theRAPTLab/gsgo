@@ -6,13 +6,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Keyword, { K_DerefProp } from 'lib/class-keyword';
-import {
-  IAgent,
-  IState,
-  TOpcode,
-  TScriptUnit,
-  TValidatedScriptUnit
-} from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
