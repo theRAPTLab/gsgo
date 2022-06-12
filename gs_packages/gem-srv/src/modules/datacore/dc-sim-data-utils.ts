@@ -17,9 +17,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { SCRIPT_PAGE_INDEX_OFFSET } from 'modules/datacore/dc-constants';
 // workaround to import enumeration types as objects requires dirpath hack
 import { EBundleType, EBundleTag } from 'modules/../types/t-script.d';
+import { SCRIPT_PAGE_INDEX_OFFSET } from 'config/dev-settings';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

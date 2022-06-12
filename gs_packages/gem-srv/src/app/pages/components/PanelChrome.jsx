@@ -1,21 +1,11 @@
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../helpers/page-xui-styles';
 
 class PanelChrome extends React.PureComponent {
   render() {
-    const {
-      id,
-      title,
-      isActive,
-      children,
-      topbar,
-      bottombar,
-      onClick,
-      classes
-    } = this.props;
+    const { id, title, isActive, children, topbar, bottombar, onClick, classes } =
+      this.props;
     return (
       <div
         className={classes.panel}

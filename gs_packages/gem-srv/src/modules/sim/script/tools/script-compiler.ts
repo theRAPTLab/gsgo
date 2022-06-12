@@ -37,6 +37,8 @@ import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import SM_Agent from 'lib/class-sm-agent';
 import VSDToken from 'script/tools/class-validation-token';
 import { ParseExpression } from './class-expr-parser-v2';
+import { DEBUG_FLAGS } from 'config/dev-settings';
+const { SYMBOLIZE_CALLS: DBG_SC } = DEBUG_FLAGS;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -178,12 +180,14 @@ function SymbolizeBlueprint(script: TScriptUnit[], bdl?: SM_Bundle) {
   if (bdl instanceof SM_Bundle) {
     BUNDLER.OpenBundle(bdl);
     bpName = BUNDLER.BundlerState().bpName;
-    console.warn(`${fn} xxxbdl %c${bpName}`, 'font-style:bold;color:green');
+    if (DBG_SC)
+      console.warn(`${fn} xxxbdl %c${bpName}`, 'font-style:bold;color:green');
   } else {
     const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
     [bpName] = BLUEPRINT;
     BUNDLER.OpenBundle(bpName);
-    console.warn(`${fn} sysbdl %c${bpName}`, 'font-style:bold;color:green');
+    if (DBG_SC)
+      console.warn(`${fn} sysbdl %c${bpName}`, 'font-style:bold;color:green');
   }
   // setup bundle type
   BUNDLER.SetBundleType(EBundleType.BLUEPRINT);
@@ -305,14 +309,15 @@ function CompileBlueprint(script: TScriptUnit[], bdl?: SM_Bundle): SM_Bundle {
     const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
     [bpName] = BLUEPRINT;
     BUNDLER.OpenBundle(bpName);
-    console.warn(`${fn} sysbdl %c${bpName}`, 'font-style:bold;color:blue');
+    if (DBG_SC)
+      console.warn(`${fn} sysbdl %c${bpName}`, 'font-style:bold;color:blue');
   }
   // setup bundle type
   BUNDLER.SetBundleType(EBundleType.BLUEPRINT);
   // compile statement-by-statement
 
   const refs = BUNDLER.SymbolRefs();
-  console.log('refs are', refs);
+  if (DBG_SC) console.log('refs are', refs);
   script.forEach((stm, line) => {
     refs.line = line;
     const objcode = CompileStatement(stm, refs);
