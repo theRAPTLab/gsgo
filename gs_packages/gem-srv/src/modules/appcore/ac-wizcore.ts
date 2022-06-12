@@ -693,6 +693,16 @@ export function CancelSlotEdit(e) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API Slot editor remove extraneous slot*/
+function DeleteSlot(event) {
+  const { slots_linescript, script_tokens, sel_linenum, sel_slotpos } =
+    STORE.State();
+  // remove the token
+  const slotIdx = CHECK.OffsetLineNum(sel_slotpos, 'sub'); // 1-based
+  slots_linescript.splice(slotIdx, 1);
+  STORE.SendState({ slots_linescript });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function PrintDBGConsole(str: string) {
   const buf = GetTextBuffer(STORE.State().dbg_console);
   buf.printLine(str);
@@ -721,6 +731,7 @@ export {
   UpdateSlotBoolean, // handle incoming change of slot boolean (input)
   WizardTestLine, // handle test line for WizardTextLine tester
   DispatchEditorClick // handle clicks on editing box
+  DeleteSlot
 };
 
 /// EXPORTED VIEWMODEL INFO UTILS //////////////////////////////////////////////
