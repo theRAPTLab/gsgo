@@ -26,6 +26,7 @@
 import Keyword, { K_DerefProp } from 'lib/class-keyword';
 import { RegisterKeyword } from 'modules/datacore';
 
+// use test project: aquatic-energy
 const USE_NEW_DEREF = false;
 
 /// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
@@ -53,7 +54,7 @@ export class prop extends Keyword {
         (agent: IAgent, state: IState) => {
           const smobj = derefProp(agent, state);
           const method = smobj[methodName as string];
-          if (method) method.apply(agent, ...args);
+          if (method) method.call(agent, ...args);
           // const method = smobj.getMethod(methodName as String);
           // method(agent, ...args);
         }

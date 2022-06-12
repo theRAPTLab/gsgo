@@ -24,6 +24,7 @@ import * as TOKENIZER from 'script/tools/script-tokenizer';
 import * as COMPILER from 'script/tools/script-compiler';
 import * as SYMBOLUTILS from 'script/tools/symbol-utilities';
 import { DEBUG_FLAGS } from 'config/dev-settings';
+const { SYMBOLIZE_CALLS: DBG_SC } = DEBUG_FLAGS;
 
 // dummy to import symbol-utilities otherwise it gets treeshaken out
 SYMBOLUTILS.BindModule();
@@ -31,7 +32,6 @@ SYMBOLUTILS.BindModule();
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRANSPILE', 'TagDebug');
-const { SYMBOLIZE_CALLS: DBG_SC } = DEBUG_FLAGS;
 const DBG = false;
 
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
@@ -88,7 +88,7 @@ function MakeAgent(instanceDef: TInstance) {
   const { id, bpid, label } = instanceDef;
   const agent = new SM_Agent(label, String(id));
   // handle extension of base agent
-  // TODO: doesn't handle recursive agent definitions
+  // TODO: instanceDefs should reflect the changes in merge #208
   if (typeof bpid === 'string') {
     if (DBG_SC)
       console.warn(

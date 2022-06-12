@@ -103,7 +103,8 @@ const SCRIPT_TO_INSTANCE = new SyncMap({
  * @param {InstanceDef} def
  */
 function MakeAgent(def) {
-  const bundle = SIMDATA.GetBlueprintBundle(def.id);
+  // TODO: instances are not using the 'name' convention established in merge #208
+  const bundle = SIMDATA.GetBlueprintBundle(def.bpid);
   const refs = { bundle, globals: {} };
   const initScript = TRANSPILER.CompileText(def.initScript, refs);
   let agent = DCAGENTS.GetAgentById(def.id);
