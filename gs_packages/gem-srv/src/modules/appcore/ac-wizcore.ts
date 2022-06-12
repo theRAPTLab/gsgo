@@ -404,6 +404,10 @@ function DispatchClick(event) {
       {}; // or new object if this is creating a new slot
     // Assume it's an identifier
     slotScriptToken.identifier = symbolValue;
+
+    // special handling to replace empty lines
+    delete slotScriptToken.line;
+
     if (sel_slotpos > slots_linescript.length) {
       // it's a new token so add it
       slots_linescript.push(slotScriptToken);
