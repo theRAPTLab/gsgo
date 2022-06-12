@@ -293,17 +293,19 @@ function UIToggleRunEditMode() {
   STORE.SendState({ dev_or_user: 1 - STORE.State().dev_or_user });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
-function UpdateSlotValue(val) {
+/** Local helper  */
+function m_UpdateSlotValueToken(key, value) {
   // Update slots_linescript
   const { slots_linescript, sel_slotpos } = State();
   // if the scriptToken already exists, update it byRef
   const slotScriptToken =
     slots_linescript[CHECK.OffsetLineNum(sel_slotpos, 'sub')] || // existing token
     {}; // or new object if this is creating a new slot
-  slotScriptToken.value = val; // We know the scriptToken is a value
-  // if the token was previously used to as a string token, remove the old string key
+  // if the token was previously used to as a token, remove the old string/value keys
+  // otherwise both keys will be active
+  delete slotScriptToken.value;
   delete slotScriptToken.string;
+  slotScriptToken[key] = value; // We know the scriptToken is a value
   if (sel_slotpos > slots_linescript.length) {
     slots_linescript.push(slotScriptToken); // it's a new token so add it
   }
@@ -311,20 +313,18 @@ function UpdateSlotValue(val) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
+function UpdateSlotValue(val) {
+  m_UpdateSlotValueToken('value', val);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
 function UpdateSlotString(val) {
-  // Update slots_linescript
-  const { slots_linescript, sel_slotpos } = State();
-  // if the scriptToken already exists, update it byRef
-  const slotScriptToken =
-    slots_linescript[CHECK.OffsetLineNum(sel_slotpos, 'sub')] || // existing token
-    {}; // or new object if this is creating a new slot
-  slotScriptToken.string = val; // We know the scriptToken is a value
-  // if the token was previously used to as a value token, remove the old value key
-  delete slotScriptToken.value;
-  if (sel_slotpos > slots_linescript.length) {
-    slots_linescript.push(slotScriptToken); // it's a new token so add it
-  }
-  SendState({ slots_linescript }); // Update state to trigger validation rerun
+  m_UpdateSlotValueToken('string', val);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
+function UpdateSlotBoolean(val) {
+  m_UpdateSlotValueToken('value', val);
 }
 /// UI EVENT DISPATCHERS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -671,7 +671,7 @@ function WizardTestLine(text: string) {
 /** API: saves the currently edited slot linescript into the current script_tokens
  *  Called by SelectEditorLineSlot
  */
-export function SaveSlotLineScript(e) {
+function SaveSlotLineScript(event) {
   const {
     script_text,
     slots_linescript,
@@ -684,13 +684,24 @@ export function SaveSlotLineScript(e) {
   STORE.SendState({ script_tokens });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function CancelSlotEdit(e) {
+/** API */
+function CancelSlotEdit(event) {
   // deselect slot
   STORE.SendState({
     sel_slotpos: -1,
     slots_linescript: [],
     slots_validation: null
   });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API Slot editor remove extraneous slot */
+function DeleteSlot(event) {
+  const { slots_linescript, script_tokens, sel_linenum, sel_slotpos } =
+    STORE.State();
+  // remove the token
+  const slotIdx = CHECK.OffsetLineNum(sel_slotpos, 'sub'); // 1-based
+  slots_linescript.splice(slotIdx, 1);
+  STORE.SendState({ slots_linescript });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function PrintDBGConsole(str: string) {
@@ -716,10 +727,14 @@ export {
   // DEPRECATED
   // ScriptChanged, // handles change of script_page lineScript tokens
   WizardTextChanged, // handle incoming change of text
-  UpdateSlotValue, // handle income change of slot value (input)
-  UpdateSlotString, // handle income change of slot string (input)
+  UpdateSlotValue, // handle incoming change of slot value (input)
+  UpdateSlotString, // handle incoming change of slot string (input)
+  UpdateSlotBoolean, // handle incoming change of slot boolean (input)
   WizardTestLine, // handle test line for WizardTextLine tester
-  DispatchEditorClick // handle clicks on editing box
+  DispatchEditorClick, // handle clicks on editing box
+  SaveSlotLineScript, // handle slot editor save request
+  CancelSlotEdit, // handle slot editor cancel edit
+  DeleteSlot // handle slot editor delete extraneous slot
 };
 
 /// EXPORTED VIEWMODEL INFO UTILS //////////////////////////////////////////////

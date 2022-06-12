@@ -67,6 +67,11 @@ function SelectEditor(props) {
     e.preventDefault();
     WIZCORE.UpdateSlotString(String(e.target.value));
   };
+  const processBooleanInput = e => {
+    e.preventDefault();
+    const toggled = unitText === 'true' ? false : true;
+    WIZCORE.UpdateSlotBoolean(toggled);
+  };
   const handleNumberKeypress = e => {
     if (e.key === 'Enter') {
       processNumberInput(e);
@@ -117,6 +122,34 @@ function SelectEditor(props) {
             onKeyPress={handleStringKeypress}
           />
           ;
+        </div>
+      );
+      break;
+    case 'boolean':
+      // NOTE `unitText` is a string
+      /* RATIONALE: While a checkbox is the normal UI element for booleans,
+         the choice of true or false is somewhat implicit.
+         A range slider makes it clearer which selection is true
+         and which is false.  So we convert the true/false values
+         in the token to a range value between 0 and 1.  This conversion
+         is all done in SelectEditor.
+      */
+      editor = (
+        <div
+          className="gsled input"
+          style={{ display: 'grid', gridTemplateColumns: '50px 50px 50px' }}
+        >
+          <label style={{ textAlign: 'right', paddingRight: '10px' }}>
+            false
+          </label>
+          <input
+            key={tkey}
+            defaultChecked={unitText === 'true' ? 'checked' : undefined}
+            type="checkbox"
+            role="switch"
+            onInput={processBooleanInput}
+          />
+          <label style={{ textAlign: 'left', paddingLeft: '10px' }}>true</label>
         </div>
       );
       break;

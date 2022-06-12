@@ -346,11 +346,12 @@ export function GValidationToken(props) {
     classes += ' styleFlagInvalid styleFlagOverflow';
   // special custom combination viewStates
   if (viewState === 'empty-editing') classes += ' styleFlagEmpty';
+  const displayLabel = String(label); // force convert boolean to string
   const jsx = isSlot ? (
     <>
       <div className="gwiz gsled meta styleSyntax">{type}</div>
       <div className={classes} data-slotkey={tokenKey}>
-        {label}
+        {displayLabel}
       </div>
       <div className={`gwiz gsled meta ${selected ? 'selected' : ''}`}>
         &nbsp;
@@ -360,7 +361,7 @@ export function GValidationToken(props) {
     </>
   ) : (
     <div className={classes} data-key={tokenKey}>
-      {label}
+      {displayLabel}
     </div>
   );
   return jsx;

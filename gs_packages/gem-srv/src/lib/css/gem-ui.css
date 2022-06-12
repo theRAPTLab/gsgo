@@ -234,8 +234,8 @@
 .gsled.input {
   padding: 10px;
 }
-.gsled.input input {
-  background-color: #ffedcc; /* override transparent pico theme */
+.gsled.input input:not([role='switch']) {
+  background-color: #ffedcc; /* override transparent pico theme, but not for switches */
 }
 .gsled.meta {
   /* help fields above and below slot */
