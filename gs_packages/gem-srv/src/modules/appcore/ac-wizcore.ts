@@ -710,15 +710,17 @@ function DeleteSlot(event) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API ScriptViewPane add line before/after selected line */
 function AddLine(position) {
-  const { script_tokens, sel_linenum } = STORE.State();
-  const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
-  const newLine = [{ line: '' }];
+  const { script_page, sel_linenum } = STORE.State();
+  const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
+  const newLine = { lineScript: [{ line: '' }] };
   if (position === 'before') {
-    script_tokens.splice(lineIdx, 0, newLine);
+    lsos.splice(sel_linenum - 1, 0, newLine);
   } else {
-    script_tokens.splice(lineIdx + 1, 0, newLine);
+    lsos.splice(sel_linenum, 0, newLine);
   }
-  STORE.SendState({ script_tokens });
+  const nscript = TRANSPILER.EditableTokensToScript(lsos);
+  const text = TRANSPILER.ScriptToText(nscript);
+  STORE.SendState({ script_tokens: nscript });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API ScriptViewPane delete selected line */
