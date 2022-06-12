@@ -129,7 +129,6 @@ function m_CompileBlueprints(bpDefs: TBlueprint[]): TBlueprint[] {
 
   return bpDefs.map(b => {
     const script = TRANSPILER.TextToScript(b.scriptText);
-    TRANSPILER.SymbolizeBlueprint(script);
     const bundle = TRANSPILER.CompileBlueprint(script);
     TRANSPILER.RegisterBlueprint(bundle); // Save to datacore
     return { name: bundle.name, scriptText: b.scriptText };
