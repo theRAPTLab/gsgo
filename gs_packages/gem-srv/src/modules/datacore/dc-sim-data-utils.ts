@@ -192,6 +192,7 @@ export {
   UnpackStatement,
   TokenValue
 } from 'script/tools/class-gscript-tokenizer-v2';
+export { TokenToString, TokenToUnitText } from 'script/tools/script-tokenizer';
 export {
   // method arguments
   UnpackArg,

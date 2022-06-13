@@ -309,6 +309,77 @@ function BundlerProgramIsSet() {
   return BundlerActive() && CUR_PROGRAM !== undefined;
 }
 
+/// SYMBOL BUNDLE LOOKUPS /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function HasFeatureSymbols(sName: string) {
+  const fn = 'HasFeatureSymbol:';
+  const bdl = m_HasCurrentBundle(fn);
+  const { features } = bdl.symbols;
+  if (features) return features[sName];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function HasPropSymbols(pName: string) {
+  const fn = 'HasPropSymbol:';
+  const bdl = m_HasCurrentBundle(fn);
+  const { props } = bdl.symbols;
+  if (props) return props[pName];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function HasBlueprintSymbols(bpName: string) {
+  const fn = 'HasBlueprintSymbols:';
+  const bdl = m_HasCurrentBundle(fn);
+  const blueprint = SIMDATA.GetBlueprintBundle(bpName);
+  if (blueprint) return blueprint.symbols;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Compiletime Utility: if the passed objref has symbols in the current
+ *  blueprint bundle or the global blueprints table, return its symbol data from
+ *  the bundle. Note that this does not check symbols for correctness; that is
+ *  the job of the validation pass that runs before compile!!! */
+function GetSymbolsForObjref(
+  objref: IToken
+): [category: string, parts: string[]] {
+  const fn = 'UnpackObjRef:';
+  let cat: string;
+  let [type, ref] = CHECK.UnpackToken(objref);
+  if (type === 'identifier' || type === 'jsString') {
+    ref = [ref];
+  } else if (type !== 'objref') return ['invalid-token', undefined];
+  cat = ref[0]; // first part
+  if (DBG) console.log(`${fn} processing objRef`, objref);
+  if (cat === 'agent') {
+    if (DBG) console.log(`...renaming ${cat} to ${ref[1]}, ref is`, ref);
+    cat = ref[1]; // remove agent part
+    ref.shift();
+    if (DBG) console.log(`...cat is now ${cat}, ref is`, ref);
+  }
+  const len = ref.length;
+  // test features
+  let symbols = HasFeatureSymbols(cat);
+  if (symbols) {
+    if (len === 1) return ['feature', ref];
+    if (len === 2) return ['featureProp', ref];
+    return ['invalid-featref', undefined];
+  }
+  // test props
+  symbols = HasPropSymbols(cat);
+  if (symbols) {
+    if (len === 1) return ['prop', ref];
+    return ['invalid-propref', undefined];
+  }
+  // test blueprints - note that the blueprint referred to has to exist
+  // in the current blueprints dictionary to pass
+  symbols = HasBlueprintSymbols(cat);
+  if (symbols) {
+    if (len === 2) return ['blueprintFeature', ref];
+    if (len === 3) return ['blueprintFeatureProp', ref];
+    return ['invalid-bp', undefined];
+  }
+
+  // failure
+  return ['invalid-match', undefined];
+}
+
 /// ERROR LOGGING /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function LogKeywordError(keyword: string, scriptLine) {
@@ -340,5 +411,10 @@ export {
   BundlerProgramIsSet,
   //
   IsValidBundle,
-  HasBundleName
+  HasBundleName,
+  //
+  HasFeatureSymbols,
+  HasPropSymbols,
+  HasBlueprintSymbols,
+  GetSymbolsForObjref
 };

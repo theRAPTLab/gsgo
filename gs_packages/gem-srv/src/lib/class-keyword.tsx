@@ -20,8 +20,13 @@
 
 import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
 import SymbolInterpreter from 'script/tools/class-symbol-interpreter';
+import * as BUNDLER from 'script/tools/script-bundler';
 import VSDToken from 'script/tools/class-validation-token';
-import { UnpackToken, UnpackArg } from 'modules/datacore/dc-sim-data-utils';
+import {
+  UnpackToken,
+  UnpackArg,
+  TokenToUnitText
+} from 'modules/datacore/dc-sim-data-utils';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -261,15 +266,89 @@ class Keyword implements IKeyword {
 
   /// UTILITIES ///////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** general utility to return first value in an array, or the value of the
+   *  passed object */
   utilFirstValue(thing: any) {
     if (Array.isArray(thing)) return thing.shift();
     return thing;
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** given an objref, figure out what kind of reference it is by looking
+   *  up symbol information. returns symbols if they exist */
+  derefProp(objRef: IToken): Function {
+    const fn = 'runtimeDeref:';
+    const unitText = TokenToUnitText;
+    const [category, ref] = BUNDLER.GetSymbolsForObjref(objRef);
+    const { bpName } = BUNDLER.BundlerState();
+    if (ref === undefined) throw Error(`${fn} ${category}`);
+    let deref: Function;
+    if (DBG) console.log(`${fn} decoding '${category}' with ${ref.join('.')}`);
+    switch (category) {
+      case 'feature':
+        deref = (agent: IAgent, context?: any) => {
+          const f = agent.getFeature(ref[0]);
+          if (f === undefined)
+            throw Error(`${fn} agent missing feature '${ref[0]}`);
+          return f;
+        };
+        break;
+      case 'featureProp':
+        deref = (agent: IAgent, context?: any) => {
+          const fp = agent.getFeatProp(ref[0], ref[1]);
+          if (fp === undefined)
+            throw Error(`${fn} agent missing featProp '${ref[0]}.${ref[1]}`);
+          return fp;
+        };
+        break;
+      case 'prop':
+        deref = (agent: IAgent, context?: any) => {
+          const p: ISM_Object = agent.getProp(ref[0]);
+          if (p === undefined) {
+            throw Error(`${fn} agent missing prop '${ref[0]}'`);
+          }
+          return p;
+        };
+        break;
+      case 'blueprintFeature':
+        deref = (agent: IAgent, context?: any) => {
+          const bpAgent: IAgent = context[ref[0]];
+          if (bpAgent === undefined) {
+            throw Error(`${fn} agent missing blueprint ref '${ref[0]}'`);
+          }
+          const f = bpAgent.getFeature(ref[1]);
+          if (f === undefined) {
+            throw Error(
+              `${fn} bpAgent '${ref[0]}' does not have feature '${ref[1]}'`
+            );
+          }
+          return f;
+        };
+        break;
+      case 'blueprintFeatureProp':
+        deref = (agent: IAgent, context?: any) => {
+          const bpAgent: IAgent = context[ref[0]];
+          if (bpAgent === undefined) {
+            throw Error(`${fn} agent missing blueprint ref '${ref[0]}'`);
+          }
+          const fp = bpAgent.getFeatProp(ref[1], ref[2]);
+          if (fp === undefined) {
+            throw Error(
+              `${fn} bpAgent '${ref[0]}.${ref[1]}' does not have prop '${ref[2]}'`
+            );
+          }
+        };
+        break;
+      default:
+        throw Error(`error: ${unitText} is not a valid objref for ${bpName}`);
+    }
+    return deref;
+  }
 } // end of Keyword Class
 
-/// STATIC UTILITY METHODS - for handling runtime arguments that need to be
-/// evaluated in the context of the runtime agent, which can't be determined
-/// at compile time.
+/// STATIC UTILITY METHODS ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// for handling runtime arguments that need to be evaluated in the context of
+/// the runtime agent, which can't be determined at compile time.
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** checks a given argument, and if it's an object we'll assume it's an
  *  UnitToken and evaluate it. Otherwise, just return the value as-is */
