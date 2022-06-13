@@ -94,8 +94,7 @@ function UnpackViewData(svm_data: TSymbolViewData): any[] {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: Given a symbolData structure for unitText, return the SPECIFIC matching type
- *  instead of all allowed types
- */
+ *  instead of all allowed types */
 function UnpackSymbolType(symbolData: TSymbolData): any[] {
   return [];
 }

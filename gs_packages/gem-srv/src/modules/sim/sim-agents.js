@@ -12,6 +12,7 @@ import SyncMap from 'lib/class-syncmap';
 import SM_Agent from 'lib/class-sm-agent';
 import DisplayObject from 'lib/class-display-object';
 
+import * as BUNDLER from 'script/tools/script-bundler';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 import * as RENDERER from 'modules/render/api-render';
@@ -103,9 +104,11 @@ const SCRIPT_TO_INSTANCE = new SyncMap({
  * @param {InstanceDef} def
  */
 function MakeAgent(def) {
-  const bundle = SIMDATA.GetBlueprintBundle(def.id);
+  // TODO: instances are not using the 'name' convention established in merge #208
+  const bundle = BUNDLER.OpenBundle(def.bpid);
   const refs = { bundle, globals: {} };
   const initScript = TRANSPILER.CompileText(def.initScript, refs);
+  BUNDLER.CloseBundle();
   let agent = DCAGENTS.GetAgentById(def.id);
   if (!agent) agent = TRANSPILER.MakeAgent(def);
   agent.exec(initScript, { agent });
