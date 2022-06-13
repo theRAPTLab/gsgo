@@ -88,7 +88,7 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
     this.prop.x = new SM_Number(0); // default to 0, otherwise it'll start out undefined
     this.prop.y = new SM_Number(0); // default to 0, otherwise it'll start out undefined
     this.prop.zIndex = new SM_Number();
-    this.prop.skin = new SM_String('onexone.json'); // HACK default value
+    this.prop.skin = new SM_String();
     this.prop.color = new SM_Number();
     this.prop.scale = new SM_Number();
     this.prop.scale.setMax(10);
@@ -483,11 +483,10 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
    *  implements ExecSMC to run arbitrary programs as well when
    *  processing AgentSets. Optionally pass a stack to reuse. */
   exec_smc(program: TSMCProgram, ctx: TAnyObject, ...args: any[]) {
-    const state = new SM_State(args, ctx);
+    const state = new SM_State([...args], ctx);
     program.forEach(op => op(this, state));
     return state.stack;
   }
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Execute a method that is a Javascript function with
    *  agent as the execution context */

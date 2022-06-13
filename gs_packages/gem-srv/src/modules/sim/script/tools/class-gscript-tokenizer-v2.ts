@@ -726,12 +726,11 @@ function Tokenize(text: string): IToken[] {
  *  If the tok is actually a javascript literal, as it might be with
  *  a decoded token in keyword.compile(), it returns the `'jsType' format
  *  like 'jsString', 'jsNumber', etc.
- *  --- ALWAYS RETURN COPY ---
  */
 function UnpackToken(tok: IToken): TUnpackedToken {
   // null tokens return error
   if (tok === undefined) return [undefined, 'undefined'];
-  if (Array.isArray(tok)) return ['jsArray', [...tok]];
+  if (Array.isArray(tok)) return ['jsArray', tok];
   const tok_type = typeof tok;
   if (tok_type === 'number') return ['jsNumber', tok];
   else if (tok_type === 'string') return ['jsString', tok];
@@ -756,10 +755,7 @@ function UnpackToken(tok: IToken): TUnpackedToken {
   if (!test(tok[type])) return [undefined, 'invalid token value'];
   // if got this far, it's a valid token, so return its decoded value
   // as [ tokenType, tokenValue ]
-  const value = tok[type];
-  if (Array.isArray(value)) return [type, [...value]];
-  if (typeof value == 'object') return [type, { ...value }];
-  return [type, value];
+  return [type, tok[type]];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Is the token whitespace or not? Line or Comment tokens return true
