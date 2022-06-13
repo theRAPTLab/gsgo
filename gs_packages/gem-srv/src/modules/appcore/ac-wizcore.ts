@@ -726,10 +726,12 @@ function AddLine(position) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API ScriptViewPane delete selected line */
 function DeleteSelectedLine(event) {
-  const { script_tokens, sel_linenum } = STORE.State();
+  const { script_page, sel_linenum } = STORE.State();
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
-  script_tokens.splice(lineIdx, 1);
-  STORE.SendState({ script_tokens });
+  const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
+  lsos.splice(lineIdx, 1);
+  const nscript = TRANSPILER.EditableTokensToScript(lsos);
+  STORE.SendState({ script_tokens: nscript });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function PrintDBGConsole(str: string) {
