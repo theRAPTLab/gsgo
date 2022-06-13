@@ -121,7 +121,7 @@ function m_SymbolizeBlueprints(bpDefs: TBlueprint[]) {
  *  2. Registers blueprint with dc-sim-resources
  *  NOTE Does NOT update state!!!
  *  NOTE Returns a valid bpDefs array -- use this to convert old gemproj files
- *      that may or may use a blueprint 'id' instead of 'name'
+ *      that may or may use a blueprint 'id' instead of 'name'ww
  *  @param {TBlueprint[]} bpDefs - array of blueprint definitions [ {name?, scriptText} ]
  *                        Accepts old gemproj files that use 'id' instead of 'name'
  *  @returns {TBlueprint[]} - bpDefs that all use 'name', not 'id'
@@ -129,11 +129,20 @@ function m_SymbolizeBlueprints(bpDefs: TBlueprint[]) {
 function m_CompileBlueprints(bpDefs: TBlueprint[]): TBlueprint[] {
   if (DBG_SC) console.warn('%cAC Compiling Blueprints', 'font-weight:bold');
 
-  return bpDefs.map(b => {
-    const script = TRANSPILER.TextToScript(b.scriptText);
+  const scripts = bpDefs.map(({ scriptText }) => {
+    const script = TRANSPILER.TextToScript(scriptText);
+    const bundle = TRANSPILER.SymbolizeBlueprint(script);
+    bundle.saveText(scriptText);
+    return script;
+  });
+
+  return scripts.map(script => {
     const bundle = TRANSPILER.CompileBlueprint(script);
     TRANSPILER.RegisterBlueprint(bundle); // Save to datacore
-    return { name: bundle.name, scriptText: b.scriptText };
+    return {
+      name: bundle.name,
+      scriptText: bundle.text || 'error - m_CompileBlueprint no text'
+    };
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

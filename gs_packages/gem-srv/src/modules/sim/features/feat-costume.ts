@@ -305,6 +305,7 @@ class CostumePack extends SM_Feature {
       agent.callFeatMethod('Physics', 'init');
     }
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setPose(agent: IAgent, poseName: string | number) {
     agent.getFeatProp(this.name, 'currentFrame').value = poseName;
   }

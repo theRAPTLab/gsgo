@@ -117,10 +117,18 @@ export default class SM_Bundle implements ISMCBundle {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   saveScript(script: TScriptUnit[]) {
-    if (!Array.isArray(script)) throw Error(`not a script`);
+    const fn = 'saveScript:';
+    if (!Array.isArray(script)) throw Error(`${fn} not a script`);
     if (script.length > 0 && !Array.isArray(script[0]))
-      throw Error(`not a script`);
+      throw Error(`${fn} not a script`);
     this.script = script;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  saveText(text: string) {
+    const fn = 'saveText:';
+    if (typeof text !== 'string') throw Error(`not a scriptText?`);
+    if (!text.trim()) console.warn(`${fn} empty text saved`);
+    this.text = text;
   }
 
   /// BUNDLE INITIALIZERS /////////////////////////////////////////////////////
