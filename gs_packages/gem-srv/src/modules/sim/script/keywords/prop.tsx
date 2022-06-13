@@ -25,7 +25,9 @@
 
 import Keyword, { K_DerefProp } from 'lib/class-keyword';
 import { RegisterKeyword } from 'modules/datacore';
+import { UnpackToken } from 'script/tools/script-tokenizer';
 
+// use test project: aquatic-energy
 const USE_NEW_DEREF = false;
 
 /// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
@@ -43,19 +45,21 @@ export class prop extends Keyword {
     // into an actual call
     if (USE_NEW_DEREF) {
       /*** TESTING CODE ***/
-      console.groupCollapsed(
-        `%cside-test deref of '${JSON.stringify(objref)}'`,
-        'font-weight:normal;color:rgba(0,0,0,0.25)'
-      );
-      const derefProp = this.shelper.derefProp(objref, refs);
-      console.groupEnd();
+      // console.warn(
+      //   `%ctesting deref of ${JSON.stringify(objref)}`,
+      //   'font-weight:normal;color:rgba(0,0,0,0.5)'
+      // );
+      let derefProp: Function;
+      try {
+        derefProp = this.derefProp(objref);
+      } catch (e) {
+        console.log(`%cerror: ${e.toString()}`, 'color:red;padding-left:8px');
+      }
       return [
         (agent: IAgent, state: IState) => {
-          const smobj = derefProp(agent, state);
+          const smobj = derefProp(agent, state.ctx);
           const method = smobj[methodName as string];
-          if (method) method.apply(agent, ...args);
-          // const method = smobj.getMethod(methodName as String);
-          // method(agent, ...args);
+          if (method) method.call(agent, ...args);
         }
       ];
       /*** END of TESTING CODE ***/

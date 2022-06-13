@@ -291,18 +291,13 @@ function CompileScript(script: TScriptUnit[], refs: TSymbolRefs): TSMCProgram {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Given a blueprint script, extract the name and save it to the
- *  simulation blueprint dictionary, and returns the bundle.
- *  DOES NOT CALL SYMBOLIZE()
- *  @param {TScriptUnit[]} script - tokenized scriptText
- *  @param {SM_Bundle} [bdl] - bundle to use rather than retrieve simdata dict
- *  @returns SM_Bundle
- */
-function CompileBlueprint(script: TScriptUnit[], bdl?: SM_Bundle): SM_Bundle {
+ *  simulation blueprint dictionary, and returns the bundle. */
+function CompileBlueprint(script: TScriptUnit[], tempBdl?: SM_Bundle): SM_Bundle {
   const fn = 'CompileBlueprint:';
   let bpName;
   // open provided bundle or look it up in SIMDATA by bpName
-  if (bdl instanceof SM_Bundle) {
-    BUNDLER.OpenBundle(bdl);
+  if (tempBdl instanceof SM_Bundle) {
+    BUNDLER.OpenBundle(tempBdl);
     bpName = BUNDLER.BundlerState().bpName;
     console.warn(`${fn} xxxbdl %c${bpName}`, 'font-style:bold;color:blue');
   } else {
