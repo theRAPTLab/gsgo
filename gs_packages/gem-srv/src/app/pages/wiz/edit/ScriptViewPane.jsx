@@ -65,6 +65,55 @@ export function ScriptViewPane(props) {
   const selTokId = WIZCORE.SelectedTokenId();
   const selLineNum = WIZCORE.SelectedLineNum();
 
+  // DELETION HELPERS
+  const isOpenClass = 'modal-is-open';
+  const openingClass = 'modal-is-opening';
+  const closingClass = 'modal-is-closing';
+  function OpenConfirmDeletionModal() {
+    document.documentElement.classList.add(isOpenClass, openingClass);
+    const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+    confirmDeleteModal.setAttribute('open', true);
+  }
+  function CloseConfirmDeletionModal() {
+    const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+    confirmDeleteModal.setAttribute('open', false);
+    document.documentElement.classList.remove(isOpenClass, openingClass);
+  }
+  function DeleteLine() {
+    CloseConfirmDeletionModal();
+    WIZCORE.DeleteSelectedLine();
+  }
+  function ConfirmDeletion(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    OpenConfirmDeletionModal();
+  }
+
+  // DELETION MODAL
+  const { vmPageLine } = WIZCORE.SelectedTokenInfo() || {}; // if no line is selected yet
+  const { lineScript } = vmPageLine || {}; // all of these values will be empty
+  const selectedLineText = lineScript
+    ? WIZCORE.GetLineScriptText(lineScript)
+    : '';
+  const confirmDeleteDialog = (
+    <dialog id="confirmDeleteModal">
+      <article>
+        <h3>Delete line?</h3>
+        <p>
+          Are you sure you want to delete the line
+          <br />
+          <span style={{ color: 'blue' }}>{selectedLineText}</span>?
+        </p>
+        <footer>
+          <button className="secondary" onClick={CloseConfirmDeletionModal}>
+            Cancel
+          </button>
+          <button onClick={DeleteLine}>Delete</button>
+        </footer>
+      </article>
+    </dialog>
+  );
+
   // a page is an array of line viewmodel data
   // the line has token viewmodel data plus line metdata
   script_page.forEach(line => {
@@ -138,10 +187,7 @@ export function ScriptViewPane(props) {
               +
             </button>
             {lineBuffer}
-            <button
-              className="outline btnDelete"
-              onClick={WIZCORE.DeleteSelectedLine}
-            >
+            <button className="outline btnDelete" onClick={ConfirmDeletion}>
               DELETE
             </button>
           </>
@@ -157,6 +203,7 @@ export function ScriptViewPane(props) {
     }
     //
   });
+
   if (DBG) {
     console.groupCollapsed('Wizard DBG');
     console.log(DBGTEXT);
@@ -164,6 +211,7 @@ export function ScriptViewPane(props) {
   return (
     <div id="ScriptWizardView" style={sScriptView}>
       {pageBuffer}
+      {confirmDeleteDialog}
     </div>
   );
 }
