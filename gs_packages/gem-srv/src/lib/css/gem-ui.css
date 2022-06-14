@@ -171,6 +171,9 @@
   left: 100%; /* http://alistapart.com/article/fauxabsolutepositioning/ */
   margin-left: -100%;
 }
+.gwiz .btnAddEnd {
+  width: 100%;
+}
 .gwiz .btnDelete {
   float: right;
   width: 100px;

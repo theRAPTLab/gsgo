@@ -205,9 +205,11 @@ export function ScriptViewPane(props) {
   });
 
   const addLineBtn = (
-    <button className="outline" onClick={e => WIZCORE.AddLine('end')}>
-      Add Line
-    </button>
+    <div className="gwiz">
+      <button className="outline btnAddEnd" onClick={e => WIZCORE.AddLine('end')}>
+        Add Line
+      </button>
+    </div>
   );
 
   if (DBG) {
