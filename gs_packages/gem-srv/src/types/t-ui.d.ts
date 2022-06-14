@@ -48,6 +48,7 @@ declare global {
   };
   type VMLineScripts = VMLineScriptLine[];
   type VMLineScriptType = 'start' | 'end';
+  type VMLineScriptInsertionPosition = 'before' | 'after' | 'end';
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** returned by Validation Token Processor */
   type VMSlot = {

@@ -204,14 +204,23 @@ export function ScriptViewPane(props) {
     //
   });
 
+  const addLineBtn = (
+    <button className="outline" onClick={e => WIZCORE.AddLine('end')}>
+      Add Line
+    </button>
+  );
+
   if (DBG) {
     console.groupCollapsed('Wizard DBG');
     console.log(DBGTEXT);
   }
   return (
-    <div id="ScriptWizardView" style={sScriptView}>
-      {pageBuffer}
+    <>
+      <div id="ScriptWizardView" style={sScriptView}>
+        {pageBuffer}
+      </div>
+      {addLineBtn}
       {confirmDeleteDialog}
-    </div>
+    </>
   );
 }

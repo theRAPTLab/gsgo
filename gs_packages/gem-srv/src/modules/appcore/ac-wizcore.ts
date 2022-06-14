@@ -715,7 +715,7 @@ function DeleteSlot(event) {
  *  If you want to add a line outside of a block, select a line
  *  outside of the block to insert.
  */
-function AddLine(position) {
+function AddLine(position: VMLineScriptInsertionPosition) {
   const { script_page, sel_linenum } = STORE.State();
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
   const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
@@ -731,6 +731,8 @@ function AddLine(position) {
       delete currTok.block;
     }
     lsos.splice(lineIdx, 0, newLine);
+  } else if (position === 'end') {
+    lsos.push(newLine);
   } else {
     lsos.splice(lineIdx + 1, 0, newLine);
   }
