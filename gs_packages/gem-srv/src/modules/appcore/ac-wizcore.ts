@@ -709,15 +709,30 @@ function DeleteSlot(event) {
   STORE.SendState({ slots_linescript });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API ScriptViewPane add line before/after selected line */
+/** API ScriptViewPane add line before/after selected line
+ *  If you select a line within a block, adding a line before
+ *  or after inserts a new line within the block.
+ *  If you want to add a line outside of a block, select a line
+ *  outside of the block to insert.
+ */
 function AddLine(position) {
   const { script_page, sel_linenum } = STORE.State();
+  const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
   const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
-  const newLine = { lineScript: [{ line: '' }] };
+  const newLine: VMLineScriptLine = { lineScript: [{ line: '' }] };
   if (position === 'before') {
-    lsos.splice(sel_linenum - 1, 0, newLine);
+    // If the current token is a block start, then we need to make the
+    // inserted block a bock start.
+    const currTok = lsos[lineIdx];
+    if (currTok.block === 'start') {
+      // Make the new line a block start
+      newLine.block = 'start';
+      // And make the current line NOT a block start
+      delete currTok.block;
+    }
+    lsos.splice(lineIdx, 0, newLine);
   } else {
-    lsos.splice(sel_linenum, 0, newLine);
+    lsos.splice(lineIdx + 1, 0, newLine);
   }
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
   const text = TRANSPILER.ScriptToText(nscript);
