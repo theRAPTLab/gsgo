@@ -677,16 +677,14 @@ function WizardTestLine(text: string) {
  *  Called by SelectEditorLineSlot
  */
 function SaveSlotLineScript(event) {
-  const {
-    script_text,
-    slots_linescript,
-    script_page,
-    script_tokens,
-    sel_linenum
-  } = STORE.State();
+  const { script_page, sel_linenum, slots_linescript } = STORE.State();
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
-  script_tokens.splice(lineIdx, 1, slots_linescript);
-  STORE.SendState({ script_tokens });
+  const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
+  const updatedLine = lsos[lineIdx]; // clone existing line to retain block info
+  updatedLine.lineScript = slots_linescript; // just update the lineScript
+  lsos.splice(lineIdx, 1, updatedLine);
+  const nscript = TRANSPILER.EditableTokensToScript(lsos);
+  STORE.SendState({ script_tokens: nscript });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API */
@@ -699,7 +697,7 @@ function CancelSlotEdit(event) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API Slot editor remove extraneous slot */
+/** API Slot editor remove extraneous slot, e.g. if gemscript has too many parameters */
 function DeleteSlot(event) {
   const { slots_linescript, script_tokens, sel_linenum, sel_slotpos } =
     STORE.State();
