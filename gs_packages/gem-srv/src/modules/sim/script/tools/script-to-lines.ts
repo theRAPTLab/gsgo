@@ -140,13 +140,18 @@ class ScriptLiner {
       level,
       lineNum
     };
-    if (this.BLOCK_FLAG) line.block = this.BLOCK_FLAG;
+    // BLOCK_FLAG is set whenever a [[ or ]] is encountered
+    // then cleared at the end of this
+    if (this.BLOCK_FLAG) line.marker = this.BLOCK_FLAG;
     this.PAGE.push(line);
+
     // also update the VMLineScripts structure
+    // this also makes use of BLOCK_FLAG
     const lso: VMLineScriptLine = { lineScript };
-    if (this.BLOCK_FLAG) lso.block = this.BLOCK_FLAG;
+    if (this.BLOCK_FLAG) lso.marker = this.BLOCK_FLAG;
     this.LSMAP.push(lso);
     this.BLOCK_FLAG = null; // always clear the flag
+
     // reset buffer and prepare for next line
     this.LINE_BUF = [];
     this.LINE_POS = SCRIPT_PAGE_INDEX_OFFSET;
@@ -241,9 +246,9 @@ function ScriptToEditableTokens(script: TScriptUnit[]): VMLineScripts {
 function ScriptPageToEditableTokens(scriptPage: VMPageLine[]): VMLineScripts {
   const line_to_scriptunit = [];
   scriptPage.forEach(vmline => {
-    const { lineScript, block } = vmline;
+    const { lineScript, marker } = vmline;
     const lso: VMLineScriptLine = { lineScript };
-    if (block) lso.block = block;
+    if (marker) lso.marker = marker;
     line_to_scriptunit.push(lso);
   });
   return line_to_scriptunit;
@@ -259,20 +264,75 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
   let current = script_tokens;
 
   lineScripts.forEach(lso => {
-    const { lineScript, block } = lso;
-    if (block === 'start') {
+    const { lineScript, marker } = lso;
+    if (marker === 'start') {
       const arr = [];
       stack.push(arr);
       current = arr;
       current.push(lineScript);
       return;
     }
-    if (block === 'end') {
+    if (marker === 'end') {
       current.push(lineScript);
       current = stack.pop();
       return;
     }
     current.push(lineScript);
+  });
+  return script_tokens;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function EditableTokensToScriptNew(lineScripts: VMLineScripts): TScriptUnit[] {
+  const fn = 'EditableTokensToScript:';
+  if (!Array.isArray(lineScripts)) throw Error(`${fn} arg should be array`);
+  /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
+    example script to refer to in comments below:
+    if {{ expr }} [[
+      a b c
+    ]] [[
+      d e f
+    ]]
+  :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+  let script_tokens = [];
+  let stm = []; // current statement array
+  let stm_stack = []; // previous statement array
+  let level = 0;
+  lineScripts.forEach(lso => {
+    const {
+      lineScript, // IToken except there are no block tokens
+      marker // marks start, end, or end-start of a block or adjacent blocks
+    } = lso;
+    // we're going to start assembling the current statement
+    // if this lso starts a block...
+    // e.g { lineScript:[ {if},{expr} ], marker:'start' }
+    if (marker === 'start') {
+      level++;
+      const block = [];
+      stm.push(...lineScript);
+      stm.push({ block });
+      stm_stack.push(stm); // save current stm array
+      stm = block;
+      return;
+    }
+    // end of a block means we are done shoving stuff
+    // into the current nested block, and we want to emit a
+    // statement into script_tokens
+    if (marker === 'end') {
+      stm.push(...lineScript);
+      if (--level === 0) script_tokens.push(...stm);
+      stm = stm_stack.pop();
+      return;
+    }
+    // hypothetical else support
+    if (marker === 'end-start') {
+      const block = [];
+      stm = stm_stack.pop();
+      stm.push({ block });
+      stm = block;
+      return;
+    }
+    stm.push(...lineScript);
+    script_tokens.push(stm);
   });
   return script_tokens;
 }

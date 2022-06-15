@@ -1,0 +1,11 @@
+# blueprint GuiWizardSlots
+# TAG isCharControllable false
+# PROGRAM DEFINE
+addProp energyType String 'producer'
+addProp energyLevel number 50
+addProp isAlive Boolean true
+addFeature Costume
+# PROGRAM INIT
+if {{ addProp.value > 0 }} [[
+  prop energyLevel setTo 10
+]]
