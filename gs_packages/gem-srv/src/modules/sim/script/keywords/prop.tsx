@@ -81,7 +81,7 @@ export class prop extends Keyword {
     const vtoks = []; // validation token array
     const [kwTok, objrefTok, methodTok, ...argToks] = unit; // get arg pattern
     // returns symbols for each dtok position excepting the keyword
-    vtoks.push(this.shelper.allKeywords(kwTok));
+    vtoks.push(this.shelper.anyKeyword(kwTok));
     vtoks.push(this.shelper.objRef(objrefTok));
     vtoks.push(this.shelper.methodName(methodTok));
     vtoks.push(...this.shelper.argsList(argToks));

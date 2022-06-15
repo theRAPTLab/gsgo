@@ -114,26 +114,77 @@ class SymbolInterpreter {
   }
 
   /// SCOPE-INDEPENDENT GLOBAL ACCESSORS //////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// These methods don't rely on prior scope being set by prior passes,
   /// and are used for the very first units parsed in a line
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** returns a list of valid keywords for the script engine */
-  allKeywords(token: IToken): TSymbolData {
+  /** returns keyword validation */
+  anyKeyword(token: IToken): TSymbolData {
     const [type, value] = TOKENIZER.UnpackToken(token);
-    const keywords = SIMDATA.GetAllKeywords();
+    const unitText = TOKENIZER.TokenToString(token);
+    const keywords = SIMDATA.GetKeywordSymbols();
     const gsType = 'keyword';
     if (type === 'comment' || type === 'line') {
-      return new VSDToken({ keywords }, { gsType, unitText: value });
+      return new VSDToken(keywords, { gsType, unitText });
     }
     if (type !== 'identifier' && type !== 'directive') {
       this.scan_error = true;
-      return new VSDToken(
-        { keywords },
-        { gsType, err_code: 'invalid', err_info: 'no keyword token' }
-      );
+      return new VSDToken(keywords, {
+        gsType,
+        err_code: 'invalid',
+        err_info: 'no keyword token'
+      });
     }
-    return new VSDToken({ keywords }, { gsType: 'keyword', unitText: value });
+    return new VSDToken(keywords, { gsType, unitText });
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** return feature validation */
+  anyFeature(token: IToken): TSymbolData {
+    const [type, fName] = TOKENIZER.UnpackToken(token);
+    const unitText = TOKENIZER.TokenToString(token);
+    const features = SIMDATA.GetFeatureSymbols();
+    const gsType = 'feature';
+    if (type !== 'identifier') {
+      this.scan_error = true;
+      return new VSDToken(features, {
+        gsType,
+        unitText,
+        err_code: 'invalid',
+        err_info: 'featureName must be an identifier'
+      });
+    }
+    if (!SIMDATA.GetFeature(fName)) {
+      this.scan_error = true;
+      return new VSDToken(features, {
+        gsType,
+        unitText,
+        err_code: 'invalid',
+        err_info: `${fName} is not a recognized feature`
+      });
+    }
+    return new VSDToken(features, { gsType, unitText });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** return propName format validation */
+  simplePropName(token: IToken) {
+    const [type, value] = TOKENIZER.UnpackToken(token);
+    const unitText = TOKENIZER.TokenToString(token);
+    const features = SIMDATA.GetFeatureSymbols();
+    const gsType = 'prop';
+    if (type !== 'identifier') {
+      this.scan_error = true;
+      return new VSDToken(features, {
+        gsType,
+        unitText,
+        err_code: 'invalid',
+        err_info: 'propName must be an identifier'
+      });
+    }
+    return new VSDToken(features, { gsType, unitText });
+  }
+
+  /// DICT SCOPED SYMBOLS ///////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   /// STRING-BASED DICT SEARCHES ////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -413,6 +464,7 @@ class SymbolInterpreter {
     const methodSignature: TGSMethodSig = this.cur_scope[methodName];
     // TODO: some keywords (e.g. 'when') may have multiple arrays
     const { args } = methodSignature;
+    // if (args === undefined) debugger;
     methodSignature.name = methodName; // add optional methodName to TSymbolData
 
     // SCOPE ARGS 2: general validation tokens for each argument
@@ -706,6 +758,12 @@ class SymbolInterpreter {
     }
     // return valid symdata/validation
     return symData;
+  }
+
+  /// SYMBOL DICT ACCESS //////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  allKeywordSymbols(): TSymbolData {
+    return;
   }
 
   /// DEREF FUNCTIONS /////////////////////////////////////////////////////////

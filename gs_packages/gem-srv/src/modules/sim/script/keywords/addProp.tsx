@@ -37,6 +37,16 @@ export class AddProp extends Keyword {
     const propCtor = GetPropTypeCtor(propType as string);
     return { props: { [propName as string]: propCtor.Symbols } };
   }
+
+  /** custom keyword validator */
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    const [kwTok, pnTok] = unit;
+    const vtoks = [];
+    vtoks.push(this.shelper.anyKeyword(kwTok));
+    vtoks.push(this.shelper.simplePropName(pnTok));
+    const vlog = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: vlog };
+  }
 } // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

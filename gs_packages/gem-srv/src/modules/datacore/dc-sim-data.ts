@@ -106,9 +106,17 @@ function DeleteAllBlueprintBundles(): void {
 function GetBlueprintSymbolsFor(bpName: string): TSymbolData {
   const { symbols } = GetBlueprintBundle(bpName);
   if (symbols !== undefined) console.log('found', bpName, 'blueprint');
-
   return symbols;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetBlueprintSymbols(): TSymbolData {
+  const symbols: TSymbolData = {};
+  GetBlueprintBundleList().forEach(bpName => {
+    symbols[bpName] = GetBlueprintSymbolsFor(bpName);
+  });
+  return symbols;
+}
+
 /// KEYWORDS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// The GEMSTEP transpiler script language is built from 'keyword' modules
@@ -141,6 +149,12 @@ function GetAllKeywords(): string[] {
     arr.push(key);
   });
   return arr;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: retrieve the keyword symbols dict */
+function GetKeywordSymbols(): TSymbolData {
+  const keywords = GetAllKeywords();
+  return { keywords };
 }
 
 /// VALUE TYPE UTILITIES //////////////////////////////////////////////////////
@@ -200,8 +214,15 @@ function DeleteAllFeatures() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetFeatureSymbolsFor(fName: string): TSymbolData {
-  console.log('getting', fName, 'feature');
   const symbols = GetFeature(fName).symbolize();
+  return symbols;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetFeatureSymbols(): TSymbolData {
+  const symbols: TSymbolData = {};
+  [...FEATURES.keys()].forEach(fName => {
+    symbols[fName] = GetFeatureSymbolsFor(fName);
+  });
   return symbols;
 }
 
@@ -347,11 +368,12 @@ export {
   GetBlueprintBundleList,
   DeleteBlueprintBundle,
   DeleteAllBlueprintBundles,
-  GetBlueprintSymbolsFor
+  GetBlueprintSymbolsFor,
+  GetBlueprintSymbols
 };
 /// the transpiler is extendable using "keyword' modules that implement
 /// symbolize, validate, and compile
-export { RegisterKeyword, GetKeyword, GetAllKeywords };
+export { RegisterKeyword, GetKeyword, GetAllKeywords, GetKeywordSymbols };
 /// scriptable properties are called "gvars" and have constructors for each type
 export {
   RegisterPropType,
@@ -367,7 +389,8 @@ export {
   GetFeatureMethod,
   RegisterFeature,
   DeleteAllFeatures,
-  GetFeatureSymbolsFor
+  GetFeatureSymbolsFor,
+  GetFeatureSymbols
 };
 /// engine maintains dicts of named Javascript functions
 export { RegisterFunction, GetFunction, GetAllFunctions };
