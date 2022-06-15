@@ -276,7 +276,7 @@ function moveWander(agent: IAgent) {
   // but really change direction once in a while
   const distance = agent.prop.Movement.distance.value;
   let direction = agent.prop.Movement.direction.value;
-  if (m_random() > 0.98) {
+  if (m_random() > 0.98 && agent.prop.Movement.doRandomOnWander.value) {
     direction += m_random(-90, 90);
     agent.prop.Movement.direction.value = direction;
   }
@@ -642,6 +642,7 @@ class MovementPack extends SM_Feature {
     this.featAddProp(agent, 'compassDirection', new SM_String()); // readonly
     this.featAddProp(agent, 'distance', new SM_Number(0.5));
     this.featAddProp(agent, 'bounceAngle', new SM_Number(180));
+    this.featAddProp(agent, 'doRandomOnWander', new SM_Boolean(true));
     this.featAddProp(agent, 'isMoving', new SM_Boolean());
     this.featAddProp(agent, 'useAutoOrientation', new SM_Boolean(false));
     this.featAddProp(agent, 'targetX', new SM_Number(0)); // so that we can set a location in pieces and go to it
