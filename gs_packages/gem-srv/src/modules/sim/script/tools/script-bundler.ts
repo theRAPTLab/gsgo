@@ -107,7 +107,7 @@ function SetProgramOut(str: string): boolean {
   const fn = 'SetProgramOut:';
   if (DBG) console.log(...PR(`${fn} setting bundleType ${str}`));
   m_HasCurrentBundle(fn);
-  const bdlKey = str.toLowerCase();
+  const bdlKey = str.toUpperCase();
   if (CHECK.IsValidBundleProgram(bdlKey)) {
     CUR_PROGRAM = bdlKey;
     return true;
