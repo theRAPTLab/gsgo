@@ -718,6 +718,7 @@ function AddLine(position: VMLineScriptInsertionPosition) {
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
   const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
   const newLine: VMLineScriptLine = { lineScript: [{ line: '' }] };
+  let newLineNum;
   if (position === 'before') {
     // If the current token is a block start, then we need to make the
     // inserted block a bock start.
@@ -728,15 +729,40 @@ function AddLine(position: VMLineScriptInsertionPosition) {
       // And make the current line NOT a block start
       delete currTok.block;
     }
+    newLineNum = sel_linenum;
     lsos.splice(lineIdx, 0, newLine);
   } else if (position === 'end') {
     lsos.push(newLine);
+    newLineNum = lsos.length;
   } else {
     lsos.splice(lineIdx + 1, 0, newLine);
+    newLineNum = sel_linenum + 1;
   }
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
   const text = TRANSPILER.ScriptToText(nscript);
-  STORE.SendState({ script_tokens: nscript });
+
+  // figure out what to update
+  const newState: TStateObject = {};
+  newState.script_tokens = nscript;
+  STORE.SendState(newState);
+
+  // Auto-select the new line for editing
+  STORE.QueueEffect(() => {
+    const selectState: TStateObject = {};
+    selectState.sel_linenum = newLineNum;
+    selectState.sel_linepos = 1; // emulate clicking on line number
+    selectState.sel_slotpos = 1;
+    STORE.SendState(selectState);
+    // Force delay the scroll, otherwise dom isn't quite ready
+    // Using `UseEffect` in ScriptViewPane doesn't quite work either
+    // and also requires a timeout, so we may as well do it here
+    // where we have explicit control over situations where we DO
+    // want to scroll (UseEffect's approach would scroll on every
+    // script_page update)
+    setTimeout(() => {
+      ScrollLineIntoView(newLineNum);
+    }, 10);
+  });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API ScriptViewPane delete selected line */
