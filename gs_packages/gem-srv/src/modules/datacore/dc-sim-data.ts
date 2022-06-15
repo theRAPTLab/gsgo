@@ -18,6 +18,7 @@ import * as CHECK from './dc-sim-data-utils';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
+const PRAGMAS: Map<string, Function> = new Map();
 const FEATURES: Map<string, SM_Feature> = new Map();
 const BLUEPRINTS: Map<string, SM_Bundle> = new Map();
 const KEYWORDS: Map<string, IKeyword> = new Map();
@@ -41,6 +42,33 @@ function m_EnsureUpperCase(s: string, p?: string) {
   p = typeof p === 'string' ? p : '';
   if (typeof s !== 'string') return undefined;
   return s.toUpperCase();
+}
+
+/// DIRECTIVES ////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function DefinePragma(pName: string, pFunc: TPragmaHandler) {
+  const fn = 'DefinePragma:';
+  const pragma = pName.toUpperCase();
+  PRAGMAS.set(pragma, pFunc);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetPragma(pName: string) {
+  const fn = 'GetPragma:';
+  return PRAGMAS.get(pName.toUpperCase());
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetPragmaSymbols(): TSymbolData {
+  // hardcoded
+  return {
+    pragmas: {
+      BLUEPRINT: {
+        name: 'BLUEPRINT',
+        args: ['bpName:blueprint', 'bpBaseName:blueprint']
+      },
+      PROGRAM: { name: 'PROGRAM', args: ['bundleOut:string'] },
+      TAG: { name: 'TAG', args: ['tagName:string', 'tagValue:{any}'] }
+    }
+  };
 }
 
 /// BLUEPRINT /////////////////////////////////////////////////////////////////
@@ -360,6 +388,8 @@ function GetAllScriptEventNames() {
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// pragmas are used by the _pragma keyword
+export { DefinePragma, GetPragma, GetPragmaSymbols };
 /// blueprints are stored as "bundles" by their name
 export {
   SaveBlueprintBundle,

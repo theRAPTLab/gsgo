@@ -209,15 +209,15 @@ declare global {
   /// SYMBOL DATA AND TYPES ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // symbol type declarations
-  type TSLit = `${'boolean' | 'string' | 'number' | 'enum'}`;
-  type TSSMObj = `${'prop' | 'method' | 'gvar' | 'block'}`;
-  type TSDeferred = `${'objref' | 'expr' | '{value}' | '{string}'}`;
-  type TSDict = `${'keyword' | 'pragma' | 'test' | 'program' | 'event'}`;
-  type TSAgent = `${'blueprint' | 'feature'}`;
-  type TSMultiArg = `${'{...}'}`; // multiple arg token marker
-  type TSList = `${'{list}'}`; // forbidden type!!! don't use!!!
-  type TSUnknown = `${'{?}'}`; // forbidden type!!! don't use!!!
-  type TGSType = `${
+  type TSLit = 'boolean' | 'string' | 'number';
+  type TSSMObj = 'prop' | 'method' | 'gvar' | 'block';
+  type TSDeferred = 'objref' | 'expr' | '{value}' | '{string}' | '{any}';
+  type TSDict = 'keyword' | 'pragma' | 'test' | 'program' | 'event';
+  type TSAgent = 'blueprint' | 'feature';
+  type TSMultiArg = '{...}'; // multiple arg token marker
+  type TSList = '{list}'; // future
+  type TSUnknown = '{?}'; // unknown 'vague' type for validation
+  type TGSType =
     | TSLit
     | TSSMObj
     | TSDeferred
@@ -225,7 +225,7 @@ declare global {
     | TSAgent
     | TSMultiArg
     | TSList
-    | TSUnknown}`;
+    | TSUnknown;
   type TSEnum = { enum: string[] }; // special format for enum args (future)
   type TGSArg = `${string}:${TGSType}` | TSEnum;
   type TGSMethodSig = {
@@ -247,6 +247,7 @@ declare global {
     // read-only dictionaries
     keywords?: string[]; // a list of valid keywords for position 0
     ctors?: { [ctorName: string]: TSymbolData }; // constructor object if needed (used by var- props)
+    pragmas?: { [prName: string]: TGSMethodSig }; // directives hack
     blueprints?: { [bpName: string]: TSymbolData }; // blueprints
     props?: { [propName: string]: TSymbolData };
     methods?: { [methodName: string]: TGSMethodSig };
@@ -385,6 +386,10 @@ declare global {
   interface IKeywordCtor {
     new (keyword?: string): IKeyword;
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** a pragma handler is mapepd to a directive (e.g. BLUEPRINT, PROGRAM) */
+  type TPragmaHandler = (...param: any) => TOpcode[];
+
   /// SCRIPT COMPILER HELPERS /////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** function signatures for 'dereferencing' function in keyword compilers */

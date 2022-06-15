@@ -165,36 +165,65 @@ class SymbolInterpreter {
     return new VSDToken(features, { gsType, unitText });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** return propName format validation */
-  simplePropName(token: IToken) {
-    const [type, value] = TOKENIZER.UnpackToken(token);
+  /** valid pragma aka directive */
+  pragma(token: IToken) {
+    const [type, prName] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
-    const features = SIMDATA.GetFeatureSymbols();
-    const gsType = 'prop';
+    const pragmas = SIMDATA.GetPragmaSymbols();
+    const gsType = 'pragma';
     if (type !== 'identifier') {
       this.scan_error = true;
-      return new VSDToken(features, {
+      return new VSDToken(pragmas, {
         gsType,
         unitText,
         err_code: 'invalid',
-        err_info: 'propName must be an identifier'
+        err_info: 'pragma must be an identifier'
       });
     }
-    return new VSDToken(features, { gsType, unitText });
+    if (!SIMDATA.GetPragma(prName)) {
+      this.scan_error = true;
+      return new VSDToken(pragmas, {
+        gsType,
+        unitText,
+        err_code: 'invalid',
+        err_info: `${prName} is not a recognized pragma`
+      });
+    }
+    this.cur_scope = pragmas.pragmas; // advance scope pointer
+    return new VSDToken(pragmas, { gsType, unitText });
   }
 
-  /// DICT SCOPED SYMBOLS ///////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** return propName format validation for addProp keyword, which doesn't need
+   *  to look up a prop to see if it exists */
+  simplePropName(token: IToken) {
+    const [type, value] = TOKENIZER.UnpackToken(token);
+    const unitText = TOKENIZER.TokenToString(token);
+    const gsType = 'prop';
+    if (type !== 'identifier') {
+      this.scan_error = true;
+      return new VSDToken(
+        {}, // should this be symn
+        {
+          gsType,
+          unitText,
+          err_code: 'invalid',
+          err_info: 'propName must be an identifier'
+        }
+      );
+    }
+    return new VSDToken({}, { gsType, unitText });
+  }
 
   /// STRING-BASED DICT SEARCHES ////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// These accessors use the refs.globals object which contains foreign
-  /// blueprints to the current bundle. The when keyword for example has to add
-  /// the blueprint name
+  /// Used by the objref symbol checker. These accessors use the refs.globals
+  /// object which contains foreign blueprints to the current bundle. The when
+  /// keyword for example has to add the blueprint name
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** If part is 'agent', return the bundle symbols or undefined. This is only
    *  used for objref check of first part */
-  strAgentLiteral(part: string, scope?: TSymbolData) {
+  strIsAgentLiteral(part: string, scope?: TSymbolData) {
     const fn = 'agentLiteral:';
     if (scope)
       throw Error(`${fn} works only on bdl_scope, so don't try to override`);
@@ -205,9 +234,8 @@ class SymbolInterpreter {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** search the refs.globals context object to see if there is a defined
    *  blueprint module in it; use the blueprint symbols to set the current scope
-   *  and return symbols
-   */
-  strBlueprintName(part: string, scope?: TSymbolData) {
+   *  and return symbols */
+  strIsBlueprintName(part: string, scope?: TSymbolData) {
     const fn = 'strBlueprintName:';
     if (scope)
       throw Error(`${fn} works on context, so don't provide scope override`);
@@ -220,8 +248,8 @@ class SymbolInterpreter {
     return bp; // valid scope is parent of cur_scope
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** search the current scope for a matching strFeatureName */
-  strFeatureName(part: string) {
+  /** search the current scope for a matching strIsFeatureName */
+  strIsFeatureName(part: string) {
     const features = this.cur_scope.features;
     if (features === undefined) return undefined; // no match
     const feature = features[part];
@@ -230,16 +258,16 @@ class SymbolInterpreter {
     return features; // valid scope is parent of cur_scope
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** check the current scope or bundle for strPropName matches or undefined. Use
-   *  this in the cases where you DO NOT WANT an objectref instead, as you would
-   *  for the addProp keyword */
-  strPropName(strPropName: string) {
+  /** check the current scope or bundle for strIsPropIdentifier matches or
+   *  undefined. Use this in the cases where you DO NOT WANT an objectref
+   *  instead, as you would for the addProp keyword */
+  strIsPropIdentifier(strIsPropIdentifier: string) {
     const ctx = this.cur_scope || {};
     // is there a props dictionary in scope?
     const propDict = this.cur_scope.props;
     if (!propDict) return undefined; // no props found
-    // does the strPropName exist?
-    const prop = propDict[strPropName];
+    // does the strIsPropIdentifier exist?
+    const prop = propDict[strIsPropIdentifier];
     if (!prop) return undefined; // no matching prop
     this.cur_scope = prop; // advance scope pointer
     return ctx; // valid scope is parent of cur_scope
@@ -282,10 +310,10 @@ class SymbolInterpreter {
     // OBJREF PART 1: what kind of object are we referencing?
     // these calls will update cur_scope SymbolData appropriately
     let part = parts[0];
-    let agent = this.strAgentLiteral(part);
-    let feature = this.strFeatureName(part);
-    let prop = this.strPropName(part);
-    let blueprint = this.strBlueprintName(part);
+    let agent = this.strIsAgentLiteral(part);
+    let feature = this.strIsFeatureName(part);
+    let prop = this.strIsPropIdentifier(part);
+    let blueprint = this.strIsBlueprintName(part);
     // is there only one part in this objref?
     let terminal = parts.length === 1;
     // does the objref terminate in a method-bearing reference?
@@ -313,9 +341,9 @@ class SymbolInterpreter {
       // are there any prop, feature, or blueprint references?
       // these calls drill-down into the scope for each part, starting in the
       // scope set in OBJREF PART 1
-      prop = this.strPropName(part);
-      feature = this.strFeatureName(part);
-      blueprint = this.strBlueprintName(part);
+      prop = this.strIsPropIdentifier(part);
+      feature = this.strIsFeatureName(part);
+      blueprint = this.strIsBlueprintName(part);
       // is this part of the objref the last part?
       terminal = ii >= parts.length - 1;
       if (terminal) {
@@ -613,7 +641,7 @@ class SymbolInterpreter {
     // e.g. addFeature
     if (gsType === 'feature' && TOKENIZER.TokenValue(tok, 'identifier')) {
       const map = SIMDATA.GetAllFeatures();
-      const features = {}; // { [strFeatureName: string]: TSymbolData };
+      const features = {}; // { [strIsFeatureName: string]: TSymbolData };
       const list = [...map.keys()];
       list.forEach(featName => {
         features[featName] = SIMDATA.GetFeature(featName).symbolize();
@@ -787,10 +815,10 @@ class SymbolInterpreter {
     const unitText = parts.join('.');
     let part = parts[0];
     // look for a matching scope dictionary
-    let f = this.strFeatureName(part);
-    let b = this.strBlueprintName(part) || SIMDATA.GetBlueprintSymbolsFor(part);
-    let a = this.strAgentLiteral(part);
-    let p = this.strPropName(part);
+    let f = this.strIsFeatureName(part);
+    let b = this.strIsBlueprintName(part) || SIMDATA.GetBlueprintSymbolsFor(part);
+    let a = this.strIsAgentLiteral(part);
+    let p = this.strIsPropIdentifier(part);
     // check for single part property
     let terminal = parts.length === 1;
     //
@@ -822,9 +850,9 @@ class SymbolInterpreter {
     //
     for (let ii = 1; ii < parts.length; ii++) {
       part = parts[ii];
-      f = this.strFeatureName(part);
-      b = this.strBlueprintName(part) || SIMDATA.GetBlueprintSymbolsFor(part);
-      p = this.strPropName(part);
+      f = this.strIsFeatureName(part);
+      b = this.strIsBlueprintName(part) || SIMDATA.GetBlueprintSymbolsFor(part);
+      p = this.strIsPropIdentifier(part);
       terminal = ii >= parts.length - 1;
       //
       if (f) console.log('**', ii, '** feature', f);

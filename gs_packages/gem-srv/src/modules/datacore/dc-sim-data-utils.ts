@@ -43,7 +43,6 @@ const GSTYPES: TGSType[] = [
   'boolean',
   'string',
   'number',
-  'enum',
   //
   'prop', // same as objref in some keywords
   'method',
@@ -53,6 +52,8 @@ const GSTYPES: TGSType[] = [
   'objref', // value of anobject ref
   'expr', // an expression that can be coerced to any type
   '{value}', // composite: literal, objref or expression
+  '{string}', // composite: literal, objref, or expression producing
+  '{any}', // value or string
   //
   'pragma',
   'test',
