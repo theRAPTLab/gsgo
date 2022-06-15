@@ -75,8 +75,7 @@ export class prop extends Keyword {
   }
 
   /** custom validation, overriding the generic validation() method of the
-   *  base Keyword class.
-   */
+   *  base Keyword class */
   validate(unit: TScriptUnit): TValidatedScriptUnit {
     const vtoks = []; // validation token array
     const [kwTok, objrefTok, methodTok, ...argToks] = unit; // get arg pattern

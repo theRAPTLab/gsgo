@@ -18,7 +18,7 @@ export class onEvent extends Keyword {
     this.args = ['eventName:string', 'consq:block'];
   }
 
-  compile(unit: TScriptUnit, idx?: number): TOpcode[] {
+  compile(unit: TScriptUnit): TOpcode[] {
     let [kw, eventName, consq] = unit;
     consq = this.utilFirstValue(consq); // a program name possibly?
     const { bpName } = BUNDLER.BundlerState();
