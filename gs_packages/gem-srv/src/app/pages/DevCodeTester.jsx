@@ -1,6 +1,4 @@
 /* eslint-disable react/no-unescaped-entities */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
 
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -13,19 +11,22 @@
 
 import React from 'react';
 import UR from '@gemstep/ursys/client';
+import { Terminal } from 'xterm';
+import { FitAddon } from 'xterm-addon-fit';
 
 /// RUN UNIT TESTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import 'test/unit-script-parser'; // test script parser
 import 'test/unit-expr-parser'; // test parser evaluation
-import 'test/unit-compiler'; // test compiler
-import 'test/unit-script-runtime'; // test runtime keyword functions
 import 'test/unit-keywords'; // test individual keywords
-
+// import 'test/unit-compiler'; // test compiler
+// import 'test/unit-script-runtime'; // test runtime keyword functions
 // style objects
 import { sGrid, sHead, sLeft, sRight, sFoot } from './wiz/SharedElements';
 // css
 import 'lib/vendor/pico.min.css';
+import 'lib/vendor/xterm.css';
+import 'lib/vendor/xterm';
 
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,11 +48,29 @@ function DevHeader(props) {
 /// ROOT APPLICATION COMPONENT ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class DevCodeTester extends React.Component {
+  constructor(props) {
+    super(props);
+    this.terminalRef = React.createRef();
+  }
+
   componentDidMount() {
     if (DBG) console.log(...PR('root component mounted'));
     document.title = 'DEV TESTS';
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
+    const terminal = new Terminal();
+    const fitAddon = new FitAddon();
+    terminal.loadAddon(fitAddon);
+    terminal.open(this.terminalRef.current);
+    // fitAddon.fit();
+    this.term = terminal;
+    this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
+    this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
+    this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
+    this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
+    this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
+    this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
+    this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
   }
 
   render() {
@@ -76,7 +95,6 @@ class DevCodeTester extends React.Component {
           <pre>
             <code>
               {`  // IMPORTS
-
   import 'test/unit-script-parser';  // test script parser
   import 'test/unit-expr-parser';    // test parser evaluation
   import 'test/unit-compiler';       // test compiler
@@ -84,6 +102,7 @@ class DevCodeTester extends React.Component {
   import 'test/unit-keywords';       // test individual keywords`}
             </code>
           </pre>
+          <div id="terminal" ref={this.terminalRef}></div>
         </div>
       </div>
     );
