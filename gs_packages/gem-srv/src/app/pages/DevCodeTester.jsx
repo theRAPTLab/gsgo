@@ -16,11 +16,14 @@ import { FitAddon } from 'xterm-addon-fit';
 
 /// RUN UNIT TESTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import 'test/unit-script-parser'; // test script parser
-import 'test/unit-expr-parser'; // test parser evaluation
-import 'test/unit-keywords'; // test individual keywords
+// import 'test/unit-script-parser'; // test script parser
+// import 'test/unit-expr-parser'; // test parser evaluation
+// import 'test/unit-keywords'; // test individual keywords
 // import 'test/unit-compiler'; // test compiler
 // import 'test/unit-script-runtime'; // test runtime keyword functions
+import * as TEST_SYMBOLS from 'test/x-symbol-tests';
+import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
+
 // style objects
 import { sGrid, sHead, sLeft, sRight, sFoot } from './wiz/SharedElements';
 // css
@@ -32,6 +35,18 @@ import 'lib/vendor/xterm';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const PR = UR.PrefixUtil('CODE TEST', 'TagApp');
+
+UR.HookPhase('UR/APP_CONFIGURE', () => {
+  // check for override load to use built-in test script
+  console.log(
+    `%cUsing TEST_SCRIPT because ENABLE_SYMBOL_TEST_BLUEPRINT is true...`,
+    'background-color:rgba(255,255,0,0.15);color:red;padding:1em 2em'
+  );
+  const script_text = TEST_SYMBOLS.GetTestScriptText();
+  // TEMPORARY TEST
+  WIZUTIL.TestScriptToEditableTokens(script_text);
+  // TEST_SYMBOLS.TestValidate();
+});
 
 /// LOCAL COMPONENTS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,12 +79,6 @@ class DevCodeTester extends React.Component {
     terminal.open(this.terminalRef.current);
     // fitAddon.fit();
     this.term = terminal;
-    this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
-    this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
-    this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
-    this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
-    this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
-    this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
     this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
   }
 

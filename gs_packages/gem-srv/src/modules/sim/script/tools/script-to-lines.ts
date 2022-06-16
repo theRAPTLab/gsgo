@@ -15,10 +15,13 @@ import {
   SHOW_EMPTY_STATEMENTS,
   SCRIPT_PAGE_INDEX_OFFSET
 } from 'config/dev-settings';
+import { StatementToText } from 'script/tools/script-tokenizer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
+const WIP = true; // enable WIP changes
+const WIPR = `WIP:${WIP}`;
 
 /// LINE PRINTING MACHINE //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,11 +56,11 @@ class ScriptLiner {
   }
   indent() {
     ++this.INDENT;
-    this.BLOCK_FLAG = 'start'; //
+    if (!WIP) this.BLOCK_FLAG = 'start';
   }
   outdent() {
     --this.INDENT;
-    this.BLOCK_FLAG = 'end';
+    if (!WIP) this.BLOCK_FLAG = 'end';
   }
   currentContext(): any {
     return {
@@ -85,6 +88,7 @@ class ScriptLiner {
   pushStatementLine(stm: TScriptUnit): void {
     const copied_toks = stm.filter(tok => !tok.block);
     this.STM_STACK.push(copied_toks); // save statement on stack
+    // console.log(this.STM_STACK.length, JSON.stringify(this.peekStatementLine()));
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** remove the saved statement, without { block } tokens */
@@ -140,6 +144,12 @@ class ScriptLiner {
       level,
       lineNum
     };
+    console.log(
+      `${this.INDENT} %cwrote line`,
+      'color:blue',
+      StatementToText(lineScript)
+    );
+
     // BLOCK_FLAG is set whenever a [[ or ]] is encountered
     // then cleared at the end of this
     if (this.BLOCK_FLAG) line.marker = this.BLOCK_FLAG;
@@ -150,12 +160,17 @@ class ScriptLiner {
     const lso: VMLineScriptLine = { lineScript };
     if (this.BLOCK_FLAG) lso.marker = this.BLOCK_FLAG;
     this.LSMAP.push(lso);
+    console.log(
+      `${this.INDENT} %cwrote lso`,
+      'color:magenta',
+      StatementToText(lineScript)
+    );
     this.BLOCK_FLAG = null; // always clear the flag
 
     // reset buffer and prepare for next line
     this.LINE_BUF = [];
     this.LINE_POS = SCRIPT_PAGE_INDEX_OFFSET;
-    this.nextLine();
+    if (!WIP) this.nextLine();
     if (DBG) this.DBGTEXT += '\n';
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -182,18 +197,36 @@ class ScriptLiner {
       // (1) if it's a block token then nested print
       if (Array.isArray(tok.block)) {
         if (DBG) this.DBGTEXT += 'BLOCK ';
+        if (WIP) this.BLOCK_FLAG = 'start';
+        console.log(
+          'LINEOUT %cBLOCK',
+          'color:red',
+          StatementToText(this.peekStatementLine())
+        );
         this.lineOut(); // flush line before processing the block
+        if (WIP) this.nextLine();
         // process statements in the block...
         this.indent();
-        tok.block.forEach(bstm => this.statementToLines(bstm));
+        if (!WIP) {
+          tok.block.forEach(bstm => this.statementToLines(bstm));
+        } else {
+          tok.block.forEach((bstm, index) => {
+            const terminal = index === tok.block.length - 1;
+            if (terminal) this.BLOCK_FLAG = 'end';
+            this.statementToLines(bstm);
+          });
+        }
         this.outdent();
         // ...done!
         return;
       }
       // (3) "print" the token to the line buffer
+      console.log('.. tokout', StatementToText([tok]), tok);
       this.tokenOut(tok);
     });
+    console.log('LINEOUT', StatementToText(this.peekStatementLine()));
     this.lineOut(); // flush buffer after statement is printed, increment line
+    if (WIP) this.nextLine();
     this.popStatementLine(); // remove current statement context
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -201,7 +234,11 @@ class ScriptLiner {
    *  tokens
    */
   programToLines(program) {
-    program.forEach(stm => this.statementToLines(stm));
+    program.forEach((stm, ii) => {
+      console.group('line', ii, WIPR);
+      this.statementToLines(stm);
+      console.groupEnd();
+    });
   }
 
   /// EXPORTED API METHODS //////////////////////////////////////////////////////

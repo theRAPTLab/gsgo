@@ -6,6 +6,10 @@ addProp energyLevel number 50
 addProp isAlive Boolean true
 addFeature Costume
 # PROGRAM INIT
-if {{ addProp.value > 0 }} [[
+if {{ aa }} [[
   prop energyLevel setTo 10
+  if {{ bb }} [[
+    prop energyLevel setTo 20
+  ]]
 ]]
+prop energyType setTo 'dead'

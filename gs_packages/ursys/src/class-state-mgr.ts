@@ -56,7 +56,7 @@ class StateMgr {
     if (GROUPS.has(groupName)) {
       console.warn(
         ...PR(
-          `'${groupName}' construction duplicate, returning existing instance`
+          `(not an error) '${groupName}' construction duplicate, returning existing instance`
         )
       );
       return GROUPS.get(groupName);
