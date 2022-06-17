@@ -105,6 +105,7 @@ function SetProgramOut(str: string): boolean {
     CUR_PROGRAM = bdlKey;
     return true;
   }
+  console.warn(`${fn} invalid bundle key ${bdlKey}`);
   return false;
 }
 
