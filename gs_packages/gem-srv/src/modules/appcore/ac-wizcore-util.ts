@@ -10,6 +10,7 @@
 
 import UR from '@gemstep/ursys/client';
 import * as TRANSPILER from 'script/transpiler-v2';
+import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 
 // load state
 const { StateMgr } = UR.class;
@@ -19,12 +20,169 @@ const { StateMgr } = UR.class;
 const PR = UR.PrefixUtil('WIZCORE', 'TagCyan');
 const MUTATE = false;
 
+type TScriptUpdateResult = {
+  script_tokens?: TScriptUnit[];
+  error?: TSymbolError;
+  oldLines?: string[];
+  newLines?: string[];
+};
+
 /// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// this is a dependent store, so we do not initialize it with _inializeState()
 /// the main WIZCORE will handle that for us, but we just want to hook up
 /// our routing here first
 const STORE = StateMgr.GetInstance('ScriptWizard');
+
+/// CHEESEBALL SCRIPT EDITING INTERFACE ///////////////////////////////////////
+/// these routines do a conversion to text and back to do the script editing,
+/// which is kind of sketchy but is a quick and dirty hadck to just get the
+/// gui working
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** helper function: converts script_tokens into script_lines */
+function m_GetScriptLinesFromTokens(script_tokens: TScriptUnit[]): string[] {
+  const script_text = TRANSPILER.ScriptToText(script_tokens);
+  const script_lines = script_text.split('\n');
+  return script_lines;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** helper function: converts script_lines to script_tokens */
+function m_GetScriptTokensFromLines(script_lines: string[]) {
+  const script_text = script_lines.join('\n');
+  const script_tokens = TRANSPILER.TextToScript(script_text);
+  return script_tokens;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: replace the current line number with the provided lineScript */
+function UpdateLine(
+  script_tokens: TScriptUnit[],
+  lineNum: number,
+  lineScript: TScriptUnit
+): TScriptUpdateResult {
+  const fn = 'UpdateLine:';
+  const script_lines = m_GetScriptLinesFromTokens(script_tokens);
+  //
+  const index = CHECK.OffsetLineNum(lineNum, 'sub');
+  if (index < 0 || index > script_lines.length - 1) {
+    return { error: { code: 'invalid', info: `${lineNum} out of range` } };
+  }
+  //
+  const oldLine = script_lines[index];
+  const newLine = TRANSPILER.StatementToText(lineScript);
+  script_lines[index] = newLine;
+  const updated_script = m_GetScriptTokensFromLines(script_lines);
+  //
+  console.log(
+    `%cmodified @${lineNum}`,
+    'font-weight:bold;color:magenta',
+    `\nold: ${oldLine.trim()}`,
+    `\nnew: ${newLine.trim()}`
+  );
+  //
+  return {
+    oldLines: [oldLine],
+    newLines: [newLine],
+    script_tokens: updated_script
+  };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: delete a single line by number */
+function DeleteLine(
+  script_tokens: TScriptUnit[],
+  lineNum: number,
+  count: number = 1
+) {
+  const fn = 'DeleteLine:';
+  const script_lines = m_GetScriptLinesFromTokens(script_tokens);
+  //
+  const index = CHECK.OffsetLineNum(lineNum, 'sub');
+  if (index < 0 || index > script_lines.length - 1) {
+    return { error: { code: 'invalid', info: `${lineNum} out of range` } };
+  }
+  //
+  const delLines = script_lines.splice(index, count);
+  const updated_script = m_GetScriptTokensFromLines(script_lines);
+  //
+  console.log(
+    `%cdeleted @${lineNum}`,
+    'font-weight:bold;color:magenta',
+    delLines
+  );
+
+  //
+  return {
+    oldLines: delLines,
+    newLines: [],
+    script_tokens: updated_script
+  };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: insert a single lineScript at lineNum */
+function InsertLine(
+  script_tokens: TScriptUnit[],
+  lineNum: number,
+  lineScript: TScriptUnit
+) {
+  const fn = 'InsertLine:';
+  const script_lines = m_GetScriptLinesFromTokens(script_tokens);
+  //
+  const index = CHECK.OffsetLineNum(lineNum, 'sub');
+  if (index < 0 || index > script_lines.length - 1) {
+    return { error: { code: 'invalid', info: `${lineNum} out of range` } };
+  }
+  //
+  const newLine = TRANSPILER.StatementToText(lineScript);
+  script_lines.splice(index, 0, newLine);
+  const updated_script = m_GetScriptTokensFromLines(script_lines);
+  //
+  console.log(
+    `%cinserted @${lineNum}`,
+    'font-weight:bold;color:magenta',
+    newLine
+  );
+  //
+  return {
+    oldLines: [],
+    newLines: [newLine],
+    script_tokens: updated_script
+  };
+}
+/// TEST BRUTE FORCE SCRIPT LINE EDITING STUFF ////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** test the insert, delete, update methods */
+function TestEditableText(scriptText) {
+  const fn = 'TestEditiableText:';
+  let script_tokens = TRANSPILER.TextToScript(scriptText);
+
+  console.group('Original ScriptText');
+  console.log(scriptText);
+  console.groupEnd();
+
+  console.group('Modifying ScriptText');
+  let line = `prop energyLevel setTo 'InsertedLine'`;
+  // here we are creating lineText, but these API methods are designed to
+  // work with lineScript tokens
+  let lineScript = TRANSPILER.StringToLineScript(line);
+  let results;
+  // insert linescript into script_tokens
+  results = InsertLine(script_tokens, 4, lineScript);
+  script_tokens = results.script_tokens;
+  // delete linescript from script_tokens
+  results = DeleteLine(script_tokens, 3);
+  script_tokens = results.script_tokens;
+  // // modify a line
+  line = `prop energyLevel setTo 'stunning change'`;
+  lineScript = TRANSPILER.StringToLineScript(line);
+  results = UpdateLine(script_tokens, 5, lineScript);
+  script_tokens = results.script_tokens;
+  console.groupEnd();
+
+  //
+  console.group('Reconstructed ScriptText');
+  const newText = TRANSPILER.ScriptToText(script_tokens);
+  console.log(newText);
+  console.groupEnd();
+}
 
 /// SCRIPT LINE EDITING STUFF ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -85,8 +243,9 @@ function TestEditableTokens(lineNum: number = 0) {
   // STORE.SendState({ script_tokens: nscript });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** This test is called From DevCodeTester */
 function TestScriptToEditableTokens(scriptText: string = '') {
-  const fn = 'DemoLineScriptEditor:';
+  const fn = 'TestScriptToEditableTokens:';
 
   function pad_num(ii: number) {
     return String(ii).padStart(2, ' ');
@@ -177,4 +336,15 @@ UR.AddConsoleTool('test_editable', num => {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { TestEditableTokens, TestScriptToEditableTokens, ForceImportHack };
+export {
+  TestEditableTokens, // test interface
+  TestScriptToEditableTokens, // test interface
+  ForceImportHack
+};
+// brute force text API
+export {
+  TestEditableText, // test interface
+  InsertLine,
+  DeleteLine,
+  UpdateLine
+};

@@ -42,9 +42,6 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
     `%cUsing TEST_SCRIPT because ENABLE_SYMBOL_TEST_BLUEPRINT is true...`,
     'background-color:rgba(255,255,0,0.15);color:red;padding:1em 2em'
   );
-  const script_text = TEST_SYMBOLS.GetTestScriptText();
-  // TEMPORARY TEST
-  WIZUTIL.TestScriptToEditableTokens(script_text);
   // TEST_SYMBOLS.TestValidate();
 });
 
@@ -80,6 +77,22 @@ class DevCodeTester extends React.Component {
     // fitAddon.fit();
     this.term = terminal;
     this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
+    // TEMPORARY TEST
+    const script_text = TEST_SYMBOLS.GetTestScriptText();
+    console.group(`%cBrokenEditableTokens`, 'font-size:3em');
+    console.log(
+      `%cThis algorithm creates an "unpacked lineScript list" that is indexed by line number, and each element can be freely modified then reconstructed. There is a bug in this algorithm`,
+      'color:maroon'
+    );
+    WIZUTIL.TestScriptToEditableTokens(script_text);
+    console.groupEnd();
+    console.group(`%cPickyEditableText`, 'font-size:3em');
+    console.log(
+      `%cThis algorithm converts script tokens to lines of text and back again, so you can use array.splice() to make changes. However, editing a statement with a BLOCK token requires care otherwise you can break parthesis balance. Not ideal`,
+      'color:maroon'
+    );
+    WIZUTIL.TestEditableText(script_text);
+    console.groupEnd();
   }
 
   render() {

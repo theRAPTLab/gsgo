@@ -38,13 +38,23 @@ function StatementToText(statement: TScriptUnit, indent: number = 0): string {
   });
   if (line.trim() !== '') return line;
   return '';
-} /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: given a text, return the parsed ScriptUnit[] representation */
 function TextToScript(text: string = ''): TScriptUnit[] {
   // this will throw an error string of '{err} @row:col'
   const script = gstDBG.tokenize(text.trim());
   return script;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: given a string, convert to statemment. Should not be any linefeeds
+ *  in the string otherwise might be surprising */
+function StringToLineScript(line: string): TScriptUnit {
+  const script = TextToScript(line);
+  if (script.length === 1) return script[0];
+  return undefined;
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: given a TScriptUnit[], return text version */
 function ScriptToText(units: TScriptUnit[]): string {
@@ -103,6 +113,7 @@ export {
 /// support
 export {
   StatementToText, // convert a line of script TScriptUnit to a line of text
+  StringToLineScript, // convert a single line string into TScriptUnit
   TokenToString, // convert a token to its string ver
   TokenToString as TokenToUnitText // alias
 };
