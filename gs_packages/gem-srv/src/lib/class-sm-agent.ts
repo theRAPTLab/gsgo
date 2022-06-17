@@ -405,8 +405,8 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
   /** Run the agent's UPDATE programs */
   agentUPDATE(frameTime: number) {
     const ctx = { agent: this, [this.blueprint.name]: this };
-    if (this.blueprint && this.blueprint.update) {
-      this.exec(this.blueprint.update, ctx);
+    if (this.blueprint && this.blueprint.UPDATE) {
+      this.exec(this.blueprint.UPDATE, ctx);
     }
     this.updateQueue.forEach(action => {
       // console.log(this.name(), 'updateAction', this.exec(action));
@@ -418,8 +418,8 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
   /** Run the agent's THINK programs */
   agentTHINK(frameTime: number) {
     const ctx = { agent: this, [this.blueprint.name]: this };
-    if (this.blueprint && this.blueprint.think) {
-      this.exec(this.blueprint.think, ctx);
+    if (this.blueprint && this.blueprint.THINK) {
+      this.exec(this.blueprint.THINK, ctx);
     }
     this.thinkQueue.forEach(action => {
       // console.log(this.name(), 'thinkAction', this.exec(action));
@@ -431,8 +431,8 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
   /** Run the agent's EXEC programs */
   agentEXEC(frameTime: number) {
     const ctx = { agent: this, [this.blueprint.name]: this };
-    if (this.blueprint && this.blueprint.exec) {
-      this.exec(this.blueprint.exec, ctx);
+    if (this.blueprint && this.blueprint.EXEC) {
+      this.exec(this.blueprint.EXEC, ctx);
     }
     this.execQueue.forEach(action => {
       // console.log(this.name(), 'execAction', this.exec(action));
@@ -452,8 +452,8 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
     if (!bdl.name) throw Error('setBlueprint got bp without name');
     this.blueprint = bdl;
     // call initialization
-    this.exec(bdl.define);
-    this.exec(bdl.init);
+    this.exec(bdl.DEFINE);
+    this.exec(bdl.INIT);
   }
 
   /// AGENT PROGRAM EXECUTION /////////////////////////////////////////////////

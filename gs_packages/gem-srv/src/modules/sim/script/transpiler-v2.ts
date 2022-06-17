@@ -44,7 +44,7 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
   if (bdl.type === EBundleType.INIT) {
     return undefined;
   }
-  if (bdl.define && bdl.type === EBundleType.BLUEPRINT) {
+  if (bdl.DEFINE && bdl.type === EBundleType.BLUEPRINT) {
     if (DBG) console.group(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
     // First deregister the blueprint if it exists
     // RemoveGlobalCondition(bdl.name); // deprecatd in script-xp
@@ -147,6 +147,7 @@ export {
 /// FORWARDED API: convert text to tokenized scripts
 export {
   TextToScript, // text w/ newlines => TScriptUnit[]
+  StringToLineScript, // single-line string => TScriptUnit
   ScriptToText, // TScriptUnit[] => produce source text from units
   TokenToString, // for converting a token to its text representation
   StatementToText // convert scriptUnit[] to text

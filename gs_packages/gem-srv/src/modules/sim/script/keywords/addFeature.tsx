@@ -10,7 +10,7 @@
 import Keyword from 'lib/class-keyword';
 import { addFeature } from 'script/ops/agent-ops';
 import { GetFeature } from 'modules/datacore/dc-sim-data';
-import { RegisterKeyword } from 'modules/datacore';
+import { RegisterKeyword, GetFeatureSymbolsFor } from 'modules/datacore';
 import { TokenToString } from 'script/tools/script-tokenizer';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
@@ -39,6 +39,15 @@ export class AddFeature extends Keyword {
       return undefined;
     }
     return { features: { [featureName as string]: feat.symbolize() } };
+  }
+
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    const [kwTok, fnTok] = unit;
+    const vtoks = [];
+    vtoks.push(this.shelper.anyKeyword(kwTok));
+    vtoks.push(this.shelper.anyFeature(fnTok));
+    const vlog = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: vlog };
   }
 } // end of keyword definition
 

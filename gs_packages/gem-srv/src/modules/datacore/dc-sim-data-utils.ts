@@ -43,7 +43,6 @@ const GSTYPES: TGSType[] = [
   'boolean',
   'string',
   'number',
-  'enum',
   //
   'prop', // same as objref in some keywords
   'method',
@@ -53,6 +52,8 @@ const GSTYPES: TGSType[] = [
   'objref', // value of anobject ref
   'expr', // an expression that can be coerced to any type
   '{value}', // composite: literal, objref or expression
+  '{string}', // composite: literal, objref, or expression producing
+  '{any}', // value or string
   //
   'pragma',
   'test',
@@ -124,22 +125,22 @@ function UnpackArg(arg: TGSArg): TSymUnpackedArg {
 /// valid keys are defined in ISMCBundle, and values indicate the
 /// simulation engine phase/context.
 const BUNDLE_CONTEXTS = [
-  'define', // programs that run during SIM DEFINE for each agent
-  'init', // programs that run on SIM INITIALIZE the agent state
-  'update', // programs that run on every SIM UPDATE
-  'think', // programs that run during SIM AI thinking phase
-  'exec', // programs that run during SIM EXECUTION phase
+  'DEFINE', // programs that run during SIM DEFINE for each agent
+  'INIT', // programs that run on SIM INITIALIZE the agent state
+  'UPDATE', // programs that run on every SIM UPDATE
+  'THINK', // programs that run during SIM AI thinking phase
+  'EXEC', // programs that run during SIM EXECUTION phase
   //
-  'condition', // programs that define global triggers
-  'event', // programs that define event handlers
+  'CONDITION', // programs that define global triggers
+  'EVENT', // programs that define event handlers
   //
-  'test', // result of a conditional keyword
-  'conseq', // block of code to run if condition true
-  'alter' // block of code to run if condition false
+  'TEST', // result of a conditional keyword
+  'CONSEQ', // block of code to run if condition true
+  'ALTER' // block of code to run if condition false
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function IsValidBundleProgram(name: string): boolean {
-  return BUNDLE_CONTEXTS.includes(name.toLowerCase());
+  return BUNDLE_CONTEXTS.includes(name.toUpperCase());
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return true if the passed bundle string is valid */
