@@ -18,14 +18,7 @@ const { StateMgr } = UR.class;
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('WIZCORE', 'TagCyan');
-const MUTATE = false;
-
-type TScriptUpdateResult = {
-  script_tokens?: TScriptUnit[];
-  error?: TSymbolError;
-  oldLines?: string[];
-  newLines?: string[];
-};
+const MUTATE = true;
 
 /// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -139,6 +132,40 @@ function TestEditableTokens(scriptText: string = '') {
   console.group('%cEditable Tokens', 'font-size:1.4em', lsos);
   dump_editables(lsos);
   console.groupEnd();
+  //
+  if (MUTATE) {
+    const lineNum = 4;
+    console.group('%cAPPLY MUTATIONS', 'font-size:1.4em');
+    // demo modify the script_page tokens
+    lsos.forEach(lso => {
+      // replace all energyLevel with BANANACAKE
+      console.log('replacing all instances of energyType with bananaType');
+      lso.lineScript.forEach(tok => {
+        if (tok.identifier && tok.identifier === 'energyType')
+          tok.identifier = 'bananaType';
+      });
+    });
+    console.log(`inserting identifiers moooo0, cow, moooo in line ${lineNum}`);
+    // insert three identifiers at the start of provided lineNum (default 0)
+    lsos[lineNum].lineScript.splice(
+      0,
+      0,
+      { identifier: 'moooooooo' },
+      { identifier: 'cow' },
+      { identifier: 'mooooooo' }
+    );
+    console.log(`inserting new comment 'aaaa' at ${lineNum}`);
+    // insert a line before lineNum
+    lsos.splice(lineNum, 0, {
+      lineScript: [{ comment: 'inserted aaaa' }]
+    });
+    console.log(`replacing line ${lineNum + 5} with comment 'nooo'`);
+    // replace line 10
+    lsos.splice(10, 1, {
+      lineScript: [{ comment: 'overwrote with nooo' }]
+    });
+    console.groupEnd();
+  }
   //
   console.group('%cRepackedTokens (textified)', 'font-size:1.4em');
   console.groupCollapsed('reconstruction log');
