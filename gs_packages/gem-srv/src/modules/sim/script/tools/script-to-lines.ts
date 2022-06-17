@@ -305,34 +305,6 @@ function ScriptPageToEditableTokens(scriptPage: VMPageLine[]): VMLineScripts {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: given an array of VMLineScripts, reconstruct the script and return it */
-function EditableTokensToScriptOld(lineScripts: VMLineScripts): TScriptUnit[] {
-  const fn = 'EditableTokensToScript:';
-  if (!Array.isArray(lineScripts)) throw Error(`${fn} arg should be array`);
-  const script_tokens = [];
-  const stack = [];
-  let current = script_tokens;
-
-  lineScripts.forEach(lso => {
-    const { lineScript, marker } = lso;
-    if (marker === 'start') {
-      const arr = [];
-      stack.push(arr);
-      current = arr;
-      current.push(lineScript);
-      return;
-    }
-    if (marker === 'end') {
-      current.push(lineScript);
-      current = stack.pop();
-      return;
-    }
-    current.push(lineScript);
-  });
-  return script_tokens;
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: replacement version of EditableTokensToScript repacker with improved
  *  instrumentation */
 function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
@@ -397,7 +369,7 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
         block_stack.push(current); // save previous
         current = block;
       }
-      console.group(
+      console.groupCollapsed(
         `%clineScript START BLOCK level=${level}`,
         'background-color:yellow'
       );
@@ -419,7 +391,7 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
     }
 
     if (marker === 'end') {
-      console.group(
+      console.groupCollapsed(
         `%clineScript END BLOCK level=${level}->${level - 1}`,
         'background-color:yellow'
       );
@@ -440,7 +412,7 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
     }
 
     if (lineScript.length) current.push(lineScript);
-    console.group(`lineScript level=${level}`);
+    console.groupCollapsed(`lineScript level=${level}`);
     dump_status(lineScript);
     console.groupEnd();
   });

@@ -290,9 +290,11 @@ function TestEditableTokens(scriptText: string = '') {
   dump_editables(lsos);
   console.groupEnd();
   //
+  console.group('%cRepackedTokens (textified)', 'font-size:1.4em');
+  console.groupCollapsed('reconstruction log');
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
+  console.groupEnd();
   const ntext = TRANSPILER.ScriptToText(nscript).trim();
-  console.group('%cRepackedTokens (textified)', 'font-size:1.4em', nscript);
   dump_script(nscript);
   console.groupEnd();
   let mismatch = mismatch_text(ntext, scriptText);

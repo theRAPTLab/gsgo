@@ -12,10 +12,12 @@ if {{ aa }} [[
   ]]
   prop energyType setTo 'INTERMISSION'
   if {{ cc }} [[
-    prop energyType setTo 'L1 disappear A'
-    prop energyType setTo 'L1 disappear B'
+    prop energyType setTo 'L2 disappear A'
+    if {{ dd }} [[
+      prop energyType setTo 'L3 ok A'
+    ]]
+    prop energyType setTo 'L2 disappear B'
   ]]
-
   prop energyType setTo 'L1 ghost A'
   prop energyType setTo 'L1 ghost B'
 ]]
