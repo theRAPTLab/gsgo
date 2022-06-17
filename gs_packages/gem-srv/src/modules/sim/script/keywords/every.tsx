@@ -41,7 +41,7 @@ export class every extends Keyword {
     this.LAST_FIRED = new Map();
   }
 
-  compile(unit: TScriptUnit, idx?: number): TOpcode[] {
+  compile(unit: TScriptUnit): TOpcode[] {
     let [kw, period, ...args] = unit;
     let runAtStart = '';
     let consq;

@@ -19,26 +19,25 @@ import { EBundleType } from 'modules/../types/t-script.d'; // workaround to impo
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** representation of a SMCBundle
- */
-export default class SM_Bundle implements ISMCBundle {
+/** representation of a SMCBundle */
+class SM_Bundle implements ISMCBundle {
   name: string; // the name of the bundle, if any
   parent: string; // the name of parent bundle, if any
   type: EBundleType; // enum type (see t-script.d)
   script: TScriptUnit[]; // saved script
   text: string; // save script text
   // lifecycle programs (can be in multiple types)
-  define: TOpcode[]; // allocation phase
-  init: TOpcode[]; // initialize phase
-  update: TOpcode[]; // update phase
-  think: TOpcode[]; // think phase
-  exec: TOpcode[]; // execution phase
+  DEFINE: TOpcode[]; // allocation phase
+  INIT: TOpcode[]; // initialize phase
+  UPDATE: TOpcode[]; // UPDATE phase
+  THINK: TOpcode[]; // THINK phase
+  EXEC: TOpcode[]; // execution phase
   // global programs
-  condition: TRegcode[]; // conditionals
+  CONDITION: TRegcode[]; // conditionals
   // local conditions (one per bundle)
-  test: TOpcode[]; // returns true or false
-  conseq: TOpcode[]; // run if true
-  alter: TOpcode[]; // run if false
+  TEST: TOpcode[]; // returns true or false
+  CONSEQ: TOpcode[]; // run if true
+  ALTER: TOpcode[]; // run if false
   // metadata
   tags: TBundleTags;
   symbols: TSymbolData;
@@ -49,15 +48,16 @@ export default class SM_Bundle implements ISMCBundle {
     if (type !== undefined) this.setType(type);
     else this.setType(EBundleType.INIT);
     //
-    this.define = []; // allocate data structures (agents, features, modules)
-    this.init = []; // initialize data structures (a,f,m)
-    this.update = []; // update lifecycle (a,f,m)
-    this.think = []; // think lifecycle (a,f,m)
-    this.exec = []; // exec lifecycle (a,f,m)
-    this.condition = []; // global program
-    this.test = []; // test function
-    this.conseq = []; // program
-    this.alter = []; // program
+    this.DEFINE = []; // allocate data structures (agents, features, modules)
+    this.INIT = []; // initialize data structures (a,f,m)
+    this.UPDATE = []; // UPDATE lifecycle (a,f,m)
+    this.THINK = []; // THINK lifecycle (a,f,m)
+    this.EXEC = []; // EXEC lifecycle (a,f,m)
+    this.CONDITION = []; // global program
+    this.TEST = []; // test function
+    this.CONSEQ = []; // program
+    this.ALTER = []; // program
+    //
     this.tags = new Map();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -134,37 +134,41 @@ export default class SM_Bundle implements ISMCBundle {
   /// BUNDLE INITIALIZERS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   initProgram() {
-    this.define = [];
+    this.DEFINE = [];
     return this;
   }
   initCondition() {
-    this.test = [];
-    this.conseq = [];
-    this.alter = [];
+    this.TEST = [];
+    this.CONSEQ = [];
+    this.ALTER = [];
     return this;
   }
   initBlueprint(name: string) {
     if (name !== undefined) this.name = name;
-    this.define = [];
-    this.init = [];
-    this.update = [];
-    this.think = [];
-    this.exec = [];
+    this.DEFINE = [];
+    this.INIT = [];
+    this.UPDATE = [];
+    this.THINK = [];
+    this.EXEC = [];
     return this;
   }
   initGlobalProgram(name: string) {
     if (name !== undefined) this.name = name;
-    this.define = [];
+    this.DEFINE = [];
     return this;
   }
   initGlobalCondition(key: string) {
     if (key !== undefined) this.name = key;
-    this.condition = [];
+    this.CONDITION = [];
     return this;
   }
   initGlobalTest(name: string) {
     if (name !== undefined) this.name = name;
-    this.test = [];
+    this.TEST = [];
     return this;
   }
 }
+
+/// EXPORT ////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export default SM_Bundle;

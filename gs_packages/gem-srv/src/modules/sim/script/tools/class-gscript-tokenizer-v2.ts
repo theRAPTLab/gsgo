@@ -629,7 +629,7 @@ class ScriptTokenizer {
       if (ch === CBRACK_CODE && cch === CBRACK_CODE) {
         this.index++; // point to char after ]]
         level--;
-        if (level === 0) return { program: str.trim() }; // return token
+        if (level === 0) return { program: str.trim() }; // return programName tok
         str += ']]'; // otherwise, save the string
       } else if (ch === OBRACK_CODE && cch === OBRACK_CODE) {
         this.index++; // point to char after [[

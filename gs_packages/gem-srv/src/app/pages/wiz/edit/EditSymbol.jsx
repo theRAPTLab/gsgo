@@ -1,6 +1,4 @@
 /* eslint-disable no-inner-declarations */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   SymbolSelector - A component that accepts selection of

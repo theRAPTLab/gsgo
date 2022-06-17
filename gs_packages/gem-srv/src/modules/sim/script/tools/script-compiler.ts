@@ -218,7 +218,10 @@ function ValidateStatement(
   refs: TSymbolRefs
 ): TValidatedScriptUnit {
   // check for zero-length statements and blank statements comments or lines)
-  if (statement.length === 0) return { validationTokens: [] };
+  if (statement === undefined)
+    return { validationTokens: [], validationLog: ['undefined statement'] };
+  if (statement.length === 0)
+    return { validationTokens: [], validationLog: ['zero-length statement'] };
   const { bundle, globals } = refs || {};
   const kw = CHECK.DecodeKeywordToken(statement[0]);
   const kwp = SIMDATA.GetKeyword(kw);

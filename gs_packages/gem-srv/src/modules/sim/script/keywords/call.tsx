@@ -42,7 +42,7 @@ export class callKeyword extends Keyword {
   //   const vtoks = []; // validation token array
   //   const [kwTok, methodTok, ...argToks] = unit; // get arg pattern
   //   // returns symbols for each dtok position excepting the keyword
-  //   vtoks.push(this.shelper.allKeywords(kwTok));
+  //   vtoks.push(this.shelper.anyKeyword(kwTok));
   //   vtoks.push(this.shelper.methodName(methodTok));
   //   vtoks.push(...this.shelper.argsList(argToks));
   //   const log = this.makeValidationLog(vtoks);

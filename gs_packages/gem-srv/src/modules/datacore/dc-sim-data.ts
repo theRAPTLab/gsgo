@@ -18,6 +18,7 @@ import * as CHECK from './dc-sim-data-utils';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
+const PRAGMAS: Map<string, Function> = new Map();
 const FEATURES: Map<string, SM_Feature> = new Map();
 const BLUEPRINTS: Map<string, SM_Bundle> = new Map();
 const KEYWORDS: Map<string, IKeyword> = new Map();
@@ -41,6 +42,33 @@ function m_EnsureUpperCase(s: string, p?: string) {
   p = typeof p === 'string' ? p : '';
   if (typeof s !== 'string') return undefined;
   return s.toUpperCase();
+}
+
+/// DIRECTIVES ////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function DefinePragma(pName: string, pFunc: TPragmaHandler) {
+  const fn = 'DefinePragma:';
+  const pragma = pName.toUpperCase();
+  PRAGMAS.set(pragma, pFunc);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetPragma(pName: string) {
+  const fn = 'GetPragma:';
+  return PRAGMAS.get(pName.toUpperCase());
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetPragmaSymbols(): TSymbolData {
+  // hardcoded
+  return {
+    pragmas: {
+      BLUEPRINT: {
+        name: 'BLUEPRINT',
+        args: ['bpName:blueprint', 'bpBaseName:blueprint']
+      },
+      PROGRAM: { name: 'PROGRAM', args: ['bundleOut:string'] },
+      TAG: { name: 'TAG', args: ['tagName:string', 'tagValue:{any}'] }
+    }
+  };
 }
 
 /// BLUEPRINT /////////////////////////////////////////////////////////////////
@@ -106,9 +134,17 @@ function DeleteAllBlueprintBundles(): void {
 function GetBlueprintSymbolsFor(bpName: string): TSymbolData {
   const { symbols } = GetBlueprintBundle(bpName);
   if (symbols !== undefined) console.log('found', bpName, 'blueprint');
-
   return symbols;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetBlueprintSymbols(): TSymbolData {
+  const symbols: TSymbolData = {};
+  GetBlueprintBundleList().forEach(bpName => {
+    symbols[bpName] = GetBlueprintSymbolsFor(bpName);
+  });
+  return symbols;
+}
+
 /// KEYWORDS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// The GEMSTEP transpiler script language is built from 'keyword' modules
@@ -141,6 +177,12 @@ function GetAllKeywords(): string[] {
     arr.push(key);
   });
   return arr;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: retrieve the keyword symbols dict */
+function GetKeywordSymbols(): TSymbolData {
+  const keywords = GetAllKeywords();
+  return { keywords };
 }
 
 /// VALUE TYPE UTILITIES //////////////////////////////////////////////////////
@@ -200,8 +242,15 @@ function DeleteAllFeatures() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetFeatureSymbolsFor(fName: string): TSymbolData {
-  console.log('getting', fName, 'feature');
   const symbols = GetFeature(fName).symbolize();
+  return symbols;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetFeatureSymbols(): TSymbolData {
+  const symbols: TSymbolData = {};
+  [...FEATURES.keys()].forEach(fName => {
+    symbols[fName] = GetFeatureSymbolsFor(fName);
+  });
   return symbols;
 }
 
@@ -339,6 +388,8 @@ function GetAllScriptEventNames() {
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// pragmas are used by the _pragma keyword
+export { DefinePragma, GetPragma, GetPragmaSymbols };
 /// blueprints are stored as "bundles" by their name
 export {
   SaveBlueprintBundle,
@@ -347,11 +398,12 @@ export {
   GetBlueprintBundleList,
   DeleteBlueprintBundle,
   DeleteAllBlueprintBundles,
-  GetBlueprintSymbolsFor
+  GetBlueprintSymbolsFor,
+  GetBlueprintSymbols
 };
 /// the transpiler is extendable using "keyword' modules that implement
 /// symbolize, validate, and compile
-export { RegisterKeyword, GetKeyword, GetAllKeywords };
+export { RegisterKeyword, GetKeyword, GetAllKeywords, GetKeywordSymbols };
 /// scriptable properties are called "gvars" and have constructors for each type
 export {
   RegisterPropType,
@@ -367,7 +419,8 @@ export {
   GetFeatureMethod,
   RegisterFeature,
   DeleteAllFeatures,
-  GetFeatureSymbolsFor
+  GetFeatureSymbolsFor,
+  GetFeatureSymbols
 };
 /// engine maintains dicts of named Javascript functions
 export { RegisterFunction, GetFunction, GetAllFunctions };

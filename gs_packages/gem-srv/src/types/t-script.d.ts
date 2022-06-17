@@ -209,15 +209,15 @@ declare global {
   /// SYMBOL DATA AND TYPES ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // symbol type declarations
-  type TSLit = `${'boolean' | 'string' | 'number' | 'enum'}`;
-  type TSSMObj = `${'prop' | 'method' | 'gvar' | 'block'}`;
-  type TSDeferred = `${'objref' | 'expr' | '{value}' | '{string}'}`;
-  type TSDict = `${'keyword' | 'pragma' | 'test' | 'program' | 'event'}`;
-  type TSAgent = `${'blueprint' | 'feature'}`;
-  type TSMultiArg = `${'{...}'}`; // multiple arg token marker
-  type TSList = `${'{list}'}`; // forbidden type!!! don't use!!!
-  type TSUnknown = `${'{?}'}`; // forbidden type!!! don't use!!!
-  type TGSType = `${
+  type TSLit = 'boolean' | 'string' | 'number';
+  type TSSMObj = 'prop' | 'method' | 'gvar' | 'block';
+  type TSDeferred = 'objref' | 'expr' | '{value}' | '{string}' | '{any}';
+  type TSDict = 'keyword' | 'pragma' | 'test' | 'program' | 'event';
+  type TSAgent = 'blueprint' | 'feature';
+  type TSMultiArg = '{...}'; // multiple arg token marker
+  type TSList = '{list}'; // future
+  type TSUnknown = '{?}'; // unknown 'vague' type for validation
+  type TGSType =
     | TSLit
     | TSSMObj
     | TSDeferred
@@ -225,7 +225,7 @@ declare global {
     | TSAgent
     | TSMultiArg
     | TSList
-    | TSUnknown}`;
+    | TSUnknown;
   type TSEnum = { enum: string[] }; // special format for enum args (future)
   type TGSArg = `${string}:${TGSType}` | TSEnum;
   type TGSMethodSig = {
@@ -247,6 +247,7 @@ declare global {
     // read-only dictionaries
     keywords?: string[]; // a list of valid keywords for position 0
     ctors?: { [ctorName: string]: TSymbolData }; // constructor object if needed (used by var- props)
+    pragmas?: { [prName: string]: TGSMethodSig }; // directives hack
     blueprints?: { [bpName: string]: TSymbolData }; // blueprints
     props?: { [propName: string]: TSymbolData };
     methods?: { [methodName: string]: TGSMethodSig };
@@ -325,19 +326,19 @@ declare global {
   /** These are the kind of programs that the simulation engine knows about */
   interface ISMCPrograms {
     // blueprint
-    define?: TSMCProgram; // def blueprint, props, features
-    init?: TSMCProgram; // allocate mem/define default values for instance
-    update?: TSMCProgram; // run during instance update cycle
-    think?: TSMCProgram; // run during instance think phase
-    exec?: TSMCProgram; // run during instance exec phase
+    DEFINE?: TSMCProgram; // def blueprint, props, features
+    INIT?: TSMCProgram; // allocate mem/define default values for instance
+    UPDATE?: TSMCProgram; // run during instance update cycle
+    THINK?: TSMCProgram; // run during instance think phase
+    EXEC?: TSMCProgram; // run during instance exec phase
     // global conditions
-    condition?: TSMCProgram; // condition handlers to run
+    CONDITION?: TSMCProgram; // condition handlers to run
     // global script events
-    event?: TSMCProgram; // event handlers to run
+    EVENT?: TSMCProgram; // event handlers to run
     // local condition (one per bundle)
-    test?: TSMCProgram; // program returning true on stack
-    conseq?: TSMCProgram; // program to run on true
-    alter?: TSMCProgram; // program to run otherwise
+    TEST?: TSMCProgram; // program returning true on stack
+    CONSEQ?: TSMCProgram; // program to run on true
+    ALTER?: TSMCProgram; // program to run otherwise
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** An ISMCBundle is a collection of compiled elements. This is the minimum
@@ -385,6 +386,10 @@ declare global {
   interface IKeywordCtor {
     new (keyword?: string): IKeyword;
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** a pragma handler is mapepd to a directive (e.g. BLUEPRINT, PROGRAM) */
+  type TPragmaHandler = (...param: any) => TOpcode[];
+
   /// SCRIPT COMPILER HELPERS /////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** function signatures for 'dereferencing' function in keyword compilers */

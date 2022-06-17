@@ -14,6 +14,7 @@ import GScriptTokenizer from 'script/tools/class-gscript-tokenizer-v2';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const gstDBG = new GScriptTokenizer();
+const CR = '\n'; // '\r\n' used by windows
 
 /// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -23,6 +24,7 @@ const gstDBG = new GScriptTokenizer();
 function StatementToText(statement: TScriptUnit, indent: number = 0): string {
   // process tokens from left to right, concat to make a line
   let line = ''.padStart(indent, ' ');
+  if (statement === undefined) return '';
   if (!Array.isArray(statement)) {
     console.warn('not a statement:', statement);
     return JSON.stringify(statement).padStart(indent, ' ');
@@ -37,13 +39,23 @@ function StatementToText(statement: TScriptUnit, indent: number = 0): string {
   });
   if (line.trim() !== '') return line;
   return '';
-} /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: given a text, return the parsed ScriptUnit[] representation */
 function TextToScript(text: string = ''): TScriptUnit[] {
   // this will throw an error string of '{err} @row:col'
   const script = gstDBG.tokenize(text.trim());
   return script;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: given a string, convert to statemment. Should not be any linefeeds
+ *  in the string otherwise might be surprising */
+function StringToLineScript(line: string): TScriptUnit {
+  const script = TextToScript(line);
+  if (script.length === 1) return script[0];
+  return undefined;
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: given a TScriptUnit[], return text version */
 function ScriptToText(units: TScriptUnit[]): string {
@@ -53,7 +65,7 @@ function ScriptToText(units: TScriptUnit[]): string {
     const lines = StatementToText(unit, indent);
     text.push(lines);
   });
-  return text.join('\n');
+  return text.join(CR);
 }
 
 /// SUPPORT API ///////////////////////////////////////////////////////////////
@@ -70,17 +82,16 @@ function TokenToString(tok: IToken, indent: number = 0) {
   if (identifier !== undefined) return identifier;
   // regular tokens
   if (value !== undefined) return value.toString();
-
-  if (string !== undefined) return `"${string}"`;
+  if (string !== undefined) return `'${string}'`;
   if (objref) return objref.join('.');
   if (comment !== undefined) return `// ${comment}`;
   if (block) {
     let lines = '';
     block.forEach((su, ii) => {
       lines += StatementToText(su, indent + 2);
-      if (ii < block.length) lines += '\n';
+      if (ii < block.length) lines += CR;
     });
-    return `[[\n${lines}${''.padStart(indent, ' ')}]]`;
+    return `[[${CR}${lines}${''.padStart(indent, ' ')}]]`;
   }
   if (expr === '') return '{{ ??? }}}'; // happens during live typing
   if (expr) return `{{ ${expr} }}`; // { expr = string }
@@ -102,6 +113,7 @@ export {
 /// support
 export {
   StatementToText, // convert a line of script TScriptUnit to a line of text
+  StringToLineScript, // convert a single line string into TScriptUnit
   TokenToString, // convert a token to its string ver
   TokenToString as TokenToUnitText // alias
 };
