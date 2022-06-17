@@ -326,19 +326,19 @@ declare global {
   /** These are the kind of programs that the simulation engine knows about */
   interface ISMCPrograms {
     // blueprint
-    define?: TSMCProgram; // def blueprint, props, features
-    init?: TSMCProgram; // allocate mem/define default values for instance
-    update?: TSMCProgram; // run during instance update cycle
-    think?: TSMCProgram; // run during instance think phase
-    exec?: TSMCProgram; // run during instance exec phase
+    DEFINE?: TSMCProgram; // def blueprint, props, features
+    INIT?: TSMCProgram; // allocate mem/define default values for instance
+    UPDATE?: TSMCProgram; // run during instance update cycle
+    THINK?: TSMCProgram; // run during instance think phase
+    EXEC?: TSMCProgram; // run during instance exec phase
     // global conditions
-    condition?: TSMCProgram; // condition handlers to run
+    CONDITION?: TSMCProgram; // condition handlers to run
     // global script events
-    event?: TSMCProgram; // event handlers to run
+    EVENT?: TSMCProgram; // event handlers to run
     // local condition (one per bundle)
-    test?: TSMCProgram; // program returning true on stack
-    conseq?: TSMCProgram; // program to run on true
-    alter?: TSMCProgram; // program to run otherwise
+    TEST?: TSMCProgram; // program returning true on stack
+    CONSEQ?: TSMCProgram; // program to run on true
+    ALTER?: TSMCProgram; // program to run otherwise
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** An ISMCBundle is a collection of compiled elements. This is the minimum
