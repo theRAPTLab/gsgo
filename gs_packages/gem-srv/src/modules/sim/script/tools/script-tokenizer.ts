@@ -23,6 +23,7 @@ const gstDBG = new GScriptTokenizer();
 function StatementToText(statement: TScriptUnit, indent: number = 0): string {
   // process tokens from left to right, concat to make a line
   let line = ''.padStart(indent, ' ');
+  if (statement === undefined) return '';
   if (!Array.isArray(statement)) {
     console.warn('not a statement:', statement);
     return JSON.stringify(statement).padStart(indent, ' ');

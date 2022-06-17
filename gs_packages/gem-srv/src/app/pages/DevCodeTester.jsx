@@ -76,7 +76,7 @@ class DevCodeTester extends React.Component {
     const terminal = new Terminal();
     const fitAddon = new FitAddon();
     terminal.loadAddon(fitAddon);
-    terminal.open(this.terminalRef.current);
+    // terminal.open(this.terminalRef.current);
     // fitAddon.fit();
     this.term = terminal;
     this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
@@ -103,14 +103,37 @@ class DevCodeTester extends React.Component {
           </p>
           <pre>
             <code>
-              {`  // IMPORTS
-  import 'test/unit-script-parser';  // test script parser
-  import 'test/unit-expr-parser';    // test parser evaluation
-  import 'test/unit-compiler';       // test compiler
-  import 'test/unit-script-runtime'; // test runtime keyword functions
-  import 'test/unit-keywords';       // test individual keywords`}
+              {`// TEST IMPORTS
+import * as TEST_SYMBOLS from 'test/x-symbol-tests';
+import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';`}
             </code>
           </pre>
+          <div>
+            <div
+              style={{
+                fontSize: '2em',
+                letterSpacing: '-1px',
+                lineHeight: '1.25em',
+                marginBottom: '0.25em'
+              }}
+            >
+              In Chrome, type Command-Option-J to open the Javascript Console
+            </div>
+            Currently we're testing{' '}
+            <code>
+              !227{' '}
+              <strong>
+                <a
+                  href="https://gitlab.com/stepsys/gem-step/gsgo/-/merge_requests/227"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  EditableTokens
+                </a>
+              </strong>{' '}
+            </code>{' '}
+            merge request.
+          </div>
           <div id="terminal" ref={this.terminalRef}></div>
         </div>
       </div>

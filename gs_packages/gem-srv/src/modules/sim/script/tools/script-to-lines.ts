@@ -15,13 +15,12 @@ import {
   SHOW_EMPTY_STATEMENTS,
   SCRIPT_PAGE_INDEX_OFFSET
 } from 'config/dev-settings';
-import { StatementToText } from 'script/tools/script-tokenizer';
+import { StatementToText, ScriptToText } from 'script/tools/script-tokenizer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-const WIP = true; // enable WIP changes
-const WIPR = `WIP:${WIP}`;
+const EMPTY_STATEMENT: TScriptUnit = [];
 
 /// LINE PRINTING MACHINE //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,6 +41,7 @@ class ScriptLiner {
   STM_STACK: TScriptUnit[];
   DBGTEXT: string;
   REFS: { bundles: TNameSet };
+  //
   constructor() {
     this.LINE_BUF = [];
     this.PAGE = [];
@@ -56,11 +56,9 @@ class ScriptLiner {
   }
   indent() {
     ++this.INDENT;
-    if (!WIP) this.BLOCK_FLAG = 'start';
   }
   outdent() {
     --this.INDENT;
-    if (!WIP) this.BLOCK_FLAG = 'end';
   }
   currentContext(): any {
     return {
@@ -85,18 +83,18 @@ class ScriptLiner {
   /** used to save the current statement array for the tokens being processed
    *  in it, so we can copy it into the PAGE array. Filters out blocks because
    *  are processed as different lines */
-  pushStatementLine(stm: TScriptUnit): void {
+  pushAbbreviated(stm: TScriptUnit): void {
     const copied_toks = stm.filter(tok => !tok.block);
     this.STM_STACK.push(copied_toks); // save statement on stack
-    // console.log(this.STM_STACK.length, JSON.stringify(this.peekStatementLine()));
+    // console.log(this.STM_STACK.length, JSON.stringify(this.peekAbbreviated()));
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** remove the saved statement, without { block } tokens */
-  popStatementLine(): TScriptUnit {
+  popAbbreviated(): TScriptUnit {
     return this.STM_STACK.pop(); // save statement on stack
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  peekStatementLine(): TScriptUnit {
+  peekAbbreviated(): TScriptUnit {
     return this.STM_STACK[this.STM_STACK.length - 1];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -125,6 +123,7 @@ class ScriptLiner {
       else this.DBGTEXT += `{${lineNum}:${linePos}} `;
     }
   }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   lineOut(): void {
     // Don't export zero buffer lines which happens when this.statementToLines
@@ -134,7 +133,7 @@ class ScriptLiner {
     if (this.LINE_BUF.length === 0 && !SHOW_EMPTY_STATEMENTS) return;
     // otherwise do the thing
     const { level, lineNum, globalRefs } = this.currentContext();
-    const lineScript = this.peekStatementLine();
+    const lineScript = this.popAbbreviated() || EMPTY_STATEMENT;
     const vmTokens = [...this.LINE_BUF];
 
     const line: VMPageLine = {
@@ -144,11 +143,12 @@ class ScriptLiner {
       level,
       lineNum
     };
-    console.log(
-      `${this.INDENT} %cwrote line`,
-      'color:blue',
-      StatementToText(lineScript)
-    );
+    if (DBG)
+      console.log(
+        `${this.INDENT} %cwrote line`,
+        'color:blue',
+        StatementToText(lineScript)
+      );
 
     // BLOCK_FLAG is set whenever a [[ or ]] is encountered
     // then cleared at the end of this
@@ -160,17 +160,18 @@ class ScriptLiner {
     const lso: VMLineScriptLine = { lineScript };
     if (this.BLOCK_FLAG) lso.marker = this.BLOCK_FLAG;
     this.LSMAP.push(lso);
-    console.log(
-      `${this.INDENT} %cwrote lso`,
-      'color:magenta',
-      StatementToText(lineScript)
-    );
+    if (DBG)
+      console.log(
+        `${this.INDENT} %cwrote lso`,
+        'color:magenta',
+        StatementToText(lineScript)
+      );
     this.BLOCK_FLAG = null; // always clear the flag
 
     // reset buffer and prepare for next line
     this.LINE_BUF = [];
     this.LINE_POS = SCRIPT_PAGE_INDEX_OFFSET;
-    if (!WIP) this.nextLine();
+    this.nextLine();
     if (DBG) this.DBGTEXT += '\n';
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -192,42 +193,47 @@ class ScriptLiner {
       if (DBG) console.log('Empty Statement', statement);
       return;
     }
-    this.pushStatementLine(statement); // set current statement context
+    this.pushAbbreviated(statement); // set current statement context
     statement.forEach((tok: IToken) => {
       // (1) if it's a block token then nested print
       if (Array.isArray(tok.block)) {
         if (DBG) this.DBGTEXT += 'BLOCK ';
-        if (WIP) this.BLOCK_FLAG = 'start';
-        console.log(
-          'LINEOUT %cBLOCK',
-          'color:red',
-          StatementToText(this.peekStatementLine())
-        );
+        this.BLOCK_FLAG = 'start';
+        if (DBG) {
+          const bflag = this.BLOCK_FLAG
+            ? `!!!!!!!! ${this.BLOCK_FLAG.toUpperCase()}`
+            : '';
+          console.log(
+            'LINEOUT %cBLOCK',
+            'color:red',
+            StatementToText(this.peekAbbreviated()),
+            bflag
+          );
+        }
         this.lineOut(); // flush line before processing the block
-        if (WIP) this.nextLine();
         // process statements in the block...
         this.indent();
-        if (!WIP) {
-          tok.block.forEach(bstm => this.statementToLines(bstm));
-        } else {
-          tok.block.forEach((bstm, index) => {
-            const terminal = index === tok.block.length - 1;
-            if (terminal) this.BLOCK_FLAG = 'end';
-            this.statementToLines(bstm);
-          });
-        }
+        tok.block.forEach((bstm, index) => {
+          const terminal = index === tok.block.length - 1;
+          if (terminal) this.BLOCK_FLAG = 'end';
+          if (DBG) console.group(`block level ${this.INDENT}`);
+          this.statementToLines(bstm);
+          console.groupEnd();
+        });
         this.outdent();
-        // ...done!
-        return;
+        if (this.INDENT > 0) this.BLOCK_FLAG = 'end';
       }
       // (3) "print" the token to the line buffer
-      console.log('.. tokout', StatementToText([tok]), tok);
+      if (DBG) console.log('.. tokout', StatementToText([tok]), tok);
       this.tokenOut(tok);
     });
-    console.log('LINEOUT', StatementToText(this.peekStatementLine()));
+    if (DBG) {
+      const bflag = this.BLOCK_FLAG
+        ? `!!!!!!!! ${this.BLOCK_FLAG.toUpperCase()}`
+        : '';
+      console.log('LINEOUT', StatementToText(this.peekAbbreviated()), bflag);
+    }
     this.lineOut(); // flush buffer after statement is printed, increment line
-    if (WIP) this.nextLine();
-    this.popStatementLine(); // remove current statement context
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Main Entry Point: Convert a tokenized script into a "page" of "lines" of
@@ -235,9 +241,9 @@ class ScriptLiner {
    */
   programToLines(program) {
     program.forEach((stm, ii) => {
-      console.group('line', ii, WIPR);
+      if (DBG) console.group('line', ii);
       this.statementToLines(stm);
-      console.groupEnd();
+      if (DBG) console.groupEnd();
     });
   }
 
@@ -293,7 +299,7 @@ function ScriptPageToEditableTokens(scriptPage: VMPageLine[]): VMLineScripts {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: given an array of VMLineScripts, reconstruct the script and return it */
-function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
+function EditableTokensToScriptOld(lineScripts: VMLineScripts): TScriptUnit[] {
   const fn = 'EditableTokensToScript:';
   if (!Array.isArray(lineScripts)) throw Error(`${fn} arg should be array`);
   const script_tokens = [];
@@ -319,7 +325,7 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
   return script_tokens;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function EditableTokensToScriptNew(lineScripts: VMLineScripts): TScriptUnit[] {
+function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
   const fn = 'EditableTokensToScript:';
   if (!Array.isArray(lineScripts)) throw Error(`${fn} arg should be array`);
   /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
@@ -331,45 +337,102 @@ function EditableTokensToScriptNew(lineScripts: VMLineScripts): TScriptUnit[] {
     ]]
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   let script_tokens = [];
-  let stm = []; // current statement array
-  let stm_stack = []; // previous statement array
+  let stm0 = []; // assemble partial statements on main level
+  let block_stack = [];
+  let current = script_tokens; // where to output statements
+
+  const js = JSON.stringify;
+
+  function dump(script: TScriptUnit[], opt = { ignoreMatch: false }) {
+    if (!opt.ignoreMatch && script === script_tokens) return ` = script_tokens`;
+    if (script.length === 0) return ' = new []';
+    let out: string = ' =\n';
+    script.forEach((s, ii) => {
+      out += `${String(ii).padStart(2, ' ')} ${js(s)}`;
+      if (ii < script.length - 1) out += '\n';
+    });
+    return out;
+  }
+  function dump_status(lineScript) {
+    console.log(`lineScript: ${js(lineScript)}`);
+    console.log(`%ccurrent${dump(current)}`, 'color:rgb(0,0,255)');
+    console.log(
+      `%cscript_tokens${dump(script_tokens, { ignoreMatch: true })}`,
+      'color:rgba(0,0,255,0.25)'
+    );
+    let stmout = js(stm0);
+    let css = 'color:rgba(255,80,0,1)';
+    if (stmout === '[]') css = 'color:rgba(255,128,0,0.5)';
+    console.log(`%cstm0 = ${stmout}`, css);
+  }
+
   let level = 0;
   lineScripts.forEach(lso => {
     const {
       lineScript, // IToken except there are no block tokens
       marker // marks start, end, or end-start of a block or adjacent blocks
     } = lso;
-    // we're going to start assembling the current statement
-    // if this lso starts a block...
-    // e.g { lineScript:[ {if},{expr} ], marker:'start' }
+
     if (marker === 'start') {
       level++;
-      const block = [];
-      stm.push(...lineScript);
-      stm.push({ block });
-      stm_stack.push(stm); // save current stm array
-      stm = block;
+      if (level === 1) {
+        const block = []; // new block [[ ],[ ]]
+        stm0 = [...lineScript, { block }];
+        current.push(stm0);
+        current = block;
+      }
+      if (level > 1) {
+        const block = []; // new block [[ ],[ ]]
+        current.push([...lineScript, { block }]);
+        block_stack.push(current); // save previous
+        current = block;
+      }
+      console.group(
+        `%clineScript START BLOCK level=${level}`,
+        'background-color:yellow'
+      );
+      dump_status(lineScript);
+      console.groupEnd();
       return;
     }
-    // end of a block means we are done shoving stuff
-    // into the current nested block, and we want to emit a
-    // statement into script_tokens
-    if (marker === 'end') {
-      stm.push(...lineScript);
-      if (--level === 0) script_tokens.push(...stm);
-      stm = stm_stack.pop();
-      return;
-    }
-    // hypothetical else support
+
     if (marker === 'end-start') {
+      console.log(
+        `%clineScript END/START BLOCKS level=${level}`,
+        'color:gray;background-color:yellow'
+      );
+      current.push(lineScript);
       const block = [];
-      stm = stm_stack.pop();
-      stm.push({ block });
-      stm = block;
+      current.push(block_stack);
+      current = block;
       return;
     }
-    stm.push(...lineScript);
-    script_tokens.push(stm);
+
+    if (marker === 'end') {
+      console.group(
+        `%clineScript END BLOCK level=${level}->${level - 1}`,
+        'background-color:yellow'
+      );
+      level--;
+      if (level < 0) console.warn('WHOOPS');
+      if (level > 0) {
+        if (lineScript.length) current.push(lineScript); // nested block
+        current = block_stack.pop(); // previos block
+      }
+      if (level === 0) {
+        if (lineScript.length) current.push(lineScript); // nested block
+        current = script_tokens; // main body
+        stm0 = [];
+      }
+      dump_status(lineScript);
+      console.groupEnd();
+      return;
+    }
+
+    if (lineScript.length) current.push(lineScript);
+    console.group(`lineScript level=${level}`);
+    dump_status(lineScript);
+    console.groupEnd();
   });
   return script_tokens;
 }

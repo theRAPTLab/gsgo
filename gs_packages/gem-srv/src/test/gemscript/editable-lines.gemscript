@@ -1,15 +1,20 @@
-# blueprint GuiWizardSlots
-# TAG isCharControllable false
-# PROGRAM DEFINE
-addProp energyType String 'producer'
-addProp energyLevel number 50
-addProp isAlive Boolean true
-addFeature Costume
-# PROGRAM INIT
+# blueprint TestEditables
+# program define
+addProp energyType number
 if {{ aa }} [[
-  prop energyLevel setTo 10
+  prop energyType setTo "AA"
   if {{ bb }} [[
-    prop energyLevel setTo 20
+    prop energyType setTo "L2 nested A"
+    prop energyType setTo "L2 nested B"
   ]]
+  prop energyType setTo "L1 ghost A"
+  prop energyType setTo "L1 ghost B"
 ]]
-prop energyType setTo 'dead'
+prop energyType setTo "L0 alive A"
+prop energyType setTo "L0 alive B"
+if {{ cc }} [[
+  prop energyType setTo "L1 disappear A"
+  prop energyType setTo "L1 disappear B"
+]]
+prop energyType setTo "L0 dead A"
+prop energyType setTo "L0 dead B"

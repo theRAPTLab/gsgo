@@ -88,35 +88,25 @@ function TestEditableTokens(lineNum: number = 0) {
 function TestScriptToEditableTokens(scriptText: string = '') {
   const fn = 'DemoLineScriptEditor:';
 
-  const script_tokens = TRANSPILER.TextToScript(scriptText);
-  const lsos = TRANSPILER.ScriptToEditableTokens(script_tokens);
-  const lineNum = 0;
-  function pad_num(ii) {
+  function pad_num(ii: number) {
     return String(ii).padStart(2, ' ');
   }
 
-  function filter_brackets(str) {
-    str = str.replace('[[', '');
-    str = str.replace(']]', '');
-    return str.trimEnd();
-  }
-  function dump_tokens(script) {
+  function dump_script(script: TScriptUnit[]) {
     let ii = 0;
     script.forEach(stm => {
       const stmText = TRANSPILER.StatementToText(stm);
       const lines = stmText.split(`\n`);
-      if (lines.length > 1) lines.pop();
       lines.forEach((line, jj) => {
-        line = filter_brackets(line);
         console.log(`${pad_num(ii + jj)} - ${line}`);
       });
       ii += lines.length;
     });
   }
 
-  function dump_editables(tokens) {
+  function dump_editables(lsoEditables: VMLineScriptLine[]) {
     let maxLen = 0;
-    const eds = lsos.map(lso => {
+    const eds = lsoEditables.map(lso => {
       let text = TRANSPILER.StatementToText(lso.lineScript);
       if (text.length > maxLen) maxLen = text.length;
       return { ...lso, text };
@@ -130,21 +120,49 @@ function TestScriptToEditableTokens(scriptText: string = '') {
       console.log(out);
     });
   }
+
   // reconstruct!
-  const nscript = TRANSPILER.EditableTokensToScript(lsos);
   console.log(...PR('RUNNING EDITABLE TOKEN TESTS'));
   //
-  console.group('Original Tokens (textified,filtered bracks)');
-  dump_tokens(script_tokens);
+  const script_tokens = TRANSPILER.TextToScript(scriptText);
+  console.groupCollapsed(
+    'Original Tokens (textified,filtered bracks)',
+    script_tokens
+  );
+  dump_script(script_tokens);
   console.groupEnd();
   //
-  console.group('Editable Tokens');
+  const lsos = TRANSPILER.ScriptToEditableTokens(script_tokens);
+  console.groupCollapsed('Editable Tokens', lsos);
   dump_editables(lsos);
   console.groupEnd();
   //
-  console.group('RepackedTokens (textified)');
-  dump_tokens(nscript);
+  const nscript = TRANSPILER.EditableTokensToScript(lsos);
+  const ntext = TRANSPILER.ScriptToText(nscript);
+  console.group('RepackedTokens (textified)', nscript);
+  dump_script(nscript);
   console.groupEnd();
+  if (ntext === scriptText) {
+    console.log(
+      '%cSCRIPT MATCHES! HOORAY',
+      'font-size:1.5em;color:green;background-color:rgba(80,192,40,0.25);padding:1em'
+    );
+  } else {
+    console.log(
+      '%cSCRIPT MATCH FAIL',
+      'font-size:1.5em;color:red;background-color:yellow;padding:1em'
+    );
+  }
+  console.log(
+    `%coriginal script\n%c${scriptText}`,
+    'font-weight:bold',
+    'color:blue'
+  );
+  console.log(
+    `%crepacked script\n%c${ntext}`,
+    'font-weight:bold',
+    'color:rgb(255,80,0)'
+  );
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
