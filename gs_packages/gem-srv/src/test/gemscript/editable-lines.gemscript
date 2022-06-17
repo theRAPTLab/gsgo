@@ -8,6 +8,11 @@ if {{ aa }} [[
   if {{ bb }} [[
     prop energyType setTo 'L2 nested A'
     prop energyType setTo 'L2 nested B'
+    if {{ cc }} [[
+      prop energyType setTo 'L1 disappear A'
+      prop energyType setTo 'L1 disappear B'
+    ]]
+    prop energyType setTo 'L2 nested C'
   ]]
   prop energyType setTo 'L1 ghost A'
   prop energyType setTo 'L1 ghost B'
@@ -15,11 +20,6 @@ if {{ aa }} [[
 
 prop energyType setTo 'L0 alive A'
 prop energyType setTo 'L0 alive B'
-
-if {{ cc }} [[
-  prop energyType setTo 'L1 disappear A'
-  prop energyType setTo 'L1 disappear B'
-]]
 
 prop energyType setTo 'L0 dead A'
 prop energyType setTo 'L0 dead B'

@@ -317,10 +317,7 @@ function TestScriptToEditableTokens(scriptText: string = '') {
     let A = text.substring(0, selection);
     let CH = text.substring(selection, selection + 1);
 
-    let B =
-      selection < text.length - 1
-        ? text.substring(selection + 1, text.length - 1)
-        : '';
+    let B = selection < text.length - 1 ? text.substring(selection + 1) : '';
     let CCCH = CH.charCodeAt(0);
     if (CCCH < 32)
       CH = `<charcode:${CH.charCodeAt(0)}>${String.fromCharCode(CCCH)}`;
