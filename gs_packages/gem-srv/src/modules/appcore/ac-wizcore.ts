@@ -720,15 +720,6 @@ function AddLine(position: VMLineScriptInsertionPosition) {
   const newLine: VMLineScriptLine = { lineScript: [{ line: '' }] };
   let newLineNum;
   if (position === 'before') {
-    // If the current token is a block start, then we need to make the
-    // inserted block a bock start.
-    const currTok = lsos[lineIdx];
-    if (currTok.block === 'start') {
-      // Make the new line a block start
-      newLine.block = 'start';
-      // And make the current line NOT a block start
-      delete currTok.block;
-    }
     newLineNum = sel_linenum;
     lsos.splice(lineIdx, 0, newLine);
   } else if (position === 'end') {
