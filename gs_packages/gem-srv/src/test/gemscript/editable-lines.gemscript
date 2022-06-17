@@ -1,20 +1,25 @@
 # blueprint TestEditables
 # program define
+
 addProp energyType number
+
 if {{ aa }} [[
-  prop energyType setTo "AA"
+  prop energyType setTo 'AA'
   if {{ bb }} [[
-    prop energyType setTo "L2 nested A"
-    prop energyType setTo "L2 nested B"
+    prop energyType setTo 'L2 nested A'
+    prop energyType setTo 'L2 nested B'
   ]]
-  prop energyType setTo "L1 ghost A"
-  prop energyType setTo "L1 ghost B"
+  prop energyType setTo 'L1 ghost A'
+  prop energyType setTo 'L1 ghost B'
 ]]
-prop energyType setTo "L0 alive A"
-prop energyType setTo "L0 alive B"
+
+prop energyType setTo 'L0 alive A'
+prop energyType setTo 'L0 alive B'
+
 if {{ cc }} [[
-  prop energyType setTo "L1 disappear A"
-  prop energyType setTo "L1 disappear B"
+  prop energyType setTo 'L1 disappear A'
+  prop energyType setTo 'L1 disappear B'
 ]]
-prop energyType setTo "L0 dead A"
-prop energyType setTo "L0 dead B"
+
+prop energyType setTo 'L0 dead A'
+prop energyType setTo 'L0 dead B'

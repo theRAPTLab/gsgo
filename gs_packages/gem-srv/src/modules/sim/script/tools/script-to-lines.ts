@@ -221,7 +221,7 @@ class ScriptLiner {
           console.groupEnd();
         });
         this.outdent();
-        if (this.INDENT > 0) this.BLOCK_FLAG = 'end';
+        if (this.INDENT > 1) this.BLOCK_FLAG = 'end';
       }
       // (3) "print" the token to the line buffer
       if (DBG) console.log('.. tokout', StatementToText([tok]), tok);
@@ -324,7 +324,10 @@ function EditableTokensToScriptOld(lineScripts: VMLineScripts): TScriptUnit[] {
   });
   return script_tokens;
 }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: replacement version of EditableTokensToScript repacker with improved
+ *  instrumentation */
 function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
   const fn = 'EditableTokensToScript:';
   if (!Array.isArray(lineScripts)) throw Error(`${fn} arg should be array`);

@@ -79,6 +79,7 @@ class DevCodeTester extends React.Component {
     this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
     // TEMPORARY TEST
     const script_text = TEST_SYMBOLS.GetTestScriptText();
+
     console.group(`%cBrokenEditableTokens`, 'font-size:3em');
     console.log(
       `%cThis algorithm creates an "unpacked lineScript list" that is indexed by line number, and each element can be freely modified then reconstructed. There is a bug in this algorithm`,
@@ -86,13 +87,14 @@ class DevCodeTester extends React.Component {
     );
     WIZUTIL.TestScriptToEditableTokens(script_text);
     console.groupEnd();
-    console.group(`%cPickyEditableText`, 'font-size:3em');
-    console.log(
-      `%cThis algorithm converts script tokens to lines of text and back again, so you can use array.splice() to make changes. However, editing a statement with a BLOCK token requires care otherwise you can break parthesis balance. Not ideal`,
-      'color:maroon'
-    );
-    WIZUTIL.TestEditableText(script_text);
-    console.groupEnd();
+
+    // console.group(`%cPickyEditableText`, 'font-size:3em');
+    // console.log(
+    //   `%cThis algorithm converts script tokens to lines of text and back again, so you can use array.splice() to make changes. However, editing a statement with a BLOCK token requires care otherwise you can break parthesis balance. Not ideal`,
+    //   'color:maroon'
+    // );
+    // WIZUTIL.TestEditableText(script_text);
+    // console.groupEnd();
   }
 
   render() {

@@ -280,48 +280,104 @@ function TestScriptToEditableTokens(scriptText: string = '') {
     });
   }
 
+  function mismatch_text(textA: string, textB: string) {
+    let a = textA.trim();
+    let b = textB.trim();
+    let alen = textA.length;
+    let blen = textB.length;
+    if (alen < blen) {
+      let temp: any = blen;
+      blen = alen;
+      alen = temp;
+      temp = b;
+      b = a;
+      b = temp;
+    }
+    for (let i = 0; i < alen; i++) {
+      if (i > blen - 1) return i;
+      let cha = a[i];
+      let chb = b[i];
+      if (cha !== chb) return i;
+    }
+    return undefined;
+  }
+
+  function highlight(text: string, options: any = {}) {
+    let { selection, color, title } = options;
+    color = color || 'black';
+    title = title || '';
+    if (typeof selection !== 'number') {
+      console.log(
+        `%c${title}\n%c${text}`,
+        'color:black;font-weight:bold',
+        `color:${color}`
+      );
+      return;
+    }
+    let A = text.substring(0, selection);
+    let CH = text.substring(selection, selection + 1);
+
+    let B =
+      selection < text.length - 1
+        ? text.substring(selection + 1, text.length - 1)
+        : '';
+    let CCCH = CH.charCodeAt(0);
+    if (CCCH < 32)
+      CH = `<charcode:${CH.charCodeAt(0)}>${String.fromCharCode(CCCH)}`;
+    console.log(
+      `%c${title}\n%c${A}%c${CH}%c${B}`,
+      'color:black;font-weight:bold',
+      `color:${color}`,
+      'background-color:rgba(255,0,0,0.5)',
+      `color:${color};background-color:none`
+    );
+    return;
+  }
   // reconstruct!
   console.log(...PR('RUNNING EDITABLE TOKEN TESTS'));
   //
   const script_tokens = TRANSPILER.TextToScript(scriptText);
-  console.groupCollapsed(
-    'Original Tokens (textified,filtered bracks)',
+  console.group(
+    '%cOriginal Tokens (textified,filtered bracks)',
+    'font-size:1.4em',
     script_tokens
   );
   dump_script(script_tokens);
   console.groupEnd();
   //
   const lsos = TRANSPILER.ScriptToEditableTokens(script_tokens);
-  console.groupCollapsed('Editable Tokens', lsos);
+  console.group('%cEditable Tokens', 'font-size:1.4em', lsos);
   dump_editables(lsos);
   console.groupEnd();
   //
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
-  const ntext = TRANSPILER.ScriptToText(nscript);
-  console.group('RepackedTokens (textified)', nscript);
+  const ntext = TRANSPILER.ScriptToText(nscript).trim();
+  console.group('%cRepackedTokens (textified)', 'font-size:1.4em', nscript);
   dump_script(nscript);
   console.groupEnd();
-  if (ntext === scriptText) {
+  let mismatch = mismatch_text(ntext, scriptText);
+  if (mismatch === undefined) {
     console.log(
       '%cSCRIPT MATCHES! HOORAY',
       'font-size:1.5em;color:green;background-color:rgba(80,192,40,0.25);padding:1em'
     );
   } else {
     console.log(
-      '%cSCRIPT MATCH FAIL',
+      `%cSCRIPT MATCH FAIL @ CHAR = ${mismatch}`,
       'font-size:1.5em;color:red;background-color:yellow;padding:1em'
     );
   }
-  console.log(
-    `%coriginal script\n%c${scriptText}`,
-    'font-weight:bold',
-    'color:blue'
-  );
-  console.log(
-    `%crepacked script\n%c${ntext}`,
-    'font-weight:bold',
-    'color:rgb(255,80,0)'
-  );
+  highlight(scriptText, {
+    selection: mismatch,
+    color: 'blue',
+    title: 'original script'
+  });
+
+  highlight(ntext, {
+    title: 'repacked script',
+    selection: mismatch,
+    color: 'darkorange'
+  });
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

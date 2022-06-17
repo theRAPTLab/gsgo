@@ -14,6 +14,7 @@ import GScriptTokenizer from 'script/tools/class-gscript-tokenizer-v2';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const gstDBG = new GScriptTokenizer();
+const CR = '\n'; // '\r\n' used by windows
 
 /// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,7 +65,7 @@ function ScriptToText(units: TScriptUnit[]): string {
     const lines = StatementToText(unit, indent);
     text.push(lines);
   });
-  return text.join('\n');
+  return text.join(CR);
 }
 
 /// SUPPORT API ///////////////////////////////////////////////////////////////
@@ -81,17 +82,16 @@ function TokenToString(tok: IToken, indent: number = 0) {
   if (identifier !== undefined) return identifier;
   // regular tokens
   if (value !== undefined) return value.toString();
-
-  if (string !== undefined) return `"${string}"`;
+  if (string !== undefined) return `'${string}'`;
   if (objref) return objref.join('.');
   if (comment !== undefined) return `// ${comment}`;
   if (block) {
     let lines = '';
     block.forEach((su, ii) => {
       lines += StatementToText(su, indent + 2);
-      if (ii < block.length) lines += '\n';
+      if (ii < block.length) lines += CR;
     });
-    return `[[\n${lines}${''.padStart(indent, ' ')}]]`;
+    return `[[${CR}${lines}${''.padStart(indent, ' ')}]]`;
   }
   if (expr === '') return '{{ ??? }}}'; // happens during live typing
   if (expr) return `{{ ${expr} }}`; // { expr = string }
