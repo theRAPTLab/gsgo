@@ -21,9 +21,10 @@ if {{ aa }} [[
   prop energyType setTo 'L1 ghost A'
   prop energyType setTo 'L1 ghost B'
 ]]
-
-prop energyType setTo 'L0 alive A'
-prop energyType setTo 'L0 alive B'
-
-prop energyType setTo 'L0 dead A'
-prop energyType setTo 'L0 dead B'
+if {{ dd }} [[
+  prop energyType setTo 'L0 alive A'
+  prop energyType setTo 'L0 alive B'
+]] [[
+  prop energyType setTo 'L0 dead A'
+  prop energyType setTo 'L0 dead B'
+]]

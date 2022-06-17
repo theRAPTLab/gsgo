@@ -18,7 +18,6 @@ const { StateMgr } = UR.class;
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('WIZCORE', 'TagCyan');
-const MUTATE = true;
 
 /// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -28,6 +27,9 @@ const MUTATE = true;
 const STORE = StateMgr.GetInstance('ScriptWizard');
 
 /// SCRIPT LINE EDITING STUFF ////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const MUTATE = false;
+const LNUM = 4;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** This test is called From DevCodeTester */
 function TestEditableTokens(scriptText: string = '') {
@@ -134,7 +136,6 @@ function TestEditableTokens(scriptText: string = '') {
   console.groupEnd();
   //
   if (MUTATE) {
-    const lineNum = 4;
     console.group('%cAPPLY MUTATIONS', 'font-size:1.4em');
     // demo modify the script_page tokens
     lsos.forEach(lso => {
@@ -145,21 +146,21 @@ function TestEditableTokens(scriptText: string = '') {
           tok.identifier = 'bananaType';
       });
     });
-    console.log(`inserting identifiers moooo0, cow, moooo in line ${lineNum}`);
+    console.log(`inserting identifiers moooo0, cow, moooo in line ${LNUM}`);
     // insert three identifiers at the start of provided lineNum (default 0)
-    lsos[lineNum].lineScript.splice(
+    lsos[LNUM].lineScript.splice(
       0,
       0,
       { identifier: 'moooooooo' },
       { identifier: 'cow' },
       { identifier: 'mooooooo' }
     );
-    console.log(`inserting new comment 'aaaa' at ${lineNum}`);
+    console.log(`inserting new comment 'aaaa' at ${LNUM}`);
     // insert a line before lineNum
-    lsos.splice(lineNum, 0, {
+    lsos.splice(LNUM, 0, {
       lineScript: [{ comment: 'inserted aaaa' }]
     });
-    console.log(`replacing line ${lineNum + 5} with comment 'nooo'`);
+    console.log(`replacing line ${LNUM + 5} with comment 'nooo'`);
     // replace line 10
     lsos.splice(10, 1, {
       lineScript: [{ comment: 'overwrote with nooo' }]

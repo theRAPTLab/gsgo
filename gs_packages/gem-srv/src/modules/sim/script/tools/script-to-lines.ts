@@ -218,16 +218,18 @@ class ScriptLiner {
       }
       // process statements in the block...
       this.indent();
-      this.BLOCK_FLAG = `start`;
+      const precedingBlock =
+        sindex - 1 >= 0 ? statement[sindex - 1].block : undefined;
+      if (!precedingBlock) this.BLOCK_FLAG = `start`;
       this.lineOut(); // flush line before processing the block
       tok.block.forEach((bstm, index) => {
         if (DBG) console.group(`block level ${this.INDENT}`);
         const terminal = index === tok.block.length - 1;
-        if (terminal) this.BLOCK_FLAG = `end`;
-        // the block_flag set here witll affect the LAST
-        // statement in the block that's being processed
-        // through the pushAbbreviated call at the top of
-        // statementToLines recursion (dizzying)
+        const followedByBlock =
+          sindex + 1 < statement.length ? statement[sindex + 1].block : undefined;
+        if (terminal) this.BLOCK_FLAG = followedByBlock ? `end-start` : `end`;
+
+        // block flag will affect recursive statement lineout
         this.statementToLines(bstm);
         console.groupEnd();
       });
@@ -348,6 +350,8 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
     console.log(`%cstm0 = ${stmout}`, css);
   }
 
+  // START CODE
+
   let level = 0;
   lineScripts.forEach(lso => {
     const {
@@ -369,7 +373,7 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
         block_stack.push(current); // save previous
         current = block;
       }
-      console.groupCollapsed(
+      console.group(
         `%clineScript START BLOCK level=${level}`,
         'background-color:yellow'
       );
@@ -378,20 +382,8 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
       return;
     }
 
-    if (marker === 'end-start') {
-      console.log(
-        `%clineScript END/START BLOCKS level=${level}`,
-        'color:gray;background-color:yellow'
-      );
-      current.push(lineScript);
-      const block = [];
-      current.push(block_stack);
-      current = block;
-      return;
-    }
-
     if (marker === 'end') {
-      console.groupCollapsed(
+      console.group(
         `%clineScript END BLOCK level=${level}->${level - 1}`,
         'background-color:yellow'
       );
@@ -411,8 +403,36 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
       return;
     }
 
+    if (marker === 'end-start') {
+      console.group(
+        `%clineScript END/START BLOCKS level=${level}`,
+        'color:gray;background-color:yellow'
+      );
+      level--;
+      if (level > 0) {
+        if (lineScript.length) current.push(lineScript); // nested block
+        current = block_stack.pop(); // previos block
+      }
+      if (level === 0) {
+        if (lineScript.length) current.push(lineScript); // nested block
+        current = script_tokens; // main body
+        // stm0 = []; // don't reset the statement
+      }
+      level++;
+      const block = []; // new block [[ ],[ ]]
+      stm0.push({ block });
+      if (level === 1) current = block;
+      if (level > 1) {
+        block_stack.push(current); // save previous
+        current = block;
+      }
+      dump_status(lineScript);
+      console.groupEnd();
+      return;
+    }
+
     if (lineScript.length) current.push(lineScript);
-    console.groupCollapsed(`lineScript level=${level}`);
+    console.group(`lineScript level=${level}`);
     dump_status(lineScript);
     console.groupEnd();
   });
