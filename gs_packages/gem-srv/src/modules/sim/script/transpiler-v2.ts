@@ -44,7 +44,7 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
   if (bdl.type === EBundleType.INIT) {
     return undefined;
   }
-  if (bdl.define && bdl.type === EBundleType.BLUEPRINT) {
+  if (bdl.DEFINE && bdl.type === EBundleType.BLUEPRINT) {
     if (DBG) console.group(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
     // First deregister the blueprint if it exists
     // RemoveGlobalCondition(bdl.name); // deprecatd in script-xp
