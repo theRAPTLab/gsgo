@@ -18,22 +18,19 @@ import * as SIMDATA from 'modules/datacore/dc-sim-data';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** the _pragma directives (e.g. #BUNDLE bundletype) return SMCPrograms that
  *  are run IMMEDIATELY after the _pragma is invoked, using a dummy agent
- *  and state object inside CompileRawUnit() of Transpiler
- */
-const PRAGMA = {
-  'BLUEPRINT': (name, parent) => {
-    BUNDLER.SetBundleName(name, parent);
-    return [];
-  },
-  'PROGRAM': libName => {
-    BUNDLER.SetProgramOut(libName);
-    return [];
-  },
-  'TAG': (tagName, value) => {
-    BUNDLER.SetBundleTag(tagName, value);
-    return [];
-  }
-};
+ *  and state object inside CompileRawUnit() of Transpiler */
+SIMDATA.DefinePragma('BLUEPRINT', (name, parent) => {
+  BUNDLER.SetBundleName(name, parent);
+  return [];
+});
+SIMDATA.DefinePragma('PROGRAM', libName => {
+  BUNDLER.SetProgramOut(libName);
+  return [];
+});
+SIMDATA.DefinePragma('TAG', (tagName, value) => {
+  BUNDLER.SetBundleTag(tagName, value);
+  return [];
+});
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,7 +50,7 @@ export class _pragma extends Keyword {
 
     // get a valid pragma
     const [, pragmaName, ...args] = params;
-    const processor = PRAGMA[(pragmaName as string).toUpperCase()];
+    const processor = SIMDATA.GetPragma((pragmaName as string).toUpperCase());
     if (processor === undefined) {
       BUNDLER.LogKeywordError(this.keyword, params);
       return [];
@@ -63,6 +60,16 @@ export class _pragma extends Keyword {
 
     if (out.length > 0) return out; // pragma returns a program
     return []; // return null program otherwise
+  }
+
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    const vtoks = []; // validation token array
+    const [kwTok, dirTok, ...argToks] = unit; // get arg pattern
+    vtoks.push(this.shelper.anyKeyword(kwTok));
+    vtoks.push(this.shelper.pragma(dirTok));
+    vtoks.push(...this.shelper.argsList(argToks));
+    const log = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: log };
   }
 } // end of keyword definition
 

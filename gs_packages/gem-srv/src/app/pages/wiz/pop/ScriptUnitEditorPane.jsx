@@ -1,5 +1,3 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   ScriptUnitEditor is the edit box that appears when there is a valid selection
@@ -21,8 +19,7 @@ import { sScriptUnitEditor } from '../SharedElements';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Returns a token editing box based on the currently selected token
  *  as defined in WIZCORE. The ScriptUnitEditor appears when a token is clicked, and
- *  is used by DevWizard.
- */
+ *  is used by DevWizard. */
 export function ScriptUnitEditor(/* props */) {
   let content = null;
   const sel = WIZCORE.SelectedTokenInfo();

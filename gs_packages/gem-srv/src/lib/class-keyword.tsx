@@ -117,7 +117,7 @@ class Keyword implements IKeyword {
 
     // (1) first token is keyword
     tok = unit[0];
-    vtoks.push(this.shelper.allKeywords(tok));
+    vtoks.push(this.shelper.anyKeyword(tok));
 
     // (2) loop through keyword argument signature in this.args
     let tokIndex = 1; // start dtok[1] after keyword
@@ -144,7 +144,7 @@ class Keyword implements IKeyword {
       for (tokIndex; tokIndex < unit.length; tokIndex++) {
         tok = unit[tokIndex];
         const tokInfo = UnpackToken(tok).join(':');
-        vtoks.push(this.newSymbolError('extra', `unexpected token {${tokInfo}}`));
+        vtoks.push(this.invalidToken('extra', `unexpected token {${tokInfo}}`));
       }
     }
 
@@ -169,7 +169,7 @@ class Keyword implements IKeyword {
 
     // error checking
     if (argType === undefined)
-      vtok = this.newSymbolError('invalid', `bad arg def ${arg}`);
+      vtok = this.invalidToken('invalid', `bad arg def ${arg}`);
     // handle argType conversion
     switch (argType) {
       case 'objref': // value is string[] of parts
@@ -184,10 +184,7 @@ class Keyword implements IKeyword {
         break;
       // TODO: handle other argTypes
       case 'prop': // a prop reference
-        vtok = this.newSymbolError(
-          'debug',
-          "'prop' typehandler should be objref?"
-        );
+        vtok = this.invalidToken('debug', "'prop' typehandler should be objref?");
         break;
       case 'blueprint': // a blueprint name
       case 'number': // value is
@@ -195,7 +192,7 @@ class Keyword implements IKeyword {
       case 'boolean': // value is
       case 'pragma': // a directive
       default:
-        vtok = this.newSymbolError(
+        vtok = this.invalidToken(
           'debug',
           `'${argType}' typehandler not implemented`
         );
@@ -244,14 +241,18 @@ class Keyword implements IKeyword {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** utility to create a TSymbolData object with errors, with option to
-   *  add valid symbols
-   */
-  newSymbolError(code: TValidationErrorCodes, info, symbols?) {
+   *  add valid symbols */
+  invalidToken(code: TValidationErrorCodes, info: string, symbols?: TSymbolData) {
     return new VSDToken(symbols, {
       gsType: '{?}',
       err_code: code,
       err_info: info
     });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** utility to create a TSymbolData object for valid tokens */
+  validToken(symbols: TSymbolData, gsType: TGSType, unitText: string) {
+    return new VSDToken(symbols, { gsType, unitText });
   }
 
   /// JSX UTILITIES ///////////////////////////////////////////////////////////

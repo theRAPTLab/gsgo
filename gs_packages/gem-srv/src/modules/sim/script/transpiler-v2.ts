@@ -147,6 +147,7 @@ export {
 /// FORWARDED API: convert text to tokenized scripts
 export {
   TextToScript, // text w/ newlines => TScriptUnit[]
+  StringToLineScript, // single-line string => TScriptUnit
   ScriptToText, // TScriptUnit[] => produce source text from units
   TokenToString, // for converting a token to its text representation
   StatementToText // convert scriptUnit[] to text

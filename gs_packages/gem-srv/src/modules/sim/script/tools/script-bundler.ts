@@ -8,8 +8,8 @@ import UR from '@gemstep/ursys/client';
 import SM_Bundle from 'lib/class-sm-bundle';
 // workaround to import enumeration types as objects requires dirpath hack
 import { EBundleType, EBundleTag } from 'modules/../types/t-script.d';
-import * as CHECK from '../../../datacore/dc-sim-data-utils';
-import * as SIMDATA from '../../../datacore/dc-sim-data';
+import * as CHECK from 'modules/datacore/dc-sim-data-utils';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -71,11 +71,7 @@ function ClearBundlerState() {
 /// to maintain compatibility
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Sets the "working bundle" from either a provided bundle or bpName
- *  that is an index into the SIMDATA Bundle Dictionary
- *  @param {(string|SM_Bundle)} bp - blueprintName or bundle to use for
- *  subsequent bundle operations
- *  @returns SM_Bundle
- */
+ *  that is an index into the SIMDATA Bundle Dictionary */
 function OpenBundle(bp: string | SM_Bundle): SM_Bundle {
   const fn = 'BeginBundle:';
   m_CheckNoOpenBundle(fn);
@@ -87,9 +83,7 @@ function OpenBundle(bp: string | SM_Bundle): SM_Bundle {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: close the bundle, which unsets the CUR_BUNDLE and disables
- *  the bundle state methods that rely on current bundle.
- *  @returns the bundle that was originally "opened" with OpenBundle()
- */
+ *  the bundle state methods that rely on current bundle. */
 function CloseBundle(): SM_Bundle {
   const fn = 'EndBundle:';
   const bdl = m_HasCurrentBundle(fn);
@@ -101,13 +95,12 @@ function CloseBundle(): SM_Bundle {
 /// BUNDLE OPERATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: set the datacore global var CUR_PROGRAM to bdlKey, which tells the
- *  AddProgram(bdl,prog) call where the program should be added
- */
+ *  AddProgram(bdl,prog) call where the program should be added */
 function SetProgramOut(str: string): boolean {
   const fn = 'SetProgramOut:';
   if (DBG) console.log(...PR(`${fn} setting bundleType ${str}`));
   m_HasCurrentBundle(fn);
-  const bdlKey = str.toLowerCase();
+  const bdlKey = str.toUpperCase();
   if (CHECK.IsValidBundleProgram(bdlKey)) {
     CUR_PROGRAM = bdlKey;
     return true;
@@ -121,8 +114,7 @@ function SetProgramOut(str: string): boolean {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: set the datacore global var CUR_NAME to to bpName, which tells the
  *  AddProgram(bdl,prog) call where the program should be added. Used by
- *  Transpiler.
- */
+ *  Transpiler */
 function SetBundleName(bpName: string, bpParent?: string): boolean {
   const fn = 'SetBundleName:';
   const bdl = m_HasCurrentBundle(fn);

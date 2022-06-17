@@ -15,7 +15,7 @@ declare global {
     vmTokens: VMToken[]; // the VMTokens in this VMLine (see below)
     lineNum: number; // the line number
     level: number; // the nesting level of this line
-    block?: VMLineScriptType; // set if this line starts or ends a block
+    marker?: VMLineScriptType; // set if this line starts or ends a block
     lineScript?: TScriptUnit; // editable line script
     globalRefs?: { bundles?: TNameSet }; // set of globals to look-up (currently just blueprints)
     domRef?: { current: any }; // React DOM reference in current
@@ -44,10 +44,10 @@ declare global {
   /** used by VMLineScriptSource in recreating. flattened linescript block data  */
   type VMLineScriptLine = {
     lineScript: TScriptUnit; // master source of lineScript in VMPageLine
-    block?: VMLineScriptType;
+    marker?: VMLineScriptType;
   };
   type VMLineScripts = VMLineScriptLine[];
-  type VMLineScriptType = 'start' | 'end';
+  type VMLineScriptType = 'start' | 'end' | 'end-start';
   type VMLineScriptInsertionPosition = 'before' | 'after' | 'end';
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** returned by Validation Token Processor */
