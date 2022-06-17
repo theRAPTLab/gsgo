@@ -1,19 +1,21 @@
 # blueprint TestEditables
 # program define
-
 addProp energyType number
-
+# program init
+prop energyType setTo 'BB'
 if {{ aa }} [[
   prop energyType setTo 'AA'
   if {{ bb }} [[
     prop energyType setTo 'L2 nested A'
     prop energyType setTo 'L2 nested B'
-    if {{ cc }} [[
-      prop energyType setTo 'L1 disappear A'
-      prop energyType setTo 'L1 disappear B'
-    ]]
     prop energyType setTo 'L2 nested C'
   ]]
+  prop energyType setTo 'INTERMISSION'
+  if {{ cc }} [[
+    prop energyType setTo 'L1 disappear A'
+    prop energyType setTo 'L1 disappear B'
+  ]]
+
   prop energyType setTo 'L1 ghost A'
   prop energyType setTo 'L1 ghost B'
 ]]

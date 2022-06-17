@@ -193,54 +193,54 @@ class ScriptLiner {
       if (DBG) console.log('Empty Statement', statement);
       return;
     }
+
     this.pushAbbreviated(statement); // set current statement context
+    //
     statement.forEach((tok: IToken, sindex: number) => {
-      // (1) if it's a block token then nested print
-      if (Array.isArray(tok.block)) {
-        if (DBG) this.DBGTEXT += 'BLOCK ';
-        this.BLOCK_FLAG = 'start';
-        if (DBG) {
-          const bflag = this.BLOCK_FLAG
-            ? `!!!!!!!! ${this.BLOCK_FLAG.toUpperCase()}`
-            : '';
-          console.log(
-            'LINEOUT %cBLOCK',
-            'color:red',
-            StatementToText(this.peekAbbreviated()),
-            bflag
-          );
-        }
-        this.lineOut(); // flush line before processing the block
-        // process statements in the block...
-        this.indent();
-        tok.block.forEach((bstm, index) => {
-          if (DBG) console.group(`block level ${this.INDENT}`);
-          const terminal = index === tok.block.length - 1;
-          if (terminal) this.BLOCK_FLAG = 'end';
-          // the block_flag set here witll affect the LAST
-          // statement in the block that's being processed
-          // through the pushAbbreviated call at the top of
-          // statementToLines recursion (dizzying)
-          this.statementToLines(bstm);
-          console.groupEnd();
-        });
-        this.outdent();
-        // if this is a terminal block token inside the statement
-        // we are processing, we also have to close the
-        // the block if it's been nested...?
-        if (this.INDENT > 1) this.BLOCK_FLAG = 'end';
+      // is this a regular token? just output it
+      if (!Array.isArray(tok.block)) {
+        if (DBG) console.log('.. tokout', StatementToText([tok]), tok);
+        this.tokenOut(tok);
+        return;
       }
-      // (3) "print" the token to the line buffer
-      if (DBG) console.log('.. tokout', StatementToText([tok]), tok);
-      this.tokenOut(tok);
+      // otherwise this is a block token and we have to recursively process it
+      if (DBG) this.DBGTEXT += 'BLOCK ';
+      if (DBG) {
+        const bflag = this.BLOCK_FLAG
+          ? `!!!!!!!! ${this.BLOCK_FLAG.toUpperCase()}`
+          : '';
+        console.log(
+          'LINEOUT %cBLOCK',
+          'color:red',
+          StatementToText(this.peekAbbreviated()),
+          bflag
+        );
+      }
+      // process statements in the block...
+      this.indent();
+      this.BLOCK_FLAG = `start`;
+      this.lineOut(); // flush line before processing the block
+      tok.block.forEach((bstm, index) => {
+        if (DBG) console.group(`block level ${this.INDENT}`);
+        const terminal = index === tok.block.length - 1;
+        if (terminal) this.BLOCK_FLAG = `end`;
+        // the block_flag set here witll affect the LAST
+        // statement in the block that's being processed
+        // through the pushAbbreviated call at the top of
+        // statementToLines recursion (dizzying)
+        this.statementToLines(bstm);
+        console.groupEnd();
+      });
+      this.outdent();
     });
+    // finished statement processing, so now output the line
+    this.lineOut(); // flush buffer after statement is printed, increment line
     if (DBG) {
       const bflag = this.BLOCK_FLAG
         ? `!!!!!!!! ${this.BLOCK_FLAG.toUpperCase()}`
         : '';
       console.log('LINEOUT', StatementToText(this.peekAbbreviated()), bflag);
     }
-    this.lineOut(); // flush buffer after statement is printed, increment line
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Main Entry Point: Convert a tokenized script into a "page" of "lines" of

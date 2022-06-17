@@ -186,65 +186,8 @@ function TestEditableText(scriptText) {
 
 /// SCRIPT LINE EDITING STUFF ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** retrieve the linescript */
-function TestEditableTokens(lineNum: number = 0) {
-  const fn = 'TestEditableTokens:';
-
-  // two ways to get the editable scripts:
-  const { script_tokens, script_page } = STORE.State();
-  const lsosFromScriptTokens = TRANSPILER.ScriptToEditableTokens(script_tokens);
-  const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
-
-  // show original
-  const scriptText = TRANSPILER.ScriptToText(script_tokens);
-  console.group('Original ScriptText');
-  console.log(scriptText);
-  console.groupEnd();
-
-  if (MUTATE) {
-    // demo modify the script_page tokens
-    lsos.forEach(lso => {
-      // replace all energyLevel with BANANACAKE
-      lso.lineScript.forEach(tok => {
-        if (tok.identifier && tok.identifier === 'energyLevel')
-          tok.identifier = 'BANANACAKE';
-      });
-    });
-    // insert three identifiers at the start of provided lineNum (default 0)
-    lsos[lineNum].lineScript.splice(
-      0,
-      0,
-      { identifier: 'moooooooo' },
-      { identifier: 'cow' },
-      { identifier: 'mooooooo' }
-    );
-    // insert a line before lineNum
-    lsos.splice(lineNum, 0, {
-      lineScript: [{ comment: 'AAAAAAAAAAAAAAAAAA' }]
-    });
-    // replace line 10
-    lsos.splice(10, 1, {
-      lineScript: [{ comment: 'NOOOOOOOOOO' }]
-    });
-  }
-  // reconstruct!
-  const nscript = TRANSPILER.EditableTokensToScript(lsos);
-  console.group('Editable Tokens');
-  console.log(lsos);
-  console.groupEnd();
-  console.group('RepackedTokens');
-  console.log(TRANSPILER.EditableTokensToScript(lsos));
-  console.groupEnd();
-  console.group('Reconstructed ScriptText');
-  console.log(TRANSPILER.ScriptToText(nscript));
-  console.groupEnd();
-
-  // if you want to update script_page, sendState!!!
-  // STORE.SendState({ script_tokens: nscript });
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** This test is called From DevCodeTester */
-function TestScriptToEditableTokens(scriptText: string = '') {
+function TestEditableTokens(scriptText: string = '') {
   const fn = 'TestScriptToEditableTokens:';
 
   function pad_num(ii: number) {
@@ -381,17 +324,10 @@ function TestScriptToEditableTokens(scriptText: string = '') {
 /** force import */
 function ForceImportHack() {}
 
-/// DEBUG DEMO ////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.AddConsoleTool('test_editable', num => {
-  TestEditableTokens(num);
-});
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
   TestEditableTokens, // test interface
-  TestScriptToEditableTokens, // test interface
   ForceImportHack
 };
 // brute force text API

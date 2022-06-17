@@ -85,7 +85,7 @@ class DevCodeTester extends React.Component {
       `%cThis algorithm creates an "unpacked lineScript list" that is indexed by line number, and each element can be freely modified then reconstructed. There is a bug in this algorithm`,
       'color:maroon'
     );
-    WIZUTIL.TestScriptToEditableTokens(script_text);
+    WIZUTIL.TestEditableTokens(script_text);
     console.groupEnd();
 
     // console.group(`%cPickyEditableText`, 'font-size:3em');
