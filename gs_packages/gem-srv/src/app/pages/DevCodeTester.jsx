@@ -22,7 +22,7 @@ import { VER_DEV_CODETEST } from 'config/dev-settings';
 // import 'test/unit-keywords'; // test individual keywords
 // import 'test/unit-compiler'; // test compiler
 // import 'test/unit-script-runtime'; // test runtime keyword functions
-import * as TEST_SYMBOLS from 'test/x-symbol-tests';
+import * as BLUEPRINT_TEST from 'test/test-blueprint';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
 
 // style objects
@@ -44,7 +44,7 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
     `%cUsing TEST_SCRIPT because ENABLE_SYMBOL_TEST_BLUEPRINT is true...`,
     'background-color:rgba(255,255,0,0.15);color:red;padding:1em 2em'
   );
-  // TEST_SYMBOLS.TestValidate();
+  // BLUEPRINT_TEST.TestValidate();
 });
 
 /// ROOT APPLICATION COMPONENT ////////////////////////////////////////////////
@@ -68,7 +68,7 @@ class DevCodeTester extends React.Component {
     this.term = terminal;
     this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
     // TEMPORARY TEST
-    const script_text = TEST_SYMBOLS.GetTestScriptText();
+    const script_text = BLUEPRINT_TEST.GetTestScriptText();
 
     console.group(`%cBrokenEditableTokens`, 'font-size:3em');
     console.log(
@@ -109,7 +109,7 @@ class DevCodeTester extends React.Component {
           <pre>
             <code>
               {`// TEST IMPORTS
-import * as TEST_SYMBOLS from 'test/x-symbol-tests';
+import * as BLUEPRINT_TEST from 'test/test-blueprint';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';`}
             </code>
           </pre>
