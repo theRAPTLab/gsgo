@@ -47,6 +47,17 @@ class TimerPack extends SM_Feature {
   decorate(agent) {
     super.decorate(agent);
   }
+
+  /// TIMER METHODS ///////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  setRoundTimer(agent: IAgent) {
+    console.error('setRoundTimer not implemented yet.');
+  }
+  stopRound(agent: IAgent) {
+    UR.RaiseMessage('NET:HACK_SIM_STOP');
+  }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   symbolize(): TSymbolData {
     return {
@@ -56,15 +67,6 @@ class TimerPack extends SM_Feature {
         stopRound: {}
       }
     };
-  }
-  /// TIMER METHODS ///////////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ///
-  setRoundTimer(agent: IAgent) {
-    console.error('setRoundTimer not implemented yet.');
-  }
-  stopRound(agent: IAgent) {
-    UR.RaiseMessage('NET:HACK_SIM_STOP');
   }
 }
 

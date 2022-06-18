@@ -185,20 +185,9 @@ class TouchPack extends SM_Feature {
   decorate(agent) {
     super.decorate(agent);
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  symbolize(): TSymbolData {
-    return {
-      props: {},
-      methods: {
-        monitor: { args: ['targetBlueprintName:string', 'touchTypes:{...}'] },
-        getTouchingAgent: { args: ['touchType:string'] },
-        clearTouches: { args: ['targetId:string'] }
-      }
-    };
-  }
+
   /// VISION METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ///
   monitor(agent: IAgent, targetBlueprintName: string, ...touchTypes: string[]) {
     // make sure agent has the Physics feature
     if (!agent.hasFeature('Physics'))
@@ -232,6 +221,19 @@ class TouchPack extends SM_Feature {
       if (a.lastTouched) a.lastTouched.delete(targetId);
       if (a.isTouching) a.isTouching.delete(targetId);
     });
+  }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {},
+      methods: {
+        monitor: { args: ['targetBlueprintName:string', 'touchTypes:{...}'] },
+        getTouchingAgent: { args: ['touchType:string'] },
+        clearTouches: { args: ['targetId:string'] }
+      }
+    };
   }
 }
 

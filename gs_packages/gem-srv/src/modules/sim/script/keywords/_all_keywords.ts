@@ -50,6 +50,7 @@ export * from './randomPos'; // randomizes position
 
 // debug keywords (very slow performance)
 export * from './dbgOut';
+export * from './dbgTick';
 export * from './dbgStack';
 export * from './dbgContext';
 export * from './dbgError';

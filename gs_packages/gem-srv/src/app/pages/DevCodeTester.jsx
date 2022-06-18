@@ -13,6 +13,7 @@ import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
+import { VER_DEV_CODETEST } from 'config/dev-settings';
 
 /// RUN UNIT TESTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -21,11 +22,12 @@ import { FitAddon } from 'xterm-addon-fit';
 // import 'test/unit-keywords'; // test individual keywords
 // import 'test/unit-compiler'; // test compiler
 // import 'test/unit-script-runtime'; // test runtime keyword functions
-import * as TEST_SYMBOLS from 'test/x-symbol-tests';
+import * as BLUEPRINT_TEST from 'test/test-blueprint';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
 
 // style objects
 import { sGrid, sHead, sLeft, sRight, sFoot } from './wiz/SharedElements';
+import { DevHeader } from './components/DevElements';
 // css
 import 'lib/vendor/pico.min.css';
 import 'lib/vendor/xterm.css';
@@ -42,20 +44,8 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
     `%cUsing TEST_SCRIPT because ENABLE_SYMBOL_TEST_BLUEPRINT is true...`,
     'background-color:rgba(255,255,0,0.15);color:red;padding:1em 2em'
   );
-  // TEST_SYMBOLS.TestValidate();
+  // BLUEPRINT_TEST.TestValidate();
 });
-
-/// LOCAL COMPONENTS //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** duplicate the old style from material-ui home.jsx */
-function DevHeader(props) {
-  const { label } = props;
-  return (
-    <header style={sHead}>
-      <span style={{ fontSize: '32px' }}>{label}</span> {UR.ConnectionString()}
-    </header>
-  );
-}
 
 /// ROOT APPLICATION COMPONENT ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -67,7 +57,7 @@ class DevCodeTester extends React.Component {
 
   componentDidMount() {
     if (DBG) console.log(...PR('root component mounted'));
-    document.title = 'DEV TESTS';
+    document.title = `DEVCODETEST V.${VER_DEV_CODETEST}`;
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     const terminal = new Terminal();
@@ -78,7 +68,7 @@ class DevCodeTester extends React.Component {
     this.term = terminal;
     this.term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m\n\r');
     // TEMPORARY TEST
-    const script_text = TEST_SYMBOLS.GetTestScriptText();
+    const script_text = BLUEPRINT_TEST.GetTestScriptText();
 
     console.group(`%cBrokenEditableTokens`, 'font-size:3em');
     console.log(
@@ -101,7 +91,7 @@ class DevCodeTester extends React.Component {
     const styles = { ...sGrid, gridTemplateColumns: '25% 75%' };
     return (
       <div id="code-tester" style={styles}>
-        <DevHeader label="DEV/CODE TEST" />
+        <DevHeader label="DEV/CODETEST" version={VER_DEV_CODETEST} />
         <div style={{ padding: '1em' }}>
           <p style={{ fontSize: '2em' }}>
             <strong>Sri&#39;s Janky Unit Tester</strong>
@@ -119,7 +109,7 @@ class DevCodeTester extends React.Component {
           <pre>
             <code>
               {`// TEST IMPORTS
-import * as TEST_SYMBOLS from 'test/x-symbol-tests';
+import * as BLUEPRINT_TEST from 'test/test-blueprint';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';`}
             </code>
           </pre>

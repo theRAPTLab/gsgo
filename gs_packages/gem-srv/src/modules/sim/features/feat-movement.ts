@@ -276,7 +276,7 @@ function moveWander(agent: IAgent) {
   // but really change direction once in a while
   const distance = agent.prop.Movement.distance.value;
   let direction = agent.prop.Movement.direction.value;
-  if (m_random() > 0.98) {
+  if (m_random() > 0.98 && agent.prop.Movement.doRandomOnWander.value) {
     direction += m_random(-90, 90);
     agent.prop.Movement.direction.value = direction;
   }
@@ -642,6 +642,7 @@ class MovementPack extends SM_Feature {
     this.featAddProp(agent, 'compassDirection', new SM_String()); // readonly
     this.featAddProp(agent, 'distance', new SM_Number(0.5));
     this.featAddProp(agent, 'bounceAngle', new SM_Number(180));
+    this.featAddProp(agent, 'doRandomOnWander', new SM_Boolean(true));
     this.featAddProp(agent, 'isMoving', new SM_Boolean());
     this.featAddProp(agent, 'useAutoOrientation', new SM_Boolean(false));
     this.featAddProp(agent, 'targetX', new SM_Number(0)); // so that we can set a location in pieces and go to it
@@ -663,40 +664,6 @@ class MovementPack extends SM_Feature {
     // agent.prop.Movement._targetId // id of seek target
     // agent.prop.Movement._targetAngle // cached value so input agents can keep turning between updates
     // agent.prop.Movement._jitterRotate
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  symbolize(): TSymbolData {
-    return {
-      props: {
-        movementType: SM_Number.Symbols,
-        controller: SM_String.Symbols,
-        direction: SM_Number.Symbols,
-        compassDirection: SM_Boolean.Symbols,
-        distance: SM_Boolean.Symbols,
-        bounceAngle: SM_Number.Symbols,
-        isMoving: SM_Number.Symbols,
-        useAutoOrientation: SM_Number.Symbols,
-        targetX: SM_Number.Symbols,
-        targetY: SM_Number.Symbols
-      },
-      methods: {
-        setController: { args: ['x:number'] },
-        queuePosition: { args: ['x:number', 'y:number'] },
-        setMovementType: { args: ['type:string', 'params:{...}'] },
-        setRandomDirection: {},
-        setRandomPosition: {},
-        setRandomPositionX: {},
-        setRandomPositionY: {},
-        setRandomStart: {},
-        setRandomStartPosition: { args: ['width:number', 'height:number'] },
-        jitterPos: { args: ['min:number', 'max:number', 'round:boolean'] },
-        jitterRotate: {},
-        seekNearest: { args: ['targetType:string'] },
-        seekNearestVisibleCone: { args: ['targetType:string'] },
-        seekNearestVisibleColor: { args: ['targetType:string'] },
-        wanderUntilInside: { args: ['targetType:string'] }
-      }
-    };
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   handleInput() {
@@ -839,6 +806,42 @@ class MovementPack extends SM_Feature {
   wanderUntilInside(agent: IAgent, targetType: string) {
     INSIDE_AGENTS.set(agent.id, { targetType });
     this.setMovementType(agent, 'wanderUntilAgent');
+  }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {
+        movementType: SM_Number.Symbols,
+        controller: SM_String.Symbols,
+        direction: SM_Number.Symbols,
+        compassDirection: SM_Boolean.Symbols,
+        distance: SM_Boolean.Symbols,
+        bounceAngle: SM_Number.Symbols,
+        isMoving: SM_Number.Symbols,
+        useAutoOrientation: SM_Number.Symbols,
+        targetX: SM_Number.Symbols,
+        targetY: SM_Number.Symbols
+      },
+      methods: {
+        setController: { args: ['x:number'] },
+        queuePosition: { args: ['x:number', 'y:number'] },
+        setMovementType: { args: ['type:string', 'params:{...}'] },
+        setRandomDirection: {},
+        setRandomPosition: {},
+        setRandomPositionX: {},
+        setRandomPositionY: {},
+        setRandomStart: {},
+        setRandomStartPosition: { args: ['width:number', 'height:number'] },
+        jitterPos: { args: ['min:number', 'max:number', 'round:boolean'] },
+        jitterRotate: {},
+        seekNearest: { args: ['targetType:string'] },
+        seekNearestVisibleCone: { args: ['targetType:string'] },
+        seekNearestVisibleColor: { args: ['targetType:string'] },
+        wanderUntilInside: { args: ['targetType:string'] }
+      }
+    };
   }
 } // end of feature class
 

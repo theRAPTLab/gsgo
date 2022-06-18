@@ -25,16 +25,13 @@ import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
-import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
-import * as TEST_SYMBOLS from 'test/x-symbol-tests';
-import { ENABLE_SYMBOL_TEST_BLUEPRINT } from 'config/dev-settings';
+import * as WIZHOOK from 'modules/appcore/ac-wizcore-hooks';
 import {
   DecodeSymbolViewData,
   UnpackViewData,
   UnpackSymbolType
 } from 'script/tools/symbol-utilities';
-import { ASSETDIR, DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 import { GetTextBuffer } from 'lib/class-textbuffer';
 
 // load state
@@ -58,6 +55,9 @@ function m_ChildOf(child, parent) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// First create the new instance, and extract the methods we plan to use
 const STORE = new StateMgr('ScriptWizard');
+WIZUTIL.LoadDependencies();
+WIZHOOK.LoadDependencies();
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// initial values of state have to be defined for constructors of components
 /// that are relying on it, but these are not yet loaded
@@ -100,53 +100,6 @@ STORE._initializeState({
   dev_or_user: 0,
   // console
   dbg_console: 'ScriptContextor'
-});
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// DEFERRED CALL: LOAD_ASSETS will fire after module loaded (and above code)
-UR.HookPhase('UR/LOAD_ASSETS', async () => {
-  // return promise to hold LOAD_ASSETS until done
-  console.log(
-    `%cInitializing 'assets/${ASSETDIR}' as project source...`,
-    'background-color:rgba(255,0,0,0.15);color:red;padding:1em 2em'
-  );
-  return PROJ_v2.LoadAssetDirectory(`/assets/${ASSETDIR}/`);
-});
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// DEFERRED CALL: APP_CONFIGURE fires after LOAD_ASSETS (above) completes
-UR.HookPhase('UR/APP_CONFIGURE', () => {
-  // check for override load to use built-in test script
-  if (ENABLE_SYMBOL_TEST_BLUEPRINT) {
-    console.log(
-      `%cUsing TEST_SCRIPT because ENABLE_SYMBOL_TEST_BLUEPRINT is true...`,
-      'background-color:rgba(255,255,0,0.15);color:red;padding:1em 2em'
-    );
-    const script_text = TEST_SYMBOLS.GetTestScriptText();
-    STORE.SendState({ script_text });
-    // TEST_SYMBOLS.TestValidate();
-    return;
-  }
-
-  // normal load
-  const cur_prjid = DEV_PRJID;
-  const cur_bpid = DEV_BPID;
-  let out = `%cLooking for '${DEV_PRJID}.prj' with blueprint name '${DEV_BPID}' `;
-  out += `in 'assets/${ASSETDIR}'...`;
-  out += '%c\n\n';
-  out += `If you see an error, check that ASSETDIR, DEV_PRJID, and DEV_BPID `;
-  out += `are correctly defined in local-settings.json`;
-  // This retrieves the uncompiled/unbundled bpDef object {name, scriptText} from gem proj
-  console.log(
-    out,
-    'background-color:rgba(255,0,0,0.15);color:red;padding:1em 2em',
-    'color:maroon',
-    '\n\n'
-  );
-  const bp = PROJ_v2.GetProjectBlueprint(cur_prjid, cur_bpid);
-  const { scriptText: script_text } = bp;
-  const vmState = { cur_prjid, cur_bpid, script_text };
-  STORE.SendState(vmState);
-  console.log(...PR(`loaded blueprint '${DEV_BPID}' from '${DEV_PRJID}'`));
-  // TEST_SYMBOLS.TestValidate();
 });
 
 /// DERIVED STATE LOGIC ///////////////////////////////////////////////////////
@@ -336,9 +289,6 @@ function UpdateSlotBoolean(val) {
 function DispatchClick(event) {
   const fn = 'DC:';
   const newState: TStateObject = {};
-
-  /*** hacky test ***/
-  WIZUTIL.ForceImportHack();
 
   /** (1) GToken was clicked? ************************************************
    *      a. set `sel_linenum` and `sel_linepos`
