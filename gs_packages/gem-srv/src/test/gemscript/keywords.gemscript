@@ -1,0 +1,38 @@
+# blueprint TestKeywordAgent
+
+# program define
+useFeature Physics
+addProp myNumber number 0
+addProp myString string "hello"
+addProp copiedString string "empty"
+addProp copiedNumber number 0
+
+# program  init
+prop myNumber setTo 1
+prop agent.myNumber setTo 2
+featProp Physics.radius setTo 10
+featCall Physics.setSize 10 10
+
+# program event
+onEvent Tick [[
+  ifExpr {{ agent.myString.value === 'hello' }} [[
+  prop myString setTo 'goodbye'
+]]
+  ifExpr {{ agent.myString.value === 'goodbye' }} [[
+   prop myString setTo 'hello'
+]]
+
+every 10 [[
+  featPropPush Physics.radius
+  propPop myNumber
+  prop myNumber add 1
+  exprPush {{ agent.myNumber + 1 }}
+  popProp copiedNumber
+]]
+
+# program condition
+when TestKeywordAgent touches TestKeywordAgent [[
+  prop myString setTo 'touched'
+  featCall TestKeywordAgent.radius setTo 12
+]]
+
