@@ -13,6 +13,7 @@ import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
+import { VER_DEV_CODETEST } from 'config/dev-settings';
 
 /// RUN UNIT TESTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,6 +27,7 @@ import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
 
 // style objects
 import { sGrid, sHead, sLeft, sRight, sFoot } from './wiz/SharedElements';
+import { DevHeader } from './components/DevElements';
 // css
 import 'lib/vendor/pico.min.css';
 import 'lib/vendor/xterm.css';
@@ -45,18 +47,6 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
   // TEST_SYMBOLS.TestValidate();
 });
 
-/// LOCAL COMPONENTS //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** duplicate the old style from material-ui home.jsx */
-function DevHeader(props) {
-  const { label } = props;
-  return (
-    <header style={sHead}>
-      <span style={{ fontSize: '32px' }}>{label}</span> {UR.ConnectionString()}
-    </header>
-  );
-}
-
 /// ROOT APPLICATION COMPONENT ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class DevCodeTester extends React.Component {
@@ -67,7 +57,7 @@ class DevCodeTester extends React.Component {
 
   componentDidMount() {
     if (DBG) console.log(...PR('root component mounted'));
-    document.title = 'DEV TESTS';
+    document.title = `DEVCODETEST V.${VER_DEV_CODETEST}`;
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     const terminal = new Terminal();
@@ -101,7 +91,7 @@ class DevCodeTester extends React.Component {
     const styles = { ...sGrid, gridTemplateColumns: '25% 75%' };
     return (
       <div id="code-tester" style={styles}>
-        <DevHeader label="DEV/CODE TEST" />
+        <DevHeader label="DEV/CODETEST" version={VER_DEV_CODETEST} />
         <div style={{ padding: '1em' }}>
           <p style={{ fontSize: '2em' }}>
             <strong>Sri&#39;s Janky Unit Tester</strong>
