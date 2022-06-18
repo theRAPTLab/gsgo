@@ -200,13 +200,16 @@ function TestEditableTokens(scriptText: string = '') {
   });
 }
 
+/// DEPENDENCY LOADER /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** force import */
-function ForceImportHack() {}
+/** dummy export to allow module to load and initialize */
+function LoadDependencies() {
+  console.log(...PR('loaded'));
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
-  TestEditableTokens, // test interface
-  ForceImportHack
+  LoadDependencies,
+  TestEditableTokens // test interface
 };
