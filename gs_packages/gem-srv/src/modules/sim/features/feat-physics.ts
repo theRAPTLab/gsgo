@@ -207,30 +207,6 @@ class PhysicsPack extends SM_Feature {
     }
     this.setShape(agent, RECTANGLE);
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  symbolize(): TSymbolData {
-    return {
-      props: {
-        'radius': SM_Number.Symbols,
-        'width': SM_Number.Symbols,
-        'height': SM_Number.Symbols,
-        'costumeWidth': SM_Number.Symbols,
-        'costumeHeight': SM_Number.Symbols,
-        'bodyRadius': SM_Number.Symbols,
-        'bodyWidth': SM_Number.Symbols,
-        'bodyHeight': SM_Number.Symbols,
-        'scale': SM_Number.Symbols,
-        'scaleY': SM_Number.Symbols
-      },
-      methods: {
-        'setShape': { args: ['shape:string'] },
-        'setSize': { args: ['width:number', 'height:number'] },
-        'setRadius': { args: ['radius:number'] },
-        'getWidth': { returns: 'width:number' },
-        'getHeight': { returns: 'height:number' }
-      }
-    };
-  }
 
   /// PHYSICS HELPERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -393,6 +369,32 @@ class PhysicsPack extends SM_Feature {
       a.y < b.y + b.height &&
       a.y + a.height > b.y
     );
+  }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {
+        'radius': SM_Number.Symbols,
+        'width': SM_Number.Symbols,
+        'height': SM_Number.Symbols,
+        'costumeWidth': SM_Number.Symbols,
+        'costumeHeight': SM_Number.Symbols,
+        'bodyRadius': SM_Number.Symbols,
+        'bodyWidth': SM_Number.Symbols,
+        'bodyHeight': SM_Number.Symbols,
+        'scale': SM_Number.Symbols,
+        'scaleY': SM_Number.Symbols
+      },
+      methods: {
+        'setShape': { args: ['shape:string'] },
+        'setSize': { args: ['width:number', 'height:number'] },
+        'setRadius': { args: ['radius:number'] },
+        'getWidth': { returns: 'width:number' },
+        'getHeight': { returns: 'height:number' }
+      }
+    };
   }
 }
 

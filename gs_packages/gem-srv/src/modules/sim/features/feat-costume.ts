@@ -232,54 +232,6 @@ class CostumePack extends SM_Feature {
     agent.prop.Costume._animationStartFrame = undefined;
     agent.prop.Costume._animationFrameRate = undefined;
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  symbolize(): TSymbolData {
-    return {
-      props: {
-        counter: SM_Number.Symbols,
-        costumeName: SM_String.Symbols,
-        currentFrame: SM_Number.Symbols,
-        flipX: SM_Boolean.Symbols,
-        flipY: SM_Boolean.Symbols,
-        colorHue: SM_Number.Symbols,
-        colorSaturation: SM_Number.Symbols,
-        colorValue: SM_Number.Symbols,
-        colorScaleIndex: SM_Number.Symbols,
-        colorScaleHue: SM_Number.Symbols,
-        colorScaleSaturation: SM_Number.Symbols,
-        colorScaleValue: SM_Number.Symbols,
-        colorScaleType: SM_String.Symbols,
-        colorScaleSteps: SM_Number.Symbols
-      },
-      methods: {
-        setCostume: { args: ['costumeName:string', 'poseName:string'] },
-        setPose: { args: ['poseName:string'] },
-        setAnimatedCostume: { args: ['costumeName:string', 'frameRate:number'] },
-        setScale: { args: ['scale:number'] },
-        setGlow: { args: ['seconds:number'] },
-        setColorize: { args: ['red:number', 'green:number', 'blue:number'] },
-        setColorizeHSV: { args: ['hue:number', 'sat:number', 'val:number'] },
-        randomizeColor: {
-          args: ['dRed:number', 'dGreen:number', 'dBlue:number']
-        },
-        randomizeColorHSV: {
-          args: ['dHue:number', 'dSat:number', 'dVal:number']
-        },
-        colorHSVWithinRange: {
-          args: [
-            'col1:number',
-            'col2:number',
-            'dHue:number',
-            'dSat:number',
-            'dVal:number'
-          ]
-        },
-        resetColorize: {},
-        test: {},
-        thinkHook: {}
-      }
-    };
-  }
 
   /// COSTUME METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -508,6 +460,56 @@ class CostumePack extends SM_Feature {
   }
   test(agent: IAgent) {
     console.log('GOT AGENT', agent.name, 'from FEATURE', this.name);
+  }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {
+        counter: SM_Number.Symbols,
+        costumeName: SM_String.Symbols,
+        currentFrame: SM_Number.Symbols,
+        flipX: SM_Boolean.Symbols,
+        flipY: SM_Boolean.Symbols,
+        colorHue: SM_Number.Symbols,
+        colorSaturation: SM_Number.Symbols,
+        colorValue: SM_Number.Symbols,
+        colorScaleIndex: SM_Number.Symbols,
+        colorScaleHue: SM_Number.Symbols,
+        colorScaleSaturation: SM_Number.Symbols,
+        colorScaleValue: SM_Number.Symbols,
+        colorScaleType: SM_String.Symbols,
+        colorScaleSteps: SM_Number.Symbols
+      },
+      methods: {
+        setCostume: { args: ['costumeName:string', 'poseName:string'] },
+        setPose: { args: ['poseName:string'] },
+        setAnimatedCostume: { args: ['costumeName:string', 'frameRate:number'] },
+        setScale: { args: ['scale:number'] },
+        setGlow: { args: ['seconds:number'] },
+        setColorize: { args: ['red:number', 'green:number', 'blue:number'] },
+        setColorizeHSV: { args: ['hue:number', 'sat:number', 'val:number'] },
+        randomizeColor: {
+          args: ['dRed:number', 'dGreen:number', 'dBlue:number']
+        },
+        randomizeColorHSV: {
+          args: ['dHue:number', 'dSat:number', 'dVal:number']
+        },
+        colorHSVWithinRange: {
+          args: [
+            'col1:number',
+            'col2:number',
+            'dHue:number',
+            'dSat:number',
+            'dVal:number'
+          ]
+        },
+        resetColorize: {},
+        test: {},
+        thinkHook: {}
+      }
+    };
   }
 }
 

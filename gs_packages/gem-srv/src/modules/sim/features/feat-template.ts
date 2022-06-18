@@ -91,6 +91,15 @@ class MyFeature extends SM_Feature {
     console.log(...PR('hey, I got', anotherVar));
     m_StaticMethod();
   }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {},
+      methods: {}
+    };
+  }
 } // end of feature class
 
 /// REGISTER FEATURE SINGLETON ////////////////////////////////////////////////

@@ -33,19 +33,15 @@ const VISION_AGENTS = new Map();
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Returns agent if it exists.
- * If it doesn't exist anymore (e.g. CharControl has dropped), remove it from
- * WIDGET_AGENTS
- * @param agentId
- */
+/** Returns agent if it exists.
+ *  If it doesn't exist anymore (e.g. CharControl has dropped), remove it from
+ *  WIDGET_AGENTS */
 function m_getAgent(agentId): IAgent {
   const a = SIMAGENTS.GetAgentById(agentId);
   if (!a) VISION_AGENTS.delete(agentId);
   return a;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_updateVisionCone(agent): { visionPoly: any[]; visionPath: any[] } {
   // Newly minted agents will not have x and y set until VIS_UPDATE
   if (
@@ -88,7 +84,7 @@ function m_updateVisionCone(agent): { visionPoly: any[]; visionPath: any[] } {
 
   return { visionPoly, visionPath };
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // REVIEW: Consider using https://github.com/davidfig/pixi-intersects
 function m_IsTargetWithinVisionCone(visionPoly, target): boolean {
   if (
@@ -104,22 +100,16 @@ function m_IsTargetWithinVisionCone(visionPoly, target): boolean {
   const result = intersect(visionPoly, targetPoly);
   return result.length > 0;
 }
-
-/**
- * Checks target color against target's background agent color
- * using agent's Vision detection thresholds to determine if the
- * target is visible against its background.
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Checks target color against target's background agent color using agent's
+ *  Vision detection thresholds to determine if the target is visible against
+ *  its background.
  *
- * Checks that target's color is visible regardless of whether or not
- * the target is within the vision one
- * Check both visionCone and color if you need both to be true.
- * The vision-cone-less check is necessary because checking for
- * camouflage when the agent is on top of target (e.g. during eating)
- * means the target is not visible in the visionCone.
- * @param agent
- * @param target
- * @returns
- */
+ *  Checks that target's color is visible regardless of whether or not the
+ *  target is within the vision one Check both visionCone and color if you need
+ *  both to be true. The vision-cone-less check is necessary because checking
+ *  for camouflage when the agent is on top of target (e.g. during eating) means
+ *  the target is not visible in the visionCone.  */
 function m_IsTargetColorVisible(agent: IAgent, target: IAgent) {
   if (
     !agent.hasFeature('Vision') ||
@@ -159,10 +149,7 @@ function m_IsTargetColorVisible(agent: IAgent, target: IAgent) {
 
 /// PHYSICS LOOP ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Vision Update Loop -- Runs once per gameloop
- */
+/** Vision Update Loop -- Runs once per gameloop */
 function m_update(frame) {
   const agentIds = Array.from(VISION_AGENTS.keys());
   agentIds.forEach(agentId => {
@@ -205,7 +192,7 @@ function m_update(frame) {
     }
   });
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_simStop() {
   // Clear vision cone
   const agentIds = Array.from(VISION_AGENTS.keys());
@@ -215,7 +202,7 @@ function m_simStop() {
     agent.debug = undefined;
   });
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_handleScriptEvent(data) {
   if (data.type === 'RoundStop') m_simStop();
 }
@@ -278,32 +265,6 @@ class VisionPack extends SM_Feature {
     prop.setMin(0);
     this.featAddProp(agent, 'colorValueDetectionThreshold', prop);
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  symbolize(): TSymbolData {
-    return {
-      props: {
-        'visionable': SM_Number.Symbols,
-        'viewDistance': SM_Number.Symbols,
-        'viewAngle': SM_Number.Symbols,
-        'colorHueDetectionThreshold': SM_Number.Symbols,
-        'colorSaturationDetectionThreshold': SM_Number.Symbols,
-        'colorValueDetectionThreshold': SM_Number.Symbols
-      },
-      methods: {
-        'monitor': { args: ['targetBlueprintName:string'] },
-        'isCamouflaged': {
-          args: [
-            'backgroundColor:number',
-            'hRange:number',
-            'sRange:number',
-            'vRange:number'
-          ]
-        },
-        // REVIEW TODO: target is an IAgent.  Should it be `blueprint`?
-        'canSeeColorOfAgent': { args: ['target:objref'] }
-      }
-    };
-  }
 
   /// VISION METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -343,14 +304,33 @@ class VisionPack extends SM_Feature {
     return m_IsTargetColorVisible(agent, target);
   }
 
-  /** This doesn't really do anything, since:
-   *  a. you can't easily call featCall with a specific target agent parameter
-   *     outside of a when
-   *  b. you can't do anything with the return value without using a stack operation
-   */
-  // canSeeCone(agent: IAgent, target: IAgent) {
-  //   return m_IsTargetWithinVisionCone(agent, target);
-  // }
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {
+        'visionable': SM_Number.Symbols,
+        'viewDistance': SM_Number.Symbols,
+        'viewAngle': SM_Number.Symbols,
+        'colorHueDetectionThreshold': SM_Number.Symbols,
+        'colorSaturationDetectionThreshold': SM_Number.Symbols,
+        'colorValueDetectionThreshold': SM_Number.Symbols
+      },
+      methods: {
+        'monitor': { args: ['targetBlueprintName:string'] },
+        'isCamouflaged': {
+          args: [
+            'backgroundColor:number',
+            'hRange:number',
+            'sRange:number',
+            'vRange:number'
+          ]
+        },
+        // REVIEW TODO: target is an IAgent.  Should it be `blueprint`?
+        'canSeeColorOfAgent': { args: ['target:objref'] }
+      }
+    };
+  }
 }
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////

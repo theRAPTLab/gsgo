@@ -252,33 +252,6 @@ class WidgetPack extends SM_Feature {
     // REGISTER the Agent for updates
     WIDGET_AGENTS.set(agent.id, agent.id);
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  symbolize(): TSymbolData {
-    return {
-      props: {
-        text: SM_String.Symbols,
-        meter: SM_Number.Symbols,
-        meterColor: SM_Number.Symbols,
-        isLargeGraphic: SM_Boolean.Symbols,
-        graphValue: SM_Number.Symbols,
-        barGraphProp: SM_String.Symbols,
-        barGraphPropFeature: SM_String.Symbols,
-        textProp: SM_String.Symbols,
-        meterProp: SM_String.Symbols
-      },
-      methods: {
-        showMessage: { args: ['propname:string'] },
-        bindTextTo: { args: ['propname:string'] },
-        bindMeterTo: { args: ['propname:string'] },
-        setMeterPosition: { args: ['position:string'] },
-        bindGraphTo: { args: ['propname:string', 'frequency:number'] },
-        bindGraphToGlobalProp: { args: ['propname:string', 'frequency:number'] },
-        bindLineGraphHistogramToFeatProp: {
-          args: ['feature:string', 'propname:string']
-        }
-      }
-    };
-  }
 
   /// WIDGET METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -340,7 +313,34 @@ class WidgetPack extends SM_Feature {
     agent.prop.AgentWidgets._histogramProp = propname;
   }
 
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {
+        text: SM_String.Symbols,
+        meter: SM_Number.Symbols,
+        meterColor: SM_Number.Symbols,
+        isLargeGraphic: SM_Boolean.Symbols,
+        graphValue: SM_Number.Symbols,
+        barGraphProp: SM_String.Symbols,
+        barGraphPropFeature: SM_String.Symbols,
+        textProp: SM_String.Symbols,
+        meterProp: SM_String.Symbols
+      },
+      methods: {
+        showMessage: { args: ['propname:string'] },
+        bindTextTo: { args: ['propname:string'] },
+        bindMeterTo: { args: ['propname:string'] },
+        setMeterPosition: { args: ['position:string'] },
+        bindGraphTo: { args: ['propname:string', 'frequency:number'] },
+        bindGraphToGlobalProp: { args: ['propname:string', 'frequency:number'] },
+        bindLineGraphHistogramToFeatProp: {
+          args: ['feature:string', 'propname:string']
+        }
+      }
+    };
+  }
 }
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////

@@ -46,19 +46,6 @@ class GlobalPack extends SM_Feature {
   decorate(agent) {
     super.decorate(agent);
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  symbolize(): TSymbolData {
-    return {
-      props: {},
-      methods: {
-        // REVIEW TODO: 'value' is :any...is it a GVAR?
-        'addGlobalProp': { args: ['pName:string', 'type:string', 'value:gvar'] },
-        // REVIEW TODO: 'value' is :any...is it a GVAR?
-        'globalProp': { args: ['pName:string', 'method:string', 'value:gvar'] },
-        'getGlobalProp': { args: ['pName:string'] }
-      }
-    };
-  }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// GLOBAL AGENT
   addGlobalProp(agent: IAgent, pName: string, type: string, value: any) {
@@ -81,6 +68,21 @@ class GlobalPack extends SM_Feature {
   getGlobalProp(agent: IAgent, pName: string) {
     const global = SM_Agent.GetGlobalAgent();
     return global.prop[pName];
+  }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {},
+      methods: {
+        // REVIEW TODO: 'value' is :any...is it a GVAR?
+        'addGlobalProp': { args: ['pName:string', 'type:string', 'value:gvar'] },
+        // REVIEW TODO: 'value' is :any...is it a GVAR?
+        'globalProp': { args: ['pName:string', 'method:string', 'value:gvar'] },
+        'getGlobalProp': { args: ['pName:string'] }
+      }
+    };
   }
 }
 

@@ -82,12 +82,8 @@ prop zIndex setTo 1000
   UR.RaiseMessage('INJECT_BLUEPRINT', { blueprint: CURSOR_BLUEPRINT });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * On every SIM/INPUTS_EXEC
- * for every Cursor agent, if it hasn't picked up a target already,
- * and it's touching an agent, then pick it up.
- */
+/** On every SIM/INPUTS_EXEC for every Cursor agent, if it hasn't picked up a
+ *  target already, and it's touching an agent, then pick it up. */
 function m_UpdateInhabitAgent(frametime) {
   // Handle the inhabiting programmatically
   const cursors = DCAGENTS.GetAgentsByType('Cursor');

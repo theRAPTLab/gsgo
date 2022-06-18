@@ -161,59 +161,7 @@ class PopulationPack extends SM_Feature {
 
     agent.prop.Population._countsByProp = new Map();
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  symbolize(): TSymbolData {
-    return {
-      props: {
-        'count': SM_Number.Symbols,
-        'sum': SM_Number.Symbols,
-        'avg': SM_Number.Symbols,
-        'min': SM_Number.Symbols,
-        'max': SM_Number.Symbols,
-        'monitoredAgent': SM_Number.Symbols,
-        'monitoredAgentProp': SM_Number.Symbols,
-        'monitoredAgentPropFeature': SM_Number.Symbols,
-        'spawnMutationProp': SM_Number.Symbols,
-        'spawnMutationPropFeature': SM_Number.Symbols,
-        'spawnMutationMaxAdd': SM_Number.Symbols,
-        'spawnMutationMaxSubtract': SM_Number.Symbols,
-        'targetPopulationSize': SM_Number.Symbols,
-        'deleteAfterSpawning': SM_Number.Symbols
-      },
-      methods: {
-        'createAgent': { args: ['blueprintName:string', 'initScript:string'] },
-        'spawnChild': { args: ['spawnScript:string', 'def:objref'] },
-        'removeAgent': {},
-        'getRandomActiveAgent': { args: ['bpname:number'] },
-        'releaseAllAgents': {},
-        'releaseInertAgents': {},
-        'hideInertAgents': {},
-        'removeInertAgents': {},
-        'agentsReproduce': { args: ['bpname:string', 'spawnScript:string'] },
-        'oneAgentReproduce': { args: ['bpname:string', 'spawnScript:string'] },
-        'populateBySpawning': { args: ['bpname:string', 'spawnScript:string'] },
-        'agentsForEachActive': { args: ['bpname:string', 'program:program'] },
-        'agentsForEach': { args: ['bpname:string', 'program:program'] },
-        'getActiveAgentsCount': { args: ['blueprintName:string'] },
-        'countAgents': { args: ['blueprintName:string'] },
-        'countAgentProp': { args: ['blueprintName:string', 'prop:string'] },
-        'minAgentProp': { args: ['bpname:string', 'prop:string'] },
-        'maxAgentProp': { args: ['bpname:string', 'prop:string'] },
-        'countAgentsByPropType': {
-          args: ['bpname:string', 'prop:string', 'clear:boolean']
-        },
-        'setAgentsByFeatPropTypeKeys': { args: ['bpname:string', 'keys:{...}'] },
-        'countExistingAgentsByFeatPropType': {
-          args: [
-            'blueprintName:string',
-            'feature:string',
-            'featprop:string',
-            'clear:boolean'
-          ]
-        }
-      }
-    };
-  }
+
   /// POPULATION METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -690,6 +638,61 @@ class PopulationPack extends SM_Feature {
   //     clear
   //   );
   // }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {
+        'count': SM_Number.Symbols,
+        'sum': SM_Number.Symbols,
+        'avg': SM_Number.Symbols,
+        'min': SM_Number.Symbols,
+        'max': SM_Number.Symbols,
+        'monitoredAgent': SM_Number.Symbols,
+        'monitoredAgentProp': SM_Number.Symbols,
+        'monitoredAgentPropFeature': SM_Number.Symbols,
+        'spawnMutationProp': SM_Number.Symbols,
+        'spawnMutationPropFeature': SM_Number.Symbols,
+        'spawnMutationMaxAdd': SM_Number.Symbols,
+        'spawnMutationMaxSubtract': SM_Number.Symbols,
+        'targetPopulationSize': SM_Number.Symbols,
+        'deleteAfterSpawning': SM_Number.Symbols
+      },
+      methods: {
+        'createAgent': { args: ['blueprintName:string', 'initScript:string'] },
+        'spawnChild': { args: ['spawnScript:string', 'def:objref'] },
+        'removeAgent': {},
+        'getRandomActiveAgent': { args: ['bpname:number'] },
+        'releaseAllAgents': {},
+        'releaseInertAgents': {},
+        'hideInertAgents': {},
+        'removeInertAgents': {},
+        'agentsReproduce': { args: ['bpname:string', 'spawnScript:string'] },
+        'oneAgentReproduce': { args: ['bpname:string', 'spawnScript:string'] },
+        'populateBySpawning': { args: ['bpname:string', 'spawnScript:string'] },
+        'agentsForEachActive': { args: ['bpname:string', 'program:program'] },
+        'agentsForEach': { args: ['bpname:string', 'program:program'] },
+        'getActiveAgentsCount': { args: ['blueprintName:string'] },
+        'countAgents': { args: ['blueprintName:string'] },
+        'countAgentProp': { args: ['blueprintName:string', 'prop:string'] },
+        'minAgentProp': { args: ['bpname:string', 'prop:string'] },
+        'maxAgentProp': { args: ['bpname:string', 'prop:string'] },
+        'countAgentsByPropType': {
+          args: ['bpname:string', 'prop:string', 'clear:boolean']
+        },
+        'setAgentsByFeatPropTypeKeys': { args: ['bpname:string', 'keys:{...}'] },
+        'countExistingAgentsByFeatPropType': {
+          args: [
+            'blueprintName:string',
+            'feature:string',
+            'featprop:string',
+            'clear:boolean'
+          ]
+        }
+      }
+    };
+  }
 } // end of feature class
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
