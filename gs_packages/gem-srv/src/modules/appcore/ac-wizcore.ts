@@ -305,7 +305,8 @@ function DispatchClick(event) {
     newState.sel_slotpos = Number(pos); // STATE UPDATE: selected slot
     STORE.SendState(newState);
     const { sel_linenum, sel_linepos } = State();
-    if (sel_linenum > 0 && sel_linepos > 0) {
+    if (sel_linenum > 0 && sel_linepos >= 0) {
+      // sel_linepos = 0 if user clicked on line number
       return;
     }
   }
@@ -354,6 +355,10 @@ function DispatchClick(event) {
       {}; // or new object if this is creating a new slot
     // Assume it's an identifier
     slotScriptToken.identifier = symbolValue;
+
+    // special handling to replace empty lines
+    delete slotScriptToken.line;
+
     if (sel_slotpos > slots_linescript.length) {
       // it's a new token so add it
       slots_linescript.push(slotScriptToken);
@@ -622,16 +627,14 @@ function WizardTestLine(text: string) {
  *  Called by SelectEditorLineSlot
  */
 function SaveSlotLineScript(event) {
-  const {
-    script_text,
-    slots_linescript,
-    script_page,
-    script_tokens,
-    sel_linenum
-  } = STORE.State();
+  const { script_page, sel_linenum, slots_linescript } = STORE.State();
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
-  script_tokens.splice(lineIdx, 1, slots_linescript);
-  STORE.SendState({ script_tokens });
+  const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
+  const updatedLine = lsos[lineIdx]; // clone existing line to retain block info
+  updatedLine.lineScript = slots_linescript; // just update the lineScript
+  lsos.splice(lineIdx, 1, updatedLine);
+  const nscript = TRANSPILER.EditableTokensToScript(lsos);
+  STORE.SendState({ script_tokens: nscript });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API */
@@ -644,7 +647,7 @@ function CancelSlotEdit(event) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API Slot editor remove extraneous slot */
+/** API Slot editor remove extraneous slot, e.g. if gemscript has too many parameters */
 function DeleteSlot(event) {
   const { slots_linescript, script_tokens, sel_linenum, sel_slotpos } =
     STORE.State();
@@ -652,6 +655,65 @@ function DeleteSlot(event) {
   const slotIdx = CHECK.OffsetLineNum(sel_slotpos, 'sub'); // 1-based
   slots_linescript.splice(slotIdx, 1);
   STORE.SendState({ slots_linescript });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API ScriptViewPane add line before/after selected line
+ *  If you select a line within a block, adding a line before
+ *  or after inserts a new line within the block.
+ *  If you want to add a line outside of a block, select a line
+ *  outside of the block to insert.
+ */
+function AddLine(position: VMLineScriptInsertionPosition) {
+  const { script_page, sel_linenum } = STORE.State();
+  const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
+  const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
+  const newLine: VMLineScriptLine = { lineScript: [{ line: '' }] };
+  let newLineNum;
+  if (position === 'before') {
+    newLineNum = sel_linenum;
+    lsos.splice(lineIdx, 0, newLine);
+  } else if (position === 'end') {
+    lsos.push(newLine);
+    newLineNum = lsos.length;
+  } else {
+    lsos.splice(lineIdx + 1, 0, newLine);
+    newLineNum = sel_linenum + 1;
+  }
+  const nscript = TRANSPILER.EditableTokensToScript(lsos);
+  const text = TRANSPILER.ScriptToText(nscript);
+
+  // figure out what to update
+  const newState: TStateObject = {};
+  newState.script_tokens = nscript;
+  STORE.SendState(newState);
+
+  // Auto-select the new line for editing
+  STORE.QueueEffect(() => {
+    const selectState: TStateObject = {};
+    selectState.sel_linenum = newLineNum;
+    selectState.sel_linepos = 1; // emulate clicking on line number
+    selectState.sel_slotpos = 1;
+    STORE.SendState(selectState);
+    // Force delay the scroll, otherwise dom isn't quite ready
+    // Using `UseEffect` in ScriptViewPane doesn't quite work either
+    // and also requires a timeout, so we may as well do it here
+    // where we have explicit control over situations where we DO
+    // want to scroll (UseEffect's approach would scroll on every
+    // script_page update)
+    setTimeout(() => {
+      ScrollLineIntoView(newLineNum);
+    }, 10);
+  });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API ScriptViewPane delete selected line */
+function DeleteSelectedLine(event) {
+  const { script_page, sel_linenum } = STORE.State();
+  const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
+  const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
+  lsos.splice(lineIdx, 1);
+  const nscript = TRANSPILER.EditableTokensToScript(lsos);
+  STORE.SendState({ script_tokens: nscript });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function PrintDBGConsole(str: string) {
@@ -684,7 +746,9 @@ export {
   DispatchEditorClick, // handle clicks on editing box
   SaveSlotLineScript, // handle slot editor save request
   CancelSlotEdit, // handle slot editor cancel edit
-  DeleteSlot // handle slot editor delete extraneous slot
+  DeleteSlot, // handle slot editor delete extraneous slot
+  AddLine, // handle ScriptViewPane request to add a new script line
+  DeleteSelectedLine // handle ScriptViewPane request to delete currently selected script line
 };
 
 /// EXPORTED VIEWMODEL INFO UTILS //////////////////////////////////////////////
