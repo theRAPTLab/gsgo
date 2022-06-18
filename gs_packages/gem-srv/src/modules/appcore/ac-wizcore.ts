@@ -27,7 +27,7 @@ import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
-import * as TEST_SYMBOLS from 'test/x-symbol-tests';
+import * as BLUEPRINT_TESTER from 'test/test-blueprint';
 import { ENABLE_SYMBOL_TEST_BLUEPRINT } from 'config/dev-settings';
 import {
   DecodeSymbolViewData,
@@ -120,9 +120,9 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
       `%cUsing TEST_SCRIPT because ENABLE_SYMBOL_TEST_BLUEPRINT is true...`,
       'background-color:rgba(255,255,0,0.15);color:red;padding:1em 2em'
     );
-    const script_text = TEST_SYMBOLS.GetTestScriptText();
+    const script_text = BLUEPRINT_TESTER.GetTestScriptText();
     STORE.SendState({ script_text });
-    // TEST_SYMBOLS.TestValidate();
+    // BLUEPRINT_TESTER.TestValidate();
     return;
   }
 
@@ -146,7 +146,7 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
   const vmState = { cur_prjid, cur_bpid, script_text };
   STORE.SendState(vmState);
   console.log(...PR(`loaded blueprint '${DEV_BPID}' from '${DEV_PRJID}'`));
-  // TEST_SYMBOLS.TestValidate();
+  // BLUEPRINT_TESTER.TestValidate();
 });
 
 /// DERIVED STATE LOGIC ///////////////////////////////////////////////////////

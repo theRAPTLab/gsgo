@@ -6,6 +6,11 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+/// DEV CODE VERIONS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const VER_DEV_WIZ = '0100DW';
+export const VER_DEV_CODETEST = '0100CT';
+
 /// GLOBAL DEBUG SWITCHES /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export const DEBUG_FLAGS = {
@@ -24,5 +29,5 @@ export const SCRIPT_PAGE_INDEX_OFFSET = 1; // set to 1 for no 0 indexes
 /// GUI WIZARD TEST BLUEPRINT /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** when set to true, GUI WIZARD will load the test script defined in
- *  x-symbol-tests instead of the DEV_PRJID and BPID */
+ *  test-blueprint instead of the DEV_PRJID and BPID */
 export const ENABLE_SYMBOL_TEST_BLUEPRINT = true;

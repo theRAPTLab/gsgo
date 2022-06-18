@@ -27,8 +27,9 @@
 
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import * as SIM from 'modules/sim/api-sim'; // load features
+import * as SIM from 'modules/sim/api-sim'; // DO NOT REMOVE
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import { VER_DEV_WIZ } from 'config/dev-settings';
 // edit mode components
 import { ScriptTextPane } from './wiz/edit/ScriptTextPane';
 import { ScriptViewPane } from './wiz/edit/ScriptViewPane';
@@ -44,6 +45,7 @@ import { StatusFooter } from './wiz/stat/StatusFooter';
 import { DBGValidateLine } from './wiz/dbg/ValidateScriptLine';
 // style objects
 import { sGrid, sHead, sLeft, sRight, sFoot } from './wiz/SharedElements';
+import { DevHeader } from './components/DevElements';
 // css
 import 'lib/vendor/pico.min.css';
 import 'lib/css/gem-ui.css';
@@ -52,18 +54,6 @@ import 'lib/css/gem-ui.css';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const PR = UR.PrefixUtil('DEWIZ', 'TagApp');
-
-/// LOCAL COMPONENTS //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** duplicate the old style from material-ui home.jsx */
-function DevHeader(props) {
-  const { label } = props;
-  return (
-    <header style={sHead}>
-      <span style={{ fontSize: '32px' }}>{label}</span> {UR.ConnectionString()}
-    </header>
-  );
-}
 
 /// ROOT APPLICATION COMPONENT ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -77,7 +67,7 @@ class DevWizard extends React.Component {
 
   componentDidMount() {
     if (DBG) console.log(...PR('root component mounted'));
-    document.title = 'DEV WIZARD';
+    document.title = `DEV/WIZARD V.${VER_DEV_WIZ}`;
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     // add top-level click handler
@@ -109,7 +99,7 @@ class DevWizard extends React.Component {
       );
     return (
       <div id="gui-wizard" style={sGrid}>
-        <DevHeader label="DEV/WIZARD" />
+        <DevHeader label="DEV/WIZARD" version={VER_DEV_WIZ} />
         <div style={sLeft}>
           <ScriptViewPane script_page={script_page} />
           {/* <ScriptUnitEditor /> */}
