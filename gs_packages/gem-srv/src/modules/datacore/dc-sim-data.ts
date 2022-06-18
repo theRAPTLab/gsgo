@@ -157,16 +157,15 @@ function GetBlueprintSymbols(): TSymbolData {
  */
 function RegisterKeyword(Ctor: IKeywordCtor, alias?: string): void {
   const fn = 'RegisterKeyword:';
-  alias = m_EnsureLowerCase(alias);
   const kobj = new Ctor();
   if (!CHECK.AreValidArgs(kobj.args as TGSArg[]))
     throw Error(`${fn} invalid argDef in keyword '${kobj.keyword}'`);
-  KEYWORDS.set(alias || m_EnsureLowerCase(kobj.keyword), kobj);
+  KEYWORDS.set(alias || kobj.keyword, kobj);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return a registered keyword module */
 function GetKeyword(name: string): IKeyword {
-  name = m_EnsureLowerCase(name);
+  name = name;
   return KEYWORDS.get(name);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
