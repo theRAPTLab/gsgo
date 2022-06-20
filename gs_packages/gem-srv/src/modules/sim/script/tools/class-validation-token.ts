@@ -23,6 +23,7 @@
 /** allowed options for enhanced validation token creation */
 type VSDOpts = {
   gsType: TGSType;
+  symbolScope?: Array<keyof TSymbolData>; // which symbol dicts apply to gui display
   unitText?: string;
   err_code?: TValidationErrorCodes;
   err_info?: string;
@@ -41,8 +42,9 @@ class VSDToken implements TSymbolData {
    */
   constructor(symbols?: TSymbolData, opt?: VSDOpts) {
     // if we want to remember the original scriptText word
-    const { unitText, gsType, err_code, err_info } = opt || {};
+    const { unitText, symbolScope, gsType, err_code, err_info } = opt || {};
     if (unitText) (this as any).unitText = unitText;
+    if (Array.isArray(symbolScope)) (this as any).symbolScope = symbolScope;
     if (gsType) (this as any).gsType = gsType;
     if (err_code || err_info) {
       (this as any).error = {

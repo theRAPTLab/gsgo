@@ -37,7 +37,7 @@ export function EditSymbol(props) {
 
   const allDicts = [];
 
-  const { slots_validation } = WIZCORE.State();
+  const { slots_validation } = WIZCORE.State(); // TValidatedScriptUnit
   // test clause
   if (sel_linenum > 0 && sel_linepos > 0) {
     // const vdata = WIZCORE.ValidateSelectedLine();
@@ -55,7 +55,7 @@ export function EditSymbol(props) {
     // no more validation tokens
     if (vIndex >= validationTokens.length) return 'nothing to render';
 
-    const symbolData = validationTokens[vIndex]; // indx into line
+    const symbolData: TSymbolData = validationTokens[vIndex]; // indx into line
     /* symbolData has the current symbol data to convert into viewdata
        `symbolData` looks like this: {
           features: {Costume: {…}, Physics: {…}, AgentWidgets: {…}}
@@ -64,7 +64,7 @@ export function EditSymbol(props) {
           unitText: "energyLevel"
         }
     */
-    const { unitText, error, gsType, ...dicts } = symbolData;
+    const { unitText, symbolScope, error, gsType, ...dicts } = symbolData;
     /* `dicts` looks like this: {
           features: {Costume: {…}, Physics: {…}, AgentWidgets: {…}}
           props: {x: {…}, y: {…}, statusText: {…}, eType: {…}, energyLevel: {…}, …}
@@ -145,31 +145,34 @@ export function EditSymbol(props) {
     // Walk down dicts
     // 1. if the key is 'features', recursively expand its props and methods.
     // 2. if the key is plain `props`, just expand it normally
-    Object.entries(dicts).forEach(([k, v]) => {
+    Object.entries(dicts).forEach(([k, v]: [keyof TSymbolData, TSymbolData]) => {
+      if (!symbolScope.includes(k)) return;
       // console.group('symbolType', k, 'symbolDictionary', v);
       if (k === 'features') {
         // 1. feature, so recursively expand
-        Object.entries(v).forEach(([featureName, featureDict]) => {
-          if (gsType === 'objref') {
-            // prop symbolData
-            const sd = {};
-            sd.props = featureDict.props;
-            // prop viewData
-            const vd = WIZCORE.DecodeSymbolViewData(featureDict);
-            // render it
-            allDicts.push(f_render_keys(sd, vd, featureName));
-          } else if (gsType === 'method') {
-            // method symbolData
-            const sd = {};
-            sd.methods = featureDict.methods;
-            // method viewData
-            const vd = WIZCORE.DecodeSymbolViewData(featureDict);
-            // render it
-            allDicts.push(f_render_keys(sd, vd, featureName));
-          } else {
-            // unspported gsType
+        Object.entries(v).forEach(
+          ([featureName, featureDict]: [string, TSymbolData]) => {
+            if (gsType === 'objref') {
+              // prop symbolData
+              const sd: TSymbolData = {};
+              sd.props = featureDict.props;
+              // prop viewData
+              const vd = WIZCORE.DecodeSymbolViewData(featureDict);
+              // render it
+              allDicts.push(f_render_keys(sd, vd, featureName));
+            } else if (gsType === 'method') {
+              // method symbolData
+              const sd: TSymbolData = {};
+              sd.methods = featureDict.methods;
+              // method viewData
+              const vd = WIZCORE.DecodeSymbolViewData(featureDict);
+              // render it
+              allDicts.push(f_render_keys(sd, vd, featureName));
+            } else {
+              // unspported gsType
+            }
           }
-        });
+        );
       } else {
         // 2. not a feature, just render the keys
         const sd = {};

@@ -75,13 +75,14 @@ export class prop extends Keyword {
   }
 
   /** custom validation, overriding the generic validation() method of the
-   *  base Keyword class */
+   *  base Keyword class  */
   validate(unit: TScriptUnit): TValidatedScriptUnit {
     const vtoks = []; // validation token array
     const [kwTok, objrefTok, methodTok, ...argToks] = unit; // get arg pattern
     // returns symbols for each dtok position excepting the keyword
+
     vtoks.push(this.shelper.anyKeyword(kwTok));
-    vtoks.push(this.shelper.objRef(objrefTok));
+    vtoks.push(this.shelper.agentObjRef(objrefTok)); // agent.propName, propName, Blueprint.propName
     vtoks.push(this.shelper.methodName(methodTok));
     vtoks.push(...this.shelper.argsList(argToks));
     const log = this.makeValidationLog(vtoks);

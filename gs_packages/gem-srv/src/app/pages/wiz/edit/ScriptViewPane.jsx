@@ -116,7 +116,7 @@ export function ScriptViewPane(props) {
 
   // a page is an array of line viewmodel data
   // the line has token viewmodel data plus line metdata
-  console.groupCollapsed('ScriptViewPane Validation');
+  if (DBG) console.groupCollapsed('ScriptViewPane Validation');
   script_page.forEach(line => {
     const { lineNum, level, vmTokens } = line;
     const lineBuffer = [];
@@ -125,8 +125,8 @@ export function ScriptViewPane(props) {
     if (hasTokens) {
       // Iterate over validation tokens so we can show errors
       const css = level > 0 ? 'color:blue;background-color:yellow;' : '';
-      console.log(`script_page ${lineNum} %cin:${level}`, css, vmTokens);
-      if (script_page_Validation[lineNum] === undefined)
+      if (DBG) console.log(`script_page ${lineNum} %cin:${level}`, css, vmTokens);
+      if (DBG && script_page_Validation[lineNum] === undefined)
         console.log(
           'broken because of repacker',
           lineNum,
@@ -212,6 +212,7 @@ export function ScriptViewPane(props) {
       DBGTEXT += '\n';
     }
     //
+    if (DBG) console.groupEnd();
   });
 
   const addLineBtn = (

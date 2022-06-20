@@ -261,6 +261,7 @@ declare global {
     // ok to change or add, as these are not defined in the reference dictionaries
     error?: TSymbolError; // debugging if error
     unitText?: string; // the scriptText word associated with symbol
+    symbolScope?: Array<keyof TSymbolData>; // 'relevant' scope to display
     gsType?: TGSType; // the gemscript meaning of this token
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -273,6 +273,112 @@ class SymbolInterpreter {
     return ctx; // valid scope is parent of cur_scope
   }
 
+  /// V1.0 OBJREF SUPPORT METHODS /////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** handle agent.propname, propName, Blueprint.propName  */
+  agentObjRef(token: IToken): TSymbolData {
+    // error checking & type overrides
+    const fn = 'agentObjRef:';
+    const gsType = 'objref';
+    this.resetScope(); // points to the bundle.symbols to start
+    let [matchType, parts] = TOKENIZER.UnpackToken(token);
+    const unitText = Array.isArray(parts) ? parts.join('.') : parts;
+    if (DBG) console.log(...PR(`${fn}: ${matchType}:${parts}`));
+    // was there a previous scope-breaking error? bail!
+    if (this.scanError())
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText,
+          err_code: 'vague',
+          err_info: `${fn} error in previous token(s)`
+        }
+      );
+    // convert identifier to single-part objref
+    // and return error if it's not objref or identifier
+    if (matchType === 'identifier') parts = [parts];
+    else if (matchType !== 'objref') {
+      this.scanError(true);
+      return new VSDToken(
+        { props: this.getBundleScope().props },
+        {
+          gsType,
+          unitText,
+          err_code: 'invalid',
+          err_info: `${fn} not an objref`
+        }
+      );
+    }
+    // OBJREF PART 1: what kind of object are we referencing?
+    // these calls will update cur_scope SymbolData appropriately
+    let part = parts[0];
+    let agent = this.strIsAgentLiteral(part);
+    let prop = this.strIsPropIdentifier(part);
+    let blueprint = this.strIsBlueprintName(part);
+    // is there only one part in this objref?
+    let terminal = parts.length === 1;
+    // does the objref terminate in a method-bearing reference?
+    if (terminal) {
+      if (prop)
+        return new VSDToken(
+          prop, // this is the full symbol dict { features, props }
+          {
+            gsType,
+            symbolScope: ['props'], // this is what's 'displayable' by GUI
+            unitText: part
+          }
+        ); // return agent scope {props}
+    }
+
+    // did any agent, feature, prop, or blueprint resolve?
+    if (!(agent || prop || blueprint)) {
+      this.scanError(true);
+      return new VSDToken(this.getBundleScope(), {
+        gsType,
+        unitText,
+        err_code: 'invalid',
+        err_info: `${fn} invalid objref '${part}'`
+      });
+    }
+
+    // OBJREF PART 2: are the remaining parts valid?
+    for (let ii = 1; ii < parts.length; ii++) {
+      part = parts[ii];
+      //
+      if (DBG) console.log('scanning', ii, 'for', part, 'in', this.cur_scope);
+      // are there any prop, feature, or blueprint references?
+      // these calls drill-down into the scope for each part, starting in the
+      // scope set in OBJREF PART 1
+      prop = this.strIsPropIdentifier(part);
+      blueprint = this.strIsBlueprintName(part);
+      // is this part of the objref the last part?
+      terminal = ii >= parts.length - 1;
+      if (terminal) {
+        if (prop)
+          return new VSDToken(
+            prop, // this is the full symbol dict
+            {
+              gsType,
+              symbolScope: ['props'], // this is what's 'displayable' by GUI
+              unitText
+            }
+          ); // return agent scope {props}
+      }
+    } /** END OF LOOP **/
+
+    // OBJREF ERROR: if we exhaust all parts without terminating, that's an error
+    // so return error+symbolData for the entire bundle
+    // example: 'prop agent'
+    this.scanError(true);
+    return new VSDToken(this.cur_scope, {
+      gsType,
+      unitText,
+      err_code: 'invalid',
+      err_info: `${fn} '${unitText}' not found or invalid`
+    });
+  }
+
   /// SCOPE-BASED INTERPRETER METHODS /////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** scans the current scope for a terminal property or feature, after
