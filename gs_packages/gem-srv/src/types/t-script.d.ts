@@ -252,6 +252,7 @@ declare global {
     props?: { [propName: string]: TSymbolData };
     methods?: { [methodName: string]: TGSMethodSig };
     features?: { [featureName: string]: TSymbolData };
+    featuresList?: string[];
     context?: { [line: number]: any }; // line number for a root statement
     methodSig?: TGSMethodSig; // arg choices
     arg?: TGSArg; // arg definition string 'name:type'

@@ -30,7 +30,16 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
   let sv_data: any = {};
 
   // check to see what
-  const { error, unitText, keywords, features, props, methods, arg } = symbolData;
+  const {
+    error,
+    unitText,
+    keywords,
+    featuresList,
+    features,
+    props,
+    methods,
+    arg
+  } = symbolData;
   if (unitText) sv_data.unitText = unitText;
   if (error)
     sv_data.error = {
@@ -40,6 +49,11 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
     sv_data.keywords = {
       info: keywords.join(', '),
       items: keywords
+    };
+  if (featuresList)
+    sv_data.featuresList = {
+      info: featuresList.join(', '),
+      items: featuresList
     };
   if (features) {
     const items = [...Object.keys(features)];

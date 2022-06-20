@@ -17,20 +17,23 @@ featCall AgentWidgets bindTextTo myString
 
 # program init
 prop myNumber setTo 1
+prop Costume.costumeName setTo 'banana.json'
 prop agent.myNumber setTo 2
 // radius is not used
-featProp Physics radius setTo 100
+featProp Physics radius setTo 200
 featCall Physics setSize 10 10
+featCall Physics.setSize 10 10
 
 # program event
 // Commented out because it results in too much output
 onEvent Tick [[
   dbgTick
+  dbgOut 'hello'
 ]]
 
 # program update
 
-every 1 [[
+every 1 runAtStart [[
   ifExpr {{ agent.getProp('myString').value === 'hello' }} [[
     prop myString setTo 'goodbye'
   ]] [[
@@ -39,10 +42,12 @@ every 1 [[
 
   // increase width every second
   featPropPush Physics width
+  featPropPush Physics.radius
   propPop myNumber
   prop myNumber add 10
   propPush myNumber
   featPropPop Physics width
+  featPropPop Physics.width
 
   // console log the result
   propPush myNumber

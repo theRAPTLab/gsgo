@@ -146,9 +146,9 @@ export function EditSymbol(props) {
     // 1. if the key is 'features', recursively expand its props and methods.
     // 2. if the key is plain `props`, just expand it normally
     Object.entries(dicts).forEach(([k, v]: [keyof TSymbolData, TSymbolData]) => {
-      if (!symbolScope.includes(k)) return;
+      if (Array.isArray(symbolScope) && !symbolScope.includes(k)) return;
       // console.group('symbolType', k, 'symbolDictionary', v);
-      if (k === 'features') {
+      if (symbolScope.includes('features')) {
         // 1. feature, so recursively expand
         Object.entries(v).forEach(
           ([featureName, featureDict]: [string, TSymbolData]) => {

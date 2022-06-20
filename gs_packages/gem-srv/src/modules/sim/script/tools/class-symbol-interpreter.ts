@@ -273,7 +273,130 @@ class SymbolInterpreter {
     return ctx; // valid scope is parent of cur_scope
   }
 
-  /// V1.0 OBJREF SUPPORT METHODS /////////////////////////////////////////////
+  /// V1.0 SYMBOL SUPPORT METHODS /////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** handle agent.propname, propName, Blueprint.propName  */
+  agentFeature(token: IToken): TSymbolData {
+    // error checking & type overrides
+    const fn = 'agentFeature:';
+    const gsType = 'objref';
+    this.resetScope(); // points to the bundle.symbols to start
+    let [matchType, featureName] = TOKENIZER.UnpackToken(token);
+    const unitText = Array.isArray(featureName)
+      ? featureName.join('.')
+      : featureName;
+    if (DBG) console.log(...PR(`${fn}: ${matchType}:${featureName}`));
+    // was there a previous scope-breaking error? bail!
+    if (this.scanError())
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          symbolScope: ['features'], // this is what's 'displayable' by GUI
+          unitText,
+          err_code: 'vague',
+          err_info: `${fn} error in previous token(s)`
+        }
+      );
+    // convert identifier to single-part objref
+    // and return error if it's not objref or identifier
+    if (matchType !== 'identifier') {
+      this.scanError(true);
+      return new VSDToken(
+        { features: this.getBundleScope().features },
+        {
+          gsType,
+          symbolScope: ['features'], // this is what's 'displayable' by GUI
+          unitText,
+          err_code: 'invalid',
+          err_info: `${fn} not an objref`
+        }
+      );
+    }
+    const feature = this.strIsFeatureName(featureName);
+    if (!feature) {
+      this.scanError(true);
+      return new VSDToken(this.cur_scope, {
+        gsType,
+        symbolScope: ['features'], // this is what's 'displayable' by GUI
+        unitText,
+        err_code: 'invalid',
+        err_info: `${fn} '${unitText}' not found or invalid`
+      });
+    }
+    return new VSDToken(
+      { features: feature }, // this is the full symbol dict { features, props }
+      {
+        gsType,
+        symbolScope: ['features'], // this is what's 'displayable' by GUI
+        unitText: featureName
+      }
+    ); // return agent scope {props}
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** handle agent.propname, propName, Blueprint.propName  */
+  agentFeatureList(token: IToken): TSymbolData {
+    // error checking & type overrides
+    const fn = 'agentFeature:';
+    const gsType = 'objref';
+    this.resetScope(); // points to the bundle.symbols to start
+    const featuresList = [...Object.keys(this.getBundleScope().features)];
+    let [matchType, featureName] = TOKENIZER.UnpackToken(token);
+    const unitText = Array.isArray(featureName)
+      ? featureName.join('.')
+      : featureName;
+    if (DBG) console.log(...PR(`${fn}: ${matchType}:${featureName}`));
+    // was there a previous scope-breaking error? bail!
+    if (this.scanError())
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          symbolScope: ['featuresList'], // this is what's 'displayable' by GUI
+          unitText,
+          err_code: 'vague',
+          err_info: `${fn} error in previous token(s)`
+        }
+      );
+    // convert identifier to single-part objref
+    // and return error if it's not objref or identifier
+    if (matchType !== 'identifier') {
+      this.scanError(true);
+      return new VSDToken(
+        { features: this.getBundleScope().features },
+        {
+          gsType,
+          symbolScope: ['featuresList'], // this is what's 'displayable' by GUI
+          unitText,
+          err_code: 'invalid',
+          err_info: `${fn} not an objref`
+        }
+      );
+    }
+    const features = this.cur_scope.features;
+    const feature = features[featureName];
+    if (!feature) {
+      this.scanError(true);
+      return new VSDToken(this.cur_scope, {
+        gsType,
+        symbolScope: ['featuresList'], // this is what's 'displayable' by GUI
+        unitText,
+        err_code: 'invalid',
+        err_info: `${fn} '${unitText}' not found or invalid`
+      });
+    }
+    this.cur_scope = feature;
+    return new VSDToken(
+      { featuresList }, // this is the full symbol dict { features, props }
+      {
+        gsType,
+        symbolScope: ['featuresList'], // this is what's 'displayable' by GUI
+        unitText: featureName
+      }
+    ); // return agent scope {props}
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** handle agent.propname, propName, Blueprint.propName  */
   agentObjRef(token: IToken): TSymbolData {
@@ -281,6 +404,117 @@ class SymbolInterpreter {
     const fn = 'agentObjRef:';
     const gsType = 'objref';
     this.resetScope(); // points to the bundle.symbols to start
+    let [matchType, featureName] = TOKENIZER.UnpackToken(token);
+    const unitText = Array.isArray(featureName)
+      ? featureName.join('.')
+      : featureName;
+    if (DBG) console.log(...PR(`${fn}: ${matchType}:${featureName}`));
+    // was there a previous scope-breaking error? bail!
+    if (this.scanError())
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText,
+          err_code: 'vague',
+          err_info: `${fn} error in previous token(s)`
+        }
+      );
+    // convert identifier to single-part objref
+    // and return error if it's not objref or identifier
+    if (matchType === 'identifier') featureName = [featureName];
+    else if (matchType !== 'objref') {
+      this.scanError(true);
+      return new VSDToken(
+        { props: this.getBundleScope().props },
+        {
+          gsType,
+          unitText,
+          err_code: 'invalid',
+          err_info: `${fn} not an objref`
+        }
+      );
+    }
+    // OBJREF PART 1: what kind of object are we referencing?
+    // these calls will update cur_scope SymbolData appropriately
+    let part = featureName[0];
+    let agent = this.strIsAgentLiteral(part);
+    let prop = this.strIsPropIdentifier(part);
+    let blueprint = this.strIsBlueprintName(part);
+    // is there only one part in this objref?
+    let terminal = featureName.length === 1;
+    // does the objref terminate in a method-bearing reference?
+    if (terminal) {
+      if (prop)
+        return new VSDToken(
+          prop, // this is the full symbol dict { features, props }
+          {
+            gsType,
+            symbolScope: ['props'], // this is what's 'displayable' by GUI
+            unitText: part
+          }
+        ); // return agent scope {props}
+    }
+
+    // did any agent, feature, prop, or blueprint resolve?
+    if (!(agent || prop || blueprint)) {
+      this.scanError(true);
+      return new VSDToken(this.getBundleScope(), {
+        gsType,
+        symbolScope: ['props'], // this is what's 'displayable' by GUI
+        unitText,
+        err_code: 'invalid',
+        err_info: `${fn} invalid objref '${part}'`
+      });
+    }
+
+    // OBJREF PART 2: are the remaining parts valid?
+    for (let ii = 1; ii < featureName.length; ii++) {
+      part = featureName[ii];
+      //
+      if (DBG) console.log('scanning', ii, 'for', part, 'in', this.cur_scope);
+      // are there any prop, feature, or blueprint references?
+      // these calls drill-down into the scope for each part, starting in the
+      // scope set in OBJREF PART 1
+      prop = this.strIsPropIdentifier(part);
+      blueprint = this.strIsBlueprintName(part);
+      // is this part of the objref the last part?
+      terminal = ii >= featureName.length - 1;
+      if (terminal) {
+        if (prop)
+          return new VSDToken(
+            prop, // this is the full symbol dict
+            {
+              gsType,
+              symbolScope: ['props'], // this is what's 'displayable' by GUI
+              unitText
+            }
+          ); // return agent scope {props}
+      }
+    } /** END OF LOOP **/
+
+    // OBJREF ERROR: if we exhaust all parts without terminating, that's an error
+    // so return error+symbolData for the entire bundle
+    // example: 'prop agent'
+    this.scanError(true);
+    return new VSDToken(this.cur_scope, {
+      gsType,
+      symbolScope: ['props'], // this is what's 'displayable' by GUI
+      unitText,
+      err_code: 'invalid',
+      err_info: `${fn} '${unitText}' not found or invalid`
+    });
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** handle
+   * CURRENT SYNTAX featProp <feature> <featPropName:featObjRef> <method> <value>
+   * agent.featPropName, featPropName, Blueprint.featPropName  */
+  featObjRef(token: IToken): TSymbolData {
+    // error checking & type overrides
+    const fn = 'featObjRef:';
+    const gsType = 'objref';
+    // this.resetScope(); // points to the bundle.symbols to start
     let [matchType, parts] = TOKENIZER.UnpackToken(token);
     const unitText = Array.isArray(parts) ? parts.join('.') : parts;
     if (DBG) console.log(...PR(`${fn}: ${matchType}:${parts}`));
@@ -313,10 +547,7 @@ class SymbolInterpreter {
     // OBJREF PART 1: what kind of object are we referencing?
     // these calls will update cur_scope SymbolData appropriately
     let part = parts[0];
-    let agent = this.strIsAgentLiteral(part);
     let prop = this.strIsPropIdentifier(part);
-    let blueprint = this.strIsBlueprintName(part);
-    // is there only one part in this objref?
     let terminal = parts.length === 1;
     // does the objref terminate in a method-bearing reference?
     if (terminal) {
@@ -332,7 +563,7 @@ class SymbolInterpreter {
     }
 
     // did any agent, feature, prop, or blueprint resolve?
-    if (!(agent || prop || blueprint)) {
+    if (!prop) {
       this.scanError(true);
       return new VSDToken(this.getBundleScope(), {
         gsType,
@@ -351,7 +582,6 @@ class SymbolInterpreter {
       // these calls drill-down into the scope for each part, starting in the
       // scope set in OBJREF PART 1
       prop = this.strIsPropIdentifier(part);
-      blueprint = this.strIsBlueprintName(part);
       // is this part of the objref the last part?
       terminal = ii >= parts.length - 1;
       if (terminal) {
@@ -378,7 +608,6 @@ class SymbolInterpreter {
       err_info: `${fn} '${unitText}' not found or invalid`
     });
   }
-
   /// SCOPE-BASED INTERPRETER METHODS /////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** scans the current scope for a terminal property or feature, after
