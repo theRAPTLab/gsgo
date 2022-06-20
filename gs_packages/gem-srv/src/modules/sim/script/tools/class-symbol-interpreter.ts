@@ -275,7 +275,9 @@ class SymbolInterpreter {
 
   /// V1.0 SYMBOL SUPPORT METHODS /////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** handle agent.propname, propName, Blueprint.propName  */
+  /** handle complete list of feature props and methods.
+   *  Currently not used
+   *  agent.propname, propName, Blueprint.propName  */
   agentFeature(token: IToken): TSymbolData {
     // error checking & type overrides
     const fn = 'agentFeature:';
@@ -335,10 +337,10 @@ class SymbolInterpreter {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** handle agent.propname, propName, Blueprint.propName  */
+  /** handle list of available features for featProp keyword */
   agentFeatureList(token: IToken): TSymbolData {
     // error checking & type overrides
-    const fn = 'agentFeature:';
+    const fn = 'agentFeatureList:';
     const gsType = 'objref';
     this.resetScope(); // points to the bundle.symbols to start
     const featuresList = [...Object.keys(this.getBundleScope().features)];
@@ -398,7 +400,8 @@ class SymbolInterpreter {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** handle agent.propname, propName, Blueprint.propName  */
+  /** handle object refs for prop keyword
+   *  agent.propname, propName, Blueprint.propName  */
   agentObjRef(token: IToken): TSymbolData {
     // error checking & type overrides
     const fn = 'agentObjRef:';
@@ -507,8 +510,7 @@ class SymbolInterpreter {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** handle
-   * CURRENT SYNTAX featProp <feature> <featPropName:featObjRef> <method> <value>
+  /** handle feature object refs for the featProp keyword
    * agent.featPropName, featPropName, Blueprint.featPropName  */
   featObjRef(token: IToken): TSymbolData {
     // error checking & type overrides
