@@ -510,8 +510,8 @@ class SymbolInterpreter {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** handle feature object refs for the featProp keyword
-   * agent.featPropName, featPropName, Blueprint.featPropName  */
+  /** handle feature object refs for the featProp keyword agent.featPropName,
+   *  featPropName, Blueprint.featPropName  */
   featObjRef(token: IToken): TSymbolData {
     // error checking & type overrides
     const fn = 'featObjRef:';
@@ -567,9 +567,10 @@ class SymbolInterpreter {
     // did any agent, feature, prop, or blueprint resolve?
     if (!prop) {
       this.scanError(true);
-      return new VSDToken(this.getBundleScope(), {
+      return new VSDToken(this.cur_scope, {
         gsType,
         unitText,
+        symbolScope: ['props'],
         err_code: 'invalid',
         err_info: `${fn} invalid objref '${part}'`
       });
@@ -856,7 +857,11 @@ class SymbolInterpreter {
       // SCOPE ARGS 3: validate current token against matching argument definition
       const tok = tokens[tokenIndex];
       const arg = args[tokenIndex];
+
+      /* THE MONEY CALL */
       const vtok = this.argSymbol(arg, tok);
+      /* THE MONEY CALL */
+
       vtok.methodSig = methodSignature;
       vtoks.push(vtok);
     } // end for
@@ -946,19 +951,31 @@ class SymbolInterpreter {
 
     // all symbols available in current bundle match token.objref
     if (gsType === 'objref' && TOKENIZER.TokenValue(tok, 'objref')) {
-      symData = new VSDToken(this.bdl_scope, { gsType, unitText });
+      symData = new VSDToken(this.bdl_scope, {
+        gsType,
+        unitText,
+        symbolScope: ['props'] // this is what's 'displayable' by GUI
+      });
     }
 
     // all props, feature props in bundle match token.identifier
     if (gsType === 'prop' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      symData = new VSDToken(this.bdl_scope, { gsType, unitText });
+      symData = new VSDToken(this.bdl_scope, {
+        gsType,
+        unitText,
+        symbolScope: ['props'] // this is what's 'displayable' by GUI
+      });
     }
 
     // is this a method name? current scope is pointing to
     // the method dict, we hope...
     // all methods in bundle match token.identifier
     if (gsType === 'method' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      symData = new VSDToken(this.cur_scope, { gsType, unitText });
+      symData = new VSDToken(this.cur_scope, {
+        gsType,
+        unitText,
+        symbolScope: ['methods'] // this is what's 'displayable' by GUI
+      });
     }
 
     // is this any gvar type?
@@ -983,7 +1000,14 @@ class SymbolInterpreter {
       list.forEach(featName => {
         features[featName] = SIMDATA.GetFeature(featName).symbolize();
       });
-      symData = new VSDToken({ features }, { gsType, unitText });
+      symData = new VSDToken(
+        { features },
+        {
+          gsType,
+          unitText,
+          symbolScope: ['features'] // this is what's 'displayable' by GUI
+        }
+      );
     }
 
     // is this a blueprint name? We allow any blueprint name in the dictionary
@@ -995,7 +1019,14 @@ class SymbolInterpreter {
       list.forEach(bundle => {
         blueprints[bundle.name] = bundle.symbols;
       });
-      symData = new VSDToken({ blueprints }, { gsType, unitText });
+      symData = new VSDToken(
+        { blueprints },
+        {
+          gsType,
+          unitText
+          // no need for symbolScope because we want to show all props and features???
+        }
+      );
     }
 
     // Named tests are TSMCPrograms which must return true/false

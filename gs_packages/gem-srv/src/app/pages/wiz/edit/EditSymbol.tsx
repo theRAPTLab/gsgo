@@ -101,7 +101,8 @@ export function EditSymbol(props) {
       Object.keys(sd).forEach((stype, i) => {
         const rowKey = `${sel_linenum}:${i}`;
         // NEW CODE: Look up from viewData specific to the recursive context
-        const { info, items } = vd[stype];
+        const vdata = vd[stype];
+        const { info, items } = vdata;
         // ORIG CODE: Look up from general viewData
         // const { info, items } = viewData[stype];
         const inner = []; // this is the list of choices
@@ -148,7 +149,8 @@ export function EditSymbol(props) {
     Object.entries(dicts).forEach(([k, v]: [keyof TSymbolData, TSymbolData]) => {
       if (Array.isArray(symbolScope) && !symbolScope.includes(k)) return;
       // console.group('symbolType', k, 'symbolDictionary', v);
-      if (symbolScope.includes('features')) {
+
+      if (Array.isArray(symbolScope) && symbolScope.includes('features')) {
         // 1. feature, so recursively expand
         Object.entries(v).forEach(
           ([featureName, featureDict]: [string, TSymbolData]) => {

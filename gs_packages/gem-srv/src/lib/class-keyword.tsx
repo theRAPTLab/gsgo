@@ -216,14 +216,22 @@ class Keyword implements IKeyword {
     });
     // create log
     vtoks.forEach((vtok, ii) => {
-      const { error, unitText = BAD_UNIT, ...symbols } = vtok;
+      const {
+        error,
+        unitText = BAD_UNIT,
+        gsType,
+        symbolScope,
+        ...symbols
+      } = vtok;
       let err = error ? error.info : '';
       let dicts = [...Object.keys(symbols)];
       let dictList = dicts.length ? dicts.join(', ') : '';
       const spc = ' '.padStart(ii.toString().length);
       let out = '';
 
-      if (dictList) out = `SDICT ${dictList}`;
+      if (dictList) out = `SDICT ${dictList} -`;
+      if (gsType) out += ` gsType:${gsType}`;
+      if (symbolScope) out += ` symScope:${symbolScope}`;
 
       if (err) {
         if (dictList) out += `\n${spc} ${' '.padStart(max)} ! `; // indent below valid dictList

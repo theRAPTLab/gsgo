@@ -12,7 +12,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Keyword from 'lib/class-keyword';
-import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -30,7 +29,7 @@ export class featCall extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit, idx: number): TOpcode[] {
+  compile(unit: TScriptUnit): TOpcode[] {
     const [kw, refArg, methodName, ...args] = unit;
     // ref is an array of strings that are fields in dot addressing
     // like agent.x
@@ -64,6 +63,20 @@ export class featCall extends Keyword {
         return callRef(agent, state.ctx, methodName, ...args);
       }
     ];
+  }
+
+  /** custom validation, overriding the generic validation() method of the
+   *  base Keyword class  */
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    const vtoks = []; // validation token array
+    const [kwTok, featTok, methodTok, ...argToks] = unit; // get arg pattern
+    // returns symbols for each dtok position excepting the keyword
+    vtoks.push(this.shelper.anyKeyword(kwTok));
+    vtoks.push(this.shelper.agentFeatureList(featTok));
+    vtoks.push(this.shelper.methodName(methodTok));
+    vtoks.push(...this.shelper.argsList(argToks));
+    const log = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: log };
   }
 } // end of keyword definition
 

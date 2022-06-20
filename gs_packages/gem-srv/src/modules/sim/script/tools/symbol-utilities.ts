@@ -24,22 +24,30 @@ const PR = UR.PrefixUtil('SYMUTIL', 'TagTest');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: convert symbol data into lists suitable for gui rendering. this is
  *  the entire list of ALLOWED CHOICES; if you want to just know what unitText
- *  is, then use UnpackSymbol
- */
+ *  is, then use UnpackSymbol */
 function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
+  const fn = `DecodeSymbolViewData:`;
   let sv_data: any = {};
 
   // check to see what
   const {
+    // metadata
     error,
     unitText,
+    gsType,
+    symbolScope,
+    // dicts
     keywords,
-    featuresList,
+    featuresList, // deprecate because features should be used for featProp
     features,
     props,
     methods,
-    arg
+    methodSig,
+    arg,
+    // unhandled crap
+    ...extra
   } = symbolData;
+
   if (unitText) sv_data.unitText = unitText;
   if (error)
     sv_data.error = {
@@ -76,10 +84,20 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
       items
     };
   }
+  if (methodSig) {
+    const items = [...Object.keys(methodSig.args)];
+    sv_data.methodSig = {
+      info: methodSig.args.join(', '),
+      items
+    };
+  }
   if (arg) {
     const [name, type] = CHECK.UnpackArg(arg);
     sv_data.arg = { info: arg, items: [name, type] };
   }
+
+  if (Object.keys(extra).length)
+    console.warn(...PR(`${fn} unhandled symbols ${JSON.stringify(extra)}`));
   return sv_data;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

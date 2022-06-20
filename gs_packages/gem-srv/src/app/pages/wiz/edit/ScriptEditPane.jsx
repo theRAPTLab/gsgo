@@ -1,5 +1,3 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   ScriptContextor - Displays the overall context of a blueprint, as well
@@ -140,7 +138,7 @@ export function ScriptEditPane(props) {
       <Console
         title="DEV: AVAILABLE SYMBOL INFO"
         name={dbg_console}
-        rows={5}
+        rows={7}
         open
       />
       {/* <DevNotes /> */}

@@ -261,15 +261,15 @@ class WidgetPack extends SM_Feature {
   showMessage(agent: IAgent, message: string) {
     UR.RaiseMessage('SHOW_MESSAGE', { message });
   }
-  bindTextTo(agent: IAgent, propname: string) {
-    agent.prop.AgentWidgets.textProp.setTo(propname);
+  bindTextTo(agent: IAgent, propName: string) {
+    agent.prop.AgentWidgets.textProp.setTo(propName);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// METER
 
-  bindMeterTo(agent: IAgent, propname: string) {
-    agent.prop.AgentWidgets.meterProp.setTo(propname);
+  bindMeterTo(agent: IAgent, propName: string) {
+    agent.prop.AgentWidgets.meterProp.setTo(propName);
   }
   setMeterPosition(agent: IAgent, position: string) {
     let result = FLAGS.POSITION.OUTSIDE_LEFT; // defaults to outside left
@@ -287,16 +287,16 @@ class WidgetPack extends SM_Feature {
   /**
    *
    * @param agent
-   * @param propname
+   * @param propName
    * @param frequency Number of frames between plotting another point
    *                  Defaults to 30, or once per second
    */
-  bindGraphTo(agent: IAgent, propname: string, frequency: number = 30) {
-    agent.prop.AgentWidgets._graphProp = propname;
+  bindGraphTo(agent: IAgent, propName: string, frequency: number = 30) {
+    agent.prop.AgentWidgets._graphProp = propName;
     agent.prop.AgentWidgets._graphFreq = frequency;
   }
-  bindGraphToGlobalProp(agent: IAgent, propname: string, frequency: number = 30) {
-    agent.prop.AgentWidgets._graphGlobalProp = propname;
+  bindGraphToGlobalProp(agent: IAgent, propName: string, frequency: number = 30) {
+    agent.prop.AgentWidgets._graphGlobalProp = propName;
     agent.prop.AgentWidgets._graphFreq = frequency;
   }
 
@@ -307,10 +307,10 @@ class WidgetPack extends SM_Feature {
   bindLineGraphHistogramToFeatProp(
     agent: IAgent,
     feature: string,
-    propname: string
+    propName: string
   ) {
     agent.prop.AgentWidgets._histogramFeature = feature;
-    agent.prop.AgentWidgets._histogramProp = propname;
+    agent.prop.AgentWidgets._histogramProp = propName;
   }
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
@@ -329,14 +329,14 @@ class WidgetPack extends SM_Feature {
         meterProp: SM_String.Symbols
       },
       methods: {
-        showMessage: { args: ['propname:string'] },
-        bindTextTo: { args: ['propname:string'] },
-        bindMeterTo: { args: ['propname:string'] },
+        showMessage: { args: ['text:string'] },
+        bindTextTo: { args: ['propName:prop'] },
+        bindMeterTo: { args: ['propName:prop'] },
         setMeterPosition: { args: ['position:string'] },
-        bindGraphTo: { args: ['propname:string', 'frequency:number'] },
-        bindGraphToGlobalProp: { args: ['propname:string', 'frequency:number'] },
+        bindGraphTo: { args: ['propName:prop', 'frequency:number'] },
+        bindGraphToGlobalProp: { args: ['propName:prop', 'frequency:number'] },
         bindLineGraphHistogramToFeatProp: {
-          args: ['feature:string', 'propname:string']
+          args: ['featureName:feature', 'propName:prop']
         }
       }
     };

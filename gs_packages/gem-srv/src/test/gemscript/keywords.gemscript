@@ -8,21 +8,20 @@ featCall Physics setSize 20
 addFeature Touches
 featCall Touches monitor TestKeywordAgent b2b
 addProp myNumber number 0
-addProp myString string 'hello'
+addProp myStringProp string 'hello'
 addProp copiedString string 'empty'
 addProp copiedNumber number 0
 
 addFeature AgentWidgets
-featCall AgentWidgets bindTextTo myString
+featCall AgentWidgets bindTextTo myStringProp
 
 # program init
 prop myNumber setTo 1
-prop Costume.costumeName setTo 'banana.json'
+featProp Costume costumeName setTo 'banana.json'
 prop agent.myNumber setTo 2
 // radius is not used
 featProp Physics radius setTo 200
 featCall Physics setSize 10 10
-featCall Physics.setSize 10 10
 
 # program event
 // Commented out because it results in too much output
@@ -34,20 +33,19 @@ onEvent Tick [[
 # program update
 
 every 1 runAtStart [[
-  ifExpr {{ agent.getProp('myString').value === 'hello' }} [[
-    prop myString setTo 'goodbye'
+  ifExpr {{ agent.getProp('myStringProp').value === 'hello' }} [[
+    prop myStringProp setTo 'goodbye'
   ]] [[
-    prop myString setTo 'hello'
+    prop myStringProp setTo 'hello'
   ]]
 
   // increase width every second
   featPropPush Physics width
-  featPropPush Physics.radius
+  featPropPush Physics radius
   propPop myNumber
   prop myNumber add 10
   propPush myNumber
   featPropPop Physics width
-  featPropPop Physics.width
 
   // console log the result
   propPush myNumber
@@ -60,6 +58,6 @@ every 1 runAtStart [[
 
 when TestKeywordAgent touches TestKeywordAgent [[
   // when they touch each other, shrink back down
-  prop myString setTo 'touched'
+  prop myStringProp setTo 'touched'
   featCall TestKeywordAgent.Physics setSize 10
 ]]

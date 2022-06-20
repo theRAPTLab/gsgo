@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   StackMachine Type Declarations
@@ -273,6 +272,7 @@ declare global {
     features?: { items: string[]; info: string };
     props?: { items: string[]; info: string };
     methods?: { items: string[]; info: string };
+    methodSig?: { items: string[]; info: string };
     // in the case of arg, items arrau begins with argname, followed by argtype
     arg?: { items: [name: string, type: string]; info: string };
     //
