@@ -144,7 +144,7 @@ function RoundsShouldLoop() {
 
 /// UPDATERS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SetRounds(projId, rounds) {
+function SetRounds(projId, rounds = []) {
   DCPROJECT.UpdateProjectData({ rounds });
   updateAndPublish(rounds);
 }
