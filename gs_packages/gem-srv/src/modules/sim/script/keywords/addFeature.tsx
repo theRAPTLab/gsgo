@@ -42,10 +42,10 @@ export class AddFeature extends Keyword {
   }
 
   validate(unit: TScriptUnit): TValidatedScriptUnit {
-    const [kwTok, fnTok] = unit;
+    const [kwTok, featTok] = unit;
     const vtoks = [];
     vtoks.push(this.shelper.anyKeyword(kwTok));
-    vtoks.push(this.shelper.anyFeature(fnTok));
+    vtoks.push(this.shelper.agentFeatureList(featTok));
     const vlog = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: vlog };
   }
