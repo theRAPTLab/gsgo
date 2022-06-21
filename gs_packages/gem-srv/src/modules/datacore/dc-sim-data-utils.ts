@@ -176,6 +176,31 @@ function IsValidBundle(bundle: ISMCBundle) {
   return undefined;
 }
 
+/// SYSTEM EVENT DEFINITIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const IMPLEMENTED_EVENTS = [
+  'TICK',
+  'ROUNDINIT',
+  'COSTUMES',
+  'START',
+  'ROUNDSTOP'
+];
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** these are implemented in sim-conditions */
+function IsValidSystemEvent(eventName: string): boolean {
+  const fn = 'IsValidSystemEvent:';
+  if (typeof eventName !== 'string') {
+    console.warn(`${fn} unexpected param: ${JSON.stringify(eventName)}`);
+    return false;
+  }
+  return IMPLEMENTED_EVENTS.includes(eventName.toUpperCase());
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return the list of all implemented system events */
+function SystemEventList() {
+  return [...IMPLEMENTED_EVENTS];
+}
+
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// data check utitlities
@@ -200,6 +225,7 @@ export {
   UnpackArg,
   AreValidArgs
 };
+export { IsValidSystemEvent, SystemEventList };
 export {
   /// bundle checking utilities
   IsValidBundleProgram,

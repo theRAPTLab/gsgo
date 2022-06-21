@@ -349,12 +349,18 @@ export function GetAgentBoundingRect(agent) {
 
 /// SCRIPT EVENTS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** RUNTIME MODULE INITIALIZATION CHEESE: make sure the event scripts dictionary
+ *  has all the legal system event names, initializing with empty map so all the
+ *  keys for system events are available to the validator system */
+CHECK.SystemEventList().forEach(evtName => {
+  if (!EVENT_SCRIPTS.has(evtName)) EVENT_SCRIPTS.set(evtName, new Map());
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Register an agentset to a particular handler. It's a TSMCProgram[] (an
  *  array of program arrays consisting of a stack of functions) that will
  *  get run when the EventHandler receives it.
  *  SCRIPT_EVENTS: Map<string, Map<string,TSMCProgram[]>> = new Map();
- *                eventName->Map(blueprintName)->TSMCProgram[]
- */
+ *                eventName->Map(blueprintName)->TSMCProgram[]              */
 function SubscribeToScriptEvent(
   evtName: string,
   bpName: string,
@@ -393,6 +399,9 @@ function GetAllScriptEvents() {
 function GetAllScriptEventNames() {
   return [...EVENT_SCRIPTS.keys()];
 }
+
+/// RUNTIME INITIALIZATION ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
