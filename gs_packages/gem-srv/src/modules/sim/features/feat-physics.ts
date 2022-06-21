@@ -391,8 +391,36 @@ class PhysicsPack extends SM_Feature {
         'setShape': { args: ['shape:string'] },
         'setSize': { args: ['width:number', 'height:number'] },
         'setRadius': { args: ['radius:number'] },
+        'setWidth': { args: ['width:number'] },
+        'setHeight': { args: ['height:number'] },
         'getWidth': { returns: 'width:number' },
-        'getHeight': { returns: 'height:number' }
+        'getHeight': { returns: 'height:number' },
+        'getBodyWidth': { returns: 'width:number' },
+        'getBodyHeight': { returns: 'height:number' },
+        'intersectsWith': {
+          args: ['targetAgent:blueprint'],
+          returns: 'intersects:boolean'
+        },
+        'intersectsWithBounds': {
+          args: ['bounds:{any}'],
+          returns: 'intersects:boolean'
+        },
+        'intersectsCenterWithBounds': {
+          args: ['bounds:{any}'],
+          returns: 'intersects:boolean'
+        },
+        'intersectsCenterWithAgentBounds': {
+          args: ['targetAgent:blueprint'],
+          returns: 'intersects:boolean'
+        },
+        'isBoundedBy': {
+          args: ['targetAgent:blueprint'],
+          returns: 'isBounded:boolean'
+        },
+        'intersects': {
+          args: ['boundsA:{any}', 'boundsB:{any}'],
+          returns: 'isBounded:boolean'
+        }
       }
     };
   }

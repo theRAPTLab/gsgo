@@ -488,6 +488,9 @@ class CostumePack extends SM_Feature {
         setAnimatedCostume: { args: ['costumeName:string', 'frameRate:number'] },
         setScale: { args: ['scale:number'] },
         setGlow: { args: ['seconds:number'] },
+        getColorHSV: {
+          returns: ['hue:number', 'saturation:number', 'value:number']
+        },
         setColorize: { args: ['red:number', 'green:number', 'blue:number'] },
         setColorizeHSV: { args: ['hue:number', 'sat:number', 'val:number'] },
         randomizeColor: {
@@ -506,6 +509,25 @@ class CostumePack extends SM_Feature {
           ]
         },
         resetColorize: {},
+        initHSVColorScale: {
+          args: [
+            'hue:number',
+            'saturation:number',
+            'value:number',
+            'type:string',
+            'steps:number'
+          ]
+        },
+        getHSVColorScaleColor: {
+          args: ['index:number'],
+          returns: 'color:number'
+        },
+        getBounds: {
+          returns: ['width:number', 'height:number']
+        },
+        getScaledBounds: {
+          returns: ['width:number', 'height:number']
+        },
         test: {},
         thinkHook: {}
       }
