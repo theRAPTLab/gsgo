@@ -190,7 +190,7 @@ export class SM_Number extends SM_Object {
 /// SYMBOLS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 SM_Number.Symbols = {
-  ctors: { Number: SM_Number.Symbols },
+  propTypes: { number: SM_Number.Symbols }, // TODO: may be vestigial
   methods: {
     setMin: { args: ['nvalue:number'], info: 'minimum value' },
     setMax: { args: ['nvalue:number'], info: 'maximum value' },

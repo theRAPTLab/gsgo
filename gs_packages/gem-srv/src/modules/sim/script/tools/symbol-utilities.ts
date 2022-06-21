@@ -42,6 +42,8 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
     features,
     props,
     methods,
+    propTypes,
+    // method arguments
     methodSig,
     arg,
     // unhandled crap
@@ -95,9 +97,22 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
     const [name, type] = CHECK.UnpackArg(arg);
     sv_data.arg = { info: arg, items: [name, type] };
   }
+  if (propTypes) {
+    const items = [...Object.keys(propTypes)];
+    sv_data.propTypes = {
+      info: items.join(', '),
+      items
+    };
+  }
 
-  if (Object.keys(extra).length)
-    console.warn(...PR(`${fn} unhandled symbols ${JSON.stringify(extra)}`));
+  // handle missing handlers gracefully for GUI
+  const extraSymbols = Object.keys(extra || {});
+  if (extraSymbols.length) {
+    console.log(...PR(`no handler for symbol types:[${extraSymbols.join(',')}]`));
+    extraSymbols.forEach(stype => {
+      sv_data[stype] = { info: `${fn} no handler ${stype}`, items: [] };
+    });
+  }
   return sv_data;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

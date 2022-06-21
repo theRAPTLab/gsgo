@@ -17,7 +17,7 @@ export class AddProp extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('addProp');
-    this.args = ['propName:{string}', 'propType:gvar', 'initValue:{value}'];
+    this.args = ['propName:{string}', 'type:propType', 'initValue:{value}'];
   }
 
   /** create smc blueprint code objects */
@@ -40,12 +40,13 @@ export class AddProp extends Keyword {
 
   /** custom keyword validator */
   validate(unit: TScriptUnit): TValidatedScriptUnit {
+    // addProp propName number appropriateValue
     const [kwTok, pnTok, typeTok, ivalTok] = unit;
     const vtoks = [];
     vtoks.push(this.shelper.anyKeyword(kwTok));
     vtoks.push(this.shelper.simplePropName(pnTok));
-    // vtoks.push(this.shelper.propCtor(typeTok));
-    // vtoks.push(this.shelper.arg(iValTok_));
+    vtoks.push(this.shelper.propCtor(typeTok));
+    vtoks.push(this.shelper.propCtorInitialValue(ivalTok));
     const vlog = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: vlog };
   }

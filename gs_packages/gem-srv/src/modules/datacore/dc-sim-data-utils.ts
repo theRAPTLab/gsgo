@@ -46,7 +46,7 @@ const GSTYPES: TGSType[] = [
   //
   'prop', // same as objref in some keywords
   'method',
-  'gvar',
+  'propType',
   'block',
   //
   'objref', // value of anobject ref

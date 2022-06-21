@@ -12,6 +12,7 @@
 import SM_Feature from 'lib/class-sm-feature';
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import SM_Bundle from 'lib/class-sm-bundle';
+import SM_Object from 'lib/class-sm-object';
 import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 import * as CHECK from './dc-sim-data-utils';
 
@@ -196,7 +197,6 @@ function RegisterPropType(propType: string, ctor: TPropType) {
 /** API: get the registered SMObject constructor by name */
 function GetPropTypeCtor(propType: string): TPropType {
   propType = m_EnsureLowerCase(propType);
-  if (!VARS.has(propType)) throw Error(`GetPropTypeCtor: ${propType} `);
   return VARS.get(propType);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -213,6 +213,15 @@ function GetAllPropTypeCtors() {
 function GetPropTypeSymbolsFor(propType: string): TSymbolData {
   const { Symbols } = VARS.get(propType);
   return Symbols;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetPropTypeSymbols(): TSymbolData {
+  const pts = [...VARS.entries()];
+  const symbols = {};
+  pts.forEach(([propType, ctor]) => {
+    symbols[propType] = ctor.Symbols;
+  });
+  return { propTypes: symbols };
 }
 
 /// FEATURES ///////////////////////////////////////////////////////////////////
@@ -409,7 +418,8 @@ export {
   GetPropTypeCtor,
   GetPropTypesDict,
   GetAllPropTypeCtors,
-  GetPropTypeSymbolsFor
+  GetPropTypeSymbolsFor,
+  GetPropTypeSymbols
 };
 /// extensions to the script engine capabilities are handled with "feature" modules
 export {

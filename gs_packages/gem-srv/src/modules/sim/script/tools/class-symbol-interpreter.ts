@@ -215,6 +215,58 @@ class SymbolInterpreter {
     return new VSDToken({}, { gsType, unitText });
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** look up the variable type (e.g. number, string, boolean )
+   *  it will set cur_cope to the found propType symbolDict */
+  propCtor(token: IToken) {
+    const fn = 'propCtor:';
+    const [type, propType] = TOKENIZER.UnpackToken(token);
+    const unitText = TOKENIZER.TokenToString(token);
+    const gsType = 'propType';
+    if (type !== 'identifier') {
+      this.scan_error = true;
+      return new VSDToken(
+        {}, // should this be symn
+        {
+          gsType,
+          unitText,
+          err_code: 'invalid',
+          err_info: `propType must be an identifier`
+        }
+      );
+    }
+    // check it's a valid propType
+    const propTypeSymbols = SIMDATA.GetPropTypeSymbols(); // { propTypes: { []:symbols }}
+    const symbols = propTypeSymbols.propTypes[propType.toLowerCase()];
+    if (!symbols) {
+      this.scanError(true);
+      return new VSDToken(this.cur_scope, {
+        gsType,
+        unitText,
+        err_code: 'invalid',
+        err_info: `${fn} '${propType}' not a valid propType`
+      });
+    }
+    // it's good
+    // prop
+    this.cur_scope = propTypeSymbols.propTypes[propType.toLowerCase()]; //  { symbols for selected type }
+    return new VSDToken(propTypeSymbols, {
+      gsType,
+      unitText,
+      symbolScope: ['propTypes']
+    });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** looks at the cur_scope, assuming it's the symbol dictionary a
+   *  propType (e.g. SM_Number.Symbols). The 'setTo' method defines
+   *  the kind of value it expects, which we pass then to argSymbol()
+   *  for actual processing and returning of validation tokens */
+  propCtorInitialValue(token: IToken) {
+    // expecting scriptToken type boolean, string, or number
+    const methodArg = this.cur_scope.methods.setTo.args[0];
+    return this.argSymbol(methodArg, token);
+  }
+
   /// STRING-BASED DICT SEARCHES ////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// Used by the objref symbol checker. These accessors use the refs.globals
@@ -978,9 +1030,9 @@ class SymbolInterpreter {
       });
     }
 
-    // is this any gvar type?
-    // all gvars available in system match token.identifier
-    if (gsType === 'gvar' && TOKENIZER.TokenValue(tok, 'identifier')) {
+    // is this any propType?
+    // all propTypes available in system match token.identifier
+    if (gsType === 'propType' && TOKENIZER.TokenValue(tok, 'identifier')) {
       const map = SIMDATA.GetPropTypesDict();
       const ctors = {};
       const list = [...map.keys()];

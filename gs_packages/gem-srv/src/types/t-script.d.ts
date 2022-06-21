@@ -209,7 +209,7 @@ declare global {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // symbol type declarations
   type TSLit = 'boolean' | 'string' | 'number';
-  type TSSMObj = 'prop' | 'method' | 'gvar' | 'block';
+  type TSSMObj = 'prop' | 'method' | 'propType' | 'block';
   type TSDeferred = 'objref' | 'expr' | '{value}' | '{string}' | '{any}';
   type TSDict = 'keyword' | 'pragma' | 'test' | 'program' | 'event';
   type TSAgent = 'blueprint' | 'feature';
@@ -245,7 +245,7 @@ declare global {
   type TSymbolData = {
     // read-only dictionaries
     keywords?: string[]; // a list of valid keywords for position 0
-    ctors?: { [ctorName: string]: TSymbolData }; // constructor object if needed (used by var- props)
+    propTypes?: { [ctorName: string]: TSymbolData }; // constructor object if needed (used by var- props)
     pragmas?: { [prName: string]: TGSMethodSig }; // directives hack
     blueprints?: { [bpName: string]: TSymbolData }; // blueprints
     props?: { [propName: string]: TSymbolData };
