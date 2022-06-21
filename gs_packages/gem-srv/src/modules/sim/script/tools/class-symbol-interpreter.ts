@@ -1034,12 +1034,12 @@ class SymbolInterpreter {
     // all propTypes available in system match token.identifier
     if (gsType === 'propType' && TOKENIZER.TokenValue(tok, 'identifier')) {
       const map = SIMDATA.GetPropTypesDict();
-      const ctors = {};
+      const propTypes = {};
       const list = [...map.keys()];
       list.forEach(ctorName => {
-        ctors[ctorName] = SIMDATA.GetPropTypeSymbolsFor(ctorName);
+        propTypes[ctorName] = SIMDATA.GetPropTypeSymbolsFor(ctorName);
       });
-      symData = new VSDToken({ ctors }, { gsType, unitText });
+      symData = new VSDToken({ propTypes }, { gsType, unitText });
     }
 
     // is this a feature module name?
