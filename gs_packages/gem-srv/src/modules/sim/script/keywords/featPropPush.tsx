@@ -54,6 +54,20 @@ export class featPropPush extends Keyword {
     });
     return progout;
   }
+
+  /** custom validation, overriding the generic validation() method of the
+   *  base Keyword class  */
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    const vtoks = []; // validation token array
+    const [kwTok, featTok, fPropfTok, methodTok, ...argToks] = unit; // get arg pattern
+    // returns symbols for each dtok position excepting the keyword
+
+    vtoks.push(this.shelper.anyKeyword(kwTok));
+    vtoks.push(this.shelper.agentFeatureList(featTok));
+    vtoks.push(this.shelper.featObjRef(fPropfTok)); // agent.propName, propName, Blueprint.propName
+    const log = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: log };
+  }
 } // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
