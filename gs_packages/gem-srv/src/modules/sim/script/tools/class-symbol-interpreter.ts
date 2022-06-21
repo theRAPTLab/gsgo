@@ -113,6 +113,39 @@ class SymbolInterpreter {
     console.log(`TODO: ${fn} should chain`, ctxChild);
   }
 
+  /// SCOPE-INDEPENDENT LITERAL VALIDATORS ////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  anyNumber(token: IToken) {
+    const fn = 'anyNumber:';
+    const [type, value] = TOKENIZER.UnpackToken(token);
+    const unitText = TOKENIZER.TokenToString(token);
+    const gsType = 'number';
+    const vtype = typeof value;
+    if (type === 'value' && vtype === 'number')
+      return new VSDToken({}, { gsType, unitText });
+    // if it's not value and type number, it's an error
+    return new VSDToken(
+      {},
+      {
+        gsType,
+        err_code: 'invalid',
+        err_info: `${fn} should be number, not a '${vtype}'`
+      }
+    );
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  anyString(token: IToken) {
+    const [type, string] = TOKENIZER.UnpackToken(token);
+    const unitText = TOKENIZER.TokenToString(token);
+    const gsType = 'string';
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  anyBoolean(token: IToken) {
+    const [type, boolean] = TOKENIZER.UnpackToken(token);
+    const unitText = TOKENIZER.TokenToString(token);
+    const gsType = 'boolean';
+  }
+
   /// SCOPE-INDEPENDENT GLOBAL ACCESSORS //////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// These methods don't rely on prior scope being set by prior passes,
@@ -164,6 +197,75 @@ class SymbolInterpreter {
     }
     return new VSDToken(features, { gsType, unitText });
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** return list of events */
+  anySystemEvent(token: IToken): TSymbolData {
+    const fn = 'anySystemEvent:';
+    let [type, eventName] = TOKENIZER.UnpackToken(token);
+    eventName = eventName.toUpperCase();
+    const unitText = TOKENIZER.TokenToString(token);
+    const eventNames = SIMDATA.GetAllScriptEventNames();
+    const gsType = 'event';
+    const symbols = { events: eventNames };
+    // wrong token type
+    if (type !== 'identifier') {
+      this.scan_error = true;
+      return new VSDToken(symbols, {
+        gsType,
+        unitText,
+        err_code: 'invalid',
+        err_info: 'systemEvent must be an identifier'
+      });
+    }
+    // not a recognized event name (e.g. Tick)
+    if (!eventNames.includes(eventName))
+      return new VSDToken(symbols, {
+        unitText,
+        gsType,
+        err_code: 'invalid',
+        err_info: `${fn} unknown system event '${eventName}'`
+      });
+    // valid we hope!
+    return new VSDToken(
+      { events: eventNames },
+      {
+        unitText,
+        gsType
+      }
+    );
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** hardcoded every keyword test options. See every.tsx to see how compile()
+   *  handle it */
+  everyOption(token: IToken): TSymbolData {
+    const fn = 'everyOption:';
+    const [type, optFlag] = TOKENIZER.UnpackToken(token);
+    const unitText = TOKENIZER.TokenToString(token);
+    const gsType = 'option';
+    const symbols = { options: ['runAtStart', ''] }; // hardcoded symbols
+    if (type === undefined) {
+      return new VSDToken(symbols, { gsType, unitText: '' });
+    }
+    if (type === 'identifier') {
+      if (optFlag === 'runAtStart')
+        return new VSDToken(symbols, { gsType, unitText });
+      // no match
+      return new VSDToken(symbols, {
+        gsType,
+        unitText,
+        err_code: 'invalid',
+        err_info: `${fn} '${optFlag}' is not a valid option for 'every' command`
+      });
+    }
+    // not an identifier
+    return new VSDToken(symbols, {
+      gsType,
+      unitText,
+      err_code: 'invalid',
+      err_info: `${fn} token '${type}' is not a valid option for 'every' command`
+    });
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** valid pragma aka directive */
   pragma(token: IToken) {

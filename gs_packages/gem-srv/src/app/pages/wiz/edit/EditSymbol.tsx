@@ -19,6 +19,7 @@ import * as TRANSPILER from 'script/transpiler-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import { GLabelToken, GSymbolToken, StackUnit } from '../SharedElements';
+import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -96,7 +97,7 @@ export function EditSymbol(props) {
      * @param {string} parentLabel - extra label for features, e.g. "Costume"
      * @returns jsx
      */
-    function f_render_keys(sd, vd, parentLabel = '') {
+    function f_render_choices(sd, vd, parentLabel = '') {
       const categoryDicts = [];
       Object.keys(sd).forEach((stype, i) => {
         const rowKey = `${sel_linenum}:${i}`;
@@ -108,13 +109,13 @@ export function EditSymbol(props) {
         const inner = []; // this is the list of choices
         // get all the choices for this symbol type
         items.forEach(choice => {
-          const choiceKey = `${stype}:${choice}`;
+          const choiceKey = `${stype}:${choice || GUI_EMPTY_TEXT}`;
           inner.push(
             <GSymbolToken
               key={choiceKey}
               symbolType={stype}
               unitText={unitText}
-              choice={choice}
+              choice={choice || GUI_EMPTY_TEXT}
             />
           );
         });
@@ -161,7 +162,7 @@ export function EditSymbol(props) {
               // prop viewData
               const vd = WIZCORE.DecodeSymbolViewData(featureDict);
               // render it
-              allDicts.push(f_render_keys(sd, vd, featureName));
+              allDicts.push(f_render_choices(sd, vd, featureName));
             } else if (gsType === 'method') {
               // method symbolData
               const sd: TSymbolData = {};
@@ -169,7 +170,7 @@ export function EditSymbol(props) {
               // method viewData
               const vd = WIZCORE.DecodeSymbolViewData(featureDict);
               // render it
-              allDicts.push(f_render_keys(sd, vd, featureName));
+              allDicts.push(f_render_choices(sd, vd, featureName));
             } else {
               // unspported gsType
             }
@@ -179,7 +180,7 @@ export function EditSymbol(props) {
         // 2. not a feature, just render the keys
         const sd = {};
         sd[k] = v;
-        allDicts.push(f_render_keys(sd, viewData));
+        allDicts.push(f_render_choices(sd, viewData));
       }
       // console.groupEnd();
     });

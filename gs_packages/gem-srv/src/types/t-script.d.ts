@@ -211,7 +211,7 @@ declare global {
   type TSLit = 'boolean' | 'string' | 'number';
   type TSSMObj = 'prop' | 'method' | 'propType' | 'block';
   type TSDeferred = 'objref' | 'expr' | '{value}' | '{string}' | '{any}';
-  type TSDict = 'keyword' | 'pragma' | 'test' | 'program' | 'event';
+  type TSDict = 'keyword' | 'pragma' | 'test' | 'program' | 'event' | 'option';
   type TSAgent = 'blueprint' | 'feature';
   type TSMultiArg = '{...}'; // multiple arg token marker
   type TSList = '{list}'; // future
@@ -257,7 +257,8 @@ declare global {
     arg?: TGSArg; // arg definition string 'name:type'
     tests?: string[]; // unused in gemscript 1.0
     programs?: string[]; // unused in gemscript 1.0
-    events?: string[];
+    events?: string[]; // system names
+    options?: string[]; // option flag  names
     // ok to change or add, as these are not defined in the reference dictionaries
     error?: TSymbolError; // debugging if error
     unitText?: string; // the scriptText word associated with symbol
@@ -312,7 +313,8 @@ declare global {
     | 'invalid' // token incorrect type, or invalid value
     | 'empty' // missing token
     | 'extra' // extra token
-    | 'vague'; // indeterminate token need
+    | 'vague' // indeterminate token need
+    | 'system'; // a non-editable not-an-error system-handwavy thing
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** keyword.validate() returns an array of TSymbolData that
    *  the error state returns code and desc if a parse issue is detected
@@ -508,3 +510,7 @@ export enum EBundleTag {
   isPozyxControllable = 'isPozyxControllable', // pozyx tracker controllable
   isPTrackControllable = 'isPTrackControllable' // ptrack tracker controllable
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** whenever a '' unitText is encountered and we need to display it as a
+ *  clickable choice, use this text instead */
+export const GUI_EMPTY_TEXT = '<blank>';

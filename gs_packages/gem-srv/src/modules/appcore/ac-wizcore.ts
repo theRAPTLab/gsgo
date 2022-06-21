@@ -33,6 +33,7 @@ import {
   UnpackSymbolType
 } from 'script/tools/symbol-utilities';
 import { GetTextBuffer } from 'lib/class-textbuffer';
+import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
 // load state
 const { StateMgr } = UR.class;
@@ -345,7 +346,12 @@ function DispatchClick(event) {
     // scriptToken which has its own type. We also need to know the
     // This is that TYPE MATCHING challenge again...
 
-    const [symbolType, symbolValue] = choiceKey.split('-');
+    let [symbolType, symbolValue] = choiceKey.split('-');
+    // note: every keyword options can have a '' choice, so we have
+    // re-encode '' as the value of GUI_EMPTY_TEXT and have to reverse
+    // it as well
+    if (symbolValue === GUI_EMPTY_TEXT) symbolValue = '';
+
     // symbolType = 'props' or 'methods'
     // symbolValue = the text label of the selected choice
 

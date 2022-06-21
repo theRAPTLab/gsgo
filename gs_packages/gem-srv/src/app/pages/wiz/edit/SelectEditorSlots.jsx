@@ -178,6 +178,7 @@ function SelectEditorSlots(props) {
       error = t.error.info;
     } else {
       // 3. No error, just show token
+      console.log('token', t);
       label = t.unitText;
       viewState = t.viewState;
     }

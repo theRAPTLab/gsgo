@@ -43,6 +43,8 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
     props,
     methods,
     propTypes,
+    options,
+    events,
     // method arguments
     methodSig,
     arg,
@@ -104,11 +106,32 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
       items
     };
   }
+  if (options) {
+    sv_data.options = {
+      items: ['runAtStart', ''],
+      info: 'runAtStart or empty string'
+    };
+  }
+  if (events) {
+    sv_data.events = {
+      info: events.join(', '),
+      items: events
+    };
+  }
 
   // handle missing handlers gracefully for GUI
   const extraSymbols = Object.keys(extra || {});
   if (extraSymbols.length) {
-    console.log(...PR(`no handler for symbol types:[${extraSymbols.join(',')}]`));
+    console.log(
+      `%c${fn} no handler for symbol types:[${extraSymbols.join(',')}]`,
+      'color:red;background-color:yellow;padding:1em'
+    );
+    // eslint-disable-next-line no-alert
+    alert(
+      `${fn}\nno handler for symbol types:[${extraSymbols.join(
+        ','
+      )}]\ndouble-check symbol-utilities.ts`
+    );
     extraSymbols.forEach(stype => {
       sv_data[stype] = { info: `${fn} no handler ${stype}`, items: [] };
     });

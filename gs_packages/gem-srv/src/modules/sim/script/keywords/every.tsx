@@ -102,6 +102,20 @@ export class every extends Keyword {
     });
     return prog;
   }
+
+  /** custom validation, overriding the generic validation() method of the
+   *  base Keyword class  */
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    const vtoks = []; // validation token array
+    const [kwTok, periodTok, optTestTok] = unit;
+    // every
+
+    vtoks.push(this.shelper.anyKeyword(kwTok));
+    vtoks.push(this.shelper.anyNumber(periodTok));
+    vtoks.push(this.shelper.everyOption(optTestTok));
+    const log = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: log };
+  }
 } // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

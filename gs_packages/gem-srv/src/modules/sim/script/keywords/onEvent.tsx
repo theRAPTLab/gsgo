@@ -30,6 +30,20 @@ export class onEvent extends Keyword {
     // this runs in global context inside sim-conditions
     return []; // subscriptions don't need to return any compiled code
   }
+
+  /** custom validation, overriding the generic validation() method of the
+   *  base Keyword class  */
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    const vtoks = []; // validation token array
+    const [kwTok, evtTok, execTok] = unit; // get arg pattern
+
+    vtoks.push(this.shelper.anyKeyword(kwTok));
+    vtoks.push(this.shelper.anySystemEvent(evtTok));
+    // vtoks.push(this.shelper.systemPlaceholder(kwTok));
+
+    const log = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: log };
+  }
 } // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

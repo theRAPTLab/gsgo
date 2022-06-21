@@ -56,11 +56,12 @@ const GSTYPES: TGSType[] = [
   '{any}', // value or string
   //
   'pragma',
-  'test',
-  'program',
-  'event',
-  'feature',
-  'blueprint',
+  'test', // an identifier that is a saved program name
+  'program', // an identifier that is a saved program name
+  'event', // an identifier that is a system event nbame
+  'option', // an identifier that is a 'flag' (e.g. every 10 runAtStart)
+  'feature', // an identifier that is the name of an SMFeature
+  'blueprint', // an identifier that is the name of a blueprint bundle
   // placeholder keyword args for use in scriptunits
   '{...}'
 ];
