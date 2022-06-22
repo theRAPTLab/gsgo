@@ -174,6 +174,7 @@ if (DBG) console.log(...PR('PRISM gemscript types', types_regex));
 class PanelScript extends React.Component {
   constructor() {
     super();
+    const { script_page } = WIZCORE.State();
     this.state = {
       viewMode: 'wizard', // 'code',
       jsx: '',
@@ -181,8 +182,9 @@ class PanelScript extends React.Component {
       openConfirmDelete: false,
       isDirty: false,
       openConfirmUnload: false,
-      confirmUnloadCallback: {} // fn called when user confirms unload
+      confirmUnloadCallback: {}, // fn called when user confirms unload
       // script: demoscript // Replace the prop `script` with this to test scripts defined in this file
+      script_page
     };
     // codejar
     this.jarRef = React.createRef();
@@ -195,6 +197,7 @@ class PanelScript extends React.Component {
       'inserted': types_regex
     });
 
+    this.handleWizUpdate = this.handleWizUpdate.bind(this);
     this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
     this.HandleScriptIsDirty = this.HandleScriptIsDirty.bind(this);
     this.GetTitle = this.GetTitle.bind(this);
@@ -228,6 +231,9 @@ class PanelScript extends React.Component {
     //   this.setState({ isDirty: true });
     // });
 
+    // add a subscriber
+    WIZCORE.SubscribeState(this.handleWizUpdate);
+
     window.addEventListener('beforeunload', e => {
       const { isDirty } = this.state;
       if (isDirty) {
@@ -239,10 +245,22 @@ class PanelScript extends React.Component {
   }
 
   componentWillUnmount() {
+    WIZCORE.UnsubscribeState(this.handleWizUpdate);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.UnhandleMessage('SCRIPT_IS_DIRTY', this.HandleScriptIsDirty);
     UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUIChanged);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
+  }
+
+  /** INCOMING: handle WIZCORE event updates */
+  handleWizUpdate(vmStateEvent) {
+    // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
+    const { script_page } = vmStateEvent;
+    if (script_page) {
+      this.setState({
+        script_page
+      });
+    }
   }
 
   HandleSimDataUpdate() {
@@ -439,7 +457,8 @@ class PanelScript extends React.Component {
       lineHighlight,
       isDirty,
       openConfirmDelete,
-      openConfirmUnload
+      openConfirmUnload,
+      script_page
     } = this.state;
     const { id, bpName, script, projId, onClick, classes } = this.props;
 
@@ -578,7 +597,6 @@ class PanelScript extends React.Component {
     // );
 
     // WIZARD -----------------------------------------------------------------
-    const { script_page } = WIZCORE.State();
     const Wizard = (
       <div
         style={{

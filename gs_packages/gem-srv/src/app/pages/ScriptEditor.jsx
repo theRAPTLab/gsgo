@@ -66,6 +66,8 @@ PANEL_CONFIG.set('sim', '60% auto 0px'); // columns
 class ScriptEditor extends React.Component {
   constructor() {
     super();
+    const { sel_linenum, sel_linepos, sel_slotpos, slots_validation } =
+      WIZCORE.State();
     this.state = {
       isReady: false,
       noMain: true,
@@ -78,8 +80,10 @@ class ScriptEditor extends React.Component {
       monitoredInstances: [],
       message: '',
       messageIsError: false,
-      sel_linenum: -1,
-      sel_linepos: -1
+      sel_linenum,
+      sel_linepos,
+      sel_slotpos,
+      slots_validation
     };
     this.handleWizUpdate = this.handleWizUpdate.bind(this);
     this.Initialize = this.Initialize.bind(this);
@@ -161,12 +165,16 @@ class ScriptEditor extends React.Component {
   /** INCOMING: handle WIZCORE event updates */
   handleWizUpdate(vmStateEvent) {
     // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
-    const { sel_linenum, sel_linepos } = vmStateEvent;
-    if (sel_linenum > 0)
-      this.setState({
-        sel_linenum,
-        sel_linepos
-      });
+    const { sel_linenum, sel_linepos, sel_slotpos, slots_validation } =
+      vmStateEvent;
+    const newState = {};
+    if (sel_linenum > 0) {
+      newState.sel_linenum = sel_linenum;
+      newState.sel_linepos = sel_linepos;
+    }
+    if (sel_slotpos > 0) newState.sel_slotpos = sel_slotpos;
+    if (slots_validation) newState.slots_validation = slots_validation;
+    this.setState(newState);
   }
 
   CleanupComponents() {
@@ -372,7 +380,9 @@ class ScriptEditor extends React.Component {
       message,
       messageIsError,
       sel_linenum,
-      sel_linepos
+      sel_linepos,
+      sel_slotpos,
+      slots_validation
     } = this.state;
     const { classes } = this.props;
 
@@ -421,10 +431,8 @@ class ScriptEditor extends React.Component {
             <PanelScript
               id="script"
               bpName={bpName}
-              script={script}
               projId={projId}
-              // allow clicks on panelClick
-              // onClick={this.OnPanelClick}
+              onClick={this.OnPanelClick}
             />
           )}
         </div>
