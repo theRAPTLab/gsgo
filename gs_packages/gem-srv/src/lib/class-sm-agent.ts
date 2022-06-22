@@ -526,7 +526,7 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
 
 /// STATIC VARIABLES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SM_Agent.Symbols = undefined; // set by SM_Agent.symbolize()
+SM_Agent.Symbols = {}; // set by SM_Agent.symbolize()
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

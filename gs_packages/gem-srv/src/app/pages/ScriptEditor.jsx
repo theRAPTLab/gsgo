@@ -17,14 +17,16 @@ import React, { useState } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
+import * as WIZCORE from 'modules/appcore/ac-wizcore';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
-import PanelSimViewer from './components/PanelSimViewer';
+// import PanelSimViewer from './components/PanelSimViewer';
 import PanelSelectBlueprint from './components/PanelSelectBlueprint';
 import PanelScript from './components/PanelScript';
 import PanelInstances from './components/PanelInstances';
 import PanelMessage from './components/PanelMessage';
 import DialogConfirm from './components/DialogConfirm';
+import { ScriptEditPane } from './wiz/edit/ScriptEditPane';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'test/unit-parser'; // test parser evaluation
@@ -75,8 +77,11 @@ class ScriptEditor extends React.Component {
       instances: [],
       monitoredInstances: [],
       message: '',
-      messageIsError: false
+      messageIsError: false,
+      sel_linenum: -1,
+      sel_linepos: -1
     };
+    this.handleWizUpdate = this.handleWizUpdate.bind(this);
     this.Initialize = this.Initialize.bind(this);
     this.CleanupComponents = this.CleanupComponents.bind(this);
     this.RequestBpEditList = this.RequestBpEditList.bind(this);
@@ -111,6 +116,12 @@ class ScriptEditor extends React.Component {
 
     window.addEventListener('beforeunload', this.CleanupComponents);
 
+    // add top-level click handler
+    document.addEventListener('click', WIZCORE.DispatchClick);
+
+    // add a subscriber
+    WIZCORE.SubscribeState(this.handleWizUpdate);
+
     // Set model section
     let { panelConfiguration, script } = this.state;
     if (bpName === '') {
@@ -143,7 +154,19 @@ class ScriptEditor extends React.Component {
 
   componentWillUnmount() {
     this.CleanupComponents();
+    WIZCORE.UnsubscribeState(this.handleWizUpdate);
     window.removeEventListener('beforeunload', this.CleanupComponents);
+  }
+
+  /** INCOMING: handle WIZCORE event updates */
+  handleWizUpdate(vmStateEvent) {
+    // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
+    const { sel_linenum, sel_linepos } = vmStateEvent;
+    if (sel_linenum > 0)
+      this.setState({
+        sel_linenum,
+        sel_linepos
+      });
   }
 
   CleanupComponents() {
@@ -249,6 +272,10 @@ class ScriptEditor extends React.Component {
    *                 wHere `agents` are gagents
    */
   OnInspectorUpdate(data) {
+    // HACK Skip inspector updates to skip extra scriptEditor render
+    // while testing ScriptViewPane integration
+    return;
+
     if (DBG) console.log(...PR('OnInspectorUpdate'));
     // Only show instances for the current blueprint
     const { bpName } = this.state;
@@ -343,7 +370,9 @@ class ScriptEditor extends React.Component {
       script,
       instances,
       message,
-      messageIsError
+      messageIsError,
+      sel_linenum,
+      sel_linepos
     } = this.state;
     const { classes } = this.props;
 
@@ -394,12 +423,14 @@ class ScriptEditor extends React.Component {
               bpName={bpName}
               script={script}
               projId={projId}
-              onClick={this.OnPanelClick}
+              // allow clicks on panelClick
+              // onClick={this.OnPanelClick}
             />
           )}
         </div>
         <div id="console-main" className={classes.main}>
-          <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
+          <ScriptEditPane selection={{ sel_linenum, sel_linepos }} />
+          {/* <PanelSimViewer id="sim" onClick={this.OnPanelClick} /> */}
         </div>
         <div
           id="console-bottom"

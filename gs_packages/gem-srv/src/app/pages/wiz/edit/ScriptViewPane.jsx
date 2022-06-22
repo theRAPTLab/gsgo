@@ -11,7 +11,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useEffect } from 'react';
-import { TokenToString, DecodeTokenPrimitive } from 'script/transpiler-v2';
+import * as TRANSPILER from 'script/transpiler-v2';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import {
   GLine,
@@ -20,6 +20,9 @@ import {
   GValidationToken,
   sScriptView
 } from '../SharedElements';
+// css -- REVIEW: Move to the top level TEMP HACK
+import 'lib/vendor/pico.min.css';
+import 'lib/css/gem-ui.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,7 +62,18 @@ let DBGTEXT = '';
 export function ScriptViewPane(props) {
   // collect resources for rendering
   DBGTEXT = '';
-  const { script_page } = props;
+  let { script_page, script_text } = props;
+
+  if (script_text && !script_page) {
+    // WIZCORE.SendState({ script_text });
+    const toks = TRANSPILER.TextToScript(script_text);
+    TRANSPILER.SymbolizeBlueprint(toks);
+    const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
+    // INSERT validation tokens to script_page
+    script_page = vmPage;
+
+    // return <p>loading...</p>;
+  }
   const script_page_Validation = WIZCORE.ValidateScriptPage();
   const pageBuffer = [];
   const selTokId = WIZCORE.SelectedTokenId();
@@ -143,8 +157,11 @@ export function ScriptViewPane(props) {
         let selected;
         let viewState;
         if (scriptToken) {
-          const dtok = DecodeTokenPrimitive(scriptToken);
-          label = typeof dtok !== 'object' ? dtok : TokenToString(scriptToken);
+          const dtok = TRANSPILER.DecodeTokenPrimitive(scriptToken);
+          label =
+            typeof dtok !== 'object'
+              ? dtok
+              : TRANSPILER.TokenToString(scriptToken);
           viewState = validationToken.error ? validationToken.error.code : '';
         } else {
           // no scriptToken, this is an empty slot -- user has not entered any data

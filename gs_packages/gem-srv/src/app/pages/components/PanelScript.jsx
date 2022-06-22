@@ -10,6 +10,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import * as WIZCORE from 'modules/appcore/ac-wizcore';
+
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { withStyles } from '@material-ui/core/styles';
@@ -18,6 +20,7 @@ import {
   ScriptToJSX,
   UpdateScript
 } from 'modules/sim/script/tools/script-to-jsx';
+import { ScriptViewPane } from '../wiz/edit/ScriptViewPane';
 import { GetAllKeywords } from 'modules/datacore';
 import { CompileToJSX } from '../helpers/mod-panel-script';
 
@@ -172,7 +175,7 @@ class PanelScript extends React.Component {
   constructor() {
     super();
     this.state = {
-      viewMode: 'code',
+      viewMode: 'wizard', // 'code',
       jsx: '',
       lineHighlight: undefined,
       openConfirmDelete: false,
@@ -216,12 +219,14 @@ class PanelScript extends React.Component {
     const highlight = editor => {
       Prism.highlightElement(editor);
     };
-    const editor = this.jarRef.current;
-    this.jar = CodeJar(editor, highlight);
-    this.jar.onUpdate(code => {
-      this.text = code;
-      this.setState({ isDirty: true });
-    });
+    // HACK TURN OFF CODCEJAR
+    // While integrateing ScriptVIewPane
+    // const editor = this.jarRef.current;
+    // this.jar = CodeJar(editor, highlight);
+    // this.jar.onUpdate(code => {
+    //   this.text = code;
+    //   this.setState({ isDirty: true });
+    // });
 
     window.addEventListener('beforeunload', e => {
       const { isDirty } = this.state;
@@ -551,28 +556,29 @@ class PanelScript extends React.Component {
     );
 
     // CODE -------------------------------------------------------------------
-    const Code = (
-      <pre
-        className="language-gemscript line-numbers match-braces"
-        data-line={lineHighlight}
-        style={{
-          fontSize: '10px',
-          lineHeight: 1,
-          whiteSpace: 'pre-line',
-          display: `${viewMode === 'code' ? 'inherit' : 'none'}`
-        }}
-      >
-        <code
-          id="codejar"
-          ref={this.jarRef}
-          style={{ width: '100%', height: 'auto' }}
-        >
-          {script}
-        </code>
-      </pre>
-    );
+    // const Code = (
+    //   <pre
+    //     className="language-gemscript line-numbers match-braces"
+    //     data-line={lineHighlight}
+    //     style={{
+    //       fontSize: '10px',
+    //       lineHeight: 1,
+    //       whiteSpace: 'pre-line',
+    //       display: `${viewMode === 'code' ? 'inherit' : 'none'}`
+    //     }}
+    //   >
+    //     <code
+    //       id="codejar"
+    //       ref={this.jarRef}
+    //       style={{ width: '100%', height: 'auto' }}
+    //     >
+    //       {script}
+    //     </code>
+    //   </pre>
+    // );
 
     // WIZARD -----------------------------------------------------------------
+    const { script_page } = WIZCORE.State();
     const Wizard = (
       <div
         style={{
@@ -581,7 +587,8 @@ class PanelScript extends React.Component {
           width: '100%'
         }}
       >
-        {jsx}
+        {/* {jsx} */}
+        <ScriptViewPane script_page={script_page} />
       </div>
     );
 
@@ -590,7 +597,8 @@ class PanelScript extends React.Component {
       <PanelChrome
         id={id} // used by click handler to identify panel
         title={updatedTitle}
-        onClick={onClick}
+        // disable click for wizard
+        // onClick={onClick}
         topbar={TopBar}
         bottombar={BottomBar}
       >
@@ -601,7 +609,7 @@ class PanelScript extends React.Component {
             width: '100%'
           }}
         >
-          {Code}
+          {/* {Code} */}
           {Wizard}
         </div>
       </PanelChrome>
