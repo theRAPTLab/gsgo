@@ -11,6 +11,7 @@
 
 import React from 'react';
 import { UnpackToken, TokenValue } from 'script/tools/script-tokenizer';
+import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -343,7 +344,8 @@ export function GValidationToken(props) {
   if (viewState === 'unexpected')
     classes += ' styleFlagInvalid styleFlagOverflow';
   // special custom combination viewStates
-  if (viewState === 'empty-editing') classes += ' styleFlagEmpty';
+  if (viewState === 'empty-editing' || label === GUI_EMPTY_TEXT)
+    classes += ' styleFlagEmpty';
   const displayLabel = String(label); // force convert boolean to string
   const jsx = isSlot ? (
     <>

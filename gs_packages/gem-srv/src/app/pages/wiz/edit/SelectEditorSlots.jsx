@@ -59,6 +59,7 @@ import {
   GValidationToken,
   StackText
 } from '../SharedElements';
+import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -178,7 +179,7 @@ function SelectEditorSlots(props) {
       error = t.error.info;
     } else {
       // 3. No error, just show token
-      label = t.unitText;
+      label = t.unitText || GUI_EMPTY_TEXT;
       viewState = t.viewState;
     }
     type = t.gsType;
