@@ -336,6 +336,8 @@ class ScriptEditor extends React.Component {
       panelConfiguration = 'select';
     }
 
+    WIZCORE.SendState({ script_text: script });
+
     this.setState({
       panelConfiguration,
       script,
