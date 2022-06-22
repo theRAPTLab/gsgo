@@ -43,7 +43,7 @@ class VSDToken implements TSymbolData {
   constructor(symbols?: TSymbolData, opt?: VSDOpts) {
     // if we want to remember the original scriptText word
     const { unitText, symbolScope, gsType, err_code, err_info } = opt || {};
-    if (unitText) (this as any).unitText = unitText;
+    if (unitText !== undefined) (this as any).unitText = unitText; // unitText can be empty string
     if (Array.isArray(symbolScope)) (this as any).symbolScope = symbolScope;
     if (gsType) (this as any).gsType = gsType;
     if (err_code || err_info) {
