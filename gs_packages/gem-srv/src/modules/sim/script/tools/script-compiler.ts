@@ -52,10 +52,14 @@ const PR = UR.PrefixUtil('COMPILE', 'TagDebug');
  *  UnpackToken, which returns [ type, value ] instead of the primitive
  *  value or token. TODO: review whether it should replace DecodeToken
  */
-function DecodeTokenPrimitive(arg) {
+function DecodeTokenPrimitive(arg: IToken) {
   const [type, value] = CHECK.UnpackToken(arg);
   if (type === undefined) {
-    console.warn('unknown argument type:', arg);
+    console.warn(
+      'unknown argument type:',
+      arg,
+      `converted to: type:${type},value:${value}`
+    );
     throw Error('DecodeTokenPrimitive: unknown argument type');
   }
   if (type === 'comment') return `// ${value}`;

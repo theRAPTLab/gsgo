@@ -637,7 +637,16 @@ function SaveSlotLineScript(event) {
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
   const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
   const updatedLine = lsos[lineIdx]; // clone existing line to retain block info
-  updatedLine.lineScript = slots_linescript; // just update the lineScript
+  updatedLine.lineScript = slots_linescript.filter(({ identifier }) => {
+    // SelectEditorLineSlot() treats lineScript tokens as "view data" and
+    // stores { identifier:'' } as part of its GUI operation, but this is an
+    // illegal script token so we can't just send it as a real token...filtering
+    // it out here
+    if (identifier === undefined) return true;
+    if (identifier === '') return false;
+    return true;
+  }); // just update the lineScript
+  console.log('updateLine', updatedLine);
   lsos.splice(lineIdx, 1, updatedLine);
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
   STORE.SendState({ script_tokens: nscript });

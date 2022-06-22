@@ -373,20 +373,23 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
         block_stack.push(current); // save previous
         current = block;
       }
-      console.group(
-        `%clineScript START BLOCK level=${level}`,
-        'background-color:yellow'
-      );
-      dump_status(lineScript);
-      console.groupEnd();
+      if (DBG) {
+        console.group(
+          `%clineScript START BLOCK level=${level}`,
+          'background-color:yellow'
+        );
+        dump_status(lineScript);
+        console.groupEnd();
+      }
       return;
     }
 
     if (marker === 'end') {
-      console.group(
-        `%clineScript END BLOCK level=${level}->${level - 1}`,
-        'background-color:yellow'
-      );
+      if (DBG)
+        console.group(
+          `%clineScript END BLOCK level=${level}->${level - 1}`,
+          'background-color:yellow'
+        );
       level--;
       if (level < 0) console.warn('WHOOPS');
       if (level > 0) {
@@ -398,16 +401,17 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
         current = script_tokens; // main body
         stm0 = [];
       }
-      dump_status(lineScript);
-      console.groupEnd();
+      if (DBG) dump_status(lineScript);
+      if (DBG) console.groupEnd();
       return;
     }
 
     if (marker === 'end-start') {
-      console.group(
-        `%clineScript END/START BLOCKS level=${level}`,
-        'color:gray;background-color:yellow'
-      );
+      if (DBG)
+        console.group(
+          `%clineScript END/START BLOCKS level=${level}`,
+          'color:gray;background-color:yellow'
+        );
       level--;
       if (level > 0) {
         if (lineScript.length) current.push(lineScript); // nested block
@@ -426,15 +430,17 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
         block_stack.push(current); // save previous
         current = block;
       }
-      dump_status(lineScript);
-      console.groupEnd();
+      if (DBG) dump_status(lineScript);
+      if (DBG) console.groupEnd();
       return;
     }
 
     if (lineScript.length) current.push(lineScript);
-    console.group(`lineScript level=${level}`);
-    dump_status(lineScript);
-    console.groupEnd();
+    if (DBG) {
+      console.group(`lineScript level=${level}`);
+      dump_status(lineScript);
+      console.groupEnd();
+    }
   });
   return script_tokens;
 }
