@@ -96,6 +96,7 @@ export const sButtonBreak = {
 /// LEFT: SCRIPT VIEW /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export const sScriptView = {
+  backgroundColor: 'white',
   overflowY: 'scroll',
   overflowX: 'none',
   whiteSpace: 'nowrap'
