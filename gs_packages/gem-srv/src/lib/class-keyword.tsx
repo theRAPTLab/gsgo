@@ -229,12 +229,12 @@ class Keyword implements IKeyword {
       const spc = ' '.padStart(ii.toString().length);
       let out = '';
 
-      if (dictList) out = `SDICT ${dictList} -`;
-      if (gsType) out += ` gsType:${gsType}`;
-      if (symbolScope) out += ` symScope:${symbolScope}`;
+      if (dictList) out = `SDICT ${dictList} `;
+      if (gsType) out += `gsType:${gsType} `;
+      if (symbolScope) out += `symScope:${symbolScope} `;
 
       if (err) {
-        if (dictList) out += `\n${spc} ${' '.padStart(max)} ! `; // indent below valid dictList
+        out += `\n${spc} ${' '.padStart(max)} ! `; // indent below valid dictList
         out += `ERROR ${err}`;
       }
       log.push(`${ii} ${unitText.padEnd(max)} - ${out}`);
