@@ -71,7 +71,7 @@ function SelectEditor(props) {
   // this is just a copy of processStringInput
   const processIdentifierInput = e => {
     e.preventDefault();
-    WIZCORE.UpdateSlotString(String(e.target.value));
+    WIZCORE.UpdateIdentifier(String(e.target.value));
   };
   const processBooleanInput = e => {
     e.preventDefault();
