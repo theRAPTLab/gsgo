@@ -115,12 +115,16 @@
 .gwiz.valueType {
   color: blue;
 }
+.gwiz.numberType {
+  color: blue;
+}
 .gwiz.stringType {
   color: maroon;
 }
 .gwiz.exprType {
   color: darkgreen;
 }
+
 .gwiz.styleSolid {
   background-color: black;
 }

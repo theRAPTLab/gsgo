@@ -152,6 +152,7 @@ export function ScriptViewPane(props) {
       lineValidationTokens.forEach((validationToken, idx) => {
         const tokInfo = vmTokens[idx] || {};
         let { tokenKey } = tokInfo;
+        const { gsType } = validationToken;
         const { scriptToken } = tokInfo;
         let label;
         let selected;
@@ -176,7 +177,7 @@ export function ScriptViewPane(props) {
             tokenKey={tokenKey}
             position={idx}
             selected={selected}
-            type="fixme"
+            type={gsType}
             label={label}
             viewState={viewState}
           />
