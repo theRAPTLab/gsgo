@@ -206,12 +206,15 @@ function GetPropTypesDict(): Map<string, TPropType> {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetAllPropTypeCtors() {
+  const fn = 'GetAllPropTypeCtors:';
   const list = [...VARS.entries()];
   return list;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetPropTypeSymbolsFor(propType: string): TSymbolData {
+  const fn = 'GetPropTypeSymbolsFor:';
   const { Symbols } = VARS.get(propType);
+  console.log(`${fn}`, Symbols);
   return Symbols;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

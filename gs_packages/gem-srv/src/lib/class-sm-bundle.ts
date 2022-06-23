@@ -42,6 +42,8 @@ class SM_Bundle implements ISMCBundle {
   tags: TBundleTags;
   symbols: TSymbolData;
   directives: TBundleDirectives;
+  //
+  _clone: number; // secret clone generation information
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   constructor(name?: string, type?: EBundleType) {
     if (typeof name === 'string') this.setName(name);
@@ -60,6 +62,20 @@ class SM_Bundle implements ISMCBundle {
     //
     this.tags = new Map();
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** makes a bad copy of a bundle, ensuring only certain objects are recreated
+   *  instead of referenced. This should only be used in very special technical
+   *  cases */
+  carelessClone(): SM_Bundle {
+    const nbdl = new SM_Bundle();
+    Object.assign(nbdl, this);
+    nbdl.setName(`${this.name}_clone`);
+    nbdl.symbols = { ...nbdl.symbols }; // new wrapper
+    const gen = this._clone || 0;
+    nbdl._clone = gen + 1; // clone generation
+    return nbdl;
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setName(name: string, parent?: string) {
     if (!name) throw Error('a name is required');

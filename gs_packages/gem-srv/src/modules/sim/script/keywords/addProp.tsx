@@ -32,10 +32,22 @@ export class AddProp extends Keyword {
 
   /** return symbol structure for this keyword */
   symbolize(unit: TScriptUnit): TSymbolData {
-    const propName = TokenToString(unit[1]);
-    const propType = TokenToString(unit[2]);
-    const propCtor = GetPropTypeCtor(propType as string);
-    return { props: { [propName as string]: propCtor.Symbols } };
+    const [kwTok, pnTok, typeTok, ivalTok] = unit;
+    if (pnTok === undefined) return {};
+    if (typeTok === undefined) return {};
+    const propName = TokenToString(pnTok);
+    const propType = TokenToString(typeTok);
+    const propClass = GetPropTypeCtor(propType);
+    if (propClass === undefined) {
+      console.warn('addProp unrecognized propType', propType);
+      return {};
+    }
+    const propClassSymbols = propClass.Symbols;
+    if (propClassSymbols === undefined) {
+      console.warn('addProp symbolize missing symbols', propClass);
+      return {};
+    }
+    return { props: { [propName as string]: propClassSymbols } };
   }
 
   /** custom keyword validator */

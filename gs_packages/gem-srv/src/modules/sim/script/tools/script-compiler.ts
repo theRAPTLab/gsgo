@@ -200,6 +200,7 @@ function SymbolizeBlueprint(script: TScriptUnit[], bdl?: SM_Bundle) {
   // symbolize statement-by-statement
   script.forEach((stm, line) => {
     const symbols = SymbolizeStatement(stm, line);
+    if (DBG && symbols) console.log(line, 'adding symbols', symbols);
     BUNDLER.AddSymbols(symbols);
   }); // script forEach
   // store script in bundle

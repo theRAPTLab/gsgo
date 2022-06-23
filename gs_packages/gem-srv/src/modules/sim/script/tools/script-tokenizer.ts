@@ -120,6 +120,7 @@ function TokenToPlainString(tok: IToken) {
   // any kind of string?
   if (jsType === 'string') return tokValue;
   if (jsType === 'number') return String(tokValue);
+  if (jsType === 'boolean') return String(tokValue);
   console.warn(`${fn} token could not be converted to string`, tok);
   return undefined;
 }

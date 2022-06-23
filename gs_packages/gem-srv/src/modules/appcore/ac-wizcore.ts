@@ -32,6 +32,8 @@ import {
   UnpackViewData,
   UnpackSymbolType
 } from 'script/tools/symbol-utilities';
+import * as COMPILER from 'script/tools/script-compiler';
+import * as BUNDLER from 'script/tools/script-bundler';
 import { GetTextBuffer } from 'lib/class-textbuffer';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
@@ -80,6 +82,7 @@ STORE._initializeState({
   // -- the whole line of slots
   slots_linescript: [], // lineScript being edited in slot editor -- the whole line
   slots_validation: null, // validation object for the current slot line being edited { validationTokens, validationLog }
+  slots_bundle: null, // temporary bundle used to store line-based symbol tables
 
   // project context
   proj_list: [], // project list
@@ -149,18 +152,46 @@ STORE._interceptState(state => {
     }
   }
 
+  // if cur_bdl changes, then copy slots_bundle
+  if (state.cur_bdl) {
+    state.slots_bundle = state.cur_bdl.carelessClone();
+  }
+
   // if the slot linescript changes, recalculate slots_validation
   if (state.slots_linescript) {
-    const { cur_bdl } = State();
+    let { slots_bundle, cur_bdl } = State();
+
+    if (!slots_bundle) {
+      slots_bundle = cur_bdl.carelessClone();
+    }
+    state.slots_bundle = slots_bundle;
+
     // if we're first setting sel_linenum, use state.sel_linenum becase it doesn't exist in State yet
     // otherwise fall back to the value set in State
     const line = state.sel_linenum || State().sel_linenum;
     const vmPageLine = GetVMPageLine(line);
     const { globalRefs } = vmPageLine;
+
+    // we have to make changes to the bundle
+    const newSymbols = COMPILER.SymbolizeStatement(state.slots_linescript);
+    BUNDLER.OpenBundle(slots_bundle);
+    BUNDLER.AddSymbols(newSymbols);
+    BUNDLER.CloseBundle();
+    // console.log('newSymbols', newSymbols);
+    // console.log('cur_bdl.symbol', cur_bdl.symbols);
+    console.log(
+      ...PR(
+        `slots_linescript: validating '${TRANSPILER.StatementToText(
+          state.slots_linescript
+        ).trim()}' with slots_bundle symbols:`,
+        state.slots_bundle.symbols
+      )
+    );
+
     state.slots_validation = TRANSPILER.ValidateStatement(
       state.slots_linescript,
       {
-        bundle: cur_bdl,
+        bundle: state.slots_bundle,
         globals: globalRefs
       }
     );
@@ -633,6 +664,7 @@ function WizardTestLine(text: string) {
  *  Called by SelectEditorLineSlot
  */
 function SaveSlotLineScript(event) {
+  const fn = 'SaveSlotLineScript:';
   const { script_page, sel_linenum, slots_linescript } = STORE.State();
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
   const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
@@ -646,7 +678,7 @@ function SaveSlotLineScript(event) {
     if (identifier === '') return false;
     return true;
   }); // just update the lineScript
-  console.log('updateLine', updatedLine);
+  console.log(...PR(fn, 'updateLine', updatedLine));
   lsos.splice(lineIdx, 1, updatedLine);
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
   STORE.SendState({ script_tokens: nscript });

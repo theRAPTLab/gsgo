@@ -319,43 +319,66 @@ class SymbolInterpreter {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** look up the variable type (e.g. number, string, boolean )
+   *  addProp propName propType propInitValu
    *  it will set cur_cope to the found propType symbolDict */
   propCtor(token: IToken) {
-    const fn = 'propCtor:';
+    const fn = '**** propCtor:';
+    // check it's a valid propType
     const [type, propType] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const gsType = 'propType';
-    if (type !== 'identifier') {
-      this.scan_error = true;
+
+    if (this.scanError())
       return new VSDToken(
-        {}, // should this be symn
+        {},
         {
           gsType,
           unitText,
-          err_code: 'invalid',
-          err_info: `propType must be an identifier`
+          err_code: 'vague',
+          err_info: `${fn} error in previous token(s)`
         }
       );
-    }
-    // check it's a valid propType
-    const propTypeSymbols = SIMDATA.GetPropTypeSymbols(); // { propTypes: { []:symbols }}
-    const symbols = propTypeSymbols.propTypes[propType.toLowerCase()];
-    if (!symbols) {
-      this.scanError(true);
-      return new VSDToken(this.cur_scope, {
+
+    const validPropTypeSymbols = SIMDATA.GetPropTypeSymbols(); // { propTypes: { []:symbols }}
+    // if not defined, return the list of valid options
+    if (token === undefined) {
+      this.scan_error = true;
+      return new VSDToken(validPropTypeSymbols, {
         gsType,
         unitText,
         err_code: 'invalid',
-        err_info: `${fn} '${propType}' not a valid propType`
+        err_info: `propType is required`
       });
     }
-    // it's good
-    // prop
-    this.cur_scope = propTypeSymbols.propTypes[propType.toLowerCase()]; //  { symbols for selected type }
-    return new VSDToken(propTypeSymbols, {
+    if (type !== 'identifier') {
+      this.scan_error = true;
+      return new VSDToken(validPropTypeSymbols, {
+        gsType,
+        unitText,
+        err_code: 'invalid',
+        err_info: `propType must be an identifier, not ${type}`
+      });
+    }
+    // if we got this far, there was a valid token, so let's see if it
+    // refers to an actual type
+    const propSymbols = validPropTypeSymbols.propTypes[propType.toLowerCase()];
+    if (!propSymbols) {
+      this.scan_error = true;
+      return new VSDToken(validPropTypeSymbols, {
+        gsType,
+        unitText,
+        err_code: 'invalid',
+        err_info: `${fn} invalid '${propType}' not a valid propType`
+      });
+    }
+    // if we got THIS far, everything looks great
+    // propType symbols look like { propTypes: { number: SM_Number.Symbols, string, ... }}
+    const propTypeMethods =
+      validPropTypeSymbols.propTypes[propType.toLowerCase()]; //  { symbols for selected type }
+    this.cur_scope = propTypeMethods;
+    return new VSDToken(validPropTypeSymbols, {
       gsType,
-      unitText,
-      symbolScope: ['propTypes']
+      unitText
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -365,7 +388,66 @@ class SymbolInterpreter {
    *  for actual processing and returning of validation tokens */
   propCtorInitialValue(token: IToken) {
     // expecting scriptToken type boolean, string, or number
-    const methodArg = this.cur_scope.methods.setTo.args[0];
+    const fn = 'propCtorInitialValue:';
+    const [type, propType] = TOKENIZER.UnpackToken(token);
+    const unitText = TOKENIZER.TokenToString(token);
+    let gsType: TGSType = '{?}'; // filled in once we know more
+
+    if (this.scanError())
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText,
+          err_code: 'vague',
+          err_info: `${fn} error in previous token(s)`
+        }
+      );
+
+    const { methods } = this.cur_scope;
+    // no methods dict...keyword validation programming bug?
+    if (!methods) {
+      this.scan_error = true;
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText,
+          err_code: 'debug',
+          err_info: `${fn} no methods dict in scope`
+        }
+      );
+    }
+    // good methods dict, expect a setTo method for any propType
+    const { setTo } = methods;
+    if (!setTo) {
+      this.scan_error = true;
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText,
+          err_code: 'debug',
+          err_info: `${fn} not a settable property`
+        }
+      );
+    }
+    const { args } = setTo;
+    if (!Array.isArray(args)) {
+      this.scan_error = true;
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText,
+          err_code: 'debug',
+          err_info: `${fn} bad setTo definition in prop`
+        }
+      );
+    }
+    // ok, everything should be good...
+    // so let the argSymbol() helper take it from here
+    const methodArg = args[0];
     return this.argSymbol(methodArg, token);
   }
 
