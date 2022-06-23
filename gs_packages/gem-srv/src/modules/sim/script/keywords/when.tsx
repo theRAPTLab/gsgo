@@ -34,7 +34,7 @@ export class when extends Keyword {
   compile(unit: TScriptUnit): TOpcode[] {
     const prog = [];
     if (unit.length < 4 || unit.length > 5) {
-      prog.push(this.errLine('when: invalid number of args', idx));
+      prog.push(this.errLine('when: invalid number of args'));
       console.warn('error parsing when units <4 >5', unit);
     } else if (unit.length === 4) {
       /** SINGLE AGENT WHEN TEST *********************************************/
