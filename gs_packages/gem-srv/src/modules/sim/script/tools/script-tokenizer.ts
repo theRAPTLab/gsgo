@@ -8,7 +8,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import GScriptTokenizer from 'script/tools/class-gscript-tokenizer-v2';
+import GScriptTokenizer, {
+  UnpackToken
+} from 'script/tools/class-gscript-tokenizer-v2';
 // uses types defined in t-script.d
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -70,9 +72,9 @@ function ScriptToText(units: TScriptUnit[]): string {
 
 /// SUPPORT API ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: given a token, return the text representation of it. If it encounters an
- *  array of nested tokens in a 'block' token, it converts those recursively
- */
+/** API: given a token, return the GEMSCRIPT text representation of it. If it
+ *  encounters an array of nested tokens in a 'block' token, it converts those
+ *  recursively */
 function TokenToString(tok: IToken, indent: number = 0) {
   if (tok === undefined) return '';
   const { directive, comment, line } = tok; // meta information
@@ -102,6 +104,25 @@ function TokenToString(tok: IToken, indent: number = 0) {
   console.warn('unknown argument type:', tok);
   throw Error('unknown argument type');
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: returns an unadorned version of the stringified token */
+function TokenToPlainString(tok: IToken) {
+  const fn = 'TokenToPlainString:';
+  const [, tokValue] = UnpackToken(tok);
+  const jsType = typeof tokValue;
+  // array of strings?
+  if (
+    Array.isArray(tokValue) &&
+    tokValue.length &&
+    typeof tokValue[0] === 'string'
+  )
+    return tokValue.join('.');
+  // any kind of string?
+  if (jsType === 'string') return tokValue;
+  if (jsType === 'number') return String(tokValue);
+  console.warn(`${fn} token could not be converted to string`, tok);
+  return undefined;
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -114,8 +135,9 @@ export {
 export {
   StatementToText, // convert a line of script TScriptUnit to a line of text
   StringToLineScript, // convert a single line string into TScriptUnit
-  TokenToString, // convert a token to its string ver
-  TokenToString as TokenToUnitText // alias
+  TokenToString, // convert a token to its GEMSCRIPT text representation
+  TokenToPlainString, // convert a token to an unadorned string
+  TokenToPlainString as TokenToUnitText // alias
 };
 /// forward gscript-tokenizer utilities
 export {

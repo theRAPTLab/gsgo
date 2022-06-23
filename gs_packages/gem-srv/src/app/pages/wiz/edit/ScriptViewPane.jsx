@@ -157,11 +157,7 @@ export function ScriptViewPane(props) {
         let selected;
         let viewState;
         if (scriptToken) {
-          const dtok = TRANSPILER.DecodeTokenPrimitive(scriptToken);
-          label =
-            typeof dtok !== 'object'
-              ? dtok
-              : TRANSPILER.TokenToString(scriptToken);
+          label = TRANSPILER.TokenToString(scriptToken);
           viewState = validationToken.error ? validationToken.error.code : '';
         } else {
           // no scriptToken, this is an empty slot -- user has not entered any data

@@ -237,7 +237,6 @@ class Keyword implements IKeyword {
         if (dictList) out += `\n${spc} ${' '.padStart(max)} ! `; // indent below valid dictList
         out += `ERROR ${err}`;
       }
-
       log.push(`${ii} ${unitText.padEnd(max)} - ${out}`);
     });
     return log; // for use by console
