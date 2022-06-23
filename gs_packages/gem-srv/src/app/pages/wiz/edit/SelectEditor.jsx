@@ -67,6 +67,12 @@ function SelectEditor(props) {
     e.preventDefault();
     WIZCORE.UpdateSlotString(String(e.target.value));
   };
+  // note this needs to have a new wizcore method for identifier input types
+  // this is just a copy of processStringInput
+  const processIdentifierInput = e => {
+    e.preventDefault();
+    WIZCORE.UpdateSlotString(String(e.target.value));
+  };
   const processBooleanInput = e => {
     e.preventDefault();
     const toggled = unitText === 'true' ? false : true;
@@ -153,10 +159,25 @@ function SelectEditor(props) {
         </div>
       );
       break;
+    case 'prop':
+      editor = (
+        <div className="gsled input">
+          <label>Enter a propName identifier</label>
+          <input
+            key={tkey}
+            defaultValue={unitText}
+            type="text"
+            onChange={processIdentifierInput}
+            onKeyPress={handleStringKeypress}
+          />
+          ;
+        </div>
+      );
+      break;
     default:
       editor = (
         <div>
-          <EditSymbol selection={selection} />
+          <EditSymbol selection={selection} expectedType={gsType} />
         </div>
       );
   }
