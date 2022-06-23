@@ -40,7 +40,7 @@ const { StateMgr } = UR.class;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('WIZCORE', 'TagCyan');
+const PR = UR.PrefixUtil('WIZCORE', 'TagBlue');
 const DBG = true;
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
@@ -56,8 +56,8 @@ function m_ChildOf(child, parent) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// First create the new instance, and extract the methods we plan to use
 const STORE = new StateMgr('ScriptWizard');
-WIZUTIL.LoadDependencies();
-WIZHOOK.LoadDependencies();
+WIZUTIL.LoadDependencies(PR);
+WIZHOOK.LoadDependencies(PR);
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// initial values of state have to be defined for constructors of components

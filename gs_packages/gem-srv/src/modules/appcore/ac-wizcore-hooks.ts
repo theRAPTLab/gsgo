@@ -6,7 +6,7 @@ import { ASSETDIR, DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('WIZCORE', 'TagCyan');
+const PR = UR.PrefixUtil('WIZ-HOOKS', 'TagCyan');
 const DBG = true;
 
 /// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
@@ -69,8 +69,8 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
 /// DEPENDENCY LOADER /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** dummy export to allow module to load and initialize */
-function LoadDependencies() {
-  console.log(...PR('loaded'));
+function LoadDependencies(PROMPTER = str => PR(str)) {
+  console.log(...PROMPTER('loaded wizcore-hooks'));
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
