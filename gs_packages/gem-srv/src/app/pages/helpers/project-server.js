@@ -520,6 +520,42 @@ function InstanceRequestEdit(data) {
     UR.RaiseMessage('INSTANCE_EDIT_ENABLE', data);
   }
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: User has edited the instance  using the InstanceEditor.
+ *  This usually means the instance name and/or the instance initScript
+ *  has changed.
+ *  The state has already been updated.
+ *  So we need to delete and recreate the instance.
+ *  @param {object} data -- {bpName, agentId}
+ */
+function InstanceDefUpdate(data) {
+  // 1. Delete the old instance
+  //    Delete the old instance so AllAgentsPropgramUpdate will recreate
+  //    it with the new script.
+  DCAGENTS.DeleteAgent({ bpid: data.bpName, id: data.agentId });
+  //    Also delete input agents
+  DCINPUTS.InputsReset();
+
+  // 2. Inform network devices
+  RaiseModelUpdate();
+  RaiseInstancesListUpdate();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** currentInstance State update handler
+ *  When a user edits an initScript, the instance needs to be re-created.
+ *  when the edit is submitted, InstanceEditor will trigger an `instances`
+ *  state group update.  This in turn triggers an InstanceDefUpdate
+ *  which will delete and recreate the instance.
+ */
+function urCurrentInstanceStateUpdated(stateObj, cb) {
+  const { currentInstance } = stateObj;
+  if (!currentInstance) return;
+  InstanceDefUpdate({
+    bpName: currentInstance.bpid,
+    agentId: currentInstance.id
+  });
+  if (typeof cb === 'function') cb(); // callback
+}
 
 /// API CALLS: SCRIPT DATA REQUESTS ///////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -706,6 +742,9 @@ async function HandleRequestProjData(data) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// SRI NOTE @BEN - is the intention here is to provide BOTH a direct call and
 /// message-based API to project-server?
+
+/// STATE HANDLERS ------------------------------------------------------------
+UR.SubscribeState('instances', urCurrentInstanceStateUpdated);
 
 /// TRANSFORM UTILS -----------------------------------------------------------
 UR.HandleMessage('NET:TRANSFORM_REQ', HandleTransformReq); // returns locale xforms
