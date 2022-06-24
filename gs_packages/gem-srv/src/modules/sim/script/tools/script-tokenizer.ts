@@ -11,11 +11,10 @@
 import GScriptTokenizer, {
   UnpackToken
 } from 'script/tools/class-gscript-tokenizer-v2';
-// uses types defined in t-script.d
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const gstDBG = new GScriptTokenizer();
+const STRTOK = new GScriptTokenizer();
 const CR = '\n'; // '\r\n' used by windows
 
 /// API ///////////////////////////////////////////////////////////////////////
@@ -46,7 +45,7 @@ function StatementToText(statement: TScriptUnit, indent: number = 0): string {
 /** API: given a text, return the parsed ScriptUnit[] representation */
 function TextToScript(text: string = ''): TScriptUnit[] {
   // this will throw an error string of '{err} @row:col'
-  const script = gstDBG.tokenize(text.trim());
+  const script = STRTOK.tokenize(text.trim());
   return script;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -125,6 +124,10 @@ function TokenToPlainString(tok: IToken) {
   return undefined;
 }
 
+/// EXPRESSION TOKENIZER //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// see export
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// main api
@@ -154,3 +157,5 @@ export {
   IsValidToken, // return true if it's a recognized token object
   IsValidTokenKey // return true if string it's a recognized token key
 } from 'script/tools/class-gscript-tokenizer-v2';
+/// forward expression parser
+export { ParseExpression } from './class-expr-parser-v2';

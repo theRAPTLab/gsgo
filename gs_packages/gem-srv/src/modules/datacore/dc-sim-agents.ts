@@ -1,13 +1,15 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  DC AGENTS
+  DATACORE AGENT SIMULATION RESOURCES
 
-  Handles Blueprints for Agents
-  Handles instancing of Blueprints
+  Maintains list of agent instances, and also provides a reverse lookup from the
+  agent id to instance.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
+import { INSTANCEDEF_ID_START } from 'config/dev-settings';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -16,16 +18,14 @@ const DBG = false;
 
 const AGENTS: Map<string, Map<any, IAgent>> = new Map(); // blueprint => Map<id,Agent>
 const AGENT_DICT: Map<any, IAgent> = new Map(); // id => Agent
-const INSTANCES: TInstanceMap = new Map(); // @BEN is this similar to AGENT_DICT, probably should be a DEF
+const INSTANCE_DEFS: TInstanceDefsByBP = new Map();
 //
-const INSTANCE_COUNTER_START_VAL = 9000; // reserve ids < 9000 for User Defined instances?
-let INSTANCE_COUNTER = INSTANCE_COUNTER_START_VAL;
+let INSTANCEDEF_ID_COUNTER = INSTANCEDEF_ID_START;
 
 /// AGENT SUPPORT UTILITIES ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: Copies all `agent.prop` GVars.  Does not copy SM_Feature props.
- *  Used by CopyAgentProps.
- */
+ *  Used by CopyAgentProps. */
 function m_CopyProps(props: object, targetProps: object) {
   for (const [key, value] of Object.entries(props)) {
     // Test for targetProps[key] b/c non-GVar properties (like `statusHistory`) do not have a setTo
@@ -36,8 +36,7 @@ function m_CopyProps(props: object, targetProps: object) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: Blindly copy all featProps.  Used by CopyAgentProps.
- *  NOTE: Ignores Dicts!!!!
- */
+ *  NOTE: Ignores Dicts!!!! */
 function m_CopyFeatProps(origFeatProps: any[], targetAgentFeatProps: any) {
   const featProps = [...Object.keys(origFeatProps)];
   featProps.forEach(p => {
@@ -59,23 +58,23 @@ function m_CopyFeatProps(origFeatProps: any[], targetAgentFeatProps: any) {
 /** Given the creation parameters, make a new instance. The init program sets
  *  the default values (and any other startup code if needed).
  */
-function DefineInstance(instanceDef: TInstance) {
+function DefineInstance(instanceDef: TInstanceDef) {
   const { bpid, id, initScript } = instanceDef;
   // console.log(...PR(`saving '${name}' blueprint '${blueprint}' with init`, init));
-  if (!INSTANCES.has(bpid)) INSTANCES.set(bpid, []);
-  const bpi = INSTANCES.get(bpid);
+  if (!INSTANCE_DEFS.has(bpid)) INSTANCE_DEFS.set(bpid, []);
+  const bpi = INSTANCE_DEFS.get(bpid);
   // Use the spec'd id, otherwise auto-generate an id
   if (!instanceDef.id) {
-    instanceDef.id = String(INSTANCE_COUNTER++);
+    instanceDef.id = String(INSTANCEDEF_ID_COUNTER++);
   }
   instanceDef.id = String(instanceDef.id); // enforce string
   bpi.push(instanceDef);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: replace an instanceDef by id with an updated definition */
-function UpdateInstance(instanceDef: TInstance) {
+function UpdateInstance(instanceDef: TInstanceDef) {
   const { bpid, id } = instanceDef;
-  const bpi = INSTANCES.get(bpid);
+  const bpi = INSTANCE_DEFS.get(bpid);
   const index = bpi.findIndex(i => i.id === id);
   if (index < 0)
     console.error(...PR(`UpdateInstance couldn't find instance ${id}`));
@@ -83,15 +82,13 @@ function UpdateInstance(instanceDef: TInstance) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: deleted an instanceDef by id if it exits */
-function DeleteInstance(instanceDef: TInstance) {
+function DeleteInstance(instanceDef: TInstanceDef) {
   const { bpid, id } = instanceDef;
-  const bpi = INSTANCES.get(bpid);
+  const bpi = INSTANCE_DEFS.get(bpid);
   if (!bpi) return; // already deleted
   const index = bpi.findIndex(i => i.id === id);
   if (index < 0 && DBG)
     // This warning can be ignored because when deleting a blueprint,
-    // sim-agents.FilterBlueprints will have already removed the instance
-    // even before AllAgentsProgram gets around to removal with SCRIPT_TO_INSTANCE.mapObjects();
     console.warn(...PR(`DeleteInstance couldn't find instance ${id}`));
   bpi.splice(index, 1);
 }
@@ -99,14 +96,14 @@ function DeleteInstance(instanceDef: TInstance) {
 /** API: return an array all instanceDefs for all blueprint types */
 function GetAllInstances() {
   const instances = [];
-  const map = [...INSTANCES.values()];
+  const map = [...INSTANCE_DEFS.values()];
   map.forEach(i => instances.push(...i));
   return instances;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: retrieve an instanceDef by a bpid (name) and id */
 function GetInstance({ bpid, id: instanceDefId }) {
-  const bpi = INSTANCES.get(bpid);
+  const bpi = INSTANCE_DEFS.get(bpid);
   if (bpi === undefined) return undefined;
   const index = bpi.findIndex(i => i.id === instanceDefId);
   if (index < 0) return undefined;
@@ -117,22 +114,22 @@ function GetInstance({ bpid, id: instanceDefId }) {
 function GetInstancesType(blueprint: string) {
   if (typeof blueprint !== 'string')
     throw Error(`bad blueprint typeof ${typeof blueprint}`);
-  if (!INSTANCES.has(blueprint)) INSTANCES.set(blueprint, []);
-  return INSTANCES.get(blueprint);
+  if (!INSTANCE_DEFS.has(blueprint)) INSTANCE_DEFS.set(blueprint, []);
+  return INSTANCE_DEFS.get(blueprint);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: clear the blueprint-to-instanceDefs map. Used when starting a
  *  new sim round
  */
 function DeleteAllInstances() {
-  INSTANCES.clear();
-  INSTANCE_COUNTER = INSTANCE_COUNTER_START_VAL;
+  INSTANCE_DEFS.clear();
+  INSTANCEDEF_ID_COUNTER = INSTANCEDEF_ID_START;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: delete all the instanceDefs associated with a particular blueprintName
  */
 function DeleteInstancesByBlueprint(bpName) {
-  INSTANCES.set(bpName, []);
+  INSTANCE_DEFS.set(bpName, []);
 }
 
 /// AGENT API METHODS /////////////////////////////////////////////////////////

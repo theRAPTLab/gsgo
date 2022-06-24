@@ -41,7 +41,7 @@ declare global {
     metadata: TMetadata;
     rounds: TRounds[];
     blueprints: TBlueprint[];
-    instances: TInstance[];
+    instances: TInstanceDef[];
   };
   type TProjectList = { id: string; label: string };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -77,15 +77,15 @@ declare global {
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** instances to create from blueprints */
-  type TInstance = {
+  type TInstanceDef = {
     id: string;
     label: string;
     bpid: string;
     initScript: string;
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** used to map blueprint name to instance list */
-  type TInstanceMap = Map<string, TInstance[]>; // string is blueprint name
+  /** used to map blueprint name to blueprint instance definitions */
+  type TInstanceDefsByBP = Map<string, TInstanceDef[]>; // string is blueprint name
 }
 
 /// EXPORT AS MODULE FOR GLOBALS //////////////////////////////////////////////
