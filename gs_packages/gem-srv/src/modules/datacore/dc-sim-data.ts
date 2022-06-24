@@ -159,8 +159,7 @@ function GetBlueprintSymbols(): TSymbolData {
 /// transpiler.ts for examples of use
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: variable types (e.g. gvar-number.ts is the type of a 'number' prop
- *  have to be declared and registered to be available to the transpiler
- */
+ *  have to be declared and registered to be available to the transpiler */
 function RegisterKeyword(Ctor: IKeywordCtor, alias?: string): void {
   const fn = 'RegisterKeyword:';
   const kobj = new Ctor();
@@ -206,7 +205,7 @@ function GetPropTypeCtor(propType: string): TPropType {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return the VAR ctor dictionary */
-function GetPropTypesDict(): Map<string, TPropType> {
+function GetPropTypeCtorDict(): Map<string, TPropType> {
   return VARS;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -433,7 +432,7 @@ export { RegisterKeyword, GetKeyword, GetAllKeywords, GetKeywordSymbols };
 export {
   RegisterPropType,
   GetPropTypeCtor,
-  GetPropTypesDict,
+  GetPropTypeCtorDict,
   GetAllPropTypeCtors,
   GetPropTypeSymbolsFor,
   GetPropTypeSymbols

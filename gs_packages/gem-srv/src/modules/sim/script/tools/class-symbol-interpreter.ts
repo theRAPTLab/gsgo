@@ -321,8 +321,8 @@ class SymbolInterpreter {
   /** look up the variable type (e.g. number, string, boolean )
    *  addProp propName propType propInitValu
    *  it will set cur_cope to the found propType symbolDict */
-  propCtor(token: IToken) {
-    const fn = '**** propCtor:';
+  anyPropType(token: IToken) {
+    const fn = 'anyPropType:';
     // check it's a valid propType
     const [type, propType] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
@@ -386,9 +386,9 @@ class SymbolInterpreter {
    *  propType (e.g. SM_Number.Symbols). The 'setTo' method defines
    *  the kind of value it expects, which we pass then to argSymbol()
    *  for actual processing and returning of validation tokens */
-  propCtorInitialValue(token: IToken) {
+  propTypeInitialValue(token: IToken) {
     // expecting scriptToken type boolean, string, or number
-    const fn = 'propCtorInitialValue:';
+    const fn = 'propTypeInitialValue:';
     const [type, propType] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     let gsType: TGSType = '{?}'; // filled in once we know more
@@ -1217,7 +1217,7 @@ class SymbolInterpreter {
     // is this any propType?
     // all propTypes available in system match token.identifier
     if (gsType === 'propType' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const map = SIMDATA.GetPropTypesDict();
+      const map = SIMDATA.GetPropTypeCtorDict();
       const propTypes = {};
       const list = [...map.keys()];
       list.forEach(ctorName => {

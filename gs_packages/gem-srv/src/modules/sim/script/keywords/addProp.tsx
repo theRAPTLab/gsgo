@@ -57,8 +57,8 @@ export class AddProp extends Keyword {
     const vtoks = [];
     vtoks.push(this.shelper.anyKeyword(kwTok));
     vtoks.push(this.shelper.simplePropName(pnTok));
-    vtoks.push(this.shelper.propCtor(typeTok));
-    vtoks.push(this.shelper.propCtorInitialValue(ivalTok));
+    vtoks.push(this.shelper.anyPropType(typeTok));
+    vtoks.push(this.shelper.propTypeInitialValue(ivalTok));
     const vlog = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: vlog };
   }
