@@ -1,24 +1,29 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  DATACORE SIMULATION RESOURCES
+  DATACORE NON-AGENT SIMULATION RESOURCES
 
   Contains dictionaries of the active entities available to the simulation
   engine that determine its runtime state. Prior to this module, the
   dictionaries were scattered across separate datacore modules which made
   it hard to see the distinct systems we support in addition o the simulator
 
+  note: AGENT dictionaries and methods are handled in a separate module,
+        dc-sim-agents
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import SM_Feature from 'lib/class-sm-feature';
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import SM_Bundle from 'lib/class-sm-bundle';
-import SM_Object from 'lib/class-sm-object';
 import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 import * as CHECK from './dc-sim-data-utils';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
+//
+// NOTE: AGENTS resources are in their own module, dc-sim-agents
+//
 const PRAGMAS: Map<string, Function> = new Map();
 const FEATURES: Map<string, SM_Feature> = new Map();
 const BLUEPRINTS: Map<string, SM_Bundle> = new Map();

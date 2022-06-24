@@ -31,3 +31,7 @@ export const SCRIPT_PAGE_INDEX_OFFSET = 1; // set to 1 for no 0 indexes
 /** when set to true, GUI WIZARD will load the test script defined in
  *  test-blueprint instead of the DEV_PRJID and BPID */
 export const ENABLE_SYMBOL_TEST_BLUEPRINT = true;
+
+/// ID COUNTER MIN/MAX VALUES /////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const INSTANCEDEF_ID_START = 9000; // instance definitions < 9000 are special?

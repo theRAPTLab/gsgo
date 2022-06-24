@@ -83,7 +83,7 @@ function ValidateLineText(line: string, bdl: SM_Bundle): TValidatedScriptUnit {
 /** API: "Make" an agent using an instance definitions, which adds the new
  *  instance to the simulation engine data
  */
-function MakeAgent(instanceDef: TInstance) {
+function MakeAgent(instanceDef: TInstanceDef) {
   const fn = 'MakeAgent:';
   const { id, bpid, label } = instanceDef;
   const agent = new SM_Agent(label, String(id));
@@ -108,7 +108,7 @@ function MakeAgent(instanceDef: TInstance) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RemoveAgent(instanceDef: TInstance) {
+function RemoveAgent(instanceDef: TInstanceDef) {
   SIMAGENTS.DeleteAgent(instanceDef);
 }
 
