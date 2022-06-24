@@ -1,0 +1,44 @@
+# BLUEPRINT GUISyntaxTester
+# TAG IsCharControllable false
+
+# PROGRAM DEFINE
+addFeature Physics
+addProp aliceString string 'hello'
+addProp bobNumber number 0
+addProp carlBoolean boolean true
+
+# PROGRAM INIT
+prop aliceString setTo 'alice'
+featProp Physics width setTo 10
+featCall Physics setRadius 20
+
+# PROGRAM CONDITION
+when GUITester touches GUITester [[
+  prop bobNumber add 1
+  prop aliceString setTo 'aliceBonk'
+]]
+
+# program event
+onEvent Tick [[
+  dbgTick
+  ifExpr {{ agent.prop['carlBoolean'].value }} [[
+    prop carlBoolean setTo false
+    prop carlBoolean setTo false
+  ]]
+]]
+
+# program update
+every 1 runAtStart [[
+  featPropPush Physics width
+  featPropPush Physics radius
+  propPop bobNumber
+  prop bobNumber add 10
+  propPush bobNumber
+  featPropPop Physics width
+  // console log the result
+  propPush myNumber
+  exprPush {{ agent.getProp('myNumber').value + 1 }}
+  propPop bobNumber
+]]
+
+
