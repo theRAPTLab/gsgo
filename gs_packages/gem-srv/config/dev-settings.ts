@@ -8,7 +8,7 @@
 
 /// DEV CODE VERIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export const VER_DEV_WIZ = '0100DW';
+export const VER_DEV_WIZ = '0101DW';
 export const VER_DEV_CODETEST = '0100CT';
 
 /// GLOBAL DEBUG SWITCHES /////////////////////////////////////////////////////
