@@ -124,15 +124,10 @@ class CodeEditor extends React.Component {
       this.setState({ isDirty });
     });
     this.disableEditing(); // disable by default
+  }
 
-    window.addEventListener('beforeunload', e => {
-      const { isDirty } = this.state;
-      if (isDirty) {
-        // Show "Leave site?" dialog
-        e.preventDefault();
-        e.returnValue = ''; // required by Chrome
-      }
-    });
+  componentWillUnmount() {
+    this.jar.destroy();
   }
 
   enableEditing() {
