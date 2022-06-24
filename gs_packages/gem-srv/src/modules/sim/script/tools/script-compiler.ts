@@ -37,6 +37,8 @@ import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import SM_Agent from 'lib/class-sm-agent';
 import VSDToken from 'script/tools/class-validation-token';
 import { ParseExpression } from './class-expr-parser-v2';
+import { Evaluate } from 'lib/expr-evaluator';
+
 import { DEBUG_FLAGS } from 'config/dev-settings';
 const { SYMBOLIZE_CALLS: DBG_SC } = DEBUG_FLAGS;
 
@@ -250,12 +252,11 @@ function ValidateStatement(
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Given a blueprint script, create a "page" of "lines" of ValidationTokens
- */
-function ValidateBlueprint(script: TScriptUnit[]) {
-  // this might store the validation page inside it, instead of using
-  // the scriptprinter classes
-  // call ValidateStatement() with all the symbolrefs bundle, global
+/** API: Given a compiled expression in AST form, see if it is accessing
+ *  defined globals */
+function ValidateExpression(exprAST, globals = {}) {
+  const result = Evaluate(exprAST, globals);
+  return result;
 }
 
 /// COMPILER API //////////////////////////////////////////////////////////////
@@ -335,7 +336,7 @@ function CompileBlueprint(script: TScriptUnit[], tempBdl?: SM_Bundle): SM_Bundle
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// MAIN API
-export { CompileBlueprint, ValidateBlueprint, SymbolizeBlueprint };
+export { CompileBlueprint, SymbolizeBlueprint };
 /// UTILITIES
 export { ExtractBlueprintMeta, CompileScript };
 export {
@@ -343,5 +344,6 @@ export {
   DecodeTokenPrimitive,
   DecodeStatement,
   SymbolizeStatement,
-  ValidateStatement
+  ValidateStatement,
+  ValidateExpression
 };

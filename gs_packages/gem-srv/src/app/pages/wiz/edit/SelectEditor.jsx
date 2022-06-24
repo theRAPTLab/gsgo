@@ -55,6 +55,7 @@ function SelectEditor(props) {
 
   const { validationTokens: vtoks, validationLog } = validation;
 
+  // get the vtoken of the current slot
   const vtok = vtoks[CHECK.OffsetLineNum(pos, 'sub')];
   const { gsType, methodSig, unitText } = vtok || {}; // gracefully fail if not defined
   const { name, args: methodArgs, info } = methodSig || {}; // gracefully fail if not defined
@@ -78,6 +79,11 @@ function SelectEditor(props) {
     const toggled = unitText === 'true' ? false : true;
     WIZCORE.UpdateSlotBoolean(toggled);
   };
+  const processExprInput = e => {
+    e.preventDefault();
+    WIZCORE.UpdateSlotExpr(String(e.target.value));
+  };
+
   const handleNumberKeypress = e => {
     if (e.key === 'Enter') {
       processNumberInput(e);
@@ -85,6 +91,12 @@ function SelectEditor(props) {
     }
   };
   const handleStringKeypress = e => {
+    if (e.key === 'Enter') {
+      processStringInput(e);
+      e.target.select();
+    }
+  };
+  const handleExprKeypress = e => {
     if (e.key === 'Enter') {
       processStringInput(e);
       e.target.select();
@@ -169,6 +181,22 @@ function SelectEditor(props) {
             type="text"
             onChange={processIdentifierInput}
             onKeyPress={handleStringKeypress}
+          />
+          ;
+        </div>
+      );
+      break;
+    case 'expr':
+      console.log('expr unitText', unitText);
+      editor = (
+        <div className="gsled input">
+          <label>Enter an expression string</label>
+          <input
+            key={tkey}
+            defaultValue={unitText}
+            type="text"
+            onChange={processExprInput}
+            onKeyPress={handleExprKeypress}
           />
           ;
         </div>

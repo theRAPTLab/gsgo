@@ -265,6 +265,7 @@ declare global {
     programs?: string[]; // unused in gemscript 1.0
     events?: string[]; // system names
     options?: string[]; // option flag  names
+    globals?: { [globalObj: string]: any }; // global symbols
     // ok to change or add, as these are not defined in the reference dictionaries
     error?: TSymbolError; // debugging if error
     unitText?: string; // the scriptText word associated with symbol

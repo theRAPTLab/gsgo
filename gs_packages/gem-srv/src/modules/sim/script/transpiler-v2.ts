@@ -134,13 +134,13 @@ export {
   DecodeStatement, // utility: works with DecodeToken to create runtime enties
   SymbolizeStatement, // utility: extract symbols defined by a keyword
   ValidateStatement, // utility: check script tokens against symbols
+  ValidateExpression, // utility: see if expression can access stuff
   //
   CompileScript, // API: return a TSMCProgram from a script text
   ExtractBlueprintMeta, // API: return directives from script text
   //
   CompileBlueprint, // API: save a blueprint script as a bundle with program output
-  SymbolizeBlueprint, // API: save blueprint symbols to a bundle
-  ValidateBlueprint // API: save validation tokens to a bundle
+  SymbolizeBlueprint // API: save blueprint symbols to a bundle
 } from 'script/tools/script-compiler';
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

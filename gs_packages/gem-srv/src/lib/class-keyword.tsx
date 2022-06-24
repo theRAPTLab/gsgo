@@ -18,7 +18,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
+import { Evaluate } from 'lib/expr-evaluator';
 import SymbolInterpreter from 'script/tools/class-symbol-interpreter';
 import * as BUNDLER from 'script/tools/script-bundler';
 import VSDToken from 'script/tools/class-validation-token';
@@ -185,6 +185,9 @@ class Keyword implements IKeyword {
       // TODO: handle other argTypes
       case 'prop': // a prop reference
         vtok = this.invalidToken('debug', "'prop' typehandler should be objref?");
+        break;
+      case 'expr':
+        vtok = this.shelper.anyExpr(token);
         break;
       case 'blueprint': // a blueprint name
       case 'number': // value is

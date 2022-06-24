@@ -23,6 +23,8 @@ import UR from '@gemstep/ursys/client';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('EVAL', 'TagDebug');
+const DBG = true;
+
 const binops = {
   '||': (a, b) => a || b,
   '&&': (a, b) => a && b,
@@ -73,64 +75,75 @@ function evaluateMember(node, context) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function evaluate(node, context) {
-  try {
-    switch (node.type) {
-      case 'ArrayExpression':
-        return evaluateArray(node.elements, context);
-      case 'BinaryExpression':
-        return binops[node.operator](
-          evaluate(node.left, context),
-          evaluate(node.right, context)
-        );
-      case 'CallExpression': {
-        let caller, fn, assign;
-        if (node.callee.type === 'MemberExpression') {
-          assign = evaluateMember(node.callee, context);
-          caller = assign[0];
-          fn = assign[1];
-        } else {
-          fn = evaluate(node.callee, context);
-        }
-        if (typeof fn !== 'function') {
-          return undefined;
-        }
-        return fn.apply(caller, evaluateArray(node.arguments, context));
+  switch (node.type) {
+    case 'ArrayExpression':
+      return evaluateArray(node.elements, context);
+    case 'BinaryExpression':
+      return binops[node.operator](
+        evaluate(node.left, context),
+        evaluate(node.right, context)
+      );
+    case 'CallExpression': {
+      let caller, fn, assign;
+      if (node.callee.type === 'MemberExpression') {
+        assign = evaluateMember(node.callee, context);
+        caller = assign[0];
+        fn = assign[1];
+      } else {
+        fn = evaluate(node.callee, context);
       }
-      case 'ConditionalExpression':
-        return evaluate(node.test, context)
-          ? evaluate(node.consequent, context)
-          : evaluate(node.alternate, context);
-
-      case 'Identifier':
-        return context[node.name];
-      case 'Literal':
-        return node.value;
-      case 'LogicalExpression':
-        if (node.operator === '||') {
-          return evaluate(node.left, context) || evaluate(node.right, context);
-        }
-        if (node.operator === '&&') {
-          return evaluate(node.left, context) && evaluate(node.right, context);
-        }
-        return binops[node.operator](
-          evaluate(node.left, context),
-          evaluate(node.right, context)
-        );
-      case 'MemberExpression':
-        return evaluateMember(node, context)[1];
-      case 'ThisExpression':
-        return context;
-      case 'UnaryExpression':
-        return unops[node.operator](evaluate(node.argument, context));
-      default:
+      if (typeof fn !== 'function') {
         return undefined;
+      }
+      return fn.apply(caller, evaluateArray(node.arguments, context));
     }
+    case 'ConditionalExpression':
+      return evaluate(node.test, context)
+        ? evaluate(node.consequent, context)
+        : evaluate(node.alternate, context);
+
+    case 'Identifier':
+      return context[node.name];
+    case 'Literal':
+      return node.value;
+    case 'LogicalExpression':
+      if (node.operator === '||') {
+        return evaluate(node.left, context) || evaluate(node.right, context);
+      }
+      if (node.operator === '&&') {
+        return evaluate(node.left, context) && evaluate(node.right, context);
+      }
+      return binops[node.operator](
+        evaluate(node.left, context),
+        evaluate(node.right, context)
+      );
+    case 'MemberExpression':
+      return evaluateMember(node, context)[1];
+    case 'ThisExpression':
+      return context;
+    case 'UnaryExpression':
+      return unops[node.operator](evaluate(node.argument, context));
+    default:
+      return undefined;
+  }
+}
+function Evaluate(node, context) {
+  try {
+    return evaluate(node, context);
   } catch (e) {
-    console.log(...PR('current node', node, '\ncontext', context));
-    throw e;
+    const globalObjs = Object.keys(context).join(',');
+    const err = `${e.toString()} w/globals:{${globalObjs}}`;
+    if (DBG)
+      console.warn(
+        `%cEXPR EVALUATE ${err}`,
+        'color:black;background-color:rgba(0,0,0,0.2);padding:1em',
+        context
+      );
+    // eslint-disable-next-line @typescript-eslint/no-throw-literal
+    throw err;
   }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { evaluate as Evaluate };
+export { Evaluate };
