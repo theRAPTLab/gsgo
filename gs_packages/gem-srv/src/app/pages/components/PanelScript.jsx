@@ -22,7 +22,6 @@ import {
 } from 'modules/sim/script/tools/script-to-jsx';
 import { ScriptViewPane } from '../wiz/edit/ScriptViewPane';
 import { GetAllKeywords } from 'modules/datacore';
-import { CompileToJSX } from '../helpers/mod-panel-script';
 
 // Force load sim-features so that Features will be registered
 // And we can read their properties
@@ -174,7 +173,7 @@ if (DBG) console.log(...PR('PRISM gemscript types', types_regex));
 class PanelScript extends React.Component {
   constructor() {
     super();
-    const { script_page } = WIZCORE.State();
+    const { script_page, script_text } = WIZCORE.State();
     this.state = {
       viewMode: 'wizard', // 'code',
       jsx: '',
@@ -184,7 +183,9 @@ class PanelScript extends React.Component {
       openConfirmUnload: false,
       confirmUnloadCallback: {}, // fn called when user confirms unload
       // script: demoscript // Replace the prop `script` with this to test scripts defined in this file
-      script_page
+      // post wizcore integration
+      script_page,
+      script_text
     };
     // codejar
     this.jarRef = React.createRef();
@@ -222,14 +223,12 @@ class PanelScript extends React.Component {
     const highlight = editor => {
       Prism.highlightElement(editor);
     };
-    // HACK TURN OFF CODCEJAR
-    // While integrateing ScriptVIewPane
-    // const editor = this.jarRef.current;
-    // this.jar = CodeJar(editor, highlight);
-    // this.jar.onUpdate(code => {
-    //   this.text = code;
-    //   this.setState({ isDirty: true });
-    // });
+    const editor = this.jarRef.current;
+    this.jar = CodeJar(editor, highlight);
+    this.jar.onUpdate(code => {
+      this.text = code;
+      this.setState({ isDirty: true });
+    });
 
     // add a subscriber
     WIZCORE.SubscribeState(this.handleWizUpdate);
@@ -255,11 +254,25 @@ class PanelScript extends React.Component {
   /** INCOMING: handle WIZCORE event updates */
   handleWizUpdate(vmStateEvent) {
     // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
-    const { script_page } = vmStateEvent;
+    const { script_page, script_text } = vmStateEvent;
     if (script_page) {
       this.setState({
-        script_page
+        script_page,
+        isDirty: true
       });
+    }
+    if (script_text) {
+      this.setState(
+        {
+          script_text,
+          isDirty: true
+        },
+        () => {
+          this.jar.updateCode(script_text);
+          // Force Prism update otherwise line number highlight is not updated
+          Prism.highlightElement(this.jarRef.current);
+        }
+      );
     }
   }
 
@@ -365,7 +378,7 @@ class PanelScript extends React.Component {
    */
   SendText() {
     const { projId, bpName } = this.props;
-    const text = this.jar.toString();
+    const text = WIZCORE.State().script_text;
     UR.CallMessage('NET:SCRIPT_UPDATE', {
       projId,
       script: text,
@@ -440,12 +453,17 @@ class PanelScript extends React.Component {
   OnToggleWizard(e, value) {
     console.log('clicked', value);
     if (value === null) return; // skip repeated clicks
-    // const currentScript = this.jar.toString();
-    // const jsx = CompileToJSX(currentScript);
-    const jsx = (
-      <p>Sri has diabled CompileToJSX() in PanelScript.OnToggleWizard()</p>
-    );
-    this.setState({ jsx, viewMode: value });
+    if (value === 'code') {
+      // currently wizard, clicked on code
+      // we don't need to do anything because wizard keeps state updated
+    } else if (value === 'wizard') {
+      const script_text = this.jar.toString();
+      WIZCORE.SendState({ script_text });
+    }
+    this.setState({ viewMode: value }, () => {
+      // Force Prism update otherwise line number highlight is not updated
+      Prism.highlightElement(this.jarRef.current);
+    });
   }
 
   render() {
@@ -458,7 +476,8 @@ class PanelScript extends React.Component {
       isDirty,
       openConfirmDelete,
       openConfirmUnload,
-      script_page
+      script_page,
+      script_text
     } = this.state;
     const { id, bpName, script, projId, onClick, classes } = this.props;
 
@@ -575,26 +594,26 @@ class PanelScript extends React.Component {
     );
 
     // CODE -------------------------------------------------------------------
-    // const Code = (
-    //   <pre
-    //     className="language-gemscript line-numbers match-braces"
-    //     data-line={lineHighlight}
-    //     style={{
-    //       fontSize: '10px',
-    //       lineHeight: 1,
-    //       whiteSpace: 'pre-line',
-    //       display: `${viewMode === 'code' ? 'inherit' : 'none'}`
-    //     }}
-    //   >
-    //     <code
-    //       id="codejar"
-    //       ref={this.jarRef}
-    //       style={{ width: '100%', height: 'auto' }}
-    //     >
-    //       {script}
-    //     </code>
-    //   </pre>
-    // );
+    const Code = (
+      <pre
+        className="language-gemscript line-numbers match-braces"
+        data-line={lineHighlight}
+        style={{
+          fontSize: '10px',
+          lineHeight: 1,
+          whiteSpace: 'pre-line',
+          display: `${viewMode === 'code' ? 'inherit' : 'none'}`
+        }}
+      >
+        <code
+          id="codejar"
+          ref={this.jarRef}
+          style={{ width: '100%', height: 'auto' }}
+        >
+          {script_text}
+        </code>
+      </pre>
+    );
 
     // WIZARD -----------------------------------------------------------------
     const Wizard = (
@@ -615,8 +634,7 @@ class PanelScript extends React.Component {
       <PanelChrome
         id={id} // used by click handler to identify panel
         title={updatedTitle}
-        // disable click for wizard
-        // onClick={onClick}
+        onClick={onClick}
         topbar={TopBar}
         bottombar={BottomBar}
       >
@@ -627,7 +645,7 @@ class PanelScript extends React.Component {
             width: '100%'
           }}
         >
-          {/* {Code} */}
+          {Code}
           {Wizard}
         </div>
       </PanelChrome>
