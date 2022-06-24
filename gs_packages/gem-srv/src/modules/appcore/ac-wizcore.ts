@@ -802,7 +802,7 @@ export {
   UpdateSlotValue, // handle incoming change of slot value (input)
   UpdateSlotString, // handle incoming change of slot string (input)
   UpdateSlotBoolean, // handle incoming change of slot boolean (input)
-
+  UpdateSlotExpr,
   WizardTestLine, // handle test line for WizardTextLine tester
   DispatchEditorClick, // handle clicks on editing box
   SaveSlotLineScript, // handle slot editor save request
