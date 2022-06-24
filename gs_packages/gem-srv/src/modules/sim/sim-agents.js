@@ -217,7 +217,7 @@ function AgentSelect() {}
  * @param {string[]} blueprintNames Array of blueprint names
  * @param {Object[]} instancesSpec Array of to-be-defined spec objects {id, name, blueprint, init, ...args}
  *                              from model.instances
- * @param {TInstance[]} instanceDefs Array of existing instanceDef (TInstance) objects {id, name, blueprint, init, ...args }
+ * @param {TInstanceDef[]} instanceDefs Array of existing instanceDef (TInstanceDef) objects {id, name, blueprint, init, ...args }
  *                             from dc-sim-agents
  */
 export function AllAgentsProgram(data) {
@@ -262,7 +262,7 @@ export function AgentProgram(blueprint) {
       TRANSPILER.RemoveAgent(instance);
     }
   });
-  // And clear the INSTANCES map for the blueprint
+  // And clear the INSTANCE_DEFS map for the blueprint
   DCAGENTS.DeleteInstancesByBlueprint(blueprint);
 
   // Initiate a new instance for the submitted blueprint

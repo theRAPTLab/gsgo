@@ -50,6 +50,8 @@ import { DevHeader } from './components/DevElements';
 import 'lib/vendor/pico.min.css';
 import 'lib/css/gem-ui.css';
 
+// SEE test-blueprint for the current test script set to load!!!
+
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;

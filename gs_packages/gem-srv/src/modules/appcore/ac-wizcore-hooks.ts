@@ -4,6 +4,8 @@ import * as BLUEPRINT_TESTER from 'test/test-blueprint';
 import { ENABLE_SYMBOL_TEST_BLUEPRINT } from 'config/dev-settings';
 import { ASSETDIR, DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 
+// SEE test-blueprint for the current test script set to load!!!
+
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('WIZ-HOOKS', 'TagCyan');

@@ -23,21 +23,27 @@ import StatusObject from './class-status-object';
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let REF_ID_COUNT = 0;
-const INTERNAL_PROPS = [
-  'zIndex',
-  'color',
-  'scale',
-  'scaleY',
-  'orientation',
-  'visible',
-  'alpha',
-  'isInert',
-  'isInhabitingTarget',
-  'statusValue',
-  'statusValueColor',
-  'statusValueIsLarge'
+type TPropRecord = { name: string; type: TGSType };
+const INTERNAL_PROPS: TPropRecord[] = [
+  { name: 'zIndex', type: 'number' },
+  { name: 'color', type: 'number' },
+  { name: 'scale', type: 'number' },
+  { name: 'scaleY', type: 'number' },
+  { name: 'orientation', type: 'number' },
+  { name: 'visible', type: 'boolean' },
+  { name: 'alpha', type: 'number' },
+  { name: 'isInert', type: 'boolean' },
+  { name: 'isInhabitingTarget', type: 'boolean' },
+  { name: 'statusValue', type: 'number' },
+  { name: 'statusValueColor', type: 'number' },
+  { name: 'statusValueIsLarge', type: 'boolean' }
 ];
-const UNIVERSAL_PROPS = ['x', 'y', 'skin', 'statusText'];
+const UNIVERSAL_PROPS = [
+  { name: 'x', type: 'number' },
+  { name: 'y', type: 'number' },
+  { name: 'skin', type: 'string' },
+  { name: 'statusText', type: 'string' }
+];
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -216,23 +222,9 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
   set statusValueIsLarge(mode: boolean) {
     this.prop.statusValueIsLarge.setTo(mode);
   }
-  /** Returns symbol data. It's called right after constructor creates default
-   *  props for all agents. The symbol data is stored as a static class
-   *  variable. */
+  /** Returns symbol data */
   symbolize(): TSymbolData {
-    if (SM_Agent.Symbols) return SM_Agent.Symbols;
-    // create the symbol data for props since they don't exist yet
-    const fn = 'symbolize:';
-    const sym = {};
-    // Only expose specific SM_Agent properties
-    // however, ben's init scripts use the internal props so this a problem
-    const props = [...UNIVERSAL_PROPS, ...INTERNAL_PROPS];
-    for (let prop of props) {
-      if (sym[prop] !== undefined) throw Error(`${fn}: ${prop} already exists`);
-      sym[prop] = this.getProp(prop).symbolize();
-    }
-    SM_Agent.Symbols = { props: sym };
-    return sym;
+    return SM_Agent.Symbols;
   }
 
   /// MOVEMENT MODES //////////////////////////////////////////////////////////
@@ -526,7 +518,14 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
 
 /// STATIC VARIABLES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SM_Agent.Symbols = {}; // set by SM_Agent.symbolize()
+/// module-time initialization of symbols
+const props = [...UNIVERSAL_PROPS, ...INTERNAL_PROPS];
+const dict = {};
+for (let { name, type } of props) {
+  const symbols = SIMDATA.GetPropTypeSymbolsFor(type);
+  dict[name] = symbols;
+}
+SM_Agent.Symbols = { props: dict };
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -208,19 +208,25 @@ declare global {
   /// SYMBOL DATA AND TYPES ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // symbol type declarations
-  type TSLit = 'boolean' | 'string' | 'number';
-  type TSSMObj = 'prop' | 'method' | 'propType' | 'block';
-  type TSDeferred = 'objref' | 'expr' | '{value}' | '{string}' | '{any}';
-  type TSDict = 'keyword' | 'pragma' | 'test' | 'program' | 'event' | 'option';
-  type TSAgent = 'blueprint' | 'feature';
-  type TSMultiArg = '{...}'; // multiple arg token marker
-  type TSList = '{list}'; // future
-  type TSUnknown = '{?}'; // unknown 'vague' type for validation
+  // fyi: using template string format allows us to specify strings that match
+  // these types to filter string values! function myFunction(type:TSLit) works
+  type TSLit = `${'boolean'}` | `${'string'}` | `${'number'}`;
+  type TSSMObj = `${'prop'}` | `${'method'}` | `${'propType'}` | `${'block'}`;
+  type TSDeferred = `${'objref'}` | `${'expr'}`;
+  type TSSpecial = `${'{value}'}` | `${'{string}'}` | `${'{any}'}`;
+  type TSDict = `${'keyword'}` | `${'pragma'}` | `${'test'}` | `${'program'}`;
+  type TSNameList = `${'event'}` | `${'option'}`;
+  type TSAgent = `${'blueprint'}` | `${'feature'}`;
+  type TSMultiArg = `${'{...}'}`; // multiple arg token marker
+  type TSList = `${'{list}'}`; // future
+  type TSUnknown = `${'{?}'}`; // unknown 'vague' type for validation
   type TGSType =
     | TSLit
     | TSSMObj
     | TSDeferred
+    | TSSpecial
     | TSDict
+    | TSNameList
     | TSAgent
     | TSMultiArg
     | TSList
@@ -259,10 +265,11 @@ declare global {
     programs?: string[]; // unused in gemscript 1.0
     events?: string[]; // system names
     options?: string[]; // option flag  names
+    globals?: { [globalObj: string]: any }; // global symbols
     // ok to change or add, as these are not defined in the reference dictionaries
     error?: TSymbolError; // debugging if error
     unitText?: string; // the scriptText word associated with symbol
-    symbolScope?: Array<keyof TSymbolData>; // 'relevant' scope to display
+    symbolScope?: Array<keyof TSymbolData>; // 'relevant' scope to iterate by gui
     gsType?: TGSType; // the gemscript meaning of this token
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
