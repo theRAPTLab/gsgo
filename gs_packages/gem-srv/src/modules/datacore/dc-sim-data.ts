@@ -192,15 +192,15 @@ function GetKeywordSymbols(): TSymbolData {
 /// VALUE TYPE UTILITIES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a SMObject, store in VARS dict */
-function RegisterPropType(propType: string, ctor: TPropType) {
-  propType = m_EnsureLowerCase(propType);
+function RegisterPropType(propType: TGSType, ctor: TPropType) {
+  propType = m_EnsureLowerCase(propType) as TGSType;
   if (VARS.has(propType)) throw Error(`RegisterPropType: ${propType} exists`);
   VARS.set(propType, ctor);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: get the registered SMObject constructor by name */
-function GetPropTypeCtor(propType: string): TPropType {
-  propType = m_EnsureLowerCase(propType);
+function GetPropTypeCtor(propType: TSLit): TPropType {
+  propType = m_EnsureLowerCase(propType) as TSLit;
   return VARS.get(propType);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -218,7 +218,6 @@ function GetAllPropTypeCtors() {
 function GetPropTypeSymbolsFor(propType: string): TSymbolData {
   const fn = 'GetPropTypeSymbolsFor:';
   const { Symbols } = VARS.get(propType);
-  console.log(`${fn}`, Symbols);
   return Symbols;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

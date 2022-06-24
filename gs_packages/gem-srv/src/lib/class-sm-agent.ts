@@ -23,21 +23,27 @@ import StatusObject from './class-status-object';
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let REF_ID_COUNT = 0;
-const INTERNAL_PROPS = [
-  'zIndex',
-  'color',
-  'scale',
-  'scaleY',
-  'orientation',
-  'visible',
-  'alpha',
-  'isInert',
-  'isInhabitingTarget',
-  'statusValue',
-  'statusValueColor',
-  'statusValueIsLarge'
+type TPropRecord = { name: string; type: TGSType };
+const INTERNAL_PROPS: TPropRecord[] = [
+  { name: 'zIndex', type: 'number' },
+  { name: 'color', type: 'number' },
+  { name: 'scale', type: 'number' },
+  { name: 'scaleY', type: 'number' },
+  { name: 'orientation', type: 'number' },
+  { name: 'visible', type: 'boolean' },
+  { name: 'alpha', type: 'number' },
+  { name: 'isInert', type: 'boolean' },
+  { name: 'isInhabitingTarget', type: 'boolean' },
+  { name: 'statusValue', type: 'number' },
+  { name: 'statusValueColor', type: 'number' },
+  { name: 'statusValueIsLarge', type: 'boolean' }
 ];
-const UNIVERSAL_PROPS = ['x', 'y', 'skin', 'statusText'];
+const UNIVERSAL_PROPS = [
+  { name: 'x', type: 'number' },
+  { name: 'y', type: 'number' },
+  { name: 'skin', type: 'string' },
+  { name: 'statusText', type: 'string' }
+];
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -526,7 +532,14 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
 
 /// STATIC VARIABLES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SM_Agent.Symbols = {}; // set by SM_Agent.symbolize()
+/// module-time initialization of symbols
+const props = [...UNIVERSAL_PROPS, ...INTERNAL_PROPS];
+const dict = {};
+for (let { name, type } of props) {
+  const symbols = SIMDATA.GetPropTypeSymbolsFor(type);
+  dict[name] = symbols;
+}
+SM_Agent.Symbols = { props: dict };
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

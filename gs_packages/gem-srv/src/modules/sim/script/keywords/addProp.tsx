@@ -23,7 +23,7 @@ export class AddProp extends Keyword {
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
     const [, propName, propType, initValue] = unit;
-    const propCtor = GetPropTypeCtor(propType as string);
+    const propCtor = GetPropTypeCtor(propType as TSLit);
     return [
       (agent: IAgent) =>
         agent.addProp(propName as string, new propCtor(initValue))
@@ -36,7 +36,7 @@ export class AddProp extends Keyword {
     if (pnTok === undefined) return {};
     if (typeTok === undefined) return {};
     const propName = TokenToString(pnTok);
-    const propType = TokenToString(typeTok);
+    const propType = TokenToString(typeTok) as TSLit;
     const propClass = GetPropTypeCtor(propType);
     if (propClass === undefined) {
       console.warn('addProp unrecognized propType', propType);
