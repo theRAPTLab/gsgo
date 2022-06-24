@@ -222,23 +222,9 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
   set statusValueIsLarge(mode: boolean) {
     this.prop.statusValueIsLarge.setTo(mode);
   }
-  /** Returns symbol data. It's called right after constructor creates default
-   *  props for all agents. The symbol data is stored as a static class
-   *  variable. */
+  /** Returns symbol data */
   symbolize(): TSymbolData {
-    if (SM_Agent.Symbols) return SM_Agent.Symbols;
-    // create the symbol data for props since they don't exist yet
-    const fn = 'symbolize:';
-    const sym = {};
-    // Only expose specific SM_Agent properties
-    // however, ben's init scripts use the internal props so this a problem
-    const props = [...UNIVERSAL_PROPS, ...INTERNAL_PROPS];
-    for (let prop of props) {
-      if (sym[prop] !== undefined) throw Error(`${fn}: ${prop} already exists`);
-      sym[prop] = this.getProp(prop).symbolize();
-    }
-    SM_Agent.Symbols = { props: sym };
-    return sym;
+    return SM_Agent.Symbols;
   }
 
   /// MOVEMENT MODES //////////////////////////////////////////////////////////
