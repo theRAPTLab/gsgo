@@ -61,9 +61,18 @@ const ADVANCED_SYMBOLS = [
 export function EditSymbol(props) {
   // we need the current selection
   const { selection = {} } = props;
-  const { sel_linenum, sel_linepos, sel_slotpos } = selection;
+  const { sel_linenum, sel_linepos, vmPageLine, sel_slotpos } = selection;
   const label = `options for token ${sel_linenum}:${sel_linepos}`;
   let symbolType;
+
+  // Keep track of symbols being used in the original script line,
+  // especially advanced or hidden symbols, so that we can show
+  // them and let the user reselect them.  NOTE that after
+  // saving the slot line, these will no longer appear though.
+  const SYMBOLS_IN_USE = [];
+  vmPageLine.lineScript.forEach(tok => {
+    if (tok.identifier) SYMBOLS_IN_USE.push(tok.identifier.toLowerCase());
+  });
 
   // this is a managed TextBuffer with name "ScriptContextor"
 
@@ -105,7 +114,8 @@ export function EditSymbol(props) {
     symbolType = gsType;
 
     // Don't render choices if the current selection should be an input form
-    if (gsType === 'number' || gsType === 'string') return '';
+    if (gsType === 'number' || gsType === 'string' || gsType === 'boolean')
+      return '';
 
     // See symbol-utilities.DecodeSymbolViewData
     const viewData = WIZCORE.DecodeSymbolViewData(symbolData); // returns the list of symbolnames for a particular symbol
@@ -142,8 +152,6 @@ export function EditSymbol(props) {
         // get all the choices for this symbol type
         items.forEach(choice => {
           const choiceKey = `${stype}:${choice || GUI_EMPTY_TEXT}`;
-          // 1. Hide unsupported and deprecated keywords
-          if (HIDDEN_SYMBOLS.includes(choice.toLowerCase())) return;
           const tok = (
             <GSymbolToken
               key={choiceKey}
@@ -152,10 +160,23 @@ export function EditSymbol(props) {
               choice={choice || GUI_EMPTY_TEXT}
             />
           );
-          // 2. Split keywords into standard and advanced
-          if (ADVANCED_SYMBOLS.includes(choice.toLowerCase())) {
+          if (
+            HIDDEN_SYMBOLS.includes(choice.toLowerCase()) &&
+            SYMBOLS_IN_USE.includes(choice.toLowerCase())
+          ) {
+            // 1. If the choice is supposed to be hidden, but
+            //    is currently in use in the original script line
+            //    , show it in the "advanced"  section so that it
+            //    can be reselected
+            advancedChoices.push(tok);
+          } else if (HIDDEN_SYMBOLS.includes(choice.toLowerCase())) {
+            // 2. Hide unsupported and deprecated keywords
+            return;
+          } else if (ADVANCED_SYMBOLS.includes(choice.toLowerCase())) {
+            // 3. Show advanced keywords
             advancedChoices.push(tok);
           } else {
+            // 4. Regular keyword
             choices.push(tok);
           }
         });
