@@ -49,6 +49,7 @@ class InstanceEditor extends React.Component {
       isHovered: false,
       isSelected: false,
       ignoreNextClickAway: false,
+      isDirty: false,
       showConfirmSave: false
     };
     this.GetInstanceName = this.GetInstanceName.bind(this);
