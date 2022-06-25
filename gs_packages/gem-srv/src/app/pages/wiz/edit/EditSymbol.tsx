@@ -26,6 +26,7 @@ import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to i
 const PR = UR.PrefixUtil('SymbolSelector');
 
 const HIDDEN_SYMBOLS = [
+  // keywords
   'randompos',
   'dbgtick',
   'if',
@@ -37,10 +38,13 @@ const HIDDEN_SYMBOLS = [
   'stacksub',
   'stackmul',
   'stackdiv',
-  'usefeature'
+  'usefeature',
+  // features
+  'cursor',
+  'global'
 ];
 const ADVANCED_SYMBOLS = [
-  'exprpop',
+  // keywords
   'exprpush',
   'proppop',
   'proppush',
@@ -49,6 +53,7 @@ const ADVANCED_SYMBOLS = [
   'dbgstack',
   'dbgcontext',
   'dbgerror'
+  // features
 ];
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
