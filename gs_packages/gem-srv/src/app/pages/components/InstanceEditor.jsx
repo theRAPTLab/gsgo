@@ -48,13 +48,15 @@ class InstanceEditor extends React.Component {
       isEditable: false,
       isHovered: false,
       isSelected: false,
-      ignoreNextClickAway: false
+      ignoreNextClickAway: false,
+      showConfirmSave: false
     };
     this.GetInstanceName = this.GetInstanceName.bind(this);
     this.HandleScriptUpdate = this.HandleScriptUpdate.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
     this.OnDeleteInstance = this.OnDeleteInstance.bind(this);
     this.DoDeselect = this.DoDeselect.bind(this);
+    this.DoSafeDeselect = this.DoSafeDeselect.bind(this);
     this.HandleEditEnable = this.HandleEditEnable.bind(this);
     this.HandleEditDisable = this.HandleEditDisable.bind(this);
     this.HandleHoverOver = this.HandleHoverOver.bind(this);
@@ -67,6 +69,7 @@ class InstanceEditor extends React.Component {
     this.OnClickAway = this.OnClickAway.bind(this);
     this.urStateUpdated = this.urStateUpdated.bind(this);
     this.SaveInitScript = this.SaveInitScript.bind(this);
+    this.UpdateDirty = this.UpdateDirty.bind(this);
     UR.HandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
     UR.HandleMessage('INSTANCE_EDIT_ENABLE', this.HandleEditEnable);
     UR.HandleMessage('INSTANCE_EDIT_DISABLE', this.HandleEditDisable);
@@ -87,7 +90,6 @@ class InstanceEditor extends React.Component {
   componentWillUnmount() {
     UR.UnsubscribeState('instances', this.urStateUpdated);
     UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
-    UR.UnhandleMessage('SCRIPT_LINE_DELETE', this.HandleScriptLineDelete);
     UR.UnhandleMessage('INSTANCE_EDIT_ENABLE', this.HandleEditEnable);
     UR.UnhandleMessage('INSTANCE_EDIT_DISABLE', this.HandleEditDisable);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
@@ -108,7 +110,7 @@ class InstanceEditor extends React.Component {
     const { isEditable } = this.state;
     if (isEditable) {
       if (data.exitEdit) {
-        this.DoDeselect();
+        this.DoSafeDeselect();
       }
       this.setState(
         state => {
@@ -158,6 +160,17 @@ class InstanceEditor extends React.Component {
     UR.RaiseMessage('NET:INSTANCE_DESELECT', { agentId: id });
   }
 
+  DoSafeDeselect() {
+    // Only allow deselect if we're not dirty
+    const { isEditable, isDirty } = this.state;
+    // If we're dirty, we need to confirm save before deselecting
+    if (isEditable && isDirty) {
+      this.setState({ showConfirmSave: true });
+    } else {
+      // always disable if message is not for us!
+      this.DoDeselect();
+    }
+  }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// URSYS Events
   ///
@@ -178,8 +191,7 @@ class InstanceEditor extends React.Component {
       });
       this.instance.scrollIntoView();
     } else {
-      // always disable if message is not for us!
-      this.DoDeselect();
+      this.DoSafeDeselect();
     }
   }
   HandleEditDisable(data) {
@@ -187,7 +199,7 @@ class InstanceEditor extends React.Component {
     // Is this message for us?
     if (data.agentId === id) {
       // YES!  Disable!
-      this.DoDeselect();
+      this.DoSafeDeselect();
     }
   }
   HandleHoverOver(data) {
@@ -214,13 +226,16 @@ class InstanceEditor extends React.Component {
   }
   HandleDeselect(data) {
     const { id } = this.props;
+    const { isDirty } = this.state;
     if (data.agentId === id) {
-      this.setState({
-        isEditable: false,
-        isSelected: false,
-        isHovered: false,
-        isAddingProperty: false
-      });
+      if (!isDirty) {
+        this.setState({
+          isEditable: false,
+          isSelected: false,
+          isHovered: false,
+          isAddingProperty: false
+        });
+      }
     }
   }
   OnNameChange(data) {
@@ -228,7 +243,7 @@ class InstanceEditor extends React.Component {
     if (isEditable) {
       if (data.exitEdit) {
         // Handle "ENTER" being used to exit
-        this.DoDeselect();
+        this.DoSafeDeselect();
       }
       this.setState(
         state => {
@@ -244,6 +259,7 @@ class InstanceEditor extends React.Component {
   OnInstanceSave() {
     const { instance } = this.state;
     UR.WriteState('instances', 'currentInstance', instance);
+    this.setState({ showConfirmSave: false });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -259,7 +275,7 @@ class InstanceEditor extends React.Component {
   }
   OnClickAway(e) {
     const { id } = this.props;
-    const { isEditable, ignoreNextClickAway } = this.state;
+    const { isEditable, isDirty, ignoreNextClickAway } = this.state;
 
     if (ignoreNextClickAway) {
       // Requests to edit via clicking on the instance in the stage
@@ -273,8 +289,13 @@ class InstanceEditor extends React.Component {
       this.setState({ ignoreNextClickAway: false });
       return;
     }
-    if (isEditable) this.DoDeselect(); // only deselect if already editing
+    if (isEditable && isDirty) {
+      this.setState({ showConfirmSave: true });
+    } else {
+      this.DoSafeDeselect();
+    }
   }
+
   urStateUpdated(stateObj, cb) {
     const { id } = this.props;
     const { currentInstance } = stateObj;
@@ -284,21 +305,35 @@ class InstanceEditor extends React.Component {
     if (typeof cb === 'function') cb();
   }
 
+  // Updates `instance` with the modified `initScript`
+  /**
+   * @param data { code }
+   */
   SaveInitScript(data) {
-    this.setState(
-      state => {
-        const { instance } = state;
-        instance.initScript = data.code;
-        return { instance };
-      },
-      () => {
-        this.OnInstanceSave();
-      }
-    );
+    if (data && data.initScript) {
+      this.setState(
+        state => {
+          const { instance } = state;
+          instance.initScript = data.code;
+          return { instance };
+        },
+        () => {
+          this.OnInstanceSave();
+        }
+      );
+    } else {
+      // just close the dialog if it's open
+      this.setState({ showConfirmSave: false });
+    }
+  }
+
+  UpdateDirty(isDirty) {
+    this.setState({ isDirty });
   }
 
   render() {
-    const { instance, isEditable, isHovered, isSelected } = this.state;
+    const { instance, isEditable, isHovered, isSelected, showConfirmSave } =
+      this.state;
     const { id, label, classes } = this.props;
 
     // if 'instance' data has been loaded (we're editing) then use that
@@ -349,7 +384,12 @@ class InstanceEditor extends React.Component {
                 <div className={classes.instanceEditorData}>{instance.bpid}</div>
               </div>
               {nameInputJSX}
-              <CodeEditor code={initScript} onSave={this.SaveInitScript} />
+              <CodeEditor
+                code={initScript}
+                showConfirmSave={showConfirmSave}
+                onSave={this.SaveInitScript}
+                onDirty={this.UpdateDirty}
+              />
               <div style={{ textAlign: 'center', marginTop: '0.5em' }}>
                 <Button
                   type="button"

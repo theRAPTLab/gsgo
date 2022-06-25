@@ -54,6 +54,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { GetAllKeywords } from 'modules/datacore';
+import DialogConfirm from './DialogConfirm';
 
 /// CODE EDIT + HIGHLIGHTING //////////////////////////////////////////////////
 import * as Prism from '../../../lib/vendor/prism_extended';
@@ -107,7 +108,9 @@ class CodeEditor extends React.Component {
     this.cancelEdit = this.cancelEdit.bind(this);
     this.startEdit = this.startEdit.bind(this);
     this.stopEdit = this.stopEdit.bind(this);
-    this.onSave = this.onSave.bind(this);
+    this.setDirty = this.setDirty.bind(this);
+    this.doSave = this.doSave.bind(this);
+    this.onConfirmSave = this.onConfirmSave.bind(this);
   }
 
   componentDidMount() {
@@ -121,7 +124,7 @@ class CodeEditor extends React.Component {
       this.text = code;
       const { origCode } = this.state;
       const isDirty = code !== origCode;
-      this.setState({ isDirty });
+      this.setDirty(isDirty);
     });
     this.disableEditing(); // disable by default
   }
@@ -131,9 +134,11 @@ class CodeEditor extends React.Component {
   }
 
   enableEditing() {
+    // locks codejar to prevent textchanges
     this.jarRef.current.setAttribute('contenteditable', 'plaintext-only');
   }
   disableEditing() {
+    // unlocks codejar to allow text changes
     this.jarRef.current.setAttribute('contenteditable', 'false');
   }
   cancelEdit() {
@@ -155,16 +160,79 @@ class CodeEditor extends React.Component {
   stopEdit() {
     this.setState({ isBeingEdited: false }, () => this.disableEditing());
   }
-  onSave() {
-    const { onSave } = this.props;
+
+  setDirty(isDirty, cb) {
+    this.setState({ isDirty }, () => {
+      const { onDirty } = this.props;
+      onDirty(isDirty);
+      if (typeof cb === 'function') cb();
+    });
+  }
+
+  doSave() {
     const code = this.jar.toString();
+    const { onSave } = this.props;
     onSave({ code });
-    this.setState({ isDirty: false }, () => this.stopEdit());
+    const isDirty = false;
+    this.setDirty(isDirty, () => this.stopEdit());
+  }
+
+  // User response to DialogConfirmSave
+  onConfirmSave(yesSave) {
+    if (yesSave) {
+      this.doSave();
+    } else {
+      // User clicked "Don't Save"
+      // Equivalent of clicking "Cancel"
+      this.cancelEdit();
+      const { onSave } = this.props;
+      onSave(); // tell parent that we're done
+    }
   }
 
   render() {
-    const { code, classes } = this.props;
+    const { code, showConfirmSave, classes } = this.props;
     const { isDirty, isBeingEdited, lineHighlight } = this.state;
+
+    const CancelBtn = (
+      <button
+        hidden={!isBeingEdited}
+        className={classes.buttonSmall}
+        onClick={this.cancelEdit}
+      >
+        Cancel
+      </button>
+    );
+    const SaveBtn = (
+      <button
+        hidden={!isBeingEdited}
+        disabled={!isDirty}
+        className={classes.buttonSmall}
+        onClick={this.doSave}
+      >
+        Save
+      </button>
+    );
+    const EditBtn = (
+      <button
+        hidden={isBeingEdited}
+        className={classes.buttonSmall}
+        onClick={this.startEdit}
+      >
+        Edit
+      </button>
+    );
+
+    const DialogConfirmSave = (
+      <DialogConfirm
+        open={showConfirmSave}
+        message={`You have unsaved changes to the init script. Save changes?`}
+        yesMessage="Save Changes"
+        noMessage="Don't Save"
+        onClose={this.onConfirmSave}
+      />
+    );
+
     return (
       <div>
         <pre
@@ -187,31 +255,13 @@ class CodeEditor extends React.Component {
           </code>
         </pre>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-          <button
-            hidden={!isBeingEdited}
-            className={classes.buttonSmall}
-            onClick={this.cancelEdit}
-          >
-            Cancel
-          </button>
-          <button
-            hidden={!isBeingEdited}
-            disabled={!isDirty}
-            className={classes.buttonSmall}
-            onClick={this.onSave}
-          >
-            Save
-          </button>
+          {CancelBtn}
+          {SaveBtn}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr' }}>
-          <button
-            hidden={isBeingEdited}
-            className={classes.buttonSmall}
-            onClick={this.startEdit}
-          >
-            Edit
-          </button>
+          {EditBtn}
         </div>
+        {DialogConfirmSave}
       </div>
     );
   }
