@@ -310,7 +310,7 @@ class InstanceEditor extends React.Component {
    * @param data { code }
    */
   SaveInitScript(data) {
-    if (data && data.initScript) {
+    if (data && data.code) {
       this.setState(
         state => {
           const { instance } = state;
