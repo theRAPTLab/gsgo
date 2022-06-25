@@ -49,6 +49,7 @@ const ADVANCED_SYMBOLS = [
   'proppush',
   'featproppop',
   'featproppush',
+  'dbgOut',
   'dbgstack',
   'dbgcontext',
   'dbgerror',
