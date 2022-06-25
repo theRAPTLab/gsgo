@@ -20,6 +20,7 @@ import UR from '@gemstep/ursys/client';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as TOKENIZER from 'script/tools/script-tokenizer';
+import * as COMPILER from 'script/tools/script-compiler';
 import VSDToken from 'script/tools/class-validation-token';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -115,11 +116,22 @@ class SymbolInterpreter {
 
   /// SCOPE-INDEPENDENT LITERAL VALIDATORS ////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** use to validate a token that can be any number */
   anyNumber(token: IToken) {
     const fn = 'anyNumber:';
     const [type, value] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const gsType = 'number';
+    if (this.scanError())
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText,
+          err_code: 'vague',
+          err_info: `${fn} error in previous token(s)`
+        }
+      );
     const vtype = typeof value;
     if (type === 'value' && vtype === 'number')
       return new VSDToken({}, { gsType, unitText });
@@ -134,16 +146,64 @@ class SymbolInterpreter {
     );
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** use to validate a token that can be any string value */
   anyString(token: IToken) {
+    const fn = 'anyString:';
     const [type, string] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const gsType = 'string';
+    if (this.scanError())
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText,
+          err_code: 'vague',
+          err_info: `${fn} error in previous token(s)`
+        }
+      );
+    const stype = typeof string;
+    if (type === 'string' && stype === 'string')
+      return new VSDToken({}, { gsType, unitText });
+    // if it's not value and type number, it's an error
+    return new VSDToken(
+      {},
+      {
+        gsType,
+        err_code: 'invalid',
+        err_info: `${fn} should be string, not a '${stype}'`
+      }
+    );
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** use to validate a token that can be any boolean value */
   anyBoolean(token: IToken) {
+    const fn = 'anyBoolean:';
     const [type, boolean] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const gsType = 'boolean';
+    if (this.scanError())
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText,
+          err_code: 'vague',
+          err_info: `${fn} error in previous token(s)`
+        }
+      );
+    const btype = typeof boolean;
+    if (type === 'boolean' && btype === 'boolean')
+      return new VSDToken({}, { gsType, unitText });
+    // if it's not value and type number, it's an error
+    return new VSDToken(
+      {},
+      {
+        gsType,
+        err_code: 'invalid',
+        err_info: `${fn} should be boolean, not a '${btype}'`
+      }
+    );
   }
 
   /// SCOPE-INDEPENDENT GLOBAL ACCESSORS //////////////////////////////////////
@@ -173,10 +233,21 @@ class SymbolInterpreter {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** return feature validation */
   anyFeature(token: IToken): TSymbolData {
+    const fn = 'anyFeature:';
     const [type, fName] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const features = SIMDATA.GetFeatureSymbols();
     const gsType = 'feature';
+    if (this.scanError())
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText,
+          err_code: 'vague',
+          err_info: `${fn} error in previous token(s)`
+        }
+      );
     if (type !== 'identifier') {
       this.scan_error = true;
       return new VSDToken(features, {
@@ -206,6 +277,16 @@ class SymbolInterpreter {
     const unitText = TOKENIZER.TokenToString(token);
     const eventNames = SIMDATA.GetAllScriptEventNames();
     const gsType = 'event';
+    if (this.scanError())
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText,
+          err_code: 'vague',
+          err_info: `${fn} error in previous token(s)`
+        }
+      );
     const symbols = { events: eventNames };
     // wrong token type
     if (type !== 'identifier') {
@@ -228,6 +309,78 @@ class SymbolInterpreter {
     // valid we hope!
     return new VSDToken(
       { events: eventNames },
+      {
+        unitText,
+        gsType
+      }
+    );
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** returns a crude check of the expression to make sure it's valid, but
+   *  does not yet check globals */
+  anyExpr(token: IToken): TSymbolData {
+    const fn = 'anyExpr:';
+    const [type, unitText] = TOKENIZER.UnpackToken(token);
+    const exprString = TOKENIZER.TokenToPlainString(token);
+    const gsType = 'expr';
+    if (this.scanError())
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText,
+          err_code: 'vague',
+          err_info: `${fn} error in previous token(s)`
+        }
+      );
+    // the global context with accessible objects...
+    // todo: how to generate this for real?
+    const globalSymbols = {
+      agent: { prop: [], getProp: () => {} },
+      BlueprintA: {},
+      BlueprintB: {}
+    };
+    // try to parse and evaluate the expression
+    // and catch any thrown errors
+    let gotError: string;
+    let ast;
+    try {
+      ast = TOKENIZER.ParseExpression(exprString);
+    } catch (err) {
+      gotError = err.toString();
+    }
+    // if any errors got thrown, expression didn't validate
+    if (gotError)
+      return new VSDToken(
+        { globals: globalSymbols },
+        {
+          unitText,
+          gsType,
+          err_code: 'invalid',
+          err_info: `parse: ${gotError}`
+        }
+      );
+    // if the AST could be generated, then try evaluating it
+    gotError = '';
+    try {
+      COMPILER.ValidateExpression(ast, globalSymbols);
+    } catch (err) {
+      gotError = err.toString();
+    }
+    // if the expression could not be evaluated, return the error
+    if (gotError)
+      return new VSDToken(
+        { globals: globalSymbols },
+        {
+          unitText,
+          gsType,
+          err_code: 'invalid',
+          err_info: `evaluate: ${gotError}`
+        }
+      );
+    // got this far, it's good!
+    return new VSDToken(
+      { globals: globalSymbols },
       {
         unitText,
         gsType
@@ -321,8 +474,8 @@ class SymbolInterpreter {
   /** look up the variable type (e.g. number, string, boolean )
    *  addProp propName propType propInitValu
    *  it will set cur_cope to the found propType symbolDict */
-  propCtor(token: IToken) {
-    const fn = '**** propCtor:';
+  anyPropType(token: IToken) {
+    const fn = 'anyPropType:';
     // check it's a valid propType
     const [type, propType] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
@@ -386,9 +539,9 @@ class SymbolInterpreter {
    *  propType (e.g. SM_Number.Symbols). The 'setTo' method defines
    *  the kind of value it expects, which we pass then to argSymbol()
    *  for actual processing and returning of validation tokens */
-  propCtorInitialValue(token: IToken) {
+  propTypeInitialValue(token: IToken) {
     // expecting scriptToken type boolean, string, or number
-    const fn = 'propCtorInitialValue:';
+    const fn = 'propTypeInitialValue:';
     const [type, propType] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     let gsType: TGSType = '{?}'; // filled in once we know more
@@ -1217,7 +1370,7 @@ class SymbolInterpreter {
     // is this any propType?
     // all propTypes available in system match token.identifier
     if (gsType === 'propType' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const map = SIMDATA.GetPropTypesDict();
+      const map = SIMDATA.GetPropTypeCtorDict();
       const propTypes = {};
       const list = [...map.keys()];
       list.forEach(ctorName => {

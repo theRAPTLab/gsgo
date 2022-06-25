@@ -290,6 +290,7 @@ function m_UpdateSlotValueToken(key, value) {
   // otherwise both keys will be active
   delete slotScriptToken.value;
   delete slotScriptToken.string;
+  delete slotScriptToken.expr;
   delete slotScriptToken.identifier;
   slotScriptToken[key] = value; // We know the scriptToken is a value
   if (sel_slotpos > slots_linescript.length) {
@@ -317,6 +318,12 @@ function UpdateIdentifier(val) {
 function UpdateSlotBoolean(val) {
   m_UpdateSlotValueToken('value', val);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
+function UpdateSlotExpr(val) {
+  m_UpdateSlotValueToken('expr', val);
+}
+
 /// UI EVENT DISPATCHERS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Called by the document handler set in DevWizard. There are no other
@@ -795,7 +802,7 @@ export {
   UpdateSlotValue, // handle incoming change of slot value (input)
   UpdateSlotString, // handle incoming change of slot string (input)
   UpdateSlotBoolean, // handle incoming change of slot boolean (input)
-  UpdateIdentifier, // handlle incoming chnage of slot identifier (input)
+  UpdateSlotExpr,
   WizardTestLine, // handle test line for WizardTextLine tester
   DispatchEditorClick, // handle clicks on editing box
   SaveSlotLineScript, // handle slot editor save request

@@ -1,24 +1,29 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  DATACORE SIMULATION RESOURCES
+  DATACORE NON-AGENT SIMULATION RESOURCES
 
   Contains dictionaries of the active entities available to the simulation
   engine that determine its runtime state. Prior to this module, the
   dictionaries were scattered across separate datacore modules which made
   it hard to see the distinct systems we support in addition o the simulator
 
+  note: AGENT dictionaries and methods are handled in a separate module,
+        dc-sim-agents
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import SM_Feature from 'lib/class-sm-feature';
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import SM_Bundle from 'lib/class-sm-bundle';
-import SM_Object from 'lib/class-sm-object';
 import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 import * as CHECK from './dc-sim-data-utils';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
+//
+// NOTE: AGENTS resources are in their own module, dc-sim-agents
+//
 const PRAGMAS: Map<string, Function> = new Map();
 const FEATURES: Map<string, SM_Feature> = new Map();
 const BLUEPRINTS: Map<string, SM_Bundle> = new Map();
@@ -154,8 +159,7 @@ function GetBlueprintSymbols(): TSymbolData {
 /// transpiler.ts for examples of use
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: variable types (e.g. gvar-number.ts is the type of a 'number' prop
- *  have to be declared and registered to be available to the transpiler
- */
+ *  have to be declared and registered to be available to the transpiler */
 function RegisterKeyword(Ctor: IKeywordCtor, alias?: string): void {
   const fn = 'RegisterKeyword:';
   const kobj = new Ctor();
@@ -188,20 +192,20 @@ function GetKeywordSymbols(): TSymbolData {
 /// VALUE TYPE UTILITIES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a SMObject, store in VARS dict */
-function RegisterPropType(propType: string, ctor: TPropType) {
-  propType = m_EnsureLowerCase(propType);
+function RegisterPropType(propType: TGSType, ctor: TPropType) {
+  propType = m_EnsureLowerCase(propType) as TGSType;
   if (VARS.has(propType)) throw Error(`RegisterPropType: ${propType} exists`);
   VARS.set(propType, ctor);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: get the registered SMObject constructor by name */
-function GetPropTypeCtor(propType: string): TPropType {
-  propType = m_EnsureLowerCase(propType);
+function GetPropTypeCtor(propType: TSLit): TPropType {
+  propType = m_EnsureLowerCase(propType) as TSLit;
   return VARS.get(propType);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return the VAR ctor dictionary */
-function GetPropTypesDict(): Map<string, TPropType> {
+function GetPropTypeCtorDict(): Map<string, TPropType> {
   return VARS;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -214,7 +218,6 @@ function GetAllPropTypeCtors() {
 function GetPropTypeSymbolsFor(propType: string): TSymbolData {
   const fn = 'GetPropTypeSymbolsFor:';
   const { Symbols } = VARS.get(propType);
-  console.log(`${fn}`, Symbols);
   return Symbols;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -428,7 +431,7 @@ export { RegisterKeyword, GetKeyword, GetAllKeywords, GetKeywordSymbols };
 export {
   RegisterPropType,
   GetPropTypeCtor,
-  GetPropTypesDict,
+  GetPropTypeCtorDict,
   GetAllPropTypeCtors,
   GetPropTypeSymbolsFor,
   GetPropTypeSymbols

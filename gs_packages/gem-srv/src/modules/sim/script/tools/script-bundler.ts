@@ -234,7 +234,10 @@ function AddSymbols(symdata: TSymbolData) {
   if (bdl.symbols === undefined) bdl.symbols = {};
   const _bdlsym = bdl.symbols;
 
-  if (symdata === undefined) console.error(`${fn} no symbol data provided`);
+  if (symdata === undefined) {
+    console.warn(`${fn} no symbol data provided`);
+    return;
+  }
 
   if (symdata.features) {
     // featureName --> featureModule
