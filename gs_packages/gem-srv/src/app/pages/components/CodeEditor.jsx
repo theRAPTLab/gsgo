@@ -158,9 +158,12 @@ class CodeEditor extends React.Component {
     );
   }
   stopEdit() {
+    this.setDirty(false);
     this.setState({ isBeingEdited: false }, () => this.disableEditing());
   }
 
+  // never set `isDirty` directly, always use `setDirty`
+  // so that parent components are informed of the change in status
   setDirty(isDirty, cb) {
     this.setState({ isDirty }, () => {
       const { onDirty } = this.props;
