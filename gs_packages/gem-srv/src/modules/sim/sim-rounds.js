@@ -52,7 +52,7 @@ function StartRoundTimer(stopfn) {
   if (DBG) console.log(...PR('Start Timer'));
   if (!ROUND_TIMER_START_VALUE) return;
 
-  const GLOBAL_AGENT = GetGlobalAgent();
+  const GLOBAL_AGENT = SM_Agent.GetGlobalAgent();
 
   TIMER_COUNTER = 0;
   GLOBAL_AGENT.prop.roundTime.setTo(0); // reset between rounds
@@ -84,8 +84,9 @@ export function StageInit() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RunScript(scriptText) {
   if (scriptText) {
-    const program = TRANSPILER.CompileText(scriptText);
-    const GLOBAL_AGENT = GetGlobalAgent();
+    const refs = { bundle: {}, globals: {} };
+    const program = TRANSPILER.CompileText(scriptText, refs);
+    const GLOBAL_AGENT = SM_Agent.GetGlobalAgent();
     GLOBAL_AGENT.exec(program, { agent: GLOBAL_AGENT });
 
     // ALTERNATIVE METHOD using exec_smc, but this has context problems.
