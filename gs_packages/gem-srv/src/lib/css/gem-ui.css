@@ -157,7 +157,7 @@
 .gwiz button {
   width: 44px;
   height: 12px;
-  background-color: lightblue;
+  background-color: rgba(255, 166, 0, 0.7);
   line-height: 2px;
   margin-bottom: 0;
 }

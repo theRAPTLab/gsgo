@@ -418,7 +418,7 @@ function DispatchClick(event) {
 
     // also auto-advance the slot selector to the next slot
     // REVIEW: Only advance if there are more validation tokens?  Otherwise, we go past the end?
-    newState.sel_slotpos = sel_slotpos + 1;
+    // newState.sel_slotpos = sel_slotpos + 1;
 
     SendState(newState);
 
