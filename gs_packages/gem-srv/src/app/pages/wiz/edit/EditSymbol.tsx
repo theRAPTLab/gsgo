@@ -148,7 +148,7 @@ export function EditSymbol(props) {
         // ORIG CODE: Look up from general viewData
         // const { info, items } = viewData[stype];
         const choices = []; // this is the list of choices
-        const advancedChoices = []; // hack to show advanced keywords in a different area
+        const expertChoices = []; // hack to show expert keywords in a different area
         // get all the choices for this symbol type
         items.forEach(choice => {
           const choiceKey = `${stype}:${choice || GUI_EMPTY_TEXT}`;
@@ -165,16 +165,16 @@ export function EditSymbol(props) {
             SYMBOLS_IN_USE.includes(choice.toLowerCase())
           ) {
             // 1. If the choice is supposed to be hidden, but
-            //    is currently in use in the original script line
-            //    , show it in the "advanced"  section so that it
+            //    is currently in use in the original script line,
+            //    show it in the "expert" section so that it
             //    can be reselected
-            advancedChoices.push(tok);
+            expertChoices.push(tok);
           } else if (HIDDEN_SYMBOLS.includes(choice.toLowerCase())) {
             // 2. Hide unsupported and deprecated keywords
             return;
           } else if (ADVANCED_SYMBOLS.includes(choice.toLowerCase())) {
-            // 3. Show advanced keywords
-            advancedChoices.push(tok);
+            // 3. Show expert keywords
+            expertChoices.push(tok);
           } else {
             // 4. Regular keyword
             choices.push(tok);
@@ -194,21 +194,21 @@ export function EditSymbol(props) {
             </div>
           </div>
         );
-        if (advancedChoices.length > 0) {
-          // Advanced
+        if (expertChoices.length > 0) {
+          // Expert
           categoryDicts.push(
             <div key={`adv${rowKey}`} style={{ display: 'contents' }}>
               <GLabelToken
                 key={`adv${rowKey}`}
                 name={
                   parentLabel
-                    ? `advanced ${parentLabel}\n${symbolType}`
-                    : `advanced ${symbolType}`
+                    ? `expert ${parentLabel}\n${symbolType}`
+                    : `expert ${symbolType}`
                 }
                 secondary
               />
               <div style={{ display: 'flex', flexWrap: 'wrap', opacity: '0.7' }}>
-                {[...advancedChoices]}
+                {[...expertChoices]}
               </div>
             </div>
           );
