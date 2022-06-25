@@ -84,6 +84,7 @@ export function StageInit() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RunScript(scriptText) {
   if (scriptText) {
+    const refs = { bundle: {}, globals: {} };
     const program = TRANSPILER.CompileText(scriptText, refs);
     const GLOBAL_AGENT = SM_Agent.GetGlobalAgent();
     GLOBAL_AGENT.exec(program, { agent: GLOBAL_AGENT });
