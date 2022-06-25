@@ -25,6 +25,32 @@ import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to i
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SymbolSelector');
 
+const HIDDEN_SYMBOLS = [
+  'randompos',
+  'dbgtick',
+  'if',
+  'call',
+  '_line',
+  '_pragma',
+  'keyworderr',
+  'stackadd',
+  'stacksub',
+  'stackmul',
+  'stackdiv',
+  'usefeature'
+];
+const ADVANCED_SYMBOLS = [
+  'exprpop',
+  'exprpush',
+  'proppop',
+  'proppush',
+  'featproppop',
+  'featproppush',
+  'dbgstack',
+  'dbgcontext',
+  'dbgerror'
+];
+
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function EditSymbol(props) {
@@ -106,11 +132,14 @@ export function EditSymbol(props) {
         const { info, items } = vdata;
         // ORIG CODE: Look up from general viewData
         // const { info, items } = viewData[stype];
-        const inner = []; // this is the list of choices
+        const choices = []; // this is the list of choices
+        const advancedChoices = []; // hack to show advanced keywords in a different area
         // get all the choices for this symbol type
         items.forEach(choice => {
           const choiceKey = `${stype}:${choice || GUI_EMPTY_TEXT}`;
-          inner.push(
+          // 1. Hide unsupported and deprecated keywords
+          if (HIDDEN_SYMBOLS.includes(choice.toLowerCase())) return;
+          const tok = (
             <GSymbolToken
               key={choiceKey}
               symbolType={stype}
@@ -118,20 +147,46 @@ export function EditSymbol(props) {
               choice={choice || GUI_EMPTY_TEXT}
             />
           );
+          // 2. Split keywords into standard and advanced
+          if (ADVANCED_SYMBOLS.includes(choice.toLowerCase())) {
+            advancedChoices.push(tok);
+          } else {
+            choices.push(tok);
+          }
         });
         // push a left-most label with symbolType with all the symbols
         // this will be displayed in a two-column grid in the render function
         // so the left will be the same height as the right
-        // REVIEW: The <> needs a key.
         categoryDicts.push(
           <div key={rowKey} style={{ display: 'contents' }}>
             <GLabelToken
               key={rowKey}
               name={parentLabel ? `${parentLabel}\n${symbolType}` : symbolType}
             />
-            <div style={{ display: 'flex', flexWrap: 'wrap' }}>{[...inner]}</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+              {[...choices]}
+            </div>
           </div>
         );
+        if (advancedChoices.length > 0) {
+          // Advanced
+          categoryDicts.push(
+            <div key={`adv${rowKey}`} style={{ display: 'contents' }}>
+              <GLabelToken
+                key={`adv${rowKey}`}
+                name={
+                  parentLabel
+                    ? `advanced ${parentLabel}\n${symbolType}`
+                    : `advanced ${symbolType}`
+                }
+                secondary
+              />
+              <div style={{ display: 'flex', flexWrap: 'wrap', opacity: '0.7' }}>
+                {[...advancedChoices]}
+              </div>
+            </div>
+          );
+        }
       });
       return categoryDicts;
     }
