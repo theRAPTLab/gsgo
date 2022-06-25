@@ -40,7 +40,6 @@ const HIDDEN_SYMBOLS = [
   'stackdiv',
   'usefeature',
   // features
-  'cursor',
   'global'
 ];
 const ADVANCED_SYMBOLS = [
@@ -52,8 +51,9 @@ const ADVANCED_SYMBOLS = [
   'featproppush',
   'dbgstack',
   'dbgcontext',
-  'dbgerror'
+  'dbgerror',
   // features
+  'cursor'
 ];
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
