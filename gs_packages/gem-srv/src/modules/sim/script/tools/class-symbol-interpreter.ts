@@ -1255,7 +1255,9 @@ class SymbolInterpreter {
       vtoks.push(vtok);
     } // end for
     // check for underflow
-    if (tokenIndex < args.length)
+    // REVIEW: 'args' might be undefined when still spec'ing the script
+    // line.  Add check to avoid reading property of 'undefined' error
+    if (args && tokenIndex < args.length)
       for (let ii = tokenIndex; ii < args.length; ii++) {
         const [argName, gsType] = CHECK.UnpackArg(args[ii]);
         vtoks.push(
