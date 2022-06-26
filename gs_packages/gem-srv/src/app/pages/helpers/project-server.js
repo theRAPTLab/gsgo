@@ -296,7 +296,7 @@ function GetBoundary() {
 function InjectBlueprint(data) {
   const { blueprint } = data;
   // Skip if already defined
-  if (ACBlueprints.GetBlueprintBundle(blueprint.id)) {
+  if (ACBlueprints.HasBlueprintBundle(blueprint.id)) {
     return;
   }
   ACBlueprints.InjectBlueprint(CURRENT_PROJECT_ID, blueprint);

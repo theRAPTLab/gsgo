@@ -95,6 +95,11 @@ function SaveBlueprintBundle(bdl: SM_Bundle) {
   return bdl;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: return whether a blueprint bundle exists */
+function HasBlueprintBundle(bpName: string): boolean {
+  return BLUEPRINTS.has(bpName);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return a blueprint bundle by bpName */
 function GetBlueprintBundle(bpName: string): SM_Bundle {
   const fn = 'GetBlueprintBundle:';
@@ -416,6 +421,7 @@ export { DefinePragma, GetPragma, GetPragmaSymbols };
 /// blueprints are stored as "bundles" by their name
 export {
   SaveBlueprintBundle,
+  HasBlueprintBundle,
   GetBlueprintBundle,
   GetAllBlueprintBundles,
   GetBlueprintBundleList,
