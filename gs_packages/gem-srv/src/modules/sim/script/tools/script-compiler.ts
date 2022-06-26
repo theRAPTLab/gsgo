@@ -159,6 +159,7 @@ function ExtractBlueprintMeta(script: TScriptUnit[]): TBlueprintMeta {
  *  inside of blocks do not have symbol data...I hope */
 function SymbolizeStatement(stm: TScriptUnit, line?: number): TSymbolData {
   const fn = 'SymbolizeStatement:';
+  if (!stm || (Array.isArray(stm) && stm.length < 1)) return {}; // blank lines emit no symbol info
   const kw = CHECK.DecodeKeywordToken(stm[0]);
   if (!kw) return {}; // blank lines emit no symbol info
   const kwp = SIMDATA.GetKeyword(kw);

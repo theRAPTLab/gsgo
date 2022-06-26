@@ -801,6 +801,7 @@ export {
   WizardTextChanged, // handle incoming change of text
   UpdateSlotValue, // handle incoming change of slot value (input)
   UpdateSlotString, // handle incoming change of slot string (input)
+  UpdateIdentifier, // handle incoming change of identifier
   UpdateSlotBoolean, // handle incoming change of slot boolean (input)
   UpdateSlotExpr,
   WizardTestLine, // handle test line for WizardTextLine tester

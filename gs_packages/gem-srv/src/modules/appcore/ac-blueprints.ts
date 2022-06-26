@@ -195,6 +195,14 @@ function GetBlueprintBundle(bpName: string): ISMCBundle {
   return SIMDATA.GetBlueprintBundle(bpName);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Checks to see if the bundle exists
+ *  @param {string} bpName
+ *  @returns boolean
+ */
+function HasBlueprintBundle(bpName: string): boolean {
+  return SIMDATA.HasBlueprintBundle(bpName);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Returns a list of blueprints with names and scriptText.
  *  Requested by ScriptEditor (via project-server) to display of list of
  *  editable blueprints.
@@ -472,6 +480,7 @@ export {
   GetBpDefs,
   GetBlueprint,
   GetBlueprintBundle,
+  HasBlueprintBundle,
   // Derived Blueprint Lists
   GetBpEditList, // used by ScriptEditor to display list of bp to edit
   GetBpNamesList,

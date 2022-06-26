@@ -49,6 +49,7 @@ const ADVANCED_SYMBOLS = [
   'proppush',
   'featproppop',
   'featproppush',
+  'dbgout',
   'dbgstack',
   'dbgcontext',
   'dbgerror',
@@ -70,9 +71,10 @@ export function EditSymbol(props) {
   // them and let the user reselect them.  NOTE that after
   // saving the slot line, these will no longer appear though.
   const SYMBOLS_IN_USE = [];
-  vmPageLine.lineScript.forEach(tok => {
-    if (tok.identifier) SYMBOLS_IN_USE.push(tok.identifier.toLowerCase());
-  });
+  if (vmPageLine)
+    vmPageLine.lineScript.forEach(tok => {
+      if (tok.identifier) SYMBOLS_IN_USE.push(tok.identifier.toLowerCase());
+    });
 
   // this is a managed TextBuffer with name "ScriptContextor"
 
