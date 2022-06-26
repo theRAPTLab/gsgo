@@ -21,7 +21,7 @@ export class ifExpr extends Keyword {
    *  NOTE: when compile is called, all arguments have already been expanded
    *  from {{ }} to a ParseTree
    */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     const [kw, test, consq, alter] = unit;
     const code = [];
     code.push((agent, state) => {

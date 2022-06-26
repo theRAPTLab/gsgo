@@ -8,7 +8,6 @@
 import UR from '@gemstep/ursys/client';
 import Keyword from 'lib/class-keyword';
 
-import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
 const PR = UR.PrefixUtil('KW_ERROR', 'TagYellow');
@@ -23,7 +22,7 @@ export class keywordErr extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     console.log(...PR(`'${unit[0]}' is not a valid keyword`));
     return [];
   }

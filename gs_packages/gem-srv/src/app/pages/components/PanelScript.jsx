@@ -16,22 +16,20 @@ import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { withStyles } from '@material-ui/core/styles';
 import UR from '@gemstep/ursys/client';
-import {
-  ScriptToJSX,
-  UpdateScript
-} from 'modules/sim/script/tools/script-to-jsx';
+import { UpdateScript } from 'modules/sim/script/tools/script-to-jsx';
 import { ScriptViewPane } from '../wiz/edit/ScriptViewPane';
 import { GetAllKeywords } from 'modules/datacore';
+import { SKIP_RELOAD_WARNING } from 'config/gem-settings';
 
 // Force load sim-features so that Features will be registered
 // And we can read their properties
 import 'modules/sim/sim-features';
 
 /// CODE EDIT + HIGHLIGHTING //////////////////////////////////////////////////
-import * as Prism from '../../../lib/vendor/prism_extended';
-import { CodeJar } from '../../../lib/vendor/codejar';
-import '../../../lib/vendor/prism_extended.css';
-import '../../../lib/css/prism_linehighlight.css'; // override TomorrowNight
+import * as Prism from 'lib/vendor/prism_extended';
+import { CodeJar } from 'lib/vendor/codejar';
+import 'lib/vendor/prism_extended.css';
+import 'lib/css/prism_linehighlight.css'; // override TomorrowNight
 
 import DialogConfirm from './DialogConfirm';
 
@@ -234,11 +232,13 @@ class PanelScript extends React.Component {
     WIZCORE.SubscribeState(this.handleWizUpdate);
 
     window.addEventListener('beforeunload', e => {
+      if (SKIP_RELOAD_WARNING) return;
       const { isDirty } = this.state;
       if (isDirty) {
         // Show "Leave site?" dialog
         e.preventDefault();
         e.returnValue = ''; // required by Chrome
+        return e;
       }
     });
   }

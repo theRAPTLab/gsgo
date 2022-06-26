@@ -33,7 +33,7 @@ export class dbgOut extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     const progout = [];
 
     progout.push((agent, state) => {

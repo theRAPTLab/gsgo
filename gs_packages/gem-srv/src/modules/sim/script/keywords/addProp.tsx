@@ -21,7 +21,7 @@ export class AddProp extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     const [, propName, propType, initValue] = unit;
     const propCtor = GetPropTypeCtor(propType as TSLit);
     return [

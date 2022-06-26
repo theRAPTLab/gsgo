@@ -19,7 +19,7 @@ export class dbgContext extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     const [keyword, numpop] = unit;
     const progout = [];
     progout.push((agent, state) => {

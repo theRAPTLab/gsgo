@@ -34,6 +34,10 @@ const RUNTIME_PATH = Path.join(__dirname, `../${RUNTIME_DIRNAME}`);
 const MQTT_URL = 'localhost'; // override in local-settings.json
 const ASSETDIR = 'local'; // override in local-settings.json
 
+/// DEVELOPER QOL /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const SKIP_RELOAD_WARNING = false; // allow skip of 'are you sure' reload
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const compositeSettings = {
@@ -44,6 +48,7 @@ const compositeSettings = {
   ASSETDIR,
   RUNTIME_PATH, // used only by servers
   MQTT_URL,
+  SKIP_RELOAD_WARNING,
   // apply overrides from local-settings.json if it exists
   ...OVERRIDES
 };

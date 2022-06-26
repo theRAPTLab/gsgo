@@ -95,7 +95,7 @@ function MakeAgent(instanceDef: TInstanceDef) {
         `${fn} making %c${bpid} id:${id} `,
         'font-style:bold;color:black'
       );
-    const bdl = SIMDATA.GetBlueprintBundle(bpid);
+    const bdl = SIMDATA.GetOrCreateBlueprintBundle(bpid);
     if (!bdl) throw Error(`agent blueprint for '${bpid}' not defined`);
     // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
     agent.setBlueprint(bdl);

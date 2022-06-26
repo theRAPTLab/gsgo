@@ -20,27 +20,17 @@
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** allowed options for enhanced validation token creation */
-type VSDOpts = {
-  gsType: TGSType;
-  symbolScope?: Array<keyof TSymbolData>; // which symbol dicts apply to gui display
-  unitText?: string;
-  err_code?: TValidationErrorCodes;
-  err_info?: string;
-};
 
 /// TSYMBOLDATA UTILITY CLASSES ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** a wrapper class for symbol data that is associated with a specific
- *  script token in a script statement (TScriptUnit). These are constructed
- *  by the SymbolInterpreter class and returned in a validation token array */
+/** a wrapper class for symbol data. These are constructed
+ *  by the SymbolInterpreter class and returned in a validation token array.
+ *  It essentially combines all the 'loose' symbol keys of a SymbolData object
+ *  into a 'symbols' property so it can be more easily used by consumers
+ */
 class VSDToken implements TSymbolData {
-  // implement a subset of TSymbolData fields
-  /** @constructor
-   *  @param {TSymbolData} symbols optional set of symbols that were available
-   *  @param {string} info optional tag, useful for adding context for errors
-   */
-  constructor(symbols?: TSymbolData, opt?: VSDOpts) {
+  //
+  constructor(symbols?: TSymbolData, opt?: TSymbolMeta) {
     // if we want to remember the original scriptText word
     const { unitText, symbolScope, gsType, err_code, err_info } = opt || {};
     if (unitText !== undefined) (this as any).unitText = unitText; // unitText can be empty string

@@ -800,8 +800,7 @@ function UnpackScript(script: TScriptUnit[]): TKWArguments[] {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Utility to validate token, returning true/false only
- */
+/** Utility to validate token, returning true/false only */
 function IsValidToken(tok: IToken): boolean {
   const [valid] = UnpackToken(tok);
   return typeof valid === 'string';

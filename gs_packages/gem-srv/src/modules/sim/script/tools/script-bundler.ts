@@ -77,7 +77,7 @@ function OpenBundle(bp: string | SM_Bundle): SM_Bundle {
   m_CheckNoOpenBundle(fn);
   if (CUR_GLOBALS === undefined) CUR_GLOBALS = {};
   if (bp instanceof SM_Bundle) CUR_BUNDLE = bp;
-  if (typeof bp === 'string') CUR_BUNDLE = SIMDATA.GetBlueprintBundle(bp);
+  if (typeof bp === 'string') CUR_BUNDLE = SIMDATA.GetOrCreateBlueprintBundle(bp);
   if (CUR_BUNDLE instanceof SM_Bundle) return CUR_BUNDLE;
   throw Error(`${fn} arg1 was not a bundle or bundleName`);
 }

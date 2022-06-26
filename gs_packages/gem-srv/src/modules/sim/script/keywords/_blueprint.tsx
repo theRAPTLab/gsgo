@@ -29,7 +29,7 @@ export class _blueprint extends Keyword {
    *  derived from ScriptUnit, everything after the keyword
    *  e.g. 'HoneyBee', 'Bee'
    */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     const [kw, blueprintName, baseBlueprint] = unit;
     const progout = [];
     // the compiler format is just an array of functions

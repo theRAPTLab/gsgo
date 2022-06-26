@@ -93,7 +93,10 @@ function DecodeToken(tok: IToken, refs: TSymbolRefs): any {
  *  it is time to invoke a compiler function. See also UnpackStatement() for
  *  a similar function that returns [type,value] (in dc-sim-data-utils)
  */
-function DecodeStatement(statement: TScriptUnit, refs: TSymbolRefs): any[] {
+function DecodeStatement(
+  statement: TScriptUnit,
+  refs: TSymbolRefs
+): TKWArguments {
   const dUnit: TScriptUnit = statement.map((tok, line) => {
     if (line === 0) {
       const arg = DecodeToken(tok, refs);
@@ -264,11 +267,7 @@ function ValidateExpression(exprAST, globals = {}) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Compile a single ScriptUnit, which invokes the Keyord Processor
  *  to generate a TSMCProgram consisting of TOpcodes. This skips directives
- *  and comments, generating no code.
- *  @param {TScriptUnit} statement - array of ScriptToken
- *  @param {number} [line] - current "line" of script metadata
- *  @returns TSMCProgram
- */
+ *  and comments, generating no code. */
 function CompileStatement(
   stm: TScriptUnit,
   refs: TSymbolRefs
@@ -309,13 +308,13 @@ function CompileBlueprint(script: TScriptUnit[], tempBdl?: SM_Bundle): SM_Bundle
   if (tempBdl instanceof SM_Bundle) {
     BUNDLER.OpenBundle(tempBdl);
     bpName = BUNDLER.BundlerState().bpName;
-    console.warn(`${fn} xxxbdl %c${bpName}`, 'font-style:bold;color:blue');
+    console.warn(`${fn} TMP bdl %c${bpName}`, 'font-style:bold;color:blue');
   } else {
     const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
     [bpName] = BLUEPRINT;
     BUNDLER.OpenBundle(bpName);
     if (DBG_SC)
-      console.warn(`${fn} sysbdl %c${bpName}`, 'font-style:bold;color:blue');
+      console.warn(`${fn} SYS bdl %c${bpName}`, 'font-style:bold;color:blue');
   }
   // setup bundle type
   BUNDLER.SetBundleType(EBundleType.BLUEPRINT);
