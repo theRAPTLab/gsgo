@@ -199,7 +199,7 @@ declare global {
       perhaps instead of having a DecodeStatement method, we push the decoding
       down to use const [value,type] = UnpackToken(tok) in the compiler
       statements themselves */
-  type TKWArg = number | string | IToken; // "decoded" tokens
+  type TKWArg = number | string | TSM_Method | IToken; // "decoded" tokens
   type TKWArguments = TKWArg[]; // decoded tokens provided to compile functions
   type TScript = TScriptUnit[]; // We use TScriptUnit[] in code
   type TCompiledStatement = TOpcode[];
@@ -384,7 +384,7 @@ declare global {
   interface IKeyword {
     keyword: string;
     args: TGSArg[] | TGSArg[][]; // multiple signatures
-    compile(unit: TScriptUnit, refs: TSymbolRefs): TOpcode[];
+    compile(unit: TKWArguments, refs: TSymbolRefs): TOpcode[];
     jsx(index: number, unit: TScriptUnit, jsxOpt?: {}): any[] /* deprecated */;
     symbolize(unit: TScriptUnit, line?: number): TSymbolData;
     setRefs(refs: TSymbolRefs): void;

@@ -18,7 +18,7 @@ export class featPropPush extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     const [kw, refArg, featPropName, optMethod] = unit;
     // ref is an array of strings that are fields in dot addressing
     // like agent.x
@@ -61,7 +61,6 @@ export class featPropPush extends Keyword {
     const vtoks = []; // validation token array
     const [kwTok, featTok, fPropfTok, methodTok, ...argToks] = unit; // get arg pattern
     // returns symbols for each dtok position excepting the keyword
-
     vtoks.push(this.shelper.anyKeyword(kwTok));
     vtoks.push(this.shelper.agentFeatureList(featTok));
     vtoks.push(this.shelper.featObjRef(fPropfTok)); // agent.propName, propName, Blueprint.propName
