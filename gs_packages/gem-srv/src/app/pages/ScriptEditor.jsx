@@ -27,6 +27,7 @@ import PanelInstances from './components/PanelInstances';
 import PanelMessage from './components/PanelMessage';
 import DialogConfirm from './components/DialogConfirm';
 import { ScriptEditPane } from './wiz/edit/ScriptEditPane';
+import { SKIP_RELOAD_WARNING } from 'config/gem-settings';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'test/unit-parser'; // test parser evaluation
@@ -118,7 +119,14 @@ class ScriptEditor extends React.Component {
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
 
-    window.addEventListener('beforeunload', this.CleanupComponents);
+    window.addEventListener('beforeunload', e => {
+      this.CleanupComponents();
+      if (SKIP_RELOAD_WARNING) return;
+      // Show "Leave site?" dialog
+      e.preventDefault();
+      e.returnValue = ''; // required by Chrome
+      return e;
+    });
 
     // add top-level click handler
     document.addEventListener('click', WIZCORE.DispatchClick);

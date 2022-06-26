@@ -49,7 +49,7 @@ class Keyword implements IKeyword {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** override in subclass */
-  compile(unit: TScriptUnit, refs?: TSymbolRefs): TCompiledStatement {
+  compile(kwArgs: TKWArguments, refs?: TSymbolRefs): TCompiledStatement {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -494,7 +494,7 @@ function K_DerefFeatureProp(refArg) {
 /** called by keywords that need to do runtime evaluation of an expression from
  *  within the returned program
  */
-function K_EvalRuntimeUnitArgs(unit: TScriptUnit, context: {}): any {
+function K_EvalRuntimeUnitArgs(unit: TKWArguments, context: {}): any {
   if (!Array.isArray(unit)) throw Error('arg must be TScriptUnit, an array');
   // note that unit is passed at creation time, so it's immutable within
   // the TOpcode. We need to return a copy through map()

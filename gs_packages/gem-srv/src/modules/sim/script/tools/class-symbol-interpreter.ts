@@ -114,24 +114,78 @@ class SymbolInterpreter {
     console.log(`TODO: ${fn} should chain`, ctxChild);
   }
 
+  /// BOILERPLATE RESPONSE HELPERS ////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** use if (this.scanError()) */
+  vagueError(token: IToken): TSymbolData {
+    const unitText = TOKENIZER.TokenToString(token);
+    const gsType = '{?}';
+    return new VSDToken(
+      {},
+      {
+        gsType,
+        unitText,
+        err_code: 'vague',
+        err_info: `error in previous token(s)`
+      }
+    );
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** return a bad token */
+  badToken(
+    token: IToken,
+    symbols: TSymbolData,
+    { gsType, err_info }: TSymbolMeta
+  ) {
+    const fn = 'badToken:';
+    const [type, value] = TOKENIZER.UnpackToken(token);
+    const unitText = TOKENIZER.TokenToString(token);
+    // inspect in case of lazy use
+    let err_code: TValidationErrorCodes;
+    if (err_info === undefined) {
+      err_code = 'debug';
+      err_info = `debug: missing err_info in SymbolInterpreter call`;
+    } else {
+      err_code = 'invalid';
+    }
+    gsType = gsType || '{?}';
+    symbols = symbols || {};
+    // return
+    this.scan_error = true;
+    return new VSDToken(symbols, {
+      gsType,
+      unitText,
+      err_code,
+      err_info
+    });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** return a 'valid' token, which has no error info */
+  goodToken(
+    token: IToken,
+    symbols: TSymbolData,
+    { gsType, symbolScope }: TSymbolMeta
+  ): VSDToken {
+    const unitText = TOKENIZER.TokenToString(token);
+    gsType = gsType || '{?}';
+    symbols = symbols || {};
+    // return
+    return new VSDToken(symbols, {
+      gsType,
+      symbolScope,
+      unitText
+    });
+  }
+
   /// SCOPE-INDEPENDENT LITERAL VALIDATORS ////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** use to validate a token that can be any number */
-  anyNumber(token: IToken) {
+  anyNumber(token: IToken): TSymbolData {
     const fn = 'anyNumber:';
+    if (this.scanError()) return this.vagueError(token);
     const [type, value] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const gsType = 'number';
-    if (this.scanError())
-      return new VSDToken(
-        {},
-        {
-          gsType,
-          unitText,
-          err_code: 'vague',
-          err_info: `${fn} error in previous token(s)`
-        }
-      );
     const vtype = typeof value;
     if (type === 'value' && vtype === 'number')
       return new VSDToken({}, { gsType, unitText });
@@ -147,21 +201,12 @@ class SymbolInterpreter {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** use to validate a token that can be any string value */
-  anyString(token: IToken) {
+  anyString(token: IToken): TSymbolData {
     const fn = 'anyString:';
+    if (this.scanError()) return this.vagueError(token);
     const [type, string] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const gsType = 'string';
-    if (this.scanError())
-      return new VSDToken(
-        {},
-        {
-          gsType,
-          unitText,
-          err_code: 'vague',
-          err_info: `${fn} error in previous token(s)`
-        }
-      );
     const stype = typeof string;
     if (type === 'string' && stype === 'string')
       return new VSDToken({}, { gsType, unitText });
@@ -177,21 +222,12 @@ class SymbolInterpreter {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** use to validate a token that can be any boolean value */
-  anyBoolean(token: IToken) {
+  anyBoolean(token: IToken): TSymbolData {
     const fn = 'anyBoolean:';
+    if (this.scanError()) return this.vagueError(token);
     const [type, boolean] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const gsType = 'boolean';
-    if (this.scanError())
-      return new VSDToken(
-        {},
-        {
-          gsType,
-          unitText,
-          err_code: 'vague',
-          err_info: `${fn} error in previous token(s)`
-        }
-      );
     const btype = typeof boolean;
     if (type === 'boolean' && btype === 'boolean')
       return new VSDToken({}, { gsType, unitText });
@@ -217,9 +253,8 @@ class SymbolInterpreter {
     const unitText = TOKENIZER.TokenToString(token);
     const keywords = SIMDATA.GetKeywordSymbols();
     const gsType = 'keyword';
-    if (type === 'comment' || type === 'line') {
+    if (type === 'comment' || type === 'line')
       return new VSDToken(keywords, { gsType, unitText });
-    }
     if (type !== 'identifier' && type !== 'directive') {
       this.scan_error = true;
       return new VSDToken(keywords, {
@@ -231,23 +266,43 @@ class SymbolInterpreter {
     return new VSDToken(keywords, { gsType, unitText });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** return feature validation */
-  anyFeature(token: IToken): TSymbolData {
-    const fn = 'anyFeature:';
+  /** allow any valid blueprint in the system */
+  anyBlueprintName(token: IToken): TSymbolData {
+    const fn = 'anyBlueprintName:';
+    if (this.scanError()) return this.vagueError(token);
+    const [type, bpName] = TOKENIZER.UnpackToken(token);
+    const gsType = 'blueprint';
+    const bpSymbols = SIMDATA.GetBlueprintSymbols();
+    const symbols: TSymbolData = { blueprints: { 'name': {} } };
+    if (type !== 'identifier') {
+      return this.badToken(token, symbols, {
+        gsType,
+        err_info: 'CharacterType must be an identifier'
+      });
+    }
+    // if the blueprint name is found
+    if (bpSymbols[bpName])
+      return this.goodToken(
+        token,
+        symbols, // valid choices are any blueprint symbol
+        { gsType }
+      );
+    // otherwise an error
+    return this.badToken(
+      token,
+      symbols, // valid choices are any blueprint symbol
+      { gsType, err_info: `no blueprint named ${bpName}` }
+    );
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** allo9 any feature in the system  */
+  anyFeatureName(token: IToken): TSymbolData {
+    const fn = 'anyFeatureName:';
+    if (this.scanError()) return this.vagueError(token);
     const [type, fName] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const features = SIMDATA.GetFeatureSymbols();
     const gsType = 'feature';
-    if (this.scanError())
-      return new VSDToken(
-        {},
-        {
-          gsType,
-          unitText,
-          err_code: 'vague',
-          err_info: `${fn} error in previous token(s)`
-        }
-      );
     if (type !== 'identifier') {
       this.scan_error = true;
       return new VSDToken(features, {
@@ -272,21 +327,12 @@ class SymbolInterpreter {
   /** return list of events */
   anySystemEvent(token: IToken): TSymbolData {
     const fn = 'anySystemEvent:';
+    if (this.scanError()) return this.vagueError(token);
     let [type, eventName] = TOKENIZER.UnpackToken(token);
     eventName = eventName.toUpperCase();
     const unitText = TOKENIZER.TokenToString(token);
     const eventNames = SIMDATA.GetAllScriptEventNames();
     const gsType = 'event';
-    if (this.scanError())
-      return new VSDToken(
-        {},
-        {
-          gsType,
-          unitText,
-          err_code: 'vague',
-          err_info: `${fn} error in previous token(s)`
-        }
-      );
     const symbols = { events: eventNames };
     // wrong token type
     if (type !== 'identifier') {
@@ -316,30 +362,53 @@ class SymbolInterpreter {
     );
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** returns the name of when tests that are available in the system
+   *  NOTE: currently when tests do NOT have symbol information for arguments, but
+   *  in GEMSTEP 1.0 there are tests with arguments so we're skipping that */
+  anyWhenTest(token: IToken): TSymbolData {
+    if (this.scanError()) return this.vagueError(token);
+    let [type, testName] = TOKENIZER.UnpackToken(token);
+    const gsType = 'test'; // note: the generic name for anything that returns T/F
+    const whenTestSymbols = SIMDATA.GetWhenTestSymbols();
+    const symbols = { methods: whenTestSymbols };
+    console.log('whenTestSymbols', whenTestSymbols);
+    if (type !== 'identifier')
+      return this.badToken(token, symbols, {
+        gsType,
+        err_info: `wrong or missing token: ${type}:${testName}`
+      });
+    if (SIMDATA.GetWhenTest(testName))
+      return this.goodToken(token, symbols, { gsType });
+    return this.badToken(token, symbols, {
+      gsType,
+      err_info: `${testName} is not a valid whenTest`
+    });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** returns a crude check of the expression to make sure it's valid, but
    *  does not yet check globals */
   anyExpr(token: IToken): TSymbolData {
     const fn = 'anyExpr:';
+    if (this.scanError()) return this.vagueError(token);
     const [type, unitText] = TOKENIZER.UnpackToken(token);
     const exprString = TOKENIZER.TokenToPlainString(token);
     const gsType = 'expr';
-    if (this.scanError())
-      return new VSDToken(
+    if (type !== 'expr')
+      return this.badToken(
+        token,
         {},
         {
           gsType,
-          unitText,
-          err_code: 'vague',
-          err_info: `${fn} error in previous token(s)`
+          err_info: `token ${type} is not an expression string`
         }
       );
     // the global context with accessible objects...
-    // todo: how to generate this for real?
-    const globalSymbols = {
+    const globals = {
       agent: { prop: [], getProp: () => {} },
       BlueprintA: {},
       BlueprintB: {}
     };
+    const symbols = { globals };
     // try to parse and evaluate the expression
     // and catch any thrown errors
     let gotError: string;
@@ -351,41 +420,25 @@ class SymbolInterpreter {
     }
     // if any errors got thrown, expression didn't validate
     if (gotError)
-      return new VSDToken(
-        { globals: globalSymbols },
-        {
-          unitText,
-          gsType,
-          err_code: 'invalid',
-          err_info: `parse: ${gotError}`
-        }
-      );
+      return this.badToken(token, symbols, {
+        gsType,
+        err_info: `parse: ${gotError}`
+      });
     // if the AST could be generated, then try evaluating it
     gotError = '';
     try {
-      COMPILER.ValidateExpression(ast, globalSymbols);
+      COMPILER.ValidateExpression(ast, globals);
     } catch (err) {
       gotError = err.toString();
     }
     // if the expression could not be evaluated, return the error
     if (gotError)
-      return new VSDToken(
-        { globals: globalSymbols },
-        {
-          unitText,
-          gsType,
-          err_code: 'invalid',
-          err_info: `evaluate: ${gotError}`
-        }
-      );
+      return new VSDToken(symbols, {
+        gsType,
+        err_info: `evaluate: ${gotError}`
+      });
     // got this far, it's good!
-    return new VSDToken(
-      { globals: globalSymbols },
-      {
-        unitText,
-        gsType
-      }
-    );
+    return this.goodToken(token, symbols, { gsType });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** hardcoded every keyword test options. See every.tsx to see how compile()
@@ -1662,7 +1715,7 @@ class SymbolInterpreter {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** inspection tool to see simdata defined at runtime */
 UR.AddConsoleTool('simdata', () => {
-  console.log('All Functions', SIMDATA.GetAllFunctions());
+  console.log('All Functions', SIMDATA.GetAllWhenTests());
   console.log('All Tests', SIMDATA.GetAllTests());
   console.log('All Programs', SIMDATA.GetAllPrograms());
   console.log('All Features', SIMDATA.GetAllFeatures());

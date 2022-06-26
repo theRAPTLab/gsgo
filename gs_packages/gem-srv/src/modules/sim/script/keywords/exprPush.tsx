@@ -21,7 +21,7 @@ export class exprPush extends Keyword {
    *  NOTE: when compile is called, all arguments have already been expanded
    *  from {{ }} to a ParseTree
    */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     const [kw, expr] = unit;
     const code = [];
     code.push((agent, state) => {

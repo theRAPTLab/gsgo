@@ -26,7 +26,6 @@ import * as TRANSPILER from 'script/transpiler-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
-import * as WIZHOOK from 'modules/appcore/ac-wizcore-hooks';
 import {
   DecodeSymbolViewData,
   UnpackViewData,
@@ -43,7 +42,7 @@ const { StateMgr } = UR.class;
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('WIZCORE', 'TagBlue');
-const DBG = true;
+const DBG = false;
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,7 +58,6 @@ function m_ChildOf(child, parent) {
 /// First create the new instance, and extract the methods we plan to use
 const STORE = new StateMgr('ScriptWizard');
 WIZUTIL.LoadDependencies(PR);
-WIZHOOK.LoadDependencies(PR);
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// initial values of state have to be defined for constructors of components
@@ -179,14 +177,15 @@ STORE._interceptState(state => {
     BUNDLER.CloseBundle();
     // console.log('newSymbols', newSymbols);
     // console.log('cur_bdl.symbol', cur_bdl.symbols);
-    console.log(
-      ...PR(
-        `slots_linescript: validating '${TRANSPILER.StatementToText(
-          state.slots_linescript
-        ).trim()}' with slots_bundle symbols:`,
-        state.slots_bundle.symbols
-      )
-    );
+    if (DBG)
+      console.log(
+        ...PR(
+          `slots_linescript: validating '${TRANSPILER.StatementToText(
+            state.slots_linescript
+          ).trim()}' with slots_bundle symbols:`,
+          state.slots_bundle.symbols
+        )
+      );
 
     state.slots_validation = TRANSPILER.ValidateStatement(
       state.slots_linescript,
