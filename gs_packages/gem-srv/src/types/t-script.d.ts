@@ -289,9 +289,8 @@ declare global {
     gsType?: string; // the gemscript meaning of this token
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Validation Tokens are a wrapper for TSymbolData, and the constructor
-   *  accepts this subset of
-   */
+  /** Validation Tokens are a wrapper for TSymbolData, and the VSDToken
+   *  constructor accepts this subset of TSymbolData propers */
   type TSymbolMeta = {
     gsType: TGSType;
     symbolScope?: Array<keyof TSymbolData>; // which symbol dicts apply to gui display
