@@ -273,8 +273,7 @@ class SymbolInterpreter {
     const [type, bpName] = TOKENIZER.UnpackToken(token);
     const gsType = 'blueprint';
     const bpSymbols = SIMDATA.GetBlueprintSymbols();
-    const symbols: TSymbolData = { blueprints: bpSymbols };
-    console.log('test', symbols, 'bpSymbol', JSON.stringify(bpSymbols, null, 2));
+    const symbols: TSymbolData = { blueprints: { 'name': {} } };
     if (type !== 'identifier') {
       return this.badToken(token, symbols, {
         gsType,

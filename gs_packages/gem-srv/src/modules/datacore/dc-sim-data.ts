@@ -95,10 +95,28 @@ function SaveBlueprintBundle(bdl: SM_Bundle) {
   return bdl;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: return a blueprint bundle by bpName */
+/** API: return a blueprint bundle by bpName. It creates a blueprint bundle
+ *  and always returns one, because this is used by symbolize to create
+ *  blueprint bundles as needed instead of checking if there is one */
 function GetBlueprintBundle(bpName: string): SM_Bundle {
   const fn = 'GetBlueprintBundle:';
-  bpName = bpName || 'default';
+  bpName = bpName || '<CreatedBundle>';
+  let bdl = BLUEPRINTS.get(bpName);
+  if (bdl === undefined) {
+    if (DBG) console.log(`${fn} creating '${bpName}' bundle on request`);
+    bdl = new SM_Bundle(bpName, EBundleType.BLUEPRINT);
+    // save the new bundle in dictionary
+    BLUEPRINTS.set(bpName, bdl);
+  }
+  return bdl;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: return a blueprint bundle by bpName. It creates a blueprint bundle
+ *  and always returns one, because this is used by symbolize to create
+ *  blueprint bundles as needed instead of checking if there is one */
+function GetOrCreateBlueprintBundle(bpName: string): SM_Bundle {
+  const fn = 'GetOrCreateBlueprintBundle:';
+  bpName = bpName || '<CreatedBundle>';
   let bdl = BLUEPRINTS.get(bpName);
   if (bdl === undefined) {
     if (DBG) console.log(`${fn} creating '${bpName}' bundle on request`);
@@ -139,7 +157,7 @@ function DeleteAllBlueprintBundles(): void {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetBlueprintSymbolsFor(bpName: string): TSymbolData {
   const { symbols } = GetBlueprintBundle(bpName);
-  if (symbols !== undefined) console.log('found', bpName, 'blueprint');
+  if (DBG) if (symbols !== undefined) console.log('found', bpName, 'blueprint');
   return symbols;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -270,8 +288,15 @@ function GetFeatureSymbols(): TSymbolData {
 
 /// TEST DICTIONARIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// named tests are TSMCPrograms that expect to receive parameters on the
+/// stack
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** returns true if test was saved for the first time, false otherwise */
-function RegisterTest(name: string, program: TSMCProgram): boolean {
+function RegisterTest(
+  name: string,
+  program: TSMCProgram,
+  symbols?: TSymbolData // future GEMSTEP
+): boolean {
   name = m_EnsureLowerCase(name);
   const newRegistration = !TEST_SCRIPTS.has(name);
   TEST_SCRIPTS.set(name, program);
@@ -295,7 +320,11 @@ function DeleteAllTests() {
 
 /// NAMED PROGRAM DICTIONARIES ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RegisterProgram(name: string, program: TSMCProgram) {
+function RegisterProgram(
+  name: string,
+  program: TSMCProgram,
+  symbols?: TSymbolData // future GEMSTEP
+) {
   name = m_EnsureLowerCase(name);
   if (NAMED_SCRIPTS.has(name)) throw Error(`RegisterProgram: ${name} exists`);
   NAMED_SCRIPTS.set(name, program);
@@ -422,6 +451,7 @@ export { DefinePragma, GetPragma, GetPragmaSymbols };
 export {
   SaveBlueprintBundle,
   GetBlueprintBundle,
+  GetOrCreateBlueprintBundle,
   GetAllBlueprintBundles,
   GetBlueprintBundleList,
   DeleteBlueprintBundle,

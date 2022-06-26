@@ -28,6 +28,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as SIM from 'modules/sim/api-sim'; // DO NOT REMOVE
+import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import * as BLUEPRINT_TESTER from 'test/test-blueprint';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import { VER_DEV_WIZ, ENABLE_SYMBOL_TEST_BLUEPRINT } from 'config/dev-settings';
