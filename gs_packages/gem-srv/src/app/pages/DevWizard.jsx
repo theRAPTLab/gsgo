@@ -28,21 +28,17 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as SIM from 'modules/sim/api-sim'; // DO NOT REMOVE
+import * as BLUEPRINT_TESTER from 'test/test-blueprint';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
-import { VER_DEV_WIZ } from 'config/dev-settings';
+import { VER_DEV_WIZ, ENABLE_SYMBOL_TEST_BLUEPRINT } from 'config/dev-settings';
+import { ASSETDIR, DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 // edit mode components
 import { ScriptTextPane } from './wiz/edit/ScriptTextPane';
 import { ScriptViewPane } from './wiz/edit/ScriptViewPane';
 import { ScriptEditPane } from './wiz/edit/ScriptEditPane';
-import { ScriptUnitEditor } from './wiz/pop/ScriptUnitEditorPane';
 // runtime mode components
-import { RTScriptPane } from './wiz/run/RTScriptPane';
-import { RTSimPane } from './wiz/run/RTSimPane';
-import { RTTargetPane } from './wiz/run/RTTargetPane'; //
 // always-there components
 import { ButtonConsole } from './wiz/ctrl/ButtonConsolePane';
-import { StatusFooter } from './wiz/stat/StatusFooter';
-import { DBGValidateLine } from './wiz/dbg/ValidateScriptLine';
 // style objects
 import { sGrid, sHead, sLeft, sRight, sFoot } from './wiz/SharedElements';
 import { DevHeader } from './components/DevElements';
@@ -56,6 +52,58 @@ import 'lib/css/gem-ui.css';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const PR = UR.PrefixUtil('DEWIZ', 'TagApp');
+
+/// PHASE MACHINE HOOKS ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// DEFERRED CALL: LOAD_ASSETS will fire after module loaded (and above code)
+UR.HookPhase('UR/LOAD_ASSETS', async () => {
+  // return promise to hold LOAD_ASSETS until done
+  console.log(
+    `%cInitializing 'assets/${ASSETDIR}' as project source...`,
+    'background-color:rgba(255,0,0,0.15);color:red;padding:1em 2em'
+  );
+  return PROJ_v2.LoadAssetDirectory(`/assets/${ASSETDIR}/`);
+});
+
+/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** loads project, extract script text, and updates state through the provide
+ *  STORE */
+function m_LoadTestProjectData() {
+  // check for override load to use built-in test script
+  if (ENABLE_SYMBOL_TEST_BLUEPRINT) {
+    console.log(
+      `%cUsing TEST_SCRIPT because ENABLE_SYMBOL_TEST_BLUEPRINT is true...`,
+      'background-color:rgba(255,255,0,0.15);color:red;padding:1em 2em'
+    );
+    const script_text = BLUEPRINT_TESTER.GetTestScriptText();
+    WIZCORE.SendState({ script_text });
+    // BLUEPRINT_TESTER.TestValidate();
+    return;
+  }
+
+  // normal load
+  const cur_prjid = DEV_PRJID;
+  const cur_bpid = DEV_BPID;
+  let out = `%cLooking for '${DEV_PRJID}.prj' with blueprint name '${DEV_BPID}' `;
+  out += `in 'assets/${ASSETDIR}'...`;
+  out += '%c\n\n';
+  out += `If you see an error, check that ASSETDIR, DEV_PRJID, and DEV_BPID `;
+  out += `are correctly defined in local-settings.json`;
+  // This retrieves the uncompiled/unbundled bpDef object {name, scriptText} from gem proj
+  console.log(
+    out,
+    'background-color:rgba(255,0,0,0.15);color:red;padding:1em 2em',
+    'color:maroon',
+    '\n\n'
+  );
+  const bp = PROJ_v2.GetProjectBlueprint(cur_prjid, cur_bpid);
+  const { scriptText: script_text } = bp;
+  const vmState = { cur_prjid, cur_bpid, script_text };
+  WIZCORE.SendState(vmState);
+  console.log(...PR(`loaded blueprint '${DEV_BPID}' from '${DEV_PRJID}'`));
+  // BLUEPRINT_TESTER.TestValidate();
+}
 
 /// ROOT APPLICATION COMPONENT ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -76,6 +124,17 @@ class DevWizard extends React.Component {
     document.addEventListener('click', WIZCORE.DispatchClick);
     // add a subscriber
     WIZCORE.SubscribeState(this.handleWizUpdate);
+    m_LoadTestProjectData(WIZCORE);
+    if (ENABLE_SYMBOL_TEST_BLUEPRINT) {
+      console.log(
+        `%cUsing TEST_SCRIPT because ENABLE_SYMBOL_TEST_BLUEPRINT is true...`,
+        'background-color:rgba(255,255,0,0.15);color:red;padding:1em 2em'
+      );
+      const script_text = BLUEPRINT_TESTER.GetTestScriptText();
+      WIZCORE.SendState({ script_text });
+      // BLUEPRINT_TESTER.TestValidate();
+      return;
+    }
   }
 
   componentWillUnmount() {
