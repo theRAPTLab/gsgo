@@ -232,8 +232,8 @@ class Keyword implements IKeyword {
       const spc = ' '.padStart(ii.toString().length);
       let out = '';
 
-      if (dictList) out = `SDICT ${dictList} `;
-      if (gsType) out += `gsType:${gsType} `;
+      if (gsType) out += `gsType:${gsType.padEnd(10, ' ')} `;
+      if (dictList) out += `SDICT ${dictList} `;
       if (symbolScope) out += `symScope:${symbolScope} `;
 
       if (err) {

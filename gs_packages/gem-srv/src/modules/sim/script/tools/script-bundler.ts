@@ -243,11 +243,13 @@ function AddSymbols(symdata: TSymbolData) {
     // featureName --> featureModule
     if (_bdlsym.features === undefined) _bdlsym.features = {};
     for (const [featName, featSymbols] of Object.entries(symdata.features)) {
-      if (_bdlsym.features[featName])
-        console.log(
-          `%coverwriting feature ${featName}`,
+      if (DBG && _bdlsym.features[featName]) {
+        console.groupCollapsed(
+          `%credefining feature ${featName}`,
           'color:rgba(0,0,0,0.25)'
         );
+        console.groupEnd();
+      }
       if (DBG) {
         console.groupCollapsed(...PR(`AddSymbol: ${featName}`));
         console.log(featSymbols);
@@ -261,8 +263,14 @@ function AddSymbols(symdata: TSymbolData) {
     // propName --->
     if (_bdlsym.props === undefined) _bdlsym.props = {};
     for (const [propName, symbolData] of Object.entries(symdata.props)) {
-      if (_bdlsym.props[propName])
-        console.log(`%coverwriting prop ${propName}`, 'color:rgba(0,0,0,0.25)');
+      if (DBG && _bdlsym.props[propName]) {
+        console.groupCollapsed(
+          `%credefining prop ${propName}`,
+          'color:rgba(0,0,0,0.25)'
+        );
+        console.log('old, new', _bdlsym.props[propName], symbolData);
+        console.groupEnd();
+      }
       if (DBG) {
         console.groupCollapsed(...PR(`AddSymbol: ${propName}`));
         console.log(symbolData);

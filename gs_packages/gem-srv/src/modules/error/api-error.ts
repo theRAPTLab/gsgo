@@ -1,6 +1,9 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The Error Module is a logger
+  The Error Module is a logger of all errors. The intention is that this
+  will be able to capture a snapshot of what isn't working during the compile
+  bundle validate symbolize operations and provide a unified means of access
+  to this information so it can be displayed in a user interface.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
