@@ -32,7 +32,7 @@ const VARS: Map<string, TPropType> = new Map();
 const EVENT_SCRIPTS: Map<string, Map<string, TSMCProgram>> = new Map();
 const TEST_SCRIPTS: Map<string, TSMCProgram> = new Map();
 const NAMED_SCRIPTS: Map<string, TSMCProgram> = new Map();
-const NAMED_FUNCTIONS: Map<string, Function> = new Map();
+const WHEN_TESTS: Map<string, Function> = new Map();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 type TPropType = typeof SM_String | typeof SM_Number | typeof SM_Boolean;
 
@@ -311,27 +311,51 @@ function GetAllPrograms() {
   return list;
 }
 
-/// NAMED FUNCTIONS DICTIONARIES //////////////////////////////////////////////
+/// WHEN TEST DICTIONARY //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RegisterFunction(name: string, func: Function): boolean {
+/// named javascript functions are used when you need to invoke it with
+/// parameters during a function call. currently, these are only used for
+/// 'when tests' and the symbol-interpreter assumes that's what they are
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function RegisterWhenTest(
+  name: string,
+  func: Function,
+  symbols?: TSymbolData // future GEMSTEP
+): boolean {
   name = m_EnsureLowerCase(name);
-  const newRegistration = !NAMED_FUNCTIONS.has(name);
-  NAMED_FUNCTIONS.set(name, func);
+  const newRegistration = !WHEN_TESTS.has(name);
+  WHEN_TESTS.set(name, func);
   return newRegistration;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetFunction(name: string): Function {
+function GetWhenTest(name: string): Function {
   name = m_EnsureLowerCase(name);
-  let f = NAMED_FUNCTIONS.get(name);
+  let f = WHEN_TESTS.get(name);
   // return always random results if the test doesn't exist
   if (!f) f = () => Math.random() > 0.5;
   return f;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetAllFunctions() {
-  const list = [...NAMED_FUNCTIONS.entries()];
-  return list;
+function GetAllWhenTests() {
+  const whenTests = [...WHEN_TESTS.entries()];
+  return whenTests;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** note: when tests can accept arguments but they are javascript function
+ *  args that have to be passed from GEMSCRIPT. Currently no when tests in
+ *  GS1.0 pass arguments, so we can return dummy structures that will still
+ *  accurately validate for now */
+function GetWhenTestSymbols() {
+  const symbols = {};
+  WHEN_TESTS.forEach((value, name) => {
+    symbols[name] = {
+      name,
+      args: [],
+      returns: 'boolean',
+      info: `${name} whenTest`
+    };
+  });
+  return symbols;
 }
 
 /// SCRIPT EVENTS /////////////////////////////////////////////////////////////
@@ -428,7 +452,7 @@ export {
   GetFeatureSymbols
 };
 /// engine maintains dicts of named Javascript functions
-export { RegisterFunction, GetFunction, GetAllFunctions };
+export { RegisterWhenTest, GetWhenTest, GetAllWhenTests, GetWhenTestSymbols };
 /// engine maintain dicts of compiler script code (TSMCProgram)
 export { RegisterProgram, GetProgram, GetAllPrograms };
 /// "when" conditions use programs that expect a certain input

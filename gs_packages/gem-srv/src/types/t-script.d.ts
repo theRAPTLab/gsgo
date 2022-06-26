@@ -289,6 +289,17 @@ declare global {
     gsType?: string; // the gemscript meaning of this token
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Validation Tokens are a wrapper for TSymbolData, and the constructor
+   *  accepts this subset of
+   */
+  type TSymbolMeta = {
+    gsType: TGSType;
+    symbolScope?: Array<keyof TSymbolData>; // which symbol dicts apply to gui display
+    unitText?: string;
+    err_code?: TValidationErrorCodes;
+    err_info?: string;
+  };
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** blueprint symbol data format */
   type TBundleSymbols = {
     props?: { [propName: string]: TSymbolData }; // map to varctor.symbols

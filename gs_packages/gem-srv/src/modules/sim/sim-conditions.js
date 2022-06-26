@@ -22,7 +22,7 @@ let GLOBAL_INTERACTIONS = [];
 
 /// REGISTER NAMED METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SIMDATA.RegisterFunction('dies', a => {
+SIMDATA.RegisterWhenTest('dies', a => {
   if (a.prop.foodLevel.value < 1) {
     console.log('dead!');
     return true;
@@ -46,7 +46,7 @@ SIMDATA.RegisterFunction('dies', a => {
  *       ]]
  *     ]]
  */
-// RegisterFunction('wasTouchedWithin', (a, b) => {
+// RegisterWhenTest('wasTouchedWithin', (a, b) => {
 //   // make sure both objects have the Physics feature
 //   if (!a.hasFeature('Physics') || !b.hasFeature('Physics'))
 //     console.error('wasTouchedWithin requires Physics');
@@ -109,12 +109,12 @@ SIMDATA.RegisterFunction('dies', a => {
  * NOTE: This can be used without Physics or Touches
  * This is functionally equivalent to 'centerTouchesCenter'
  */
-SIMDATA.RegisterFunction('isCenteredOn', (a, b, distance = 5) => {
+SIMDATA.RegisterWhenTest('isCenteredOn', (a, b, distance = 5) => {
   // checks if distance between agents is less than distance
   return DistanceTo(a, b) <= distance;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SIMDATA.RegisterFunction('isCloseTo', (a, b, distance = 30) => {
+SIMDATA.RegisterWhenTest('isCloseTo', (a, b, distance = 30) => {
   // checks if distance between agents is less than distance
   // Doesn't need Physics or Touch
   return DistanceTo(a, b) <= distance;
@@ -131,19 +131,19 @@ function m_TouchTest(a, b, touchType) {
 }
 /// a center touches b center
 /// This is the Physics equivalent of `isCenteredOn`
-SIMDATA.RegisterFunction('centerTouchesCenter', (a, b) => {
+SIMDATA.RegisterWhenTest('centerTouchesCenter', (a, b) => {
   return m_TouchTest(a, b, 'c2c');
 });
 /// a center touches b bounds
-SIMDATA.RegisterFunction('centerTouches', (a, b) => {
+SIMDATA.RegisterWhenTest('centerTouches', (a, b) => {
   return m_TouchTest(a, b, 'c2b');
 });
 /// a bounds touches b bounds
-SIMDATA.RegisterFunction('touches', (a, b) => {
+SIMDATA.RegisterWhenTest('touches', (a, b) => {
   return m_TouchTest(a, b, 'b2b');
 });
 /// a bounds touches b bounds
-SIMDATA.RegisterFunction('isInside', (a, b) => {
+SIMDATA.RegisterWhenTest('isInside', (a, b) => {
   return m_TouchTest(a, b, 'binb');
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -159,15 +159,15 @@ function m_FirstTouchTest(a, b, touchType) {
   );
 }
 /// a center first touches b center
-SIMDATA.RegisterFunction('centerFirstTouchesCenter', (a, b) => {
+SIMDATA.RegisterWhenTest('centerFirstTouchesCenter', (a, b) => {
   return m_FirstTouchTest(a, b, 'c2c');
 });
 /// a center first touches b bounds
-SIMDATA.RegisterFunction('centerFirstTouches', (a, b) => {
+SIMDATA.RegisterWhenTest('centerFirstTouches', (a, b) => {
   return m_FirstTouchTest(a, b, 'c2b');
 });
 /// a bounds first touches b bounds
-SIMDATA.RegisterFunction('firstTouches', (a, b) => {
+SIMDATA.RegisterWhenTest('firstTouches', (a, b) => {
   return m_FirstTouchTest(a, b, 'b2b');
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -182,33 +182,33 @@ function m_LastTouchTest(a, b, touchType) {
   );
 }
 /// a center last touches b center
-SIMDATA.RegisterFunction('centerLastTouchesCenter', (a, b) => {
+SIMDATA.RegisterWhenTest('centerLastTouchesCenter', (a, b) => {
   return m_LastTouchTest(a, b, 'c2c');
 });
 /// a center last touches b bounds
-SIMDATA.RegisterFunction('centerLastTouches', (a, b) => {
+SIMDATA.RegisterWhenTest('centerLastTouches', (a, b) => {
   return m_LastTouchTest(a, b, 'c2b');
 });
 /// a bounds last touches b bounds
-SIMDATA.RegisterFunction('lastTouches', (a, b) => {
+SIMDATA.RegisterWhenTest('lastTouches', (a, b) => {
   return m_LastTouchTest(a, b, 'b2b');
 });
 
 /// VISION TESTS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SIMDATA.RegisterFunction('sees', (a, b) => {
+SIMDATA.RegisterWhenTest('sees', (a, b) => {
   // checks if b is within vision cone of a
   if (!a.hasFeature('Vision') || !b.hasFeature('Costume')) return false;
   return a.canSeeCone ? a.canSeeCone.get(b.id) : false;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SIMDATA.RegisterFunction('doesNotSee', (a, b) => {
+SIMDATA.RegisterWhenTest('doesNotSee', (a, b) => {
   // checks if b is NOT within vision cone of a
   if (!a.hasFeature('Vision') || !b.hasFeature('Costume')) return false;
   return a.canSeeCone ? !a.canSeeCone.get(b.id) : true;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SIMDATA.RegisterFunction('seesCamouflaged', (a, b) => {
+SIMDATA.RegisterWhenTest('seesCamouflaged', (a, b) => {
   // checks if b's color relative to its background is visible to a
   // AND the color range is outside of the detectableRange
   const canSeeCone = a.canSeeCone ? !a.canSeeCone.get(b.id) : true;
