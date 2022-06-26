@@ -146,8 +146,11 @@ export function ScriptViewPane(props) {
           lineNum,
           script_page_Validation[lineNum]
         );
-      const lineValidationTokens =
-        script_page_Validation[lineNum].validationTokens;
+      // if a line was deleted, lineNum might exceed
+      // the script_page_Validation length
+      const lineValidationTokens = script_page_Validation[lineNum]
+        ? script_page_Validation[lineNum].validationTokens
+        : [];
 
       lineValidationTokens.forEach((validationToken, idx) => {
         const tokInfo = vmTokens[idx] || {};
