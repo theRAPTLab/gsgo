@@ -446,6 +446,7 @@ function InjectBlueprint(projId: string, bpDef: TBlueprint) {
 function UpdateBlueprint(projId: string, bpName: string, scriptText: string) {
   const def = { scriptText };
   const bpDef = { name: bpName, scriptText };
+
   // 1. Compile the new blueprint
   m_SymbolizeBlueprints([bpDef]);
   m_CompileBlueprints([bpDef]); // add/update BPTEXTMAP as a side effect
