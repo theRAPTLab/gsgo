@@ -785,6 +785,9 @@ class SymbolInterpreter {
     const fn = 'agentFeatureList:';
     const gsType = 'objref';
     this.resetScope(); // points to the bundle.symbols to start
+    if (this.getBundleScope().features === undefined) {
+      return this.goodToken(token, { features: {} }, { gsType });
+    }
     const featuresList = [...Object.keys(this.getBundleScope().features)];
     let [matchType, featureName] = TOKENIZER.UnpackToken(token);
     const unitText = Array.isArray(featureName)
