@@ -104,6 +104,18 @@ class SymbolInterpreter {
     const fn = 'scanError:';
     if (flag !== undefined) this.scan_error = Boolean(flag);
     return this.scan_error;
+  getBundlePropSymbols(): TSymbolData {
+    const props = this.bdl_scope.props || {};
+    return props;
+  }
+  getBundleFeatureSymbols(): TSymbolData {
+    const features = this.bdl_scope.features || {};
+    return features;
+  }
+  setCurrentScope(symbols: TSymbolData) {
+    const fn = 'setCurrentScope:';
+    if (typeof symbols !== 'object') throw Error(`${fn} expect symbol object`);
+    this.cur_scope = symbols;
   }
   setGlobal(ctx: object) {
     this.refs.globals = ctx;
@@ -114,9 +126,26 @@ class SymbolInterpreter {
     console.log(`TODO: ${fn} should chain`, ctxChild);
   }
 
-  /// BOILERPLATE RESPONSE HELPERS ////////////////////////////////////////////
+  /// BOILERPLATE HELPERS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** use if (this.scanError()) */
+  /** return true if a scan error had occured */
+  detectScanError(flag?: boolean) {
+    const fn = 'detectScanError:';
+    if (flag !== undefined) this.scan_error = Boolean(flag);
+    return this.scan_error;
+  }
+  /** return true if token is wrong type */
+  detectTypeError(gsType, token) {
+    let [matchType] = TOKENIZER.UnpackToken(token);
+    return matchType !== gsType;
+  }
+  /** return unitText, tokType, tokValue from a token */
+  extractTokenMeta(token) {
+    const [tokType, tokValue] = TOKENIZER.UnpackToken(token);
+    const unitText = TOKENIZER.TokenToString(token);
+    return [unitText, tokType, tokValue];
+  }
+  /** use if (this.detectScanError()) */
   vagueError(token: IToken): TSymbolData {
     const unitText = TOKENIZER.TokenToString(token);
     const gsType = '{?}';
