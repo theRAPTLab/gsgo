@@ -20,9 +20,8 @@ import { StatementToText } from 'script/tools/script-tokenizer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
+const DBG = false;
 const EMPTY_STATEMENT: TScriptUnit = [];
-type STM_MEM = { ls: TScriptUnit; parent: number };
 const PR = UR.PrefixUtil('TMP_TOKS', 'TagRed');
 
 /// LINE PRINTING MACHINE //////////////////////////////////////////////////////
