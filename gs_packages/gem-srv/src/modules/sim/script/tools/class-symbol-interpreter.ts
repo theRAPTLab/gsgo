@@ -273,7 +273,7 @@ class SymbolInterpreter {
     const [type, bpName] = TOKENIZER.UnpackToken(token);
     const gsType = 'blueprint';
     const bpSymbols = SIMDATA.GetBlueprintSymbols();
-    const symbols: TSymbolData = { blueprints: { 'name': {} } };
+    const symbols: TSymbolData = { blueprints: bpSymbols as any };
     if (type !== 'identifier') {
       return this.badToken(token, symbols, {
         gsType,
@@ -371,7 +371,7 @@ class SymbolInterpreter {
     const gsType = 'test'; // note: the generic name for anything that returns T/F
     const whenTestSymbols = SIMDATA.GetWhenTestSymbols();
     const symbols = { methods: whenTestSymbols };
-    console.log('whenTestSymbols', whenTestSymbols);
+    // console.log('whenTestSymbols', whenTestSymbols);
     if (type !== 'identifier')
       return this.badToken(token, symbols, {
         gsType,
