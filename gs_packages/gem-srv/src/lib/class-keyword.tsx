@@ -232,7 +232,7 @@ class Keyword implements IKeyword {
       const spc = ' '.padStart(ii.toString().length);
       let out = '';
 
-      if (gsType) out += `gsType:${gsType.padEnd(10, ' ')} `;
+      if (gsType) out += `gsType:${gsType.padEnd(9, ' ')} `;
       if (dictList) out += `SDICT ${dictList} `;
       if (symbolScope) out += `symScope:${symbolScope} `;
 
