@@ -11,16 +11,19 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys';
 import {
   SHOW_EMPTY_STATEMENTS,
   SCRIPT_PAGE_INDEX_OFFSET
 } from 'config/dev-settings';
-import { StatementToText, ScriptToText } from 'script/tools/script-tokenizer';
+import { StatementToText } from 'script/tools/script-tokenizer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
+const DBG = true;
 const EMPTY_STATEMENT: TScriptUnit = [];
+type STM_MEM = { ls: TScriptUnit; parent: number };
+const PR = UR.PrefixUtil('TMP_TOKS', 'TagRed');
 
 /// LINE PRINTING MACHINE //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,7 +41,7 @@ class ScriptLiner {
   LINE_POS: number;
   INDENT: number;
   BLOCK_FLAG: VMLineScriptType;
-  STM_STACK: TScriptUnit[];
+  TMP_TOKS: TScriptUnit[];
   DBGTEXT: string;
   REFS: { bundles: TNameSet };
   //
@@ -73,7 +76,7 @@ class ScriptLiner {
     this.LINE_BUF = [];
     this.LINE_POS = SCRIPT_PAGE_INDEX_OFFSET;
     this.LINE_NUM = SCRIPT_PAGE_INDEX_OFFSET;
-    this.STM_STACK = [];
+    this.TMP_TOKS = [];
     this.PAGE = [];
     this.TOKMAP.clear();
     this.BLOCK_FLAG = null;
@@ -84,19 +87,19 @@ class ScriptLiner {
   /** used to save the current statement array for the tokens being processed
    *  in it, so we can copy it into the PAGE array. Filters out blocks because
    *  are processed as different lines */
-  pushContext(stm: TScriptUnit): void {
-    const copied_toks = stm.filter(tok => !tok.block);
-    this.STM_STACK.push(copied_toks); // save statement on stack
-    // console.log(this.STM_STACK.length, JSON.stringify(this.peekContext ()));
+  pushTokens(stm: TScriptUnit): void {
+    const copied_toks: IToken[] = stm.filter(tok => !tok.block);
+    this.TMP_TOKS.push(copied_toks); // save statement on stack
+    // console.log(this.TMP_TOKS.length, JSON.stringify(this.peekTokens ()));
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** remove the saved statement, without { block } tokens */
-  popContext(): TScriptUnit {
-    return this.STM_STACK.pop(); // save statement on stack
+  popTokens(): TScriptUnit {
+    return this.TMP_TOKS.pop();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  peekContext(): TScriptUnit {
-    return this.STM_STACK[this.STM_STACK.length - 1];
+  peekTokens(): TScriptUnit {
+    return this.TMP_TOKS[this.TMP_TOKS.length - 1];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   nextLine(): void {
@@ -134,7 +137,7 @@ class ScriptLiner {
     if (this.LINE_BUF.length === 0 && !SHOW_EMPTY_STATEMENTS) return;
     // otherwise do the thing
     const { level, lineNum, globalRefs } = this.currentContext();
-    const lineScript = this.popContext() || EMPTY_STATEMENT;
+    const lineScript = this.popTokens() || EMPTY_STATEMENT;
     const vmTokens = [...this.LINE_BUF];
 
     const line: VMPageLine = {
@@ -191,11 +194,11 @@ class ScriptLiner {
   /** reference algorithm used by statementToLines */
   genericStatementDeblocker(stm: TScriptUnit): void {
     if (stm.length === 0) return;
-    this.pushContext(stm); // set current statement context
+    this.pushTokens(stm); // set current statement context
     stm.forEach((tok: IToken, idx) => {
       const isBlock = Array.isArray(tok.block);
       if (isBlock) {
-        this.lineOut(); // uses popContext() to retrieve lineScript
+        this.lineOut(); // uses popTokens() to retrieve lineScript
         tok.block.forEach(bstm => {
           this.genericStatementDeblocker(bstm);
         });
@@ -203,7 +206,7 @@ class ScriptLiner {
         this.tokenOut(tok);
       }
     });
-    this.lineOut(); // uses popContext() flush all the tokenOut acquired
+    this.lineOut(); // uses popTokens() flush all the tokenOut acquired
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** reference algorithm used by EditableTokensToLines, which is the
@@ -281,7 +284,7 @@ class ScriptLiner {
       if (DBG) console.log('Empty Statement', statement);
       return;
     }
-    this.pushContext(statement); // set current statement context
+    this.pushTokens(statement); // set current statement context
     statement.forEach((tok: IToken, sindex: number) => {
       // regular token: add to statement
       if (!Array.isArray(tok.block)) {
@@ -298,7 +301,7 @@ class ScriptLiner {
         console.log(
           'LINEOUT %cBLOCK',
           'color:red',
-          StatementToText(this.peekContext()),
+          StatementToText(this.peekTokens()),
           bflag
         );
       }
@@ -326,7 +329,7 @@ class ScriptLiner {
       const bflag = this.BLOCK_FLAG
         ? `!!!!!!!! ${this.BLOCK_FLAG.toUpperCase()}`
         : '';
-      console.log('LINEOUT', StatementToText(this.peekContext()), bflag);
+      console.log('LINEOUT', StatementToText(this.peekTokens()), bflag);
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
