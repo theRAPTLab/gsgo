@@ -41,14 +41,8 @@ export class prop extends Keyword {
   /** create smc blueprint code objects */
   compile(dtoks: TScriptUnit, refs: TSymbolRefs): TOpcode[] {
     const [kw, objref, methodName, ...args] = dtoks;
-    // create a function that will be used to dereferences the objref
-    // into an actual call
+    /*** TESTING CODE ***/
     if (USE_NEW_DEREF) {
-      /*** TESTING CODE ***/
-      // console.warn(
-      //   `%ctesting deref of ${JSON.stringify(objref)}`,
-      //   'font-weight:normal;color:rgba(0,0,0,0.5)'
-      // );
       let derefProp: Function;
       try {
         derefProp = this.derefProp(objref);

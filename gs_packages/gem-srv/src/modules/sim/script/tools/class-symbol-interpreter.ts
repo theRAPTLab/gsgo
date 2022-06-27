@@ -100,10 +100,6 @@ class SymbolInterpreter {
   getBundleScope(): TSymbolData {
     return this.bdl_scope;
   }
-  scanError(flag?: boolean) {
-    const fn = 'scanError:';
-    if (flag !== undefined) this.scan_error = Boolean(flag);
-    return this.scan_error;
   getBundlePropSymbols(): TSymbolData {
     const props = this.bdl_scope.props || {};
     return props;
@@ -211,7 +207,7 @@ class SymbolInterpreter {
   /** use to validate a token that can be any number */
   anyNumber(token: IToken): TSymbolData {
     const fn = 'anyNumber:';
-    if (this.scanError()) return this.vagueError(token);
+    if (this.detectScanError()) return this.vagueError(token);
     const [type, value] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const gsType = 'number';
@@ -232,7 +228,7 @@ class SymbolInterpreter {
   /** use to validate a token that can be any string value */
   anyString(token: IToken): TSymbolData {
     const fn = 'anyString:';
-    if (this.scanError()) return this.vagueError(token);
+    if (this.detectScanError()) return this.vagueError(token);
     const [type, string] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const gsType = 'string';
@@ -253,7 +249,7 @@ class SymbolInterpreter {
   /** use to validate a token that can be any boolean value */
   anyBoolean(token: IToken): TSymbolData {
     const fn = 'anyBoolean:';
-    if (this.scanError()) return this.vagueError(token);
+    if (this.detectScanError()) return this.vagueError(token);
     const [type, boolean] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const gsType = 'boolean';
@@ -298,7 +294,7 @@ class SymbolInterpreter {
   /** allow any valid blueprint in the system */
   anyBlueprintName(token: IToken): TSymbolData {
     const fn = 'anyBlueprintName:';
-    if (this.scanError()) return this.vagueError(token);
+    if (this.detectScanError()) return this.vagueError(token);
     const [type, bpName] = TOKENIZER.UnpackToken(token);
     const gsType = 'blueprint';
     const bpSymbols = SIMDATA.GetBlueprintSymbols();
@@ -327,7 +323,7 @@ class SymbolInterpreter {
   /** allo9 any feature in the system  */
   anyFeatureName(token: IToken): TSymbolData {
     const fn = 'anyFeatureName:';
-    if (this.scanError()) return this.vagueError(token);
+    if (this.detectScanError()) return this.vagueError(token);
     const [type, fName] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const features = SIMDATA.GetFeatureSymbols();
@@ -356,7 +352,7 @@ class SymbolInterpreter {
   /** return list of events */
   anySystemEvent(token: IToken): TSymbolData {
     const fn = 'anySystemEvent:';
-    if (this.scanError()) return this.vagueError(token);
+    if (this.detectScanError()) return this.vagueError(token);
     let [type, eventName] = TOKENIZER.UnpackToken(token);
     eventName = eventName.toUpperCase();
     const unitText = TOKENIZER.TokenToString(token);
@@ -395,7 +391,7 @@ class SymbolInterpreter {
    *  NOTE: currently when tests do NOT have symbol information for arguments, but
    *  in GEMSTEP 1.0 there are tests with arguments so we're skipping that */
   anyWhenTest(token: IToken): TSymbolData {
-    if (this.scanError()) return this.vagueError(token);
+    if (this.detectScanError()) return this.vagueError(token);
     let [type, testName] = TOKENIZER.UnpackToken(token);
     const gsType = 'test'; // note: the generic name for anything that returns T/F
     const whenTestSymbols = SIMDATA.GetWhenTestSymbols();
@@ -418,7 +414,7 @@ class SymbolInterpreter {
    *  does not yet check globals */
   anyExpr(token: IToken): TSymbolData {
     const fn = 'anyExpr:';
-    if (this.scanError()) return this.vagueError(token);
+    if (this.detectScanError()) return this.vagueError(token);
     const [type, unitText] = TOKENIZER.UnpackToken(token);
     const exprString = TOKENIZER.TokenToPlainString(token);
     const gsType = 'expr';
@@ -563,7 +559,7 @@ class SymbolInterpreter {
     const unitText = TOKENIZER.TokenToString(token);
     const gsType = 'propType';
 
-    if (this.scanError())
+    if (this.detectScanError())
       return new VSDToken(
         {},
         {
@@ -628,7 +624,7 @@ class SymbolInterpreter {
     const unitText = TOKENIZER.TokenToString(token);
     let gsType: TGSType = '{?}'; // filled in once we know more
 
-    if (this.scanError())
+    if (this.detectScanError())
       return new VSDToken(
         {},
         {
@@ -729,16 +725,16 @@ class SymbolInterpreter {
     return features; // valid scope is parent of cur_scope
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** check the current scope or bundle for strIsPropIdentifier matches or
+  /** check the current scope or bundle for strIsPropName matches or
    *  undefined. Use this in the cases where you DO NOT WANT an objectref
    *  instead, as you would for the addProp keyword */
-  strIsPropIdentifier(strIsPropIdentifier: string) {
+  strIsPropName(strIsPropName: string) {
     const ctx = this.cur_scope || {};
     // is there a props dictionary in scope?
     const propDict = this.cur_scope.props;
     if (!propDict) return undefined; // no props found
-    // does the strIsPropIdentifier exist?
-    const prop = propDict[strIsPropIdentifier];
+    // does the strIsPropName exist?
+    const prop = propDict[strIsPropName];
     if (!prop) return undefined; // no matching prop
     this.cur_scope = prop; // advance scope pointer
     return ctx; // valid scope is parent of cur_scope
@@ -760,7 +756,7 @@ class SymbolInterpreter {
       : featureName;
     if (DBG) console.log(...PR(`${fn}: ${matchType}:${featureName}`));
     // was there a previous scope-breaking error? bail!
-    if (this.scanError())
+    if (this.detectScanError())
       return new VSDToken(
         {},
         {
@@ -774,7 +770,7 @@ class SymbolInterpreter {
     // convert identifier to single-part objref
     // and return error if it's not objref or identifier
     if (matchType !== 'identifier') {
-      this.scanError(true);
+      this.detectScanError(true);
       return new VSDToken(
         { features: this.getBundleScope().features },
         {
@@ -788,7 +784,7 @@ class SymbolInterpreter {
     }
     const feature = this.strIsFeatureName(featureName);
     if (!feature) {
-      this.scanError(true);
+      this.detectScanError(true);
       return new VSDToken(this.cur_scope, {
         gsType,
         symbolScope: ['features'], // this is what's 'displayable' by GUI
@@ -824,7 +820,7 @@ class SymbolInterpreter {
       : featureName;
     if (DBG) console.log(...PR(`${fn}: ${matchType}:${featureName}`));
     // was there a previous scope-breaking error? bail!
-    if (this.scanError())
+    if (this.detectScanError())
       return new VSDToken(
         {},
         {
@@ -838,7 +834,7 @@ class SymbolInterpreter {
     // convert identifier to single-part objref
     // and return error if it's not objref or identifier
     if (matchType !== 'identifier') {
-      this.scanError(true);
+      this.detectScanError(true);
       return new VSDToken(
         { featuresList },
         {
@@ -852,7 +848,7 @@ class SymbolInterpreter {
     const features = this.cur_scope.features;
     const feature = features[featureName];
     if (!feature) {
-      this.scanError(true);
+      this.detectScanError(true);
       return new VSDToken(this.cur_scope, {
         gsType,
         symbolScope: ['featuresList'], // this is what's 'displayable' by GUI
@@ -927,13 +923,14 @@ class SymbolInterpreter {
   featObjRef(token: IToken): TSymbolData {
     // error checking & type overrides
     const fn = 'featObjRef:';
-    const gsType = 'objref';
+
+    const gsType = 'feature';
     // this.resetScope(); // points to the bundle.symbols to start
     let [matchType, parts] = TOKENIZER.UnpackToken(token);
     const unitText = Array.isArray(parts) ? parts.join('.') : parts;
     if (DBG) console.log(...PR(`${fn}: ${matchType}:${parts}`));
     // was there a previous scope-breaking error? bail!
-    if (this.scanError())
+    if (this.detectScanError())
       return new VSDToken(
         {},
         {
@@ -947,7 +944,7 @@ class SymbolInterpreter {
     // and return error if it's not objref or identifier
     if (matchType === 'identifier') parts = [parts];
     else if (matchType !== 'objref') {
-      this.scanError(true);
+      this.detectScanError(true);
       return new VSDToken(
         { props: this.getBundleScope().props },
         {
@@ -961,7 +958,7 @@ class SymbolInterpreter {
     // OBJREF PART 1: what kind of object are we referencing?
     // these calls will update cur_scope SymbolData appropriately
     let part = parts[0];
-    let prop = this.strIsPropIdentifier(part);
+    let prop = this.strIsPropName(part);
     let terminal = parts.length === 1;
     // does the objref terminate in a method-bearing reference?
     if (terminal) {
@@ -978,7 +975,7 @@ class SymbolInterpreter {
 
     // did any agent, feature, prop, or blueprint resolve?
     if (!prop) {
-      this.scanError(true);
+      this.detectScanError(true);
       return new VSDToken(this.cur_scope, {
         gsType,
         unitText,
@@ -996,7 +993,7 @@ class SymbolInterpreter {
       // are there any prop, feature, or blueprint references?
       // these calls drill-down into the scope for each part, starting in the
       // scope set in OBJREF PART 1
-      prop = this.strIsPropIdentifier(part);
+      prop = this.strIsPropName(part);
       // is this part of the objref the last part?
       terminal = ii >= parts.length - 1;
       if (terminal) {
@@ -1015,7 +1012,7 @@ class SymbolInterpreter {
     // OBJREF ERROR: if we exhaust all parts without terminating, that's an error
     // so return error+symbolData for the entire bundle
     // example: 'prop agent'
-    this.scanError(true);
+    this.detectScanError(true);
     return new VSDToken(this.cur_scope, {
       gsType,
       unitText,
@@ -1023,6 +1020,7 @@ class SymbolInterpreter {
       err_info: `${fn} '${unitText}' not found or invalid`
     });
   }
+
   /// SCOPE-BASED INTERPRETER METHODS /////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** scans the current scope for a terminal property or feature, after
@@ -1035,7 +1033,7 @@ class SymbolInterpreter {
     let [matchType, parts] = TOKENIZER.UnpackToken(token);
     if (DBG) console.log(...PR(`${fn}: ${matchType}:${parts}`));
     // was there a previous scope-breaking error? bail!
-    if (this.scanError())
+    if (this.detectScanError())
       return new VSDToken(
         {},
         {
@@ -1049,7 +1047,7 @@ class SymbolInterpreter {
     // and return error if it's not objref or identifier
     if (matchType === 'identifier') parts = [parts];
     else if (matchType !== 'objref') {
-      this.scanError(true);
+      this.detectScanError(true);
       return new VSDToken(this.getBundleScope(), {
         gsType,
         unitText: parts,
@@ -1062,7 +1060,7 @@ class SymbolInterpreter {
     let part = parts[0];
     let agent = this.strIsAgentLiteral(part);
     let feature = this.strIsFeatureName(part);
-    let prop = this.strIsPropIdentifier(part);
+    let prop = this.strIsPropName(part);
     let blueprint = this.strIsBlueprintName(part);
     // is there only one part in this objref?
     let terminal = parts.length === 1;
@@ -1074,7 +1072,7 @@ class SymbolInterpreter {
 
     // did any agent, feature, prop, or blueprint resolve?
     if (!(agent || feature || prop || blueprint)) {
-      this.scanError(true);
+      this.detectScanError(true);
       return new VSDToken(this.getBundleScope(), {
         gsType,
         unitText: TOKENIZER.TokenToUnitText(token),
@@ -1091,7 +1089,7 @@ class SymbolInterpreter {
       // are there any prop, feature, or blueprint references?
       // these calls drill-down into the scope for each part, starting in the
       // scope set in OBJREF PART 1
-      prop = this.strIsPropIdentifier(part);
+      prop = this.strIsPropName(part);
       feature = this.strIsFeatureName(part);
       blueprint = this.strIsBlueprintName(part);
       // is this part of the objref the last part?
@@ -1106,7 +1104,7 @@ class SymbolInterpreter {
     // OBJREF ERROR: if we exhaust all parts without terminating, that's an error
     // so return error+symbolData for the entire bundle
     // example: 'prop agent'
-    this.scanError(true);
+    this.detectScanError(true);
     const orStr = parts.join('.');
     return new VSDToken(this.cur_scope, {
       gsType,
@@ -1124,7 +1122,7 @@ class SymbolInterpreter {
     if (DBG) console.log(...PR(`${fn}: ${matchType}:${methodName}`));
 
     // was there a previous scope-breaking error?
-    if (this.scanError())
+    if (this.detectScanError())
       return new VSDToken(
         {},
         {
@@ -1147,7 +1145,7 @@ class SymbolInterpreter {
       );
     // is there a token?
     if (token === undefined) {
-      this.scanError(true);
+      this.detectScanError(true);
       const { methods } = this.cur_scope;
       return new VSDToken(
         { methods },
@@ -1156,7 +1154,7 @@ class SymbolInterpreter {
     }
     // is the token an identifier?
     if (matchType !== 'identifier') {
-      this.scanError(true);
+      this.detectScanError(true);
       const symbols = this.cur_scope;
       return new VSDToken(symbols, {
         gsType,
@@ -1167,7 +1165,7 @@ class SymbolInterpreter {
     }
     // is the indentifier defined?
     if (typeof methodName !== 'string') {
-      this.scanError(true);
+      this.detectScanError(true);
       return new VSDToken(
         {},
         {
@@ -1181,7 +1179,7 @@ class SymbolInterpreter {
     // is there a methods dictionary in scope
     const { methods } = this.cur_scope;
     if (methods === undefined) {
-      this.scanError(true);
+      this.detectScanError(true);
       return new VSDToken(
         {},
         {
@@ -1195,7 +1193,7 @@ class SymbolInterpreter {
     // does methodName exist in the methods dict?
     const methodSig = methods[methodName]; //
     if (methodSig === undefined) {
-      this.scanError(true);
+      this.detectScanError(true);
       return new VSDToken(
         {
           methods
@@ -1600,7 +1598,7 @@ class SymbolInterpreter {
     let f = this.strIsFeatureName(part);
     let b = this.strIsBlueprintName(part) || SIMDATA.GetBlueprintSymbolsFor(part);
     let a = this.strIsAgentLiteral(part);
-    let p = this.strIsPropIdentifier(part);
+    let p = this.strIsPropName(part);
     // check for single part property
     let terminal = parts.length === 1;
     //
@@ -1634,7 +1632,7 @@ class SymbolInterpreter {
       part = parts[ii];
       f = this.strIsFeatureName(part);
       b = this.strIsBlueprintName(part) || SIMDATA.GetBlueprintSymbolsFor(part);
-      p = this.strIsPropIdentifier(part);
+      p = this.strIsPropName(part);
       terminal = ii >= parts.length - 1;
       //
       if (f) console.log('**', ii, '** feature', f);
