@@ -1,0 +1,21 @@
+# blueprint TestBlockCoontext
+# program define
+addProp myNumber number 0
+addProp myStringProp string 'hello'
+
+# program update
+every 1 runAtStart [[
+  ifExpr {{ agent.getProp('myStringProp').value === 'hello' }} [[
+    prop myStringProp setTo 'goodbye A'
+    prop myStringProp setTo 'goodbye B'
+  ]] [[
+    prop myStringProp setTo 'hello C'
+    prop myStringProp setTo 'hello D'
+  ]]
+  propPop myNumber
+  prop myNumber add 10
+  propPush myNumber
+  featPropPop Physics width
+]]
+
+
