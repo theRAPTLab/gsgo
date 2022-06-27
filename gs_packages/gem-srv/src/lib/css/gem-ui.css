@@ -200,6 +200,10 @@
 .gline.selected {
   /* border-bottom: 1px solid rgba(255, 166, 0, 1) !important; orange */
   background-color: rgba(255, 166, 0, 0.25) !important;
+  border-top: 4px dotted rgba(255, 166, 0, 1);
+  border-bottom: 4px dotted rgba(255, 166, 0, 1);
+  padding-top: 2px;
+  padding-bottom: 2px;
 }
 .gtoken.selected:hover {
   background-color: rgba(255, 166, 0, 0.8) !important;

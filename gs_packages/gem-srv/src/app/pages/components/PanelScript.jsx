@@ -523,8 +523,8 @@ class PanelScript extends React.Component {
         exclusive
         onChange={this.OnToggleWizard}
       >
-        <StyledToggleButton value="code">Code</StyledToggleButton>
         <StyledToggleButton value="wizard">Wizard</StyledToggleButton>
+        <StyledToggleButton value="code">Code</StyledToggleButton>
       </ToggleButtonGroup>
     );
 
