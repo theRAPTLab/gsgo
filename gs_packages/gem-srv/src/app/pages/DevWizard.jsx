@@ -126,16 +126,6 @@ class DevWizard extends React.Component {
     // add a subscriber
     WIZCORE.SubscribeState(this.handleWizUpdate);
     m_LoadTestProjectData(WIZCORE);
-    if (ENABLE_SYMBOL_TEST_BLUEPRINT) {
-      console.log(
-        `%cUsing TEST_SCRIPT because ENABLE_SYMBOL_TEST_BLUEPRINT is true...`,
-        'background-color:rgba(255,255,0,0.15);color:red;padding:1em 2em'
-      );
-      const script_text = BLUEPRINT_TESTER.GetTestScriptText();
-      WIZCORE.SendState({ script_text });
-      // BLUEPRINT_TESTER.TestValidate();
-      return;
-    }
   }
 
   componentWillUnmount() {

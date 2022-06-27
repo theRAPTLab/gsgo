@@ -11,7 +11,6 @@
 import Keyword from 'lib/class-keyword';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as SIMCOND from 'modules/datacore/dc-sim-conditions';
-
 import { ERROR } from 'modules/error/api-error';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
