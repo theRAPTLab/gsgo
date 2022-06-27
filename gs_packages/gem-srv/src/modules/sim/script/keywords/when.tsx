@@ -84,8 +84,8 @@ export class when extends Keyword {
     argToks.pop(); // remove the consequent; we don't use it for validating
     vtoks.push(this.shelper.anyKeyword(kwTok));
     vtoks.push(this.shelper.anyBlueprintName(aTok));
+    vtoks.push(this.shelper.anyWhenTest(testTok));
     vtoks.push(this.shelper.anyBlueprintName(bTok));
-    vtoks.push(this.shelper.anyWhenTest(testTok)); // note that this is out of order
     // vtoks.push(this.shelper.argsList(argToks); // GS1.0 doesn't use args for tests
     const log = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: log };
