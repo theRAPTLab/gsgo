@@ -20,6 +20,7 @@ import UR from '@gemstep/ursys/client';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as TOKENIZER from 'script/tools/script-tokenizer';
+import * as COMPILER from 'script/tools/script-compiler';
 import VSDToken from 'script/tools/class-validation-token';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -113,10 +114,75 @@ class SymbolInterpreter {
     console.log(`TODO: ${fn} should chain`, ctxChild);
   }
 
+  /// BOILERPLATE RESPONSE HELPERS ////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** use if (this.scanError()) */
+  vagueError(token: IToken): TSymbolData {
+    const unitText = TOKENIZER.TokenToString(token);
+    const gsType = '{?}';
+    return new VSDToken(
+      {},
+      {
+        gsType,
+        unitText,
+        err_code: 'vague',
+        err_info: `error in previous token(s)`
+      }
+    );
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** return a bad token */
+  badToken(
+    token: IToken,
+    symbols: TSymbolData,
+    { gsType, err_info }: TSymbolMeta
+  ) {
+    const fn = 'badToken:';
+    const [type, value] = TOKENIZER.UnpackToken(token);
+    const unitText = TOKENIZER.TokenToString(token);
+    // inspect in case of lazy use
+    let err_code: TValidationErrorCodes;
+    if (err_info === undefined) {
+      err_code = 'debug';
+      err_info = `debug: missing err_info in SymbolInterpreter call`;
+    } else {
+      err_code = 'invalid';
+    }
+    gsType = gsType || '{?}';
+    symbols = symbols || {};
+    // return
+    this.scan_error = true;
+    return new VSDToken(symbols, {
+      gsType,
+      unitText,
+      err_code,
+      err_info
+    });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** return a 'valid' token, which has no error info */
+  goodToken(
+    token: IToken,
+    symbols: TSymbolData,
+    { gsType, symbolScope }: TSymbolMeta
+  ): VSDToken {
+    const unitText = TOKENIZER.TokenToString(token);
+    gsType = gsType || '{?}';
+    symbols = symbols || {};
+    // return
+    return new VSDToken(symbols, {
+      gsType,
+      symbolScope,
+      unitText
+    });
+  }
+
   /// SCOPE-INDEPENDENT LITERAL VALIDATORS ////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  anyNumber(token: IToken) {
+  /** use to validate a token that can be any number */
+  anyNumber(token: IToken): TSymbolData {
     const fn = 'anyNumber:';
+    if (this.scanError()) return this.vagueError(token);
     const [type, value] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const gsType = 'number';
@@ -134,16 +200,46 @@ class SymbolInterpreter {
     );
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  anyString(token: IToken) {
+  /** use to validate a token that can be any string value */
+  anyString(token: IToken): TSymbolData {
+    const fn = 'anyString:';
+    if (this.scanError()) return this.vagueError(token);
     const [type, string] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const gsType = 'string';
+    const stype = typeof string;
+    if (type === 'string' && stype === 'string')
+      return new VSDToken({}, { gsType, unitText });
+    // if it's not value and type number, it's an error
+    return new VSDToken(
+      {},
+      {
+        gsType,
+        err_code: 'invalid',
+        err_info: `${fn} should be string, not a '${stype}'`
+      }
+    );
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  anyBoolean(token: IToken) {
+  /** use to validate a token that can be any boolean value */
+  anyBoolean(token: IToken): TSymbolData {
+    const fn = 'anyBoolean:';
+    if (this.scanError()) return this.vagueError(token);
     const [type, boolean] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const gsType = 'boolean';
+    const btype = typeof boolean;
+    if (type === 'boolean' && btype === 'boolean')
+      return new VSDToken({}, { gsType, unitText });
+    // if it's not value and type number, it's an error
+    return new VSDToken(
+      {},
+      {
+        gsType,
+        err_code: 'invalid',
+        err_info: `${fn} should be boolean, not a '${btype}'`
+      }
+    );
   }
 
   /// SCOPE-INDEPENDENT GLOBAL ACCESSORS //////////////////////////////////////
@@ -157,9 +253,8 @@ class SymbolInterpreter {
     const unitText = TOKENIZER.TokenToString(token);
     const keywords = SIMDATA.GetKeywordSymbols();
     const gsType = 'keyword';
-    if (type === 'comment' || type === 'line') {
+    if (type === 'comment' || type === 'line')
       return new VSDToken(keywords, { gsType, unitText });
-    }
     if (type !== 'identifier' && type !== 'directive') {
       this.scan_error = true;
       return new VSDToken(keywords, {
@@ -171,8 +266,39 @@ class SymbolInterpreter {
     return new VSDToken(keywords, { gsType, unitText });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** return feature validation */
-  anyFeature(token: IToken): TSymbolData {
+  /** allow any valid blueprint in the system */
+  anyBlueprintName(token: IToken): TSymbolData {
+    const fn = 'anyBlueprintName:';
+    if (this.scanError()) return this.vagueError(token);
+    const [type, bpName] = TOKENIZER.UnpackToken(token);
+    const gsType = 'blueprint';
+    const bpSymbols = SIMDATA.GetBlueprintSymbols();
+    const symbols: TSymbolData = { blueprints: bpSymbols as any };
+    if (type !== 'identifier') {
+      return this.badToken(token, symbols, {
+        gsType,
+        err_info: 'CharacterType must be an identifier'
+      });
+    }
+    // if the blueprint name is found
+    if (bpSymbols[bpName])
+      return this.goodToken(
+        token,
+        symbols, // valid choices are any blueprint symbol
+        { gsType }
+      );
+    // otherwise an error
+    return this.badToken(
+      token,
+      symbols, // valid choices are any blueprint symbol
+      { gsType, err_info: `no blueprint named ${bpName}` }
+    );
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** allo9 any feature in the system  */
+  anyFeatureName(token: IToken): TSymbolData {
+    const fn = 'anyFeatureName:';
+    if (this.scanError()) return this.vagueError(token);
     const [type, fName] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const features = SIMDATA.GetFeatureSymbols();
@@ -201,6 +327,7 @@ class SymbolInterpreter {
   /** return list of events */
   anySystemEvent(token: IToken): TSymbolData {
     const fn = 'anySystemEvent:';
+    if (this.scanError()) return this.vagueError(token);
     let [type, eventName] = TOKENIZER.UnpackToken(token);
     eventName = eventName.toUpperCase();
     const unitText = TOKENIZER.TokenToString(token);
@@ -233,6 +360,85 @@ class SymbolInterpreter {
         gsType
       }
     );
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** returns the name of when tests that are available in the system
+   *  NOTE: currently when tests do NOT have symbol information for arguments, but
+   *  in GEMSTEP 1.0 there are tests with arguments so we're skipping that */
+  anyWhenTest(token: IToken): TSymbolData {
+    if (this.scanError()) return this.vagueError(token);
+    let [type, testName] = TOKENIZER.UnpackToken(token);
+    const gsType = 'test'; // note: the generic name for anything that returns T/F
+    const whenTestSymbols = SIMDATA.GetWhenTestSymbols();
+    const symbols = { methods: whenTestSymbols };
+    // console.log('whenTestSymbols', whenTestSymbols);
+    if (type !== 'identifier')
+      return this.badToken(token, symbols, {
+        gsType,
+        err_info: `wrong or missing token: ${type}:${testName}`
+      });
+    if (SIMDATA.GetWhenTest(testName))
+      return this.goodToken(token, symbols, { gsType });
+    return this.badToken(token, symbols, {
+      gsType,
+      err_info: `${testName} is not a valid whenTest`
+    });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** returns a crude check of the expression to make sure it's valid, but
+   *  does not yet check globals */
+  anyExpr(token: IToken): TSymbolData {
+    const fn = 'anyExpr:';
+    if (this.scanError()) return this.vagueError(token);
+    const [type, unitText] = TOKENIZER.UnpackToken(token);
+    const exprString = TOKENIZER.TokenToPlainString(token);
+    const gsType = 'expr';
+    if (type !== 'expr')
+      return this.badToken(
+        token,
+        {},
+        {
+          gsType,
+          err_info: `token ${type} is not an expression string`
+        }
+      );
+    // the global context with accessible objects...
+    const globals = {
+      agent: { prop: [], getProp: () => {} },
+      BlueprintA: {},
+      BlueprintB: {}
+    };
+    const symbols = { globals };
+    // try to parse and evaluate the expression
+    // and catch any thrown errors
+    let gotError: string;
+    let ast;
+    try {
+      ast = TOKENIZER.ParseExpression(exprString);
+    } catch (err) {
+      gotError = err.toString();
+    }
+    // if any errors got thrown, expression didn't validate
+    if (gotError)
+      return this.badToken(token, symbols, {
+        gsType,
+        err_info: `parse: ${gotError}`
+      });
+    // if the AST could be generated, then try evaluating it
+    gotError = '';
+    try {
+      COMPILER.ValidateExpression(ast, globals);
+    } catch (err) {
+      gotError = err.toString();
+    }
+    // if the expression could not be evaluated, return the error
+    if (gotError)
+      return new VSDToken(symbols, {
+        gsType,
+        err_info: `evaluate: ${gotError}`
+      });
+    // got this far, it's good!
+    return this.goodToken(token, symbols, { gsType });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** hardcoded every keyword test options. See every.tsx to see how compile()
@@ -319,43 +525,66 @@ class SymbolInterpreter {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** look up the variable type (e.g. number, string, boolean )
+   *  addProp propName propType propInitValu
    *  it will set cur_cope to the found propType symbolDict */
-  propCtor(token: IToken) {
-    const fn = 'propCtor:';
+  anyPropType(token: IToken) {
+    const fn = 'anyPropType:';
+    // check it's a valid propType
     const [type, propType] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const gsType = 'propType';
-    if (type !== 'identifier') {
-      this.scan_error = true;
+
+    if (this.scanError())
       return new VSDToken(
-        {}, // should this be symn
+        {},
         {
           gsType,
           unitText,
-          err_code: 'invalid',
-          err_info: `propType must be an identifier`
+          err_code: 'vague',
+          err_info: `${fn} error in previous token(s)`
         }
       );
-    }
-    // check it's a valid propType
-    const propTypeSymbols = SIMDATA.GetPropTypeSymbols(); // { propTypes: { []:symbols }}
-    const symbols = propTypeSymbols.propTypes[propType.toLowerCase()];
-    if (!symbols) {
-      this.scanError(true);
-      return new VSDToken(this.cur_scope, {
+
+    const validPropTypeSymbols = SIMDATA.GetPropTypeSymbols(); // { propTypes: { []:symbols }}
+    // if not defined, return the list of valid options
+    if (token === undefined) {
+      this.scan_error = true;
+      return new VSDToken(validPropTypeSymbols, {
         gsType,
         unitText,
         err_code: 'invalid',
-        err_info: `${fn} '${propType}' not a valid propType`
+        err_info: `propType is required`
       });
     }
-    // it's good
-    // prop
-    this.cur_scope = propTypeSymbols.propTypes[propType.toLowerCase()]; //  { symbols for selected type }
-    return new VSDToken(propTypeSymbols, {
+    if (type !== 'identifier') {
+      this.scan_error = true;
+      return new VSDToken(validPropTypeSymbols, {
+        gsType,
+        unitText,
+        err_code: 'invalid',
+        err_info: `propType must be an identifier, not ${type}`
+      });
+    }
+    // if we got this far, there was a valid token, so let's see if it
+    // refers to an actual type
+    const propSymbols = validPropTypeSymbols.propTypes[propType.toLowerCase()];
+    if (!propSymbols) {
+      this.scan_error = true;
+      return new VSDToken(validPropTypeSymbols, {
+        gsType,
+        unitText,
+        err_code: 'invalid',
+        err_info: `${fn} invalid '${propType}' not a valid propType`
+      });
+    }
+    // if we got THIS far, everything looks great
+    // propType symbols look like { propTypes: { number: SM_Number.Symbols, string, ... }}
+    const propTypeMethods =
+      validPropTypeSymbols.propTypes[propType.toLowerCase()]; //  { symbols for selected type }
+    this.cur_scope = propTypeMethods;
+    return new VSDToken(validPropTypeSymbols, {
       gsType,
-      unitText,
-      symbolScope: ['propTypes']
+      unitText
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -363,9 +592,68 @@ class SymbolInterpreter {
    *  propType (e.g. SM_Number.Symbols). The 'setTo' method defines
    *  the kind of value it expects, which we pass then to argSymbol()
    *  for actual processing and returning of validation tokens */
-  propCtorInitialValue(token: IToken) {
+  propTypeInitialValue(token: IToken) {
     // expecting scriptToken type boolean, string, or number
-    const methodArg = this.cur_scope.methods.setTo.args[0];
+    const fn = 'propTypeInitialValue:';
+    const [type, propType] = TOKENIZER.UnpackToken(token);
+    const unitText = TOKENIZER.TokenToString(token);
+    let gsType: TGSType = '{?}'; // filled in once we know more
+
+    if (this.scanError())
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText,
+          err_code: 'vague',
+          err_info: `${fn} error in previous token(s)`
+        }
+      );
+
+    const { methods } = this.cur_scope;
+    // no methods dict...keyword validation programming bug?
+    if (!methods) {
+      this.scan_error = true;
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText,
+          err_code: 'debug',
+          err_info: `${fn} no methods dict in scope`
+        }
+      );
+    }
+    // good methods dict, expect a setTo method for any propType
+    const { setTo } = methods;
+    if (!setTo) {
+      this.scan_error = true;
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText,
+          err_code: 'debug',
+          err_info: `${fn} not a settable property`
+        }
+      );
+    }
+    const { args } = setTo;
+    if (!Array.isArray(args)) {
+      this.scan_error = true;
+      return new VSDToken(
+        {},
+        {
+          gsType,
+          unitText,
+          err_code: 'debug',
+          err_info: `${fn} bad setTo definition in prop`
+        }
+      );
+    }
+    // ok, everything should be good...
+    // so let the argSymbol() helper take it from here
+    const methodArg = args[0];
     return this.argSymbol(methodArg, token);
   }
 
@@ -497,6 +785,9 @@ class SymbolInterpreter {
     const fn = 'agentFeatureList:';
     const gsType = 'objref';
     this.resetScope(); // points to the bundle.symbols to start
+    if (this.getBundleScope().features === undefined) {
+      return this.goodToken(token, { features: {} }, { gsType });
+    }
     const featuresList = [...Object.keys(this.getBundleScope().features)];
     let [matchType, featureName] = TOKENIZER.UnpackToken(token);
     const unitText = Array.isArray(featureName)
@@ -1020,7 +1311,9 @@ class SymbolInterpreter {
       vtoks.push(vtok);
     } // end for
     // check for underflow
-    if (tokenIndex < args.length)
+    // REVIEW: 'args' might be undefined when still spec'ing the script
+    // line.  Add check to avoid reading property of 'undefined' error
+    if (args && tokenIndex < args.length)
       for (let ii = tokenIndex; ii < args.length; ii++) {
         const [argName, gsType] = CHECK.UnpackArg(args[ii]);
         vtoks.push(
@@ -1135,7 +1428,7 @@ class SymbolInterpreter {
     // is this any propType?
     // all propTypes available in system match token.identifier
     if (gsType === 'propType' && TOKENIZER.TokenValue(tok, 'identifier')) {
-      const map = SIMDATA.GetPropTypesDict();
+      const map = SIMDATA.GetPropTypeCtorDict();
       const propTypes = {};
       const list = [...map.keys()];
       list.forEach(ctorName => {
@@ -1425,7 +1718,7 @@ class SymbolInterpreter {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** inspection tool to see simdata defined at runtime */
 UR.AddConsoleTool('simdata', () => {
-  console.log('All Functions', SIMDATA.GetAllFunctions());
+  console.log('All Functions', SIMDATA.GetAllWhenTests());
   console.log('All Tests', SIMDATA.GetAllTests());
   console.log('All Programs', SIMDATA.GetAllPrograms());
   console.log('All Features', SIMDATA.GetAllFeatures());

@@ -22,7 +22,7 @@ export class _line extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     return [];
   }
 } // end of UseFeature

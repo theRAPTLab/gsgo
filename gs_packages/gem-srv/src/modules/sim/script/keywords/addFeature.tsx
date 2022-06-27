@@ -23,7 +23,7 @@ export class AddFeature extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     const progout = [];
     const [, featureName] = unit;
     const feat = GetFeature(featureName as string);

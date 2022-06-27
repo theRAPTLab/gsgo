@@ -1,13 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  A collection of symbol utilities
-
-  The SymbolInterpreter class accepts a symbol table on construction
-  is to lookup symbol data from a token.
-  Your provide a bundle and context
-  It knows how to lookup features, programs, and blueprints.
-  It knows how to dig into props.
-
+  Utilities to convert TSymbolData into friendlier structures
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -22,9 +15,9 @@ const PR = UR.PrefixUtil('SYMUTIL', 'TagTest');
 
 /// UTILITY METHODS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** UTILITY: convert symbol data into lists suitable for gui rendering. this is
- *  the entire list of ALLOWED CHOICES; if you want to just know what unitText
- *  is, then use UnpackSymbol */
+/** UTILITY: convert symbol data into an 'items' string[] of
+ *  allowed choices. It also provides a debug string called 'info' that
+ *  shows all the possible choices.. */
 function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
   const fn = `DecodeSymbolViewData:`;
   let sv_data: any = {};
@@ -38,6 +31,7 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
     symbolScope,
     // dicts
     keywords,
+    blueprints,
     featuresList, // deprecate because features should be used for featProp
     features,
     props,
@@ -70,6 +64,13 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
   if (features) {
     const items = [...Object.keys(features)];
     sv_data.features = {
+      info: items.join(', '),
+      items
+    };
+  }
+  if (blueprints) {
+    const items = Object.keys(blueprints);
+    sv_data.blueprints = {
       info: items.join(', '),
       items
     };
@@ -122,15 +123,15 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
   // handle missing handlers gracefully for GUI
   const extraSymbols = Object.keys(extra || {});
   if (extraSymbols.length) {
-    console.log(
-      `%c${fn} no handler for symbol types:[${extraSymbols.join(',')}]`,
+    console.warn(
+      `%c${fn} no handler for symbol types:${extraSymbols.join(',')}`,
       'color:red;background-color:yellow;padding:1em'
     );
     // eslint-disable-next-line no-alert
     alert(
       `${fn}\nno handler for symbol types:[${extraSymbols.join(
         ','
-      )}]\ndouble-check symbol-utilities.ts`
+      )}]\ndouble-check symbol-utilities.ts, or bad symboldata?`
     );
     extraSymbols.forEach(stype => {
       sv_data[stype] = { info: `${fn} no handler ${stype}`, items: [] };
@@ -140,8 +141,7 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: returns an array all symbolTypes associatd with unitText:
- *  [ unitText, [ symbolType, items ], [ symbolType, items ], ... ]
- */
+ *  [ unitText, [ symbolType, items ], [ symbolType, items ], ... ] */
 function UnpackViewData(svm_data: TSymbolViewData): any[] {
   const list = [];
   Object.keys(svm_data).forEach(key => {

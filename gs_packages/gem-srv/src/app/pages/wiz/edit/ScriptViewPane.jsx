@@ -11,7 +11,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useEffect } from 'react';
-import { TokenToString, DecodeTokenPrimitive } from 'script/transpiler-v2';
+import * as TRANSPILER from 'script/transpiler-v2';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import {
   GLine,
@@ -20,6 +20,9 @@ import {
   GValidationToken,
   sScriptView
 } from '../SharedElements';
+// css -- REVIEW: Move to the top level TEMP HACK
+import 'lib/vendor/pico.min.css';
+import 'lib/css/gem-ui.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,7 +62,18 @@ let DBGTEXT = '';
 export function ScriptViewPane(props) {
   // collect resources for rendering
   DBGTEXT = '';
-  const { script_page } = props;
+  let { script_page, script_text } = props;
+
+  if (script_text && !script_page) {
+    // WIZCORE.SendState({ script_text });
+    const toks = TRANSPILER.TextToScript(script_text);
+    TRANSPILER.SymbolizeBlueprint(toks);
+    const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
+    // INSERT validation tokens to script_page
+    script_page = vmPage;
+
+    // return <p>loading...</p>;
+  }
   const script_page_Validation = WIZCORE.ValidateScriptPage();
   const pageBuffer = [];
   const selTokId = WIZCORE.SelectedTokenId();
@@ -132,19 +146,22 @@ export function ScriptViewPane(props) {
           lineNum,
           script_page_Validation[lineNum]
         );
-      const lineValidationTokens =
-        script_page_Validation[lineNum].validationTokens;
+      // if a line was deleted, lineNum might exceed
+      // the script_page_Validation length
+      const lineValidationTokens = script_page_Validation[lineNum]
+        ? script_page_Validation[lineNum].validationTokens
+        : [];
 
       lineValidationTokens.forEach((validationToken, idx) => {
         const tokInfo = vmTokens[idx] || {};
         let { tokenKey } = tokInfo;
+        const { gsType } = validationToken;
         const { scriptToken } = tokInfo;
         let label;
         let selected;
         let viewState;
         if (scriptToken) {
-          const dtok = DecodeTokenPrimitive(scriptToken);
-          label = typeof dtok !== 'object' ? dtok : TokenToString(scriptToken);
+          label = TRANSPILER.TokenToString(scriptToken);
           viewState = validationToken.error ? validationToken.error.code : '';
         } else {
           // no scriptToken, this is an empty slot -- user has not entered any data
@@ -163,7 +180,7 @@ export function ScriptViewPane(props) {
             tokenKey={tokenKey}
             position={idx}
             selected={selected}
-            type="fixme"
+            type={gsType}
             label={label}
             viewState={viewState}
           />

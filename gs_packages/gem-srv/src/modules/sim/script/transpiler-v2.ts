@@ -83,7 +83,7 @@ function ValidateLineText(line: string, bdl: SM_Bundle): TValidatedScriptUnit {
 /** API: "Make" an agent using an instance definitions, which adds the new
  *  instance to the simulation engine data
  */
-function MakeAgent(instanceDef: TInstance) {
+function MakeAgent(instanceDef: TInstanceDef) {
   const fn = 'MakeAgent:';
   const { id, bpid, label } = instanceDef;
   const agent = new SM_Agent(label, String(id));
@@ -95,7 +95,7 @@ function MakeAgent(instanceDef: TInstance) {
         `${fn} making %c${bpid} id:${id} `,
         'font-style:bold;color:black'
       );
-    const bdl = SIMDATA.GetBlueprintBundle(bpid);
+    const bdl = SIMDATA.GetOrCreateBlueprintBundle(bpid);
     if (!bdl) throw Error(`agent blueprint for '${bpid}' not defined`);
     // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
     agent.setBlueprint(bdl);
@@ -108,7 +108,7 @@ function MakeAgent(instanceDef: TInstance) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RemoveAgent(instanceDef: TInstance) {
+function RemoveAgent(instanceDef: TInstanceDef) {
   SIMAGENTS.DeleteAgent(instanceDef);
 }
 
@@ -134,13 +134,13 @@ export {
   DecodeStatement, // utility: works with DecodeToken to create runtime enties
   SymbolizeStatement, // utility: extract symbols defined by a keyword
   ValidateStatement, // utility: check script tokens against symbols
+  ValidateExpression, // utility: see if expression can access stuff
   //
   CompileScript, // API: return a TSMCProgram from a script text
   ExtractBlueprintMeta, // API: return directives from script text
   //
   CompileBlueprint, // API: save a blueprint script as a bundle with program output
-  SymbolizeBlueprint, // API: save blueprint symbols to a bundle
-  ValidateBlueprint // API: save validation tokens to a bundle
+  SymbolizeBlueprint // API: save blueprint symbols to a bundle
 } from 'script/tools/script-compiler';
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

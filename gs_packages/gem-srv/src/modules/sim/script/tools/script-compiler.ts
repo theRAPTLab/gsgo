@@ -37,6 +37,8 @@ import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import SM_Agent from 'lib/class-sm-agent';
 import VSDToken from 'script/tools/class-validation-token';
 import { ParseExpression } from './class-expr-parser-v2';
+import { Evaluate } from 'lib/expr-evaluator';
+
 import { DEBUG_FLAGS } from 'config/dev-settings';
 const { SYMBOLIZE_CALLS: DBG_SC } = DEBUG_FLAGS;
 
@@ -91,7 +93,10 @@ function DecodeToken(tok: IToken, refs: TSymbolRefs): any {
  *  it is time to invoke a compiler function. See also UnpackStatement() for
  *  a similar function that returns [type,value] (in dc-sim-data-utils)
  */
-function DecodeStatement(statement: TScriptUnit, refs: TSymbolRefs): any[] {
+function DecodeStatement(
+  statement: TScriptUnit,
+  refs: TSymbolRefs
+): TKWArguments {
   const dUnit: TScriptUnit = statement.map((tok, line) => {
     if (line === 0) {
       const arg = DecodeToken(tok, refs);
@@ -157,6 +162,7 @@ function ExtractBlueprintMeta(script: TScriptUnit[]): TBlueprintMeta {
  *  inside of blocks do not have symbol data...I hope */
 function SymbolizeStatement(stm: TScriptUnit, line?: number): TSymbolData {
   const fn = 'SymbolizeStatement:';
+  if (!stm || (Array.isArray(stm) && stm.length < 1)) return {}; // blank lines emit no symbol info
   const kw = CHECK.DecodeKeywordToken(stm[0]);
   if (!kw) return {}; // blank lines emit no symbol info
   const kwp = SIMDATA.GetKeyword(kw);
@@ -200,6 +206,7 @@ function SymbolizeBlueprint(script: TScriptUnit[], bdl?: SM_Bundle) {
   // symbolize statement-by-statement
   script.forEach((stm, line) => {
     const symbols = SymbolizeStatement(stm, line);
+    if (DBG && symbols) console.log(line, 'adding symbols', symbols);
     BUNDLER.AddSymbols(symbols);
   }); // script forEach
   // store script in bundle
@@ -249,23 +256,18 @@ function ValidateStatement(
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Given a blueprint script, create a "page" of "lines" of ValidationTokens
- */
-function ValidateBlueprint(script: TScriptUnit[]) {
-  // this might store the validation page inside it, instead of using
-  // the scriptprinter classes
-  // call ValidateStatement() with all the symbolrefs bundle, global
+/** API: Given a compiled expression in AST form, see if it is accessing
+ *  defined globals */
+function ValidateExpression(exprAST, globals = {}) {
+  const result = Evaluate(exprAST, globals);
+  return result;
 }
 
 /// COMPILER API //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Compile a single ScriptUnit, which invokes the Keyord Processor
  *  to generate a TSMCProgram consisting of TOpcodes. This skips directives
- *  and comments, generating no code.
- *  @param {TScriptUnit} statement - array of ScriptToken
- *  @param {number} [line] - current "line" of script metadata
- *  @returns TSMCProgram
- */
+ *  and comments, generating no code. */
 function CompileStatement(
   stm: TScriptUnit,
   refs: TSymbolRefs
@@ -306,13 +308,13 @@ function CompileBlueprint(script: TScriptUnit[], tempBdl?: SM_Bundle): SM_Bundle
   if (tempBdl instanceof SM_Bundle) {
     BUNDLER.OpenBundle(tempBdl);
     bpName = BUNDLER.BundlerState().bpName;
-    console.warn(`${fn} xxxbdl %c${bpName}`, 'font-style:bold;color:blue');
+    console.warn(`${fn} TMP bdl %c${bpName}`, 'font-style:bold;color:blue');
   } else {
     const { BLUEPRINT, TAGS } = ExtractBlueprintMeta(script);
     [bpName] = BLUEPRINT;
     BUNDLER.OpenBundle(bpName);
     if (DBG_SC)
-      console.warn(`${fn} sysbdl %c${bpName}`, 'font-style:bold;color:blue');
+      console.warn(`${fn} SYS bdl %c${bpName}`, 'font-style:bold;color:blue');
   }
   // setup bundle type
   BUNDLER.SetBundleType(EBundleType.BLUEPRINT);
@@ -334,7 +336,7 @@ function CompileBlueprint(script: TScriptUnit[], tempBdl?: SM_Bundle): SM_Bundle
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// MAIN API
-export { CompileBlueprint, ValidateBlueprint, SymbolizeBlueprint };
+export { CompileBlueprint, SymbolizeBlueprint };
 /// UTILITIES
 export { ExtractBlueprintMeta, CompileScript };
 export {
@@ -342,5 +344,6 @@ export {
   DecodeTokenPrimitive,
   DecodeStatement,
   SymbolizeStatement,
-  ValidateStatement
+  ValidateStatement,
+  ValidateExpression
 };

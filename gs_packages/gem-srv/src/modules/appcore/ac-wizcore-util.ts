@@ -17,7 +17,7 @@ const { StateMgr } = UR.class;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('WIZCORE', 'TagCyan');
+const PR = UR.PrefixUtil('WIZ-UTIL', 'TagBlue');
 
 /// MODULE STATE INITIALIZATION ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -203,8 +203,8 @@ function TestEditableTokens(scriptText: string = '') {
 /// DEPENDENCY LOADER /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** dummy export to allow module to load and initialize */
-function LoadDependencies() {
-  console.log(...PR('loaded'));
+function LoadDependencies(PROMPTER = str => PR(str)) {
+  console.log(...PROMPTER('loaded wizcore-util'));
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

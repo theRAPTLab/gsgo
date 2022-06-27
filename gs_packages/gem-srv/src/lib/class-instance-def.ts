@@ -10,7 +10,7 @@ class InstanceDef implements IPoolable {
   // instanceDef
   blueprint: string;
   name?: string;
-  initScript?: TScriptUnit[]; // is defined in TInstance, but not used in sim-agents update
+  initScript?: TScriptUnit[]; // is defined in TInstanceDef, but not used in sim-agents update
   valid: boolean;
   flag: number;
   x: number;

@@ -17,7 +17,7 @@ export class ifKeyword extends Keyword {
     this.args = ['condition:expr', 'consequent:block', 'alternate:block'];
   }
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     const [kw, test, consq, alter] = unit;
     const code = [];
     code.push((agent, state) => {

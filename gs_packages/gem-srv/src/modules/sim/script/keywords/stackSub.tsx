@@ -5,7 +5,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword from 'lib/class-keyword';
 import { RegisterKeyword } from 'modules/datacore';
 
@@ -18,7 +17,7 @@ export class stackSub extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     const [kw] = unit;
     const progout = [];
 

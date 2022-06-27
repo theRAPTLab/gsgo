@@ -26,12 +26,13 @@ import * as TRANSPILER from 'script/transpiler-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
-import * as WIZHOOK from 'modules/appcore/ac-wizcore-hooks';
 import {
   DecodeSymbolViewData,
   UnpackViewData,
   UnpackSymbolType
 } from 'script/tools/symbol-utilities';
+import * as COMPILER from 'script/tools/script-compiler';
+import * as BUNDLER from 'script/tools/script-bundler';
 import { GetTextBuffer } from 'lib/class-textbuffer';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
@@ -40,8 +41,8 @@ const { StateMgr } = UR.class;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('WIZCORE', 'TagCyan');
-const DBG = true;
+const PR = UR.PrefixUtil('WIZCORE', 'TagBlue');
+const DBG = false;
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -56,8 +57,7 @@ function m_ChildOf(child, parent) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// First create the new instance, and extract the methods we plan to use
 const STORE = new StateMgr('ScriptWizard');
-WIZUTIL.LoadDependencies();
-WIZHOOK.LoadDependencies();
+WIZUTIL.LoadDependencies(PR);
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// initial values of state have to be defined for constructors of components
@@ -80,6 +80,7 @@ STORE._initializeState({
   // -- the whole line of slots
   slots_linescript: [], // lineScript being edited in slot editor -- the whole line
   slots_validation: null, // validation object for the current slot line being edited { validationTokens, validationLog }
+  slots_bundle: null, // temporary bundle used to store line-based symbol tables
 
   // project context
   proj_list: [], // project list
@@ -149,18 +150,47 @@ STORE._interceptState(state => {
     }
   }
 
+  // if cur_bdl changes, then copy slots_bundle
+  if (state.cur_bdl) {
+    state.slots_bundle = state.cur_bdl.carelessClone();
+  }
+
   // if the slot linescript changes, recalculate slots_validation
   if (state.slots_linescript) {
-    const { cur_bdl } = State();
+    let { slots_bundle, cur_bdl } = State();
+
+    if (!slots_bundle) {
+      slots_bundle = cur_bdl.carelessClone();
+    }
+    state.slots_bundle = slots_bundle;
+
     // if we're first setting sel_linenum, use state.sel_linenum becase it doesn't exist in State yet
     // otherwise fall back to the value set in State
     const line = state.sel_linenum || State().sel_linenum;
     const vmPageLine = GetVMPageLine(line);
     const { globalRefs } = vmPageLine;
+
+    // we have to make changes to the bundle
+    const newSymbols = COMPILER.SymbolizeStatement(state.slots_linescript);
+    BUNDLER.OpenBundle(slots_bundle);
+    BUNDLER.AddSymbols(newSymbols);
+    BUNDLER.CloseBundle();
+    // console.log('newSymbols', newSymbols);
+    // console.log('cur_bdl.symbol', cur_bdl.symbols);
+    if (DBG)
+      console.log(
+        ...PR(
+          `slots_linescript: validating '${TRANSPILER.StatementToText(
+            state.slots_linescript
+          ).trim()}' with slots_bundle symbols:`,
+          state.slots_bundle.symbols
+        )
+      );
+
     state.slots_validation = TRANSPILER.ValidateStatement(
       state.slots_linescript,
       {
-        bundle: cur_bdl,
+        bundle: state.slots_bundle,
         globals: globalRefs
       }
     );
@@ -259,6 +289,8 @@ function m_UpdateSlotValueToken(key, value) {
   // otherwise both keys will be active
   delete slotScriptToken.value;
   delete slotScriptToken.string;
+  delete slotScriptToken.expr;
+  delete slotScriptToken.identifier;
   slotScriptToken[key] = value; // We know the scriptToken is a value
   if (sel_slotpos > slots_linescript.length) {
     slots_linescript.push(slotScriptToken); // it's a new token so add it
@@ -277,9 +309,20 @@ function UpdateSlotString(val) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
+function UpdateIdentifier(val) {
+  m_UpdateSlotValueToken('identifier', val);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
 function UpdateSlotBoolean(val) {
   m_UpdateSlotValueToken('value', val);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
+function UpdateSlotExpr(val) {
+  m_UpdateSlotValueToken('expr', val);
+}
+
 /// UI EVENT DISPATCHERS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Called by the document handler set in DevWizard. There are no other
@@ -374,7 +417,7 @@ function DispatchClick(event) {
 
     // also auto-advance the slot selector to the next slot
     // REVIEW: Only advance if there are more validation tokens?  Otherwise, we go past the end?
-    newState.sel_slotpos = sel_slotpos + 1;
+    // newState.sel_slotpos = sel_slotpos + 1;
 
     SendState(newState);
 
@@ -633,6 +676,7 @@ function WizardTestLine(text: string) {
  *  Called by SelectEditorLineSlot
  */
 function SaveSlotLineScript(event) {
+  const fn = 'SaveSlotLineScript:';
   const { script_page, sel_linenum, slots_linescript } = STORE.State();
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
   const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
@@ -646,7 +690,7 @@ function SaveSlotLineScript(event) {
     if (identifier === '') return false;
     return true;
   }); // just update the lineScript
-  console.log('updateLine', updatedLine);
+  console.log(...PR(fn, 'updateLine', updatedLine));
   lsos.splice(lineIdx, 1, updatedLine);
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
   STORE.SendState({ script_tokens: nscript });
@@ -756,7 +800,9 @@ export {
   WizardTextChanged, // handle incoming change of text
   UpdateSlotValue, // handle incoming change of slot value (input)
   UpdateSlotString, // handle incoming change of slot string (input)
+  UpdateIdentifier, // handle incoming change of identifier
   UpdateSlotBoolean, // handle incoming change of slot boolean (input)
+  UpdateSlotExpr,
   WizardTestLine, // handle test line for WizardTextLine tester
   DispatchEditorClick, // handle clicks on editing box
   SaveSlotLineScript, // handle slot editor save request

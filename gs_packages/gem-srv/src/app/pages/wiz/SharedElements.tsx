@@ -96,6 +96,7 @@ export const sButtonBreak = {
 /// LEFT: SCRIPT VIEW /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export const sScriptView = {
+  backgroundColor: 'white',
   overflowY: 'scroll',
   overflowX: 'none',
   whiteSpace: 'nowrap'
@@ -370,13 +371,13 @@ export function GValidationToken(props) {
 /// LABEL TOKEN ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GLabelToken(props) {
-  const { name } = props;
+  const { name, secondary } = props;
   return (
     <div
       className="gwiz gtoken"
       role="none"
       style={{
-        backgroundColor: '#003b76e0',
+        backgroundColor: secondary ? '#003b7630' : '#003b76e0',
         color: 'white',
         fontWeight: 'bold',
         minWidth: '100px'

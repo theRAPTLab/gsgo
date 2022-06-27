@@ -1,11 +1,12 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  x-symbols-test
+  test-blueprints
 
   symbol tokens and validator test suite
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
 import SM_Bundle from 'lib/class-sm-bundle';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
@@ -15,7 +16,9 @@ import { DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 // import TEST_SCRIPT from 'test/gemscript/gui-wizard-slots.gemscript';
 // import TEST_SCRIPT from 'test/gemscript/gui-wizard-deref.gemscript';
 // import TEST_SCRIPT from 'test/gemscript/editable-lines.gemscript';
-import TEST_SCRIPT from 'test/gemscript/keywords.gemscript';
+// import TEST_SCRIPT from 'test/gemscript/keywords.gemscript';
+import TEST_SCRIPT from 'test/gemscript/gui-tester.gemscript';
+// import TEST_SCRIPT from 'test/gemscript/gui-block-context.gemscript';
 
 const { warn, log, table, group, groupCollapsed, groupEnd } = console;
 
@@ -48,6 +51,21 @@ function GetTestScriptText() {
   const bp = PROJ_v2.GetProjectBlueprint(DEV_PRJID, DEV_BPID);
   const { scriptText } = bp;
   return scriptText;
+}
+
+function CompileScript(script_text: string) {
+  const script = TRANSPILER.TextToScript(script_text);
+  // GENERATE A BUNDLE that does not get saved into the
+  let bdl: SM_Bundle = new SM_Bundle('test-validate');
+  bdl = TRANSPILER.SymbolizeBlueprint(script, bdl);
+  bdl = TRANSPILER.CompileBlueprint(script, bdl);
+  const { name, symbols } = bdl;
+  log(
+    `%ccompiled ${name}, got symbols`,
+    'font-style:italic;color:maroon',
+    symbols
+  );
+  return bdl;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestValidate() {
@@ -153,6 +171,15 @@ function TestValidate() {
 
   groupEnd();
 }
+
+/// CLI TESTS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.AddConsoleTool('compile_test', () => {
+  const script_text = GetTestScriptText();
+  const bdl = CompileScript(script_text);
+  console.log('compiled', script_text);
+  return bdl;
+});
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -85,6 +85,25 @@ function m_updateVisionCone(agent): { visionPoly: any[]; visionPath: any[] } {
   return { visionPoly, visionPath };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Returns the SCALED bounding rect of the agent
+function m_GetAgentBoundingRect(agent) {
+  // Based on costume
+  if (!agent.hasFeature('Costume'))
+    throw new Error(
+      `m_GetAgentBoundingRect: Tried to use vision on an agent with no costume ${agent.id}`
+    );
+  const { w, h } = agent.callFeatMethod('Costume', 'getScaledBounds');
+  const halfw = w / 2;
+  const halfh = h / 2;
+  return [
+    { x: agent.x - halfw, y: agent.y - halfh },
+    { x: agent.x + halfw, y: agent.y - halfh },
+    { x: agent.x + halfw, y: agent.y + halfh },
+    { x: agent.x - halfw, y: agent.y + halfh }
+  ];
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // REVIEW: Consider using https://github.com/davidfig/pixi-intersects
 function m_IsTargetWithinVisionCone(visionPoly, target): boolean {
   if (
@@ -95,7 +114,7 @@ function m_IsTargetWithinVisionCone(visionPoly, target): boolean {
   )
     return false;
 
-  const targetPoly = SIMDATA.GetAgentBoundingRect(target);
+  const targetPoly = m_GetAgentBoundingRect(target);
   // Returns array of intersecting objects, or [] if no intersects
   const result = intersect(visionPoly, targetPoly);
   return result.length > 0;

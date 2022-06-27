@@ -93,7 +93,7 @@ function ShuffleArray(array) {
  */
 function SingleAgentFilter(type: string, testA: string, ...args: any) {
   const agents = DCAGENTS.GetAgentsByType(type);
-  const testFunc = SIMDATA.GetFunction(testA);
+  const testFunc = SIMDATA.GetWhenTest(testA);
   ShuffleArray(agents);
   const pass = [];
   const fail = [];
@@ -110,7 +110,7 @@ function SingleAgentFilter(type: string, testA: string, ...args: any) {
 function PairAgentFilter(A: string, testAB: string, B: string, ...args: any) {
   const setA = DCAGENTS.GetAgentsByType(A);
   const setB = DCAGENTS.GetAgentsByType(B);
-  const testFunc = SIMDATA.GetFunction(testAB);
+  const testFunc = SIMDATA.GetWhenTest(testAB);
   ShuffleArray(setA);
   ShuffleArray(setB);
   const pass = [];
