@@ -18,6 +18,7 @@ import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import * as TRANSPILER from 'script/transpiler-v2';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 // import PanelSimViewer from './components/PanelSimViewer';
@@ -226,6 +227,11 @@ class ScriptEditor extends React.Component {
   UpdateBpEditList(bpEditList) {
     if (DBG) console.log(...PR('UpdateBpEditList', bpEditList));
     const { bpName } = this.state;
+    bpEditList.forEach(thing => {
+      const { name, scriptText } = thing;
+      const script = TRANSPILER.TextToScript(scriptText);
+      TRANSPILER.SymbolizeBlueprint(script);
+    });
     this.setState({ bpEditList }, () => {
       if (bpName) {
         this.OnSelectScript({ bpName });
