@@ -811,10 +811,9 @@ class SymbolInterpreter {
     if (matchType !== 'identifier') {
       this.scanError(true);
       return new VSDToken(
-        { features: this.getBundleScope().features },
+        { featuresList },
         {
           gsType,
-          symbolScope: ['featuresList'], // this is what's 'displayable' by GUI
           unitText,
           err_code: 'invalid',
           err_info: `${fn} not an objref`
