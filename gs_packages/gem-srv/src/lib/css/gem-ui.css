@@ -23,6 +23,7 @@
   --shima: 16px;
   --shim2a: 30px;
   --gap: 10px;
+  --primary: rgba(128, 83, 0, 1); /* override pico */
 }
 
 .gunit {
@@ -115,12 +116,16 @@
 .gwiz.valueType {
   color: blue;
 }
+.gwiz.numberType {
+  color: blue;
+}
 .gwiz.stringType {
   color: maroon;
 }
 .gwiz.exprType {
   color: darkgreen;
 }
+
 .gwiz.styleSolid {
   background-color: black;
 }
@@ -153,7 +158,7 @@
 .gwiz button {
   width: 44px;
   height: 12px;
-  background-color: lightblue;
+  background-color: rgba(255, 166, 0, 0.7);
   line-height: 2px;
   margin-bottom: 0;
 }
@@ -162,6 +167,7 @@
   position: relative;
   top: -28px;
   left: 100%; /* http://alistapart.com/article/fauxabsolutepositioning/ */
+  border-width: 2px;
   margin-left: -100%;
 }
 .gwiz .btnAddAfter {
@@ -169,6 +175,7 @@
   position: relative;
   top: 28px;
   left: 100%; /* http://alistapart.com/article/fauxabsolutepositioning/ */
+  border-width: 2px;
   margin-left: -100%;
 }
 .gwiz .btnAddEnd {
@@ -177,6 +184,8 @@
 .gwiz .btnDelete {
   float: right;
   width: 100px;
+  height: 100%;
+  border-width: 2px;
   font-size: 0.8rem;
 }
 
@@ -189,7 +198,8 @@
   cursor: pointer;
 }
 .gline.selected {
-  border-bottom: 1px solid rgba(255, 166, 0, 1) !important; /* orange */
+  /* border-bottom: 1px solid rgba(255, 166, 0, 1) !important; orange */
+  background-color: rgba(255, 166, 0, 0.25) !important;
 }
 .gtoken.selected:hover {
   background-color: rgba(255, 166, 0, 0.8) !important;

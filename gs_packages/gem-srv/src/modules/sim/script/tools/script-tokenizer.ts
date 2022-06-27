@@ -8,12 +8,13 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import GScriptTokenizer from 'script/tools/class-gscript-tokenizer-v2';
-// uses types defined in t-script.d
+import GScriptTokenizer, {
+  UnpackToken
+} from 'script/tools/class-gscript-tokenizer-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const gstDBG = new GScriptTokenizer();
+const STRTOK = new GScriptTokenizer();
 const CR = '\n'; // '\r\n' used by windows
 
 /// API ///////////////////////////////////////////////////////////////////////
@@ -44,7 +45,7 @@ function StatementToText(statement: TScriptUnit, indent: number = 0): string {
 /** API: given a text, return the parsed ScriptUnit[] representation */
 function TextToScript(text: string = ''): TScriptUnit[] {
   // this will throw an error string of '{err} @row:col'
-  const script = gstDBG.tokenize(text.trim());
+  const script = STRTOK.tokenize(text.trim());
   return script;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,9 +71,9 @@ function ScriptToText(units: TScriptUnit[]): string {
 
 /// SUPPORT API ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: given a token, return the text representation of it. If it encounters an
- *  array of nested tokens in a 'block' token, it converts those recursively
- */
+/** API: given a token, return the GEMSCRIPT text representation of it. If it
+ *  encounters an array of nested tokens in a 'block' token, it converts those
+ *  recursively */
 function TokenToString(tok: IToken, indent: number = 0) {
   if (tok === undefined) return '';
   const { directive, comment, line } = tok; // meta information
@@ -102,6 +103,30 @@ function TokenToString(tok: IToken, indent: number = 0) {
   console.warn('unknown argument type:', tok);
   throw Error('unknown argument type');
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: returns an unadorned version of the stringified token */
+function TokenToPlainString(tok: IToken) {
+  const fn = 'TokenToPlainString:';
+  const [, tokValue] = UnpackToken(tok);
+  const jsType = typeof tokValue;
+  // array of strings?
+  if (
+    Array.isArray(tokValue) &&
+    tokValue.length &&
+    typeof tokValue[0] === 'string'
+  )
+    return tokValue.join('.');
+  // any kind of string?
+  if (jsType === 'string') return tokValue;
+  if (jsType === 'number') return String(tokValue);
+  if (jsType === 'boolean') return String(tokValue);
+  console.warn(`${fn} token could not be converted to string`, tok);
+  return undefined;
+}
+
+/// EXPRESSION TOKENIZER //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// see export
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -114,8 +139,9 @@ export {
 export {
   StatementToText, // convert a line of script TScriptUnit to a line of text
   StringToLineScript, // convert a single line string into TScriptUnit
-  TokenToString, // convert a token to its string ver
-  TokenToString as TokenToUnitText // alias
+  TokenToString, // convert a token to its GEMSCRIPT text representation
+  TokenToPlainString, // convert a token to an unadorned string
+  TokenToPlainString as TokenToUnitText // alias
 };
 /// forward gscript-tokenizer utilities
 export {
@@ -131,3 +157,5 @@ export {
   IsValidToken, // return true if it's a recognized token object
   IsValidTokenKey // return true if string it's a recognized token key
 } from 'script/tools/class-gscript-tokenizer-v2';
+/// forward expression parser
+export { ParseExpression } from './class-expr-parser-v2';

@@ -35,7 +35,6 @@ export class SM_String extends SM_Object {
 /// SYMBOLS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 SM_String.Symbols = {
-  propTypes: { string: SM_String.Symbols },
   methods: {
     setTo: { args: ['value:string'] },
     eq: { args: ['str:string'], returns: 'isEqual:boolean' },

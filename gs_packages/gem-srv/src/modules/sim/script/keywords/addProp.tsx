@@ -21,9 +21,9 @@ export class AddProp extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     const [, propName, propType, initValue] = unit;
-    const propCtor = GetPropTypeCtor(propType as string);
+    const propCtor = GetPropTypeCtor(propType as TSLit);
     return [
       (agent: IAgent) =>
         agent.addProp(propName as string, new propCtor(initValue))
@@ -32,10 +32,22 @@ export class AddProp extends Keyword {
 
   /** return symbol structure for this keyword */
   symbolize(unit: TScriptUnit): TSymbolData {
-    const propName = TokenToString(unit[1]);
-    const propType = TokenToString(unit[2]);
-    const propCtor = GetPropTypeCtor(propType as string);
-    return { props: { [propName as string]: propCtor.Symbols } };
+    const [kwTok, pnTok, typeTok, ivalTok] = unit;
+    if (pnTok === undefined) return {};
+    if (typeTok === undefined) return {};
+    const propName = TokenToString(pnTok);
+    const propType = TokenToString(typeTok) as TSLit;
+    const propClass = GetPropTypeCtor(propType);
+    if (propClass === undefined) {
+      console.warn('addProp unrecognized propType', propType);
+      return {};
+    }
+    const propClassSymbols = propClass.Symbols;
+    if (propClassSymbols === undefined) {
+      console.warn('addProp symbolize missing symbols', propClass);
+      return {};
+    }
+    return { props: { [propName as string]: propClassSymbols } };
   }
 
   /** custom keyword validator */
@@ -45,8 +57,8 @@ export class AddProp extends Keyword {
     const vtoks = [];
     vtoks.push(this.shelper.anyKeyword(kwTok));
     vtoks.push(this.shelper.simplePropName(pnTok));
-    vtoks.push(this.shelper.propCtor(typeTok));
-    vtoks.push(this.shelper.propCtorInitialValue(ivalTok));
+    vtoks.push(this.shelper.anyPropType(typeTok));
+    vtoks.push(this.shelper.propTypeInitialValue(ivalTok));
     const vlog = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: vlog };
   }

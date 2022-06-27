@@ -18,7 +18,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
+import { Evaluate } from 'lib/expr-evaluator';
 import SymbolInterpreter from 'script/tools/class-symbol-interpreter';
 import * as BUNDLER from 'script/tools/script-bundler';
 import VSDToken from 'script/tools/class-validation-token';
@@ -49,7 +49,7 @@ class Keyword implements IKeyword {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** override in subclass */
-  compile(unit: TScriptUnit, refs?: TSymbolRefs): TCompiledStatement {
+  compile(kwArgs: TKWArguments, refs?: TSymbolRefs): TCompiledStatement {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -186,6 +186,9 @@ class Keyword implements IKeyword {
       case 'prop': // a prop reference
         vtok = this.invalidToken('debug', "'prop' typehandler should be objref?");
         break;
+      case 'expr':
+        vtok = this.shelper.anyExpr(token);
+        break;
       case 'blueprint': // a blueprint name
       case 'number': // value is
       case 'string': // value is
@@ -229,15 +232,14 @@ class Keyword implements IKeyword {
       const spc = ' '.padStart(ii.toString().length);
       let out = '';
 
-      if (dictList) out = `SDICT ${dictList} -`;
-      if (gsType) out += ` gsType:${gsType}`;
-      if (symbolScope) out += ` symScope:${symbolScope}`;
+      if (gsType) out += `gsType:${gsType.padEnd(9, ' ')} `;
+      if (dictList) out += `SDICT ${dictList} `;
+      if (symbolScope) out += `symScope:${symbolScope} `;
 
       if (err) {
-        if (dictList) out += `\n${spc} ${' '.padStart(max)} ! `; // indent below valid dictList
+        out += `\n${spc} ${' '.padStart(max)} ! `; // indent below valid dictList
         out += `ERROR ${err}`;
       }
-
       log.push(`${ii} ${unitText.padEnd(max)} - ${out}`);
     });
     return log; // for use by console
@@ -492,7 +494,7 @@ function K_DerefFeatureProp(refArg) {
 /** called by keywords that need to do runtime evaluation of an expression from
  *  within the returned program
  */
-function K_EvalRuntimeUnitArgs(unit: TScriptUnit, context: {}): any {
+function K_EvalRuntimeUnitArgs(unit: TKWArguments, context: {}): any {
   if (!Array.isArray(unit)) throw Error('arg must be TScriptUnit, an array');
   // note that unit is passed at creation time, so it's immutable within
   // the TOpcode. We need to return a copy through map()

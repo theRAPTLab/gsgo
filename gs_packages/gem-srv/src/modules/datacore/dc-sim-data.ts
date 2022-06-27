@@ -1,24 +1,29 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  DATACORE SIMULATION RESOURCES
+  DATACORE NON-AGENT SIMULATION RESOURCES
 
   Contains dictionaries of the active entities available to the simulation
   engine that determine its runtime state. Prior to this module, the
   dictionaries were scattered across separate datacore modules which made
   it hard to see the distinct systems we support in addition o the simulator
 
+  note: AGENT dictionaries and methods are handled in a separate module,
+        dc-sim-agents
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import SM_Feature from 'lib/class-sm-feature';
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import SM_Bundle from 'lib/class-sm-bundle';
-import SM_Object from 'lib/class-sm-object';
 import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 import * as CHECK from './dc-sim-data-utils';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
+//
+// NOTE: AGENTS resources are in their own module, dc-sim-agents
+//
 const PRAGMAS: Map<string, Function> = new Map();
 const FEATURES: Map<string, SM_Feature> = new Map();
 const BLUEPRINTS: Map<string, SM_Bundle> = new Map();
@@ -27,7 +32,7 @@ const VARS: Map<string, TPropType> = new Map();
 const EVENT_SCRIPTS: Map<string, Map<string, TSMCProgram>> = new Map();
 const TEST_SCRIPTS: Map<string, TSMCProgram> = new Map();
 const NAMED_SCRIPTS: Map<string, TSMCProgram> = new Map();
-const NAMED_FUNCTIONS: Map<string, Function> = new Map();
+const WHEN_TESTS: Map<string, Function> = new Map();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 type TPropType = typeof SM_String | typeof SM_Number | typeof SM_Boolean;
 
@@ -90,10 +95,31 @@ function SaveBlueprintBundle(bdl: SM_Bundle) {
   return bdl;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: return whether a blueprint bundle exists */
+function HasBlueprintBundle(bpName: string): boolean {
+  return BLUEPRINTS.has(bpName);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return a blueprint bundle by bpName */
 function GetBlueprintBundle(bpName: string): SM_Bundle {
   const fn = 'GetBlueprintBundle:';
-  bpName = bpName || 'default';
+  bpName = bpName || '<CreatedBundle>';
+  let bdl = BLUEPRINTS.get(bpName);
+  if (bdl === undefined) {
+    if (DBG) console.log(`${fn} creating '${bpName}' bundle on request`);
+    bdl = new SM_Bundle(bpName, EBundleType.BLUEPRINT);
+    // save the new bundle in dictionary
+    BLUEPRINTS.set(bpName, bdl);
+  }
+  return bdl;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: return a blueprint bundle by bpName. It creates a blueprint bundle
+ *  and always returns one, because this is used by symbolize to create
+ *  blueprint bundles as needed instead of checking if there is one */
+function GetOrCreateBlueprintBundle(bpName: string): SM_Bundle {
+  const fn = 'GetOrCreateBlueprintBundle:';
+  bpName = bpName || '<CreatedBundle>';
   let bdl = BLUEPRINTS.get(bpName);
   if (bdl === undefined) {
     if (DBG) console.log(`${fn} creating '${bpName}' bundle on request`);
@@ -134,7 +160,7 @@ function DeleteAllBlueprintBundles(): void {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetBlueprintSymbolsFor(bpName: string): TSymbolData {
   const { symbols } = GetBlueprintBundle(bpName);
-  if (symbols !== undefined) console.log('found', bpName, 'blueprint');
+  if (DBG) if (symbols !== undefined) console.log('found', bpName, 'blueprint');
   return symbols;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -154,8 +180,7 @@ function GetBlueprintSymbols(): TSymbolData {
 /// transpiler.ts for examples of use
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: variable types (e.g. gvar-number.ts is the type of a 'number' prop
- *  have to be declared and registered to be available to the transpiler
- */
+ *  have to be declared and registered to be available to the transpiler */
 function RegisterKeyword(Ctor: IKeywordCtor, alias?: string): void {
   const fn = 'RegisterKeyword:';
   const kobj = new Ctor();
@@ -188,29 +213,31 @@ function GetKeywordSymbols(): TSymbolData {
 /// VALUE TYPE UTILITIES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a SMObject, store in VARS dict */
-function RegisterPropType(propType: string, ctor: TPropType) {
-  propType = m_EnsureLowerCase(propType);
+function RegisterPropType(propType: TGSType, ctor: TPropType) {
+  propType = m_EnsureLowerCase(propType) as TGSType;
   if (VARS.has(propType)) throw Error(`RegisterPropType: ${propType} exists`);
   VARS.set(propType, ctor);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: get the registered SMObject constructor by name */
-function GetPropTypeCtor(propType: string): TPropType {
-  propType = m_EnsureLowerCase(propType);
+function GetPropTypeCtor(propType: TSLit): TPropType {
+  propType = m_EnsureLowerCase(propType) as TSLit;
   return VARS.get(propType);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return the VAR ctor dictionary */
-function GetPropTypesDict(): Map<string, TPropType> {
+function GetPropTypeCtorDict(): Map<string, TPropType> {
   return VARS;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetAllPropTypeCtors() {
+  const fn = 'GetAllPropTypeCtors:';
   const list = [...VARS.entries()];
   return list;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetPropTypeSymbolsFor(propType: string): TSymbolData {
+  const fn = 'GetPropTypeSymbolsFor:';
   const { Symbols } = VARS.get(propType);
   return Symbols;
 }
@@ -264,8 +291,15 @@ function GetFeatureSymbols(): TSymbolData {
 
 /// TEST DICTIONARIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// named tests are TSMCPrograms that expect to receive parameters on the
+/// stack
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** returns true if test was saved for the first time, false otherwise */
-function RegisterTest(name: string, program: TSMCProgram): boolean {
+function RegisterTest(
+  name: string,
+  program: TSMCProgram,
+  symbols?: TSymbolData // future GEMSTEP
+): boolean {
   name = m_EnsureLowerCase(name);
   const newRegistration = !TEST_SCRIPTS.has(name);
   TEST_SCRIPTS.set(name, program);
@@ -289,7 +323,11 @@ function DeleteAllTests() {
 
 /// NAMED PROGRAM DICTIONARIES ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RegisterProgram(name: string, program: TSMCProgram) {
+function RegisterProgram(
+  name: string,
+  program: TSMCProgram,
+  symbols?: TSymbolData // future GEMSTEP
+) {
   name = m_EnsureLowerCase(name);
   if (NAMED_SCRIPTS.has(name)) throw Error(`RegisterProgram: ${name} exists`);
   NAMED_SCRIPTS.set(name, program);
@@ -305,46 +343,51 @@ function GetAllPrograms() {
   return list;
 }
 
-/// NAMED FUNCTIONS DICTIONARIES //////////////////////////////////////////////
+/// WHEN TEST DICTIONARY //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RegisterFunction(name: string, func: Function): boolean {
+/// named javascript functions are used when you need to invoke it with
+/// parameters during a function call. currently, these are only used for
+/// 'when tests' and the symbol-interpreter assumes that's what they are
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function RegisterWhenTest(
+  name: string,
+  func: Function,
+  symbols?: TSymbolData // future GEMSTEP
+): boolean {
   name = m_EnsureLowerCase(name);
-  const newRegistration = !NAMED_FUNCTIONS.has(name);
-  NAMED_FUNCTIONS.set(name, func);
+  const newRegistration = !WHEN_TESTS.has(name);
+  WHEN_TESTS.set(name, func);
   return newRegistration;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetFunction(name: string): Function {
+function GetWhenTest(name: string): Function {
   name = m_EnsureLowerCase(name);
-  let f = NAMED_FUNCTIONS.get(name);
+  let f = WHEN_TESTS.get(name);
   // return always random results if the test doesn't exist
   if (!f) f = () => Math.random() > 0.5;
   return f;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetAllFunctions() {
-  const list = [...NAMED_FUNCTIONS.entries()];
-  return list;
+function GetAllWhenTests() {
+  const whenTests = [...WHEN_TESTS.entries()];
+  return whenTests;
 }
-
-/// DEPRECATED - MOVE TO FEAT VISION //////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Returns the SCALED bounding rect of the agent
-export function GetAgentBoundingRect(agent) {
-  // Based on costume
-  if (!agent.hasFeature('Costume'))
-    throw new Error(
-      `GetAgentBoundingRect: Tried to use vision on an agent with no costume ${agent.id}`
-    );
-  const { w, h } = agent.callFeatMethod('Costume', 'getScaledBounds');
-  const halfw = w / 2;
-  const halfh = h / 2;
-  return [
-    { x: agent.x - halfw, y: agent.y - halfh },
-    { x: agent.x + halfw, y: agent.y - halfh },
-    { x: agent.x + halfw, y: agent.y + halfh },
-    { x: agent.x - halfw, y: agent.y + halfh }
-  ];
+/** note: when tests can accept arguments but they are javascript function
+ *  args that have to be passed from GEMSCRIPT. Currently no when tests in
+ *  GS1.0 pass arguments, so we can return dummy structures that will still
+ *  accurately validate for now */
+function GetWhenTestSymbols() {
+  const symbols = {};
+  WHEN_TESTS.forEach((value, name) => {
+    symbols[name] = {
+      name,
+      args: [],
+      returns: 'boolean',
+      info: `${name} whenTest`
+    };
+  });
+  return symbols;
 }
 
 /// SCRIPT EVENTS /////////////////////////////////////////////////////////////
@@ -410,7 +453,9 @@ export { DefinePragma, GetPragma, GetPragmaSymbols };
 /// blueprints are stored as "bundles" by their name
 export {
   SaveBlueprintBundle,
+  HasBlueprintBundle,
   GetBlueprintBundle,
+  GetOrCreateBlueprintBundle,
   GetAllBlueprintBundles,
   GetBlueprintBundleList,
   DeleteBlueprintBundle,
@@ -425,7 +470,7 @@ export { RegisterKeyword, GetKeyword, GetAllKeywords, GetKeywordSymbols };
 export {
   RegisterPropType,
   GetPropTypeCtor,
-  GetPropTypesDict,
+  GetPropTypeCtorDict,
   GetAllPropTypeCtors,
   GetPropTypeSymbolsFor,
   GetPropTypeSymbols
@@ -441,7 +486,7 @@ export {
   GetFeatureSymbols
 };
 /// engine maintains dicts of named Javascript functions
-export { RegisterFunction, GetFunction, GetAllFunctions };
+export { RegisterWhenTest, GetWhenTest, GetAllWhenTests, GetWhenTestSymbols };
 /// engine maintain dicts of compiler script code (TSMCProgram)
 export { RegisterProgram, GetProgram, GetAllPrograms };
 /// "when" conditions use programs that expect a certain input

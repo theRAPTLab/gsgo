@@ -257,7 +257,7 @@ function SelectEditorSlots(props) {
       * "Save" location -- Should "Save" always appear bottom justified?
                         How do we handle short displays?  What should stay fixed
                         and what should scroll?
-      * CLickaway       -- Should the current slot line be saved as soon as you click away?
+      * Clickaway       -- Should the current slot line be saved as soon as you click away?
                         *  Add a "[ ] Save when I click away" option?
                         *  Test modeless edit and turn "Cancel" button into "REVERT"?
   */

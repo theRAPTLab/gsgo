@@ -11,16 +11,18 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys';
 import {
   SHOW_EMPTY_STATEMENTS,
   SCRIPT_PAGE_INDEX_OFFSET
 } from 'config/dev-settings';
-import { StatementToText, ScriptToText } from 'script/tools/script-tokenizer';
+import { StatementToText } from 'script/tools/script-tokenizer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const EMPTY_STATEMENT: TScriptUnit = [];
+const PR = UR.PrefixUtil('TMP_TOKS', 'TagRed');
 
 /// LINE PRINTING MACHINE //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,10 +40,11 @@ class ScriptLiner {
   LINE_POS: number;
   INDENT: number;
   BLOCK_FLAG: VMLineScriptType;
-  STM_STACK: TScriptUnit[];
+  TMP_TOKS: TScriptUnit[];
   DBGTEXT: string;
   REFS: { bundles: TNameSet };
   //
+
   constructor() {
     this.LINE_BUF = [];
     this.PAGE = [];
@@ -72,7 +75,7 @@ class ScriptLiner {
     this.LINE_BUF = [];
     this.LINE_POS = SCRIPT_PAGE_INDEX_OFFSET;
     this.LINE_NUM = SCRIPT_PAGE_INDEX_OFFSET;
-    this.STM_STACK = [];
+    this.TMP_TOKS = [];
     this.PAGE = [];
     this.TOKMAP.clear();
     this.BLOCK_FLAG = null;
@@ -83,19 +86,19 @@ class ScriptLiner {
   /** used to save the current statement array for the tokens being processed
    *  in it, so we can copy it into the PAGE array. Filters out blocks because
    *  are processed as different lines */
-  pushAbbreviated(stm: TScriptUnit): void {
-    const copied_toks = stm.filter(tok => !tok.block);
-    this.STM_STACK.push(copied_toks); // save statement on stack
-    // console.log(this.STM_STACK.length, JSON.stringify(this.peekAbbreviated()));
+  pushTokens(stm: TScriptUnit): void {
+    const copied_toks: IToken[] = stm.filter(tok => !tok.block);
+    this.TMP_TOKS.push(copied_toks); // save statement on stack
+    // console.log(this.TMP_TOKS.length, JSON.stringify(this.peekTokens ()));
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** remove the saved statement, without { block } tokens */
-  popAbbreviated(): TScriptUnit {
-    return this.STM_STACK.pop(); // save statement on stack
+  popTokens(): TScriptUnit {
+    return this.TMP_TOKS.pop();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  peekAbbreviated(): TScriptUnit {
-    return this.STM_STACK[this.STM_STACK.length - 1];
+  peekTokens(): TScriptUnit {
+    return this.TMP_TOKS[this.TMP_TOKS.length - 1];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   nextLine(): void {
@@ -133,7 +136,7 @@ class ScriptLiner {
     if (this.LINE_BUF.length === 0 && !SHOW_EMPTY_STATEMENTS) return;
     // otherwise do the thing
     const { level, lineNum, globalRefs } = this.currentContext();
-    const lineScript = this.popAbbreviated() || EMPTY_STATEMENT;
+    const lineScript = this.popTokens() || EMPTY_STATEMENT;
     const vmTokens = [...this.LINE_BUF];
 
     const line: VMPageLine = {
@@ -187,23 +190,108 @@ class ScriptLiner {
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** reference algorithm used by statementToLines */
+  genericStatementDeblocker(stm: TScriptUnit): void {
+    if (stm.length === 0) return;
+    this.pushTokens(stm); // set current statement context
+    stm.forEach((tok: IToken, idx) => {
+      const isBlock = Array.isArray(tok.block);
+      if (isBlock) {
+        this.lineOut(); // uses popTokens() to retrieve lineScript
+        tok.block.forEach(bstm => {
+          this.genericStatementDeblocker(bstm);
+        });
+      } else {
+        this.tokenOut(tok);
+      }
+    });
+    this.lineOut(); // uses popTokens() flush all the tokenOut acquired
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** reference algorithm used by EditableTokensToLines, which is the
+   *  opposite of the statement deblocker */
+  genericBlockStatementer(lineScripts: VMLineScripts): TScriptUnit[] {
+    let script_tokens = [];
+    let stm0 = []; // assemble partial statements on main level
+    let block_stack = [];
+    let current = script_tokens; // where to output statements
+    // START CODE
+    let level = 0;
+    lineScripts.forEach(lso => {
+      const { lineScript, marker } = lso;
+      if (marker === 'start') {
+        level++;
+        if (level === 1) {
+          const block = []; // new block [[ ],[ ]]
+          stm0 = [...lineScript, { block }];
+          current.push(stm0);
+          current = block;
+        }
+        if (level > 1) {
+          const block = []; // new block [[ ],[ ]]
+          current.push([...lineScript, { block }]);
+          block_stack.push(current); // save previous
+          current = block;
+        }
+        return;
+      }
+
+      if (marker === 'end') {
+        level--;
+        if (level < 0) console.warn('WHOOPS');
+        if (level > 0) {
+          if (lineScript.length) current.push(lineScript); // nested block
+          current = block_stack.pop(); // previos block
+        }
+        if (level === 0) {
+          if (lineScript.length) current.push(lineScript); // nested block
+          current = script_tokens; // main body
+          stm0 = [];
+        }
+        return;
+      }
+
+      if (marker === 'end-start') {
+        level--;
+        if (level > 0) {
+          if (lineScript.length) current.push(lineScript); // nested block
+          current = block_stack.pop(); // previos block
+        }
+        if (level === 0) {
+          if (lineScript.length) current.push(lineScript); // nested block
+          current = script_tokens; // main body
+          // stm0 = []; // don't reset the statement
+        }
+        level++;
+        const block = []; // new block [[ ],[ ]]
+        stm0.push({ block });
+        if (level === 1) current = block;
+        if (level > 1) {
+          block_stack.push(current); // save previous
+          current = block;
+        }
+        return;
+      }
+      if (lineScript.length) current.push(lineScript);
+    });
+    return script_tokens;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   statementToLines(statement: TScriptUnit): void {
     // process all the tokens in the statement
     if (statement.length === 0) {
       if (DBG) console.log('Empty Statement', statement);
       return;
     }
-
-    this.pushAbbreviated(statement); // set current statement context
-    //
+    this.pushTokens(statement); // set current statement context
     statement.forEach((tok: IToken, sindex: number) => {
-      // is this a regular token? just output it
+      // regular token: add to statement
       if (!Array.isArray(tok.block)) {
-        if (DBG) console.log('.. tokout', StatementToText([tok]), tok);
         this.tokenOut(tok);
+        if (DBG) console.log('.. tokout', StatementToText([tok]), tok);
         return;
       }
-      // otherwise this is a block token and we have to recursively process it
+      // block token: detect blockstart/end conditions and process recursively
       if (DBG) this.DBGTEXT += 'BLOCK ';
       if (DBG) {
         const bflag = this.BLOCK_FLAG
@@ -212,12 +300,11 @@ class ScriptLiner {
         console.log(
           'LINEOUT %cBLOCK',
           'color:red',
-          StatementToText(this.peekAbbreviated()),
+          StatementToText(this.peekTokens()),
           bflag
         );
       }
       // process statements in the block...
-      this.indent();
       const precedingBlock =
         sindex - 1 >= 0 ? statement[sindex - 1].block : undefined;
       if (!precedingBlock) this.BLOCK_FLAG = `start`;
@@ -228,12 +315,12 @@ class ScriptLiner {
         const followedByBlock =
           sindex + 1 < statement.length ? statement[sindex + 1].block : undefined;
         if (terminal) this.BLOCK_FLAG = followedByBlock ? `end-start` : `end`;
-
         // block flag will affect recursive statement lineout
+        this.indent();
         this.statementToLines(bstm);
+        this.outdent();
         console.groupEnd();
       });
-      this.outdent();
     });
     // finished statement processing, so now output the line
     this.lineOut(); // flush buffer after statement is printed, increment line
@@ -241,14 +328,14 @@ class ScriptLiner {
       const bflag = this.BLOCK_FLAG
         ? `!!!!!!!! ${this.BLOCK_FLAG.toUpperCase()}`
         : '';
-      console.log('LINEOUT', StatementToText(this.peekAbbreviated()), bflag);
+      console.log('LINEOUT', StatementToText(this.peekTokens()), bflag);
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Main Entry Point: Convert a tokenized script into a "page" of "lines" of
    *  tokens
    */
-  programToLines(program) {
+  programToLines(program: TScriptUnit[]) {
     program.forEach((stm, ii) => {
       if (DBG) console.group('line', ii);
       this.statementToLines(stm);

@@ -10,26 +10,26 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import * as WIZCORE from 'modules/appcore/ac-wizcore';
+
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { withStyles } from '@material-ui/core/styles';
 import UR from '@gemstep/ursys/client';
-import {
-  ScriptToJSX,
-  UpdateScript
-} from 'modules/sim/script/tools/script-to-jsx';
+import { UpdateScript } from 'modules/sim/script/tools/script-to-jsx';
+import { ScriptViewPane } from '../wiz/edit/ScriptViewPane';
 import { GetAllKeywords } from 'modules/datacore';
-import { CompileToJSX } from '../helpers/mod-panel-script';
+import { SKIP_RELOAD_WARNING } from 'config/gem-settings';
 
 // Force load sim-features so that Features will be registered
 // And we can read their properties
 import 'modules/sim/sim-features';
 
 /// CODE EDIT + HIGHLIGHTING //////////////////////////////////////////////////
-import * as Prism from '../../../lib/vendor/prism_extended';
-import { CodeJar } from '../../../lib/vendor/codejar';
-import '../../../lib/vendor/prism_extended.css';
-import '../../../lib/css/prism_linehighlight.css'; // override TomorrowNight
+import * as Prism from 'lib/vendor/prism_extended';
+import { CodeJar } from 'lib/vendor/codejar';
+import 'lib/vendor/prism_extended.css';
+import 'lib/css/prism_linehighlight.css'; // override TomorrowNight
 
 import DialogConfirm from './DialogConfirm';
 
@@ -171,15 +171,19 @@ if (DBG) console.log(...PR('PRISM gemscript types', types_regex));
 class PanelScript extends React.Component {
   constructor() {
     super();
+    const { script_page, script_text } = WIZCORE.State();
     this.state = {
-      viewMode: 'code',
+      viewMode: 'wizard', // 'code',
       jsx: '',
       lineHighlight: undefined,
       openConfirmDelete: false,
       isDirty: false,
       openConfirmUnload: false,
-      confirmUnloadCallback: {} // fn called when user confirms unload
+      confirmUnloadCallback: {}, // fn called when user confirms unload
       // script: demoscript // Replace the prop `script` with this to test scripts defined in this file
+      // post wizcore integration
+      script_page,
+      script_text
     };
     // codejar
     this.jarRef = React.createRef();
@@ -192,6 +196,7 @@ class PanelScript extends React.Component {
       'inserted': types_regex
     });
 
+    this.handleWizUpdate = this.handleWizUpdate.bind(this);
     this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
     this.HandleScriptIsDirty = this.HandleScriptIsDirty.bind(this);
     this.GetTitle = this.GetTitle.bind(this);
@@ -223,21 +228,52 @@ class PanelScript extends React.Component {
       this.setState({ isDirty: true });
     });
 
+    // add a subscriber
+    WIZCORE.SubscribeState(this.handleWizUpdate);
+
     window.addEventListener('beforeunload', e => {
+      if (SKIP_RELOAD_WARNING) return;
       const { isDirty } = this.state;
       if (isDirty) {
         // Show "Leave site?" dialog
         e.preventDefault();
         e.returnValue = ''; // required by Chrome
+        return e;
       }
     });
   }
 
   componentWillUnmount() {
+    WIZCORE.UnsubscribeState(this.handleWizUpdate);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.UnhandleMessage('SCRIPT_IS_DIRTY', this.HandleScriptIsDirty);
     UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUIChanged);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
+  }
+
+  /** INCOMING: handle WIZCORE event updates */
+  handleWizUpdate(vmStateEvent) {
+    // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
+    const { script_page, script_text } = vmStateEvent;
+    if (script_page) {
+      this.setState({
+        script_page,
+        isDirty: true
+      });
+    }
+    if (script_text) {
+      this.setState(
+        {
+          script_text,
+          isDirty: true
+        },
+        () => {
+          this.jar.updateCode(script_text);
+          // Force Prism update otherwise line number highlight is not updated
+          Prism.highlightElement(this.jarRef.current);
+        }
+      );
+    }
   }
 
   HandleSimDataUpdate() {
@@ -342,7 +378,7 @@ class PanelScript extends React.Component {
    */
   SendText() {
     const { projId, bpName } = this.props;
-    const text = this.jar.toString();
+    const text = WIZCORE.State().script_text;
     UR.CallMessage('NET:SCRIPT_UPDATE', {
       projId,
       script: text,
@@ -417,12 +453,17 @@ class PanelScript extends React.Component {
   OnToggleWizard(e, value) {
     console.log('clicked', value);
     if (value === null) return; // skip repeated clicks
-    // const currentScript = this.jar.toString();
-    // const jsx = CompileToJSX(currentScript);
-    const jsx = (
-      <p>Sri has diabled CompileToJSX() in PanelScript.OnToggleWizard()</p>
-    );
-    this.setState({ jsx, viewMode: value });
+    if (value === 'code') {
+      // currently wizard, clicked on code
+      // we don't need to do anything because wizard keeps state updated
+    } else if (value === 'wizard') {
+      const script_text = this.jar.toString();
+      WIZCORE.SendState({ script_text });
+    }
+    this.setState({ viewMode: value }, () => {
+      // Force Prism update otherwise line number highlight is not updated
+      Prism.highlightElement(this.jarRef.current);
+    });
   }
 
   render() {
@@ -434,7 +475,9 @@ class PanelScript extends React.Component {
       lineHighlight,
       isDirty,
       openConfirmDelete,
-      openConfirmUnload
+      openConfirmUnload,
+      script_page,
+      script_text
     } = this.state;
     const { id, bpName, script, projId, onClick, classes } = this.props;
 
@@ -567,7 +610,7 @@ class PanelScript extends React.Component {
           ref={this.jarRef}
           style={{ width: '100%', height: 'auto' }}
         >
-          {script}
+          {script_text}
         </code>
       </pre>
     );
@@ -581,7 +624,8 @@ class PanelScript extends React.Component {
           width: '100%'
         }}
       >
-        {jsx}
+        {/* {jsx} */}
+        <ScriptViewPane script_page={script_page} />
       </div>
     );
 

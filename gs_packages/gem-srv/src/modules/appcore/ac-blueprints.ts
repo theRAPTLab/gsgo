@@ -195,6 +195,14 @@ function GetBlueprintBundle(bpName: string): ISMCBundle {
   return SIMDATA.GetBlueprintBundle(bpName);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Checks to see if the bundle exists
+ *  @param {string} bpName
+ *  @returns boolean
+ */
+function HasBlueprintBundle(bpName: string): boolean {
+  return SIMDATA.HasBlueprintBundle(bpName);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Returns a list of blueprints with names and scriptText.
  *  Requested by ScriptEditor (via project-server) to display of list of
  *  editable blueprints.
@@ -446,6 +454,7 @@ function InjectBlueprint(projId: string, bpDef: TBlueprint) {
 function UpdateBlueprint(projId: string, bpName: string, scriptText: string) {
   const def = { scriptText };
   const bpDef = { name: bpName, scriptText };
+
   // 1. Compile the new blueprint
   m_SymbolizeBlueprints([bpDef]);
   m_CompileBlueprints([bpDef]); // add/update BPTEXTMAP as a side effect
@@ -471,6 +480,7 @@ export {
   GetBpDefs,
   GetBlueprint,
   GetBlueprintBundle,
+  HasBlueprintBundle,
   // Derived Blueprint Lists
   GetBpEditList, // used by ScriptEditor to display list of bp to edit
   GetBpNamesList,

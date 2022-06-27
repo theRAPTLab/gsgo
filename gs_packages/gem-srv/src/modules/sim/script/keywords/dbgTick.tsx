@@ -21,7 +21,7 @@ export class dbgTick extends Keyword {
     this.args = ['*:{...}'];
   }
 
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     const progout = [];
     progout.push((agent, state) => {
       let count = COUNTERS.get(agent.id) || 0;

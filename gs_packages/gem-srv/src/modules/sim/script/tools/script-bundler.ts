@@ -77,7 +77,7 @@ function OpenBundle(bp: string | SM_Bundle): SM_Bundle {
   m_CheckNoOpenBundle(fn);
   if (CUR_GLOBALS === undefined) CUR_GLOBALS = {};
   if (bp instanceof SM_Bundle) CUR_BUNDLE = bp;
-  if (typeof bp === 'string') CUR_BUNDLE = SIMDATA.GetBlueprintBundle(bp);
+  if (typeof bp === 'string') CUR_BUNDLE = SIMDATA.GetOrCreateBlueprintBundle(bp);
   if (CUR_BUNDLE instanceof SM_Bundle) return CUR_BUNDLE;
   throw Error(`${fn} arg1 was not a bundle or bundleName`);
 }
@@ -234,17 +234,22 @@ function AddSymbols(symdata: TSymbolData) {
   if (bdl.symbols === undefined) bdl.symbols = {};
   const _bdlsym = bdl.symbols;
 
-  if (symdata === undefined) console.error(`${fn} no symbol data provided`);
+  if (symdata === undefined) {
+    console.warn(`${fn} no symbol data provided`);
+    return;
+  }
 
   if (symdata.features) {
     // featureName --> featureModule
     if (_bdlsym.features === undefined) _bdlsym.features = {};
     for (const [featName, featSymbols] of Object.entries(symdata.features)) {
-      if (_bdlsym.features[featName])
-        console.log(
-          `%coverwriting feature ${featName}`,
+      if (DBG && _bdlsym.features[featName]) {
+        console.groupCollapsed(
+          `%credefining feature ${featName}`,
           'color:rgba(0,0,0,0.25)'
         );
+        console.groupEnd();
+      }
       if (DBG) {
         console.groupCollapsed(...PR(`AddSymbol: ${featName}`));
         console.log(featSymbols);
@@ -258,8 +263,14 @@ function AddSymbols(symdata: TSymbolData) {
     // propName --->
     if (_bdlsym.props === undefined) _bdlsym.props = {};
     for (const [propName, symbolData] of Object.entries(symdata.props)) {
-      if (_bdlsym.props[propName])
-        console.log(`%coverwriting prop ${propName}`, 'color:rgba(0,0,0,0.25)');
+      if (DBG && _bdlsym.props[propName]) {
+        console.groupCollapsed(
+          `%credefining prop ${propName}`,
+          'color:rgba(0,0,0,0.25)'
+        );
+        console.log('old, new', _bdlsym.props[propName], symbolData);
+        console.groupEnd();
+      }
       if (DBG) {
         console.groupCollapsed(...PR(`AddSymbol: ${propName}`));
         console.log(symbolData);

@@ -64,7 +64,6 @@ export class SM_Boolean extends SM_Object {
 /// SYMBOLS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 SM_Boolean.Symbols = {
-  propTypes: { boolean: SM_Boolean.Symbols },
   methods: {
     setTo: { args: ['value:boolean'] },
     true: { returns: 'value:boolean' },
