@@ -10,6 +10,7 @@ addProp carlBoolean boolean true
 # PROGRAM INIT
 prop aliceString setTo 'alice'
 featProp Physics width setTo 10
+featProp agent.Physics.width setTo 10
 featCall Physics setRadius 20
 
 # PROGRAM CONDITION

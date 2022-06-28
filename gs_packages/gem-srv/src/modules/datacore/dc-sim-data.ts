@@ -204,10 +204,10 @@ function GetAllKeywords(): string[] {
   return arr;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: retrieve the keyword symbols dict */
-function GetKeywordSymbols(): TSymbolData {
+/** API: retrieve unwrapped symbols for keywords  */
+function GetKeywordSymbols() {
   const keywords = GetAllKeywords();
-  return { keywords };
+  return keywords;
 }
 
 /// VALUE TYPE UTILITIES //////////////////////////////////////////////////////
@@ -236,19 +236,21 @@ function GetAllPropTypeCtors() {
   return list;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return unwrapped symbols for a PropType (ctors for prop vars) */
 function GetPropTypeSymbolsFor(propType: string): TSymbolData {
   const fn = 'GetPropTypeSymbolsFor:';
   const { Symbols } = VARS.get(propType);
   return Symbols;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return unwrapped symbols for ALL proptypes */
 function GetPropTypeSymbols(): TSymbolData {
   const pts = [...VARS.entries()];
   const symbols = {};
   pts.forEach(([propType, ctor]) => {
     symbols[propType] = ctor.Symbols;
   });
-  return { propTypes: symbols };
+  return symbols;
 }
 
 /// FEATURES ///////////////////////////////////////////////////////////////////
@@ -276,11 +278,13 @@ function DeleteAllFeatures() {
   FEATURES.clear();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return unwrapped 'features' symbols */
 function GetFeatureSymbolsFor(fName: string): TSymbolData {
   const symbols = GetFeature(fName).symbolize();
   return symbols;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return unwrapped 'features' symbols */
 function GetFeatureSymbols(): TSymbolData {
   const symbols: TSymbolData = {};
   [...FEATURES.keys()].forEach(fName => {
