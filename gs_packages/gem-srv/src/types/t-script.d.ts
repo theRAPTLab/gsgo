@@ -210,13 +210,13 @@ declare global {
   // symbol type declarations
   // fyi: using template string format allows us to specify strings that match
   // these types to filter string values! function myFunction(type:TSLit) works
-  type TSLit = `${'boolean'}` | `${'string'}` | `${'number'}`;
+  type TSLit = `${'boolean'}` | `${'string'}` | `${'number'}` | `${'identifier'}`;
   type TSSMObj = `${'prop'}` | `${'method'}` | `${'propType'}` | `${'block'}`;
   type TSDeferred = `${'objref'}` | `${'expr'}`;
   type TSSpecial = `${'{value}'}` | `${'{string}'}` | `${'{any}'}`;
   type TSDict = `${'keyword'}` | `${'pragma'}` | `${'test'}` | `${'program'}`;
   type TSNameList = `${'event'}` | `${'option'}`;
-  type TSAgent = `${'blueprint'}` | `${'feature'}`;
+  type TSAgent = `${'blueprint'}` | `${'feature'}` | `${'bdlOut'}` | `${'tag'}`;
   type TSMultiArg = `${'{...}'}`; // multiple arg token marker
   type TSList = `${'{list}'}`; // future
   type TSUnknown = `${'{?}'}`; // unknown 'vague' type for validation
@@ -263,6 +263,8 @@ declare global {
     arg?: TGSArg; // arg definition string 'name:type'
     tests?: string[]; // unused in gemscript 1.0
     programs?: string[]; // unused in gemscript 1.0
+    bdlOuts?: string[]; // valid bundle output name (e.g. DEFINE, INIT, UPDATE)
+    tags?: { [tagName: string]: TGSArg };
     events?: string[]; // system names
     options?: string[]; // option flag  names
     globals?: { [globalObj: string]: any }; // global symbols

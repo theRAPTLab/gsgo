@@ -74,7 +74,7 @@ class SymbolInterpreter {
       if (typeof globals === 'object') this.setGlobal(globals);
       else throw Error(`${fn} invalid context`);
     }
-    if (bundle._clone && bundle._clone > 0)
+    if (DBG && bundle._clone && bundle._clone > 0)
       console.log(`${fn}: FYI this is a temp clone bundle`);
     this.bdl_scope = this.refs.bundle.symbols;
     this.reset();
@@ -506,30 +506,153 @@ class SymbolInterpreter {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** valid pragma aka directive */
   pragma(token: IToken) {
-    const [type, prName] = TOKENIZER.UnpackToken(token);
-    const unitText = TOKENIZER.TokenToString(token);
-    const pragmas = SIMDATA.GetPragmaSymbols();
+    if (this.detectScanError()) return this.vagueError(token);
+    let [unitText, tokType, prName] = this.extractTokenMeta(token);
+    // convert old identifier into a objref array
     const gsType = 'pragma';
-    if (type !== 'identifier') {
-      this.scan_error = true;
-      return new VSDToken(pragmas, {
+    const pragmas = SIMDATA.GetPragmaMethodSymbols();
+    const symbols = { methods: pragmas };
+    if (tokType !== 'identifier')
+      return this.badToken(token, symbols as TSymbolData, {
         gsType,
-        unitText,
-        err_code: 'invalid',
-        err_info: 'pragma must be an identifier'
+        err_info: `pragma expect identifier, not ${tokType}`
       });
-    }
-    if (!SIMDATA.GetPragma(prName)) {
-      this.scan_error = true;
-      return new VSDToken(pragmas, {
+    if (!SIMDATA.GetPragma(prName))
+      return this.badToken(token, symbols as TSymbolData, {
         gsType,
-        unitText,
-        err_code: 'invalid',
         err_info: `${prName} is not a recognized pragma`
       });
+
+    const pragma = pragmas[prName.toUpperCase()];
+    if (!pragma)
+      return this.badToken(token, symbols as TSymbolData, {
+        gsType,
+        err_info: `${prName} is not a recognized pragma`
+      });
+    this.setCurrentScope(pragma); // methodArgs
+    return this.goodToken(token, symbols as TSymbolData, { gsType });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** valid pragma arguments */
+  pragmaArgs(tokens: IToken[]) {
+    // expect scope to be set to method args structure
+    // program name
+    // tag name value
+    // blueprint name base
+    const [arg1, arg2] = tokens;
+    const { name, args } = this.getCurrentScope() as TGSMethodSig;
+
+    // BLUEPRINT //////////////////////////////////////////////////////////////
+    if (name === 'BLUEPRINT') {
+      const [bpType, bpName] = CHECK.UnpackToken(arg1);
+      const a1symbols = {};
+      const [baseType, baseName] = CHECK.UnpackToken(arg2);
+      const a2symbols = {};
+      // at minimum we expect arg1 to be the name of the blueprint being defined
+      if (bpType !== 'identifier')
+        return [
+          this.badToken(arg1, a1symbols, {
+            gsType: 'identifier',
+            err_info: `expected an identifier`
+          }),
+          this.vagueError(arg2)
+        ];
+      // if there is an arg2, then check validity
+      if (arg2 !== undefined) {
+        if (baseType !== 'identifier')
+          return [
+            this.goodToken(arg1, a1symbols, { gsType: 'identifier' }),
+            this.badToken(arg2, a2symbols, {
+              gsType: 'identifier',
+              err_info: `expected an identifier`
+            })
+          ];
+        const base = SIMDATA.GetBlueprintSymbolsFor(baseName);
+        if (base === undefined)
+          return [
+            this.goodToken(arg1, a1symbols, { gsType: 'identifier' }),
+            this.badToken(arg2, a2symbols, {
+              gsType: 'identifier',
+              err_info: `${baseName} is not an existing blueprint`
+            })
+          ];
+      }
+      // everything is fine
+      return [
+        this.goodToken(arg1, a1symbols, { gsType: 'identifier' }),
+        this.goodToken(arg2, a2symbols, { gsType: 'identifier' })
+      ];
     }
-    this.cur_scope = pragmas.pragmas; // advance scope pointer
-    return new VSDToken(pragmas, { gsType, unitText });
+    // PROGRAM ////////////////////////////////////////////////////////////////
+    if (name === 'PROGRAM') {
+      const bdlOuts = SIMDATA.GetBundleOutSymbols();
+      const [type, bundleOut] = CHECK.UnpackToken(arg1);
+      // good bundle program
+      if (CHECK.IsValidBundleProgram(bundleOut.toUpperCase()))
+        return [this.goodToken(arg1, { bdlOuts }, { gsType: 'bdlOut' })];
+      // not a valid bundle program
+      return [
+        this.badToken(
+          arg1,
+          { bdlOuts },
+          {
+            gsType: 'bdlOut',
+            err_info: `${bundleOut} is not a recognizied bundleOut directive`
+          }
+        )
+      ];
+    }
+    // TAGS ///////////////////////////////////////////////////////////////////
+    if (name === 'TAG') {
+      const tags = SIMDATA.GetBundleTagSymbols();
+      const symbols = { tags } as TSymbolData;
+      const [tagType, tagName] = CHECK.UnpackToken(arg1);
+      const [valueType, value] = CHECK.UnpackToken(arg2);
+      if (tagType !== 'identifier')
+        return [
+          this.badToken(arg1, symbols, {
+            gsType: 'tag',
+            err_info: `expected an identifier`
+          }),
+          this.vagueError(arg2)
+        ];
+      const tag = SIMDATA.IsBundleTagName(tagName);
+      if (tag === undefined)
+        return [
+          this.badToken(arg1, symbols, {
+            gsType: 'tag',
+            err_info: `${tagName} is not a recognized tag`
+          }),
+          this.vagueError(arg2)
+        ];
+      // valid tag
+      const [argHint, argType] = CHECK.UnpackArg(tag);
+      if (argType !== 'boolean')
+        return [
+          this.goodToken(arg1, symbols, { gsType: 'tag' }),
+          this.badToken(
+            arg2,
+            {},
+            {
+              gsType: 'boolean',
+              err_info: `tag value must be boolean not ${argType}`
+            }
+          )
+        ];
+      // got this far, it's probably ok!
+      return [
+        this.goodToken(arg1, symbols, { gsType: 'tag' }),
+        this.goodToken(arg2, {}, { gsType: 'boolean' })
+      ];
+    }
+    // UNHANDLED //////////////////////////////////////////////////////////////
+    return [
+      this.badToken(
+        arg1,
+        {},
+        { gsType: '{?}', err_info: `unhandled pragma ${name}` }
+      )
+    ];
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1195,7 +1318,6 @@ class SymbolInterpreter {
   argsList(tokens: IToken[]): TSymbolData[] {
     const fn = 'argsList:';
     const vtoks = [];
-
     // is the current scope single-entry dictionary containing a method array?
     const methodNames = [...Object.keys(this.cur_scope)];
     if (methodNames.length !== 1) {
