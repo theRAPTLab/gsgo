@@ -72,7 +72,8 @@ function SelectEditor(props) {
   // this is just a copy of processStringInput
   const processIdentifierInput = e => {
     e.preventDefault();
-    WIZCORE.UpdateIdentifier(String(e.target.value));
+    const err = WIZCORE.UpdateIdentifier(String(e.target.value));
+    if (err) alert(err);
   };
   const processBooleanInput = e => {
     e.preventDefault();
@@ -102,6 +103,13 @@ function SelectEditor(props) {
       e.target.select();
     }
   };
+  const handleIdentifierKeydown = e => {
+    if (e.code === 'Space') e.preventDefault(); // no spaces allowed in identifier
+    if (e.key === 'Enter') {
+      processIdentifierInput(e);
+      e.target.select();
+    }
+  };
 
   let editor;
 
@@ -113,6 +121,21 @@ function SelectEditor(props) {
   defaultNumber = Number.isNaN(defaultNumber) ? '' : defaultNumber; // make sure it's number
 
   switch (gsType) {
+    case 'identifier':
+      editor = (
+        <div className="gsled input">
+          <label>Enter a {gsType}</label>
+          <input
+            key={tkey}
+            defaultValue={unitText}
+            type="text"
+            onChange={processIdentifierInput}
+            onKeyDown={handleIdentifierKeydown}
+          />
+          ;
+        </div>
+      );
+      break;
     case 'number':
       editor = (
         <div className="gsled input">

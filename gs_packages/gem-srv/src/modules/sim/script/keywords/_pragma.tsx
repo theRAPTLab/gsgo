@@ -67,7 +67,7 @@ export class _pragma extends Keyword {
     const [kwTok, dirTok, ...argToks] = unit; // get arg pattern
     vtoks.push(this.shelper.anyKeyword(kwTok));
     vtoks.push(this.shelper.pragma(dirTok));
-    vtoks.push(...this.shelper.argsList(argToks));
+    vtoks.push(...this.shelper.pragmaArgs(argToks));
     const log = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: log };
   }

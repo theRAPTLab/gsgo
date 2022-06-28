@@ -39,6 +39,9 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
     propTypes,
     options,
     events,
+    // pragmas
+    tags,
+    bdlOuts,
     // method arguments
     methodSig,
     arg,
@@ -117,6 +120,19 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
     sv_data.events = {
       info: events.join(', '),
       items: events
+    };
+  }
+  if (tags) {
+    const items = [...Object.keys(tags)];
+    sv_data.tags = {
+      info: items.join(','),
+      items
+    };
+  }
+  if (bdlOuts) {
+    sv_data.bdlOuts = {
+      info: bdlOuts.join(', '),
+      items: bdlOuts
     };
   }
 

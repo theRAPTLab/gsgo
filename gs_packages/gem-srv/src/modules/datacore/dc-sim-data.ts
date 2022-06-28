@@ -15,7 +15,7 @@
 import SM_Feature from 'lib/class-sm-feature';
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import SM_Bundle from 'lib/class-sm-bundle';
-import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
+import { EBundleType, EBundleTag } from 'modules/../types/t-script.d'; // workaround to import as obj
 import * as CHECK from './dc-sim-data-utils';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -63,17 +63,15 @@ function GetPragma(pName: string) {
   return PRAGMAS.get(pName.toUpperCase());
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetPragmaSymbols(): TSymbolData {
-  // hardcoded
+/** return hardcoded symbol data, derived from _pragma.tsx */
+function GetPragmaMethodSymbols() {
   return {
-    pragmas: {
-      BLUEPRINT: {
-        name: 'BLUEPRINT',
-        args: ['bpName:blueprint', 'bpBaseName:blueprint']
-      },
-      PROGRAM: { name: 'PROGRAM', args: ['bundleOut:string'] },
-      TAG: { name: 'TAG', args: ['tagName:string', 'tagValue:{any}'] }
-    }
+    BLUEPRINT: {
+      name: 'BLUEPRINT',
+      args: ['bpName:blueprint', 'bpBaseName:blueprint']
+    },
+    PROGRAM: { name: 'PROGRAM', args: ['bundleOut:bdlOut'] },
+    TAG: { name: 'TAG', args: ['tagName:string', 'tagValue:{any}'] }
   };
 }
 
@@ -170,6 +168,29 @@ function GetBlueprintSymbols(): TSymbolData {
     symbols[bpName] = GetBlueprintSymbolsFor(bpName);
   });
   return symbols;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return hardcoded bundle program types */
+function GetBundleOutSymbols() {
+  return ['DEFINE', 'INIT', 'UPDATE', 'THINK', 'EXEC', 'CONDITION', 'EVENT'];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return symbols for tag pragma */
+function GetBundleTagSymbols() {
+  return {
+    IsCharControllable: 'enable:boolean',
+    isPozyxControllable: 'enable:boolean',
+    isPtrackControllable: 'enable:boolean'
+  };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return pascal-case tagname if there is a case-insensitive match */
+function IsBundleTagName(tagName: string) {
+  const tags = GetBundleTagSymbols();
+  const tagNames = Object.keys(tags);
+  const tagCheck = tagNames.map(key => key.toLowerCase());
+  let found = tagCheck.indexOf(tagName.toLowerCase());
+  return found >= 0 ? tags[tagNames[found]] : undefined;
 }
 
 /// KEYWORDS //////////////////////////////////////////////////////////////////
@@ -447,13 +468,10 @@ function GetAllScriptEventNames() {
   return [...EVENT_SCRIPTS.keys()];
 }
 
-/// RUNTIME INITIALIZATION ////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// pragmas are used by the _pragma keyword
-export { DefinePragma, GetPragma, GetPragmaSymbols };
+export { DefinePragma, GetPragma, GetPragmaMethodSymbols };
 /// blueprints are stored as "bundles" by their name
 export {
   SaveBlueprintBundle,
@@ -465,7 +483,10 @@ export {
   DeleteBlueprintBundle,
   DeleteAllBlueprintBundles,
   GetBlueprintSymbolsFor,
-  GetBlueprintSymbols
+  GetBlueprintSymbols,
+  GetBundleOutSymbols,
+  GetBundleTagSymbols,
+  IsBundleTagName
 };
 /// the transpiler is extendable using "keyword' modules that implement
 /// symbolize, validate, and compile

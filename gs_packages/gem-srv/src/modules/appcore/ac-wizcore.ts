@@ -308,9 +308,17 @@ function UpdateSlotString(val) {
   m_UpdateSlotValueToken('string', val);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
-function UpdateIdentifier(val) {
+/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument)
+ *  returns true if input validation passed */
+function UpdateIdentifier(val): string {
+  // don't allow leading numbers
+  // spaces are filtered out at the input level
+  if (val === '') return 'identifiers may not be blank';
+  const ch = val.charAt(0);
+  const isDigit = !isNaN(ch) && !isNaN(parseFloat(ch));
+  if (isDigit) return 'identifiers can not start with a number';
   m_UpdateSlotValueToken('identifier', val);
+  return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
