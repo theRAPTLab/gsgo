@@ -187,7 +187,6 @@ function SelectEditor(props) {
       );
       break;
     case 'expr':
-      console.log('expr unitText', unitText);
       editor = (
         <div className="gsled input">
           <label>Enter an expression string</label>

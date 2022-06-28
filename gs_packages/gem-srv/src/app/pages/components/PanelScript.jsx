@@ -451,7 +451,6 @@ class PanelScript extends React.Component {
   }
 
   OnToggleWizard(e, value) {
-    console.log('clicked', value);
     if (value === null) return; // skip repeated clicks
     if (value === 'code') {
       // currently wizard, clicked on code
