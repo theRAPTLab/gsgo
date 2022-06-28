@@ -74,6 +74,8 @@ class SymbolInterpreter {
       if (typeof globals === 'object') this.setGlobal(globals);
       else throw Error(`${fn} invalid context`);
     }
+    if (bundle._clone && bundle._clone > 0)
+      console.log(`${fn}: FYI this is a temp clone bundle`);
     this.bdl_scope = this.refs.bundle.symbols;
     this.reset();
   }
@@ -90,6 +92,9 @@ class SymbolInterpreter {
   }
   resetScope() {
     this.cur_scope = this.getInitialScope();
+  }
+  getBundleName(): string {
+    return this.refs.bundle.name;
   }
   getInitialScope(): TSymbolData {
     return this.getBundleScope();
@@ -277,18 +282,19 @@ class SymbolInterpreter {
     const [type, value] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const keywords = SIMDATA.GetKeywordSymbols();
+    const symbols = { keywords };
     const gsType = 'keyword';
     if (type === 'comment' || type === 'line')
-      return new VSDToken(keywords, { gsType, unitText });
+      return new VSDToken(symbols, { gsType, unitText });
     if (type !== 'identifier' && type !== 'directive') {
       this.scan_error = true;
-      return new VSDToken(keywords, {
+      return new VSDToken(symbols, {
         gsType,
         err_code: 'invalid',
         err_info: 'no keyword token'
       });
     }
-    return new VSDToken(keywords, { gsType, unitText });
+    return new VSDToken(symbols as TSymbolData, { gsType, unitText });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** allow any valid blueprint in the system */
@@ -570,44 +576,43 @@ class SymbolInterpreter {
         }
       );
 
-    const validPropTypeSymbols = SIMDATA.GetPropTypeSymbols(); // { propTypes: { []:symbols }}
-    // if not defined, return the list of valid options
-    if (token === undefined) {
-      this.scan_error = true;
-      return new VSDToken(validPropTypeSymbols, {
-        gsType,
-        unitText,
-        err_code: 'invalid',
-        err_info: `propType is required`
-      });
-    }
-    if (type !== 'identifier') {
-      this.scan_error = true;
-      return new VSDToken(validPropTypeSymbols, {
-        gsType,
-        unitText,
-        err_code: 'invalid',
-        err_info: `propType must be an identifier, not ${type}`
-      });
-    }
+    const symbols = { propTypes: SIMDATA.GetPropTypeSymbols() }; // { propTypes: { []:symbols }}
     // if we got this far, there was a valid token, so let's see if it
     // refers to an actual type
-    const propSymbols = validPropTypeSymbols.propTypes[propType.toLowerCase()];
-    if (!propSymbols) {
+    if (!symbols) {
       this.scan_error = true;
-      return new VSDToken(validPropTypeSymbols, {
+      return new VSDToken(symbols as TSymbolData, {
         gsType,
         unitText,
         err_code: 'invalid',
         err_info: `${fn} invalid '${propType}' not a valid propType`
       });
     }
+    // if token not defined, return the list of valid options
+    if (token === undefined) {
+      this.scan_error = true;
+      return new VSDToken(symbols as TSymbolData, {
+        gsType,
+        unitText,
+        err_code: 'invalid',
+        err_info: `propType is required`
+      });
+    }
+    // if token is not an identifier, also bad
+    if (type !== 'identifier') {
+      this.scan_error = true;
+      return new VSDToken(symbols as TSymbolData, {
+        gsType,
+        unitText,
+        err_code: 'invalid',
+        err_info: `propType must be an identifier, not ${type}`
+      });
+    }
     // if we got THIS far, everything looks great
     // propType symbols look like { propTypes: { number: SM_Number.Symbols, string, ... }}
-    const propTypeMethods =
-      validPropTypeSymbols.propTypes[propType.toLowerCase()]; //  { symbols for selected type }
+    const propTypeMethods = symbols.propTypes[propType.toLowerCase()]; //  { symbols for selected type }
     this.cur_scope = propTypeMethods;
-    return new VSDToken(validPropTypeSymbols, {
+    return new VSDToken(symbols as TSymbolData, {
       gsType,
       unitText
     });
@@ -923,101 +928,74 @@ class SymbolInterpreter {
   featObjRef(token: IToken): TSymbolData {
     // error checking & type overrides
     const fn = 'featObjRef:';
-
-    const gsType = 'feature';
-    // this.resetScope(); // points to the bundle.symbols to start
-    let [matchType, parts] = TOKENIZER.UnpackToken(token);
-    const unitText = Array.isArray(parts) ? parts.join('.') : parts;
-    if (DBG) console.log(...PR(`${fn}: ${matchType}:${parts}`));
-    // was there a previous scope-breaking error? bail!
-    if (this.detectScanError())
-      return new VSDToken(
-        {},
-        {
-          gsType,
-          unitText,
-          err_code: 'vague',
-          err_info: `${fn} error in previous token(s)`
-        }
-      );
-    // convert identifier to single-part objref
-    // and return error if it's not objref or identifier
-    if (matchType === 'identifier') parts = [parts];
-    else if (matchType !== 'objref') {
-      this.detectScanError(true);
-      return new VSDToken(
-        { props: this.getBundleScope().props },
-        {
-          gsType,
-          unitText,
-          err_code: 'invalid',
-          err_info: `${fn} not an objref`
-        }
-      );
-    }
-    // OBJREF PART 1: what kind of object are we referencing?
-    // these calls will update cur_scope SymbolData appropriately
-    let part = parts[0];
-    let prop = this.strIsPropName(part);
-    let terminal = parts.length === 1;
-    // does the objref terminate in a method-bearing reference?
-    if (terminal) {
-      if (prop)
-        return new VSDToken(
-          prop, // this is the full symbol dict { features, props }
-          {
-            gsType,
-            symbolScope: ['props'], // this is what's 'displayable' by GUI
-            unitText: part
-          }
-        ); // return agent scope {props}
-    }
-
-    // did any agent, feature, prop, or blueprint resolve?
-    if (!prop) {
-      this.detectScanError(true);
-      return new VSDToken(this.cur_scope, {
+    if (this.detectScanError()) return this.vagueError(token);
+    let [unitText, tokType, propRef] = this.extractTokenMeta(token);
+    // convert old identifier into a objref array
+    const gsType = 'objref';
+    // figure out what we got
+    let [bpName, featureName, propName] = propRef;
+    let blueprints = SIMDATA.GetBlueprintSymbols();
+    const agentName = this.getBundleName();
+    const agent = { agent: SIMDATA.GetBlueprintBundle(agentName).symbols };
+    blueprints = { ...blueprints, ...agent };
+    if (tokType === 'identifier')
+      return this.badToken(token, { blueprints } as TSymbolData, {
         gsType,
-        unitText,
-        symbolScope: ['props'],
-        err_code: 'invalid',
-        err_info: `${fn} invalid objref '${part}'`
+        err_info: `not an objref; got ${tokType} instead ${propRef}`
+      });
+    // Object.assign(blueprints, { agent }); // insert the blueprint for agent
+    // PART 1 should be agent or Blueprint
+    if (bpName === undefined)
+      return this.badToken(token, { blueprints } as TSymbolData, {
+        gsType,
+        err_info: `objref[1] must be 'agent' or a blueprint name`
+      });
+    const blueprint = blueprints[bpName];
+    if (blueprint === undefined) {
+      return this.badToken(token, { blueprints } as TSymbolData, {
+        gsType,
+        err_info: `objref[1] must be 'agent' or a blueprint name, not ${bpName}`
       });
     }
-
-    // OBJREF PART 2: are the remaining parts valid?
-    for (let ii = 1; ii < parts.length; ii++) {
-      part = parts[ii];
-      //
-      if (DBG) console.log('scanning', ii, 'for', part, 'in', this.cur_scope);
-      // are there any prop, feature, or blueprint references?
-      // these calls drill-down into the scope for each part, starting in the
-      // scope set in OBJREF PART 1
-      prop = this.strIsPropName(part);
-      // is this part of the objref the last part?
-      terminal = ii >= parts.length - 1;
-      if (terminal) {
-        if (prop)
-          return new VSDToken(
-            prop, // this is the full symbol dict
-            {
-              gsType,
-              symbolScope: ['props'], // this is what's 'displayable' by GUI
-              unitText
-            }
-          ); // return agent scope {props}
-      }
-    } /** END OF LOOP **/
-
-    // OBJREF ERROR: if we exhaust all parts without terminating, that's an error
-    // so return error+symbolData for the entire bundle
-    // example: 'prop agent'
-    this.detectScanError(true);
-    return new VSDToken(this.cur_scope, {
-      gsType,
-      unitText,
-      err_code: 'invalid',
-      err_info: `${fn} '${unitText}' not found or invalid`
+    // PART 2 should be a featureName in the blueprint symbol dict
+    const features = blueprint.features;
+    if (featureName === undefined)
+      return this.badToken(token, { blueprints, features } as TSymbolData, {
+        gsType,
+        err_info: `objref[2] must be a feature defined in blueprint ${bpName}`
+      });
+    const feature = features[featureName];
+    if (feature === undefined) {
+      return this.badToken(token, { blueprints, features } as TSymbolData, {
+        gsType,
+        err_info: `${featureName} is not defined in ${bpName}`
+      });
+    }
+    // PART 3 should be a propname in the features symbol dict
+    const props = feature.props;
+    if (propName === undefined)
+      return this.badToken(
+        token,
+        { blueprints, features, props } as TSymbolData,
+        {
+          gsType,
+          err_info: `objref[3] must be a propName defined in ${bpName}.${featureName}`
+        }
+      );
+    const prop = props[propName];
+    if (prop === undefined)
+      return this.badToken(
+        token,
+        { blueprints, features, props } as TSymbolData,
+        {
+          gsType,
+          err_info: `${propName} is not defined in ${featureName} for ${bpName}`
+        }
+      );
+    // if we got this far, it's good!
+    this.setCurrentScope(prop);
+    return this.goodToken(token, { blueprints, features, props } as TSymbolData, {
+      gsType
     });
   }
 

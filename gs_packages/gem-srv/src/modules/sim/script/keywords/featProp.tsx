@@ -68,7 +68,8 @@ export class featProp extends Keyword {
         mName: string,
         ...prms
       ) => {
-        return agent.getFeatProp(ref[0] as string, pName)[mName](...prms);
+        const featName = ref[0];
+        return agent.getFeatProp(featName as string, pName)[mName](...prms);
       };
     } else if (len === 2) {
       /** EXPLICIT REF *******************************************************/
@@ -80,9 +81,30 @@ export class featProp extends Keyword {
         mName: string,
         ...prms
       ) => {
-        const c = context[ref[0] as string]; // SM_Agent context
+        const featName = ref[1];
+        const bpName = ref[0];
+        const c = context[bpName as string]; // SM_Agent context
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
-        return c.getFeatProp(ref[1], pName)[mName](...prms);
+        return c.getFeatProp(featName, pName)[mName](...prms);
+      };
+    } else if (len === 3) {
+      /** NEW EXTENDED REF REQUIRED ******************************************/
+      /// e.g. blueprint.feature.prop
+      callRef = (
+        agent: IAgent,
+        context: any,
+        pName: string,
+        mName: string,
+        ...prms
+      ) => {
+        const bpName = ref[0];
+        const featName = ref[1];
+        const propName = ref[2];
+        const c = context[bpName as string]; // SM_Agent context
+        if (c === undefined) throw Error(`context missing '${ref[0]}'`);
+        // ref[0] = blueprint, ref[1] = feature, ref[2] = prop
+        // we use our own decoded propname rather than looking for the passed version
+        return c.getFeatProp(featName, propName)[mName](...prms);
       };
     } else {
       console.warn('error parse ref', ref);
@@ -99,12 +121,10 @@ export class featProp extends Keyword {
    *  base Keyword class  */
   validate(unit: TScriptUnit): TValidatedScriptUnit {
     const vtoks = []; // validation token array
-    const [kwTok, featTok, fPropfTok, methodTok, ...argToks] = unit; // get arg pattern
+    const [kwTok, featObjRefTok, methodTok, ...argToks] = unit; // get arg pattern
     // returns symbols for each dtok position excepting the keyword
-
     vtoks.push(this.shelper.anyKeyword(kwTok));
-    vtoks.push(this.shelper.agentFeatureList(featTok));
-    vtoks.push(this.shelper.featObjRef(fPropfTok)); // agent.propName, propName, Blueprint.propName
+    vtoks.push(this.shelper.featObjRef(featObjRefTok)); // agent.propName, propName, Blueprint.propName
     vtoks.push(this.shelper.methodName(methodTok));
     vtoks.push(...this.shelper.argsList(argToks));
     const log = this.makeValidationLog(vtoks);

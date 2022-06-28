@@ -69,7 +69,6 @@ class SM_Bundle implements ISMCBundle {
   carelessClone(): SM_Bundle {
     const nbdl = new SM_Bundle();
     Object.assign(nbdl, this);
-    nbdl.setName(`${this.name}_clone`);
     nbdl.symbols = { ...nbdl.symbols }; // new wrapper
     const gen = this._clone || 0;
     nbdl._clone = gen + 1; // clone generation
