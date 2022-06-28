@@ -90,13 +90,8 @@ export class featProp extends Keyword {
     } else if (len === 3) {
       /** NEW EXTENDED REF REQUIRED ******************************************/
       /// e.g. blueprint.feature.prop
-      callRef = (
-        agent: IAgent,
-        context: any,
-        pName: string,
-        mName: string,
-        ...prms
-      ) => {
+      console.log('*** running len 3 ***');
+      callRef = (agent: IAgent, context: any, mName: string, ...prms) => {
         const bpName = ref[0];
         const featName = ref[1];
         const propName = ref[2];
@@ -104,11 +99,20 @@ export class featProp extends Keyword {
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         // ref[0] = blueprint, ref[1] = feature, ref[2] = prop
         // we use our own decoded propname rather than looking for the passed version
+        console.log(bpName, featName, propName);
         return c.getFeatProp(featName, propName)[mName](...prms);
       };
     } else {
       console.warn('error parse ref', ref);
       callRef = () => {};
+    }
+    if (len === 3) {
+      const [, objRef, mName, ...mArgs] = dtoks;
+      return [
+        (agent: IAgent, state: IState) => {
+          return callRef(agent, state.ctx, mName, ...args);
+        }
+      ];
     }
     return [
       (agent: IAgent, state: IState) => {
