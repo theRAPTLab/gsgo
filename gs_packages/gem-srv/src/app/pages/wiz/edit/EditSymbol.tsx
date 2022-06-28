@@ -116,7 +116,12 @@ export function EditSymbol(props) {
     symbolType = gsType;
 
     // Don't render choices if the current selection should be an input form
-    if (gsType === 'number' || gsType === 'string' || gsType === 'boolean')
+    if (
+      gsType === 'number' ||
+      gsType === 'string' ||
+      gsType === 'boolean' ||
+      gsType === 'identifier'
+    )
       return '';
 
     // See symbol-utilities.DecodeSymbolViewData
