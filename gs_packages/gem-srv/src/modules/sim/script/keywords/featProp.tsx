@@ -90,7 +90,6 @@ export class featProp extends Keyword {
     } else if (len === 3) {
       /** NEW EXTENDED REF REQUIRED ******************************************/
       /// e.g. blueprint.feature.prop
-      console.log('*** running len 3 ***');
       callRef = (agent: IAgent, context: any, mName: string, ...prms) => {
         const bpName = ref[0];
         const featName = ref[1];
