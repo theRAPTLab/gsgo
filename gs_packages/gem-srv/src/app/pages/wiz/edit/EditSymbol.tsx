@@ -230,43 +230,45 @@ export function EditSymbol(props) {
     // Walk down dicts
     // 1. if the key is 'features', recursively expand its props and methods.
     // 2. if the key is plain `props`, just expand it normally
-    Object.entries(dicts).forEach(([k, v]: [keyof TSymbolData, TSymbolData]) => {
-      if (Array.isArray(symbolScope) && !symbolScope.includes(k)) return;
-      // console.group('symbolType', k, 'symbolDictionary', v);
+    Object.entries(dicts).forEach(
+      ([dictName, v]: [keyof TSymbolData, TSymbolData]) => {
+        if (Array.isArray(symbolScope) && !symbolScope.includes(dictName)) return;
+        // console.group('symbolType', k, 'symbolDictionary', v);
 
-      if (Array.isArray(symbolScope) && symbolScope.includes('features')) {
-        // 1. feature, so recursively expand
-        Object.entries(v).forEach(
-          ([featureName, featureDict]: [string, TSymbolData]) => {
-            if (gsType === 'objref') {
-              // prop symbolData
-              const sd: TSymbolData = {};
-              sd.props = featureDict.props;
-              // prop viewData
-              const vd = WIZCORE.DecodeSymbolViewData(featureDict);
-              // render it
-              allDicts.push(f_render_choices(sd, vd, featureName));
-            } else if (gsType === 'method') {
-              // method symbolData
-              const sd: TSymbolData = {};
-              sd.methods = featureDict.methods;
-              // method viewData
-              const vd = WIZCORE.DecodeSymbolViewData(featureDict);
-              // render it
-              allDicts.push(f_render_choices(sd, vd, featureName));
-            } else {
-              // unspported gsType
+        if (Array.isArray(symbolScope) && symbolScope.includes('features')) {
+          // 1. feature, so recursively expand
+          Object.entries(v).forEach(
+            ([featureName, featureDict]: [string, TSymbolData]) => {
+              if (gsType === 'objref') {
+                // prop symbolData
+                const sd: TSymbolData = {};
+                sd.props = featureDict.props;
+                // prop viewData
+                const vd = WIZCORE.DecodeSymbolViewData(featureDict);
+                // render it
+                allDicts.push(f_render_choices(sd, vd, dictName));
+              } else if (gsType === 'method') {
+                // method symbolData
+                const sd: TSymbolData = {};
+                sd.methods = featureDict.methods;
+                // method viewData
+                const vd = WIZCORE.DecodeSymbolViewData(featureDict);
+                // render it
+                allDicts.push(f_render_choices(sd, vd, dictName));
+              } else {
+                // unspported gsType
+              }
             }
-          }
-        );
-      } else {
-        // 2. not a feature, just render the keys
-        const sd = {};
-        sd[k] = v;
-        allDicts.push(f_render_choices(sd, viewData));
+          );
+        } else {
+          // 2. not a feature, just render the keys
+          const sd = {};
+          sd[dictName] = v;
+          allDicts.push(f_render_choices(sd, viewData, dictName));
+        }
+        // console.groupEnd();
       }
-      // console.groupEnd();
-    });
+    );
   }
 
   /// RENDER //////////////////////////////////////////////////////////////////

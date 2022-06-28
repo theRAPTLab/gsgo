@@ -451,7 +451,6 @@ class PanelScript extends React.Component {
   }
 
   OnToggleWizard(e, value) {
-    console.log('clicked', value);
     if (value === null) return; // skip repeated clicks
     if (value === 'code') {
       // currently wizard, clicked on code
@@ -523,8 +522,8 @@ class PanelScript extends React.Component {
         exclusive
         onChange={this.OnToggleWizard}
       >
-        <StyledToggleButton value="code">Code</StyledToggleButton>
         <StyledToggleButton value="wizard">Wizard</StyledToggleButton>
+        <StyledToggleButton value="code">Code</StyledToggleButton>
       </ToggleButtonGroup>
     );
 
