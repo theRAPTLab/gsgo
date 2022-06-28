@@ -1122,6 +1122,86 @@ class SymbolInterpreter {
     });
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** handle feature method object refs for the featCall keyword,
+   *  feature.featMethod, Blueprint.feature.featMethod  */
+  featMethodObjRef(token: IToken): TSymbolData {
+    // error checking & type overrides
+    const fn = 'featMethodObjRef:';
+    if (this.detectScanError()) return this.vagueError(token);
+    let [unitText, tokType, propRef] = this.extractTokenMeta(token);
+    // convert old identifier into a objref array
+    const gsType = 'objref';
+    // figure out what we got
+    let [bpName, featureName, methodName] = propRef;
+    let blueprints = SIMDATA.GetBlueprintSymbols();
+    const agentName = this.getBundleName();
+    const agent = { agent: SIMDATA.GetBlueprintBundle(agentName).symbols };
+    blueprints = { ...blueprints, ...agent };
+    if (tokType === 'identifier')
+      return this.badToken(token, { blueprints } as TSymbolData, {
+        gsType,
+        err_info: `not an objref; got ${tokType} instead ${propRef}`
+      });
+    // Object.assign(blueprints, { agent }); // insert the blueprint for agent
+    // PART 1 should be agent or Blueprint
+    if (bpName === undefined)
+      return this.badToken(token, { blueprints } as TSymbolData, {
+        gsType,
+        err_info: `objref[1] must be 'agent' or a blueprint name`
+      });
+    const blueprint = blueprints[bpName];
+    if (blueprint === undefined) {
+      return this.badToken(token, { blueprints } as TSymbolData, {
+        gsType,
+        err_info: `objref[1] must be 'agent' or a blueprint name, not ${bpName}`
+      });
+    }
+    // PART 2 should be a featureName in the blueprint symbol dict
+    const features = blueprint.features;
+    if (featureName === undefined)
+      return this.badToken(token, { blueprints, features } as TSymbolData, {
+        gsType,
+        err_info: `objref[2] must be a feature defined in blueprint ${bpName}`
+      });
+    const feature = features[featureName];
+    if (feature === undefined) {
+      return this.badToken(token, { blueprints, features } as TSymbolData, {
+        gsType,
+        err_info: `${featureName} is not defined in ${bpName}`
+      });
+    }
+    // PART 3 should be a methodName in the features symbol dict
+    const methods = feature.methods;
+    if (methodName === undefined)
+      return this.badToken(
+        token,
+        { blueprints, features, methods } as TSymbolData,
+        {
+          gsType,
+          err_info: `objref[3] must be a methodName defined in ${bpName}.${featureName}`
+        }
+      );
+    const method = methods[methodName];
+    if (method === undefined)
+      return this.badToken(
+        token,
+        { blueprints, features, methods } as TSymbolData,
+        {
+          gsType,
+          err_info: `${methodName} is not defined in ${featureName} for ${bpName}`
+        }
+      );
+    // if we got this far, it's good!
+    this.setCurrentScope(method);
+    return this.goodToken(
+      token,
+      { blueprints, features, methods } as TSymbolData,
+      {
+        gsType
+      }
+    );
+  }
   /// SCOPE-BASED INTERPRETER METHODS /////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** scans the current scope for a terminal property or feature, after

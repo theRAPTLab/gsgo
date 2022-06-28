@@ -394,14 +394,23 @@ export function GLabelToken(props) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GSymbolToken(props) {
-  const { symbolType, choice, unitText } = props;
+  const { symbolType, choice, unitText, label } = props;
   const cnames = ['gwiz', 'gtoken', 'clickable'];
-  if (choice === unitText) cnames.push('chosen');
 
+  // Label Override
+  // <blueprint>.<propName> hack
+  // If 'label' is present, then we're overriding the default
+  // 'choice' display with a simplified label.
+  // The goal is to keep the display simple.  e.g.while the
+  // choice should be 'Bee.energyLevel' we're showing just
+  // 'energyLevel'.
+  const displayLabel = label || choice; // 'label' will override choice
+
+  if (unitText === displayLabel) cnames.push('chosen');
   const token = `${symbolType}-${choice}`;
   return (
     <div className={cnames.join(' ')} data-choice={token}>
-      {choice}
+      {displayLabel}
     </div>
   );
 }

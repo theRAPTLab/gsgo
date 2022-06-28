@@ -63,6 +63,8 @@ import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to i
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+
 const KEY_BITS = -1 + 2 ** 16;
 let KEY_COUNTER = 0;
 
@@ -84,6 +86,8 @@ function u_Key(prefix = '') {
   if (++KEY_COUNTER > KEY_BITS) KEY_COUNTER = 0;
   return `${prefix}${hex}`;
 }
+
+/// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** The intent: display the current selected line as a buffered version of the
  *  actual scriptLine so we can select parts of it and edit it separately
@@ -104,7 +108,6 @@ function u_Key(prefix = '') {
  *    selected/notselected
  *    hover/
  */
-
 function SelectEditorSlots(props) {
   const { selection } = props; // sel_linenum, sel_linepos
 
@@ -127,6 +130,8 @@ function SelectEditorSlots(props) {
   */
   const { slots_linescript, slots_validation, sel_slotpos, sel_linenum } =
     WIZCORE.State();
+
+  if (DBG) console.log('SlotEditor slots_validation', slots_validation);
 
   // 2. Process each validation token
   const { validationTokens } = slots_validation;
