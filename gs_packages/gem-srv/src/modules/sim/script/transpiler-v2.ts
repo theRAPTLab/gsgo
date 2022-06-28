@@ -61,8 +61,7 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
 /** Compile a source text and return compiled TSM_Method. Similar to
  *  CompileBlueprint but does not handle directives or build a bundle. Used
  *  for generating code snippets from any GEMSCRIPT text (e.g. for init
- *  scripts, or anything that isn't part of the
- */
+ *  scripts, or anything that isn't part of it */
 function CompileText(text: string, refs: TSymbolRefs): TSMCProgram {
   const script = TOKENIZER.TextToScript(text);
   return COMPILER.CompileScript(script, refs);
@@ -76,6 +75,87 @@ function ValidateLineText(line: string, bdl: SM_Bundle): TValidatedScriptUnit {
     globals: {}
   });
   return vtoks;
+}
+
+/// SCRIPT UTILITIES //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: ensure that a script has the required blue directives. Does not
+ *  modify original script */
+function EnforceBlueprintPragmas(script: TScriptUnit[]): TScriptUnit[] {
+  const MAP: { [key: string]: any } = {};
+  const newScript = [];
+  const statements = script.entries();
+
+  // first scan for blueprint, insert if missing
+  let [stmNum, stm] = statements.next().value;
+  let [kw, pragmaType, pragmaKey, ...args] = TOKENIZER.UnpackStatement(stm);
+  pragmaType = (pragmaType as string).toUpperCase();
+  if (kw && kw !== '#' && pragmaType !== 'BLUEPRINT') {
+    newScript.push(...TOKENIZER.TextToScript(`# BLUEPRINT Agent${Date.now()}`));
+  }
+  newScript.push(stm);
+
+  // next scan for everything that is a directive at the top
+  let scanTags = true;
+  while (scanTags) {
+    [stmNum, stm] = statements.next().value;
+    [kw, pragmaType, pragmaKey, ...args] = TOKENIZER.UnpackStatement(stm);
+    pragmaType = pragmaType || '';
+    pragmaType = (pragmaType as string).toUpperCase();
+    if ((kw && kw !== '#') || pragmaType !== 'TAG') {
+      scanTags = false;
+    } else {
+      const pkey = pragmaType;
+      if (MAP[pkey] === undefined) MAP[pkey] = {};
+      const pdict = MAP[pkey];
+      pdict[pragmaKey as string] = { stmNum, args };
+      newScript.push(stm);
+    }
+  }
+  // check that required directives are in place\
+  const foundTags = { ...MAP.TAG };
+  const reqTags = { ...SIMDATA.GetBundleTagSymbols() }; // make a copy to destroy
+  Object.keys(foundTags).forEach(tag => {
+    const hasTag = SIMDATA.IsBundleTagName(tag);
+    if (hasTag) delete reqTags[tag];
+  });
+  // see if there are any non-deleted tags, and then shove them in.
+  Object.keys(reqTags).forEach(key =>
+    newScript.push(...TOKENIZER.TextToScript(`# TAG ${key} false`))
+  );
+
+  // add a blank line underneath
+  newScript.push(...TOKENIZER.TextToScript(''));
+
+  // check for required program directives
+  // while writing the rest of the statements
+  const needsProg = new Set(SIMDATA.GetBundleOutSymbols());
+  let entry = statements.next().value;
+  while (entry) {
+    [stmNum, stm] = entry;
+    let b, c;
+    [kw, b, c] = TOKENIZER.UnpackStatement(stm);
+    kw = kw || '';
+    if (kw && kw === '#') {
+      b = b || '';
+      b = b.toUpperCase();
+      c = c || '';
+      c = c.toUpperCase();
+      if (b === 'PROGRAM') needsProg.delete(c);
+    }
+    newScript.push(stm);
+    entry = statements.next().value;
+  }
+  // add missing program directives at end of script
+  needsProg.forEach(progType => {
+    const slines = TOKENIZER.TextToScript(
+      `// required directive\n# PROGRAM ${progType}`
+    );
+    newScript.push([{ line: '' }]);
+    newScript.push(...slines);
+  });
+  // return the modified script
+  return newScript;
 }
 
 /// AGENT UTILITIES ///////////////////////////////////////////////////////////
@@ -123,11 +203,18 @@ export {
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// API: These methods are related to transpiling GEMSCRIPT
-/// from source text and
+/// from source text
 export {
   CompileText, // compile a script text that IS NOT a blueprint
   ValidateLineText // return validation tokens for line
 };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// API: script manipulation utilities
+export {
+  EnforceBlueprintPragmas // make sure a script has required pragmas
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// FORWARDED API: convert tokenized scripts into other useful forms
 export {
   DecodeTokenPrimitive, // utility: to convert a scriptToken into runtime data
   DecodeToken, // utility: with DecodeTokenPrimitive, converts a token into runtime entity

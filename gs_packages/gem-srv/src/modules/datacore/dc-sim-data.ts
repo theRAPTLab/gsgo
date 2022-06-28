@@ -172,7 +172,9 @@ function GetBlueprintSymbols(): TSymbolData {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return hardcoded bundle program types */
 function GetBundleOutSymbols() {
-  return ['DEFINE', 'INIT', 'UPDATE', 'THINK', 'EXEC', 'CONDITION', 'EVENT'];
+  // technically  'THINK', 'EXEC' are also available, but GS1.0 scripts don't
+  // use them
+  return ['DEFINE', 'INIT', 'UPDATE', 'CONDITION', 'EVENT'];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return symbols for tag pragma */

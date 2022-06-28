@@ -113,7 +113,8 @@ STORE._interceptState(state => {
   const { script_text, script_tokens, sel_linenum, sel_slotpos } = state;
   // if script_text is changing, we also want to emit new script_token
   if (!script_tokens && script_text) {
-    const toks = TRANSPILER.TextToScript(script_text);
+    let toks = TRANSPILER.TextToScript(script_text);
+    toks = TRANSPILER.EnforceBlueprintPragmas(toks);
     state.script_tokens = toks;
     TRANSPILER.SymbolizeBlueprint(toks);
     state.cur_bdl = TRANSPILER.CompileBlueprint(toks);

@@ -711,7 +711,7 @@ class ScriptTokenizer {
   }
 }
 
-/// STATIC METHODS  //////////////////////////////////////////////////////////'
+/// MAIN API METHODS  /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const scriptifier = new ScriptTokenizer();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -719,6 +719,8 @@ const scriptifier = new ScriptTokenizer();
 function Tokenize(text: string): IToken[] {
   return scriptifier.tokenize(text);
 }
+
+/// TOKEN INSPECTION UTILITIES ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to validate token types
  *  returns [ token_type, token_value ] if it is a valid token,
@@ -758,19 +760,9 @@ function UnpackToken(tok: IToken): TUnpackedToken {
   return [type, tok[type]];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Is the token whitespace or not? Line or Comment tokens return true
- */
-function IsNonCodeToken(tok: IToken): boolean {
-  const [type, value] = UnpackToken(tok);
-  if (type === 'line') return true;
-  if (type === 'comment') return true;
-  return false;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Similar to the script compiler's DecodeStatement() utility, this function
  *  does a similar unpacking except it doesn't compile blocks, instead
- *  recursively unpacking them. Skips line and comment tokens.
- */
+ *  recursively unpacking them. Skips line and comment tokens. */
 function UnpackStatement(unit: TScriptUnit): TKWArguments {
   const ustatement = [];
   unit.forEach(tok => {
@@ -787,8 +779,7 @@ function UnpackStatement(unit: TScriptUnit): TKWArguments {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Similar to the script compiler's CompileScript() utility, this fnction
  *  uses UnpackStatement to fully unpack nested blocks. It removes all comments
- *  and blank lines.
- */
+ *  and blank lines. */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function UnpackScript(script: TScriptUnit[]): TKWArguments[] {
   const uscript = [];
@@ -797,18 +788,6 @@ function UnpackScript(script: TScriptUnit[]): TKWArguments[] {
     if (ustm !== undefined && ustm.length > 0) uscript.push(ustm);
   });
   return uscript;
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Utility to validate token, returning true/false only */
-function IsValidToken(tok: IToken): boolean {
-  const [valid] = UnpackToken(tok);
-  return typeof valid === 'string';
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Utility to check string is a known token type */
-function IsValidTokenKey(tokType: string): boolean {
-  return validTokenTypes[tokType] !== undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to return tokenValue if it optionally matches expected type */
@@ -839,6 +818,29 @@ function DecodeKeywordToken(tok: any): string {
   }
   return value;
 }
+
+/// TOKEN VALIDITY CHECKS /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Is the token whitespace or not? Line or Comment tokens return true
+ */
+function IsNonCodeToken(tok: IToken): boolean {
+  const [type, value] = UnpackToken(tok);
+  if (type === 'line') return true;
+  if (type === 'comment') return true;
+  return false;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Utility to validate token, returning true/false only */
+function IsValidToken(tok: IToken): boolean {
+  const [valid] = UnpackToken(tok);
+  return typeof valid === 'string';
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Utility to check string is a known token type */
+function IsValidTokenKey(tokType: string): boolean {
+  return validTokenTypes[tokType] !== undefined;
+}
+
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default ScriptTokenizer;
