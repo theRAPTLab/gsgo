@@ -1015,22 +1015,33 @@ class SymbolInterpreter {
       blueprints,
       props // default to agent
     } as TSymbolData;
-    if (this.detectTypeError(gsType, token))
+    if (this.detectTypeError(gsType, token)) {
       return this.badToken(token, symbols, {
         gsType,
         err_info: `token is not ${gsType} (got ${tokType})`
       });
+    }
     // we want to use our custom symbol dict for processing
     this.setCurrentScope(symbols);
     // check validity
     let [bpName, propName] = propRef;
+    // PART 1 should be agent or Blueprint
     const goodBlueprint =
       bpName === 'agent' || SIMDATA.HasBlueprintBundle(bpName);
+    // Part 2 should be valid propName
+    const prop = props[propName];
     const goodProp = props[propName] !== undefined;
-    if (goodBlueprint && goodProp)
+    if (goodBlueprint && goodProp) {
+      // Found a goodProp, so add the prop methods to the cur_scope
+      // so that the next slot (methodName) knows which methods are
+      // valid
+      const methods = prop ? prop.methods : {};
+      symbols.methods = methods;
+      this.setCurrentScope(symbols);
       return this.goodToken(token, symbols, {
         gsType
       });
+    }
     // otherwise a bad token
     if (!goodBlueprint)
       return this.badToken(token, symbols, {
