@@ -342,6 +342,7 @@ export function GValidationToken(props) {
   if (viewState === 'extra') classes += ' styleFlagInvalid';
   if (viewState === 'empty') classes += ' styleFlagInvalid styleFlagEmpty';
   if (viewState === 'vague') classes += ' styleFlagDisabled';
+  if (viewState === 'debug') classes += ' styleFlagInvalid styleFlagDisabled';
   if (viewState === 'unexpected')
     classes += ' styleFlagInvalid styleFlagOverflow';
   // special custom combination viewStates
