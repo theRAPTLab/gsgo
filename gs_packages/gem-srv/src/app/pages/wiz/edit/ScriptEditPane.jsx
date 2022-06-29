@@ -135,12 +135,14 @@ export function ScriptEditPane(props) {
       {/* then back to business */}
       {/* spacer to push Console down to bottom */}
       <div style={{ flexGrow: 1 }}>&nbsp;</div>
-      <Console
-        title="DEV: AVAILABLE SYMBOL INFO"
-        name={dbg_console}
-        rows={7}
-        open
-      />
+      <div style={{ backgroundColor: '#eee' }}>
+        <Console
+          title="DEV: AVAILABLE SYMBOL INFO"
+          name={dbg_console}
+          rows={7}
+          open
+        />
+      </div>
       {/* <DevNotes /> */}
       {/* <DevNotice /> */}
     </FlexStack>
