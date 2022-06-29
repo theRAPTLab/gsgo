@@ -1006,7 +1006,10 @@ class SymbolInterpreter {
     const [unitText, tokType, propRef] = this.extractTokenMeta(token);
     const gsType = 'objref';
     // construct expected symbols
-    const blueprints = SIMDATA.GetBlueprintSymbols();
+    let blueprints = SIMDATA.GetBlueprintSymbols();
+    const agentName = this.getBundleName();
+    const agent = { agent: SIMDATA.GetBlueprintBundle(agentName).symbols };
+    blueprints = { ...blueprints, ...agent };
     let props = this.getBundlePropSymbols();
     const symbols: TSymbolData = {
       blueprints,
