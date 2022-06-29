@@ -1207,7 +1207,7 @@ class SymbolInterpreter {
         }
       );
     // if we got this far, it's good!
-    this.setCurrentScope(method);
+    this.setCurrentScope({ methods: method });
     return this.goodToken(
       token,
       { blueprints, features, methods } as TSymbolData,
@@ -1402,7 +1402,9 @@ class SymbolInterpreter {
       );
     }
     // all good!
-    this.cur_scope = { [methodName]: methodSig }; // advance scope pointer
+    // works for prop, featProp, featCall
+    this.setCurrentScope({ [methodName]: methodSig });
+
     return new VSDToken({ methods }, { gsType, unitText: methodName }); // valid scope is parent of cur_scope
   }
 
