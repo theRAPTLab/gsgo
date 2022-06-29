@@ -23,6 +23,7 @@
 import UR from '@gemstep/ursys/client';
 import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
+import { Tokenize as TokenizeString } from 'script/tools/class-gscript-tokenizer-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
@@ -410,11 +411,18 @@ function DispatchClick(event) {
     const slotScriptToken =
       slots_linescript[CHECK.OffsetLineNum(sel_slotpos, 'sub')] || // existing token
       {}; // or new object if this is creating a new slot
-    // Assume it's an identifier
-    slotScriptToken.identifier = symbolValue;
 
-    // special handling to replace empty lines
-    delete slotScriptToken.line;
+    // Update the slotScriptToken object by modifying its keys
+    // 1. get the updated script token
+    const updatedTok = TokenizeString(symbolValue)[0][0];
+    // 2. clear out old slotScriptToken keys
+    //    e.g. need to clear 'identifier' if this is now an object
+    //    e.g. need to clear 'line' if this is converted from an emtpy line
+    //    e.g. need to clear 'objref' if this is converting to an identifier
+    Object.keys(slotScriptToken).forEach(key => delete slotScriptToken[key]);
+    // 3. copy the key
+    const key = Object.keys(updatedTok)[0]; // should only be one
+    slotScriptToken[key] = updatedTok[key];
 
     if (sel_slotpos > slots_linescript.length) {
       // it's a new token so add it
