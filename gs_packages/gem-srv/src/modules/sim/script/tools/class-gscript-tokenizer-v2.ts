@@ -798,21 +798,28 @@ function TokenValue(tok, matchType?: string) {
   return tokenValue;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Utility to return the pragma value if it is one, undefined otherwise */
-function DecodePragmaToken(tok: IToken): string[] {
-  const [type, tokenValue] = UnpackToken(tok);
-  if (type === '_pragma') return tokenValue;
-  return undefined;
+/** Utility to return the directive values. If it's directive, the
+ *  first value will be '#' followed by decoded values. Otherwise
+ *  first value is undefined, followed by decoded */
+function DecodeAsDirectiveStatement(stm: TScriptUnit): string[] {
+  // { directive:'#' } {
+  const [kwTok, ...args] = stm;
+  const results = args.map(tok => TokenValue(tok));
+  const isGood = TokenIsType(kwTok, 'directive');
+  if (!TokenIsType(kwTok, 'directive')) return [undefined, ...results];
+  return ['#', ...results];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function DecodeKeywordToken(tok: any): string {
-  const fn = 'DecodeKeywordToken:';
-  const [type, value] = UnpackToken(tok);
-  if (type === 'directive') return '_pragma';
+/** Utility to return the keyword module name from, if it is a keyword token
+ *  special keywords use a leading underscore as their filename */
+function KWModuleFromKeywordToken(kwTok: any): string {
+  const fn = 'KWModuleFromKeywordToken:';
+  const [type, value] = UnpackToken(kwTok);
+  if (type === 'directive') return '_directive';
   if (type === 'comment') return '_comment';
   if (type === 'line') return '_line';
   if (type !== 'identifier') {
-    console.warn(`${fn} bad token`, tok);
+    console.warn(`${fn} bad token`, kwTok);
     const err = `${fn} tok '${type}' is not decodeable as a keyword`;
     throw Error(err);
   }
@@ -856,6 +863,11 @@ export {
   //
   UnpackToken // return [type, value]
 };
-export { DecodeKeywordToken, DecodePragmaToken, TokenValue };
+export {
+  KWModuleFromKeywordToken,
+  DecodeAsDirectiveStatement,
+  TokenValue,
+  TokenIsType
+};
 /// utilities to return whether a particular token is of a particular type
 export { IsNonCodeToken, IsValidToken, IsValidTokenKey };

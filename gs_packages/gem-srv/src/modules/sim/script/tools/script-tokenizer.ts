@@ -150,8 +150,8 @@ export {
   UnpackStatement, // unroll a statement containing block tokens into multiple statements
   //
   TokenValue, // return the 'value' of the token, optionally test against type
-  DecodeKeywordToken, // if it's a keyword token, return keyword
   DecodePragmaToken, // if it's a pragma token, return directive
+  KWModuleFromKeywordToken, // if it's a keyword token, return keyword
   //
   IsNonCodeToken, // return true if it's whitespace or comment
   IsValidToken, // return true if it's a recognized token object

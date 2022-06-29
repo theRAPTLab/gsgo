@@ -201,7 +201,11 @@ function HasDirective(bpText: string, directive: string) {
   units.forEach(rawUnit => {
     const unit = COMPILER.DecodeStatement(rawUnit);
     if (unit.length !== 3) return; // we're expecting `# PROGRAM xxx` so length = 3
-    if (unit[0] === '_pragma' && unit[1] === 'PROGRAM' && unit[2] === directive)
+    if (
+      unit[0] === '_directive' &&
+      unit[1] === 'PROGRAM' &&
+      unit[2] === directive
+    )
       result = true;
   });
   return result;
