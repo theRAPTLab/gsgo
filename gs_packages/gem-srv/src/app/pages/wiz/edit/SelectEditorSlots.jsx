@@ -282,7 +282,9 @@ function SelectEditorSlots(props) {
         <div className="gsled choicesline gwiz styleError">{selectedError}</div>
         {extraTokenName && (
           <div className="gsled choicesline gwiz styleError">
-            <button onClick={DeleteSlot}>DELETE {extraTokenName}</button>
+            <button onClick={DeleteSlot} style={{ width: 'fit-content' }}>
+              DELETE &quot;{extraTokenName}&quot;
+            </button>
           </div>
         )}
         <SelectEditor selection={selection} />
