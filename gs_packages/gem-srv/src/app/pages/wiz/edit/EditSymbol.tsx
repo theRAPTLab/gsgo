@@ -25,7 +25,7 @@ import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to i
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SymbolSelector');
 
-const HIDDEN_SYMBOLS = [
+export const HIDDEN_SYMBOLS = [
   // keywords
   'randompos',
   'dbgtick',
@@ -40,9 +40,28 @@ const HIDDEN_SYMBOLS = [
   'stackdiv',
   'usefeature',
   // features
-  'global'
+  'global',
+  // costume
+  'getbounds',
+  'getscaledbounds',
+  'test',
+  'thinkhook',
+  // physics
+  'bodyradius',
+  'bodywidth',
+  'bodyheight',
+  'getbodywidth',
+  'getbodyheight',
+  // agent
+  'skin',
+  'scale',
+  'scaley',
+  'isinhabitingtarget',
+  'statusvalue',
+  'statusvaluecolor',
+  'statusvalueislarge'
 ];
-const ADVANCED_SYMBOLS = [
+export const ADVANCED_SYMBOLS = [
   // keywords
   'exprpush',
   'proppop',
@@ -54,7 +73,15 @@ const ADVANCED_SYMBOLS = [
   'dbgcontext',
   'dbgerror',
   // features
-  'cursor'
+  'cursor',
+  // agent
+  'statustext',
+  'zindex',
+  'color',
+  'orientation',
+  'visible',
+  'alpha',
+  'isinert'
 ];
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////

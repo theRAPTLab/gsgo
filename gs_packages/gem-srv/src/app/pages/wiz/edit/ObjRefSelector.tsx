@@ -20,6 +20,7 @@ import React from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import { GValidationToken, GSymbolToken } from '../SharedElements';
+import { HIDDEN_SYMBOLS, ADVANCED_SYMBOLS } from './EditSymbol';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -151,13 +152,14 @@ function ObjRefSelector(props) {
       </div>
     );
 
-    optionsList.push(
-      <div key={position} className="gsled objref-choices">
-        {Object.keys(tok.options).map(k => {
-          const optionLabel = tok.parentLabel
-            ? `${tok.parentLabel}.${k}`
-            : k || '';
-          return (
+    const options = [];
+    const advanced = [];
+    Object.keys(tok.options).forEach(k => {
+      const optionLabel = tok.parentLabel ? `${tok.parentLabel}.${k}` : k || '';
+      if (HIDDEN_SYMBOLS.includes(k.toLowerCase())) return;
+      if (ADVANCED_SYMBOLS.includes(k.toLowerCase())) {
+        advanced.push(
+          <div style={{ opacity: 0.3 }} key={k}>
             <GSymbolToken
               key={k}
               symbolType={k}
@@ -165,8 +167,24 @@ function ObjRefSelector(props) {
               choice={optionLabel} // value returned when selected e.g. 'bp.feat.prop'
               label={k} // human readable display
             />
-          );
-        })}
+          </div>
+        );
+        return;
+      }
+      options.push(
+        <GSymbolToken
+          key={k}
+          symbolType={k}
+          unitText={label} // currently selected text
+          choice={optionLabel} // value returned when selected e.g. 'bp.feat.prop'
+          label={k} // human readable display
+        />
+      );
+    });
+
+    optionsList.push(
+      <div key={position} className="gsled objref-choices">
+        {[...options, ...advanced]}
       </div>
     );
   });
