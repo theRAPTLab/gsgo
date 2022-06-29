@@ -97,19 +97,23 @@ const literalRemapper = {
 };
 // keys are valid token types, values are validation functions
 const validTokenTypes = {
-  directive: arg => typeof arg === 'string' && arg !== '',
-  comment: arg => typeof arg === 'string',
-  line: arg => typeof arg === 'string',
-  value: arg =>
+  directive: (arg: any) => typeof arg === 'string' && arg === '#',
+  comment: (arg: any) => typeof arg === 'string',
+  line: (arg: any) => typeof arg === 'string',
+  value: (arg: any) =>
     typeof arg === 'number' || typeof arg === 'boolean' || arg === null,
-  string: arg => typeof arg === 'string',
-  program: arg => typeof arg === 'string' && arg !== '',
-  block: arg => Array.isArray(arg),
-  identifier: arg => typeof arg === 'string' && arg !== '',
-  objref: arg =>
+  string: (arg: any) => typeof arg === 'string',
+  program: (arg: any) => typeof arg === 'string' && arg !== '',
+  block: (arg: any) => Array.isArray(arg),
+  identifier: (arg: any) => {
+    if (typeof arg !== 'string') return false;
+    if (arg.includes('.')) return false;
+    return arg !== '';
+  },
+  objref: (arg: any) =>
     Array.isArray(arg) &&
     arg.every(item => typeof item === 'string' && item !== ''),
-  expr: arg => typeof arg === 'string' && arg !== ''
+  expr: (arg: any) => typeof arg === 'string' && arg !== ''
 };
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
@@ -269,6 +273,7 @@ class ScriptTokenizer {
   tokenize(src: string, flag?: string) {
     let lines: string[];
     if (typeof src === 'string') lines = src.split('\n');
+    else return [];
     this.lines = lines; // an array of strings
     this.linesCount = this.lines.length;
     this.linesIndex = 0;
@@ -792,7 +797,7 @@ function UnpackScript(script: TScriptUnit[]): TKWArguments[] {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to return tokenValue if it optionally matches expected type */
 function TokenValue(tok, matchType?: string) {
-  if (matchType && !IsValidTokenKey(matchType)) return undefined;
+  if (matchType && !StringIsValidTokenType(matchType)) return undefined;
   const [type, tokenValue] = UnpackToken(tok); // note: only unpacks valid tokens
   if (matchType && matchType !== type) return undefined;
   return tokenValue;
@@ -828,10 +833,9 @@ function KWModuleFromKeywordToken(kwTok: any): string {
 
 /// TOKEN VALIDITY CHECKS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Is the token whitespace or not? Line or Comment tokens return true
- */
+/** Is the token whitespace or not? Line or Comment tokens return true */
 function IsNonCodeToken(tok: IToken): boolean {
-  const [type, value] = UnpackToken(tok);
+  const [type] = UnpackToken(tok);
   if (type === 'line') return true;
   if (type === 'comment') return true;
   return false;
@@ -839,13 +843,21 @@ function IsNonCodeToken(tok: IToken): boolean {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to validate token, returning true/false only */
 function IsValidToken(tok: IToken): boolean {
-  const [valid] = UnpackToken(tok);
-  return typeof valid === 'string';
+  const [type] = UnpackToken(tok);
+  return typeof type === 'string'; // type is undefined in invalid
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to check string is a known token type */
-function IsValidTokenKey(tokType: string): boolean {
+function StringIsValidTokenType(tokType: string): boolean {
   return validTokenTypes[tokType] !== undefined;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function TokenIsType(tok: IToken, matchType: string): boolean {
+  const [tokType, tokValue] = UnpackToken(tok);
+  if (tokType !== matchType) return false;
+  const test = validTokenTypes[matchType];
+  if (test === undefined) return false;
+  return test(tokValue);
 }
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
@@ -870,4 +882,4 @@ export {
   TokenIsType
 };
 /// utilities to return whether a particular token is of a particular type
-export { IsNonCodeToken, IsValidToken, IsValidTokenKey };
+export { IsNonCodeToken, IsValidToken, StringIsValidTokenType };
