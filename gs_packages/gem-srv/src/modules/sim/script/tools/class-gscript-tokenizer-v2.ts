@@ -105,13 +105,16 @@ const validTokenTypes = {
   string: arg => typeof arg === 'string',
   program: arg => typeof arg === 'string' && arg !== '',
   block: arg => Array.isArray(arg),
-  identifier: arg => typeof arg === 'string' && arg !== '',
+  identifier: arg => {
+    if (typeof arg !== 'string') return false;
+    if (arg.includes('.')) return false;
+    return arg !== '';
+  },
   objref: arg =>
     Array.isArray(arg) &&
     arg.every(item => typeof item === 'string' && item !== ''),
   expr: arg => typeof arg === 'string' && arg !== ''
 };
-
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Get return the longest key length of any object
