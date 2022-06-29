@@ -1439,11 +1439,12 @@ class SymbolInterpreter {
 
     // SCOPE ARGS 2: general validation tokens for each argument
     // this loop structure is weird because we have to handle overflow
-    // and underflow conditionss
+    // and underflow conditions
     let tokenIndex = 0;
     for (tokenIndex; tokenIndex < tokens.length; tokenIndex++) {
+      // overflow
       // is the tokenIndex greater than the number of argument definitions?
-      if (tokenIndex >= args.length) {
+      if (args && tokenIndex >= args.length) {
         vtoks.push(
           new VSDToken(
             {},
@@ -1460,7 +1461,7 @@ class SymbolInterpreter {
       }
       // SCOPE ARGS 3: validate current token against matching argument definition
       const tok = tokens[tokenIndex];
-      const arg = args[tokenIndex];
+      const arg = args ? args[tokenIndex] : '';
 
       /* THE MONEY CALL */
       const vtok = this.argSymbol(arg, tok);
