@@ -82,6 +82,7 @@ function ValidateLineText(line: string, bdl: SM_Bundle): TValidatedScriptUnit {
 /** API: ensure that a script has the required blue directives. Does not
  *  modify original script */
 function EnforceBlueprintPragmas(script: TScriptUnit[]): TScriptUnit[] {
+  const TAGMAP = new Map();
   const MAP: { [key: string]: any } = {};
   const newScript = [];
   const statements = script.entries();
@@ -102,6 +103,8 @@ function EnforceBlueprintPragmas(script: TScriptUnit[]): TScriptUnit[] {
     [kw, pragmaType, pragmaKey, ...args] = TOKENIZER.UnpackStatement(stm);
     pragmaType = pragmaType || '';
     pragmaType = (pragmaType as string).toUpperCase();
+    pragmaKey = pragmaKey || '';
+    pragmaKey = (pragmaKey as string).toUpperCase();
     if ((kw && kw !== '#') || pragmaType !== 'TAG') {
       scanTags = false;
     } else {
@@ -112,17 +115,21 @@ function EnforceBlueprintPragmas(script: TScriptUnit[]): TScriptUnit[] {
       newScript.push(stm);
     }
   }
-  // check that required directives are in place\
+  // check that required directives are in place
   const foundTags = { ...MAP.TAG };
   const reqTags = { ...SIMDATA.GetBundleTagSymbols() }; // make a copy to destroy
   Object.keys(foundTags).forEach(tag => {
     const hasTag = SIMDATA.IsBundleTagName(tag);
-    if (hasTag) delete reqTags[tag];
+    if (hasTag) {
+      if (DBG) console.log('deleting', hasTag, 'from', reqTags);
+      delete reqTags[hasTag];
+    }
   });
   // see if there are any non-deleted tags, and then shove them in.
-  Object.keys(reqTags).forEach(key =>
-    newScript.push(...TOKENIZER.TextToScript(`# TAG ${key} false`))
-  );
+  Object.keys(reqTags).forEach(key => {
+    if (DBG) console.log('adding missing TAG', key);
+    newScript.push(...TOKENIZER.TextToScript(`# TAG ${key} false`));
+  });
 
   // add a blank line underneath
   newScript.push(...TOKENIZER.TextToScript(''));
