@@ -43,7 +43,8 @@ function ObjRefSelector(props) {
   const { validationTokens } = slots_validation;
   // get the vtoken of the objRef slot
   const vtok = validationTokens[CHECK.OffsetLineNum(objRefPos, 'sub')];
-  const { gsType, methodSig, unitText } = vtok || {}; // gracefully fail if not defined
+  const { gsType, methodSig, unitText, error } = vtok || {}; // gracefully fail if not defined
+  const { code, info } = error || {};
 
   // 2. deref the objref
   let bits = unitText.split('.');
@@ -143,6 +144,8 @@ function ObjRefSelector(props) {
           selected={selected}
           type={type}
           label={label}
+          viewState={code} // error
+          error={info} // error
           isSlot
         />
       </div>
