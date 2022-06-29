@@ -215,50 +215,14 @@ export {
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// FORWARDED API: convert tokenized scripts into other useful forms
-export {
-  DecodeTokenPrimitive, // utility: to convert a scriptToken into runtime data
-  DecodeToken, // utility: with DecodeTokenPrimitive, converts a token into runtime entity
-  DecodeStatement, // utility: works with DecodeToken to create runtime enties
-  SymbolizeStatement, // utility: extract symbols defined by a keyword
-  ValidateStatement, // utility: check script tokens against symbols
-  ValidateExpression, // utility: see if expression can access stuff
-  //
-  CompileScript, // API: return a TSMCProgram from a script text
-  ExtractBlueprintMeta, // API: return directives from script text
-  //
-  CompileBlueprint, // API: save a blueprint script as a bundle with program output
-  SymbolizeBlueprint // API: save blueprint symbols to a bundle
-} from 'script/tools/script-compiler';
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export * from 'script/tools/script-compiler'; //
 /// FORWARDED API: convert text to tokenized scripts
-export {
-  TextToScript, // text w/ newlines => TScriptUnit[]
-  StringToLineScript, // single-line string => TScriptUnit
-  ScriptToText, // TScriptUnit[] => produce source text from units
-  TokenToString, // for converting a token to its text representation
-  StatementToText // convert scriptUnit[] to text
-} from 'script/tools/script-tokenizer';
-/// DEPRCECATED API: convert tokenized script into a React representation
-export {
-  ScriptToJSX // TScriptUnit[] => jsx
-} from 'script/tools/script-to-jsx';
+export * from 'script/tools/script-tokenizer';
 /// FORWARDED API: convert tokenized script to React-renderable data structures
-export {
-  ScriptToLines, // converts script into a viewmodel suitable for rendering as lines
-  ScriptToEditableTokens, // script to editable token list
-  ScriptPageToEditableTokens, // script_page to editable token list
-  EditableTokensToScript // pack editable token list back into script
-} from 'script/tools/script-to-lines';
-
+export * from 'script/tools/script-to-lines';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// DEPRCECATED API: convert tokenized script into a React representation
+export * from 'script/tools/script-to-jsx';
 /// DEPRECATED API: these are routines that extract these values using brute
 /// force techniques before the compiler generated this information for us
-export {
-  ExtractBlueprintProperties,
-  ExtractBlueprintPropertiesMap,
-  ExtractBlueprintPropertiesTypeMap,
-  ExtractFeaturesUsed,
-  ExtractFeatPropMapFromScript,
-  ExtractFeatPropMap
-} from 'script/tools/script-extraction-utilities';
+export * from 'script/tools/script-extraction-utilities';

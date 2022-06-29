@@ -69,6 +69,7 @@ STORE._initializeState({
 
   script_page: [], // source tokens 'printed' as lines
   key_to_token: new Map(), // lookup map from tokenLine+Pos to original token
+  program_map: null, // lookup map for directive sections
 
   sel_linenum: -1, // selected line of wizard. If < 0 it is not set, pointer to script_page
   sel_linepos: -1, // select index into line. If < 0 it is not set
@@ -111,26 +112,33 @@ STORE._initializeState({
 ///          ALL state objects, but it CAN be used to set other state vars?
 STORE._interceptState(state => {
   const { script_text, script_tokens, sel_linenum, sel_slotpos } = state;
+
   // if script_text is changing, we also want to emit new script_token
-  if (!script_tokens && script_text) {
+  if (script_text && !script_tokens) {
     let toks = TRANSPILER.TextToScript(script_text);
     toks = TRANSPILER.EnforceBlueprintPragmas(toks);
     state.script_tokens = toks;
     TRANSPILER.SymbolizeBlueprint(toks);
     state.cur_bdl = TRANSPILER.CompileBlueprint(toks);
     const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
+    const programMap = TRANSPILER.ScriptToProgramMap(toks);
     // INSERT validation tokens to script_page
     state.script_page = vmPage;
     state.key_to_token = tokMap;
+    state.program_map = programMap;
   }
+
   // if script_tokens is changing, we also want to emit new script_text
-  if (!script_text && script_tokens) {
+  if (script_tokens && !script_text) {
     try {
+      state.script_tokens = TRANSPILER.EnforceBlueprintPragmas(script_tokens);
       const text = TRANSPILER.ScriptToText(state.script_tokens);
       state.script_text = text;
-      const [vmPage, tokMap] = TRANSPILER.ScriptToLines(script_tokens);
+      const [vmPage, tokMap] = TRANSPILER.ScriptToLines(state.script_tokens);
+      const programMap = TRANSPILER.ScriptToProgramMap(state.script_tokens);
       state.script_page = vmPage;
       state.key_to_token = tokMap;
+      state.program_map = programMap;
     } catch (e) {
       // ignore TextToScript compiler errors during live typing
       console.error(`wizcore_interceptState tokens: ${e.toString()}`);
@@ -784,6 +792,58 @@ function DeleteSelectedLine(event) {
   STORE.SendState({ script_tokens: nscript });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API return what PROGRAM directive a line is inside, as well as its range */
+function GetProgramContextForLine(lineNum: number): TLineContext {
+  const { program_map } = STORE.State();
+  if (!program_map) return;
+
+  let foundProgram: string;
+  program_map.forEach(({ program, start, end }) => {
+    if (foundProgram) return foundProgram;
+    if (lineNum <= end && lineNum >= start) foundProgram = program;
+  });
+  //
+  if (foundProgram) return program_map.get(foundProgram);
+  return undefined;
+}
+
+/// TESTS /////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** example for ben...
+ *
+ *
+ *  DELETE this when you don't need it anymore
+ *
+ *
+ */
+UR.HookPhase('UR/APP_START', () => {
+  let lineToCheck = 22;
+  const { program_map, script_tokens } = STORE.State();
+  console.group(`Testing Program Directive Line Context for line ${lineToCheck}`);
+  const lineInfo: TLineContext = GetProgramContextForLine(lineToCheck);
+  if (!lineInfo) {
+    console.warn(`${lineToCheck} isnt in a PROGRAM section!`);
+  } else {
+    const { program, start, end } = lineInfo;
+    const range = `${start}-${end}`;
+    console.log(`line ${lineToCheck} in 'PROGRAM ${program}' (lines ${range})`);
+  }
+  const [page] = TRANSPILER.DBG_ScriptToLinesV2(script_tokens);
+  console.group('program_map used v2 line maper');
+  page.forEach(pline => {
+    const { num, level, line } = pline;
+    const lineNum = String(num).padStart(3, '0');
+    const indent = ''.padStart(level * 2, ' ');
+    const text = TRANSPILER.StatementToText(line);
+    console.log(`${lineNum} - ${indent} ${text}`);
+  });
+
+  console.groupEnd();
+  console.groupEnd();
+}); // end of HookPhase
+
+/// DEBUG CONSOLE /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function PrintDBGConsole(str: string) {
   const buf = GetTextBuffer(STORE.State().dbg_console);
   buf.printLine(str);
@@ -818,7 +878,8 @@ export {
   CancelSlotEdit, // handle slot editor cancel edit
   DeleteSlot, // handle slot editor delete extraneous slot
   AddLine, // handle ScriptViewPane request to add a new script line
-  DeleteSelectedLine // handle ScriptViewPane request to delete currently selected script line
+  DeleteSelectedLine, // handle ScriptViewPane request to delete currently selected script line
+  GetProgramContextForLine // given a line number, returns its program context
 };
 
 /// EXPORTED VIEWMODEL INFO UTILS //////////////////////////////////////////////

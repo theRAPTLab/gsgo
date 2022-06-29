@@ -287,15 +287,19 @@ class ScriptLiner {
   statementToLinesV2(statement: TScriptUnit): TScriptUnit[] {
     //
     const DIRECTIVES = [];
-    // process all the tokens in the statement
-    if (statement.length === 0) return [];
     /*  RECURSIVE FUNCTION DECLARATIONS */
     const is_terminal = (arr, i) => i === arr.length - 1;
     const process_stm = (stm: TScriptUnit, level: number = 0): TScriptUnit[] => {
       let RESULTS = [];
       let LINESCRIPT = [];
+      if (stm.length === 0) {
+        if (!SHOW_EMPTY_STATEMENTS) return [];
+        RESULTS.push({ num: this.LINE_NUM++, level, line: [{ line: '' }] });
+        return RESULTS;
+      }
+
       let [isDir, pragma, ...args] = DecodeAsDirectiveStatement(stm);
-      if (isDir) DIRECTIVES.push({ num: this.LINE_NUM, pragma, args });
+      if (isDir) DIRECTIVES.push({ num: this.LINE_NUM, pragma, ...args });
       stm.forEach((tok: IToken) => {
         const [tokType] = UnpackToken(tok);
         // not a block, just save the token to the buffer
@@ -327,6 +331,7 @@ class ScriptLiner {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   programToLinesV2(program: TScriptUnit[]) {
+    this.clearData();
     const PAGE = [];
     const DIRECTIVES = [];
     const programLines = program.values();
@@ -450,6 +455,51 @@ function ScriptToLines(
   return [script_page, key_to_token, line_to_scriptunit];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: given a program, return a map of <programDirective,{start,end}> */
+function ScriptToProgramMap(script: TScriptUnit[]): Map<string, TLineContext> {
+  const SL = new ScriptLiner();
+  const [PAGE, DIRECTIVES] = SL.programToLinesV2(script);
+  let DIR_MAP = new Map();
+  let map_entry: any;
+  DIRECTIVES.forEach(dir => {
+    let { num, pragma, ...args } = dir;
+    pragma = pragma.toUpperCase();
+    if (pragma === 'PROGRAM') {
+      let program = args[0];
+      if (typeof program === 'string') program = program.toUpperCase();
+      // if program changed, then write the end state
+      if (map_entry) {
+        if (DIR_MAP.has(map_entry.program)) {
+          const err = `multiple declarations of ${program}`;
+          console.warn(err);
+          throw Error(err);
+        }
+        map_entry.end = num - 1;
+        DIR_MAP.set(map_entry.program, map_entry);
+        if (DBG)
+          console.log(
+            'program',
+            map_entry.program.padEnd(10, ' '),
+            `range:${map_entry.start}:${map_entry.end}`
+          );
+        map_entry = null;
+      }
+      // start a new map entry
+      map_entry = {
+        program: program || 'error bad program string',
+        start: num,
+        end: -1
+      };
+    }
+  });
+  return DIR_MAP;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** accessor to new script-to-lines algorithm ..., don't use in production */
+function DBG_ScriptToLinesV2(script: TScriptUnit[]) {
+  return LINER.programToLinesV2(script);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: given a script of ScriptUnit statements, return an array of objects
  *  0-indexed by line. Editing the lineScript array inside  */
 function ScriptToEditableTokens(script: TScriptUnit[]): VMLineScripts {
@@ -514,7 +564,6 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
   }
 
   // START CODE
-
   let level = 0;
   lineScripts.forEach(lso => {
     const {
@@ -613,7 +662,11 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
 export default ScriptLiner;
 export {
   ScriptToLines, // script to indexed data structures for GUI
+  ScriptToProgramMap, // script to program directive map
   ScriptPageToEditableTokens, // script_page to editable token list
   ScriptToEditableTokens, // script to editable token list
   EditableTokensToScript // pack editable token list back into script
+};
+export {
+  DBG_ScriptToLinesV2 // tester for new script-to-lines algorithm
 };
