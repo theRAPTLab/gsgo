@@ -41,6 +41,10 @@ import PanelChrome from './PanelChrome';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('PANELSCRIPT');
 const DBG = false;
+
+const VIEWMODE_WIZARD = 'wizard';
+const VIEWMODE_CODE = 'code';
+
 let needsSyntaxReHighlight = false;
 
 const StyledToggleButton = withStyles(theme => ({
@@ -173,7 +177,7 @@ class PanelScript extends React.Component {
     super();
     const { script_page, script_text } = WIZCORE.State();
     this.state = {
-      viewMode: 'wizard', // 'code',
+      viewMode: VIEWMODE_WIZARD, // 'code',
       jsx: '',
       lineHighlight: undefined,
       openConfirmDelete: false,
@@ -377,8 +381,17 @@ class PanelScript extends React.Component {
    *    b. SaveAgent saves agents by id, which comes from a counter
    */
   SendText() {
+    const { viewMode } = this.state;
     const { projId, bpName } = this.props;
-    const text = WIZCORE.State().script_text;
+    let text;
+    // if we're in code view, send the code script
+    if (viewMode === VIEWMODE_CODE) {
+      text = this.jar.toString();
+      WIZCORE.SendState({ script_text: text });
+    } else {
+      // wizard data
+      text = WIZCORE.State().script_text;
+    }
     UR.CallMessage('NET:SCRIPT_UPDATE', {
       projId,
       script: text,
@@ -452,10 +465,10 @@ class PanelScript extends React.Component {
 
   OnToggleWizard(e, value) {
     if (value === null) return; // skip repeated clicks
-    if (value === 'code') {
+    if (value === VIEWMODE_CODE) {
       // currently wizard, clicked on code
       // we don't need to do anything because wizard keeps state updated
-    } else if (value === 'wizard') {
+    } else if (value === VIEWMODE_WIZARD) {
       const script_text = this.jar.toString();
       WIZCORE.SendState({ script_text });
     }
@@ -522,8 +535,8 @@ class PanelScript extends React.Component {
         exclusive
         onChange={this.OnToggleWizard}
       >
-        <StyledToggleButton value="wizard">Wizard</StyledToggleButton>
-        <StyledToggleButton value="code">Code</StyledToggleButton>
+        <StyledToggleButton value={VIEWMODE_WIZARD}>Wizard</StyledToggleButton>
+        <StyledToggleButton value={VIEWMODE_CODE}>Code</StyledToggleButton>
       </ToggleButtonGroup>
     );
 
@@ -601,7 +614,7 @@ class PanelScript extends React.Component {
           fontSize: '10px',
           lineHeight: 1,
           whiteSpace: 'pre-line',
-          display: `${viewMode === 'code' ? 'inherit' : 'none'}`
+          display: `${viewMode === VIEWMODE_CODE ? 'inherit' : 'none'}`
         }}
       >
         <code
@@ -618,7 +631,7 @@ class PanelScript extends React.Component {
     const Wizard = (
       <div
         style={{
-          display: `${viewMode === 'wizard' ? 'flex' : 'none'}`,
+          display: `${viewMode === VIEWMODE_WIZARD ? 'flex' : 'none'}`,
           flexDirection: 'column',
           width: '100%'
         }}
