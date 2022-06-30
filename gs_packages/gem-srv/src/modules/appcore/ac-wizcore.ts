@@ -794,16 +794,16 @@ function DeleteSelectedLine(event) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API return what PROGRAM directive a line is inside, as well as its range */
 function GetProgramContextForLine(lineNum: number): TLineContext {
-  const { program_map } = STORE.State();
-  if (!program_map) return;
+  const { script_tokens, program_map } = STORE.State();
+  let map = program_map || TRANSPILER.ScriptToProgramMap(script_tokens);
 
   let foundProgram: string;
-  program_map.forEach(({ program, start, end }) => {
+  map.forEach(({ program, start, end }) => {
     if (foundProgram) return foundProgram;
     if (lineNum <= end && lineNum >= start) foundProgram = program;
   });
   //
-  if (foundProgram) return program_map.get(foundProgram);
+  if (foundProgram) return map.get(foundProgram);
   return undefined;
 }
 

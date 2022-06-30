@@ -299,7 +299,11 @@ class ScriptLiner {
       }
 
       let [isDir, pragma, ...args] = DecodeAsDirectiveStatement(stm);
-      if (isDir) DIRECTIVES.push({ num: this.LINE_NUM, pragma, ...args });
+      if (isDir) {
+        // console.log('DecodeAsDirectiveStatement', isDir, pragma, ...args);
+        let entry = { num: this.LINE_NUM, pragma, args };
+        DIRECTIVES.push(entry);
+      }
       stm.forEach((tok: IToken) => {
         const [tokType] = UnpackToken(tok);
         // not a block, just save the token to the buffer
@@ -463,8 +467,9 @@ function ScriptToProgramMap(script: TScriptUnit[]): Map<string, TLineContext> {
   const [PAGE, DIRECTIVES] = SL.programToLinesV2(script);
   let DIR_MAP = new Map();
   let map_entry: any;
+  // directives is an array of { pragma,
   DIRECTIVES.forEach(dir => {
-    let { num, pragma, ...args } = dir;
+    let { num, pragma, args } = dir;
     pragma = pragma.toUpperCase();
     if (pragma === 'PROGRAM') {
       let program = args[0];
@@ -478,15 +483,7 @@ function ScriptToProgramMap(script: TScriptUnit[]): Map<string, TLineContext> {
         }
         map_entry.end = num - 1;
         DIR_MAP.set(map_entry.program, map_entry);
-        if (DBG)
-          console.log(
-            'program',
-            map_entry.program.padEnd(10, ' '),
-            `range:${map_entry.start}:${map_entry.end}`
-          );
-        map_entry = null;
       }
-      // start a new map entry
       map_entry = {
         program: program || 'error bad program string',
         start: num,
@@ -495,17 +492,7 @@ function ScriptToProgramMap(script: TScriptUnit[]): Map<string, TLineContext> {
     }
     // if there is a map_entry still open at the end,
     // close it
-    if (map_entry) {
-      map_entry.end = num;
-      DIR_MAP.set(map_entry.program, map_entry);
-      if (DBG)
-        console.log(
-          'program',
-          map_entry.program.padEnd(10, ' '),
-          `range:${map_entry.start}:${map_entry.end}`
-        );
-      map_entry = null;
-    }
+    // if (map_entry.end < 0) map_entry.end = num;
   });
   return DIR_MAP;
 }
