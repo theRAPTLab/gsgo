@@ -700,6 +700,28 @@ function SaveSlotLineScript(event) {
   const { script_page, sel_linenum, slots_linescript } = STORE.State();
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
   const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
+
+  // HACK ---------------------------------------------------------------------
+  // Insert Block for new block keywords
+  const cur_line = script_page[lineIdx];
+  const isNewLine =
+    cur_line &&
+    cur_line.lineScript &&
+    cur_line.lineScript[0] &&
+    cur_line.lineScript[0].hasOwnProperty('line');
+  const new_kw_tok = slots_linescript ? slots_linescript[0] : {};
+  const new_kw = new_kw_tok ? new_kw_tok.identifier : '';
+  if (
+    isNewLine &&
+    ['every', 'ifexpr', 'onevent', 'when'].includes(new_kw.toLowerCase())
+  ) {
+    // insert block!!!
+    slots_linescript.push({
+      block: [[{ comment: 'insert code here' }]]
+    });
+  }
+  // END HACK -----------------------------------------------------------------
+
   const updatedLine = lsos[lineIdx]; // clone existing line to retain block info
   updatedLine.lineScript = slots_linescript.filter(({ identifier }) => {
     // SelectEditorLineSlot() treats lineScript tokens as "view data" and
