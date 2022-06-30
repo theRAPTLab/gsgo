@@ -172,25 +172,28 @@ function GetBlueprintSymbols(): TSymbolData {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return hardcoded bundle program types */
 function GetBundleOutSymbols() {
-  return ['DEFINE', 'INIT', 'UPDATE', 'THINK', 'EXEC', 'CONDITION', 'EVENT'];
+  // technically  'THINK', 'EXEC' are also available, but GS1.0 scripts don't
+  // use them
+  return ['DEFINE', 'INIT', 'UPDATE', 'CONDITION', 'EVENT'];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return symbols for tag pragma */
 function GetBundleTagSymbols() {
   return {
     IsCharControllable: 'enable:boolean',
-    isPozyxControllable: 'enable:boolean',
-    isPtrackControllable: 'enable:boolean'
+    IsPozyxControllable: 'enable:boolean',
+    IsPtrackControllable: 'enable:boolean'
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return pascal-case tagname if there is a case-insensitive match */
-function IsBundleTagName(tagName: string) {
+function IsBundleTagName(tagName: string): string {
+  tagName = tagName.toUpperCase();
   const tags = GetBundleTagSymbols();
   const tagNames = Object.keys(tags);
-  const tagCheck = tagNames.map(key => key.toLowerCase());
-  let found = tagCheck.indexOf(tagName.toLowerCase());
-  return found >= 0 ? tags[tagNames[found]] : undefined;
+  const tagCheck = tagNames.map(key => key.toUpperCase());
+  let found = tagCheck.indexOf(tagName);
+  return found >= 0 ? tagNames[found] : undefined;
 }
 
 /// KEYWORDS //////////////////////////////////////////////////////////////////

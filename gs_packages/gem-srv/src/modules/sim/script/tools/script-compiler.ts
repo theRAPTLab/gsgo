@@ -38,7 +38,6 @@ import SM_Agent from 'lib/class-sm-agent';
 import VSDToken from 'script/tools/class-validation-token';
 import { ParseExpression } from './class-expr-parser-v2';
 import { Evaluate } from 'lib/expr-evaluator';
-
 import { DEBUG_FLAGS } from 'config/dev-settings';
 const { SYMBOLIZE_CALLS: DBG_SC } = DEBUG_FLAGS;
 
@@ -82,7 +81,7 @@ function DecodeToken(tok: IToken, refs: TSymbolRefs): any {
   if (type === 'line') return value;
   if (type === 'expr') return { expr: ParseExpression(value) };
   if (type === 'comment') return { comment: value };
-  if (type === 'directive') return '_pragma';
+  if (type === 'directive') return '_directive';
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   if (type === 'block') return CompileScript(value, refs);
   if (type === 'program') return SIMDATA.GetProgram(value);
@@ -163,7 +162,7 @@ function ExtractBlueprintMeta(script: TScriptUnit[]): TBlueprintMeta {
 function SymbolizeStatement(stm: TScriptUnit, line?: number): TSymbolData {
   const fn = 'SymbolizeStatement:';
   if (!stm || (Array.isArray(stm) && stm.length < 1)) return {}; // blank lines emit no symbol info
-  const kw = CHECK.DecodeKeywordToken(stm[0]);
+  const kw = CHECK.KWModuleFromKeywordToken(stm[0]);
   if (!kw) return {}; // blank lines emit no symbol info
   const kwp = SIMDATA.GetKeyword(kw);
   if (!kwp) {
@@ -234,7 +233,7 @@ function ValidateStatement(
   if (statement.length === 0)
     return { validationTokens: [], validationLog: ['zero-length statement'] };
   const { bundle, globals } = refs || {};
-  const kw = CHECK.DecodeKeywordToken(statement[0]);
+  const kw = CHECK.KWModuleFromKeywordToken(statement[0]);
   const kwp = SIMDATA.GetKeyword(kw);
   if (kwp !== undefined) {
     kwp.setRefs({ bundle, globals });
@@ -273,7 +272,7 @@ function CompileStatement(
   refs: TSymbolRefs
 ): TCompiledStatement {
   const fn = 'CompileStatement:';
-  const kw = CHECK.DecodeKeywordToken(stm[0]);
+  const kw = CHECK.KWModuleFromKeywordToken(stm[0]);
   if (!kw) return []; // skips comments, blank lines
   const kwp = SIMDATA.GetKeyword(kw) || SIMDATA.GetKeyword('keywordErr');
   if (!kwp) throw Error(`${fn} bad keyword ${kw}`);

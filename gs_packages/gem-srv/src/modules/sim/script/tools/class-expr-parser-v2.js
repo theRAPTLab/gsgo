@@ -703,20 +703,3 @@ function ParseExpression(expr) {
 export default ExpressionParser;
 /// UTILITY METHOD
 export { ParseExpression };
-/// CONSTANTS AND UTILITIES
-export { isIdentifierPart, isIdentifierStart, isDecimalDigit };
-export {
-  unary_ops,
-  binary_ops,
-  PERIOD_CODE,
-  COMMA_CODE,
-  SQUOTE_CODE,
-  DQUOTE_CODE,
-  OPAREN_CODE,
-  CPAREN_CODE,
-  OBRACK_CODE,
-  CBRACK_CODE,
-  QUMARK_CODE,
-  SEMCOL_CODE,
-  COLON_CODE
-};

@@ -32,7 +32,7 @@ const HIDDEN_SYMBOLS = [
   'if',
   'call',
   '_line',
-  '_pragma',
+  '_directive',
   'keyworderr',
   'stackadd',
   'stacksub',
