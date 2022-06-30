@@ -936,7 +936,7 @@ class SymbolInterpreter {
   agentFeatureList(token: IToken): TSymbolData {
     // error checking & type overrides
     const fn = 'agentFeatureList:';
-    const gsType = 'objref';
+    const gsType = 'feature';
     this.resetScope(); // points to the bundle.symbols to start
     if (this.getBundleScope().features === undefined) {
       return this.goodToken(token, { features: {} }, { gsType });
