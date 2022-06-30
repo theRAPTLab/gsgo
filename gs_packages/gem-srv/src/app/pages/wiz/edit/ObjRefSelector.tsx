@@ -110,18 +110,21 @@ function ObjRefSelector(props) {
         type: 'featProp',
         options: featProps
       }); // propName
-    } else if (keyword === 'featCall') {
-      // FEAT METHOD OBJREF
-      // Part 3: featMethod
-      const featMethod = part3;
-      const featDef = featList ? featList[featName] : undefined;
-      const featMethods = featDef && featDef.methods ? featDef.methods : [];
-      vtoks.push({
-        selectedText: featMethod,
-        parentLabel: `${bpName}.${featName}`,
-        type: 'featMethod',
-        options: featMethods
-      }); // propName
+      // DEPRECATED: featCall's objref is just <bpName><featName>
+      //             It doesn't include the <methodName>
+      //
+      // } else if (keyword === 'featCall') {
+      //   // FEAT METHOD OBJREF
+      //   // Part 3: featMethod
+      //   const featMethod = part3;
+      //   const featDef = featList ? featList[featName] : undefined;
+      //   const featMethods = featDef && featDef.methods ? featDef.methods : [];
+      //   vtoks.push({
+      //     selectedText: featMethod,
+      //     parentLabel: `${bpName}.${featName}`,
+      //     type: 'featMethod',
+      //     options: featMethods
+      //   }); // propName
     }
   }
 

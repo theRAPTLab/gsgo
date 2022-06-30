@@ -69,10 +69,11 @@ export class featCall extends Keyword {
    *  base Keyword class  */
   validate(unit: TScriptUnit): TValidatedScriptUnit {
     const vtoks = []; // validation token array
-    const [kwTok, featMethodRefTok, ...argToks] = unit; // get arg pattern
+    const [kwTok, featRefTok, methodTok, ...argToks] = unit; // get arg pattern
     // returns symbols for each dtok position excepting the keyword
     vtoks.push(this.shelper.anyKeyword(kwTok));
-    vtoks.push(this.shelper.featMethodObjRef(featMethodRefTok));
+    vtoks.push(this.shelper.featRef(featRefTok));
+    vtoks.push(this.shelper.methodName(methodTok));
     vtoks.push(...this.shelper.argsList(argToks));
     const log = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: log };

@@ -1141,8 +1141,9 @@ class SymbolInterpreter {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** handle feature method object refs for the featCall keyword,
-   *  feature.featMethod, Blueprint.feature.featMethod  */
-  featMethodObjRef(token: IToken): TSymbolData {
+   *  feature, Blueprint.feature
+   *  e.g. featCall Bee.Costume setCostume 'bee.json' */
+  featRef(token: IToken): TSymbolData {
     // error checking & type overrides
     const fn = 'featMethodObjRef:';
     if (this.detectScanError()) return this.vagueError(token);
@@ -1188,29 +1189,10 @@ class SymbolInterpreter {
         err_info: `${featureName} is not defined in ${bpName}`
       });
     }
-    // PART 3 should be a methodName in the features symbol dict
+    // No PART 3 but set methods for the cur_scope
     const methods = feature.methods;
-    if (methodName === undefined)
-      return this.badToken(
-        token,
-        { blueprints, features, methods } as TSymbolData,
-        {
-          gsType,
-          err_info: `objref[3] must be a methodName defined in ${bpName}.${featureName}`
-        }
-      );
-    const method = methods[methodName];
-    if (method === undefined)
-      return this.badToken(
-        token,
-        { blueprints, features, methods } as TSymbolData,
-        {
-          gsType,
-          err_info: `${methodName} is not defined in ${featureName} for ${bpName}`
-        }
-      );
+    this.setCurrentScope({ methods });
     // if we got this far, it's good!
-    this.setCurrentScope({ methods: method });
     return this.goodToken(
       token,
       { blueprints, features, methods } as TSymbolData,
