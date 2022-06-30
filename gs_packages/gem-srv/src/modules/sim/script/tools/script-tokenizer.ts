@@ -45,6 +45,7 @@ function StatementToText(statement: TScriptUnit, indent: number = 0): string {
 /** API: given a text, return the parsed ScriptUnit[] representation */
 function TextToScript(text: string = ''): TScriptUnit[] {
   // this will throw an error string of '{err} @row:col'
+  if (typeof text !== 'string') return [];
   const script = STRTOK.tokenize(text.trim());
   return script;
 }
@@ -144,18 +145,6 @@ export {
   TokenToPlainString as TokenToUnitText // alias
 };
 /// forward gscript-tokenizer utilities
-export {
-  UnpackToken, // return [type, value] of token
-  UnpackScript, // unroll a script of statements
-  UnpackStatement, // unroll a statement containing block tokens into multiple statements
-  //
-  TokenValue, // return the 'value' of the token, optionally test against type
-  DecodeKeywordToken, // if it's a keyword token, return keyword
-  DecodePragmaToken, // if it's a pragma token, return directive
-  //
-  IsNonCodeToken, // return true if it's whitespace or comment
-  IsValidToken, // return true if it's a recognized token object
-  IsValidTokenKey // return true if string it's a recognized token key
-} from 'script/tools/class-gscript-tokenizer-v2';
+export * from 'script/tools/class-gscript-tokenizer-v2';
 /// forward expression parser
-export { ParseExpression } from './class-expr-parser-v2';
+export * from './class-expr-parser-v2';

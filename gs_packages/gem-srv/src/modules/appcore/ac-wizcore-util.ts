@@ -10,7 +10,6 @@
 
 import UR from '@gemstep/ursys/client';
 import * as TRANSPILER from 'script/transpiler-v2';
-import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 
 // load state
 const { StateMgr } = UR.class;

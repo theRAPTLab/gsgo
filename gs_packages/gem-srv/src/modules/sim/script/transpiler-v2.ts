@@ -61,8 +61,7 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
 /** Compile a source text and return compiled TSM_Method. Similar to
  *  CompileBlueprint but does not handle directives or build a bundle. Used
  *  for generating code snippets from any GEMSCRIPT text (e.g. for init
- *  scripts, or anything that isn't part of the
- */
+ *  scripts, or anything that isn't part of it */
 function CompileText(text: string, refs: TSymbolRefs): TSMCProgram {
   const script = TOKENIZER.TextToScript(text);
   return COMPILER.CompileScript(script, refs);
@@ -76,6 +75,94 @@ function ValidateLineText(line: string, bdl: SM_Bundle): TValidatedScriptUnit {
     globals: {}
   });
   return vtoks;
+}
+
+/// SCRIPT UTILITIES //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: ensure that a script has the required blue directives. Does not
+ *  modify original script */
+function EnforceBlueprintPragmas(script: TScriptUnit[]): TScriptUnit[] {
+  const TAGMAP: { [key: string]: any } = {};
+  const newScript = [];
+
+  // first scan for blueprint, insert if missing
+  /* SETUP **/ const statements = script.entries();
+  /* READ ***/ let [stmNum, stm] = statements.next().value;
+  let [kw, pragmaType, pragmaKey, ...args] = TOKENIZER.UnpackStatement(stm);
+  pragmaType = (pragmaType as string).toUpperCase();
+  if (kw && kw !== '#' && pragmaType !== 'BLUEPRINT') {
+    newScript.push(...TOKENIZER.TextToScript(`# BLUEPRINT Agent${Date.now()}`));
+  }
+  newScript.push(stm);
+  // next scan for everything that is a directive at the top
+  let scanTags = true;
+  /* READ ***/ [stmNum, stm] = statements.next().value;
+  while (scanTags) {
+    [kw, pragmaType, pragmaKey, ...args] = TOKENIZER.UnpackStatement(stm);
+    pragmaType = pragmaType || '';
+    pragmaType = (pragmaType as string).toUpperCase();
+    pragmaKey = pragmaKey || '';
+    pragmaKey = (pragmaKey as string).toUpperCase();
+    if ((kw && kw !== '#') || pragmaType !== 'TAG') {
+      // stop at the first non tag
+      scanTags = false;
+    } else {
+      const pkey = pragmaType;
+      if (TAGMAP[pkey] === undefined) TAGMAP[pkey] = {};
+      const pdict = TAGMAP[pkey];
+      pdict[pragmaKey as string] = { stmNum, args };
+      newScript.push(stm);
+      /* READ ***/ [stmNum, stm] = statements.next().value;
+    }
+  }
+  // check that required directives are in place
+  const foundTags = { ...TAGMAP.TAG };
+  const reqTags = { ...SIMDATA.GetBundleTagSymbols() }; // make a copy to destroy
+  Object.keys(foundTags).forEach(tag => {
+    const hasTag = SIMDATA.IsBundleTagName(tag);
+    if (hasTag) {
+      if (DBG) console.log('deleting', hasTag, 'from', reqTags);
+      delete reqTags[hasTag];
+    }
+  });
+  // see if there are any non-deleted tags, and then shove them in.
+  Object.keys(reqTags).forEach(key => {
+    if (DBG) console.log('adding missing TAG', key);
+    newScript.push(...TOKENIZER.TextToScript(`# TAG ${key} false`));
+  });
+
+  // add a blank line underneath
+  // newScript.push(...TOKENIZER.TextToScript(''));
+
+  // check for required program directives
+  // while writing the rest of the statements
+  const needsProg = new Set(SIMDATA.GetBundleOutSymbols());
+  /* REUSE **/ let entry = [stmNum, stm]; // exit previously still good
+  while (entry) {
+    [stmNum, stm] = entry;
+    let b, c;
+    [kw, b, c] = TOKENIZER.UnpackStatement(stm);
+    kw = kw || '';
+    if (kw && kw === '#') {
+      b = b || '';
+      b = b.toUpperCase();
+      c = c || '';
+      c = c.toUpperCase();
+      if (b === 'PROGRAM') needsProg.delete(c);
+    }
+    newScript.push(stm);
+    /* READ ***/ entry = statements.next().value; /*** READ ***/
+  }
+  // add missing program directives at end of script
+  needsProg.forEach(progType => {
+    const slines = TOKENIZER.TextToScript(
+      `// required directive\n# PROGRAM ${progType}`
+    );
+    newScript.push([{ line: '' }]);
+    newScript.push(...slines);
+  });
+  // return the modified script
+  return newScript;
 }
 
 /// AGENT UTILITIES ///////////////////////////////////////////////////////////
@@ -123,55 +210,26 @@ export {
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// API: These methods are related to transpiling GEMSCRIPT
-/// from source text and
+/// from source text
 export {
   CompileText, // compile a script text that IS NOT a blueprint
   ValidateLineText // return validation tokens for line
 };
-export {
-  DecodeTokenPrimitive, // utility: to convert a scriptToken into runtime data
-  DecodeToken, // utility: with DecodeTokenPrimitive, converts a token into runtime entity
-  DecodeStatement, // utility: works with DecodeToken to create runtime enties
-  SymbolizeStatement, // utility: extract symbols defined by a keyword
-  ValidateStatement, // utility: check script tokens against symbols
-  ValidateExpression, // utility: see if expression can access stuff
-  //
-  CompileScript, // API: return a TSMCProgram from a script text
-  ExtractBlueprintMeta, // API: return directives from script text
-  //
-  CompileBlueprint, // API: save a blueprint script as a bundle with program output
-  SymbolizeBlueprint // API: save blueprint symbols to a bundle
-} from 'script/tools/script-compiler';
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// API: script manipulation utilities
+export {
+  EnforceBlueprintPragmas // make sure a script has required pragmas
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// FORWARDED API: convert tokenized scripts into other useful forms
+export * from 'script/tools/script-compiler'; //
 /// FORWARDED API: convert text to tokenized scripts
-export {
-  TextToScript, // text w/ newlines => TScriptUnit[]
-  StringToLineScript, // single-line string => TScriptUnit
-  ScriptToText, // TScriptUnit[] => produce source text from units
-  TokenToString, // for converting a token to its text representation
-  StatementToText // convert scriptUnit[] to text
-} from 'script/tools/script-tokenizer';
-/// DEPRCECATED API: convert tokenized script into a React representation
-export {
-  ScriptToJSX // TScriptUnit[] => jsx
-} from 'script/tools/script-to-jsx';
+export * from 'script/tools/script-tokenizer';
 /// FORWARDED API: convert tokenized script to React-renderable data structures
-export {
-  ScriptToLines, // converts script into a viewmodel suitable for rendering as lines
-  ScriptToEditableTokens, // script to editable token list
-  ScriptPageToEditableTokens, // script_page to editable token list
-  EditableTokensToScript // pack editable token list back into script
-} from 'script/tools/script-to-lines';
-
+export * from 'script/tools/script-to-lines';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// DEPRCECATED API: convert tokenized script into a React representation
+export * from 'script/tools/script-to-jsx';
 /// DEPRECATED API: these are routines that extract these values using brute
 /// force techniques before the compiler generated this information for us
-export {
-  ExtractBlueprintProperties,
-  ExtractBlueprintPropertiesMap,
-  ExtractBlueprintPropertiesTypeMap,
-  ExtractFeaturesUsed,
-  ExtractFeatPropMapFromScript,
-  ExtractFeatPropMap
-} from 'script/tools/script-extraction-utilities';
+export * from 'script/tools/script-extraction-utilities';
