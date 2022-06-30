@@ -394,6 +394,10 @@ function DispatchClick(event) {
       vmPageLine // all the VMTokens in this line
     } = SelectedTokenInfo();
 
+    // if the token is locked, ignore the click
+    const classes = event.target.getAttribute('class');
+    if (classes.includes('locked')) return; // don't process click
+
     // here we want to map the selected symbolType/symbolValue to the
     // scriptToken which has its own type. We also need to know the
     // This is that TYPE MATCHING challenge again...

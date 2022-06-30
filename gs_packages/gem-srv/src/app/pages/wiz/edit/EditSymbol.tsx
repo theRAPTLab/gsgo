@@ -61,6 +61,23 @@ export const HIDDEN_SYMBOLS = [
   'statusvaluecolor',
   'statusvalueislarge'
 ];
+export const LOCKED_SYMBOLS = [
+  '#',
+  '_pragma',
+  'blueprint',
+  'tag',
+  'ischarcontrollable',
+  'ispozyxcontrollable',
+  'isptrackcontrollable',
+  'program',
+  'define',
+  'init',
+  'condition',
+  'event',
+  'update',
+  'think',
+  'exec'
+];
 export const ADVANCED_SYMBOLS = [
   // keywords
   'exprpush',
@@ -88,7 +105,7 @@ export const ADVANCED_SYMBOLS = [
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function EditSymbol(props) {
   // we need the current selection
-  const { selection = {} } = props;
+  const { selection = {}, locked } = props;
   const { sel_linenum, sel_linepos, vmPageLine, sel_slotpos } = selection;
   const label = `options for token ${sel_linenum}:${sel_linepos}`;
   let symbolType;
@@ -186,12 +203,16 @@ export function EditSymbol(props) {
         // get all the choices for this symbol type
         items.forEach(choice => {
           const choiceKey = `${stype}:${choice || GUI_EMPTY_TEXT}`;
+          // if EditSymbol is locked, it overrides ALL symbol choices
+          const symbolIsLocked =
+            locked || LOCKED_SYMBOLS.includes(choice.toLowerCase());
           const tok = (
             <GSymbolToken
               key={choiceKey}
               symbolType={stype}
               unitText={unitText}
               choice={choice || GUI_EMPTY_TEXT}
+              locked={symbolIsLocked}
             />
           );
           if (

@@ -20,6 +20,7 @@ import {
   GValidationToken,
   sScriptView
 } from '../SharedElements';
+import { LOCKED_SYMBOLS } from './EditSymbol';
 // css -- REVIEW: Move to the top level TEMP HACK
 import 'lib/vendor/pico.min.css';
 import 'lib/css/gem-ui.css';
@@ -135,6 +136,7 @@ export function ScriptViewPane(props) {
     const { lineNum, level, vmTokens } = line;
     const lineBuffer = [];
     const hasTokens = vmTokens.length > 0;
+    let lineHasLockedSymbols = false;
     // iterate over vmTokens if it exists
     if (hasTokens) {
       // Iterate over validation tokens so we can show errors
@@ -173,6 +175,12 @@ export function ScriptViewPane(props) {
           else viewState = 'empty';
           tokenKey = `${lineNum},${idx + 1}`; // generate tokenKey
         }
+        // locked
+        if (LOCKED_SYMBOLS.includes(label.toLowerCase())) {
+          viewState = 'locked';
+          lineHasLockedSymbols = true;
+        }
+        // selected
         selected = tokenKey === selTokId;
         lineBuffer.push(
           <GValidationToken
@@ -214,9 +222,11 @@ export function ScriptViewPane(props) {
               +
             </button>
             {lineBuffer}
-            <button className="outline btnDelete" onClick={ConfirmDeletion}>
-              DELETE
-            </button>
+            {!lineHasLockedSymbols && (
+              <button className="outline btnDelete" onClick={ConfirmDeletion}>
+                DELETE
+              </button>
+            )}
           </>
         );
       }

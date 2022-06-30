@@ -25,7 +25,7 @@ import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 
 import { ObjRefSelector } from './ObjRefSelector';
-import { EditSymbol } from './EditSymbol';
+import { LOCKED_SYMBOLS, EditSymbol } from './EditSymbol';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -120,6 +120,9 @@ function SelectEditor(props) {
   // necessary to prevent NaN error if unitText is undefined
   let defaultNumber = Number(unitText);
   defaultNumber = Number.isNaN(defaultNumber) ? '' : defaultNumber; // make sure it's number
+
+  // locked
+  const locked = LOCKED_SYMBOLS.includes(unitText.toLowerCase());
 
   switch (gsType) {
     case 'identifier':
@@ -239,7 +242,11 @@ function SelectEditor(props) {
     default:
       editor = (
         <div>
-          <EditSymbol selection={selection} expectedType={gsType} />
+          <EditSymbol
+            selection={selection}
+            expectedType={gsType}
+            locked={locked}
+          />
         </div>
       );
   }

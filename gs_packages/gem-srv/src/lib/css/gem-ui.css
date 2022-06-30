@@ -197,6 +197,13 @@
   background-color: rgba(255, 166, 0, 0.5);
   cursor: pointer;
 }
+.gtoken.locked {
+  color: rgba(0, 0, 0, 0.4);
+}
+.gtoken.locked:hover {
+  background-color: rgba(221, 221, 221, 1);
+  cursor: not-allowed;
+}
 .gline.selected {
   /* border-bottom: 1px solid rgba(255, 166, 0, 1) !important; orange */
   background-color: rgba(255, 166, 0, 0.25) !important;
@@ -224,6 +231,16 @@
 }
 .gtoken.styleFlagInvalid.selected {
   background-color: rgba(255, 100, 0, 1) !important;
+}
+.gwiz.styleFlagLocked {
+  color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.05);
+  outline: dashed 1px rgba(0, 0, 0, 0.1);
+  outline-offset: -1px; /* border inside div */
+}
+.gwiz.styleFlagLocked:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+  cursor: not-allowed;
 }
 .gwiz.styleFlagDisabled {
   color: rgba(0, 0, 0, 0.1);
