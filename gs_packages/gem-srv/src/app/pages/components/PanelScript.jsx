@@ -261,25 +261,20 @@ class PanelScript extends React.Component {
   handleWizUpdate(vmStateEvent) {
     // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
     const { script_page, script_text } = vmStateEvent;
+    const newState = {};
+    let cb;
     if (script_page) {
-      this.setState({
-        script_page,
-        isDirty: true
-      });
+      newState.script_page = script_page;
     }
     if (script_text) {
-      this.setState(
-        {
-          script_text,
-          isDirty: true
-        },
-        () => {
-          this.jar.updateCode(script_text);
-          // Force Prism update otherwise line number highlight is not updated
-          Prism.highlightElement(this.jarRef.current);
-        }
-      );
+      newState.script_text = script_text;
+      cb = () => {
+        this.jar.updateCode(script_text);
+        // Force Prism update otherwise line number highlight is not updated
+        Prism.highlightElement(this.jarRef.current);
+      };
     }
+    this.setState(newState, cb);
   }
 
   HandleSimDataUpdate() {
