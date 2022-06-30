@@ -122,7 +122,7 @@ function SelectEditor(props) {
   defaultNumber = Number.isNaN(defaultNumber) ? '' : defaultNumber; // make sure it's number
 
   // locked
-  const locked = LOCKED_SYMBOLS.includes(unitText.toLowerCase());
+  const locked = unitText && LOCKED_SYMBOLS.includes(unitText.toLowerCase());
 
   switch (gsType) {
     case 'identifier':
