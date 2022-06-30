@@ -34,11 +34,11 @@ SIMDATA.DefinePragma('TAG', (tagName, value) => {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class _pragma extends Keyword {
+export class _directive extends Keyword {
   // base pragmaerties defined in KeywordDef
 
   constructor() {
-    super('_pragma');
+    super('_directive');
     this.args = ['pragmaName:pragma', '*:{...}'];
   }
 
@@ -76,4 +76,4 @@ export class _pragma extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-SIMDATA.RegisterKeyword(_pragma);
+SIMDATA.RegisterKeyword(_directive);

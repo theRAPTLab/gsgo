@@ -63,7 +63,7 @@ function ScriptToJSX(units: TScriptUnit[], options: any[]): any[] {
       unit[1] = rawUnit[0] ? rawUnit[0].comment : '';
     }
 
-    if (keyword === '#') keyword = '_pragma';
+    if (keyword === '#') keyword = '_directive';
     let kwProcessor = GetKeyword(keyword);
     if (!kwProcessor) {
       kwProcessor = GetKeyword('dbgError');
