@@ -476,32 +476,35 @@ function ScriptToProgramMap(script: TScriptUnit[]): Map<string, TLineContext> {
   let DIR_MAP = new Map();
   let map_entry: any;
   let last_num: number;
-  // directives is an array of { pragma,
+  // directives is an array of { pragma, num, args }
   DIRECTIVES.forEach(dir => {
     let { num, pragma, args } = dir;
-    last_num = num;
     pragma = pragma.toUpperCase();
+    // handle PROGRAM
     if (pragma === 'PROGRAM') {
       let program = args[0];
       if (typeof program === 'string') program = program.toUpperCase();
       // if program changed, then write the end state
       if (map_entry) {
         if (DIR_MAP.has(map_entry.program)) {
-          const err = `multiple declarations of ${program}`;
+          const err = `multiple declarations of ${map_entry.program}`;
           console.warn(err);
           throw Error(err);
         }
         map_entry.end = num - 1;
         DIR_MAP.set(map_entry.program, map_entry);
       }
+      // always create a new map entry because we just closed one
+      // or a new one is beginning
       map_entry = {
         program: program || 'error bad program string',
         start: num,
         end: -1
       };
     }
-    if ((pragma = 'EOF')) last_num = num;
+    last_num = num;
   });
+  // post-loop cleanup of any open map entries
   if (map_entry && map_entry.end < 0) {
     map_entry.end = last_num;
     DIR_MAP.set(map_entry.program, map_entry);

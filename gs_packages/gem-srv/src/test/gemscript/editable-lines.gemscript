@@ -1,30 +1,43 @@
 # blueprint TestEditables
 # program define
-addProp energyType number
+addProp energyType string
 # program init
-prop energyType setTo 'BB'
-if {{ aa }} [[
-  prop energyType setTo 'AA'
-  if {{ bb }} [[
-    prop energyType setTo 'L2 nested A'
-    prop energyType setTo 'L2 nested B'
-    prop energyType setTo 'L2 nested C'
+prop agent.energyType setTo 'BB'
+if {{ agent.energyType }} [[
+  prop agent.energyType setTo 'AA'
+  if {{ agent.energyType }} [[
+    prop agent.energyType setTo 'L2 nested A'
+    prop agent.energyType setTo 'L2 nested B'
+    prop agent.energyType setTo 'L2 nested C'
   ]]
-  prop energyType setTo 'INTERMISSION'
-  if {{ cc }} [[
-    prop energyType setTo 'L2 disappear A'
-    if {{ dd }} [[
-      prop energyType setTo 'L3 ok A'
+  prop agent.energyType setTo 'INTERMISSION'
+  if {{ agent.energyType }} [[
+    prop agent.energyType setTo 'L2 disappear A'
+    if {{ agent.energyType }} [[
+      prop agent.energyType setTo 'L3 ok A'
     ]]
-    prop energyType setTo 'L2 disappear B'
+    prop agent.energyType setTo 'L2 disappear B'
   ]]
-  prop energyType setTo 'L1 ghost A'
-  prop energyType setTo 'L1 ghost B'
+  prop agent.energyType setTo 'L1 ghost A'
+  prop agent.energyType setTo 'L1 ghost B'
 ]]
-if {{ dd }} [[
-  prop energyType setTo 'L0 alive A'
-  prop energyType setTo 'L0 alive B'
+if {{ agent.energyType }} [[
+  prop agent.energyType setTo 'L0 alive A'
+  prop agent.energyType setTo 'L0 alive B'
 ]] [[
-  prop energyType setTo 'L0 dead A'
-  prop energyType setTo 'L0 dead B'
+  prop agent.energyType setTo 'L0 dead A'
+  prop agent.energyType setTo 'L0 dead B'
+]]
+# program event
+onEvent Tick [[
+  dbgTick
+  ifExpr {{ agent.prop['energyType'].value }} [[
+    prop agent.energyType setTo 'L2 Tick A'
+    prop agent.energyType setTo 'L2 Tick B'
+  ]]
+]]
+# program update
+every 1 runAtStart [[
+  prop agent.energyType setTo 'L1 update A'
+  prop agent.energyType setTo 'L1 update B'
 ]]
