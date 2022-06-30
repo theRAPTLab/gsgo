@@ -97,19 +97,23 @@ const literalRemapper = {
 };
 // keys are valid token types, values are validation functions
 const validTokenTypes = {
-  directive: arg => typeof arg === 'string' && arg !== '',
-  comment: arg => typeof arg === 'string',
-  line: arg => typeof arg === 'string',
-  value: arg =>
+  directive: (arg: any) => typeof arg === 'string' && arg === '#',
+  comment: (arg: any) => typeof arg === 'string',
+  line: (arg: any) => typeof arg === 'string',
+  value: (arg: any) =>
     typeof arg === 'number' || typeof arg === 'boolean' || arg === null,
-  string: arg => typeof arg === 'string',
-  program: arg => typeof arg === 'string' && arg !== '',
-  block: arg => Array.isArray(arg),
-  identifier: arg => typeof arg === 'string' && arg !== '',
-  objref: arg =>
+  string: (arg: any) => typeof arg === 'string',
+  program: (arg: any) => typeof arg === 'string' && arg !== '',
+  block: (arg: any) => Array.isArray(arg),
+  identifier: (arg: any) => {
+    if (typeof arg !== 'string') return false;
+    if (arg.includes('.')) return false;
+    return arg !== '';
+  },
+  objref: (arg: any) =>
     Array.isArray(arg) &&
     arg.every(item => typeof item === 'string' && item !== ''),
-  expr: arg => typeof arg === 'string' && arg !== ''
+  expr: (arg: any) => typeof arg === 'string' && arg !== ''
 };
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
@@ -269,6 +273,7 @@ class ScriptTokenizer {
   tokenize(src: string, flag?: string) {
     let lines: string[];
     if (typeof src === 'string') lines = src.split('\n');
+    else return [];
     this.lines = lines; // an array of strings
     this.linesCount = this.lines.length;
     this.linesIndex = 0;
@@ -711,7 +716,7 @@ class ScriptTokenizer {
   }
 }
 
-/// STATIC METHODS  //////////////////////////////////////////////////////////'
+/// MAIN API METHODS  /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const scriptifier = new ScriptTokenizer();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -719,6 +724,8 @@ const scriptifier = new ScriptTokenizer();
 function Tokenize(text: string): IToken[] {
   return scriptifier.tokenize(text);
 }
+
+/// TOKEN INSPECTION UTILITIES ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to validate token types
  *  returns [ token_type, token_value ] if it is a valid token,
@@ -758,19 +765,9 @@ function UnpackToken(tok: IToken): TUnpackedToken {
   return [type, tok[type]];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Is the token whitespace or not? Line or Comment tokens return true
- */
-function IsNonCodeToken(tok: IToken): boolean {
-  const [type, value] = UnpackToken(tok);
-  if (type === 'line') return true;
-  if (type === 'comment') return true;
-  return false;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Similar to the script compiler's DecodeStatement() utility, this function
  *  does a similar unpacking except it doesn't compile blocks, instead
- *  recursively unpacking them. Skips line and comment tokens.
- */
+ *  recursively unpacking them. Skips line and comment tokens. */
 function UnpackStatement(unit: TScriptUnit): TKWArguments {
   const ustatement = [];
   unit.forEach(tok => {
@@ -787,8 +784,7 @@ function UnpackStatement(unit: TScriptUnit): TKWArguments {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Similar to the script compiler's CompileScript() utility, this fnction
  *  uses UnpackStatement to fully unpack nested blocks. It removes all comments
- *  and blank lines.
- */
+ *  and blank lines. */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function UnpackScript(script: TScriptUnit[]): TKWArguments[] {
   const uscript = [];
@@ -798,47 +794,72 @@ function UnpackScript(script: TScriptUnit[]): TKWArguments[] {
   });
   return uscript;
 }
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Utility to validate token, returning true/false only */
-function IsValidToken(tok: IToken): boolean {
-  const [valid] = UnpackToken(tok);
-  return typeof valid === 'string';
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Utility to check string is a known token type */
-function IsValidTokenKey(tokType: string): boolean {
-  return validTokenTypes[tokType] !== undefined;
-}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to return tokenValue if it optionally matches expected type */
 function TokenValue(tok, matchType?: string) {
-  if (matchType && !IsValidTokenKey(matchType)) return undefined;
+  if (matchType && !StringIsValidTokenType(matchType)) return undefined;
   const [type, tokenValue] = UnpackToken(tok); // note: only unpacks valid tokens
   if (matchType && matchType !== type) return undefined;
   return tokenValue;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Utility to return the pragma value if it is one, undefined otherwise */
-function DecodePragmaToken(tok: IToken): string[] {
-  const [type, tokenValue] = UnpackToken(tok);
-  if (type === '_pragma') return tokenValue;
-  return undefined;
+/** Utility to return the directive values. If it's directive, the
+ *  first value will be '#' followed by decoded values. Otherwise
+ *  first value is undefined, followed by decoded */
+function DecodeAsDirectiveStatement(stm: TScriptUnit): string[] {
+  // { directive:'#' } {
+  const [kwTok, ...args] = stm;
+  const results = args.map(tok => TokenValue(tok));
+  const isGood = TokenIsType(kwTok, 'directive');
+  if (!TokenIsType(kwTok, 'directive')) return [undefined, ...results];
+  return ['#', ...results];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function DecodeKeywordToken(tok: any): string {
-  const fn = 'DecodeKeywordToken:';
-  const [type, value] = UnpackToken(tok);
-  if (type === 'directive') return '_pragma';
+/** Utility to return the keyword module name from, if it is a keyword token
+ *  special keywords use a leading underscore as their filename */
+function KWModuleFromKeywordToken(kwTok: any): string {
+  const fn = 'KWModuleFromKeywordToken:';
+  const [type, value] = UnpackToken(kwTok);
+  if (type === 'directive') return '_directive';
   if (type === 'comment') return '_comment';
   if (type === 'line') return '_line';
   if (type !== 'identifier') {
-    console.warn(`${fn} bad token`, tok);
+    console.warn(`${fn} bad token`, kwTok);
     const err = `${fn} tok '${type}' is not decodeable as a keyword`;
     throw Error(err);
   }
   return value;
 }
+
+/// TOKEN VALIDITY CHECKS /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Is the token whitespace or not? Line or Comment tokens return true */
+function IsNonCodeToken(tok: IToken): boolean {
+  const [type] = UnpackToken(tok);
+  if (type === 'line') return true;
+  if (type === 'comment') return true;
+  return false;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Utility to validate token, returning true/false only */
+function IsValidToken(tok: IToken): boolean {
+  const [type] = UnpackToken(tok);
+  return typeof type === 'string'; // type is undefined in invalid
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Utility to check string is a known token type */
+function StringIsValidTokenType(tokType: string): boolean {
+  return validTokenTypes[tokType] !== undefined;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function TokenIsType(tok: IToken, matchType: string): boolean {
+  const [tokType, tokValue] = UnpackToken(tok);
+  if (tokType !== matchType) return false;
+  const test = validTokenTypes[matchType];
+  if (test === undefined) return false;
+  return test(tokValue);
+}
+
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default ScriptTokenizer;
@@ -854,6 +875,11 @@ export {
   //
   UnpackToken // return [type, value]
 };
-export { DecodeKeywordToken, DecodePragmaToken, TokenValue };
+export {
+  KWModuleFromKeywordToken,
+  DecodeAsDirectiveStatement,
+  TokenValue,
+  TokenIsType
+};
 /// utilities to return whether a particular token is of a particular type
-export { IsNonCodeToken, IsValidToken, IsValidTokenKey };
+export { IsNonCodeToken, IsValidToken, StringIsValidTokenType };

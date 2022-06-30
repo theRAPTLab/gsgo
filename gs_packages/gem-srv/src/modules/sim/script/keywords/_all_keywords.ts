@@ -35,7 +35,7 @@ export * from './every'; // script event processing
 // system keywords being with _
 export * from './_comment'; // embed comment data
 export * from './_line'; // a blank line
-export * from './_pragma'; // compiler control
+export * from './_directive'; // compiler control
 
 /// DEVELOPMENT LIMBO /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -57,6 +57,13 @@ declare global {
     unitText: string;
     dataSelectKey: number;
   };
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** returned by ScriptToProgramMap */
+  type TLineContext = {
+    program: string;
+    start: number;
+    end: number;
+  };
 }
 
 /// EXPORT AS MODULE FOR GLOBALS //////////////////////////////////////////////

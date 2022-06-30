@@ -211,10 +211,10 @@ export {
   // type checks
   IsNonCodeToken,
   IsValidToken,
-  IsValidTokenKey,
+  StringIsValidTokenType,
   // token evaluation
-  DecodePragmaToken,
-  DecodeKeywordToken,
+  DecodeAsDirectiveStatement,
+  KWModuleFromKeywordToken,
   UnpackToken,
   UnpackStatement,
   TokenValue
