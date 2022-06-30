@@ -418,7 +418,8 @@ class ScriptEditor extends React.Component {
       <div
         className={classes.root}
         style={{
-          gridTemplateColumns: PANEL_CONFIG.get(panelConfiguration)
+          gridTemplateColumns: PANEL_CONFIG.get(panelConfiguration),
+          gridTemplateRows: '40px auto' // force hide bottom bar
         }}
       >
         <div
@@ -459,6 +460,7 @@ class ScriptEditor extends React.Component {
           <ScriptEditPane selection={{ sel_linenum, sel_linepos }} />
           {/* <PanelSimViewer id="sim" onClick={this.OnPanelClick} /> */}
         </div>
+        {/* Hidden by gridTemplateRows at root div
         <div
           id="console-bottom"
           className={classes.bottom}
@@ -485,7 +487,7 @@ class ScriptEditor extends React.Component {
             />
             {DialogNoMain}
           </div>
-        </div>
+        </div> */}
       </div>
     );
   }
