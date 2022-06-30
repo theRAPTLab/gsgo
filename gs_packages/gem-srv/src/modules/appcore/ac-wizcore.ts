@@ -795,6 +795,12 @@ function DeleteSelectedLine(event) {
 /** API return what PROGRAM directive a line is inside, as well as its range */
 function GetProgramContextForLine(lineNum: number): TLineContext {
   const { script_tokens, program_map } = STORE.State();
+  if (program_map === null && script_tokens.length === 0) {
+    console.warn(
+      '%cscript_tokens and program_map are empty...is ScriptEditor initializing out-of-order?',
+      'font-size:1.5em'
+    );
+  }
   let map = program_map || TRANSPILER.ScriptToProgramMap(script_tokens);
 
   let foundProgram: string;

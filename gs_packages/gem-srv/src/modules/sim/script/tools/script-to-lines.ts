@@ -195,6 +195,148 @@ class ScriptLiner {
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Main Entry Point: Convert a tokenized script into a "page" of "lines" of
+   *  tokens */
+  programToLines(program: TScriptUnit[]) {
+    program.forEach((stm, ii) => {
+      if (DBG) console.group('line', ii);
+      this.statementToLines(stm);
+      if (DBG) console.groupEnd();
+    });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  statementToLines(statement: TScriptUnit): void {
+    // process all the tokens in the statement
+    if (statement.length === 0) {
+      if (DBG) console.log('Empty Statement', statement);
+      return;
+    }
+    this.pushTokens(statement); // set current statement context
+    statement.forEach((tok: IToken, sindex: number) => {
+      // regular token: add to statement
+      if (!Array.isArray(tok.block)) {
+        this.tokenOut(tok);
+        if (DBG) console.log('.. tokout', StatementToText([tok]), tok);
+        return;
+      }
+      // block token: detect blockstart/end conditions and process recursively
+      if (DBG) this.DBGTEXT += 'BLOCK ';
+      if (DBG) {
+        const bflag = this.BLOCK_FLAG
+          ? `!!!!!!!! ${this.BLOCK_FLAG.toUpperCase()}`
+          : '';
+        console.log(
+          'LINEOUT %cBLOCK',
+          'color:red',
+          StatementToText(this.peekTokens()),
+          bflag
+        );
+      }
+      // process statements in the block...
+      const precedingBlock =
+        sindex - 1 >= 0 ? statement[sindex - 1].block : undefined;
+      if (!precedingBlock) this.BLOCK_FLAG = `start`;
+      this.lineOut(); // flush line before processing the block
+      tok.block.forEach((bstm, index) => {
+        if (DBG) console.group(`block level ${this.INDENT}`);
+        const terminal = index === tok.block.length - 1;
+        const followedByBlock =
+          sindex + 1 < statement.length ? statement[sindex + 1].block : undefined;
+        if (terminal) this.BLOCK_FLAG = followedByBlock ? `end-start` : `end`;
+        // block flag will affect recursive statement lineout
+        this.indent();
+        this.statementToLines(bstm);
+        this.outdent();
+        console.groupEnd();
+      });
+    });
+    // finished statement processing, so now output the line
+    this.lineOut(); // flush buffer after statement is printed, increment line
+    if (DBG) {
+      const bflag = this.BLOCK_FLAG
+        ? `!!!!!!!! ${this.BLOCK_FLAG.toUpperCase()}`
+        : '';
+      console.log('LINEOUT', StatementToText(this.peekTokens()), bflag);
+    }
+  }
+
+  /// EXPERIMENTAL //////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API: Improved algorithm for converting a statement into a stack of lines
+   *  with nesting level indicators */
+  statementToLinesV2(statement: TScriptUnit): TScriptUnit[] {
+    //
+    const DIRECTIVES = [];
+    /*  RECURSIVE FUNCTION DECLARATIONS */
+    const is_terminal = (arr, i) => i === arr.length - 1;
+    const process_stm = (stm: TScriptUnit, level: number = 0): TScriptUnit[] => {
+      let RESULTS = [];
+      let LINESCRIPT = [];
+      if (stm.length === 0) {
+        if (!SHOW_EMPTY_STATEMENTS) return [];
+        RESULTS.push({ num: this.LINE_NUM++, level, line: [{ line: '' }] });
+        return RESULTS;
+      }
+
+      let [isDir, pragma, ...args] = DecodeAsDirectiveStatement(stm);
+      if (isDir) {
+        // console.log('DecodeAsDirectiveStatement', isDir, pragma, ...args);
+        let entry = { num: this.LINE_NUM, pragma, args };
+        DIRECTIVES.push(entry);
+      }
+      stm.forEach((tok: IToken) => {
+        const [tokType] = UnpackToken(tok);
+        // not a block, just save the token to the buffer
+        if (tokType !== 'block') {
+          LINESCRIPT.push(tok);
+          return;
+        }
+        // otherwise it's a block of statements
+        // first save the current part of the LINESCRIPT to results
+        RESULTS.push({ num: this.LINE_NUM++, level, line: LINESCRIPT });
+        LINESCRIPT = [];
+        const bstms = tok.block.values();
+        let bstm = bstms.next().value;
+        while (bstm) {
+          const blines = process_stm(bstm, level + 1);
+          blines.forEach(bline => RESULTS.push(bline));
+          bstm = bstms.next().value;
+        }
+        return;
+      });
+
+      // done processing statement tokens, push assembled line
+      if (LINESCRIPT.length > 0 || SHOW_EMPTY_STATEMENTS)
+        RESULTS.push({ num: this.LINE_NUM++, level, line: LINESCRIPT });
+      return RESULTS;
+    }; // end of process_stm
+
+    /* END OF RECURSIVE FUNCTION DECLARATIONS */
+    const RESULTS = process_stm(statement);
+    return [RESULTS, DIRECTIVES];
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API: Improved algorithm for converting a program into a stack of lines
+   *  with nesting level indicators */
+  programToLinesV2(program: TScriptUnit[]) {
+    this.clearData();
+    const PAGE = [];
+    const DIRECTIVES = [];
+    let counter = 0;
+    const programLines = program.values();
+    let pline = programLines.next().value;
+    while (pline) {
+      const [lines, dirs] = this.statementToLinesV2(pline);
+      counter += lines.length;
+      PAGE.push(...lines);
+      DIRECTIVES.push(...dirs);
+      pline = programLines.next().value;
+    }
+    // write a final program end directive
+    DIRECTIVES.push({ num: counter, pragma: 'EOF' });
+    return [PAGE, DIRECTIVES];
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** reference algorithm used by statementToLines */
   genericStatementDeblocker(stm: TScriptUnit): void {
     if (stm.length === 0) return;
@@ -280,148 +422,6 @@ class ScriptLiner {
       if (lineScript.length) current.push(lineScript);
     });
     return script_tokens;
-  }
-
-  /// EXPERIMENTAL //////////////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: Improved algorithm for converting a statement into a stack of lines
-   *  with nesting level indicators */
-  statementToLinesV2(statement: TScriptUnit): TScriptUnit[] {
-    //
-    const DIRECTIVES = [];
-    /*  RECURSIVE FUNCTION DECLARATIONS */
-    const is_terminal = (arr, i) => i === arr.length - 1;
-    const process_stm = (stm: TScriptUnit, level: number = 0): TScriptUnit[] => {
-      let RESULTS = [];
-      let LINESCRIPT = [];
-      if (stm.length === 0) {
-        if (!SHOW_EMPTY_STATEMENTS) return [];
-        RESULTS.push({ num: this.LINE_NUM++, level, line: [{ line: '' }] });
-        return RESULTS;
-      }
-
-      let [isDir, pragma, ...args] = DecodeAsDirectiveStatement(stm);
-      if (isDir) {
-        // console.log('DecodeAsDirectiveStatement', isDir, pragma, ...args);
-        let entry = { num: this.LINE_NUM, pragma, args };
-        DIRECTIVES.push(entry);
-      }
-      stm.forEach((tok: IToken) => {
-        const [tokType] = UnpackToken(tok);
-        // not a block, just save the token to the buffer
-        if (tokType !== 'block') {
-          LINESCRIPT.push(tok);
-          return;
-        }
-        // otherwise it's a block of statements
-        // first save the current part of the LINESCRIPT to results
-        RESULTS.push({ num: this.LINE_NUM++, level, line: LINESCRIPT });
-        LINESCRIPT = [];
-        const bstms = tok.block.values();
-        let bstm = bstms.next().value;
-        while (bstm) {
-          const blines = process_stm(bstm, level + 1);
-          blines.forEach(bline => RESULTS.push(bline));
-          bstm = bstms.next().value;
-        }
-        return;
-      });
-
-      // done processing statement tokens, push assembled line
-      if (LINESCRIPT.length > 0 || SHOW_EMPTY_STATEMENTS)
-        RESULTS.push({ num: this.LINE_NUM++, level, line: LINESCRIPT });
-      return RESULTS;
-    }; // end of process_stm
-
-    /* END OF RECURSIVE FUNCTION DECLARATIONS */
-    const RESULTS = process_stm(statement);
-    return [RESULTS, DIRECTIVES];
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: Improved algorithm for converting a program into a stack of lines
-   *  with nesting level indicators */
-  programToLinesV2(program: TScriptUnit[]) {
-    this.clearData();
-    const PAGE = [];
-    const DIRECTIVES = [];
-    let counter = 0;
-    const programLines = program.values();
-    let pline = programLines.next().value;
-    while (pline) {
-      const [lines, dirs] = this.statementToLinesV2(pline);
-      counter += lines.length;
-      PAGE.push(...lines);
-      DIRECTIVES.push(...dirs);
-      pline = programLines.next().value;
-    }
-    // write a final program end directive
-    DIRECTIVES.push({ num: counter, pragma: 'EOF' });
-    return [PAGE, DIRECTIVES];
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Main Entry Point: Convert a tokenized script into a "page" of "lines" of
-   *  tokens */
-  programToLines(program: TScriptUnit[]) {
-    program.forEach((stm, ii) => {
-      if (DBG) console.group('line', ii);
-      this.statementToLines(stm);
-      if (DBG) console.groupEnd();
-    });
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  statementToLines(statement: TScriptUnit): void {
-    // process all the tokens in the statement
-    if (statement.length === 0) {
-      if (DBG) console.log('Empty Statement', statement);
-      return;
-    }
-    this.pushTokens(statement); // set current statement context
-    statement.forEach((tok: IToken, sindex: number) => {
-      // regular token: add to statement
-      if (!Array.isArray(tok.block)) {
-        this.tokenOut(tok);
-        if (DBG) console.log('.. tokout', StatementToText([tok]), tok);
-        return;
-      }
-      // block token: detect blockstart/end conditions and process recursively
-      if (DBG) this.DBGTEXT += 'BLOCK ';
-      if (DBG) {
-        const bflag = this.BLOCK_FLAG
-          ? `!!!!!!!! ${this.BLOCK_FLAG.toUpperCase()}`
-          : '';
-        console.log(
-          'LINEOUT %cBLOCK',
-          'color:red',
-          StatementToText(this.peekTokens()),
-          bflag
-        );
-      }
-      // process statements in the block...
-      const precedingBlock =
-        sindex - 1 >= 0 ? statement[sindex - 1].block : undefined;
-      if (!precedingBlock) this.BLOCK_FLAG = `start`;
-      this.lineOut(); // flush line before processing the block
-      tok.block.forEach((bstm, index) => {
-        if (DBG) console.group(`block level ${this.INDENT}`);
-        const terminal = index === tok.block.length - 1;
-        const followedByBlock =
-          sindex + 1 < statement.length ? statement[sindex + 1].block : undefined;
-        if (terminal) this.BLOCK_FLAG = followedByBlock ? `end-start` : `end`;
-        // block flag will affect recursive statement lineout
-        this.indent();
-        this.statementToLines(bstm);
-        this.outdent();
-        console.groupEnd();
-      });
-    });
-    // finished statement processing, so now output the line
-    this.lineOut(); // flush buffer after statement is printed, increment line
-    if (DBG) {
-      const bflag = this.BLOCK_FLAG
-        ? `!!!!!!!! ${this.BLOCK_FLAG.toUpperCase()}`
-        : '';
-      console.log('LINEOUT', StatementToText(this.peekTokens()), bflag);
-    }
   }
 
   /// EXPORTED API METHODS //////////////////////////////////////////////////////
