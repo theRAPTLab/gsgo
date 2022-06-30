@@ -115,7 +115,6 @@ const validTokenTypes = {
     arg.every(item => typeof item === 'string' && item !== ''),
   expr: (arg: any) => typeof arg === 'string' && arg !== ''
 };
-
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Get return the longest key length of any object
