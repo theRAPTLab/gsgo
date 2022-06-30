@@ -313,9 +313,12 @@ class ScriptEditor extends React.Component {
 
   OnPanelClick(id) {
     if (id === 'sim') return; // don't do anything if user clicks on sim panel
-    this.setState({
-      panelConfiguration: id
-    });
+    this.setState(
+      {
+        panelConfiguration: id
+      },
+      () => WIZCORE.CancelSlotEdit()
+    );
   }
 
   /**
