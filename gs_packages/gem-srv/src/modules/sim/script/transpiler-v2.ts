@@ -82,41 +82,41 @@ function ValidateLineText(line: string, bdl: SM_Bundle): TValidatedScriptUnit {
 /** API: ensure that a script has the required blue directives. Does not
  *  modify original script */
 function EnforceBlueprintPragmas(script: TScriptUnit[]): TScriptUnit[] {
-  const TAGMAP = new Map();
-  const MAP: { [key: string]: any } = {};
+  const TAGMAP: { [key: string]: any } = {};
   const newScript = [];
-  const statements = script.entries();
 
   // first scan for blueprint, insert if missing
-  let [stmNum, stm] = statements.next().value;
+  /* SETUP **/ const statements = script.entries();
+  /* READ ***/ let [stmNum, stm] = statements.next().value;
   let [kw, pragmaType, pragmaKey, ...args] = TOKENIZER.UnpackStatement(stm);
   pragmaType = (pragmaType as string).toUpperCase();
   if (kw && kw !== '#' && pragmaType !== 'BLUEPRINT') {
     newScript.push(...TOKENIZER.TextToScript(`# BLUEPRINT Agent${Date.now()}`));
   }
   newScript.push(stm);
-
   // next scan for everything that is a directive at the top
   let scanTags = true;
+  /* READ ***/ [stmNum, stm] = statements.next().value;
   while (scanTags) {
-    [stmNum, stm] = statements.next().value;
     [kw, pragmaType, pragmaKey, ...args] = TOKENIZER.UnpackStatement(stm);
     pragmaType = pragmaType || '';
     pragmaType = (pragmaType as string).toUpperCase();
     pragmaKey = pragmaKey || '';
     pragmaKey = (pragmaKey as string).toUpperCase();
     if ((kw && kw !== '#') || pragmaType !== 'TAG') {
+      // stop at the first non tag
       scanTags = false;
     } else {
       const pkey = pragmaType;
-      if (MAP[pkey] === undefined) MAP[pkey] = {};
-      const pdict = MAP[pkey];
+      if (TAGMAP[pkey] === undefined) TAGMAP[pkey] = {};
+      const pdict = TAGMAP[pkey];
       pdict[pragmaKey as string] = { stmNum, args };
       newScript.push(stm);
+      /* READ ***/ [stmNum, stm] = statements.next().value;
     }
   }
   // check that required directives are in place
-  const foundTags = { ...MAP.TAG };
+  const foundTags = { ...TAGMAP.TAG };
   const reqTags = { ...SIMDATA.GetBundleTagSymbols() }; // make a copy to destroy
   Object.keys(foundTags).forEach(tag => {
     const hasTag = SIMDATA.IsBundleTagName(tag);
@@ -132,12 +132,12 @@ function EnforceBlueprintPragmas(script: TScriptUnit[]): TScriptUnit[] {
   });
 
   // add a blank line underneath
-  newScript.push(...TOKENIZER.TextToScript(''));
+  // newScript.push(...TOKENIZER.TextToScript(''));
 
   // check for required program directives
   // while writing the rest of the statements
   const needsProg = new Set(SIMDATA.GetBundleOutSymbols());
-  let entry = statements.next().value;
+  /* REUSE **/ let entry = [stmNum, stm]; // exit previously still good
   while (entry) {
     [stmNum, stm] = entry;
     let b, c;
@@ -151,7 +151,7 @@ function EnforceBlueprintPragmas(script: TScriptUnit[]): TScriptUnit[] {
       if (b === 'PROGRAM') needsProg.delete(c);
     }
     newScript.push(stm);
-    entry = statements.next().value;
+    /* READ ***/ entry = statements.next().value; /*** READ ***/
   }
   // add missing program directives at end of script
   needsProg.forEach(progType => {

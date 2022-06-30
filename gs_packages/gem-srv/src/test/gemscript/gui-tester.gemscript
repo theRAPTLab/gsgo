@@ -2,7 +2,6 @@
 # TAG IsCharControllable true
 # TAG ispozyxcontrollable false
 # TAG ISPTRACKCONTROLLABLE false
-
 # PROGRAM DEFINE
 addFeature Physics
 addProp aliceString string 'hello'

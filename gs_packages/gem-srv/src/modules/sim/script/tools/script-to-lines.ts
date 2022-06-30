@@ -320,11 +320,13 @@ class ScriptLiner {
         }
         return;
       });
+
       // done processing statement tokens, push assembled line
       if (LINESCRIPT.length > 0 || SHOW_EMPTY_STATEMENTS)
         RESULTS.push({ num: this.LINE_NUM++, level, line: LINESCRIPT });
       return RESULTS;
-    };
+    }; // end of process_stm
+
     /* END OF RECURSIVE FUNCTION DECLARATIONS */
     const RESULTS = process_stm(statement);
     return [RESULTS, DIRECTIVES];
@@ -490,6 +492,19 @@ function ScriptToProgramMap(script: TScriptUnit[]): Map<string, TLineContext> {
         start: num,
         end: -1
       };
+    }
+    // if there is a map_entry still open at the end,
+    // close it
+    if (map_entry) {
+      map_entry.end = num;
+      DIR_MAP.set(map_entry.program, map_entry);
+      if (DBG)
+        console.log(
+          'program',
+          map_entry.program.padEnd(10, ' '),
+          `range:${map_entry.start}:${map_entry.end}`
+        );
+      map_entry = null;
     }
   });
   return DIR_MAP;
