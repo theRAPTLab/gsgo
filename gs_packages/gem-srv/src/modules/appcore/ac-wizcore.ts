@@ -817,7 +817,7 @@ function GetProgramContextForLine(lineNum: number): TLineContext {
  *
  */
 UR.HookPhase('UR/APP_START', () => {
-  let lineToCheck = 22;
+  let lineToCheck = 34;
   const { program_map, script_tokens } = STORE.State();
   console.group(`Testing Program Directive Line Context for line ${lineToCheck}`);
   const lineInfo: TLineContext = GetProgramContextForLine(lineToCheck);
@@ -826,7 +826,10 @@ UR.HookPhase('UR/APP_START', () => {
   } else {
     const { program, start, end } = lineInfo;
     const range = `${start}-${end}`;
-    console.log(`line ${lineToCheck} in 'PROGRAM ${program}' (lines ${range})`);
+    console.log(
+      `%cline ${lineToCheck} in 'PROGRAM ${program}' (lines ${range})`,
+      'font-size:1.5em'
+    );
   }
   const [page] = TRANSPILER.DBG_ScriptToLinesV2(script_tokens);
   console.group('program_map used v2 line maper');

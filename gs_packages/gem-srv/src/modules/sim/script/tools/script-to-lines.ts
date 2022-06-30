@@ -281,6 +281,8 @@ class ScriptLiner {
     });
     return script_tokens;
   }
+
+  /// EXPERIMENTAL //////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: Improved algorithm for converting a statement into a stack of lines
    *  with nesting level indicators */
@@ -336,18 +338,24 @@ class ScriptLiner {
     return [RESULTS, DIRECTIVES];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API: Improved algorithm for converting a program into a stack of lines
+   *  with nesting level indicators */
   programToLinesV2(program: TScriptUnit[]) {
     this.clearData();
     const PAGE = [];
     const DIRECTIVES = [];
+    let counter = 0;
     const programLines = program.values();
     let pline = programLines.next().value;
     while (pline) {
       const [lines, dirs] = this.statementToLinesV2(pline);
+      counter += lines.length;
       PAGE.push(...lines);
       DIRECTIVES.push(...dirs);
       pline = programLines.next().value;
     }
+    // write a final program end directive
+    DIRECTIVES.push({ num: counter, pragma: 'EOF' });
     return [PAGE, DIRECTIVES];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -467,9 +475,11 @@ function ScriptToProgramMap(script: TScriptUnit[]): Map<string, TLineContext> {
   const [PAGE, DIRECTIVES] = SL.programToLinesV2(script);
   let DIR_MAP = new Map();
   let map_entry: any;
+  let last_num: number;
   // directives is an array of { pragma,
   DIRECTIVES.forEach(dir => {
     let { num, pragma, args } = dir;
+    last_num = num;
     pragma = pragma.toUpperCase();
     if (pragma === 'PROGRAM') {
       let program = args[0];
@@ -490,10 +500,12 @@ function ScriptToProgramMap(script: TScriptUnit[]): Map<string, TLineContext> {
         end: -1
       };
     }
-    // if there is a map_entry still open at the end,
-    // close it
-    // if (map_entry.end < 0) map_entry.end = num;
+    if ((pragma = 'EOF')) last_num = num;
   });
+  if (map_entry && map_entry.end < 0) {
+    map_entry.end = last_num;
+    DIR_MAP.set(map_entry.program, map_entry);
+  }
   return DIR_MAP;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
