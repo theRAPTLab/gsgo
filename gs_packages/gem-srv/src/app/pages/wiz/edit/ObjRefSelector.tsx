@@ -89,7 +89,7 @@ function ObjRefSelector(props) {
       options: vtok.blueprints
     });
     // Part 2: featName
-    const bpDef = bpName ? vtok.blueprints[bpName] : undefined;
+    const bpDef = bpName && vtok.blueprints ? vtok.blueprints[bpName] : undefined;
     const featList = bpDef && bpDef.features ? bpDef.features : [];
     vtoks.push({
       selectedText: featName,
