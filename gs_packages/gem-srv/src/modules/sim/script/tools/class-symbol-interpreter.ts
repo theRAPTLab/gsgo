@@ -22,6 +22,7 @@ import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as TOKENIZER from 'script/tools/script-tokenizer';
 import * as COMPILER from 'script/tools/script-compiler';
 import VSDToken from 'script/tools/class-validation-token';
+import { GetFeatureSymbols } from 'modules/datacore/dc-sim-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -941,7 +942,9 @@ class SymbolInterpreter {
     if (this.getBundleScope().features === undefined) {
       return this.goodToken(token, { features: {} }, { gsType });
     }
-    const featuresList = [...Object.keys(this.getBundleScope().features)];
+
+    const allFeatureSymbols = GetFeatureSymbols();
+    const featuresList = [...Object.keys(allFeatureSymbols)];
     let [matchType, featureName] = TOKENIZER.UnpackToken(token);
     const unitText = Array.isArray(featureName)
       ? featureName.join('.')
