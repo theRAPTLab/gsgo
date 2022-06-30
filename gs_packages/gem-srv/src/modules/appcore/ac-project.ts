@@ -70,6 +70,7 @@ import * as ACMetadata from './ac-metadata';
 import * as ACRounds from './ac-rounds';
 import * as ACBlueprints from './ac-blueprints';
 import * as ACInstances from './ac-instances';
+import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
