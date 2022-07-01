@@ -67,11 +67,19 @@ function TestEditableTokens(scriptText: string = '') {
     });
   }
 
-  function mismatch_text(src: string, test: string) {
-    let a = src.trim();
-    let b = test.trim();
-    let alen = src.length;
-    let blen = test.length;
+  function mismatch_text(textA: string, textB: string) {
+    let a = textA.trim();
+    let b = textB.trim();
+    let alen = textA.length;
+    let blen = textB.length;
+    if (alen < blen) {
+      let temp: any = blen;
+      blen = alen;
+      alen = temp;
+      temp = b;
+      b = a;
+      b = temp;
+    }
     for (let i = 0; i < alen; i++) {
       if (i > blen - 1) return i;
       let cha = a[i];
@@ -113,7 +121,7 @@ function TestEditableTokens(scriptText: string = '') {
   console.log(...PR('RUNNING EDITABLE TOKEN TESTS'));
   //
   const script_tokens = TRANSPILER.TextToScript(scriptText);
-  console.groupCollapsed(
+  console.group(
     '%cOriginal Tokens (textified,filtered bracks)',
     'font-size:1.4em',
     script_tokens
@@ -122,12 +130,12 @@ function TestEditableTokens(scriptText: string = '') {
   console.groupEnd();
   //
   const lsos = TRANSPILER.ScriptToEditableTokens(script_tokens);
-  console.groupCollapsed('%cEditable Tokens', 'font-size:1.4em', lsos);
+  console.group('%cEditable Tokens', 'font-size:1.4em', lsos);
   dump_editables(lsos);
   console.groupEnd();
   //
   if (MUTATE) {
-    console.groupCollapsed('%cAPPLY MUTATIONS', 'font-size:1.4em');
+    console.group('%cAPPLY MUTATIONS', 'font-size:1.4em');
     // demo modify the script_page tokens
     lsos.forEach(lso => {
       // replace all energyLevel with BANANACAKE
@@ -159,14 +167,14 @@ function TestEditableTokens(scriptText: string = '') {
     console.groupEnd();
   }
   //
-  console.groupCollapsed('%cRepackedTokens (textified)', 'font-size:1.4em');
+  console.group('%cRepackedTokens (textified)', 'font-size:1.4em');
   console.groupCollapsed('reconstruction log');
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
   console.groupEnd();
   const ntext = TRANSPILER.ScriptToText(nscript).trim();
   dump_script(nscript);
   console.groupEnd();
-  let mismatch = mismatch_text(ntext, scriptText.trim());
+  let mismatch = mismatch_text(ntext, scriptText);
   if (mismatch === undefined) {
     console.log(
       '%cSCRIPT MATCHES! HOORAY',
@@ -178,16 +186,16 @@ function TestEditableTokens(scriptText: string = '') {
       'font-size:1.5em;color:red;background-color:yellow;padding:1em'
     );
   }
-  highlight(ntext, {
-    title: 'repacked script',
-    selection: mismatch,
-    color: 'darkorange'
-  });
-
   highlight(scriptText, {
     selection: mismatch,
     color: 'blue',
     title: 'original script'
+  });
+
+  highlight(ntext, {
+    title: 'repacked script',
+    selection: mismatch,
+    color: 'darkorange'
   });
 }
 
