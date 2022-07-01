@@ -61,7 +61,7 @@ function ObjRefSelector(props) {
 
   // 4. Generate validation tokens for objref
   const vtoks = []; // validation token array
-  if (keyword === 'prop') {
+  if (keyword === 'prop' || keyword === 'propPop' || keyword === 'propPush') {
     // PROP OBJREF
     const [bpName, propName] = bits;
     // Part 1: bpName
@@ -98,7 +98,11 @@ function ObjRefSelector(props) {
       options: featList
     });
 
-    if (keyword === 'featProp') {
+    if (
+      keyword === 'featProp' ||
+      keyword === 'featPropPop' ||
+      keyword === 'featPropPush'
+    ) {
       // FEAT PROP OBJREF
       // Part 3: featProp
       const featProp = part3;
@@ -109,23 +113,23 @@ function ObjRefSelector(props) {
         parentLabel: `${bpName}.${featName}`,
         type: 'featProp',
         options: featProps
-      }); // propName
-      // DEPRECATED: featCall's objref is just <bpName><featName>
-      //             It doesn't include the <methodName>
-      //
-      // } else if (keyword === 'featCall') {
-      //   // FEAT METHOD OBJREF
-      //   // Part 3: featMethod
-      //   const featMethod = part3;
-      //   const featDef = featList ? featList[featName] : undefined;
-      //   const featMethods = featDef && featDef.methods ? featDef.methods : [];
-      //   vtoks.push({
-      //     selectedText: featMethod,
-      //     parentLabel: `${bpName}.${featName}`,
-      //     type: 'featMethod',
-      //     options: featMethods
-      //   }); // propName
+      });
     }
+    // DEPRECATED: featCall's objref is just <bpName><featName>
+    //             It doesn't include the <methodName>
+    //
+    // } else if (keyword === 'featCall') {
+    //   // FEAT METHOD OBJREF
+    //   // Part 3: featMethod
+    //   const featMethod = part3;
+    //   const featDef = featList ? featList[featName] : undefined;
+    //   const featMethods = featDef && featDef.methods ? featDef.methods : [];
+    //   vtoks.push({
+    //     selectedText: featMethod,
+    //     parentLabel: `${bpName}.${featName}`,
+    //     type: 'featMethod',
+    //     options: featMethods
+    //   }); // propName
   }
 
   const tokenList = [];
