@@ -434,13 +434,20 @@ class SymbolInterpreter {
           err_info: `token ${type} is not an expression string`
         }
       );
+    //
+    // REVIEW: This is only seeing if the expression itself can be
+    // turned itnto so mething but it doesn't check against
+    // valid symbols.  We need to run evaluate on this to make
+    // sure everythihng is legal.
+    // This needs the global context for a line.
+    //
     // the global context with accessible objects...
-    const globals = {
-      agent: { prop: [], getProp: () => {} },
-      BlueprintA: {},
-      BlueprintB: {}
-    };
-    const symbols = { globals };
+    // const globals = {
+    // agent: { prop: [], getProp: () => {} },
+    // BlueprintA: {},
+    // BlueprintB: {}
+    // };
+    const symbols = {};
     // try to parse and evaluate the expression
     // and catch any thrown errors
     let gotError: string;
@@ -456,19 +463,21 @@ class SymbolInterpreter {
         gsType,
         err_info: `parse: ${gotError}`
       });
-    // if the AST could be generated, then try evaluating it
-    gotError = '';
-    try {
-      COMPILER.ValidateExpression(ast, globals);
-    } catch (err) {
-      gotError = err.toString();
-    }
-    // if the expression could not be evaluated, return the error
-    if (gotError)
-      return new VSDToken(symbols, {
-        gsType,
-        err_info: `evaluate: ${gotError}`
-      });
+    // REVIEW: placeholders
+    //
+    // // if the AST could be generated, then try evaluating it
+    // gotError = '';
+    // try {
+    //   COMPILER.ValidateExpression(ast, globals);
+    // } catch (err) {
+    //   gotError = err.toString();
+    // }
+    // // if the expression could not be evaluated, return the error
+    // if (gotError)
+    //   return new VSDToken(symbols, {
+    //     gsType,
+    //     err_info: `evaluate: ${gotError}`
+    //   });
     // got this far, it's good!
     return this.goodToken(token, symbols, { gsType });
   }
