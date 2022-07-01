@@ -24,6 +24,7 @@ import React from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 
+import { ObjRefSelector } from './ObjRefSelector';
 import { EditSymbol } from './EditSymbol';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -221,6 +222,17 @@ function SelectEditor(props) {
             onKeyPress={handleExprKeypress}
           />
           ;
+        </div>
+      );
+      break;
+    case 'objref':
+      editor = (
+        <div>
+          <ObjRefSelector
+            selection={selection}
+            expectedType={gsType}
+            objRefPos={pos}
+          />
         </div>
       );
       break;

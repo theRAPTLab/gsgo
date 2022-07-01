@@ -25,7 +25,7 @@ import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to i
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SymbolSelector');
 
-const HIDDEN_SYMBOLS = [
+export const HIDDEN_SYMBOLS = [
   // keywords
   'randompos',
   'dbgtick',
@@ -40,9 +40,28 @@ const HIDDEN_SYMBOLS = [
   'stackdiv',
   'usefeature',
   // features
-  'global'
+  'global',
+  // costume
+  'getbounds',
+  'getscaledbounds',
+  'test',
+  'thinkhook',
+  // physics
+  'bodyradius',
+  'bodywidth',
+  'bodyheight',
+  'getbodywidth',
+  'getbodyheight',
+  // agent
+  'skin',
+  'scale',
+  'scaley',
+  'isinhabitingtarget',
+  'statusvalue',
+  'statusvaluecolor',
+  'statusvalueislarge'
 ];
-const ADVANCED_SYMBOLS = [
+export const ADVANCED_SYMBOLS = [
   // keywords
   'exprpush',
   'proppop',
@@ -54,7 +73,15 @@ const ADVANCED_SYMBOLS = [
   'dbgcontext',
   'dbgerror',
   // features
-  'cursor'
+  'cursor',
+  // agent
+  'statustext',
+  'zindex',
+  'color',
+  'orientation',
+  'visible',
+  'alpha',
+  'isinert'
 ];
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
@@ -238,39 +265,9 @@ export function EditSymbol(props) {
     Object.entries(dicts).forEach(
       ([dictName, v]: [keyof TSymbolData, TSymbolData]) => {
         if (Array.isArray(symbolScope) && !symbolScope.includes(dictName)) return;
-        // console.group('symbolType', k, 'symbolDictionary', v);
-
-        if (Array.isArray(symbolScope) && symbolScope.includes('features')) {
-          // 1. feature, so recursively expand
-          Object.entries(v).forEach(
-            ([featureName, featureDict]: [string, TSymbolData]) => {
-              if (gsType === 'objref') {
-                // prop symbolData
-                const sd: TSymbolData = {};
-                sd.props = featureDict.props;
-                // prop viewData
-                const vd = WIZCORE.DecodeSymbolViewData(featureDict);
-                // render it
-                allDicts.push(f_render_choices(sd, vd, dictName));
-              } else if (gsType === 'method') {
-                // method symbolData
-                const sd: TSymbolData = {};
-                sd.methods = featureDict.methods;
-                // method viewData
-                const vd = WIZCORE.DecodeSymbolViewData(featureDict);
-                // render it
-                allDicts.push(f_render_choices(sd, vd, dictName));
-              } else {
-                // unspported gsType
-              }
-            }
-          );
-        } else {
-          // 2. not a feature, just render the keys
-          const sd = {};
-          sd[dictName] = v;
-          allDicts.push(f_render_choices(sd, viewData, dictName));
-        }
+        const sd = {};
+        sd[dictName] = v;
+        allDicts.push(f_render_choices(sd, viewData, dictName));
         // console.groupEnd();
       }
     );

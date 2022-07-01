@@ -314,6 +314,11 @@
   grid-template-columns: 45% 10% 45%;
   padding-top: 10px;
 }
+.gsled.objref-choices {
+  margin: 0 1px;
+  padding: 10px;
+  background-color: #ffd28088;
+}
 /* end Slot Editor */
 /*
  * Dialog
