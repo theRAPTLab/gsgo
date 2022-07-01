@@ -19,6 +19,9 @@ const IS_MOBILE =
 const DEFAULT_PADDING = IS_NODE
   ? 10 // nodejs
   : 8; // not nodejs
+const DEFAULT_SPACE = IS_NODE
+  ? ' '.padStart(DEFAULT_PADDING, ' ')
+  : ' '.padStart(DEFAULT_PADDING + 4, ' ');
 const DEFAULT_COLOR = 'TagNull';
 
 const TERM_COLORS = {
@@ -330,7 +333,9 @@ function makeStyleFormatter(prompt, tagColor) {
   let outArray = m_MakeColorArray(prompt, tagColor);
   if (outArray.length === 0) return () => [];
   if (IS_MOBILE) outArray = [`${prompt}:`];
-  return (str, ...args) => [...outArray, str, ...args];
+  const f = (str, ...args) => [...outArray, str, ...args];
+  f._ = `\n${DEFAULT_SPACE}`;
+  return f;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return an array that can be spread like console.log(...arr) */
