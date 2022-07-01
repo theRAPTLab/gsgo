@@ -342,6 +342,7 @@ export function GValidationToken(props) {
   if (viewState === 'extra') classes += ' styleFlagInvalid';
   if (viewState === 'empty') classes += ' styleFlagInvalid styleFlagEmpty';
   if (viewState === 'vague') classes += ' styleFlagDisabled';
+  if (viewState === 'locked') classes += ' styleFlagLocked';
   if (viewState === 'debug') classes += ' styleFlagInvalid styleFlagDisabled';
   if (viewState === 'unexpected')
     classes += ' styleFlagInvalid styleFlagOverflow';
@@ -395,7 +396,7 @@ export function GLabelToken(props) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GSymbolToken(props) {
-  const { symbolType, choice, unitText, label } = props;
+  const { symbolType, choice, unitText, label, locked } = props;
   const cnames = ['gwiz', 'gtoken', 'clickable'];
 
   // Label Override
@@ -409,6 +410,8 @@ export function GSymbolToken(props) {
 
   if (unitText === displayLabel) cnames.push('chosen');
   const token = `${symbolType}-${choice}`;
+  if (locked) cnames.push('locked');
+
   return (
     <div className={cnames.join(' ')} data-choice={token}>
       {displayLabel}

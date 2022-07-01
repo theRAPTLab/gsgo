@@ -25,7 +25,6 @@
 
 import Keyword, { K_DerefProp } from 'lib/class-keyword';
 import { RegisterKeyword } from 'modules/datacore';
-import { UnpackToken } from 'script/tools/script-tokenizer';
 
 // use test project: aquatic-energy
 const USE_NEW_DEREF = false;
@@ -62,7 +61,7 @@ export class prop extends Keyword {
       return [
         (agent: IAgent, state: IState) => {
           const p = deref(agent, state.ctx);
-          p[methodName as string](...args);
+          if (p && p[methodName as string]) p[methodName as string](...args);
         }
       ];
     }

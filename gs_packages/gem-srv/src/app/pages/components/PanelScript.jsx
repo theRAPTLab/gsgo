@@ -204,6 +204,7 @@ class PanelScript extends React.Component {
     this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
     this.HandleScriptIsDirty = this.HandleScriptIsDirty.bind(this);
     this.GetTitle = this.GetTitle.bind(this);
+    // DEPRECATED?  No one is Raising SCRIPT_UI_CHANGED at the moment?
     this.HandleScriptUIChanged = this.HandleScriptUIChanged.bind(this);
     this.SendText = this.SendText.bind(this);
     this.OnSelectScriptClick = this.OnSelectScriptClick.bind(this);
@@ -215,6 +216,7 @@ class PanelScript extends React.Component {
 
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.HandleMessage('SCRIPT_IS_DIRTY', this.HandleScriptIsDirty);
+    // DEPRECATED?  No one is Raising SCRIPT_UI_CHANGED at the moment?
     UR.HandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUIChanged);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
@@ -259,25 +261,20 @@ class PanelScript extends React.Component {
   handleWizUpdate(vmStateEvent) {
     // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
     const { script_page, script_text } = vmStateEvent;
+    const newState = {};
+    let cb;
     if (script_page) {
-      this.setState({
-        script_page,
-        isDirty: true
-      });
+      newState.script_page = script_page;
     }
     if (script_text) {
-      this.setState(
-        {
-          script_text,
-          isDirty: true
-        },
-        () => {
-          this.jar.updateCode(script_text);
-          // Force Prism update otherwise line number highlight is not updated
-          Prism.highlightElement(this.jarRef.current);
-        }
-      );
+      newState.script_text = script_text;
+      cb = () => {
+        this.jar.updateCode(script_text);
+        // Force Prism update otherwise line number highlight is not updated
+        Prism.highlightElement(this.jarRef.current);
+      };
     }
+    this.setState(newState, cb);
   }
 
   HandleSimDataUpdate() {
@@ -297,57 +294,11 @@ class PanelScript extends React.Component {
    * update codejar text
    * @param {Object} data { index, scriptUnit, exitEdit }
    */
+  // DEPRECATED?  No one is Raising SCRIPT_UI_CHANGED at the moment?
   HandleScriptUIChanged(data) {
     // 1. Convert script text to script units
     const currentScript = this.jar.toString();
     const updatedScript = UpdateScript(currentScript, data);
-
-    // WORKING VERSION
-    // const origScriptUnits = TRANSPILER.TextToScript(currentScript);
-
-    // // 2. Figure out which unit to replace
-    // const line = data.index;
-    // const parentLine = data.parentIndices;
-    // let scriptUnits = [...origScriptUnits];
-    // console.log('scriptUnits (should be same as prev)', scriptUnits);
-    // if (parentLine !== undefined) {
-    //   // Update is a nested line, replace the block
-    //   console.log('updating nested line');
-    //   const blockPosition = data.blockIndex; // could be first block or second block <conseq> <alt>
-    //   console.error('block is', blockPosition);
-    //   const origBlock = scriptUnits[parentLine][blockPosition];
-    //   console.log('...origBlock', origBlock);
-    //   console.log('...line', line);
-    //   const origBlockData = origBlock.block;
-    //   origBlockData.splice(line, 1, ...data.scriptUnit);
-    //   console.log('...updatedBlockData', origBlockData);
-    //   scriptUnits[parentLine][blockPosition] = {
-    //     block: origBlockData
-    //   };
-    // } else {
-    //   // Update root level line
-    //   scriptUnits[line] = data.scriptUnit;
-    // }
-    // console.log('updated ScriptUnits', scriptUnits, scriptUnits[1]);
-
-    // // 3. Convert back to script text
-    // const updatedScript = TRANSPILER.ScriptToText(scriptUnits);
-    // console.log('updated script text', updatedScript);
-
-    // END WORKING VERSION
-
-    // ORIG
-    // const currentScript = this.jar.toString();
-    // // 1. Convert script text to array
-    // const scriptTextLines = currentScript.split('\n');
-    // // 2. Conver the updated line to text
-    // const updatedLineText = TRANSPILER.ScriptToText(
-    //   data.scriptUnit
-    // );
-    // // 3. Replace the updated line in the script array
-    // scriptTextLines[data.index] = updatedLineText;
-    // // 4. Convert the script array back to script text
-    // const updatedScript = scriptTextLines.join('\n');
 
     // 5. Update the codejar code
     this.jar.updateCode(updatedScript);

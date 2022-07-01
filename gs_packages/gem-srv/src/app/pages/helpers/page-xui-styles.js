@@ -123,7 +123,8 @@ const useStylesHOC = theme => ({
     gridColumnEnd: 'span 1',
     position: 'relative',
     width: '100%',
-    height: '100%'
+    height: '100%',
+    overflow: 'scroll'
   },
   top: {
     gridColumnEnd: 'span 3',
