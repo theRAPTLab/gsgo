@@ -98,7 +98,6 @@ export class featProp extends Keyword {
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         // ref[0] = blueprint, ref[1] = feature, ref[2] = prop
         // we use our own decoded propname rather than looking for the passed version
-        console.log(bpName, featName, propName);
         return c.getFeatProp(featName, propName)[mName](...prms);
       };
     } else {

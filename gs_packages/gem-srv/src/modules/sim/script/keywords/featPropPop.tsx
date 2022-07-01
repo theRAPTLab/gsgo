@@ -23,7 +23,7 @@ export class featPropPop extends Keyword {
     const [kw, refArg, featPropName] = unit;
     // ref is an array of strings that are fields in dot addressing
     // like agent.x
-    const ref = refArg.objref || [refArg];
+    const ref = (refArg as IToken).objref || [refArg];
     const len = ref.length;
 
     // create a function that will be used to callReferences the objref
@@ -67,12 +67,10 @@ export class featPropPop extends Keyword {
    *  base Keyword class  */
   validate(unit: TScriptUnit): TValidatedScriptUnit {
     const vtoks = []; // validation token array
-    const [kwTok, featTok, fPropfTok, methodTok, ...argToks] = unit; // get arg pattern
+    const [kwTok, fPropfTok] = unit; // get arg pattern
     // returns symbols for each dtok position excepting the keyword
-
     vtoks.push(this.shelper.anyKeyword(kwTok));
-    vtoks.push(this.shelper.agentFeatureList(featTok));
-    vtoks.push(this.shelper.featObjRef(fPropfTok)); // agent.propName, propName, Blueprint.propName
+    vtoks.push(this.shelper.featObjRef(fPropfTok)); // featName.propName, agent.featName.propName, Blueprint.featName.propName
     const log = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: log };
   }
