@@ -17,6 +17,7 @@ import { withStyles } from '@material-ui/core/styles';
 import UR from '@gemstep/ursys/client';
 import SIMCTRL from './helpers/mod-sim-control';
 import * as PROJSERVER from './helpers/project-server';
+import { ERR_MGR } from 'modules/error-mgr';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import MissionMapEditor from './MissionMapEditor';
@@ -56,6 +57,7 @@ PANEL_CONFIG.set('tracker', '0px auto 400px'); // columns
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: STYLES ARE IMPORTED FROM COMMON-STYLES.JS
+
 class MissionControl extends React.Component {
   constructor() {
     super();
@@ -143,7 +145,12 @@ class MissionControl extends React.Component {
     // We read the currently selected projId from the URL,
     // and prep project-server to load it.
     // project-server will load on UR/APP_START
-    PROJSERVER.ProjectDataPreInit(this, projId);
+    if (ERR_MGR)
+      try {
+        PROJSERVER.ProjectDataPreInit(this, projId);
+      } catch (caught) {
+        ERR_MGR.Dump();
+      }
   }
 
   componentWillUnmount() {
