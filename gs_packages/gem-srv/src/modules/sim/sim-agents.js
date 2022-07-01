@@ -105,13 +105,25 @@ const SCRIPT_TO_INSTANCE = new SyncMap({
  */
 function MakeAgent(def) {
   // TODO: instances are not using the 'name' convention established in merge #208
-  const bundle = BUNDLER.OpenBundle(def.bpid);
-  const refs = { bundle, globals: {} };
-  const initScript = TRANSPILER.CompileText(def.initScript, refs);
-  BUNDLER.CloseBundle();
-  let agent = DCAGENTS.GetAgentById(def.id);
-  if (!agent) agent = TRANSPILER.MakeAgent(def);
-  agent.exec(initScript, { agent });
+  try {
+    const bundle = BUNDLER.OpenBundle(def.bpid);
+    const refs = { bundle, globals: {} };
+    const initScript = TRANSPILER.CompileText(def.initScript, refs);
+    BUNDLER.CloseBundle();
+    let agent = DCAGENTS.GetAgentById(def.id);
+    if (!agent) agent = TRANSPILER.MakeAgent(def);
+    agent.exec(initScript, { agent });
+  } catch (caught) {
+    ERROR(`MakeAgent failed`, {
+      source: 'simulator',
+      data: {
+        line,
+        bundle: bdl
+      },
+      where: 'sim-agents.MakeAgent',
+      caught
+    });
+  }
 }
 
 SCRIPT_TO_INSTANCE.setMapFunctions({

@@ -21,6 +21,7 @@ type SMErrSource =
   | `${'project-loader'}`
   | `${'project-init'}`
   | `${'app'}`
+  | `${'appstate'}`
   | `${'expression'}`
   | `${'tokenizer'}`
   | `${'bundler'}`

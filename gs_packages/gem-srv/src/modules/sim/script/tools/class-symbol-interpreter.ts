@@ -22,6 +22,7 @@ import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as TOKENIZER from 'script/tools/script-tokenizer';
 import * as COMPILER from 'script/tools/script-compiler';
 import VSDToken from 'script/tools/class-validation-token';
+import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -446,8 +447,8 @@ class SymbolInterpreter {
     let ast;
     try {
       ast = TOKENIZER.ParseExpression(exprString);
-    } catch (err) {
-      gotError = err.toString();
+    } catch (caught) {
+      gotError = caught.toString();
     }
     // if any errors got thrown, expression didn't validate
     if (gotError)
@@ -606,8 +607,8 @@ class SymbolInterpreter {
     if (name === 'TAG') {
       const tags = SIMDATA.GetBundleTagSymbols();
       const symbols = { tags } as TSymbolData;
-      const [tagType, tagName] = CHECK.UnpackToken(arg1);
-      const [valueType, value] = CHECK.UnpackToken(arg2);
+      let [tagType, tagName] = CHECK.UnpackToken(arg1);
+      let [valueType, value] = CHECK.UnpackToken(arg2);
       if (tagType !== 'identifier')
         return [
           this.badToken(arg1, symbols, {
@@ -616,8 +617,8 @@ class SymbolInterpreter {
           }),
           this.vagueError(arg2)
         ];
-      const tag = SIMDATA.IsBundleTagName(tagName);
-      if (tag === undefined)
+      let goodTagName = SIMDATA.IsBundleTagName(tagName);
+      if (goodTagName === undefined)
         return [
           this.badToken(arg1, symbols, {
             gsType: 'tag',
@@ -626,6 +627,7 @@ class SymbolInterpreter {
           this.vagueError(arg2)
         ];
       // valid tag
+      let tag = tags[tagName];
       const [argHint, argType] = CHECK.UnpackArg(tag);
       if (argType !== 'boolean')
         return [

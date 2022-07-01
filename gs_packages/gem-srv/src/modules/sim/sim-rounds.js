@@ -11,6 +11,7 @@ import { SM_Number } from 'modules/sim/script/vars/_all_vars';
 import SM_Agent from 'lib/class-sm-agent';
 import SM_State from 'lib/class-sm-state';
 import * as TRANSPILER from './script/transpiler-v2';
+import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -101,21 +102,35 @@ export function RoundsReset() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function RoundInit(SIMSTATUS) {
-  RSIMSTATUS = SIMSTATUS;
-  console.log(...PR('RoundInit!'));
-  ROUNDS_INDEX++;
-  ROUNDS_COUNTER++;
-  const round = ACRounds.GetRoundDef(ROUNDS_INDEX);
-  if (round) {
-    if (round.time !== undefined) {
-      ROUND_TIMER_START_VALUE = round.time;
-      RSIMSTATUS.timer = ROUND_TIMER_START_VALUE;
+  try {
+    RSIMSTATUS = SIMSTATUS;
+    console.log(...PR('RoundInit!'));
+    ROUNDS_INDEX++;
+    ROUNDS_COUNTER++;
+    const round = ACRounds.GetRoundDef(ROUNDS_INDEX);
+    if (round) {
+      if (round.time !== undefined) {
+        ROUND_TIMER_START_VALUE = round.time;
+        RSIMSTATUS.timer = ROUND_TIMER_START_VALUE;
+      }
+      if (round.intro) {
+        const message = `Round ${ROUNDS_COUNTER + 1}: ${round.intro}`;
+        UR.RaiseMessage('SHOW_MESSAGE', { message });
+      }
+      RunScript(round.initScript);
     }
-    if (round.intro) {
-      const message = `Round ${ROUNDS_COUNTER + 1}: ${round.intro}`;
-      UR.RaiseMessage('SHOW_MESSAGE', { message });
-    }
-    RunScript(round.initScript);
+  } catch (caught) {
+    ERROR(`could not run round init script`, {
+      source: 'runtime',
+      data: {
+        round,
+        RSIMSTATUS,
+        ROUNDS_INDEX,
+        ROUNDS_COUNTER
+      },
+      where: 'sim-rounds.RoundInit',
+      caught
+    });
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -127,31 +142,45 @@ export function RoundStart(stopfn) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// @return true when all rounds are completed
 export function RoundStop() {
-  console.log(...PR('RoundStop!'));
-  StopRoundTimer();
-  const round = ACRounds.GetRoundDef(ROUNDS_INDEX);
-  if (round) {
-    if (round.outtro) {
-      const message = `End Round ${ROUNDS_COUNTER + 1}: ${round.outtro}`;
-      UR.RaiseMessage('SHOW_MESSAGE', { message });
+  try {
+    console.log(...PR('RoundStop!'));
+    StopRoundTimer();
+    const round = ACRounds.GetRoundDef(ROUNDS_INDEX);
+    if (round) {
+      if (round.outtro) {
+        const message = `End Round ${ROUNDS_COUNTER + 1}: ${round.outtro}`;
+        UR.RaiseMessage('SHOW_MESSAGE', { message });
+      }
+      RunScript(round.endScript);
     }
-    RunScript(round.endScript);
+
+    // Prep for Next Round
+
+    // If there are more rounds, not complete
+    if (ROUNDS_INDEX + 1 < ACRounds.GetRoundCount()) return false;
+
+    // If rounds loop, not complete
+    // (Rounds loop by default if 'noloop' is not defined or set to true)
+    if (ACRounds.RoundsShouldLoop()) {
+      ROUNDS_INDEX = -1;
+      return false;
+    }
+
+    // No more rounds
+    return true;
+  } catch (caught) {
+    ERROR(`could not run round stop script`, {
+      source: 'runtime',
+      data: {
+        round,
+        RSIMSTATUS,
+        ROUNDS_INDEX,
+        ROUNDS_COUNTER
+      },
+      where: 'sim-rounds.Roundstop',
+      caught
+    });
   }
-
-  // Prep for Next Round
-
-  // If there are more rounds, not complete
-  if (ROUNDS_INDEX + 1 < ACRounds.GetRoundCount()) return false;
-
-  // If rounds loop, not complete
-  // (Rounds loop by default if 'noloop' is not defined or set to true)
-  if (ACRounds.RoundsShouldLoop()) {
-    ROUNDS_INDEX = -1;
-    return false;
-  }
-
-  // No more rounds
-  return true;
 }
 
 /// SYNCHRONOUS LIFECYCLE /////////////////////////////////////////////////////

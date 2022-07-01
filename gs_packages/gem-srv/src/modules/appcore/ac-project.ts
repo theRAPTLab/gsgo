@@ -197,27 +197,27 @@ function GetProject(projId) {
 // }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /** API: This is the main project data loader call.
  *  Requests .gemproj file data from the server, and saves the data to
  *  all the ac-* submodules as well as datacore.
- *  project-server calls this during Initialize when Main is first loaded.
- */
+ *  project-server calls this during Initialize when Main is first loaded. */
 async function LoadProjectFromAsset(projId) {
-  const project = await DCPROJECT.ProjectFileLoadFromAsset(projId);
-  if (!project)
-    // eslint-disable-next-line no-alert
-    alert(
-      `The project "${projId}" could not be loaded!  Are you sure it exists?`
-    );
-  // Init AppCore (AC) modules
-  ACMetadata.SetMetadata(projId, project.metadata);
-  ACRounds.SetRounds(projId, project.rounds);
-  ACBlueprints.SetBlueprints(projId, project.blueprints);
-  ACInstances.SetInstances(projId, project.instances);
-  // Update datacore
-  DCPROJECT.SetCurrentProject(project);
-  updateAndPublish(project);
+  try {
+    const project = await DCPROJECT.ProjectFileLoadFromAsset(projId);
+    // Init AppCore (AC) modules
+    ACMetadata.SetMetadata(projId, project.metadata);
+    ACRounds.SetRounds(projId, project.rounds);
+    ACBlueprints.SetBlueprints(projId, project.blueprints);
+    ACInstances.SetInstances(projId, project.instances);
+    // Update datacore
+    DCPROJECT.SetCurrentProject(project);
+    updateAndPublish(project);
+  } catch (err) {
+    ERROR(`could not load and initialize project ${projId}`, {
+      source: 'project-loader',
+      where: 'ac-project.LoadProjectFromAsset'
+    });
+  }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
