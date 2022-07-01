@@ -62,6 +62,7 @@ export class featPropPush extends Keyword {
     const [kwTok, fPropfTok] = unit; // get arg pattern
     // returns symbols for each dtok position excepting the keyword
     vtoks.push(this.shelper.anyKeyword(kwTok));
+    // debugging: Also check ObjRefSelector's insertion of validation tokens
     vtoks.push(this.shelper.featObjRef(fPropfTok)); // featName.propName, agent.featName.propName, Blueprint.featName.propName
     const log = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: log };
