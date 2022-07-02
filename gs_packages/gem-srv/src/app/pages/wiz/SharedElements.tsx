@@ -342,6 +342,8 @@ export function GValidationToken(props) {
   if (viewState === 'extra') classes += ' styleFlagInvalid';
   if (viewState === 'empty') classes += ' styleFlagInvalid styleFlagEmpty';
   if (viewState === 'vague') classes += ' styleFlagDisabled';
+  if (viewState === 'locked') classes += ' styleFlagLocked';
+  if (viewState === 'debug') classes += ' styleFlagInvalid styleFlagDisabled';
   if (viewState === 'unexpected')
     classes += ' styleFlagInvalid styleFlagOverflow';
   // special custom combination viewStates
@@ -394,14 +396,25 @@ export function GLabelToken(props) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GSymbolToken(props) {
-  const { symbolType, choice, unitText } = props;
+  const { symbolType, choice, unitText, label, locked } = props;
   const cnames = ['gwiz', 'gtoken', 'clickable'];
-  if (choice === unitText) cnames.push('chosen');
 
+  // Label Override
+  // <blueprint>.<propName> hack
+  // If 'label' is present, then we're overriding the default
+  // 'choice' display with a simplified label.
+  // The goal is to keep the display simple.  e.g.while the
+  // choice should be 'Bee.energyLevel' we're showing just
+  // 'energyLevel'.
+  const displayLabel = label || choice; // 'label' will override choice
+
+  if (unitText === displayLabel) cnames.push('chosen');
   const token = `${symbolType}-${choice}`;
+  if (locked) cnames.push('locked');
+
   return (
     <div className={cnames.join(' ')} data-choice={token}>
-      {choice}
+      {displayLabel}
     </div>
   );
 }

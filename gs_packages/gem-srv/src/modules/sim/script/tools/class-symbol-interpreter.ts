@@ -434,13 +434,20 @@ class SymbolInterpreter {
           err_info: `token ${type} is not an expression string`
         }
       );
+    //
+    // REVIEW: This is only seeing if the expression itself can be
+    // turned itnto so mething but it doesn't check against
+    // valid symbols.  We need to run evaluate on this to make
+    // sure everythihng is legal.
+    // This needs the global context for a line.
+    //
     // the global context with accessible objects...
-    const globals = {
-      agent: { prop: [], getProp: () => {} },
-      BlueprintA: {},
-      BlueprintB: {}
-    };
-    const symbols = { globals };
+    // const globals = {
+    // agent: { prop: [], getProp: () => {} },
+    // BlueprintA: {},
+    // BlueprintB: {}
+    // };
+    const symbols = {};
     // try to parse and evaluate the expression
     // and catch any thrown errors
     let gotError: string;
@@ -456,19 +463,21 @@ class SymbolInterpreter {
         gsType,
         err_info: `parse: ${gotError}`
       });
-    // if the AST could be generated, then try evaluating it
-    gotError = '';
-    try {
-      COMPILER.ValidateExpression(ast, globals);
-    } catch (err) {
-      gotError = err.toString();
-    }
-    // if the expression could not be evaluated, return the error
-    if (gotError)
-      return new VSDToken(symbols, {
-        gsType,
-        err_info: `evaluate: ${gotError}`
-      });
+    // REVIEW: placeholders
+    //
+    // // if the AST could be generated, then try evaluating it
+    // gotError = '';
+    // try {
+    //   COMPILER.ValidateExpression(ast, globals);
+    // } catch (err) {
+    //   gotError = err.toString();
+    // }
+    // // if the expression could not be evaluated, return the error
+    // if (gotError)
+    //   return new VSDToken(symbols, {
+    //     gsType,
+    //     err_info: `evaluate: ${gotError}`
+    //   });
     // got this far, it's good!
     return this.goodToken(token, symbols, { gsType });
   }
@@ -938,12 +947,14 @@ class SymbolInterpreter {
   agentFeatureList(token: IToken): TSymbolData {
     // error checking & type overrides
     const fn = 'agentFeatureList:';
-    const gsType = 'objref';
+    const gsType = 'feature';
     this.resetScope(); // points to the bundle.symbols to start
     if (this.getBundleScope().features === undefined) {
       return this.goodToken(token, { features: {} }, { gsType });
     }
-    const featuresList = [...Object.keys(this.getBundleScope().features)];
+
+    const allFeatureSymbols = SIMDATA.GetFeatureSymbols();
+    const featuresList = [...Object.keys(allFeatureSymbols)];
     let [matchType, featureName] = TOKENIZER.UnpackToken(token);
     const unitText = Array.isArray(featureName)
       ? featureName.join('.')
@@ -1008,28 +1019,42 @@ class SymbolInterpreter {
     const [unitText, tokType, propRef] = this.extractTokenMeta(token);
     const gsType = 'objref';
     // construct expected symbols
-    const blueprints = SIMDATA.GetBlueprintSymbols();
+    let blueprints = SIMDATA.GetBlueprintSymbols();
+    const agentName = this.getBundleName();
+    const agent = { agent: SIMDATA.GetBlueprintBundle(agentName).symbols };
+    blueprints = { ...blueprints, ...agent };
     let props = this.getBundlePropSymbols();
     const symbols: TSymbolData = {
       blueprints,
       props // default to agent
     } as TSymbolData;
-    if (this.detectTypeError(gsType, token))
+    if (this.detectTypeError(gsType, token)) {
       return this.badToken(token, symbols, {
         gsType,
         err_info: `token is not ${gsType} (got ${tokType})`
       });
+    }
     // we want to use our custom symbol dict for processing
     this.setCurrentScope(symbols);
     // check validity
     let [bpName, propName] = propRef;
+    // PART 1 should be agent or Blueprint
     const goodBlueprint =
       bpName === 'agent' || SIMDATA.HasBlueprintBundle(bpName);
+    // Part 2 should be valid propName
+    const prop = props[propName];
     const goodProp = props[propName] !== undefined;
-    if (goodBlueprint && goodProp)
+    if (goodBlueprint && goodProp) {
+      // Found a goodProp, so add the prop methods to the cur_scope
+      // so that the next slot (methodName) knows which methods are
+      // valid
+      const methods = prop ? prop.methods : {};
+      symbols.methods = methods;
+      this.setCurrentScope(symbols);
       return this.goodToken(token, symbols, {
         gsType
       });
+    }
     // otherwise a bad token
     if (!goodBlueprint)
       return this.badToken(token, symbols, {
@@ -1124,6 +1149,68 @@ class SymbolInterpreter {
     });
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** handle feature method object refs for the featCall keyword,
+   *  feature, Blueprint.feature
+   *  e.g. featCall Bee.Costume setCostume 'bee.json' */
+  featRef(token: IToken): TSymbolData {
+    // error checking & type overrides
+    const fn = 'featMethodObjRef:';
+    if (this.detectScanError()) return this.vagueError(token);
+    let [unitText, tokType, propRef] = this.extractTokenMeta(token);
+    // convert old identifier into a objref array
+    const gsType = 'objref';
+    // figure out what we got
+    let [bpName, featureName, methodName] = propRef;
+    let blueprints = SIMDATA.GetBlueprintSymbols();
+    const agentName = this.getBundleName();
+    const agent = { agent: SIMDATA.GetBlueprintBundle(agentName).symbols };
+    blueprints = { ...blueprints, ...agent };
+    if (tokType === 'identifier')
+      return this.badToken(token, { blueprints } as TSymbolData, {
+        gsType,
+        err_info: `not an objref; got ${tokType} instead ${propRef}`
+      });
+    // Object.assign(blueprints, { agent }); // insert the blueprint for agent
+    // PART 1 should be agent or Blueprint
+    if (bpName === undefined)
+      return this.badToken(token, { blueprints } as TSymbolData, {
+        gsType,
+        err_info: `objref[1] must be 'agent' or a blueprint name`
+      });
+    const blueprint = blueprints[bpName];
+    if (blueprint === undefined) {
+      return this.badToken(token, { blueprints } as TSymbolData, {
+        gsType,
+        err_info: `objref[1] must be 'agent' or a blueprint name, not ${bpName}`
+      });
+    }
+    // PART 2 should be a featureName in the blueprint symbol dict
+    const features = blueprint.features;
+    if (featureName === undefined)
+      return this.badToken(token, { blueprints, features } as TSymbolData, {
+        gsType,
+        err_info: `objref[2] must be a feature defined in blueprint ${bpName}`
+      });
+    const feature = features[featureName];
+    if (feature === undefined) {
+      return this.badToken(token, { blueprints, features } as TSymbolData, {
+        gsType,
+        err_info: `${featureName} is not defined in ${bpName}`
+      });
+    }
+    // No PART 3 but set methods for the cur_scope
+    const methods = feature.methods;
+    this.setCurrentScope({ methods });
+    // if we got this far, it's good!
+    return this.goodToken(
+      token,
+      { blueprints, features, methods } as TSymbolData,
+      {
+        gsType
+      }
+    );
+  }
   /// SCOPE-BASED INTERPRETER METHODS /////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** scans the current scope for a terminal property or feature, after
@@ -1310,7 +1397,9 @@ class SymbolInterpreter {
       );
     }
     // all good!
-    this.cur_scope = { [methodName]: methodSig }; // advance scope pointer
+    // works for prop, featProp, featCall
+    this.setCurrentScope({ [methodName]: methodSig });
+
     return new VSDToken({ methods }, { gsType, unitText: methodName }); // valid scope is parent of cur_scope
   }
 
@@ -1347,11 +1436,12 @@ class SymbolInterpreter {
 
     // SCOPE ARGS 2: general validation tokens for each argument
     // this loop structure is weird because we have to handle overflow
-    // and underflow conditionss
+    // and underflow conditions
     let tokenIndex = 0;
     for (tokenIndex; tokenIndex < tokens.length; tokenIndex++) {
+      // overflow
       // is the tokenIndex greater than the number of argument definitions?
-      if (tokenIndex >= args.length) {
+      if (args && tokenIndex >= args.length) {
         vtoks.push(
           new VSDToken(
             {},
@@ -1368,7 +1458,7 @@ class SymbolInterpreter {
       }
       // SCOPE ARGS 3: validate current token against matching argument definition
       const tok = tokens[tokenIndex];
-      const arg = args[tokenIndex];
+      const arg = args ? args[tokenIndex] : '';
 
       /* THE MONEY CALL */
       const vtok = this.argSymbol(arg, tok);

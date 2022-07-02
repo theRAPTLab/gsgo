@@ -23,6 +23,7 @@
 import UR from '@gemstep/ursys/client';
 import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
+import { Tokenize as TokenizeString } from 'script/tools/class-gscript-tokenizer-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
@@ -422,6 +423,10 @@ function DispatchClick(event) {
       vmPageLine // all the VMTokens in this line
     } = SelectedTokenInfo();
 
+    // if the token is locked, ignore the click
+    const classes = event.target.getAttribute('class');
+    if (classes.includes('locked')) return; // don't process click
+
     // here we want to map the selected symbolType/symbolValue to the
     // scriptToken which has its own type. We also need to know the
     // This is that TYPE MATCHING challenge again...
@@ -439,11 +444,18 @@ function DispatchClick(event) {
     const slotScriptToken =
       slots_linescript[CHECK.OffsetLineNum(sel_slotpos, 'sub')] || // existing token
       {}; // or new object if this is creating a new slot
-    // Assume it's an identifier
-    slotScriptToken.identifier = symbolValue;
 
-    // special handling to replace empty lines
-    delete slotScriptToken.line;
+    // Update the slotScriptToken object by modifying its keys
+    // 1. get the updated script token
+    const updatedTok = TokenizeString(symbolValue)[0][0];
+    // 2. clear out old slotScriptToken keys
+    //    e.g. need to clear 'identifier' if this is now an object
+    //    e.g. need to clear 'line' if this is converted from an emtpy line
+    //    e.g. need to clear 'objref' if this is converting to an identifier
+    Object.keys(slotScriptToken).forEach(key => delete slotScriptToken[key]);
+    // 3. copy the key
+    const key = Object.keys(updatedTok)[0]; // should only be one
+    slotScriptToken[key] = updatedTok[key];
 
     if (sel_slotpos > slots_linescript.length) {
       // it's a new token so add it
@@ -730,6 +742,28 @@ function SaveSlotLineScript(event) {
   const { script_page, sel_linenum, slots_linescript } = STORE.State();
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
   const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
+
+  // HACK ---------------------------------------------------------------------
+  // Insert Block for new block keywords
+  const cur_line = script_page[lineIdx];
+  const isNewLine =
+    cur_line &&
+    cur_line.lineScript &&
+    cur_line.lineScript[0] &&
+    cur_line.lineScript[0].hasOwnProperty('line');
+  const new_kw_tok = slots_linescript ? slots_linescript[0] : {};
+  const new_kw = new_kw_tok ? new_kw_tok.identifier : '';
+  if (
+    isNewLine &&
+    ['every', 'ifexpr', 'onevent', 'when'].includes(new_kw.toLowerCase())
+  ) {
+    // insert block!!!
+    slots_linescript.push({
+      block: [[{ comment: 'insert code here' }]]
+    });
+  }
+  // END HACK -----------------------------------------------------------------
+
   const updatedLine = lsos[lineIdx]; // clone existing line to retain block info
   updatedLine.lineScript = slots_linescript.filter(({ identifier }) => {
     // SelectEditorLineSlot() treats lineScript tokens as "view data" and

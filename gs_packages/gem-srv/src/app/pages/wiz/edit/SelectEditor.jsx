@@ -24,7 +24,8 @@ import React from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 
-import { EditSymbol } from './EditSymbol';
+import { ObjRefSelector } from './ObjRefSelector';
+import { LOCKED_SYMBOLS, EditSymbol } from './EditSymbol';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -119,6 +120,9 @@ function SelectEditor(props) {
   // necessary to prevent NaN error if unitText is undefined
   let defaultNumber = Number(unitText);
   defaultNumber = Number.isNaN(defaultNumber) ? '' : defaultNumber; // make sure it's number
+
+  // locked
+  const locked = unitText && LOCKED_SYMBOLS.includes(unitText.toLowerCase());
 
   switch (gsType) {
     case 'identifier':
@@ -224,10 +228,25 @@ function SelectEditor(props) {
         </div>
       );
       break;
+    case 'objref':
+      editor = (
+        <div>
+          <ObjRefSelector
+            selection={selection}
+            expectedType={gsType}
+            objRefPos={pos}
+          />
+        </div>
+      );
+      break;
     default:
       editor = (
         <div>
-          <EditSymbol selection={selection} expectedType={gsType} />
+          <EditSymbol
+            selection={selection}
+            expectedType={gsType}
+            locked={locked}
+          />
         </div>
       );
   }
