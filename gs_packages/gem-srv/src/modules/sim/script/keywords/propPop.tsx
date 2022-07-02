@@ -44,6 +44,7 @@ export class propPop extends Keyword {
     // returns symbols for each dtok position excepting the keyword
 
     vtoks.push(this.shelper.anyKeyword(kwTok));
+    // debugging: Also check ObjRefSelector's insertion of validation tokens
     vtoks.push(this.shelper.agentObjRef(objrefTok)); // agent.propName, propName, Blueprint.propName
     const log = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: log };

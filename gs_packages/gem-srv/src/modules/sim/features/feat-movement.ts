@@ -813,14 +813,14 @@ class MovementPack extends SM_Feature {
   symbolize(): TSymbolData {
     return {
       props: {
-        movementType: SM_Number.Symbols,
+        movementType: SM_String.Symbols,
         controller: SM_String.Symbols,
         direction: SM_Number.Symbols,
-        compassDirection: SM_Boolean.Symbols,
-        distance: SM_Boolean.Symbols,
+        compassDirection: SM_String.Symbols,
+        distance: SM_Number.Symbols,
         bounceAngle: SM_Number.Symbols,
         isMoving: SM_Number.Symbols,
-        useAutoOrientation: SM_Number.Symbols,
+        useAutoOrientation: SM_Boolean.Symbols,
         targetX: SM_Number.Symbols,
         targetY: SM_Number.Symbols
       },

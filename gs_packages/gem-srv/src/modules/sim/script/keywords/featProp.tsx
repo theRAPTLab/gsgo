@@ -98,7 +98,6 @@ export class featProp extends Keyword {
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         // ref[0] = blueprint, ref[1] = feature, ref[2] = prop
         // we use our own decoded propname rather than looking for the passed version
-        console.log(bpName, featName, propName);
         return c.getFeatProp(featName, propName)[mName](...prms);
       };
     } else {
@@ -127,6 +126,7 @@ export class featProp extends Keyword {
     const [kwTok, featObjRefTok, methodTok, ...argToks] = unit; // get arg pattern
     // returns symbols for each dtok position excepting the keyword
     vtoks.push(this.shelper.anyKeyword(kwTok));
+    // debugging: Also check ObjRefSelector's insertion of validation tokens
     vtoks.push(this.shelper.featObjRef(featObjRefTok)); // agent.propName, propName, Blueprint.propName
     vtoks.push(this.shelper.methodName(methodTok));
     vtoks.push(...this.shelper.argsList(argToks));
