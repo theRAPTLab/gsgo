@@ -989,13 +989,17 @@ class SymbolInterpreter {
     const feature = features[featureName];
     if (!feature) {
       this.detectScanError(true);
-      return new VSDToken(this.cur_scope, {
-        gsType,
-        symbolScope: ['featuresList'], // this is what's 'displayable' by GUI
-        unitText,
-        err_code: 'invalid',
-        err_info: `${fn} '${unitText}' not found or invalid`
-      });
+      // return new VSDToken(this.cur_scope, {
+      return new VSDToken(
+        { featuresList },
+        {
+          gsType,
+          symbolScope: ['featuresList'], // this is what's 'displayable' by GUI
+          unitText,
+          err_code: 'invalid',
+          err_info: `${fn} '${unitText}' not found or invalid`
+        }
+      );
     }
     this.cur_scope = feature;
     return new VSDToken(
