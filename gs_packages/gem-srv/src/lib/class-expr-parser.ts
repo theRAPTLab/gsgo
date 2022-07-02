@@ -135,6 +135,10 @@ const isIdentifierPart = function (ch) {
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class ExpressionParser {
+  expr: string;
+  index: number;
+  lastIndex: number;
+  length: number;
   constructor() {
     this.expr = '';
     this.index = 0;
