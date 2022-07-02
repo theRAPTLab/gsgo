@@ -212,7 +212,8 @@ class ScriptLiner {
       return;
     }
     this.pushTokens(statement); // set current statement context
-    statement.forEach((tok: IToken, sindex: number) => {
+    // process tokens in the statement
+    statement.forEach((tok: IToken, stokIndex: number) => {
       // regular token: add to statement
       if (!Array.isArray(tok.block)) {
         this.tokenOut(tok);
@@ -234,22 +235,35 @@ class ScriptLiner {
       }
       // process statements in the block...
       const precedingBlock =
-        sindex - 1 >= 0 ? statement[sindex - 1].block : undefined;
+        stokIndex - 1 >= 0 ? statement[stokIndex - 1].block : undefined;
       if (!precedingBlock) this.BLOCK_FLAG = `start`;
       this.lineOut(); // flush line before processing the block
-      tok.block.forEach((bstm, index) => {
+      tok.block.forEach((bstm, bindex) => {
         if (DBG) console.group(`block level ${this.INDENT}`);
-        const terminal = index === tok.block.length - 1;
+        let termBstm = bindex === tok.block.length - 1;
         const followedByBlock =
-          sindex + 1 < statement.length ? statement[sindex + 1].block : undefined;
-        if (terminal) this.BLOCK_FLAG = followedByBlock ? `end-start` : `end`;
+          stokIndex + 1 < statement.length
+            ? statement[stokIndex + 1].block
+            : undefined;
+        // if we know that the next block in the current statement is a block, we need to end
+        // with an 'end-start' not an 'end'
+        if (termBstm && followedByBlock) this.BLOCK_FLAG = `end-start`;
         // block flag will affect recursive statement lineout
         this.indent();
         this.statementToLines(bstm);
         this.outdent();
         console.groupEnd();
       });
+      if (!this.BLOCK_FLAG) this.BLOCK_FLAG = `end`;
+      console.log(
+        'EOBLOCK',
+        this.INDENT,
+        StatementToText(statement).split('\n')[0]
+      );
+      return;
+      // end of block
     });
+
     // finished statement processing, so now output the line
     this.lineOut(); // flush buffer after statement is printed, increment line
     if (DBG) {
@@ -476,32 +490,35 @@ function ScriptToProgramMap(script: TScriptUnit[]): Map<string, TLineContext> {
   let DIR_MAP = new Map();
   let map_entry: any;
   let last_num: number;
-  // directives is an array of { pragma,
+  // directives is an array of { pragma, num, args }
   DIRECTIVES.forEach(dir => {
     let { num, pragma, args } = dir;
-    last_num = num;
     pragma = pragma.toUpperCase();
+    // handle PROGRAM
     if (pragma === 'PROGRAM') {
       let program = args[0];
       if (typeof program === 'string') program = program.toUpperCase();
       // if program changed, then write the end state
       if (map_entry) {
         if (DIR_MAP.has(map_entry.program)) {
-          const err = `multiple declarations of ${program}`;
+          const err = `multiple declarations of ${map_entry.program}`;
           console.warn(err);
           throw Error(err);
         }
         map_entry.end = num - 1;
         DIR_MAP.set(map_entry.program, map_entry);
       }
+      // always create a new map entry because we just closed one
+      // or a new one is beginning
       map_entry = {
         program: program || 'error bad program string',
         start: num,
         end: -1
       };
     }
-    if ((pragma = 'EOF')) last_num = num;
+    last_num = num;
   });
+  // post-loop cleanup of any open map entries
   if (map_entry && map_entry.end < 0) {
     map_entry.end = last_num;
     DIR_MAP.set(map_entry.program, map_entry);
