@@ -118,8 +118,9 @@ function MakeAgent(def) {
     ERROR(`MakeAgent failed`, {
       source: 'simulator',
       data: {
-        line,
-        bundle: bdl
+        def,
+        refs,
+        initScript
       },
       where: 'sim-agents.MakeAgent',
       caught
