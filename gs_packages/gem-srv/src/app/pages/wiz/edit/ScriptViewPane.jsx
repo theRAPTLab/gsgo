@@ -176,7 +176,7 @@ export function ScriptViewPane(props) {
           tokenKey = `${lineNum},${idx + 1}`; // generate tokenKey
         }
         // locked
-        if (LOCKED_SYMBOLS.includes(label.toLowerCase())) {
+        if (LOCKED_SYMBOLS.includes(String(label).toLowerCase())) {
           viewState = 'locked';
           lineHasLockedSymbols = true;
         }
