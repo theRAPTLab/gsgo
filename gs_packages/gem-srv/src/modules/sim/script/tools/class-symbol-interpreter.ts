@@ -1086,16 +1086,15 @@ class SymbolInterpreter {
     // convert old identifier into a objref array
     const gsType = 'objref';
     // figure out what we got
+    if (tokType === 'identifier') {
+      tokType = 'objref';
+      propRef = [propRef];
+    }
     let [bpName, featureName, propName] = propRef;
     let blueprints = SIMDATA.GetBlueprintSymbols();
     const agentName = this.getBundleName();
     const agent = { agent: SIMDATA.GetBlueprintBundle(agentName).symbols };
     blueprints = { ...blueprints, ...agent };
-    if (tokType === 'identifier')
-      return this.badToken(token, { blueprints } as TSymbolData, {
-        gsType,
-        err_info: `not an objref; got ${tokType} instead ${propRef}`
-      });
     // Object.assign(blueprints, { agent }); // insert the blueprint for agent
     // PART 1 should be agent or Blueprint
     if (bpName === undefined)
