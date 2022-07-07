@@ -140,8 +140,8 @@ export function EditSymbol(props) {
     const { validationTokens } = slots_validation;
 
     // no more validation tokens
-    if (vIndex >= validationTokens.length) return 'nothing to render';
-
+    if (vIndex >= validationTokens.length)
+      return <StackUnit label="No options" type="symbol" open sticky />;
     const symbolData: TSymbolData = validationTokens[vIndex]; // indx into line
     /* symbolData has the current symbol data to convert into viewdata
        `symbolData` looks like this: {

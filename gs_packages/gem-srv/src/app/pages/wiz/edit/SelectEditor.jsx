@@ -52,7 +52,7 @@ function SelectEditor(props) {
 
   const { sel_slotpos: pos, slots_validation: validation } = selection;
 
-  if (pos < 0) return 'Nothing selected';
+  if (pos < 0) return <div className="gsled input">Nothing selected</div>;
 
   const { validationTokens: vtoks, validationLog } = validation;
 
