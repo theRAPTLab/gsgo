@@ -758,7 +758,7 @@ function SaveSlotLineScript(event) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API */
-function CancelSlotEdit(event) {
+function CancelSlotEdit() {
   // deselect slot
   STORE.SendState({
     sel_slotpos: -1,
@@ -834,6 +834,7 @@ function DeleteSelectedLine(event) {
   lsos.splice(lineIdx, 1);
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
   STORE.SendState({ script_tokens: nscript });
+  CancelSlotEdit();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API return what PROGRAM directive a line is inside, as well as its range */
