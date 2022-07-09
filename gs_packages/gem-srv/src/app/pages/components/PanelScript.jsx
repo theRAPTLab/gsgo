@@ -201,7 +201,6 @@ class PanelScript extends React.Component {
 
     this.handleWizUpdate = this.handleWizUpdate.bind(this);
     this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
-    this.HandleScriptIsDirty = this.HandleScriptIsDirty.bind(this);
     this.GetTitle = this.GetTitle.bind(this);
     // DEPRECATED?  No one is Raising SCRIPT_UI_CHANGED at the moment?
     this.HandleScriptUIChanged = this.HandleScriptUIChanged.bind(this);
@@ -214,7 +213,6 @@ class PanelScript extends React.Component {
     this.OnToggleWizard = this.OnToggleWizard.bind(this);
 
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
-    UR.HandleMessage('SCRIPT_IS_DIRTY', this.HandleScriptIsDirty);
     // DEPRECATED?  No one is Raising SCRIPT_UI_CHANGED at the moment?
     UR.HandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUIChanged);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
@@ -250,7 +248,6 @@ class PanelScript extends React.Component {
   componentWillUnmount() {
     WIZCORE.UnsubscribeState(this.handleWizUpdate);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
-    UR.UnhandleMessage('SCRIPT_IS_DIRTY', this.HandleScriptIsDirty);
     UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUIChanged);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
@@ -279,10 +276,6 @@ class PanelScript extends React.Component {
 
   HandleSimDataUpdate() {
     needsSyntaxReHighlight = true;
-  }
-
-  HandleScriptIsDirty() {
-    WIZCORE.SendState({ script_page_needs_saving: true });
   }
 
   GetTitle(blueprintName) {
