@@ -49,6 +49,7 @@
 import UR from '@gemstep/ursys/client';
 import React from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import { SelectEditor } from './SelectEditor';
 import {
@@ -109,7 +110,8 @@ function u_Key(prefix = '') {
  *    hover/
  */
 function SelectEditorSlots(props) {
-  const { selection } = props; // sel_linenum, sel_linepos
+  const { selection } = props; // sel_linenum, sel_linepos, slots_needs_saving
+  const { slots_need_saving } = selection || {};
 
   if (!selection)
     return <div className="gsled panel panelhelp">{L10N.MSG_SELECT_TOKEN}</div>;
@@ -214,12 +216,15 @@ function SelectEditorSlots(props) {
 
   function SaveSlot(e) {
     WIZCORE.SaveSlotLineScript(e);
+    SLOTCORE.SendState({ slots_need_saving: false });
   }
   function CancelSlotEdit(e) {
     WIZCORE.CancelSlotEdit(e);
+    SLOTCORE.SendState({ slots_need_saving: false });
   }
   function DeleteSlot(e) {
     WIZCORE.DeleteSlot(e);
+    SLOTCORE.SendState({ slots_need_saving: false });
   }
 
   /*
@@ -295,7 +300,7 @@ function SelectEditorSlots(props) {
           Cancel
         </button>
         &nbsp;
-        <button type="button" onClick={SaveSlot}>
+        <button type="button" disabled={!slots_need_saving} onClick={SaveSlot}>
           Save
         </button>
       </div>

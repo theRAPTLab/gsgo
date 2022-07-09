@@ -18,6 +18,7 @@ import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as TRANSPILER from 'script/transpiler-v2';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
@@ -70,6 +71,7 @@ class ScriptEditor extends React.Component {
     super();
     const { sel_linenum, sel_linepos, sel_slotpos, slots_validation } =
       WIZCORE.State();
+    const { slots_need_saving } = SLOTCORE.State();
     this.state = {
       isReady: false,
       noMain: true,
@@ -85,9 +87,11 @@ class ScriptEditor extends React.Component {
       sel_linenum,
       sel_linepos,
       sel_slotpos,
-      slots_validation
+      slots_validation,
+      slots_need_saving
     };
     this.handleWizUpdate = this.handleWizUpdate.bind(this);
+    this.handleSlotUpdate = this.handleSlotUpdate.bind(this);
     this.Initialize = this.Initialize.bind(this);
     this.CleanupComponents = this.CleanupComponents.bind(this);
     this.RequestBpEditList = this.RequestBpEditList.bind(this);
@@ -134,6 +138,7 @@ class ScriptEditor extends React.Component {
 
     // add a subscriber
     WIZCORE.SubscribeState(this.handleWizUpdate);
+    SLOTCORE.SubscribeState(this.handleSlotUpdate);
 
     // Set model section
     let { panelConfiguration, script } = this.state;
@@ -172,10 +177,17 @@ class ScriptEditor extends React.Component {
   }
 
   /** INCOMING: handle WIZCORE event updates */
+  /// REVIEW: This should probably be removed to a separate
+  ///         ScriptEditor business logic module
   handleWizUpdate(vmStateEvent) {
     // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
-    const { sel_linenum, sel_linepos, sel_slotpos, slots_validation } =
-      vmStateEvent;
+    const {
+      sel_linenum,
+      sel_linepos,
+      sel_slotpos,
+      slots_validation,
+      slots_linescript
+    } = vmStateEvent;
     const newState = {};
     if (sel_linenum > 0) {
       newState.sel_linenum = sel_linenum;
@@ -183,6 +195,22 @@ class ScriptEditor extends React.Component {
     }
     if (sel_slotpos > 0) newState.sel_slotpos = sel_slotpos;
     if (slots_validation) newState.slots_validation = slots_validation;
+    if (Object.keys(newState).length > 0) this.setState(newState);
+
+    // COORDINATE WITH SLOTCORE!
+    // If "sel_slotpos" is present then the user had selected a slot
+    // -- selecting a slot means no data has changed, so no need to save.
+    // If slots_linescript changes by itself, then the slots DO need saving
+    if (slots_linescript && !sel_slotpos) {
+      SLOTCORE.SendState({ slots_need_saving: true });
+    }
+  }
+
+  /** INCOMING: handle SLOTCORE event updates */
+  handleSlotUpdate(vmStateEvent) {
+    const { slots_need_saving } = vmStateEvent;
+    const newState = {};
+    newState.slots_need_saving = slots_need_saving;
     this.setState(newState);
   }
 
@@ -283,7 +311,10 @@ class ScriptEditor extends React.Component {
       });
       monitoredInstances.push(i.id);
     });
-    this.setState({ instances, monitoredInstances });
+    // REVIEW: Instances are currently not displayed in
+    // the ScriptEditor, so skip the setState
+    // so that PanelScript does not re-render.
+    // this.setState({ instances, monitoredInstances });
   }
 
   /**
@@ -353,7 +384,9 @@ class ScriptEditor extends React.Component {
       panelConfiguration = 'select';
     }
 
-    WIZCORE.SendState({ script_text: script });
+    // Special WIZCORE handler to init state without triggering interceptState
+    WIZCORE.SendState({ script_text: script, script_page_needs_saving: false });
+    SLOTCORE.SendState({ slots_need_saving: false });
 
     this.setState({
       panelConfiguration,
@@ -401,7 +434,8 @@ class ScriptEditor extends React.Component {
       sel_linenum,
       sel_linepos,
       sel_slotpos,
-      slots_validation
+      slots_validation,
+      slots_need_saving
     } = this.state;
     const { classes } = this.props;
 
@@ -457,7 +491,9 @@ class ScriptEditor extends React.Component {
           )}
         </div>
         <div id="console-main" className={classes.main}>
-          <ScriptEditPane selection={{ sel_linenum, sel_linepos }} />
+          <ScriptEditPane
+            selection={{ sel_linenum, sel_linepos, slots_need_saving }}
+          />
           {/* <PanelSimViewer id="sim" onClick={this.OnPanelClick} /> */}
         </div>
         {/* Hidden by gridTemplateRows at root div

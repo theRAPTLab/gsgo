@@ -69,6 +69,7 @@ STORE._initializeState({
   script_tokens: [], // source tokens (from text)
 
   script_page: [], // source tokens 'printed' as lines
+  script_page_needs_saving: false, // track save status
   key_to_token: new Map(), // lookup map from tokenLine+Pos to original token
   program_map: null, // lookup map for directive sections
 
@@ -106,6 +107,14 @@ STORE._initializeState({
   dbg_console: 'ScriptContextor'
 });
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Secondary data initializer
+/// ScriptEditor uses this to load script_text after Main is loaded
+/// without triggering _interceptState;
+function InitSetState(parms) {
+  STORE._setState(parms);
+}
+
 /// DERIVED STATE LOGIC ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// spy on incoming SendState events and modify/add events as needed
@@ -138,6 +147,7 @@ STORE._interceptState(state => {
       const [vmPage, tokMap] = TRANSPILER.ScriptToLines(state.script_tokens);
       const programMap = TRANSPILER.ScriptToProgramMap(state.script_tokens);
       state.script_page = vmPage;
+      state.script_page_needs_saving = true;
       state.key_to_token = tokMap;
       state.program_map = programMap;
     } catch (e) {
@@ -178,7 +188,7 @@ STORE._interceptState(state => {
     // otherwise fall back to the value set in State
     const line = state.sel_linenum || State().sel_linenum;
     const vmPageLine = GetVMPageLine(line);
-    const { globalRefs } = vmPageLine;
+    const { globalRefs } = vmPageLine || {};
 
     // we have to make changes to the bundle
     const newSymbols = COMPILER.SymbolizeStatement(state.slots_linescript);
@@ -906,6 +916,7 @@ export { State, SendState, SubscribeState, UnsubscribeState, QueueEffect };
 /// EXPORTED EVENT DISPATCHERS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
+  InitSetState, // special state handling: set state without triggering intercept
   DispatchClick, // handles clicks on Wizard document
   // DEPRECATED
   // ScriptChanged, // handles change of script_page lineScript tokens

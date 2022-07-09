@@ -181,7 +181,6 @@ class PanelScript extends React.Component {
       jsx: '',
       lineHighlight: undefined,
       openConfirmDelete: false,
-      isDirty: false,
       openConfirmUnload: false,
       confirmUnloadCallback: {}, // fn called when user confirms unload
       // script: demoscript // Replace the prop `script` with this to test scripts defined in this file
@@ -231,7 +230,7 @@ class PanelScript extends React.Component {
     this.jar = CodeJar(editor, highlight);
     this.jar.onUpdate(code => {
       this.text = code;
-      this.setState({ isDirty: true });
+      WIZCORE.SendState({ script_page_needs_saving: true });
     });
 
     // add a subscriber
@@ -239,8 +238,7 @@ class PanelScript extends React.Component {
 
     window.addEventListener('beforeunload', e => {
       if (SKIP_RELOAD_WARNING) return;
-      const { isDirty } = this.state;
-      if (isDirty) {
+      if (WIZCORE.State().script_page_needs_saving) {
         // Show "Leave site?" dialog
         e.preventDefault();
         e.returnValue = ''; // required by Chrome
@@ -260,7 +258,7 @@ class PanelScript extends React.Component {
   /** INCOMING: handle WIZCORE event updates */
   handleWizUpdate(vmStateEvent) {
     // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
-    const { script_page, script_text } = vmStateEvent;
+    const { script_page, script_text, script_page_needs_saving } = vmStateEvent;
     const newState = {};
     let cb;
     if (script_page) {
@@ -274,7 +272,9 @@ class PanelScript extends React.Component {
         Prism.highlightElement(this.jarRef.current);
       };
     }
-    this.setState(newState, cb);
+    // if script_page_needs_saving, the setState will trigger a rerender
+    if (script_page || script_text || script_page_needs_saving)
+      this.setState(newState, cb);
   }
 
   HandleSimDataUpdate() {
@@ -282,7 +282,7 @@ class PanelScript extends React.Component {
   }
 
   HandleScriptIsDirty() {
-    this.setState({ isDirty: true });
+    WIZCORE.SendState({ script_page_needs_saving: true });
   }
 
   GetTitle(blueprintName) {
@@ -302,7 +302,7 @@ class PanelScript extends React.Component {
 
     // 5. Update the codejar code
     this.jar.updateCode(updatedScript);
-    this.setState({ isDirty: true });
+    WIZCORE.SendState({ script_page_needs_saving: true });
   }
 
   /**
@@ -331,6 +331,7 @@ class PanelScript extends React.Component {
    *    a. SaveAgent saves it to the AGENTS map.
    *    b. SaveAgent saves agents by id, which comes from a counter
    */
+  /// REVIEW: Shouldn't this be handled by Wizcore?
   SendText() {
     const { viewMode } = this.state;
     const { projId, bpName } = this.props;
@@ -349,8 +350,9 @@ class PanelScript extends React.Component {
       origBlueprintName: bpName
     }).then(result => {
       const newBpName = result.bpName;
-      this.setState({ isDirty: false });
-      // select the new script
+      WIZCORE.SendState({ script_page_needs_saving: false });
+
+      // select the new script otherwise wizard retains the old script
       UR.RaiseMessage('SELECT_SCRIPT', { bpName: newBpName });
     });
   }
@@ -359,9 +361,8 @@ class PanelScript extends React.Component {
     // Go back to select screen
     // This calls the ScriptEditor onClick handler
     // to reconfigure the panels
-    const { isDirty } = this.state;
     const { onClick } = this.props;
-    if (isDirty) {
+    if (WIZCORE.State().script_page_needs_saving) {
       this.setState({
         openConfirmUnload: true,
         confirmUnloadCallback: () => onClick(action)
@@ -418,7 +419,9 @@ class PanelScript extends React.Component {
     if (value === null) return; // skip repeated clicks
     if (value === VIEWMODE_CODE) {
       // currently wizard, clicked on code
-      // we don't need to do anything because wizard keeps state updated
+      // we don't need to do a data update because wizard keeps state updated
+      // but we do need to unselect slot editor
+      WIZCORE.CancelSlotEdit();
     } else if (value === VIEWMODE_WIZARD) {
       const script_text = this.jar.toString();
       WIZCORE.SendState({ script_text });
@@ -436,14 +439,13 @@ class PanelScript extends React.Component {
       viewMode,
       jsx,
       lineHighlight,
-      isDirty,
       openConfirmDelete,
       openConfirmUnload,
       script_page,
       script_text
     } = this.state;
     const { id, bpName, script, projId, onClick, classes } = this.props;
-
+    const needsSaving = WIZCORE.State().script_page_needs_saving;
     // CodeJar Refresh
     //
     // CodeJar does syntax highlighting when
@@ -497,6 +499,7 @@ class PanelScript extends React.Component {
         type="button"
         className={classes.button}
         style={{ alignSelf: 'flex-end' }}
+        disabled={needsSaving}
         onClick={() => this.OnSelectScriptClick('select')}
       >
         &lt; SELECT SCRIPT
@@ -518,7 +521,7 @@ class PanelScript extends React.Component {
         className={classes.button}
         style={{ alignSelf: 'flex-end' }}
         onClick={() => this.SendText()}
-        disabled={!isDirty}
+        disabled={!needsSaving}
       >
         SAVE TO SERVER
       </button>
