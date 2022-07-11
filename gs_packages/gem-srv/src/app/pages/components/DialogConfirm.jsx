@@ -1,3 +1,5 @@
+/// DEPRECATED: Use pico.css-based Dialog.jsx instead!
+
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import Button from '@material-ui/core/Button';
