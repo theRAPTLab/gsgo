@@ -483,8 +483,8 @@ class CostumePack extends SM_Feature {
         colorScaleSteps: SM_Number.Symbols
       },
       methods: {
-        setCostume: { args: ['costumeName:string', 'poseName:string'] },
-        setPose: { args: ['poseName:string'] },
+        setCostume: { args: ['costumeName:string', 'poseName:number'] },
+        setPose: { args: ['poseName:number'] },
         setAnimatedCostume: { args: ['costumeName:string', 'frameRate:number'] },
         setScale: { args: ['scale:number'] },
         setGlow: { args: ['seconds:number'] },

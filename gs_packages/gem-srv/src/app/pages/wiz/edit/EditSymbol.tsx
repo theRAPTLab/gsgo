@@ -54,7 +54,7 @@ export const HIDDEN_SYMBOLS = [
   'getbodyheight',
   // agent
   'skin',
-  'scale',
+  // 'scale', // needed by physics
   'scaley',
   'isinhabitingtarget',
   'statusvalue',
