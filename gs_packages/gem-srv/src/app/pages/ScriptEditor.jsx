@@ -135,7 +135,7 @@ class ScriptEditor extends React.Component {
     });
 
     // add top-level click handler
-    document.addEventListener('click', WIZCORE.DispatchClick);
+    document.addEventListener('click', EDITORCORE.DispatchClick);
 
     // add a subscriber
     WIZCORE.SubscribeState(this.handleWizUpdate);
@@ -208,12 +208,6 @@ class ScriptEditor extends React.Component {
   }
 
   /** INCOMING: handle SLOTCORE event updates */
-  handleSlotUpdate(vmStateEvent) {
-    const { slots_need_saving } = vmStateEvent;
-    const newState = {};
-    newState.slots_need_saving = slots_need_saving;
-    this.setState(newState);
-  }
 
   CleanupComponents() {
     this.UnRegisterInstances();

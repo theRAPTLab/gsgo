@@ -577,14 +577,12 @@ export { State, SendState, SubscribeState, UnsubscribeState, QueueEffect };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
   InitSetState, // special state handling: set state without triggering intercept
-  DispatchClick, // handles clicks on Wizard document
   // DEPRECATED
   // ScriptChanged, // handles change of script_page lineScript tokens
   WizardTextChanged, // handle incoming change of text
   WizardTestLine, // handle test line for WizardTextLine tester
   DispatchEditorClick, // handle clicks on editing box
   AddLine, // handle ScriptViewPane request to add a new script line
-  DeleteSelectedLine, // handle ScriptViewPane request to delete currently selected script line
   GetProgramContextForLine // given a line number, returns its program context
 };
 
