@@ -302,7 +302,7 @@ class SlotEditor extends React.Component {
           </>
         }
         yesMessage={`Save Changes`}
-        noMessage={`Discard Changes`}
+        noMessage={`Cancel`}
         onClose={this.HandleSaveDialogClick}
       />
     );
