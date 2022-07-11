@@ -15,14 +15,14 @@
     `slots_linescript` changes.
 
     Any changes to the slot are:
-    1. Handled by EDITORCORE.DispatchClick
-    2. EDITORCORE.DispatchClick updates the `slots_linescript` state.
+    1. Handled by EDITMGR.DispatchClick
+    2. EDITMGR.DispatchClick updates the `slots_linescript` state.
     3. The state update triggers _interceptState,
       ...which validates 'slots_linescript'
       ...and creates a new `slots_validation` state.
 
     Any changes in selection are:
-    1. Handled by EDITORCORE.DispatchClick
+    1. Handled by EDITMGR.DispatchClick
       ...which updates the various sel_* states
     2. The state update triggers _interceptState,
 
@@ -30,7 +30,7 @@
   UI
 
     Key User Input Triggers
-    User clicks are all handled by EDITORCORE.DispatchClick, which in turn sets:
+    User clicks are all handled by EDITMGR.DispatchClick, which in turn sets:
     * script page click => `sel_linenum`/`sel_linepos` -- Any clicks in the script page will result in
       1.  `sel_slotpos` -- the currently selected slot is updated
       2.  `slots_linescript` and `slots_validation` -- _interceptState will also update
@@ -64,7 +64,7 @@
 
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import * as EDITORCORE from 'modules/appcore/ac-editorcore';
+import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
@@ -121,16 +121,16 @@ class SlotEditor extends React.Component {
   /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   SaveSlot() {
-    EDITORCORE.SaveSlotLineScript();
+    EDITMGR.SaveSlotLineScript();
     console.log('@@@@ CLearing slots_need_saving');
     SLOTCORE.SendState({ slots_need_saving: false });
   }
   CancelSlotEdit() {
-    EDITORCORE.CancelSlotEdit();
+    EDITMGR.CancelSlotEdit();
     SLOTCORE.SendState({ slots_need_saving: false });
   }
   DeleteSlot() {
-    EDITORCORE.DeleteSlot();
+    EDITMGR.DeleteSlot();
     SLOTCORE.SendState({ slots_need_saving: false });
   }
   // -- Save Dialog helpers

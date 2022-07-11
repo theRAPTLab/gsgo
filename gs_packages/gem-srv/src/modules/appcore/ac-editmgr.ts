@@ -5,14 +5,14 @@
 
   GUI ViewModel Support
 
-  ac-editorcore handles state management and business logic for
+  ac-editmgr handles state management and business logic for
   the ScriptEditor and its sub components.
 
-  ac-editorcore coordinates state between:
+  ac-editmgr coordinates state between:
   * ac-wizcore
   * ac-slotcore
 
-  ac-editorcore is the main click handler for the wizard UI,
+  ac-editorceditmgrore is the main click handler for the wizard UI,
   coordinating clicks across wizcore and slotcore.
 
   ---
@@ -24,21 +24,21 @@
       b. WIZCORE._interceptState        script_tokens
                                         cur_bdl
                                         script_page
-      c. EDITORCORE.wizUpdate           SLOTCORE.SendState({ slots_bundle })
+      c. EDITMGR.wizUpdate           SLOTCORE.SendState({ slots_bundle })
       d. SLOTCORE._interceptState       ...
-      e. EDITORCORE.slotUpdate          ...
+      e. EDITMGR.slotUpdate          ...
 
   2. Select Line
       a. User clicks script_page
-      b. EDITORCORE.DispatchClick       WIZCORE.SendState({     SLOTCORE.SendState({
+      b. EDITMGR.DispatchClick       WIZCORE.SendState({     SLOTCORE.SendState({
                                           sel_linenum             sel_slotpos
                                           sel_linepos           })
                                         })
       c. WIZCORE._interceptState        ...
       d. SLOTCORE._interceptState                               ...
-      e. EDITORCORE.wizUpdate           SLOTCORE.SendState({ slots_linescript })
+      e. EDITMGR.wizUpdate           SLOTCORE.SendState({ slots_linescript })
       f. SLOTCORE._interceptState       ...
-      g. EDITORCORE.slotUpdate                                  ...
+      g. EDITMGR.slotUpdate                                  ...
 
   3. Select slot position
   4. Select Choice
@@ -49,19 +49,19 @@
   8. Delete Line
 
   ORDER OF OPERATIONS
-    EDITORCORE.DispatchClick
+    EDITMGR.DispatchClick
 
     WIZCORE._interceptState
     SLOTCORE._interceptState
 
-    EDITORCORE.wizUpdate
-    EDITORCORE.slotUpdate
+    EDITMGR.wizUpdate
+    EDITMGR.slotUpdate
 
     WIZCORE._interceptState
     SLOTCORE._interceptState
 
-    EDITORCORE.wizUpdate
-    EDITORCORE.slotUpdate
+    EDITMGR.wizUpdate
+    EDITMGR.slotUpdate
 
 
   ---
@@ -98,7 +98,7 @@ const { StateMgr } = UR.class;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('EDITORCORE', 'TagBlue');
+const PR = UR.PrefixUtil('EDITMGR', 'TagBlue');
 const DBG = false;
 
 /// HELPERS ///////////////////////////////////////////////////////////////////

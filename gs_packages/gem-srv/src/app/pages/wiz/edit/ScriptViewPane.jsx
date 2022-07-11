@@ -17,7 +17,7 @@
 
 import React, { useState } from 'react';
 import * as TRANSPILER from 'script/transpiler-v2';
-import * as EDITORCORE from 'modules/appcore/ac-editorcore';
+import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import Dialog from '../../../pages/components/Dialog';
 import {
@@ -95,7 +95,7 @@ export function ScriptViewPane(props) {
     setDeleteDialogIsOpen(true);
   }
   function HandleConfirmDeleteLine(doDelete) {
-    if (doDelete) EDITORCORE.DeleteSelectedLine();
+    if (doDelete) EDITMGR.DeleteSelectedLine();
     setDeleteDialogIsOpen(false);
   }
   // -- Deletion Display Data

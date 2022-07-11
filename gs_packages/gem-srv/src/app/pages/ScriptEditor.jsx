@@ -17,7 +17,7 @@ import React, { useState } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
-import * as EDITORCORE from 'modules/appcore/ac-editorcore';
+import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as TRANSPILER from 'script/transpiler-v2';
@@ -125,7 +125,7 @@ class ScriptEditor extends React.Component {
     });
 
     // add top-level click handler
-    document.addEventListener('click', EDITORCORE.DispatchClick);
+    document.addEventListener('click', EDITMGR.DispatchClick);
 
     // Set model section
     let { panelConfiguration, script } = this.state;

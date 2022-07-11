@@ -28,6 +28,7 @@
 
 import UR from '@gemstep/ursys/client';
 import React from 'react';
+import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 
 import ToggleButton from '@material-ui/lab/ToggleButton';
@@ -438,7 +439,7 @@ class PanelScript extends React.Component {
       // currently wizard, clicked on code
       // we don't need to do a data update because wizard keeps state updated
       // but we do need to unselect slot editor
-      WIZCORE.CancelSlotEdit();
+      EDITMGR.CancelSlotEdit();
     } else if (value === VIEWMODE_WIZARD) {
       const script_text = this.jar.toString();
       WIZCORE.SendState({ script_text });

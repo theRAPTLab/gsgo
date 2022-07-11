@@ -494,7 +494,7 @@ function AddLine(position: VMLineScriptInsertionPosition) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// function DeleteLine() => See ac-editorcore.ts
+// function DeleteLine() => See ac-editmgr.ts
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API return what PROGRAM directive a line is inside, as well as its range */
 function GetProgramContextForLine(lineNum: number): TLineContext {
