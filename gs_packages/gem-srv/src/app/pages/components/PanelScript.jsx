@@ -31,7 +31,7 @@ import { CodeJar } from 'lib/vendor/codejar';
 import 'lib/vendor/prism_extended.css';
 import 'lib/css/prism_linehighlight.css'; // override TomorrowNight
 
-import DialogConfirm from './DialogConfirm';
+import Dialog from './Dialog';
 
 import { useStylesHOC } from '../helpers/page-xui-styles';
 
@@ -520,7 +520,8 @@ class PanelScript extends React.Component {
       </button>
     );
     const DialogConfirmDelete = (
-      <DialogConfirm
+      <Dialog
+        id="DialogConfirmDelete"
         open={openConfirmDelete}
         message={`Are you sure you want to delete the "${bpName}" script?`}
         yesMessage={`Delete ${bpName}`}
@@ -528,7 +529,8 @@ class PanelScript extends React.Component {
       />
     );
     const DialogConfirmUnload = (
-      <DialogConfirm
+      <Dialog
+        id="DialogConfirmUnload"
         open={openConfirmUnload}
         message={`Are you sure you want to leave without saving the "${bpName}" script?`}
         yesMessage={`Leave ${bpName} without saving`}
