@@ -10,9 +10,10 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import Dialog from '../../../pages/components/Dialog';
 import {
   GLine,
   GBlankLine,
@@ -62,16 +63,10 @@ let DBGTEXT = '';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ScriptViewPane(props) {
   // collect resources for rendering
-  DBGTEXT = '';
   let { script_page, script_text } = props;
 
-  if (script_text && !script_page) {
-    // WIZCORE.SendState({ script_text });
-    const toks = TRANSPILER.TextToScript(script_text);
-    TRANSPILER.SymbolizeBlueprint(toks);
-    const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
-    // INSERT validation tokens to script_page
-    script_page = vmPage;
+  const [deleteDialogIsOpen, setDeleteDialogIsOpen] = useState(0);
+  DBGTEXT = '';
 
     // return <p>loading...</p>;
   }
@@ -98,35 +93,47 @@ export function ScriptViewPane(props) {
     CloseConfirmDeletionModal();
     WIZCORE.DeleteSelectedLine();
   }
+  // UI JSX: ADD LINE
+  const addLineBtn = (
+    <div className="gwiz">
+      <button className="outline btnAddEnd" onClick={e => WIZCORE.AddLine('end')}>
+        Add Line
+      </button>
+    </div>
+  );
+
+  // UI JSX: DELETION MODAL
+  // -- Deletion helpers
   function ConfirmDeletion(e) {
     e.preventDefault();
     e.stopPropagation();
-    OpenConfirmDeletionModal();
+    setDeleteDialogIsOpen(true);
   }
-
-  // DELETION MODAL
+  function HandleConfirmDeleteLine(doDelete) {
+    if (doDelete) WIZCORE.DeleteSelectedLine();
+    setDeleteDialogIsOpen(false);
+  }
+  // -- Deletion Display Data
   const { vmPageLine } = WIZCORE.SelectedTokenInfo() || {}; // if no line is selected yet
   const { lineScript } = vmPageLine || {}; // all of these values will be empty
   const selectedLineText = lineScript
     ? WIZCORE.GetLineScriptText(lineScript)
     : '';
   const confirmDeleteDialog = (
-    <dialog id="confirmDeleteModal">
-      <article>
-        <h3>Delete line?</h3>
-        <p>
+    <Dialog
+      id="ConfirmDeleteLineDialog"
+      open={deleteDialogIsOpen}
+      title={'Delete line?'}
+      message={
+        <>
           Are you sure you want to delete the line
           <br />
           <span style={{ color: 'blue' }}>{selectedLineText}</span>?
-        </p>
-        <footer>
-          <button className="secondary" onClick={CloseConfirmDeletionModal}>
-            Cancel
-          </button>
-          <button onClick={DeleteLine}>Delete</button>
-        </footer>
-      </article>
-    </dialog>
+        </>
+      }
+      yesMessage={`Delete`}
+      onClose={HandleConfirmDeleteLine}
+    />
   );
 
   // a page is an array of line viewmodel data
@@ -242,18 +249,11 @@ export function ScriptViewPane(props) {
     if (DBG) console.groupEnd();
   });
 
-  const addLineBtn = (
-    <div className="gwiz">
-      <button className="outline btnAddEnd" onClick={e => WIZCORE.AddLine('end')}>
-        Add Line
-      </button>
-    </div>
-  );
-
   if (DBG) {
     console.groupCollapsed('Wizard DBG');
     console.log(DBGTEXT);
   }
+
   return (
     <>
       <div id="ScriptWizardView" style={sScriptView}>
