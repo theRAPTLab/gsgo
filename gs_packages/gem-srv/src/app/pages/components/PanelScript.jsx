@@ -26,13 +26,13 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
 import React from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { withStyles } from '@material-ui/core/styles';
-import UR from '@gemstep/ursys/client';
 import { UpdateScript } from 'modules/sim/script/tools/script-to-jsx';
 import { ScriptViewPane } from '../wiz/edit/ScriptViewPane';
 import { GetAllKeywords } from 'modules/datacore';
