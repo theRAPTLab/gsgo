@@ -46,7 +46,18 @@ function u_Key(prefix = '') {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** determine what editor to show  */
+/** determine what editor to show
+ *  @param object props
+ *  @param object props.selection
+ *  // from WIZCORE.SelectedTokenId
+ *  @param object props.selection.sel_linenum
+ *  @param object props.selection.sel_linepos
+ *  @param object props.selection.vmPageLine
+ *  // from slot
+ *  @param object props.selection.sel_slotpos
+ *  @param object props.selection.slots_validation
+ *  @param object props.selection.slots_linescript
+ */
 function SelectEditor(props) {
   const { selection } = props;
   if (selection === undefined) return null;
