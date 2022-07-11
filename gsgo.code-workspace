@@ -15,10 +15,7 @@
       "gs_packages/gem-srv/runtime": true
     },
     "files.exclude": {
-      ".eslintignore": true,
       ".gitlab": true,
-      ".prettierrc.js": true,
-      ".vscode": true,
       "docs": true,
       "gs_packages/gem-srv/assets-src": true,
       "gs_packages/gem-srv/gem_srv.code-workspace": true,
