@@ -1,5 +1,8 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+  DEPRECATED -- use SlotEditor instead.
+
+
   SelectEditorSlots
 
   DATA
@@ -47,11 +50,12 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import { SelectEditor } from './SelectEditor';
+import Dialog from '../../../pages/components/Dialog';
 import {
   GridStack,
   FlexStack,
@@ -64,7 +68,7 @@ import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to i
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
+const DBG = true;
 
 const KEY_BITS = -1 + 2 ** 16;
 let KEY_COUNTER = 0;
@@ -110,32 +114,66 @@ function u_Key(prefix = '') {
  *    hover/
  */
 function SelectEditorSlots(props) {
-  const { selection } = props; // sel_linenum, sel_linepos, slots_needs_saving
-  const { slots_need_saving } = selection || {};
+  // const { selection } = props; // sel_linenum, sel_linepos, slots_needs_saving
+  // const { slots_need_saving, slots_save_dialog_is_open } = selection || {};
 
-  if (!selection)
-    return <div className="gsled panel panelhelp">{L10N.MSG_SELECT_TOKEN}</div>;
+  const [needsRedraw, setNeedsRedraw] = useState(0);
 
-  let selectedError = '';
-  let selectedHelp = '';
+  /// SUB-MODULE STATE HANDLERS /////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// wizcore
+  function handleWizUpdate(vmStateEvent) {
+    console.log('SelecEditorSlots wizupdate', vmStateEvent);
+    const {
+      sel_linenum,
+      sel_linepos,
+      sel_slotpos,
+      slots_validation,
+      slots_linescript
+    } = vmStateEvent;
+    // REDRAW when slots_linescript is updated!
+    if (slots_linescript && !sel_slotpos) {
+      setNeedsRedraw(true);
+    }
+  }
+  WIZCORE.SubscribeState(handleWizUpdate);
+  /// slotcore
+  function handleSlotUpdate(vmStateEvent) {
+    console.log('SelecEditorSlots slotupdate', vmStateEvent);
+    const { slots_need_saving, slots_save_dialog_is_open } = vmStateEvent;
+    // REDRAW when slots_need_saving or slots_save_dialog_is_open is updated!
+    if (
+      vmStateEvent.hasOwnProperty('slots_need_saving') ||
+      vmStateEvent.hasOwnProperty('slots_save_dialog_is_open')
+    ) {
+      console.log('........................triggering redaw');
+      setNeedsRedraw(!needsRedraw);
+    } else {
+      console.log(
+        '...........funny',
+        vmStateEvent.hasOwnProperty('slots_need_saving')
+      );
+    }
+  }
+  SLOTCORE.SubscribeState(handleSlotUpdate);
+
+  /// PREPARE RENDER DATA /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   // 1. Get Slot Definitions
-  /* REVIEW
-              When should we use SelectedTokenInfo vs reading State directly?
-              NOTE that `selection` above comes from props and only contains
-              sel_linenum and sel_linepos, not the whole SelectedTokenInfo
-              object.
-              * We should probably remove use of the var `selection` elsewhere
-                if is not the selected token info.
-              * Is passing selection via props even necessary if everyone is
-                just reading it directly from wizcore anyway?
-  */
   const { slots_linescript, slots_validation, sel_slotpos, sel_linenum } =
     WIZCORE.State();
-
+  const { slots_need_saving, slots_save_dialog_is_open } = SLOTCORE.State();
+  console.log('prerender slots_need_saving', slots_need_saving);
+  let selectedError = '';
+  let selectedHelp = '';
   if (DBG) console.log('SlotEditor slots_validation', slots_validation);
 
-  // 2. Process each validation token
+  // 2. Nothing selected
+  if (!slots_validation)
+    return <div className="gsled panel panelhelp">{L10N.MSG_SELECT_TOKEN}</div>;
+
+  // 3. Process each validation token
   const { validationTokens } = slots_validation;
   const tokenList = [];
   const validationTokenCount = validationTokens.length;
@@ -216,6 +254,7 @@ function SelectEditorSlots(props) {
 
   function SaveSlot(e) {
     WIZCORE.SaveSlotLineScript(e);
+    console.error('@@@@ CLearing slots_need_saving');
     SLOTCORE.SendState({ slots_need_saving: false });
   }
   function CancelSlotEdit(e) {
@@ -226,6 +265,35 @@ function SelectEditorSlots(props) {
     WIZCORE.DeleteSlot(e);
     SLOTCORE.SendState({ slots_need_saving: false });
   }
+
+  // UI JSX: CONFIRM SAVE Dialog
+  // -- Save Dialog helpers
+  function HandleSaveDialogClick(doSave) {
+    if (doSave) SaveSlot();
+    SLOTCORE.SendState({ slots_save_dialog_is_open: false });
+  }
+  // -- Save Dialog Display Data
+  const lineScript = WIZCORE.State().slots_linescript || {}; // if no line is selected yet
+  const selectedLineText = lineScript
+    ? WIZCORE.GetLineScriptText(lineScript)
+    : '';
+  const confirmSaveDialog = (
+    <Dialog
+      id="ConfirmSlotSaveDialog"
+      open={slots_save_dialog_is_open}
+      title={'Save line?'}
+      message={
+        <>
+          Are you sure you want to exit without saving the line
+          <br />
+          <span style={{ color: 'blue' }}>{selectedLineText}</span>?
+        </>
+      }
+      yesMessage={`Save Changes`}
+      noMessage={`Discard Changes`}
+      onClose={HandleSaveDialogClick}
+    />
+  );
 
   /*
       Keyword Help
@@ -271,6 +339,9 @@ function SelectEditorSlots(props) {
                         *  Add a "[ ] Save when I click away" option?
                         *  Test modeless edit and turn "Cancel" button into "REVERT"?
   */
+
+  const selection = WIZCORE.SelectedTokenInfo();
+  console.error('~~~~~~~~SelecEditorSlots redraw', sel_slotpos, slots_validation);
   return (
     <div className="gsled panel">
       {/* RATIONALE: Title bar to let you know you're editing and show which line you're editing */}
@@ -305,6 +376,7 @@ function SelectEditorSlots(props) {
         </button>
       </div>
       <div className="gsled panelhelp">{keywordHelp}</div>
+      {confirmSaveDialog}
     </div>
   );
 }

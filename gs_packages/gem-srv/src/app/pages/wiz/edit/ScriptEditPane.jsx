@@ -7,17 +7,10 @@
 
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import { TokenToString, DecodeTokenPrimitive } from 'script/transpiler-v2';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import Console from '../stat/Console';
-import { SelectEditorSlots } from './SelectEditorSlots';
-import {
-  GridStack,
-  FlexStack,
-  StackUnit,
-  GToken,
-  StackText
-} from '../SharedElements';
+import SlotEditor from './SlotEditor';
+import { FlexStack, StackUnit, StackText } from '../SharedElements';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -123,7 +116,8 @@ export function ScriptEditPane(props) {
     <FlexStack id="ScriptContextor" style={{ height: '100%' }}>
       {/* <DevStuffToAdd /> */}
       {/* put some kind of chooser here */}
-      <SelectEditorSlots selection={selInfo} />
+      {/* <SelectEditorSlots selection={selInfo} /> */}
+      <SlotEditor />
       {/* then back to business */}
       {/* spacer to push Console down to bottom */}
       <div style={{ flexGrow: 1 }}>&nbsp;</div>
