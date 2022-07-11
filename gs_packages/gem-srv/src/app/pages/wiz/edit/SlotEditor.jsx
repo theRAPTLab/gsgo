@@ -135,8 +135,9 @@ class SlotEditor extends React.Component {
   }
   // -- Save Dialog helpers
   HandleSaveDialogClick(doSave) {
-    if (doSave) this.SaveSlot();
-    SLOTCORE.SendState({ slots_save_dialog_is_open: false });
+    SLOTCORE.SendState({ slots_save_dialog_is_open: false }, () => {
+      if (doSave) this.SaveSlot();
+    });
   }
 
   /// RENDERER ////////////////////////////////////////////////////////////////
