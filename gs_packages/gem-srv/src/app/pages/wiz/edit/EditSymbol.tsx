@@ -71,7 +71,6 @@ export const LOCKED_SYMBOLS = [
   'isptrackcontrollable',
   'program',
   'define',
-  'init',
   'condition',
   'event',
   'update',
@@ -91,6 +90,7 @@ export const ADVANCED_SYMBOLS = [
   'dbgerror',
   // features
   'cursor',
+  'init', // physics
   // agent
   'statustext',
   'zindex',
