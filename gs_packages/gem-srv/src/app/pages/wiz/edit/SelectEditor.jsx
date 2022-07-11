@@ -22,6 +22,7 @@
 
 import React from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 
 import { ObjRefSelector } from './ObjRefSelector';
@@ -63,27 +64,27 @@ function SelectEditor(props) {
 
   const processNumberInput = e => {
     e.preventDefault();
-    WIZCORE.UpdateSlotValue(Number(e.target.value));
+    SLOTCORE.UpdateSlotValue(Number(e.target.value));
   };
   const processStringInput = e => {
     e.preventDefault();
-    WIZCORE.UpdateSlotString(String(e.target.value));
+    SLOTCORE.UpdateSlotString(String(e.target.value));
   };
   // note this needs to have a new wizcore method for identifier input types
   // this is just a copy of processStringInput
   const processIdentifierInput = e => {
     e.preventDefault();
-    const err = WIZCORE.UpdateIdentifier(String(e.target.value));
+    const err = SLOTCORE.UpdateIdentifier(String(e.target.value));
     if (err) alert(err);
   };
   const processBooleanInput = e => {
     e.preventDefault();
     const toggled = unitText === 'true' ? false : true;
-    WIZCORE.UpdateSlotBoolean(toggled);
+    SLOTCORE.UpdateSlotBoolean(toggled);
   };
   const processExprInput = e => {
     e.preventDefault();
-    WIZCORE.UpdateSlotExpr(String(e.target.value));
+    SLOTCORE.UpdateSlotExpr(String(e.target.value));
   };
 
   const handleNumberKeypress = e => {

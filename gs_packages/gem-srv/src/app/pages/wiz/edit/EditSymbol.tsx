@@ -18,6 +18,7 @@ import UR from '@gemstep/ursys/client';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import { GLabelToken, GSymbolToken, StackUnit } from '../SharedElements';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
@@ -124,7 +125,7 @@ export function EditSymbol(props) {
 
   const allDicts = [];
 
-  const { slots_validation } = WIZCORE.State(); // TValidatedScriptUnit
+  const { slots_validation } = SLOTCORE.State(); // TValidatedScriptUnit
   // test clause
   if (sel_linenum > 0 && sel_linepos > 0) {
     // const vdata = WIZCORE.ValidateSelectedLine();
@@ -142,6 +143,7 @@ export function EditSymbol(props) {
     // no more validation tokens
     if (vIndex >= validationTokens.length)
       return <StackUnit label="No options" type="symbol" open sticky />;
+
     const symbolData: TSymbolData = validationTokens[vIndex]; // indx into line
     /* symbolData has the current symbol data to convert into viewdata
        `symbolData` looks like this: {

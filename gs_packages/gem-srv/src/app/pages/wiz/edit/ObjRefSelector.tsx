@@ -18,6 +18,7 @@
 
 import React from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import { GValidationToken, GSymbolToken } from '../SharedElements';
 import { HIDDEN_SYMBOLS, ADVANCED_SYMBOLS } from './EditSymbol';
@@ -37,9 +38,8 @@ function ObjRefSelector(props) {
   const { selection, expectedType, objRefPos } = props;
   if (!selection)
     return <div className="gsled panel panelhelp">Nothing Selected</div>;
-  const { slots_linescript, slots_validation, sel_slotpos, sel_linenum } =
-    WIZCORE.State();
-
+  const { sel_linenum } = WIZCORE.State();
+  const { slots_linescript, slots_validation, sel_slotpos } = SLOTCORE.State();
   // 1. Process each validation token
   const { validationTokens } = slots_validation;
   // get the vtoken of the objRef slot

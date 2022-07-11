@@ -21,6 +21,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import { TStateObject } from '@gemstep/ursys/types';
+import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 
 // load state
 const { StateMgr } = UR.class;
@@ -39,7 +41,15 @@ const STORE = new StateMgr('SlotCore');
 /// initial values of state have to be defined for constructors of components
 /// that are relying on it, but these are not yet loaded
 STORE._initializeState({
-  slots_need_saving: false // flag sent during data initialization by
+  // metadata
+  slots_need_saving: false, // flag sent during data initialization by
+  slots_save_dialog_is_open: false, // flag used to show confirm save dialog in SelectEditorSlots
+  // selection data
+  sel_slotpos: -1, // selected slot currently being edited.  If < 0 it is not set
+  // slot data
+  slots_linescript: [], // lineScript being edited in slot editor -- the whole line
+  slots_validation: null, // validation object for the current slot line being edited { validationTokens, validationLog }
+  slots_bundle: null // temporary bundle used to store line-based symbol tables
 });
 
 /// DERIVED STATE LOGIC ///////////////////////////////////////////////////////
@@ -53,7 +63,61 @@ STORE._interceptState(state => {
 
 /// UI-DRIVEN STATE UPDATES ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Local helper  */
+function m_UpdateSlotValueToken(key, value) {
+  // Update slots_linescript
+  const { slots_linescript, sel_slotpos } = State();
+  // if the scriptToken already exists, update it byRef
+  const slotScriptToken =
+    slots_linescript[CHECK.OffsetLineNum(sel_slotpos, 'sub')] || // existing token
+    {}; // or new object if this is creating a new slot
+  // if the token was previously used to as a token, remove the old string/value keys
+  // otherwise both keys will be active
+  delete slotScriptToken.value;
+  delete slotScriptToken.string;
+  delete slotScriptToken.expr;
+  delete slotScriptToken.identifier;
+  slotScriptToken[key] = value; // We know the scriptToken is a value
+  if (sel_slotpos > slots_linescript.length) {
+    slots_linescript.push(slotScriptToken); // it's a new token so add it
+  }
+  const slots_need_saving = true;
+  SendState({ slots_linescript, slots_need_saving }); // Update state to trigger validation rerun
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
+function UpdateSlotValue(val) {
+  m_UpdateSlotValueToken('value', val);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
+function UpdateSlotString(val) {
+  m_UpdateSlotValueToken('string', val);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument)
+ *  returns true if input validation passed */
+function UpdateIdentifier(val): string {
+  // don't allow leading numbers
+  // spaces are filtered out at the input level
+  if (val === '') return 'identifiers may not be blank';
+  const ch = val.charAt(0);
+  const isDigit = !isNaN(ch) && !isNaN(parseFloat(ch));
+  if (isDigit) return 'identifiers can not start with a number';
+  m_UpdateSlotValueToken('identifier', val);
+  return undefined;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
+function UpdateSlotBoolean(val) {
+  m_UpdateSlotValueToken('value', val);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
+function UpdateSlotExpr(val) {
+  m_UpdateSlotValueToken('expr', val);
+}
 /// UI SCREEN HELPERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -67,7 +131,13 @@ export { State, SendState, SubscribeState, UnsubscribeState, QueueEffect };
 
 /// EXPORTED EVENT DISPATCHERS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export {};
+export {
+  UpdateSlotValue, // handle incoming change of slot value (input)
+  UpdateSlotString, // handle incoming change of slot string (input)
+  UpdateIdentifier, // handle incoming change of identifier
+  UpdateSlotBoolean, // handle incoming change of slot boolean (input)
+  UpdateSlotExpr
+};
 
 /// EXPORTED VIEWMODEL INFO UTILS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
