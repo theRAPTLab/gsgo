@@ -70,9 +70,6 @@ PANEL_CONFIG.set('sim', '60% auto 0px'); // columns
 class ScriptEditor extends React.Component {
   constructor() {
     super();
-    const { sel_linenum, sel_linepos, sel_slotpos, slots_validation } =
-      WIZCORE.State();
-    const { slots_need_saving } = SLOTCORE.State();
     this.state = {
       isReady: false,
       noMain: true,
@@ -84,15 +81,8 @@ class ScriptEditor extends React.Component {
       instances: [],
       monitoredInstances: [],
       message: '',
-      messageIsError: false,
-      sel_linenum,
-      sel_linepos,
-      sel_slotpos,
-      slots_validation,
-      slots_need_saving
+      messageIsError: false
     };
-    this.handleWizUpdate = this.handleWizUpdate.bind(this);
-    this.handleSlotUpdate = this.handleSlotUpdate.bind(this);
     this.Initialize = this.Initialize.bind(this);
     this.CleanupComponents = this.CleanupComponents.bind(this);
     this.RequestBpEditList = this.RequestBpEditList.bind(this);
@@ -137,10 +127,6 @@ class ScriptEditor extends React.Component {
     // add top-level click handler
     document.addEventListener('click', EDITORCORE.DispatchClick);
 
-    // add a subscriber
-    WIZCORE.SubscribeState(this.handleWizUpdate);
-    SLOTCORE.SubscribeState(this.handleSlotUpdate);
-
     // Set model section
     let { panelConfiguration, script } = this.state;
     if (bpName === '') {
@@ -173,41 +159,8 @@ class ScriptEditor extends React.Component {
 
   componentWillUnmount() {
     this.CleanupComponents();
-    WIZCORE.UnsubscribeState(this.handleWizUpdate);
     window.removeEventListener('beforeunload', this.CleanupComponents);
   }
-
-  /** INCOMING: handle WIZCORE event updates */
-  /// REVIEW: This should probably be removed to a separate
-  ///         ScriptEditor business logic module
-  handleWizUpdate(vmStateEvent) {
-    // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
-    const {
-      sel_linenum,
-      sel_linepos,
-      sel_slotpos,
-      slots_validation,
-      slots_linescript
-    } = vmStateEvent;
-    const newState = {};
-    if (sel_linenum > 0) {
-      newState.sel_linenum = sel_linenum;
-      newState.sel_linepos = sel_linepos;
-    }
-    if (sel_slotpos > 0) newState.sel_slotpos = sel_slotpos;
-    if (slots_validation) newState.slots_validation = slots_validation;
-    if (Object.keys(newState).length > 0) this.setState(newState);
-
-    // COORDINATE WITH SLOTCORE!
-    // If "sel_slotpos" is present then the user had selected a slot
-    // -- selecting a slot means no data has changed, so no need to save.
-    // If slots_linescript changes by itself, then the slots DO need saving
-    if (slots_linescript && !sel_slotpos) {
-      SLOTCORE.SendState({ slots_need_saving: true });
-    }
-  }
-
-  /** INCOMING: handle SLOTCORE event updates */
 
   CleanupComponents() {
     this.UnRegisterInstances();
@@ -416,22 +369,7 @@ class ScriptEditor extends React.Component {
    */
   render() {
     if (DBG) console.log(...PR('render'));
-    const {
-      noMain,
-      panelConfiguration,
-      projId,
-      bpEditList,
-      bpName,
-      script,
-      instances,
-      message,
-      messageIsError,
-      sel_linenum,
-      sel_linepos,
-      sel_slotpos,
-      slots_validation,
-      slots_need_saving
-    } = this.state;
+    const { noMain, panelConfiguration, projId, bpEditList, bpName } = this.state;
     const { classes } = this.props;
 
     const DialogNoMain = (
@@ -486,9 +424,7 @@ class ScriptEditor extends React.Component {
           )}
         </div>
         <div id="console-main" className={classes.main}>
-          <ScriptEditPane
-            selection={{ sel_linenum, sel_linepos, slots_need_saving }}
-          />
+          <ScriptEditPane />
           {/* <PanelSimViewer id="sim" onClick={this.OnPanelClick} /> */}
         </div>
         {/* Hidden by gridTemplateRows at root div
@@ -516,9 +452,9 @@ class ScriptEditor extends React.Component {
               instances={instances}
               disallowDeRegister
             />
-            {DialogNoMain}
           </div>
         </div> */}
+        {DialogNoMain}
       </div>
     );
   }

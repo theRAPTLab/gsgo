@@ -116,20 +116,6 @@ function DevNotice(props) {
 /// GUI EDITOR DEFINITION /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ScriptEditPane(props) {
-  const { selection } = props;
-  const { slots_need_saving } = selection;
-  // we need the current selection if there is one
-  let selInfo = WIZCORE.SelectedTokenInfo();
-  if (selInfo !== undefined) {
-    const { sel_linepos: pos, slots_validation: validation } = selInfo;
-    const { validationTokens: vtoks, validationLog } = validation;
-    WIZCORE.UpdateDBGConsole(validationLog);
-    const vtok = vtoks[pos - 1];
-    // stuff "slots_need_saving" into "selInfo" so slot editor will update save state
-    // this is necessary to force slot editor to update and render to update
-    // the "Save" button
-    selInfo.slots_need_saving = slots_need_saving;
-  }
   const { dbg_console } = WIZCORE.State();
 
   /// RENDER //////////////////////////////////////////////////////////////////
