@@ -3,10 +3,15 @@
   ScriptView - Given a script_page array of renderable state, emit
   a clickable wizard GUI.
 
+  `sel_linenum` is passed to cause ScriptViewPane to re-render the
+  selected line (to show line add/delete buttons) if the user clicks on an
+  existing line.
+
   COMPONENT USAGE
 
-    <ScriptView vmPage={this.state.script_page} />
-    where script_page is defined in ac-wizcore
+    <ScriptViewPane script_page={script_page} sel_linenum={sel_linenum} />
+
+  where script_page is defined in ac-wizcore
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -63,36 +68,15 @@ let DBGTEXT = '';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ScriptViewPane(props) {
   // collect resources for rendering
-  let { script_page, script_text } = props;
+  let { script_page, sel_linenum } = props;
 
   const [deleteDialogIsOpen, setDeleteDialogIsOpen] = useState(0);
   DBGTEXT = '';
 
-    // return <p>loading...</p>;
-  }
   const script_page_Validation = WIZCORE.ValidateScriptPage();
   const pageBuffer = [];
   const selTokId = WIZCORE.SelectedTokenId();
-  const selLineNum = WIZCORE.SelectedLineNum();
 
-  // DELETION HELPERS
-  const isOpenClass = 'modal-is-open';
-  const openingClass = 'modal-is-opening';
-  const closingClass = 'modal-is-closing';
-  function OpenConfirmDeletionModal() {
-    document.documentElement.classList.add(isOpenClass, openingClass);
-    const confirmDeleteModal = document.getElementById('confirmDeleteModal');
-    confirmDeleteModal.setAttribute('open', true);
-  }
-  function CloseConfirmDeletionModal() {
-    const confirmDeleteModal = document.getElementById('confirmDeleteModal');
-    confirmDeleteModal.setAttribute('open', false);
-    document.documentElement.classList.remove(isOpenClass, openingClass);
-  }
-  function DeleteLine() {
-    CloseConfirmDeletionModal();
-    WIZCORE.DeleteSelectedLine();
-  }
   // UI JSX: ADD LINE
   const addLineBtn = (
     <div className="gwiz">
@@ -136,6 +120,7 @@ export function ScriptViewPane(props) {
     />
   );
 
+  // SCRIPT PAGE
   // a page is an array of line viewmodel data
   // the line has token viewmodel data plus line metdata
   if (DBG) console.groupCollapsed('ScriptViewPane Validation');
@@ -211,7 +196,7 @@ export function ScriptViewPane(props) {
     const num = String(lineNum).padStart(3, '0');
     //
     if (hasTokens || DRAW_CLOSING_LINES) {
-      const selected = selLineNum === lineNum;
+      const selected = sel_linenum === lineNum;
       let lineJSX = lineBuffer;
       if (selected) {
         lineJSX = (

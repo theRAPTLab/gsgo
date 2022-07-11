@@ -3,9 +3,26 @@
 
   PanelScript - Script Editing and Highlighting
 
-  This uses `prism` to highlight gemscript.
-  * We extend the javascript highlighting to add highlighting
-    for gemscript keywords and data types.
+  Shows:
+  * Code Editor View
+  * Script Page Wizard View
+
+  MANAGING STATE
+
+      PanelScript has to manage both the Code view and the ScriptViewPane
+      Wizard view.  To do so, it listens to wizcore state updates and
+      passes it on to the subcomponents, including ScriptViewPane.
+
+      ScriptViewPane uses props to receive `script_page` for backward
+      compatibility with DevWizard
+
+  WIZARD VIEW
+
+  CODE VIEW
+
+      This uses `prism` to highlight gemscript.
+      * We extend the javascript highlighting to add highlighting
+        for gemscript keywords and data types.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -175,7 +192,7 @@ if (DBG) console.log(...PR('PRISM gemscript types', types_regex));
 class PanelScript extends React.Component {
   constructor() {
     super();
-    const { script_page, script_text } = WIZCORE.State();
+    const { script_page, script_text, sel_linenum } = WIZCORE.State();
     this.state = {
       viewMode: VIEWMODE_WIZARD, // 'code',
       jsx: '',
@@ -186,7 +203,8 @@ class PanelScript extends React.Component {
       // script: demoscript // Replace the prop `script` with this to test scripts defined in this file
       // post wizcore integration
       script_page,
-      script_text
+      script_text,
+      sel_linenum
     };
     // codejar
     this.jarRef = React.createRef();
@@ -255,7 +273,8 @@ class PanelScript extends React.Component {
   /** INCOMING: handle WIZCORE event updates */
   handleWizUpdate(vmStateEvent) {
     // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
-    const { script_page, script_text, script_page_needs_saving } = vmStateEvent;
+    const { script_page, script_text, script_page_needs_saving, sel_linenum } =
+      vmStateEvent;
     const newState = {};
     let cb;
     if (script_page) {
@@ -269,8 +288,13 @@ class PanelScript extends React.Component {
         Prism.highlightElement(this.jarRef.current);
       };
     }
+    // REVIEW: This is not strictly necessary...just using this to trigger
+    // ScriptViewPane redraw for now
+    if (sel_linenum !== undefined) {
+      newState.sel_linenum = sel_linenum;
+    }
     // if script_page_needs_saving, the setState will trigger a rerender
-    if (script_page || script_text || script_page_needs_saving)
+    if (Object.keys(newState).length > 0 || script_page_needs_saving)
       this.setState(newState, cb);
   }
 
@@ -435,10 +459,11 @@ class PanelScript extends React.Component {
       openConfirmDelete,
       openConfirmUnload,
       script_page,
-      script_text
+      script_text,
+      sel_linenum
     } = this.state;
     const { id, bpName, script, projId, onClick, classes } = this.props;
-    const needsSaving = WIZCORE.State().script_page_needs_saving;
+    const { script_page_needs_saving: needsSaving } = WIZCORE.State();
     // CodeJar Refresh
     //
     // CodeJar does syntax highlighting when
@@ -586,7 +611,7 @@ class PanelScript extends React.Component {
         }}
       >
         {/* {jsx} */}
-        <ScriptViewPane script_page={script_page} />
+        <ScriptViewPane script_page={script_page} sel_linenum={sel_linenum} />
       </div>
     );
 
