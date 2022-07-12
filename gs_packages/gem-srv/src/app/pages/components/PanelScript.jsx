@@ -30,6 +30,7 @@ import UR from '@gemstep/ursys/client';
 import React from 'react';
 import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
@@ -351,6 +352,16 @@ class PanelScript extends React.Component {
    */
   /// REVIEW: Shouldn't this be handled by Wizcore?
   SendText() {
+    // abort if slots need saving
+    // REVIEW: The more UI-friendly way to do this would probably
+    //         be to use a custom dialog that allows you to both
+    //         save the slot AND submit to server.
+    const { slots_need_saving } = SLOTCORE.State();
+    if (slots_need_saving) {
+      SLOTCORE.SendState({ slots_save_dialog_is_open: true });
+      return;
+    }
+
     const { viewMode } = this.state;
     const { projId, bpName } = this.props;
     let text;
