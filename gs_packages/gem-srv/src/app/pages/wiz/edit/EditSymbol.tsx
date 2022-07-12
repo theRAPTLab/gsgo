@@ -74,6 +74,7 @@ export const LOCKED_SYMBOLS = [
   'define',
   'condition',
   'event',
+  'init',
   'update',
   'think',
   'exec'
@@ -91,7 +92,6 @@ export const ADVANCED_SYMBOLS = [
   'dbgerror',
   // features
   'cursor',
-  'init', // physics
   // agent
   'statustext',
   'zindex',
