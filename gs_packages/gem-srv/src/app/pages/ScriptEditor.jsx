@@ -296,7 +296,7 @@ class ScriptEditor extends React.Component {
       {
         panelConfiguration: id
       },
-      () => WIZCORE.CancelSlotEdit()
+      () => EDITMGR.CancelSlotEdit()
     );
   }
 
