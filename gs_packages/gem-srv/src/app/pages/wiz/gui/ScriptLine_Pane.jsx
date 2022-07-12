@@ -1,9 +1,5 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-
-  DEPRECATED -- See ScriptLine_Pane
-
-
   ScriptContextor - Displays the overall context of a blueprint, as well
   as providing help as needed. I'm imagining it as an accordion view.
 
@@ -12,8 +8,9 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import Console from '../stat/Console';
-import SlotEditor from './SlotEditor';
+import SlotEditor_Block from './SlotEditor_Block';
 import { FlexStack, StackUnit, StackText } from '../SharedElements';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -112,7 +109,16 @@ function DevNotice(props) {
 
 /// GUI EDITOR DEFINITION /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function ScriptEditPane(props) {
+export function ScriptLine_Pane(props) {
+  // show validationLog
+  const { slots_validation } = SLOTCORE.State();
+  console.log('slots_validtion', slots_validation);
+  if (slots_validation) {
+    const { validationTokens, validationLog } = slots_validation;
+    console.warn('############ validationLog', validationLog);
+    WIZCORE.UpdateDBGConsole(validationLog);
+  }
+
   const { dbg_console } = WIZCORE.State();
 
   /// RENDER //////////////////////////////////////////////////////////////////
@@ -121,7 +127,7 @@ export function ScriptEditPane(props) {
       {/* <DevStuffToAdd /> */}
       {/* put some kind of chooser here */}
       {/* <SelectEditorSlots selection={selInfo} /> */}
-      <SlotEditor />
+      <SlotEditor_Block />
       {/* then back to business */}
       {/* spacer to push Console down to bottom */}
       <div style={{ flexGrow: 1 }}>&nbsp;</div>

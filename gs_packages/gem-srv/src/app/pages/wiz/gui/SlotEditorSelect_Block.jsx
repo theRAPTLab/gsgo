@@ -1,11 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-
-  DEPRECATED -- See SlotEditorSelect_Block
-
-
-
-  SelectEditor
+  SlotEditorSelect_Block
 
   ~~given the current selection which is a token on the left side,~~
   given the current selection which is a slot token on the RIGHT side,
@@ -30,8 +25,8 @@ import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 
-import { ObjRefSelector } from './ObjRefSelector';
-import { LOCKED_SYMBOLS, EditSymbol } from './EditSymbol';
+import { ObjRefSelector_Block } from './ObjRefSelector_Block';
+import { LOCKED_SYMBOLS, EditSymbol_Block } from './EditSymbol_Block';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -63,7 +58,7 @@ function u_Key(prefix = '') {
  *  @param object props.selection.slots_validation
  *  @param object props.selection.slots_linescript
  */
-function SelectEditor(props) {
+function SlotEditorSelect_Block(props) {
   const { selection } = props;
   if (selection === undefined) return null;
 
@@ -259,7 +254,7 @@ function SelectEditor(props) {
     default:
       editor = (
         <div>
-          <EditSymbol
+          <EditSymbol_Block
             selection={selection}
             expectedType={gsType}
             locked={locked}
@@ -272,4 +267,4 @@ function SelectEditor(props) {
 
 /// COMPONENT EXPORT //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { SelectEditor };
+export { SlotEditorSelect_Block };

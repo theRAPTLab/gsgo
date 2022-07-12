@@ -11,6 +11,18 @@
   5. UpdateModelData sets OnSelectScript
   6. OnSelectScript loads the actual script
 
+  COMPONENT HIERARCHY
+
+  The components are (oldname):
+
+    ScriptEditor:root
+      ScriptView_Pane:panel       (PanelScript)
+        <codejar>                 aka ScriptViewCode_Block
+        ScriptViewWiz_Block       (ScriptViewPane)
+      ScriptLine_Pane:panel       (ScriptEditPane)
+        SlotEditor_Block          (SelectEditorSlots)
+          SlotEditorSelect_Block  (SelectEditor)
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
@@ -25,12 +37,14 @@ import * as TRANSPILER from 'script/transpiler-v2';
 /// PANELS ////////////////////////////////////////////////////////////////////
 // import PanelSimViewer from './components/PanelSimViewer';
 import PanelSelectBlueprint from './components/PanelSelectBlueprint';
-import PanelScript from './components/PanelScript';
 import PanelInstances from './components/PanelInstances';
 import PanelMessage from './components/PanelMessage';
 import DialogConfirm from './components/DialogConfirm';
-import { ScriptEditPane } from './wiz/edit/ScriptEditPane';
 import { SKIP_RELOAD_WARNING } from 'config/gem-settings';
+
+/// WIZ GUI PANELS ////////////////////////////////////////////////////////////
+import ScriptView_Pane from './wiz/gui/ScriptView_Pane';
+import { ScriptLine_Pane } from './wiz/gui/ScriptLine_Pane';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'test/unit-parser'; // test parser evaluation
@@ -81,10 +95,11 @@ class ScriptEditor extends React.Component {
       instances: [],
       monitoredInstances: [],
       message: '',
-      messageIsError: false
+      messageIsError: false,
+      selection: ''
     };
-    this.Initialize = this.Initialize.bind(this);
     this.CleanupComponents = this.CleanupComponents.bind(this);
+    this.Initialize = this.Initialize.bind(this);
     this.RequestBpEditList = this.RequestBpEditList.bind(this);
     this.HandleProjectUpdate = this.HandleProjectUpdate.bind(this);
     this.UpdateBpEditList = this.UpdateBpEditList.bind(this);
@@ -415,7 +430,7 @@ class ScriptEditor extends React.Component {
             />
           )}
           {panelConfiguration === 'script' && (
-            <PanelScript
+            <ScriptView_Pane
               id="script"
               bpName={bpName}
               projId={projId}
@@ -424,7 +439,7 @@ class ScriptEditor extends React.Component {
           )}
         </div>
         <div id="console-main" className={classes.main}>
-          <ScriptEditPane />
+          <ScriptLine_Pane />
           {/* <PanelSimViewer id="sim" onClick={this.OnPanelClick} /> */}
         </div>
         {/* Hidden by gridTemplateRows at root div

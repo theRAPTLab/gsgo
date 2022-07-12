@@ -1,14 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-
-
-  DEPRECATED -- See SLotEditor_Block
-
-
-
-
-
-  SlotEditor
+  SlotEditor_Block
 
   UI for students to edit individual gemscript lines word by word.
 
@@ -76,7 +68,7 @@ import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-import { SelectEditor } from './SelectEditor';
+import { SlotEditorSelect_Block } from './SlotEditorSelect_Block';
 import Dialog from '../../../pages/components/Dialog';
 import { GValidationToken } from '../SharedElements';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
@@ -94,7 +86,7 @@ L10N.MSG_SELECT_TOKEN = `Click on a ${L10N.LINE} on the left to edit it.`;
 
 /// ROOT APPLICATION COMPONENT ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class SlotEditor extends React.Component {
+class SlotEditor_Block extends React.Component {
   constructor(props) {
     super(props);
     this.state = SLOTCORE.State();
@@ -120,6 +112,7 @@ class SlotEditor extends React.Component {
   /** INCOMING: handle SLOTCORE event updates */
   HandleSlotUpdate(vmStateEvent) {
     // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
+    console.error('SlotEditor:HandleSlotUpdate', vmStateEvent);
     this.setState(vmStateEvent);
     // CAREFUL VERSION
     // const { script_page } = vmStateEvent;
@@ -265,7 +258,7 @@ class SlotEditor extends React.Component {
             </button>
           </div>
         )}
-        <SelectEditor selection={selectEditorSelection} />
+        <SlotEditorSelect_Block selection={selectEditorSelection} />
         <div className="gsled choicesline choiceshelp">{selectedHelp}</div>
       </div>
     );
@@ -332,4 +325,4 @@ class SlotEditor extends React.Component {
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// include MaterialUI styles
-export default SlotEditor;
+export default SlotEditor_Block;
