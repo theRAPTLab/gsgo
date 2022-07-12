@@ -100,6 +100,7 @@ class ScriptEditor extends React.Component {
     };
     this.CleanupComponents = this.CleanupComponents.bind(this);
     this.Initialize = this.Initialize.bind(this);
+    this.HandleEditMgrUpdate = this.HandleEditMgrUpdate.bind(this);
     this.RequestBpEditList = this.RequestBpEditList.bind(this);
     this.HandleProjectUpdate = this.HandleProjectUpdate.bind(this);
     this.UpdateBpEditList = this.UpdateBpEditList.bind(this);
@@ -142,6 +143,9 @@ class ScriptEditor extends React.Component {
     // add top-level click handler
     document.addEventListener('click', EDITMGR.DispatchClick);
 
+    // state listeners
+    EDITMGR.SubscribeState(this.HandleEditMgrUpdate);
+
     // Set model section
     let { panelConfiguration, script } = this.state;
     if (bpName === '') {
@@ -175,6 +179,7 @@ class ScriptEditor extends React.Component {
   componentWillUnmount() {
     this.CleanupComponents();
     window.removeEventListener('beforeunload', this.CleanupComponents);
+    EDITMGR.UnsubscribeState(handleEditMgrUpdate);
   }
 
   CleanupComponents() {
@@ -193,6 +198,11 @@ class ScriptEditor extends React.Component {
     this.RequestBpEditList(projId);
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
+  }
+
+  HandleEditMgrUpdate(vmStateEvent) {
+    const { selection } = vmStateEvent;
+    if (selection) this.setState({ selection });
   }
 
   /**
@@ -384,7 +394,8 @@ class ScriptEditor extends React.Component {
    */
   render() {
     if (DBG) console.log(...PR('render'));
-    const { noMain, panelConfiguration, projId, bpEditList, bpName } = this.state;
+    const { noMain, panelConfiguration, projId, bpEditList, bpName, selection } =
+      this.state;
     const { classes } = this.props;
 
     const DialogNoMain = (
@@ -439,7 +450,7 @@ class ScriptEditor extends React.Component {
           )}
         </div>
         <div id="console-main" className={classes.main}>
-          <ScriptLine_Pane />
+          <ScriptLine_Pane selection={selection} />
           {/* <PanelSimViewer id="sim" onClick={this.OnPanelClick} /> */}
         </div>
         {/* Hidden by gridTemplateRows at root div

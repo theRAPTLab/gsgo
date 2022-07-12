@@ -141,7 +141,13 @@ function handleWizUpdate(vmStateEvent) {
     newSlotState.sel_slotpos = sel_linepos;
   }
 
-  if (Object.keys(newSlotState).length > 0) SLOTCORE.SendState(newSlotState);
+  if (Object.keys(newSlotState).length > 0) {
+    SLOTCORE.SendState(newSlotState);
+
+    // Fire "selection" when user selects a line or position
+    // so that ScriptEditor, ScriptLine_Pane will update dev validationLog dump
+    STORE.SendState({ selection: 'sel_linenum or sel_linepos' });
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function handleSlotUpdate(vmStateEvent) {
@@ -186,7 +192,8 @@ function handleSlotUpdate(vmStateEvent) {
 /// initial values of state have to be defined for constructors of components
 /// that are relying on it, but these are not yet loaded
 STORE._initializeState({
-  // slots_need_saving: false // flag sent during data initialization by
+  selection: '' // placeholder for sel_linenum -- to be implemented in future
+  // currently used to trigger state update to show validationLog dump
 });
 
 /// DERIVED STATE LOGIC ///////////////////////////////////////////////////////
@@ -195,7 +202,7 @@ STORE._initializeState({
 /// BL NOTE: `state` only contains state objects that have CHANGED, it does not include
 ///          ALL state objects, but it CAN be used to set other state vars?
 STORE._interceptState(state => {
-  // const { slots_need_saving } = state;
+  // const { selection } = state;
 });
 
 /// UI-DRIVEN STATE UPDATES ///////////////////////////////////////////////////

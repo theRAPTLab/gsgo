@@ -110,15 +110,14 @@ function DevNotice(props) {
 /// GUI EDITOR DEFINITION /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ScriptLine_Pane(props) {
-  // show validationLog
+  const { selection } = props;
+
+  // show validationLog in DEV: AVAILALBLE SYMBOL INFO
   const { slots_validation } = SLOTCORE.State();
-  console.log('slots_validtion', slots_validation);
   if (slots_validation) {
     const { validationTokens, validationLog } = slots_validation;
-    console.warn('############ validationLog', validationLog);
     WIZCORE.UpdateDBGConsole(validationLog);
   }
-
   const { dbg_console } = WIZCORE.State();
 
   /// RENDER //////////////////////////////////////////////////////////////////
