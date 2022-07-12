@@ -161,33 +161,34 @@ function ObjRefSelector(props) {
 
     const options = [];
     const advanced = [];
-    Object.keys(tok.options).forEach(k => {
-      const optionLabel = tok.parentLabel ? `${tok.parentLabel}.${k}` : k || '';
-      if (HIDDEN_SYMBOLS.includes(k.toLowerCase())) return;
-      if (ADVANCED_SYMBOLS.includes(k.toLowerCase())) {
-        advanced.push(
-          <div style={{ opacity: 0.3 }} key={k}>
-            <GSymbolToken
-              key={k}
-              symbolType={k}
-              unitText={label} // currently selected text
-              choice={optionLabel} // value returned when selected e.g. 'bp.feat.prop'
-              label={k} // human readable display
-            />
-          </div>
+    if (tok.options)
+      Object.keys(tok.options).forEach(k => {
+        const optionLabel = tok.parentLabel ? `${tok.parentLabel}.${k}` : k || '';
+        if (HIDDEN_SYMBOLS.includes(k.toLowerCase())) return;
+        if (ADVANCED_SYMBOLS.includes(k.toLowerCase())) {
+          advanced.push(
+            <div style={{ opacity: 0.3 }} key={k}>
+              <GSymbolToken
+                key={k}
+                symbolType={k}
+                unitText={label} // currently selected text
+                choice={optionLabel} // value returned when selected e.g. 'bp.feat.prop'
+                label={k} // human readable display
+              />
+            </div>
+          );
+          return;
+        }
+        options.push(
+          <GSymbolToken
+            key={k}
+            symbolType={k}
+            unitText={label} // currently selected text
+            choice={optionLabel} // value returned when selected e.g. 'bp.feat.prop'
+            label={k} // human readable display
+          />
         );
-        return;
-      }
-      options.push(
-        <GSymbolToken
-          key={k}
-          symbolType={k}
-          unitText={label} // currently selected text
-          choice={optionLabel} // value returned when selected e.g. 'bp.feat.prop'
-          label={k} // human readable display
-        />
-      );
-    });
+      });
 
     optionsList.push(
       <div key={position} className="gsled objref-choices">
