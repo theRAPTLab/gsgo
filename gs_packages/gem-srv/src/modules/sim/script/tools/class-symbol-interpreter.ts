@@ -990,7 +990,12 @@ class SymbolInterpreter {
         }
       );
     }
-    const features = this.cur_scope.features;
+    // DEPRECATED: this makes no sense because cur_scope was reset,
+    // so no features have been defined at all.
+    // const features = this.cur_scope.features;
+    //
+    // INSTEAD we want to point it to ALL features
+    const features = allFeatureSymbols;
     const feature = features[featureName];
     if (!feature) {
       this.detectScanError(true);
