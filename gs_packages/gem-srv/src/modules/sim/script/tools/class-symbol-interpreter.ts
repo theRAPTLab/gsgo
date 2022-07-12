@@ -948,9 +948,14 @@ class SymbolInterpreter {
     const fn = 'agentFeatureList:';
     const gsType = 'feature';
     this.resetScope(); // points to the bundle.symbols to start
-    if (this.getBundleScope().features === undefined) {
-      return this.goodToken(token, { features: {} }, { gsType });
-    }
+
+    // No need to do this check.  We want the full list of features,
+    // not just the features that have been defined in the bundle.
+    //
+    // if (this.getBundleScope().features === undefined) {
+    //   console.error('no features?', GetFeatureSymbols(), this.getBundleScope());
+    //   return this.goodToken(token, { features: {} }, { gsType });
+    // }
 
     const allFeatureSymbols = GetFeatureSymbols();
     const featuresList = [...Object.keys(allFeatureSymbols)];
@@ -962,7 +967,7 @@ class SymbolInterpreter {
     // was there a previous scope-breaking error? bail!
     if (this.detectScanError())
       return new VSDToken(
-        {},
+        { featuresList },
         {
           gsType,
           symbolScope: ['featuresList'], // this is what's 'displayable' by GUI
