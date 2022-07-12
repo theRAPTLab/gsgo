@@ -218,4 +218,4 @@ function ObjRefSelector_Block(props) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { ObjRefSelector_Block as ObjRefSelector };
+export { ObjRefSelector_Block };

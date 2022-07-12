@@ -243,7 +243,7 @@ function SlotEditorSelect_Block(props) {
     case 'objref':
       editor = (
         <div>
-          <ObjRefSelector
+          <ObjRefSelector_Block
             selection={selection}
             expectedType={gsType}
             objRefPos={pos}
