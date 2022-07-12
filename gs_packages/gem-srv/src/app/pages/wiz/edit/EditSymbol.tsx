@@ -39,6 +39,7 @@ export const HIDDEN_SYMBOLS = [
   'stacksub',
   'stackmul',
   'stackdiv',
+  'usefeature', // deprecated.  use 'addFeature'
   // features
   'global',
   // costume
@@ -89,7 +90,6 @@ export const ADVANCED_SYMBOLS = [
   'dbgstack',
   'dbgcontext',
   'dbgerror',
-  'usefeature',
   // features
   'cursor',
   // agent
