@@ -133,7 +133,12 @@ function handleWizUpdate(vmStateEvent) {
     const { lineScript } = script_page[CHECK.OffsetLineNum(sel_linenum, 'sub')];
     const new_slots_linescript = lineScript.map(t => ({ ...t }));
     newSlotState.slots_linescript = new_slots_linescript;
-    console.log('updating slots_linescript', new_slots_linescript);
+  }
+
+  // 2. User has selected new line position
+  //    Coordinate wizcore with slotcore: select the new sel_slotpos
+  if (sel_linepos && sel_linepos > 0) {
+    newSlotState.sel_slotpos = sel_linepos;
   }
 
   if (Object.keys(newSlotState).length > 0) SLOTCORE.SendState(newSlotState);
