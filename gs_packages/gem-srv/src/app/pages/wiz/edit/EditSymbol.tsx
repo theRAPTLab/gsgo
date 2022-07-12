@@ -144,7 +144,7 @@ export function EditSymbol(props) {
     if (vIndex >= validationTokens.length)
       return <StackUnit label="No options" type="symbol" open sticky />;
 
-    const symbolData: TSymbolData = validationTokens[vIndex]; // indx into line
+    const symbolData: TSymbolData = validationTokens[vIndex] || {}; // indx into line
     /* symbolData has the current symbol data to convert into viewdata
        `symbolData` looks like this: {
           features: {Costume: {…}, Physics: {…}, AgentWidgets: {…}}
