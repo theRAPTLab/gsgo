@@ -1772,6 +1772,30 @@ class SymbolInterpreter {
     return symData;
   }
 
+  /** Process overflow args for keywords
+   *  This is needed so the overflow words will display.
+   *  Otherwise, overflow words are truncated.
+   */
+  extraArgsList(tokens: IToken[]): TSymbolData[] {
+    const fn = 'extraArgsList:';
+    const vtoks = [];
+    let tokenIndex = 0;
+    for (tokenIndex; tokenIndex < tokens.length; tokenIndex++) {
+      vtoks.push(
+        new VSDToken(
+          {},
+          {
+            gsType: '{?}',
+            unitText: TOKENIZER.TokenToUnitText(tokens[tokenIndex]),
+            err_code: 'extra',
+            err_info: `${fn} method ignores extra arg`
+          }
+        )
+      );
+    }
+    return vtoks;
+  }
+
   /// SYMBOL DICT ACCESS //////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   allKeywordSymbols(): TSymbolData {

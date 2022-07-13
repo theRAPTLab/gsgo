@@ -67,11 +67,12 @@ export class featPropPop extends Keyword {
    *  base Keyword class  */
   validate(unit: TScriptUnit): TValidatedScriptUnit {
     const vtoks = []; // validation token array
-    const [kwTok, fPropfTok] = unit; // get arg pattern
+    const [kwTok, fPropfTok, ...argToks] = unit; // get arg pattern
     // returns symbols for each dtok position excepting the keyword
     vtoks.push(this.shelper.anyKeyword(kwTok));
     // debugging: Also check ObjRefSelector's insertion of validation tokens
     vtoks.push(this.shelper.featObjRef(fPropfTok)); // featName.propName, agent.featName.propName, Blueprint.featName.propName
+    vtoks.push(...this.shelper.extraArgsList(argToks)); // handle extra args in line
     const log = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: log };
   }
