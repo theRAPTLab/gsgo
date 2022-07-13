@@ -112,7 +112,6 @@ class SlotEditor_Block extends React.Component {
   /** INCOMING: handle SLOTCORE event updates */
   HandleSlotUpdate(vmStateEvent) {
     // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
-    console.error('SlotEditor:HandleSlotUpdate', vmStateEvent);
     this.setState(vmStateEvent);
     // CAREFUL VERSION
     // const { script_page } = vmStateEvent;
@@ -123,16 +122,12 @@ class SlotEditor_Block extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   SaveSlot() {
     EDITMGR.SaveSlotLineScript();
-    console.log('@@@@ CLearing slots_need_saving');
-    SLOTCORE.SendState({ slots_need_saving: false });
   }
   CancelSlotEdit() {
     EDITMGR.CancelSlotEdit();
-    SLOTCORE.SendState({ slots_need_saving: false });
   }
   DeleteSlot() {
     EDITMGR.DeleteSlot();
-    SLOTCORE.SendState({ slots_need_saving: false });
   }
   // -- Save Dialog helpers
   HandleSaveDialogClick(doSave) {

@@ -405,6 +405,7 @@ function SaveSlotLineScript(event) {
   lsos.splice(lineIdx, 1, updatedLine);
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
   WIZCORE.SendState({ script_tokens: nscript });
+  SLOTCORE.SendState({ slots_need_saving: false });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API */
@@ -413,7 +414,8 @@ function CancelSlotEdit() {
   SLOTCORE.SendState({
     sel_slotpos: -1,
     slots_linescript: [],
-    slots_validation: null
+    slots_validation: null,
+    slots_need_saving: false
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -423,7 +425,7 @@ function DeleteSlot(event) {
   // remove the token
   const slotIdx = CHECK.OffsetLineNum(sel_slotpos, 'sub'); // 1-based
   slots_linescript.splice(slotIdx, 1);
-  SLOTCORE.SendState({ slots_linescript });
+  SLOTCORE.SendState({ slots_linescript, slots_need_saving: true });
 }
 /// UI SCREEN HELPERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
