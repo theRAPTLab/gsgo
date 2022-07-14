@@ -110,7 +110,7 @@ function SlotEditorSelect_Block(props) {
   };
   const handleExprKeypress = e => {
     if (e.key === 'Enter') {
-      processStringInput(e);
+      processExprInput(e);
       e.target.select();
     }
   };
