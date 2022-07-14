@@ -30,6 +30,19 @@ export class exprPush extends Keyword {
     });
     return code;
   }
+  /** custom validation, overriding the generic validation() method of the
+   *  base Keyword class  */
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    const vtoks = []; // validation token array
+    const [kwTok, exprTok, ...argToks] = unit; // get arg pattern
+    // returns symbols for each dtok position excepting the keyword
+
+    vtoks.push(this.shelper.anyKeyword(kwTok));
+    vtoks.push(this.shelper.anyExpr(exprTok));
+    vtoks.push(...this.shelper.extraArgsList(argToks)); // handle extra args in line
+    const log = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: log };
+  }
 } // end of keyword definiition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
