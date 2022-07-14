@@ -143,6 +143,15 @@ STORE._interceptState(state => {
       state.script_page_needs_saving = true;
       state.key_to_token = tokMap;
       state.program_map = programMap;
+    } catch (caught) {
+      ERROR(`error occurred during script-tokens intercept`, {
+        source: 'appstate',
+        data: {
+          script_tokens
+        },
+        where: 'ac-wizcore._interceptState script_tokens',
+        caught
+      });
     }
   }
 });
