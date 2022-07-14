@@ -81,8 +81,6 @@ function SlotEditorSelect_Block(props) {
     e.preventDefault();
     SLOTCORE.UpdateSlotString(String(e.target.value));
   };
-  // note this needs to have a new wizcore method for identifier input types
-  // this is just a copy of processStringInput
   const processIdentifierInput = e => {
     e.preventDefault();
     const err = SLOTCORE.UpdateIdentifier(String(e.target.value));
