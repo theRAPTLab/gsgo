@@ -167,6 +167,7 @@ function hook_Filter(key, propOrValue, propValue) {
     // update datacore
     const instances = propOrValue;
     DCPROJECT.UpdateProjectData({ instances });
+    updateAndPublish(instances); // publish instanceidList after changs in instances
   }
   return undefined;
 }
