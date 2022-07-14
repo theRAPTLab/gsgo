@@ -362,7 +362,7 @@ function DeleteSelectedLine(event) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: saves the currently edited slot linescript into the current script_tokens
- *  Called by SelectEditorLineSlot
+ *  Called by SlotEditor_Blcok
  */
 function SaveSlotLineScript(event) {
   const fn = 'SaveSlotLineScript:';

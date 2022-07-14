@@ -100,6 +100,9 @@ STORE._initializeState({
 });
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/// DEPREATED? -- we actually need to use SendState to triger compiles?
+///
 /// Secondary data initializer
 /// ScriptEditor uses this to load script_text after Main is loaded
 /// without triggering _interceptState;
