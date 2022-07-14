@@ -1,7 +1,9 @@
 /// DEFAULT SPRITE NAME ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DEFAULT_SPRITE = 'null'; // loaded by as-load-sprites constructor
-// const DEFAULT_SPRITE = ''; // set to '' to not show one
+/// the sprite is loaded in as-load-sprites constructor
+const DEFAULT_SPRITE = 'unknown'; // show a question mark
+// const DEFAULT_SPRITE = 'turtle'; // zero angle points right
+// const DEFAULT_SPRITE = ''; // don't show a sprite
 
 /// VISUAL EFFECT FLAGS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
