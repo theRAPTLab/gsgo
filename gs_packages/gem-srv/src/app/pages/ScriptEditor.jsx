@@ -11,24 +11,40 @@
   5. UpdateModelData sets OnSelectScript
   6. OnSelectScript loads the actual script
 
+  COMPONENT HIERARCHY
+
+  The components are (oldname):
+
+    ScriptEditor:root
+      ScriptView_Pane:panel       (PanelScript)
+        <codejar>                 aka ScriptViewCode_Block
+        ScriptViewWiz_Block       (ScriptViewPane)
+      ScriptLine_Pane:panel       (ScriptEditPane)
+        SlotEditor_Block          (SelectEditorSlots)
+          SlotEditorSelect_Block  (SelectEditor)
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
+import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as TRANSPILER from 'script/transpiler-v2';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 // import PanelSimViewer from './components/PanelSimViewer';
 import PanelSelectBlueprint from './components/PanelSelectBlueprint';
-import PanelScript from './components/PanelScript';
 import PanelInstances from './components/PanelInstances';
 import PanelMessage from './components/PanelMessage';
 import DialogConfirm from './components/DialogConfirm';
-import { ScriptEditPane } from './wiz/edit/ScriptEditPane';
 import { SKIP_RELOAD_WARNING } from 'config/gem-settings';
+
+/// WIZ GUI PANELS ////////////////////////////////////////////////////////////
+import ScriptView_Pane from './wiz/gui/ScriptView_Pane';
+import { ScriptLine_Pane } from './wiz/gui/ScriptLine_Pane';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'test/unit-parser'; // test parser evaluation
@@ -68,8 +84,6 @@ PANEL_CONFIG.set('sim', '60% auto 0px'); // columns
 class ScriptEditor extends React.Component {
   constructor() {
     super();
-    const { sel_linenum, sel_linepos, sel_slotpos, slots_validation } =
-      WIZCORE.State();
     this.state = {
       isReady: false,
       noMain: true,
@@ -82,14 +96,11 @@ class ScriptEditor extends React.Component {
       monitoredInstances: [],
       message: '',
       messageIsError: false,
-      sel_linenum,
-      sel_linepos,
-      sel_slotpos,
-      slots_validation
+      selection: ''
     };
-    this.handleWizUpdate = this.handleWizUpdate.bind(this);
-    this.Initialize = this.Initialize.bind(this);
     this.CleanupComponents = this.CleanupComponents.bind(this);
+    this.Initialize = this.Initialize.bind(this);
+    this.HandleEditMgrUpdate = this.HandleEditMgrUpdate.bind(this);
     this.RequestBpEditList = this.RequestBpEditList.bind(this);
     this.HandleProjectUpdate = this.HandleProjectUpdate.bind(this);
     this.UpdateBpEditList = this.UpdateBpEditList.bind(this);
@@ -130,10 +141,10 @@ class ScriptEditor extends React.Component {
     });
 
     // add top-level click handler
-    document.addEventListener('click', WIZCORE.DispatchClick);
+    document.addEventListener('click', EDITMGR.DispatchClick);
 
-    // add a subscriber
-    WIZCORE.SubscribeState(this.handleWizUpdate);
+    // state listeners
+    EDITMGR.SubscribeState(this.HandleEditMgrUpdate);
 
     // Set model section
     let { panelConfiguration, script } = this.state;
@@ -167,23 +178,8 @@ class ScriptEditor extends React.Component {
 
   componentWillUnmount() {
     this.CleanupComponents();
-    WIZCORE.UnsubscribeState(this.handleWizUpdate);
     window.removeEventListener('beforeunload', this.CleanupComponents);
-  }
-
-  /** INCOMING: handle WIZCORE event updates */
-  handleWizUpdate(vmStateEvent) {
-    // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
-    const { sel_linenum, sel_linepos, sel_slotpos, slots_validation } =
-      vmStateEvent;
-    const newState = {};
-    if (sel_linenum > 0) {
-      newState.sel_linenum = sel_linenum;
-      newState.sel_linepos = sel_linepos;
-    }
-    if (sel_slotpos > 0) newState.sel_slotpos = sel_slotpos;
-    if (slots_validation) newState.slots_validation = slots_validation;
-    this.setState(newState);
+    EDITMGR.UnsubscribeState(handleEditMgrUpdate);
   }
 
   CleanupComponents() {
@@ -202,6 +198,11 @@ class ScriptEditor extends React.Component {
     this.RequestBpEditList(projId);
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
+  }
+
+  HandleEditMgrUpdate(vmStateEvent) {
+    const { selection } = vmStateEvent;
+    if (selection) this.setState({ selection });
   }
 
   /**
@@ -283,7 +284,10 @@ class ScriptEditor extends React.Component {
       });
       monitoredInstances.push(i.id);
     });
-    this.setState({ instances, monitoredInstances });
+    // REVIEW: Instances are currently not displayed in
+    // the ScriptEditor, so skip the setState
+    // so that PanelScript does not re-render.
+    // this.setState({ instances, monitoredInstances });
   }
 
   /**
@@ -317,7 +321,7 @@ class ScriptEditor extends React.Component {
       {
         panelConfiguration: id
       },
-      () => WIZCORE.CancelSlotEdit()
+      () => EDITMGR.CancelSlotEdit()
     );
   }
 
@@ -353,7 +357,9 @@ class ScriptEditor extends React.Component {
       panelConfiguration = 'select';
     }
 
-    WIZCORE.SendState({ script_text: script });
+    // Special WIZCORE handler to init state without triggering interceptState
+    WIZCORE.SendState({ script_text: script, script_page_needs_saving: false });
+    SLOTCORE.SendState({ slots_need_saving: false });
 
     this.setState({
       panelConfiguration,
@@ -388,21 +394,8 @@ class ScriptEditor extends React.Component {
    */
   render() {
     if (DBG) console.log(...PR('render'));
-    const {
-      noMain,
-      panelConfiguration,
-      projId,
-      bpEditList,
-      bpName,
-      script,
-      instances,
-      message,
-      messageIsError,
-      sel_linenum,
-      sel_linepos,
-      sel_slotpos,
-      slots_validation
-    } = this.state;
+    const { noMain, panelConfiguration, projId, bpEditList, bpName, selection } =
+      this.state;
     const { classes } = this.props;
 
     const DialogNoMain = (
@@ -448,7 +441,7 @@ class ScriptEditor extends React.Component {
             />
           )}
           {panelConfiguration === 'script' && (
-            <PanelScript
+            <ScriptView_Pane
               id="script"
               bpName={bpName}
               projId={projId}
@@ -457,7 +450,7 @@ class ScriptEditor extends React.Component {
           )}
         </div>
         <div id="console-main" className={classes.main}>
-          <ScriptEditPane selection={{ sel_linenum, sel_linepos }} />
+          <ScriptLine_Pane selection={selection} />
           {/* <PanelSimViewer id="sim" onClick={this.OnPanelClick} /> */}
         </div>
         {/* Hidden by gridTemplateRows at root div
@@ -485,9 +478,9 @@ class ScriptEditor extends React.Component {
               instances={instances}
               disallowDeRegister
             />
-            {DialogNoMain}
           </div>
         </div> */}
+        {DialogNoMain}
       </div>
     );
   }

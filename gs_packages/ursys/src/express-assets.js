@@ -62,7 +62,7 @@ function AssetManifest_Middleware(options = {}) {
   return (req, res, next) => {
     MFEST.SetAssetPath(assetPath);
     MFEST.SetRemoteAssetUrl(remoteAssetUrl);
-    MFEST.DeliverManifest(req, res, next);
+    void MFEST.DeliverManifest(req, res, next);
   };
 }
 
@@ -82,7 +82,7 @@ function AssetUpdate_Middleware(options = {}) {
     const body = req.body; // originally sent as string, but converted to object here
     PROJFILE.SetAssetPath(assetPath);
     PROJFILE.SetProjectRoot(projectRoot);
-    PROJFILE.WriteProject(body, result => {
+    void PROJFILE.WriteProject(body, result => {
       if (result) res.status(500).send(`WriteProject Error: ${result}`);
       else res.status(200).send({ result: 'Saved' });
     });
@@ -106,7 +106,7 @@ function MediaProxy_Middleware(options = {}) {
     return (req, res, next) => next();
   }
   return (req, res, next) => {
-    PROXY.ProxyMedia(req, res, next);
+    void PROXY.ProxyMedia(req, res, next);
   };
 }
 

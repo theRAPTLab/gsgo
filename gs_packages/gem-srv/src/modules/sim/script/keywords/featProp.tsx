@@ -108,7 +108,7 @@ export class featProp extends Keyword {
       const [, objRef, mName, ...mArgs] = dtoks;
       return [
         (agent: IAgent, state: IState) => {
-          return callRef(agent, state.ctx, mName, ...args);
+          return callRef(agent, state.ctx, mName, ...mArgs);
         }
       ];
     }
@@ -127,7 +127,7 @@ export class featProp extends Keyword {
     // returns symbols for each dtok position excepting the keyword
     vtoks.push(this.shelper.anyKeyword(kwTok));
     // debugging: Also check ObjRefSelector's insertion of validation tokens
-    vtoks.push(this.shelper.featObjRef(featObjRefTok)); // agent.propName, propName, Blueprint.propName
+    vtoks.push(this.shelper.featObjRef(featObjRefTok)); // featName.propName, agent.featName.propName, Blueprint.featName.propName
     vtoks.push(this.shelper.methodName(methodTok));
     vtoks.push(...this.shelper.argsList(argToks));
     const log = this.makeValidationLog(vtoks);

@@ -948,9 +948,14 @@ class SymbolInterpreter {
     const fn = 'agentFeatureList:';
     const gsType = 'feature';
     this.resetScope(); // points to the bundle.symbols to start
-    if (this.getBundleScope().features === undefined) {
-      return this.goodToken(token, { features: {} }, { gsType });
-    }
+
+    // No need to do this check.  We want the full list of features,
+    // not just the features that have been defined in the bundle.
+    //
+    // if (this.getBundleScope().features === undefined) {
+    //   console.error('no features?', GetFeatureSymbols(), this.getBundleScope());
+    //   return this.goodToken(token, { features: {} }, { gsType });
+    // }
 
     const allFeatureSymbols = GetFeatureSymbols();
     const featuresList = [...Object.keys(allFeatureSymbols)];
@@ -962,7 +967,7 @@ class SymbolInterpreter {
     // was there a previous scope-breaking error? bail!
     if (this.detectScanError())
       return new VSDToken(
-        {},
+        { featuresList },
         {
           gsType,
           symbolScope: ['featuresList'], // this is what's 'displayable' by GUI
@@ -985,7 +990,12 @@ class SymbolInterpreter {
         }
       );
     }
-    const features = this.cur_scope.features;
+    // DEPRECATED: this makes no sense because cur_scope was reset,
+    // so no features have been defined at all.
+    // const features = this.cur_scope.features;
+    //
+    // INSTEAD we want to point it to ALL features
+    const features = allFeatureSymbols;
     const feature = features[featureName];
     if (!feature) {
       this.detectScanError(true);
@@ -1086,16 +1096,15 @@ class SymbolInterpreter {
     // convert old identifier into a objref array
     const gsType = 'objref';
     // figure out what we got
+    if (tokType === 'identifier') {
+      tokType = 'objref';
+      propRef = [propRef];
+    }
     let [bpName, featureName, propName] = propRef;
     let blueprints = SIMDATA.GetBlueprintSymbols();
     const agentName = this.getBundleName();
     const agent = { agent: SIMDATA.GetBlueprintBundle(agentName).symbols };
     blueprints = { ...blueprints, ...agent };
-    if (tokType === 'identifier')
-      return this.badToken(token, { blueprints } as TSymbolData, {
-        gsType,
-        err_info: `not an objref; got ${tokType} instead ${propRef}`
-      });
     // Object.assign(blueprints, { agent }); // insert the blueprint for agent
     // PART 1 should be agent or Blueprint
     if (bpName === undefined)
@@ -1761,6 +1770,30 @@ class SymbolInterpreter {
     }
     // return valid symdata/validation
     return symData;
+  }
+
+  /** Process overflow args for keywords
+   *  This is needed so the overflow words will display.
+   *  Otherwise, overflow words are truncated.
+   */
+  extraArgsList(tokens: IToken[]): TSymbolData[] {
+    const fn = 'extraArgsList:';
+    const vtoks = [];
+    let tokenIndex = 0;
+    for (tokenIndex; tokenIndex < tokens.length; tokenIndex++) {
+      vtoks.push(
+        new VSDToken(
+          {},
+          {
+            gsType: '{?}',
+            unitText: TOKENIZER.TokenToUnitText(tokens[tokenIndex]),
+            err_code: 'extra',
+            err_info: `${fn} method ignores extra arg`
+          }
+        )
+      );
+    }
+    return vtoks;
   }
 
   /// SYMBOL DICT ACCESS //////////////////////////////////////////////////////

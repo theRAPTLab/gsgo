@@ -1,14 +1,9 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-
-
-  DEPRECATED --- See ScriptViewWiz_Block
-
-
-
-
-  ScriptView - Given a script_page array of renderable state, emit
+  ScriptViewWiz_Block - Given a script_page array of renderable state, emit
   a clickable wizard GUI.
+
+  Was: ScriptViewPane.jsx
 
   `sel_linenum` is passed to cause ScriptViewPane to re-render the
   selected line (to show line add/delete buttons) if the user clicks on an
@@ -26,7 +21,7 @@ import React, { useState } from 'react';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
-import Dialog from '../../../pages/components/Dialog';
+import Dialog from '../../components/Dialog';
 import {
   GLine,
   GBlankLine,
@@ -34,7 +29,7 @@ import {
   GValidationToken,
   sScriptView
 } from '../SharedElements';
-import { LOCKED_SYMBOLS } from './EditSymbol';
+import { LOCKED_SYMBOLS } from './EditSymbol_Block';
 // css -- REVIEW: Move to the top level TEMP HACK
 import 'lib/vendor/pico.min.css';
 import 'lib/css/gem-ui.css';
@@ -74,7 +69,7 @@ function u_Key(prefix = '') {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let DBGTEXT = '';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function ScriptViewPane(props) {
+export function ScriptViewWiz_Block(props) {
   // collect resources for rendering
   let { script_page, sel_linenum } = props;
 
