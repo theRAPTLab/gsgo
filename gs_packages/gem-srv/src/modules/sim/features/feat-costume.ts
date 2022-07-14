@@ -468,7 +468,7 @@ class CostumePack extends SM_Feature {
     return {
       props: {
         counter: SM_Number.Symbols,
-        costumeName: SM_String.Symbols,
+        // costumeName: SM_String.Symbols, // should be private variable
         currentFrame: SM_Number.Symbols,
         flipX: SM_Boolean.Symbols,
         flipY: SM_Boolean.Symbols,
