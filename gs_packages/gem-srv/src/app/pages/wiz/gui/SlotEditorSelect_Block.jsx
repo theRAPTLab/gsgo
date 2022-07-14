@@ -228,12 +228,13 @@ function SlotEditorSelect_Block(props) {
       );
       break;
     case 'expr':
+      const defaultExpr = unitText.replace(/^{{\s/, '').replace(/\s}}$/, '');
       editor = (
         <div className="gsled input">
           <label>Enter an expression string</label>
           <input
             key={tkey}
-            defaultValue={unitText}
+            defaultValue={defaultExpr}
             type="text"
             onChange={processExprInput}
             onKeyPress={handleExprKeypress}
