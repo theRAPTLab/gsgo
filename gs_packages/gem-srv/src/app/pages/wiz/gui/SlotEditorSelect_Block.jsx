@@ -168,12 +168,16 @@ function SlotEditorSelect_Block(props) {
       );
       break;
     case 'string':
+      // UnpackToken inserts the string "undefined" for undefined tokens
+      // so we need to strip it out here so the input field doesn't default
+      // to "undefined"
+      const defaultString = unitText === 'undefined' ? '' : unitText; // show blank rather than 'undefined' if unitText is not defined
       editor = (
         <div className="gsled input">
           <label>Enter a {gsType}</label>
           <input
             key={tkey}
-            defaultValue={unitText}
+            defaultValue={defaultString}
             type="text"
             onChange={processStringInput}
             onKeyPress={handleStringKeypress}
