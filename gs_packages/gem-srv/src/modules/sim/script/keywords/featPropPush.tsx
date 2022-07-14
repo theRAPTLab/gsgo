@@ -22,7 +22,7 @@ export class featPropPush extends Keyword {
     const [kw, refArg, featPropName, optMethod] = unit;
     // ref is an array of strings that are fields in dot addressing
     // like agent.x
-    const ref = refArg.objref || [refArg];
+    const ref = (refArg as IToken).objref || [refArg];
     const len = ref.length;
 
     // create a function that will be used to callReferences the objref
@@ -41,17 +41,37 @@ export class featPropPush extends Keyword {
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         return c.getFeatProp(ref[1], pName)[mName];
       };
+    } else if (len === 3) {
+      /** NEW EXTENDED REF REQUIRED ******************************************/
+      /// e.g. blueprint.feature.prop
+      callRef = (agent: IAgent, context: any, mName: string) => {
+        const bpName = ref[0];
+        const featName = ref[1];
+        const propName = ref[2];
+        const c = context[bpName as string]; // SM_Agent context
+        if (c === undefined) throw Error(`context missing '${ref[0]}'`);
+        // ref[0] = blueprint, ref[1] = feature, ref[2] = prop
+        // we use our own decoded propname rather than looking for the passed version
+        return c.getFeatProp(featName, propName)[mName];
+      };
     } else {
       console.warn('error parse ref', ref);
       callRef = () => {};
     }
     const progout = [];
-    progout.push((agent, state) => {
-      // console.log('callRef', callRef, agent, state.ctx, featPropName, optMethod);
-      const methodName = optMethod !== undefined ? optMethod : 'value';
-
-      state.push(callRef(agent, state.ctx, featPropName, methodName));
-    });
+    if (len === 3) {
+      const [, objRef, mArgs] = unit;
+      progout.push((agent, state) => {
+        const methodName = optMethod !== undefined ? optMethod : 'value';
+        state.push(callRef(agent, state.ctx, methodName));
+      });
+    } else {
+      progout.push((agent, state) => {
+        // console.log('callRef', callRef, agent, state.ctx, featPropName, optMethod);
+        const methodName = optMethod !== undefined ? optMethod : 'value';
+        state.push(callRef(agent, state.ctx, featPropName, methodName));
+      });
+    }
     return progout;
   }
 
@@ -59,11 +79,12 @@ export class featPropPush extends Keyword {
    *  base Keyword class  */
   validate(unit: TScriptUnit): TValidatedScriptUnit {
     const vtoks = []; // validation token array
-    const [kwTok, featTok, fPropfTok, methodTok, ...argToks] = unit; // get arg pattern
+    const [kwTok, fPropfTok, ...argToks] = unit; // get arg pattern
     // returns symbols for each dtok position excepting the keyword
     vtoks.push(this.shelper.anyKeyword(kwTok));
-    vtoks.push(this.shelper.agentFeatureList(featTok));
-    vtoks.push(this.shelper.featObjRef(fPropfTok)); // agent.propName, propName, Blueprint.propName
+    // debugging: Also check ObjRefSelector's insertion of validation tokens
+    vtoks.push(this.shelper.featObjRef(fPropfTok)); // featName.propName, agent.featName.propName, Blueprint.featName.propName
+    vtoks.push(...this.shelper.extraArgsList(argToks)); // handle extra args in line
     const log = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: log };
   }

@@ -468,7 +468,7 @@ class CostumePack extends SM_Feature {
     return {
       props: {
         counter: SM_Number.Symbols,
-        costumeName: SM_String.Symbols,
+        // costumeName: SM_String.Symbols, // should be private variable
         currentFrame: SM_Number.Symbols,
         flipX: SM_Boolean.Symbols,
         flipY: SM_Boolean.Symbols,
@@ -483,8 +483,8 @@ class CostumePack extends SM_Feature {
         colorScaleSteps: SM_Number.Symbols
       },
       methods: {
-        setCostume: { args: ['costumeName:string', 'poseName:string'] },
-        setPose: { args: ['poseName:string'] },
+        setCostume: { args: ['costumeName:string', 'poseName:number'] },
+        setPose: { args: ['poseName:number'] },
         setAnimatedCostume: { args: ['costumeName:string', 'frameRate:number'] },
         setScale: { args: ['scale:number'] },
         setGlow: { args: ['seconds:number'] },

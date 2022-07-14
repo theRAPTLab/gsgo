@@ -71,20 +71,13 @@ STORE._initializeState({
   script_tokens: [], // source tokens (from text)
 
   script_page: [], // source tokens 'printed' as lines
+  script_page_needs_saving: false, // track save status
   key_to_token: new Map(), // lookup map from tokenLine+Pos to original token
   program_map: null, // lookup map for directive sections
 
   sel_linenum: -1, // selected line of wizard. If < 0 it is not set, pointer to script_page
   sel_linepos: -1, // select index into line. If < 0 it is not set
   error: '', // used for displaying error messages
-
-  // slot data
-  // -- current selected slot
-  sel_slotpos: -1, // selected slot currently being edited.  If < 0 it is not set
-  // -- the whole line of slots
-  slots_linescript: [], // lineScript being edited in slot editor -- the whole line
-  slots_validation: null, // validation object for the current slot line being edited { validationTokens, validationLog }
-  slots_bundle: null, // temporary bundle used to store line-based symbol tables
 
   // project context
   proj_list: [], // project list
@@ -108,14 +101,21 @@ STORE._initializeState({
   dbg_console: 'ScriptContextor'
 });
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Secondary data initializer
+/// ScriptEditor uses this to load script_text after Main is loaded
+/// without triggering _interceptState;
+function InitSetState(parms) {
+  STORE._setState(parms);
+}
+
 /// DERIVED STATE LOGIC ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// spy on incoming SendState events and modify/add events as needed
 /// BL NOTE: `state` only contains state objects that have CHANGED, it does not include
 ///          ALL state objects, but it CAN be used to set other state vars?
 STORE._interceptState(state => {
-  const { script_text, script_tokens, sel_linenum, sel_slotpos } = state;
-
+  const { script_text, script_tokens, sel_linenum } = state;
   // if script_text is changing, we also want to emit new script_token
   if (script_text && !script_tokens) {
     let toks = TRANSPILER.TextToScript(script_text);
@@ -140,89 +140,9 @@ STORE._interceptState(state => {
       const [vmPage, tokMap] = TRANSPILER.ScriptToLines(state.script_tokens);
       const programMap = TRANSPILER.ScriptToProgramMap(state.script_tokens);
       state.script_page = vmPage;
+      state.script_page_needs_saving = true;
       state.key_to_token = tokMap;
       state.program_map = programMap;
-    } catch (caught) {
-      ERROR(`error occurred during script-tokens intercept`, {
-        source: 'appstate',
-        data: {
-          script_tokens
-        },
-        where: 'ac-wizcore._interceptState script_tokens',
-        caught
-      });
-    }
-  }
-
-  // run validation and save result if new selected token
-  if (sel_linenum) {
-    if (sel_linenum > 0) {
-      const { script_page } = State();
-      const { lineScript } = script_page[CHECK.OffsetLineNum(sel_linenum, 'sub')];
-      // FIXME: IF the slot is currently being edited, don't allow selection?
-      // clone the current linescript
-      state.slots_linescript = lineScript.map(t => ({ ...t }));
-    } else {
-      // REVIEW does this ever happen?!?
-      state.sel_validation = null;
-    }
-  }
-
-  // if cur_bdl changes, then copy slots_bundle
-  if (state.cur_bdl) {
-    state.slots_bundle = state.cur_bdl.carelessClone();
-  }
-
-  // if the slot linescript changes, recalculate slots_validation
-  if (state.slots_linescript) {
-    let { slots_bundle, cur_bdl } = State();
-
-    if (!slots_bundle) {
-      slots_bundle = cur_bdl.carelessClone();
-    }
-    state.slots_bundle = slots_bundle;
-
-    // if we're first setting sel_linenum, use state.sel_linenum becase it doesn't exist in State yet
-    // otherwise fall back to the value set in State
-    const line = state.sel_linenum || State().sel_linenum;
-    const vmPageLine = GetVMPageLine(line);
-    const { globalRefs } = vmPageLine;
-
-    // we have to make changes to the bundle
-    const newSymbols = COMPILER.SymbolizeStatement(state.slots_linescript);
-    BUNDLER.OpenBundle(slots_bundle);
-    BUNDLER.AddSymbols(newSymbols);
-    BUNDLER.CloseBundle();
-    // console.log('newSymbols', newSymbols);
-    // console.log('cur_bdl.symbol', cur_bdl.symbols);
-    if (DBG)
-      console.log(
-        ...PR(
-          `slots_linescript: validating '${TRANSPILER.StatementToText(
-            state.slots_linescript
-          ).trim()}' with slots_bundle symbols:`,
-          state.slots_bundle.symbols
-        )
-      );
-
-    try {
-      state.slots_validation = TRANSPILER.ValidateStatement(
-        state.slots_linescript,
-        {
-          bundle: state.slots_bundle,
-          globals: globalRefs
-        }
-      );
-    } catch (caught) {
-      ERROR(`could not validate slots_linescript`, {
-        source: 'validator',
-        data: {
-          state,
-          globalRefs
-        },
-        where: 'ac-wizcore._interceptState slots_linescript',
-        caught
-      });
     }
   }
 });
@@ -307,196 +227,6 @@ function UIToggleRunEditMode() {
   STORE.SendState({ dev_or_user: 1 - STORE.State().dev_or_user });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Local helper  */
-function m_UpdateSlotValueToken(key, value) {
-  // Update slots_linescript
-  const { slots_linescript, sel_slotpos } = State();
-  // if the scriptToken already exists, update it byRef
-  const slotScriptToken =
-    slots_linescript[CHECK.OffsetLineNum(sel_slotpos, 'sub')] || // existing token
-    {}; // or new object if this is creating a new slot
-  // if the token was previously used to as a token, remove the old string/value keys
-  // otherwise both keys will be active
-  delete slotScriptToken.value;
-  delete slotScriptToken.string;
-  delete slotScriptToken.expr;
-  delete slotScriptToken.identifier;
-  slotScriptToken[key] = value; // We know the scriptToken is a value
-  if (sel_slotpos > slots_linescript.length) {
-    slots_linescript.push(slotScriptToken); // it's a new token so add it
-  }
-  SendState({ slots_linescript }); // Update state to trigger validation rerun
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
-function UpdateSlotValue(val) {
-  m_UpdateSlotValueToken('value', val);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
-function UpdateSlotString(val) {
-  m_UpdateSlotValueToken('string', val);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument)
- *  returns true if input validation passed */
-function UpdateIdentifier(val): string {
-  // don't allow leading numbers
-  // spaces are filtered out at the input level
-  if (val === '') return 'identifiers may not be blank';
-  const ch = val.charAt(0);
-  const isDigit = !isNaN(ch) && !isNaN(parseFloat(ch));
-  if (isDigit) return 'identifiers can not start with a number';
-  m_UpdateSlotValueToken('identifier', val);
-  return undefined;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
-function UpdateSlotBoolean(val) {
-  m_UpdateSlotValueToken('value', val);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
-function UpdateSlotExpr(val) {
-  m_UpdateSlotValueToken('expr', val);
-}
-
-/// UI EVENT DISPATCHERS //////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Called by the document handler set in DevWizard. There are no other
- *  click handlers. Note that event is a React synthetic event which wraps
- *  the native event. https://reactjs.org/docs/events.html
- *  List of mouse events: https://www.w3.org/TR/DOM-Level-3-Events/#events-mouseevents
- */
-function DispatchClick(event) {
-  const fn = 'DC:';
-  const newState: TStateObject = {};
-
-  /** (1) GToken was clicked? ************************************************
-   *      a. set `sel_linenum` and `sel_linepos`
-   *      b. set the slot as a secondary action
-   *         --  set `sel_slotpos`
-   *      c. NOTE the state update will result in `slots_linescript` and `slots_validation` updates
-   */
-  const tokenKey = event.target.getAttribute('data-key');
-  if (tokenKey !== null) {
-    // notify subscribers of new current line and token index
-    const [line, pos] = tokenKey.split(',');
-    newState.sel_linenum = Number(line); // STATE UPDATE: selected line
-    newState.sel_linepos = Number(pos); // STATE UPDATE: selected pos
-    newState.sel_slotpos = Number(pos); // STATE UPDATE: selected slot
-    STORE.SendState(newState);
-    const { sel_linenum, sel_linepos } = State();
-    if (sel_linenum > 0 && sel_linepos >= 0) {
-      // sel_linepos = 0 if user clicked on line number
-      return;
-    }
-  }
-
-  /** (2) GValidationToken was clicked? ************************************************/
-  const slotKey = event.target.getAttribute('data-slotkey');
-  if (slotKey !== null) {
-    // If the slot was disabled, don't let it be clicked
-    if (event.target.className.includes('styleFlagDisabled')) return;
-    // Else, select the slot
-    const [line, pos] = slotKey.split(',');
-    newState.sel_slotpos = Number(pos); // STATE UPDATE: selected line
-    SendState(newState);
-    const { sel_slotpos } = State();
-    if (sel_slotpos > 0) {
-      return;
-    }
-  }
-
-  /** (3) ChoiceToken was clicked? ******************************************/
-  const choiceKey = event.target.getAttribute('data-choice');
-  if (choiceKey !== null) {
-    const {
-      scriptToken, // the actual script token (not vmToken)
-      sel_linenum, // line number in VMPage
-      sel_linepos, // line position in VMPage[lineNum]
-      sel_slotpos,
-      slots_linescript,
-      slots_validation,
-      context, // the memory context for this token
-      validation,
-      vmPageLine // all the VMTokens in this line
-    } = SelectedTokenInfo();
-
-    // if the token is locked, ignore the click
-    const classes = event.target.getAttribute('class');
-    if (classes.includes('locked')) return; // don't process click
-
-    // here we want to map the selected symbolType/symbolValue to the
-    // scriptToken which has its own type. We also need to know the
-    // This is that TYPE MATCHING challenge again...
-
-    let [symbolType, symbolValue] = choiceKey.split('-');
-    // note: every keyword options can have a '' choice, so we have
-    // re-encode '' as the value of GUI_EMPTY_TEXT and have to reverse
-    // it as well
-    if (symbolValue === GUI_EMPTY_TEXT) symbolValue = '';
-
-    // symbolType = 'props' or 'methods'
-    // symbolValue = the text label of the selected choice
-
-    // if the scriptToken already exists, update it byRef
-    const slotScriptToken =
-      slots_linescript[CHECK.OffsetLineNum(sel_slotpos, 'sub')] || // existing token
-      {}; // or new object if this is creating a new slot
-
-    // Update the slotScriptToken object by modifying its keys
-    // 1. get the updated script token
-    const updatedTok = TokenizeString(symbolValue)[0][0];
-    // 2. clear out old slotScriptToken keys
-    //    e.g. need to clear 'identifier' if this is now an object
-    //    e.g. need to clear 'line' if this is converted from an emtpy line
-    //    e.g. need to clear 'objref' if this is converting to an identifier
-    Object.keys(slotScriptToken).forEach(key => delete slotScriptToken[key]);
-    // 3. copy the key
-    const key = Object.keys(updatedTok)[0]; // should only be one
-    slotScriptToken[key] = updatedTok[key];
-
-    if (sel_slotpos > slots_linescript.length) {
-      // it's a new token so add it
-      slots_linescript.push(slotScriptToken);
-    }
-    // Update state to trigger validation rerun
-    newState.slots_linescript = slots_linescript;
-
-    // also auto-advance the slot selector to the next slot
-    // REVIEW: Only advance if there are more validation tokens?  Otherwise, we go past the end?
-    // newState.sel_slotpos = sel_slotpos + 1;
-
-    SendState(newState);
-
-    PrintDBGConsole(
-      `${fn} clicked ${JSON.stringify(choiceKey)}\nscriptToken ${JSON.stringify(
-        scriptToken
-      )}`
-    );
-
-    /** end hack test **/
-    return;
-  }
-  /** (3) ScriptContextor clicks ********************************************/
-  const sc = document.getElementById('ScriptContextor');
-  if (m_ChildOf(event.target, sc)) {
-    // console.log('click inside ScriptContextor', event.target);
-    return;
-  }
-  /** (4) DESELECT IF NON-TOKEN *********************************************/
-  const sv = document.getElementById('ScriptWizardView');
-  if (m_ChildOf(event.target, sv)) {
-    // if nothing processed, then unset selection
-    SendState({ sel_linenum: -1, sel_linepos: -1 });
-    return;
-  }
-  /** (N) unhandled click oops **********************************************/
-  const err = 'unhandled click in';
-  // console.log(err, event.target);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Called by the ScriptElementEditor component, or anything that wants to intercept
  *  a click before DispatchClick() guesses no token was clicked
  */
@@ -558,10 +288,7 @@ function SelectedTokenInfo() {
     sel_linenum,
     sel_linepos,
     script_page,
-    sel_validation: validation,
-    sel_slotpos,
-    slots_linescript,
-    slots_validation
+    sel_validation: validation
   } = State();
   if (sel_linenum > 0 && sel_linepos > 0) {
     const vmPageLine = GetVMPageLine(sel_linenum);
@@ -571,10 +298,7 @@ function SelectedTokenInfo() {
       sel_linepos, // line position in VMPage[lineNum]
       context, // the memory context for this token
       validation, // validation tokens in this line
-      vmPageLine, // all the VMTokens in this line
-      sel_slotpos, // slot position
-      slots_linescript, // current scriptTokens for line being editee
-      slots_validation // validation tokens for line being edited
+      vmPageLine // all the VMTokens in this line
     };
     return selInfo;
   }
@@ -734,72 +458,6 @@ function WizardTestLine(text: string) {
   } // try-catch
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: saves the currently edited slot linescript into the current script_tokens
- *  Called by SelectEditorLineSlot
- */
-function SaveSlotLineScript(event) {
-  const fn = 'SaveSlotLineScript:';
-  const { script_page, sel_linenum, slots_linescript } = STORE.State();
-  const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
-  const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
-
-  // HACK ---------------------------------------------------------------------
-  // Insert Block for new block keywords
-  const cur_line = script_page[lineIdx];
-  const isNewLine =
-    cur_line &&
-    cur_line.lineScript &&
-    cur_line.lineScript[0] &&
-    cur_line.lineScript[0].hasOwnProperty('line');
-  const new_kw_tok = slots_linescript ? slots_linescript[0] : {};
-  const new_kw = new_kw_tok ? new_kw_tok.identifier : '';
-  if (
-    isNewLine &&
-    ['every', 'ifexpr', 'onevent', 'when'].includes(new_kw.toLowerCase())
-  ) {
-    // insert block!!!
-    slots_linescript.push({
-      block: [[{ comment: 'insert code here' }]]
-    });
-  }
-  // END HACK -----------------------------------------------------------------
-
-  const updatedLine = lsos[lineIdx]; // clone existing line to retain block info
-  updatedLine.lineScript = slots_linescript.filter(({ identifier }) => {
-    // SelectEditorLineSlot() treats lineScript tokens as "view data" and
-    // stores { identifier:'' } as part of its GUI operation, but this is an
-    // illegal script token so we can't just send it as a real token...filtering
-    // it out here
-    if (identifier === undefined) return true;
-    if (identifier === '') return false;
-    return true;
-  }); // just update the lineScript
-  console.log(...PR(fn, 'updateLine', updatedLine));
-  lsos.splice(lineIdx, 1, updatedLine);
-  const nscript = TRANSPILER.EditableTokensToScript(lsos);
-  STORE.SendState({ script_tokens: nscript });
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API */
-function CancelSlotEdit(event) {
-  // deselect slot
-  STORE.SendState({
-    sel_slotpos: -1,
-    slots_linescript: [],
-    slots_validation: null
-  });
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API Slot editor remove extraneous slot, e.g. if gemscript has too many parameters */
-function DeleteSlot(event) {
-  const { slots_linescript, script_tokens, sel_linenum, sel_slotpos } =
-    STORE.State();
-  // remove the token
-  const slotIdx = CHECK.OffsetLineNum(sel_slotpos, 'sub'); // 1-based
-  slots_linescript.splice(slotIdx, 1);
-  STORE.SendState({ slots_linescript });
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API ScriptViewPane add line before/after selected line
  *  If you select a line within a block, adding a line before
  *  or after inserts a new line within the block.
@@ -835,7 +493,6 @@ function AddLine(position: VMLineScriptInsertionPosition) {
     const selectState: TStateObject = {};
     selectState.sel_linenum = newLineNum;
     selectState.sel_linepos = 1; // emulate clicking on line number
-    selectState.sel_slotpos = 1;
     STORE.SendState(selectState);
     // Force delay the scroll, otherwise dom isn't quite ready
     // Using `UseEffect` in ScriptViewPane doesn't quite work either
@@ -849,15 +506,7 @@ function AddLine(position: VMLineScriptInsertionPosition) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API ScriptViewPane delete selected line */
-function DeleteSelectedLine(event) {
-  const { script_page, sel_linenum } = STORE.State();
-  const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
-  const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
-  lsos.splice(lineIdx, 1);
-  const nscript = TRANSPILER.EditableTokensToScript(lsos);
-  STORE.SendState({ script_tokens: nscript });
-}
+// function DeleteLine() => See ac-editmgr.ts
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API return what PROGRAM directive a line is inside, as well as its range */
 function GetProgramContextForLine(lineNum: number): TLineContext {
@@ -939,22 +588,13 @@ export { State, SendState, SubscribeState, UnsubscribeState, QueueEffect };
 /// EXPORTED EVENT DISPATCHERS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
-  DispatchClick, // handles clicks on Wizard document
+  InitSetState, // special state handling: set state without triggering intercept
   // DEPRECATED
   // ScriptChanged, // handles change of script_page lineScript tokens
   WizardTextChanged, // handle incoming change of text
-  UpdateSlotValue, // handle incoming change of slot value (input)
-  UpdateSlotString, // handle incoming change of slot string (input)
-  UpdateIdentifier, // handle incoming change of identifier
-  UpdateSlotBoolean, // handle incoming change of slot boolean (input)
-  UpdateSlotExpr,
   WizardTestLine, // handle test line for WizardTextLine tester
   DispatchEditorClick, // handle clicks on editing box
-  SaveSlotLineScript, // handle slot editor save request
-  CancelSlotEdit, // handle slot editor cancel edit
-  DeleteSlot, // handle slot editor delete extraneous slot
   AddLine, // handle ScriptViewPane request to add a new script line
-  DeleteSelectedLine, // handle ScriptViewPane request to delete currently selected script line
   GetProgramContextForLine // given a line number, returns its program context
 };
 
@@ -970,6 +610,7 @@ export {
   SelectedTokenId, // return current selected token identifier
   SelectedLineNum, // return line number of current selected token
   SelectedTokenInfo, // return contextual info about current selected token
+  GetVMPageLine, // return script_page line
   GetLineScriptText, // return string version of a scriptUnit
   ValidateLine, // return TValidationResult for passed linenum
   ValidateSelectedLine, // return TValidationResult for current select line

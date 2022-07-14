@@ -285,7 +285,7 @@ async function DeliverManifest(req, res, next) {
     const assetDirs = ASFILE.GetAssetDirs(path);
     if (assetDirs.length > 0) {
       // Assets are in this directory
-      await m_AutoGenerateManifest(path, pathname, manifest).then(result => {
+      void m_AutoGenerateManifest(path, pathname, manifest).then(result => {
         res.json(result);
       });
       return;
@@ -321,7 +321,7 @@ async function DeliverManifest(req, res, next) {
       json = json.shift();
       const mpath = Path.join(path, `${GS_MANIFEST_FILENAME}.json`);
       FILE.EnsureDir(path);
-      await FILE.WriteJSON(mpath, json, err => {
+      void FILE.WriteJSON(mpath, json, err => {
         if (err) TERM('error:', err);
       });
     }

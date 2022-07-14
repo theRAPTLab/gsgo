@@ -48,6 +48,11 @@ class SpriteLoader extends AssetLoader {
     this._loader.onProgress.add(this._loadProgress);
     this._loadComplete = this._loadComplete.bind(this);
     this._loader.onComplete.add(this._loadComplete);
+
+    // add default sprite
+    this.queueAssetList([
+      { assetId: 1, assetName: 'null', assetUrl: 'static/spr-null.png' }
+    ]);
   }
 
   /// INHERITED FROM ASSETLOADER BASE CLASS ///////////////////////////////////

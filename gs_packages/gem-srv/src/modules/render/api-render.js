@@ -94,7 +94,7 @@ function Init(element) {
       // zIndex needs to be set before updateTransform is called
       vobj.setZIndex(dobj.zIndex);
       vobj.setPosition(dobj.x, dobj.y);
-      if (!dobj.skin) throw Error('missing skin property');
+      // if (!dobj.skin) throw Error('missing skin property');
       vobj.setVisible(dobj.visible);
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);

@@ -1,15 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-
-
-
-  DEPRECATED -- See ObjRefSelector_Block
-
-
-
-
-
-  ObjRefSelector
+  ObjRefSelector_Block
 
   This is a slot editor for defining compound object references for
   use with 'prop', 'featProp' and 'featCall' keywords.
@@ -30,7 +21,7 @@ import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import { GValidationToken, GSymbolToken } from '../SharedElements';
-import { HIDDEN_SYMBOLS, ADVANCED_SYMBOLS } from './EditSymbol';
+import { HIDDEN_SYMBOLS, ADVANCED_SYMBOLS } from './EditSymbol_Block';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -41,7 +32,7 @@ const OBJREFTYPE_FEATMETHOD = 'featMethodObjRef';
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ObjRefSelector(props) {
+function ObjRefSelector_Block(props) {
   // 'objRefPos' is the slot position of the object reference relative to
   // slots_validation
   const { selection, expectedType, objRefPos } = props;
@@ -227,4 +218,4 @@ function ObjRefSelector(props) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { ObjRefSelector };
+export { ObjRefSelector_Block };
