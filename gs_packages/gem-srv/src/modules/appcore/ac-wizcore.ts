@@ -114,6 +114,10 @@ function InitSetState(parms) {
 ///          ALL state objects, but it CAN be used to set other state vars?
 STORE._interceptState(state => {
   const { script_text, script_tokens, sel_linenum } = state;
+
+  // 'script_text' is primarily used by components that show the raw code
+  // called when ScriptView_Pane switches from wizard to code view
+  // called when ScriptView_Pane triggers a save to server in code view
   // if script_text is changing, we also want to emit new script_token
   if (script_text && !script_tokens) {
     let toks = TRANSPILER.TextToScript(script_text);
@@ -129,10 +133,16 @@ STORE._interceptState(state => {
     state.program_map = programMap;
   }
 
+  // called when student saves a line in the slot editor
+  // (SlotEditor_Block call to ac-editmgr.SaveSlotLineScript)
   // if script_tokens is changing, we also want to emit new script_text
   if (script_tokens && !script_text) {
     try {
       state.script_tokens = TRANSPILER.EnforceBlueprintPragmas(script_tokens);
+      // also symbolize blueprints -- eg after adding a feature, need to re-symbolize to make feature available
+      TRANSPILER.SymbolizeBlueprint(script_tokens);
+      state.cur_bdl = TRANSPILER.CompileBlueprint(script_tokens);
+      // end symbolize
       const text = TRANSPILER.ScriptToText(state.script_tokens);
       state.script_text = text;
       const [vmPage, tokMap] = TRANSPILER.ScriptToLines(state.script_tokens);
