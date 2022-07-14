@@ -41,17 +41,37 @@ export class featPropPush extends Keyword {
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         return c.getFeatProp(ref[1], pName)[mName];
       };
+    } else if (len === 3) {
+      /** NEW EXTENDED REF REQUIRED ******************************************/
+      /// e.g. blueprint.feature.prop
+      callRef = (agent: IAgent, context: any, mName: string) => {
+        const bpName = ref[0];
+        const featName = ref[1];
+        const propName = ref[2];
+        const c = context[bpName as string]; // SM_Agent context
+        if (c === undefined) throw Error(`context missing '${ref[0]}'`);
+        // ref[0] = blueprint, ref[1] = feature, ref[2] = prop
+        // we use our own decoded propname rather than looking for the passed version
+        return c.getFeatProp(featName, propName)[mName];
+      };
     } else {
       console.warn('error parse ref', ref);
       callRef = () => {};
     }
     const progout = [];
-    progout.push((agent, state) => {
-      // console.log('callRef', callRef, agent, state.ctx, featPropName, optMethod);
-      const methodName = optMethod !== undefined ? optMethod : 'value';
-
-      state.push(callRef(agent, state.ctx, featPropName, methodName));
-    });
+    if (len === 3) {
+      const [, objRef, mArgs] = unit;
+      progout.push((agent, state) => {
+        const methodName = optMethod !== undefined ? optMethod : 'value';
+        state.push(callRef(agent, state.ctx, methodName));
+      });
+    } else {
+      progout.push((agent, state) => {
+        // console.log('callRef', callRef, agent, state.ctx, featPropName, optMethod);
+        const methodName = optMethod !== undefined ? optMethod : 'value';
+        state.push(callRef(agent, state.ctx, featPropName, methodName));
+      });
+    }
     return progout;
   }
 

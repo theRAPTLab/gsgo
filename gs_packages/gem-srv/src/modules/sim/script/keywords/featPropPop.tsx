@@ -51,9 +51,30 @@ export class featPropPop extends Keyword {
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         return c.getFeatProp(ref[1], pName).setTo(arg);
       };
+    } else if (len === 3) {
+      /** NEW EXTENDED REF REQUIRED ******************************************/
+      /// e.g. blueprint.feature.prop
+      callRef = (agent: IAgent, context: any, arg) => {
+        const bpName = ref[0];
+        const featName = ref[1];
+        const propName = ref[2];
+        const c = context[bpName as string]; // SM_Agent context
+        if (c === undefined) throw Error(`context missing '${ref[0]}'`);
+        // ref[0] = blueprint, ref[1] = feature, ref[2] = prop
+        // we use our own decoded propname rather than looking for the passed version
+        return c.getFeatProp(featName, propName).setTo(arg);
+      };
     } else {
       console.warn('error parse ref', ref);
       callRef = () => {};
+    }
+    if (len === 3) {
+      const [, objRef, mArgs] = unit;
+      return [
+        (agent: IAgent, state: IState) => {
+          return callRef(agent, state.ctx, state.pop());
+        }
+      ];
     }
     return [
       (agent: IAgent, state: IState) => {
