@@ -18,6 +18,7 @@
 import UR from '@gemstep/ursys/client';
 import * as PIXI from 'pixi.js';
 import AssetLoader from './class-asset-loader';
+import { DEFAULT_SPRITE } from 'modules/flags';
 // import { TAssetDef, TAssetType } from '../../lib/t-assets';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -50,9 +51,10 @@ class SpriteLoader extends AssetLoader {
     this._loader.onComplete.add(this._loadComplete);
 
     // add default sprite
-    this.queueAssetList([
-      { assetId: 1, assetName: 'null', assetUrl: 'static/spr-null.png' }
-    ]);
+    const assetId = 1;
+    const assetName = DEFAULT_SPRITE;
+    const assetUrl = `static/spr-${DEFAULT_SPRITE}.png`;
+    this.queueAssetList([{ assetId, assetName, assetUrl }]);
   }
 
   /// INHERITED FROM ASSETLOADER BASE CLASS ///////////////////////////////////
