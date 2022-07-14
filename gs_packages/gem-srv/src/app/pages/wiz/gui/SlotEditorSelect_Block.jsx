@@ -1,11 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-
-  DEPRECATED -- See SlotEditorSelect_Block
-
-
-
-  SelectEditor
+  SlotEditorSelect_Block
 
   ~~given the current selection which is a token on the left side,~~
   given the current selection which is a slot token on the RIGHT side,
@@ -30,8 +25,8 @@ import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 
-import { ObjRefSelector } from './ObjRefSelector';
-import { LOCKED_SYMBOLS, EditSymbol } from './EditSymbol';
+import { ObjRefSelector_Block } from './ObjRefSelector_Block';
+import { LOCKED_SYMBOLS, EditSymbol_Block } from './EditSymbol_Block';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -63,7 +58,7 @@ function u_Key(prefix = '') {
  *  @param object props.selection.slots_validation
  *  @param object props.selection.slots_linescript
  */
-function SelectEditor(props) {
+function SlotEditorSelect_Block(props) {
   const { selection } = props;
   if (selection === undefined) return null;
 
@@ -86,8 +81,6 @@ function SelectEditor(props) {
     e.preventDefault();
     SLOTCORE.UpdateSlotString(String(e.target.value));
   };
-  // note this needs to have a new wizcore method for identifier input types
-  // this is just a copy of processStringInput
   const processIdentifierInput = e => {
     e.preventDefault();
     const err = SLOTCORE.UpdateIdentifier(String(e.target.value));
@@ -117,7 +110,7 @@ function SelectEditor(props) {
   };
   const handleExprKeypress = e => {
     if (e.key === 'Enter') {
-      processStringInput(e);
+      processExprInput(e);
       e.target.select();
     }
   };
@@ -173,12 +166,16 @@ function SelectEditor(props) {
       );
       break;
     case 'string':
+      // UnpackToken inserts the string "undefined" for undefined tokens
+      // so we need to strip it out here so the input field doesn't default
+      // to "undefined"
+      const defaultString = unitText === 'undefined' ? '' : unitText; // show blank rather than 'undefined' if unitText is not defined
       editor = (
         <div className="gsled input">
           <label>Enter a {gsType}</label>
           <input
             key={tkey}
-            defaultValue={unitText}
+            defaultValue={defaultString}
             type="text"
             onChange={processStringInput}
             onKeyPress={handleStringKeypress}
@@ -231,12 +228,13 @@ function SelectEditor(props) {
       );
       break;
     case 'expr':
+      const defaultExpr = unitText.replace(/^{{\s/, '').replace(/\s}}$/, '');
       editor = (
         <div className="gsled input">
           <label>Enter an expression string</label>
           <input
             key={tkey}
-            defaultValue={unitText}
+            defaultValue={defaultExpr}
             type="text"
             onChange={processExprInput}
             onKeyPress={handleExprKeypress}
@@ -248,7 +246,7 @@ function SelectEditor(props) {
     case 'objref':
       editor = (
         <div>
-          <ObjRefSelector
+          <ObjRefSelector_Block
             selection={selection}
             expectedType={gsType}
             objRefPos={pos}
@@ -259,7 +257,7 @@ function SelectEditor(props) {
     default:
       editor = (
         <div>
-          <EditSymbol
+          <EditSymbol_Block
             selection={selection}
             expectedType={gsType}
             locked={locked}
@@ -272,4 +270,4 @@ function SelectEditor(props) {
 
 /// COMPONENT EXPORT //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { SelectEditor };
+export { SlotEditorSelect_Block };

@@ -94,7 +94,7 @@ async function PromiseLoadAssets(subdir: string = '') {
   const promises = [];
   for (const kv of assets) {
     const asType = kv[0]; // avoiding array destructure because old typescript
-    const asList = kv[1] as Array<TAssetDef>;
+    const asList = kv[1];
     // because manifest entries are relative to their directory, we have
     // to add subdir in so loader has correct URL
 

@@ -34,11 +34,12 @@ export class propPush extends Keyword {
    *  base Keyword class  */
   validate(unit: TScriptUnit): TValidatedScriptUnit {
     const vtoks = []; // validation token array
-    const [kwTok, objrefTok] = unit; // get arg pattern
+    const [kwTok, objrefTok, ...argToks] = unit; // get arg pattern
     // returns symbols for each dtok position excepting the keyword
 
     vtoks.push(this.shelper.anyKeyword(kwTok));
     vtoks.push(this.shelper.agentObjRef(objrefTok)); // agent.propName, propName, Blueprint.propName
+    vtoks.push(...this.shelper.extraArgsList(argToks)); // handle extra args in line
     const log = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: log };
   }

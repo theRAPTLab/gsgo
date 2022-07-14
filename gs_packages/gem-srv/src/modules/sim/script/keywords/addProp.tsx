@@ -53,12 +53,13 @@ export class AddProp extends Keyword {
   /** custom keyword validator */
   validate(unit: TScriptUnit): TValidatedScriptUnit {
     // addProp propName number appropriateValue
-    const [kwTok, pnTok, typeTok, ivalTok] = unit;
+    const [kwTok, pnTok, typeTok, ivalTok, ...argToks] = unit;
     const vtoks = [];
     vtoks.push(this.shelper.anyKeyword(kwTok));
     vtoks.push(this.shelper.simplePropName(pnTok));
     vtoks.push(this.shelper.anyPropType(typeTok));
     vtoks.push(this.shelper.propTypeInitialValue(ivalTok));
+    vtoks.push(...this.shelper.extraArgsList(argToks)); // handle extra args in line
     const vlog = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: vlog };
   }

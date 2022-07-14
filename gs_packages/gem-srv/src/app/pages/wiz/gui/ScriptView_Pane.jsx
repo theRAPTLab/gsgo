@@ -1,14 +1,9 @@
 /* eslint-disable prefer-template */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+  ScriptView_Pane - Script Editing and Highlighting
 
-
-DEPRECATED>  See ScriptView_Pane
-
-
-
-
-  PanelScript - Script Editing and Highlighting
+  Was: PanelScript.jsx
 
   Shows:
   * Code Editor View
@@ -43,7 +38,7 @@ import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { withStyles } from '@material-ui/core/styles';
 import { UpdateScript } from 'modules/sim/script/tools/script-to-jsx';
-import { ScriptViewPane } from '../wiz/edit/ScriptViewPane';
+import { ScriptViewWiz_Block } from './ScriptViewWiz_Block';
 import { GetAllKeywords } from 'modules/datacore';
 import { SKIP_RELOAD_WARNING } from 'config/gem-settings';
 
@@ -57,11 +52,11 @@ import { CodeJar } from 'lib/vendor/codejar';
 import 'lib/vendor/prism_extended.css';
 import 'lib/css/prism_linehighlight.css'; // override TomorrowNight
 
-import Dialog from './Dialog';
+import Dialog from '../../components/Dialog';
 
-import { useStylesHOC } from '../helpers/page-xui-styles';
+import { useStylesHOC } from '../../helpers/page-xui-styles';
 
-import PanelChrome from './PanelChrome';
+import PanelChrome from '../../components/PanelChrome';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -198,7 +193,7 @@ if (DBG) console.log(...PR('PRISM gemscript types', types_regex));
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: STYLES ARE IMPORTED FROM COMMON-STYLES.JS
-class PanelScript extends React.Component {
+class ScriptView_Pane extends React.Component {
   constructor() {
     super();
     const { script_page, script_text, sel_linenum } = WIZCORE.State();
@@ -630,7 +625,10 @@ class PanelScript extends React.Component {
         }}
       >
         {/* {jsx} */}
-        <ScriptViewPane script_page={script_page} sel_linenum={sel_linenum} />
+        <ScriptViewWiz_Block
+          script_page={script_page}
+          sel_linenum={sel_linenum}
+        />
       </div>
     );
 
@@ -665,4 +663,4 @@ window.URDebugTest = () => {
   });
 };
 
-export default withStyles(useStylesHOC)(PanelScript);
+export default withStyles(useStylesHOC)(ScriptView_Pane);

@@ -1,14 +1,6 @@
 /* eslint-disable no-inner-declarations */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-
-
-
-  DEPRECATED -- See EditSymbol_Block
-
-
-
-
   SymbolSelector - A component that accepts selection of
   { sel_linenum, sel_linepos } and draws out everything in it
 
@@ -112,7 +104,7 @@ export const ADVANCED_SYMBOLS = [
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function EditSymbol(props) {
+export function EditSymbol_Block(props) {
   // we need the current selection
   const { selection = {}, locked } = props;
   const { sel_linenum, sel_linepos, vmPageLine, sel_slotpos } = selection;
