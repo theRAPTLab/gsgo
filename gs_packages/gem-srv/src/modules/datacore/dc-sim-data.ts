@@ -180,9 +180,9 @@ function GetBundleOutSymbols() {
 /** return symbols for tag pragma */
 function GetBundleTagSymbols() {
   return {
-    IsCharControllable: 'enable:boolean',
-    IsPozyxControllable: 'enable:boolean',
-    IsPtrackControllable: 'enable:boolean'
+    IsCharControllable: 'enable:boolean' as TGSArg,
+    IsPozyxControllable: 'enable:boolean' as TGSArg,
+    IsPtrackControllable: 'enable:boolean' as TGSArg
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

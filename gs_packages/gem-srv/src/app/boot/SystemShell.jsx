@@ -28,6 +28,8 @@ import {
   LazyCodeTester
 } from './SystemRoutes';
 
+import CSS from './SystemShell.css';
+
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SystemShell');

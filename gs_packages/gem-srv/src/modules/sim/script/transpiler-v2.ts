@@ -15,6 +15,7 @@ import { EBundleType } from 'modules/../types/t-script.d'; // workaround to impo
 import SM_Agent from 'lib/class-sm-agent';
 import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
+import ERROR from 'modules/error-mgr';
 
 // critical imports
 import 'script/keywords/_all_keywords';
@@ -69,12 +70,24 @@ function CompileText(text: string, refs: TSymbolRefs): TSMCProgram {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Given a lineScript in text form and a bundle with symbols, validate it */
 function ValidateLineText(line: string, bdl: SM_Bundle): TValidatedScriptUnit {
-  const [lineScript] = TOKENIZER.TextToScript(line);
-  const vtoks = COMPILER.ValidateStatement(lineScript, {
-    bundle: bdl,
-    globals: {}
-  });
-  return vtoks;
+  try {
+    const [lineScript] = TOKENIZER.TextToScript(line);
+    const vtoks = COMPILER.ValidateStatement(lineScript, {
+      bundle: bdl,
+      globals: {}
+    });
+    return vtoks;
+  } catch (caught) {
+    ERROR(`could not validate text string`, {
+      source: 'validator',
+      data: {
+        line,
+        bundle: bdl
+      },
+      where: 'transpiler.ValidateLineText',
+      caught
+    });
+  }
 }
 
 /// SCRIPT UTILITIES //////////////////////////////////////////////////////////

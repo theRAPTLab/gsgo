@@ -62,7 +62,8 @@ const config = {
     '**/built',
     '**/assets-src',
     '**/node_modules',
-    '**/vendor/*.js'
+    '**/vendor/*.js',
+    '.eslintrc.js'
   ],
   parserOptions: {
     ecmaFeatures: {

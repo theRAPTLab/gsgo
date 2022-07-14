@@ -86,6 +86,7 @@ import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as COMPILER from 'script/tools/script-compiler';
 import * as BUNDLER from 'script/tools/script-bundler';
+import ERROR from 'modules/error-mgr';
 
 import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
@@ -176,14 +177,21 @@ function handleSlotUpdate(vmStateEvent) {
     BUNDLER.OpenBundle(slots_bundle);
     BUNDLER.AddSymbols(newSymbols);
     BUNDLER.CloseBundle();
-
-    newSlotState.slots_validation = TRANSPILER.ValidateStatement(
-      slots_linescript,
-      {
-        bundle: slots_bundle,
-        globals: globalRefs
-      }
-    );
+    try {
+      newSlotState.slots_validation = TRANSPILER.ValidateStatement(
+        slots_linescript,
+        {
+          bundle: slots_bundle,
+          globals: globalRefs
+        }
+      );
+    } catch (caught) {
+      ERROR(`could not validate slots_linescript`, {
+        source: 'validator',
+        where: 'ac-editmgr.handleSlotUpdate',
+        caught
+      });
+    }
   }
 
   if (Object.keys(newSlotState).length > 0) SLOTCORE.SendState(newSlotState);

@@ -34,6 +34,8 @@ import {
 } from 'script/tools/symbol-utilities';
 import * as COMPILER from 'script/tools/script-compiler';
 import * as BUNDLER from 'script/tools/script-bundler';
+import ERROR from 'modules/error-mgr';
+
 import { GetTextBuffer } from 'lib/class-textbuffer';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
@@ -154,9 +156,15 @@ STORE._interceptState(state => {
       state.script_page_needs_saving = true;
       state.key_to_token = tokMap;
       state.program_map = programMap;
-    } catch (e) {
-      // ignore TextToScript compiler errors during live typing
-      console.error(`wizcore_interceptState tokens: ${e.toString()}`);
+    } catch (caught) {
+      ERROR(`error occurred during script-tokens intercept`, {
+        source: 'appstate',
+        data: {
+          script_tokens
+        },
+        where: 'ac-wizcore._interceptState script_tokens',
+        caught
+      });
     }
   }
 });
@@ -363,10 +371,23 @@ function ValidateLine(lineNum: number): TValidatedScriptUnit {
 function ValidatePageLine(vmLine: VMPageLine): TValidatedScriptUnit {
   const { lineScript, globalRefs } = vmLine;
   const { cur_bdl } = STORE.State();
-  return TRANSPILER.ValidateStatement(lineScript, {
-    bundle: cur_bdl,
-    globals: globalRefs
-  });
+  try {
+    return TRANSPILER.ValidateStatement(lineScript, {
+      bundle: cur_bdl,
+      globals: globalRefs
+    });
+  } catch (caught) {
+    ERROR(`could not validate slots_linescript`, {
+      source: 'validator',
+      data: {
+        lineScript,
+        cur_bdl,
+        globalRefs
+      },
+      where: 'ac-wizcore.ValidatePageLine',
+      caught
+    });
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Validate all the lines in the script_page and return the validation

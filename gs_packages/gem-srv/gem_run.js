@@ -74,16 +74,19 @@ function GEMSRV_Start(opt) {
     }
     Process.exit(0);
   });
-  process.once('SIGINT', async () => {
+  process.once('SIGINT', () => {
     TOUT('***SIGINT***');
     TOUT('Stopping URNET...');
-    await UR.URNET_Stop();
-    TOUT('Stopping Development Server...');
-    await GEMAPP.CloseAppServer();
+    void (async () => {
+      await UR.URNET_Stop();
+      TOUT('Stopping Development Server...');
+      await GEMAPP.CloseAppServer();
+      TOUT('');
+    })();
   });
 
   // run ursys
-  (async () => {
+  void (async () => {
     await GEMAPP.StartAppServer(opt);
     await UR.Initialize([TRACKER.StartTrackerSystem]);
     await UR.URNET_Start({
