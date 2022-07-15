@@ -423,13 +423,14 @@ class ScriptView_Pane extends React.Component {
   }
 
   OnDeleteConfirm(yesDelete) {
+    const { projId, bpName } = this.props;
     this.setState({
       openConfirmDelete: false
     });
     if (yesDelete) {
       UR.RaiseMessage('SELECT_SCRIPT', { bpName: undefined }); // go to selection screen
       UR.RaiseMessage('NET:BLUEPRINT_DELETE', {
-        blueprintName: this.origBlueprintName
+        blueprintName: bpName
       });
     }
   }
@@ -562,7 +563,7 @@ class ScriptView_Pane extends React.Component {
       <Dialog
         id="DialogConfirmDelete"
         open={openConfirmDelete}
-        message={`Are you sure you want to delete the "${bpName}" script?`}
+        message={`Are you sure you want to delete the "${bpName}" script and characters?`}
         yesMessage={`Delete ${bpName}`}
         onClose={this.OnDeleteConfirm}
       />
