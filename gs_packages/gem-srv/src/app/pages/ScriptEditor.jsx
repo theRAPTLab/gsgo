@@ -64,8 +64,8 @@ const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
 # TAG isPTrackControllable false
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'circle.json' 0
-featCall Costume setScale 1
+featCall agent.Costume setCostume 'circle.json' 0
+featCall agent.Costume setScale 1
 // useFeature Movement
 # PROGRAM EVENT
 // onEvent Tick [[ ]]
