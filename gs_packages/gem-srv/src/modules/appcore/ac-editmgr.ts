@@ -161,7 +161,7 @@ function handleSlotUpdate(vmStateEvent) {
     let { slots_bundle } = SLOTCORE.State();
 
     if (!slots_bundle) {
-      slots_bundle = cur_bdl.carelessClone();
+      slots_bundle = cur_bdl ? cur_bdl.carelessClone() : [];
     }
     newSlotState.slots_bundle = slots_bundle;
 
