@@ -107,6 +107,15 @@ function urProjectStateUpdated(stateObj, cb) {
   if (typeof cb === 'function') cb();
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// subscriber to state group 'project' changes
+function urBlueprintStateUpdated(stateObj, cb) {
+  if (DBG) console.log(...PR('urBlueprintStateUpdated', stateObj));
+  const { bpDefs } = stateObj;
+  UR.CallMessage('NET:BLUEPRINTS_UPDATE', { bpDefs });
+  if (typeof cb === 'function') cb();
+}
+
 /// INSPECTOR UTILS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API:
@@ -166,6 +175,7 @@ function ProjectDataPreInit(parent, projId) {
 
   UR.SubscribeState('locales', urLocaleStateUpdated);
   UR.SubscribeState('project', urProjectStateUpdated);
+  UR.SubscribeState('blueprints', urBlueprintStateUpdated);
 
   // Load currently saved locale
   const localeId = u_GetLocaleIdFromLocalStorage();

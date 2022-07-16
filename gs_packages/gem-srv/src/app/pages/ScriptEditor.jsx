@@ -3,25 +3,53 @@
 
   ScriptEditor - Edit Script Blueprints
 
-  state.script is loaded
-  1. UR/APP_START waits for Main to come online
-  2. Initialize() calls RequestModel
-  3. RequestModel requests model data via URSYS
-  4. URSYS callback calls UpdateModelData
-  5. UpdateModelData sets OnSelectScript
-  6. OnSelectScript loads the actual script
+  state.script is loaded when
+      1. UR/APP_START waits for Main to come online
+      2. Initialize() calls RequestBpEditList
+      3. RequestBpEditList requests model data via URSYS
+      4. URSYS callback calls UpdateBpEditList
+      5. UpdateBpEditList sets OnSelectScript
+      6. OnSelectScript loads the actual script
+
+
+      RATIONALE
+
+    We want Main to be the traffic cop, so it can keep track of edit state
+    and read/write permissions.  This method of loading also allows for
+    temporary non-saved versions of project files/blueprint scripts.
+
 
   COMPONENT HIERARCHY
 
-  The components are (oldname):
+      The components are (oldname):
 
-    ScriptEditor:root
-      ScriptView_Pane:panel       (PanelScript)
-        <codejar>                 aka ScriptViewCode_Block
-        ScriptViewWiz_Block       (ScriptViewPane)
-      ScriptLine_Pane:panel       (ScriptEditPane)
-        SlotEditor_Block          (SelectEditorSlots)
-          SlotEditorSelect_Block  (SelectEditor)
+      Script Edit View
+
+        ScriptEditor:root
+          ScriptView_Pane:panel       (PanelScript)
+            <codejar>                 aka ScriptViewCode_Block
+            ScriptViewWiz_Block       (ScriptViewPane)
+          ScriptLine_Pane:panel       (ScriptEditPane)
+            SlotEditor_Block          (SelectEditorSlots)
+              SlotEditorSelect_Block  (SelectEditor)
+
+      Script Selector View
+
+        PanelSelectBlueprint
+
+
+  NEW BLUEPRINTS
+      New blueprints can be created one of two ways:
+      1. User clicks on "New Character Type" from Main
+      2. User clicks on "ADD CHARACTER TYPE" from ScriptEditor's selection screen.
+
+      Main: New Character Type
+      This opens up a new ScriptEditor app tab with a blank script.
+
+      Script Editor: ADD CHARACTER TYPE
+      PanelSelectBlueprint raises SELECT_SCRIPT, and ScriptEditor's
+      OnSelectScript handler loads a new script on an already
+      open window.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -46,6 +74,10 @@ import { SKIP_RELOAD_WARNING } from 'config/gem-settings';
 import ScriptView_Pane from './wiz/gui/ScriptView_Pane';
 import { ScriptLine_Pane } from './wiz/gui/ScriptLine_Pane';
 
+/// DATA /////////////////////////////////////////////////////////////////////
+/// Load RegisterWhenTests
+import * as SIMCOND from 'modules/sim/sim-conditions'; // DO NOT REMOVE
+
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'test/unit-parser'; // test parser evaluation
 
@@ -64,8 +96,8 @@ const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
 # TAG isPTrackControllable false
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'circle.json' 0
-featCall Costume setScale 1
+featCall agent.Costume setCostume 'circle.json' 0
+featCall agent.Costume setScale 1
 // useFeature Movement
 # PROGRAM EVENT
 // onEvent Tick [[ ]]
@@ -234,9 +266,8 @@ class ScriptEditor extends React.Component {
       TRANSPILER.SymbolizeBlueprint(script);
     });
     this.setState({ bpEditList }, () => {
-      if (bpName) {
-        this.OnSelectScript({ bpName });
-      }
+      // always call OnSelectScript.  if bpName is '', we load a blank TEMPLATE script
+      this.OnSelectScript({ bpName });
     });
   }
 
@@ -333,13 +364,12 @@ class ScriptEditor extends React.Component {
     const { bpName } = data;
     if (DBG) console.warn(...PR('OnSelectScript', data));
     this.UnRegisterInstances();
-    const { bpEditList, projId } = this.state;
+    const { bpEditList = [], projId } = this.state;
     if (bpEditList === undefined || bpEditList.length < 1) {
       console.warn(
         'ScriptEditor.OnSelectAgent: No bpEditList to load',
         bpEditList
       );
-      return; // no scripts defined
     }
     const bpDef = bpEditList.find(b => b.name === bpName);
     const script = bpDef ? bpDef.scriptText : SCRIPT_TEMPLATE;
