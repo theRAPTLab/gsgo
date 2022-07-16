@@ -30,13 +30,15 @@ import UR from '@gemstep/ursys/client';
 import * as SIM from 'modules/sim/api-sim'; // DO NOT REMOVE
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import * as BLUEPRINT_TESTER from 'test/test-blueprint';
+import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import { VER_DEV_WIZ, ENABLE_SYMBOL_TEST_BLUEPRINT } from 'config/dev-settings';
 import { ASSETDIR, DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 // edit mode components
 import { ScriptTextPane } from './wiz/edit/ScriptTextPane';
-import { ScriptViewPane } from './wiz/edit/ScriptViewPane';
-import { ScriptEditPane } from './wiz/edit/ScriptEditPane';
+import { ScriptViewWiz_Block } from './wiz/gui/ScriptViewWiz_Block';
+import { ScriptLine_Pane } from './wiz/gui/ScriptLine_Pane';
 // runtime mode components
 // always-there components
 import { ButtonConsole } from './wiz/ctrl/ButtonConsolePane';
@@ -114,6 +116,7 @@ class DevWizard extends React.Component {
     this.state = WIZCORE.State();
     // bind methods that are called asynchronously
     this.handleWizUpdate = this.handleWizUpdate.bind(this);
+    this.handleSlotUpdate = this.handleSlotUpdate.bind(this);
   }
 
   componentDidMount() {
@@ -122,9 +125,10 @@ class DevWizard extends React.Component {
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     // add top-level click handler
-    document.addEventListener('click', WIZCORE.DispatchClick);
+    document.addEventListener('click', EDITMGR.DispatchClick);
     // add a subscriber
     WIZCORE.SubscribeState(this.handleWizUpdate);
+    SLOTCORE.SubscribeState(this.handleSlotUpdate);
     m_LoadTestProjectData(WIZCORE);
   }
 
@@ -141,11 +145,27 @@ class DevWizard extends React.Component {
     // if (script_page) this.setState({ script_page });
   }
 
+  /** INCOMING: handle SLOTCORE event updates */
+  handleSlotUpdate(vmStateEvent) {
+    const { slots_need_saving, slots_save_dialog_is_open } = vmStateEvent;
+    // just trigger a state update so "Save" button is refreshed
+    const newState = {};
+    this.setState(newState);
+  }
+
   render() {
     const { sel_linenum, sel_linepos, script_page, dev_or_user } = this.state;
+    const { slots_need_saving, slots_save_dialog_is_open } = SLOTCORE.State();
     const RightSide =
       dev_or_user === 0 ? (
-        <ScriptEditPane selection={{ sel_linenum, sel_linepos }} />
+        <ScriptLine_Pane
+          selection={{
+            sel_linenum,
+            sel_linepos,
+            slots_need_saving,
+            slots_save_dialog_is_open
+          }}
+        />
       ) : (
         <ScriptTextPane />
       );
@@ -153,7 +173,10 @@ class DevWizard extends React.Component {
       <div id="gui-wizard" style={sGrid}>
         <DevHeader label="DEV/WIZARD" version={VER_DEV_WIZ} />
         <div style={sLeft}>
-          <ScriptViewPane script_page={script_page} />
+          <ScriptViewWiz_Block
+            script_page={script_page}
+            sel_linenum={sel_linenum}
+          />
           {/* <ScriptUnitEditor /> */}
         </div>
         <div style={sRight}>{RightSide}</div>

@@ -128,6 +128,15 @@ STORE._interceptState(state => {
     state.script_tokens = toks;
     TRANSPILER.SymbolizeBlueprint(toks);
     state.cur_bdl = TRANSPILER.CompileBlueprint(toks);
+
+    // ...did the name change?  if so, remove the old bundle
+    const { cur_bdl } = STORE.State();
+    if (cur_bdl !== null) {
+      const { name: curName } = cur_bdl;
+      const { name: newName } = state.cur_bdl;
+      if (newName !== curName) SIMDATA.DeleteBlueprintBundle(curName);
+    }
+
     const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
     const programMap = TRANSPILER.ScriptToProgramMap(toks);
     // INSERT validation tokens to script_page
@@ -145,6 +154,15 @@ STORE._interceptState(state => {
       // also symbolize blueprints -- eg after adding a feature, need to re-symbolize to make feature available
       TRANSPILER.SymbolizeBlueprint(script_tokens);
       state.cur_bdl = TRANSPILER.CompileBlueprint(script_tokens);
+
+      // ...did the name change?  if so, remove the old bundle
+      const { cur_bdl } = STORE.State();
+      if (cur_bdl !== null) {
+        const { name: curName } = cur_bdl;
+        const { name: newName } = state.cur_bdl;
+        if (newName !== curName) SIMDATA.DeleteBlueprintBundle(curName);
+      }
+
       // end symbolize
       const text = TRANSPILER.ScriptToText(state.script_tokens);
       state.script_text = text;

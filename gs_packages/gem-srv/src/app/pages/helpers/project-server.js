@@ -108,11 +108,12 @@ function urProjectStateUpdated(stateObj, cb) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// subscriber to state group 'project' changes
+/// subscriber to state group 'blueprint' changes
+/// Informs ScriptEditor of changes to blueprints, esp deletion
 function urBlueprintStateUpdated(stateObj, cb) {
   if (DBG) console.log(...PR('urBlueprintStateUpdated', stateObj));
   const { bpDefs } = stateObj;
-  UR.CallMessage('NET:BLUEPRINTS_UPDATE', { bpDefs });
+  if (bpDefs) UR.CallMessage('NET:BLUEPRINTS_UPDATE', { bpDefs });
   if (typeof cb === 'function') cb();
 }
 
