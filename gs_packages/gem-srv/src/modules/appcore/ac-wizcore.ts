@@ -149,33 +149,29 @@ STORE._interceptState(state => {
   // (SlotEditor_Block call to ac-editmgr.SaveSlotLineScript)
   // if script_tokens is changing, we also want to emit new script_text
   if (script_tokens && !script_text) {
-    try {
-      state.script_tokens = TRANSPILER.EnforceBlueprintPragmas(script_tokens);
-      // also symbolize blueprints -- eg after adding a feature, need to re-symbolize to make feature available
-      TRANSPILER.SymbolizeBlueprint(script_tokens);
-      state.cur_bdl = TRANSPILER.CompileBlueprint(script_tokens);
+    console.log('script-tokens', script_tokens);
+    state.script_tokens = TRANSPILER.EnforceBlueprintPragmas(script_tokens);
+    // also symbolize blueprints -- eg after adding a feature, need to re-symbolize to make feature available
+    TRANSPILER.SymbolizeBlueprint(script_tokens);
+    state.cur_bdl = TRANSPILER.CompileBlueprint(script_tokens);
 
-      // ...did the name change?  if so, remove the old bundle
-      const { cur_bdl } = STORE.State();
-      if (cur_bdl !== null) {
-        const { name: curName } = cur_bdl;
-        const { name: newName } = state.cur_bdl;
-        if (newName !== curName) SIMDATA.DeleteBlueprintBundle(curName);
-      }
-
-      // end symbolize
-      const text = TRANSPILER.ScriptToText(state.script_tokens);
-      state.script_text = text;
-      const [vmPage, tokMap] = TRANSPILER.ScriptToLines(state.script_tokens);
-      const programMap = TRANSPILER.ScriptToProgramMap(state.script_tokens);
-      state.script_page = vmPage;
-      state.script_page_needs_saving = true;
-      state.key_to_token = tokMap;
-      state.program_map = programMap;
-    } catch (e) {
-      // ignore TextToScript compiler errors during live typing
-      console.error(`wizcore_interceptState tokens: ${e.toString()}`);
+    // ...did the name change?  if so, remove the old bundle
+    const { cur_bdl } = STORE.State();
+    if (cur_bdl !== null) {
+      const { name: curName } = cur_bdl;
+      const { name: newName } = state.cur_bdl;
+      if (newName !== curName) SIMDATA.DeleteBlueprintBundle(curName);
     }
+
+    // end symbolize
+    const text = TRANSPILER.ScriptToText(state.script_tokens);
+    state.script_text = text;
+    const [vmPage, tokMap] = TRANSPILER.ScriptToLines(state.script_tokens);
+    const programMap = TRANSPILER.ScriptToProgramMap(state.script_tokens);
+    state.script_page = vmPage;
+    state.script_page_needs_saving = true;
+    state.key_to_token = tokMap;
+    state.program_map = programMap;
   }
 });
 
@@ -547,44 +543,6 @@ function GetProgramContextForLine(lineNum: number): TLineContext {
   if (foundProgram) return map.get(foundProgram);
   return undefined;
 }
-
-/// TESTS /////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** example for ben...
- *
- *
- *  DELETE this when you don't need it anymore
- *
- *
- */
-UR.HookPhase('UR/APP_START', () => {
-  let lineToCheck = 34;
-  const { program_map, script_tokens } = STORE.State();
-  console.group(`Testing Program Directive Line Context for line ${lineToCheck}`);
-  const lineInfo: TLineContext = GetProgramContextForLine(lineToCheck);
-  if (!lineInfo) {
-    console.warn(`${lineToCheck} isnt in a PROGRAM section!`);
-  } else {
-    const { program, start, end } = lineInfo;
-    const range = `${start}-${end}`;
-    console.log(
-      `%cline ${lineToCheck} in 'PROGRAM ${program}' (lines ${range})`,
-      'font-size:1.5em'
-    );
-  }
-  const [page] = TRANSPILER.DBG_ScriptToLinesV2(script_tokens);
-  console.group('program_map used v2 line maper');
-  page.forEach(pline => {
-    const { num, level, line } = pline;
-    const lineNum = String(num).padStart(3, '0');
-    const indent = ''.padStart(level * 2, ' ');
-    const text = TRANSPILER.StatementToText(line);
-    console.log(`${lineNum} - ${indent} ${text}`);
-  });
-
-  console.groupEnd();
-  console.groupEnd();
-}); // end of HookPhase
 
 /// DEBUG CONSOLE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

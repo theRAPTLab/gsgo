@@ -255,11 +255,12 @@ class ScriptLiner {
         console.groupEnd();
       });
       if (!this.BLOCK_FLAG) this.BLOCK_FLAG = `end`;
-      console.log(
-        'EOBLOCK',
-        this.INDENT,
-        StatementToText(statement).split('\n')[0]
-      );
+      if (DBG)
+        console.log(
+          'EOBLOCK',
+          this.INDENT,
+          StatementToText(statement).split('\n')[0]
+        );
       return;
       // end of block
     });
@@ -372,6 +373,7 @@ class ScriptLiner {
   /** reference algorithm used by EditableTokensToLines, which is the
    *  opposite of the statement deblocker */
   genericBlockStatementer(lineScripts: VMLineScripts): TScriptUnit[] {
+    const fn = 'genericBlockStatementer:';
     let script_tokens = [];
     let stm0 = []; // assemble partial statements on main level
     let block_stack = [];
@@ -399,7 +401,7 @@ class ScriptLiner {
 
       if (marker === 'end') {
         level--;
-        if (level < 0) console.warn('WHOOPS');
+        if (level < 0) console.warn(`${fn} unexpected: level is < 0`, level);
         if (level > 0) {
           if (lineScript.length) current.push(lineScript); // nested block
           current = block_stack.pop(); // previos block
@@ -596,7 +598,7 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
 
   // START CODE
   let level = 0;
-  lineScripts.forEach(lso => {
+  lineScripts.forEach((lso, ii) => {
     const {
       lineScript, // IToken except there are no block tokens
       marker // marks start, end, or end-start of a block or adjacent blocks
@@ -634,7 +636,19 @@ function EditableTokensToScript(lineScripts: VMLineScripts): TScriptUnit[] {
           'background-color:yellow'
         );
       level--;
-      if (level < 0) console.warn('WHOOPS');
+      if (level < 0) {
+        console.warn(
+          `${fn} unexpected: level < 0`,
+          level,
+          `line:${ii + SCRIPT_PAGE_INDEX_OFFSET}`,
+          lineScripts[ii]
+        );
+        throw Error(
+          `${fn} unexpected level underflow at scriptline ${
+            ii + SCRIPT_PAGE_INDEX_OFFSET
+          }`
+        );
+      }
       if (level > 0) {
         if (lineScript.length) current.push(lineScript); // nested block
         current = block_stack.pop(); // previos block
