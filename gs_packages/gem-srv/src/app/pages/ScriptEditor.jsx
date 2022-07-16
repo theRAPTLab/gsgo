@@ -61,6 +61,7 @@ import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as TRANSPILER from 'script/transpiler-v2';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 // import PanelSimViewer from './components/PanelSimViewer';
@@ -274,6 +275,8 @@ class ScriptEditor extends React.Component {
   UpdateBpEditList(bpEditList) {
     if (DBG) console.log(...PR('UpdateBpEditList', bpEditList));
     const { bpName } = this.state;
+    // clear all bundles to remove deleted bundles
+    SIMDATA.DeleteAllBlueprintBundles();
     bpEditList.forEach(thing => {
       const { name, scriptText } = thing;
       const script = TRANSPILER.TextToScript(scriptText);
