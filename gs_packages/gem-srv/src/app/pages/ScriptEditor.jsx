@@ -46,6 +46,10 @@ import { SKIP_RELOAD_WARNING } from 'config/gem-settings';
 import ScriptView_Pane from './wiz/gui/ScriptView_Pane';
 import { ScriptLine_Pane } from './wiz/gui/ScriptLine_Pane';
 
+/// DATA /////////////////////////////////////////////////////////////////////
+/// Load RegisterWhenTests
+import * as SIMCOND from 'modules/sim/sim-conditions'; // DO NOT REMOVE
+
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'test/unit-parser'; // test parser evaluation
 
