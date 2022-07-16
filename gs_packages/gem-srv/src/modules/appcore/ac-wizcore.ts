@@ -548,44 +548,6 @@ function GetProgramContextForLine(lineNum: number): TLineContext {
   return undefined;
 }
 
-/// TESTS /////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** example for ben...
- *
- *
- *  DELETE this when you don't need it anymore
- *
- *
- */
-UR.HookPhase('UR/APP_START', () => {
-  let lineToCheck = 34;
-  const { program_map, script_tokens } = STORE.State();
-  console.group(`Testing Program Directive Line Context for line ${lineToCheck}`);
-  const lineInfo: TLineContext = GetProgramContextForLine(lineToCheck);
-  if (!lineInfo) {
-    console.warn(`${lineToCheck} isnt in a PROGRAM section!`);
-  } else {
-    const { program, start, end } = lineInfo;
-    const range = `${start}-${end}`;
-    console.log(
-      `%cline ${lineToCheck} in 'PROGRAM ${program}' (lines ${range})`,
-      'font-size:1.5em'
-    );
-  }
-  const [page] = TRANSPILER.DBG_ScriptToLinesV2(script_tokens);
-  console.group('program_map used v2 line maper');
-  page.forEach(pline => {
-    const { num, level, line } = pline;
-    const lineNum = String(num).padStart(3, '0');
-    const indent = ''.padStart(level * 2, ' ');
-    const text = TRANSPILER.StatementToText(line);
-    console.log(`${lineNum} - ${indent} ${text}`);
-  });
-
-  console.groupEnd();
-  console.groupEnd();
-}); // end of HookPhase
-
 /// DEBUG CONSOLE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function PrintDBGConsole(str: string) {
