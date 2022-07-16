@@ -138,7 +138,9 @@ export function EditSymbol_Block(props) {
     if (sel_slotpos < 0) return 'Click on a word above to edit it.'; // clicked ScriptView, not SelectEditorLineSlot
     const vIndex = CHECK.OffsetLineNum(sel_slotpos, 'sub');
 
-    const { validationTokens } = slots_validation;
+    const validationTokens = slots_validation
+      ? slots_validation.validationTokens
+      : [];
 
     // no more validation tokens
     if (vIndex >= validationTokens.length)
