@@ -131,9 +131,11 @@ STORE._interceptState(state => {
 
     // ...did the name change?  if so, remove the old bundle
     const { cur_bdl } = STORE.State();
-    const { name: curName } = cur_bdl;
-    const { name: newName } = state.cur_bdl;
-    if (newName !== curName) SIMDATA.DeleteBlueprintBundle(curName);
+    if (cur_bdl !== null) {
+      const { name: curName } = cur_bdl;
+      const { name: newName } = state.cur_bdl;
+      if (newName !== curName) SIMDATA.DeleteBlueprintBundle(curName);
+    }
 
     const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
     const programMap = TRANSPILER.ScriptToProgramMap(toks);
@@ -155,9 +157,11 @@ STORE._interceptState(state => {
 
       // ...did the name change?  if so, remove the old bundle
       const { cur_bdl } = STORE.State();
-      const { name: curName } = cur_bdl;
-      const { name: newName } = state.cur_bdl;
-      if (newName !== curName) SIMDATA.DeleteBlueprintBundle(curName);
+      if (cur_bdl !== null) {
+        const { name: curName } = cur_bdl;
+        const { name: newName } = state.cur_bdl;
+        if (newName !== curName) SIMDATA.DeleteBlueprintBundle(curName);
+      }
 
       // end symbolize
       const text = TRANSPILER.ScriptToText(state.script_tokens);
