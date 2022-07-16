@@ -112,8 +112,8 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
   }
   if (options) {
     sv_data.options = {
-      items: ['runAtStart', ''],
-      info: 'runAtStart or empty string'
+      items: ['runAtStart', 'runAfter'],
+      info: 'runAtStart or runAfter'
     };
   }
   if (events) {

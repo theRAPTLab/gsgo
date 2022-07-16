@@ -489,12 +489,12 @@ class SymbolInterpreter {
     const [type, optFlag] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const gsType = 'option';
-    const symbols = { options: ['runAtStart', ''] }; // hardcoded symbols
+    const symbols = { options: ['runAtStart', 'runAfter'] }; // hardcoded symbols
     if (type === undefined) {
       return new VSDToken(symbols, { gsType, unitText: '' });
     }
     if (type === 'identifier') {
-      if (optFlag === 'runAtStart')
+      if (symbols.options.includes(optFlag))
         return new VSDToken(symbols, { gsType, unitText });
       // no match
       return new VSDToken(symbols, {

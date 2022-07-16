@@ -61,6 +61,7 @@ import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as TRANSPILER from 'script/transpiler-v2';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 // import PanelSimViewer from './components/PanelSimViewer';
@@ -95,12 +96,11 @@ const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
 # TAG isPozyxControllable true
 # TAG isPTrackControllable false
 # PROGRAM DEFINE
-useFeature Costume
+addFeature Costume
 featCall agent.Costume setCostume 'circle.json' 0
 featCall agent.Costume setScale 1
-// useFeature Movement
 # PROGRAM EVENT
-// onEvent Tick [[ ]]
+// every 5 runAfter [[ ]]
 # PROGRAM UPDATE
 // when xxx touches yyy [[ ]]`;
 
@@ -135,6 +135,7 @@ class ScriptEditor extends React.Component {
     this.HandleEditMgrUpdate = this.HandleEditMgrUpdate.bind(this);
     this.RequestBpEditList = this.RequestBpEditList.bind(this);
     this.HandleProjectUpdate = this.HandleProjectUpdate.bind(this);
+    this.HandleBlueprintsUpdate = this.HandleBlueprintsUpdate.bind(this);
     this.UpdateBpEditList = this.UpdateBpEditList.bind(this);
     this.UnRegisterInstances = this.UnRegisterInstances.bind(this);
     this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
@@ -147,6 +148,7 @@ class ScriptEditor extends React.Component {
     // Sent by PanelSelectAgent
     UR.HandleMessage('SELECT_SCRIPT', this.OnSelectScript);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
+    UR.HandleMessage('NET:BLUEPRINTS_UPDATE', this.HandleBlueprintsUpdate);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleProjectUpdate);
     UR.HandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
@@ -177,6 +179,11 @@ class ScriptEditor extends React.Component {
 
     // state listeners
     EDITMGR.SubscribeState(this.HandleEditMgrUpdate);
+
+    // don't bother subscribing to 'blueprints' changes
+    // ac-blueprints is running on MAIN, not ScriptEditor so our
+    // instance won't register change events
+    // UR.SubscribeState('blueprints', this.UrBlueprintStateUpdated);
 
     // Set model section
     let { panelConfiguration, script } = this.state;
@@ -218,6 +225,7 @@ class ScriptEditor extends React.Component {
     this.UnRegisterInstances();
     UR.UnhandleMessage('SELECT_SCRIPT', this.OnSelectScript);
     UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
+    UR.UnhandleMessage('NET:BLUEPRINTS_UPDATE', this.HandleBlueprintsUpdate);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleProjectUpdate);
     UR.UnhandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
@@ -252,6 +260,13 @@ class ScriptEditor extends React.Component {
     });
   }
 
+  /** needed to respond to blueprint deletion */
+  HandleBlueprintsUpdate(data) {
+    const { bpDefs } = data;
+    if (Array.isArray(bpDefs) && bpDefs.length > 0)
+      this.UpdateBpEditList(data.bpDefs);
+  }
+
   /**
    * Locally store list of editable blueprints
    * and load the current script if it's been specified
@@ -260,6 +275,8 @@ class ScriptEditor extends React.Component {
   UpdateBpEditList(bpEditList) {
     if (DBG) console.log(...PR('UpdateBpEditList', bpEditList));
     const { bpName } = this.state;
+    // clear all bundles to remove deleted bundles
+    SIMDATA.DeleteAllBlueprintBundles();
     bpEditList.forEach(thing => {
       const { name, scriptText } = thing;
       const script = TRANSPILER.TextToScript(scriptText);
