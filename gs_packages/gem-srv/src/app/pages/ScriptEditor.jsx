@@ -95,12 +95,11 @@ const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
 # TAG isPozyxControllable true
 # TAG isPTrackControllable false
 # PROGRAM DEFINE
-useFeature Costume
+addFeature Costume
 featCall agent.Costume setCostume 'circle.json' 0
 featCall agent.Costume setScale 1
-// useFeature Movement
 # PROGRAM EVENT
-// onEvent Tick [[ ]]
+// every 5 runAfter [[ ]]
 # PROGRAM UPDATE
 // when xxx touches yyy [[ ]]`;
 
