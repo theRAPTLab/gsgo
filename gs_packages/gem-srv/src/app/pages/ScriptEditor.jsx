@@ -134,6 +134,7 @@ class ScriptEditor extends React.Component {
     this.HandleEditMgrUpdate = this.HandleEditMgrUpdate.bind(this);
     this.RequestBpEditList = this.RequestBpEditList.bind(this);
     this.HandleProjectUpdate = this.HandleProjectUpdate.bind(this);
+    this.HandleBlueprintsUpdate = this.HandleBlueprintsUpdate.bind(this);
     this.UpdateBpEditList = this.UpdateBpEditList.bind(this);
     this.UnRegisterInstances = this.UnRegisterInstances.bind(this);
     this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
@@ -146,6 +147,7 @@ class ScriptEditor extends React.Component {
     // Sent by PanelSelectAgent
     UR.HandleMessage('SELECT_SCRIPT', this.OnSelectScript);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
+    UR.HandleMessage('NET:BLUEPRINTS_UPDATE', this.HandleBlueprintsUpdate);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleProjectUpdate);
     UR.HandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
@@ -176,6 +178,11 @@ class ScriptEditor extends React.Component {
 
     // state listeners
     EDITMGR.SubscribeState(this.HandleEditMgrUpdate);
+
+    // don't bother subscribing to 'blueprints' changes
+    // ac-blueprints is running on MAIN, not ScriptEditor so our
+    // instance won't register change events
+    // UR.SubscribeState('blueprints', this.UrBlueprintStateUpdated);
 
     // Set model section
     let { panelConfiguration, script } = this.state;
@@ -217,6 +224,7 @@ class ScriptEditor extends React.Component {
     this.UnRegisterInstances();
     UR.UnhandleMessage('SELECT_SCRIPT', this.OnSelectScript);
     UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
+    UR.UnhandleMessage('NET:BLUEPRINTS_UPDATE', this.HandleBlueprintsUpdate);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleProjectUpdate);
     UR.UnhandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
@@ -249,6 +257,13 @@ class ScriptEditor extends React.Component {
     }).then(rdata => {
       return this.UpdateBpEditList(rdata.result);
     });
+  }
+
+  /** needed to respond to blueprint deletion */
+  HandleBlueprintsUpdate(data) {
+    const { bpDefs } = data;
+    if (Array.isArray(bpDefs) && bpDefs.length > 0)
+      this.UpdateBpEditList(data.bpDefs);
   }
 
   /**
