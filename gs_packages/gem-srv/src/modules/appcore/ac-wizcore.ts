@@ -149,33 +149,29 @@ STORE._interceptState(state => {
   // (SlotEditor_Block call to ac-editmgr.SaveSlotLineScript)
   // if script_tokens is changing, we also want to emit new script_text
   if (script_tokens && !script_text) {
-    try {
-      state.script_tokens = TRANSPILER.EnforceBlueprintPragmas(script_tokens);
-      // also symbolize blueprints -- eg after adding a feature, need to re-symbolize to make feature available
-      TRANSPILER.SymbolizeBlueprint(script_tokens);
-      state.cur_bdl = TRANSPILER.CompileBlueprint(script_tokens);
+    console.log('script-tokens', script_tokens);
+    state.script_tokens = TRANSPILER.EnforceBlueprintPragmas(script_tokens);
+    // also symbolize blueprints -- eg after adding a feature, need to re-symbolize to make feature available
+    TRANSPILER.SymbolizeBlueprint(script_tokens);
+    state.cur_bdl = TRANSPILER.CompileBlueprint(script_tokens);
 
-      // ...did the name change?  if so, remove the old bundle
-      const { cur_bdl } = STORE.State();
-      if (cur_bdl !== null) {
-        const { name: curName } = cur_bdl;
-        const { name: newName } = state.cur_bdl;
-        if (newName !== curName) SIMDATA.DeleteBlueprintBundle(curName);
-      }
-
-      // end symbolize
-      const text = TRANSPILER.ScriptToText(state.script_tokens);
-      state.script_text = text;
-      const [vmPage, tokMap] = TRANSPILER.ScriptToLines(state.script_tokens);
-      const programMap = TRANSPILER.ScriptToProgramMap(state.script_tokens);
-      state.script_page = vmPage;
-      state.script_page_needs_saving = true;
-      state.key_to_token = tokMap;
-      state.program_map = programMap;
-    } catch (e) {
-      // ignore TextToScript compiler errors during live typing
-      console.error(`wizcore_interceptState tokens: ${e.toString()}`);
+    // ...did the name change?  if so, remove the old bundle
+    const { cur_bdl } = STORE.State();
+    if (cur_bdl !== null) {
+      const { name: curName } = cur_bdl;
+      const { name: newName } = state.cur_bdl;
+      if (newName !== curName) SIMDATA.DeleteBlueprintBundle(curName);
     }
+
+    // end symbolize
+    const text = TRANSPILER.ScriptToText(state.script_tokens);
+    state.script_text = text;
+    const [vmPage, tokMap] = TRANSPILER.ScriptToLines(state.script_tokens);
+    const programMap = TRANSPILER.ScriptToProgramMap(state.script_tokens);
+    state.script_page = vmPage;
+    state.script_page_needs_saving = true;
+    state.key_to_token = tokMap;
+    state.program_map = programMap;
   }
 });
 
