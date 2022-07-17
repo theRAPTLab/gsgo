@@ -109,7 +109,7 @@ class SimControl {
   }
 
   DoSimCostumes() {
-    APISIM.Costumes();
+    APISIM.GotoCostumeLoop();
   }
 
   /**

@@ -16,9 +16,6 @@ import * as MOD from './helpers/dev-faketrack-ui';
 import { useStylesHOC } from './helpers/page-styles';
 import '../../lib/css/tracker.css';
 
-/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-/// import '../modules/sim/runtime';
-
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('FAKETR' /*'TagInput'*/);
