@@ -99,14 +99,14 @@ function EnforceBlueprintPragmas(script: TScriptUnit[]): TScriptUnit[] {
   /* READ ***/ [stmNum, stm] = statements.next().value;
   while (scanTags) {
     [kw, pragmaType, pragmaKey, ...args] = TOKENIZER.UnpackStatement(stm);
-    pragmaType = pragmaType || '';
-    pragmaType = (pragmaType as string).toUpperCase();
-    pragmaKey = pragmaKey || '';
-    pragmaKey = (pragmaKey as string).toUpperCase();
     if ((kw && kw !== '#') || pragmaType !== 'TAG') {
       // stop at the first non tag
       scanTags = false;
     } else {
+      pragmaType = pragmaType || '';
+      pragmaType = (pragmaType as string).toUpperCase();
+      pragmaKey = pragmaKey || '';
+      pragmaKey = (pragmaKey as string).toUpperCase();
       const pkey = pragmaType;
       if (TAGMAP[pkey] === undefined) TAGMAP[pkey] = {};
       const pdict = TAGMAP[pkey];
