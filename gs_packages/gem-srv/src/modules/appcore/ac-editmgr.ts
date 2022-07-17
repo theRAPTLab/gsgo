@@ -118,6 +118,29 @@ const STORE = new StateMgr('EditorCore');
 WIZCORE.SubscribeState(handleWizUpdate);
 SLOTCORE.SubscribeState(handleSlotUpdate);
 
+/// HELPERS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+function m_generateSlotsValidation(slots_bundle) {
+  // if we're first setting sel_linenum, use state.sel_linenum becase it doesn't exist in State yet
+  // otherwise fall back to the value set in State
+  let { slots_linescript } = SLOTCORE.State();
+  const { sel_linenum } = WIZCORE.State();
+  const vmPageLine = WIZCORE.GetVMPageLine(sel_linenum);
+  const { globalRefs } = vmPageLine || {};
+
+  // we have to make changes to the bundle
+  const newSymbols = COMPILER.SymbolizeStatement(slots_linescript);
+  BUNDLER.OpenBundle(slots_bundle);
+  BUNDLER.AddSymbols(newSymbols);
+  BUNDLER.CloseBundle();
+
+  return TRANSPILER.ValidateStatement(slots_linescript, {
+    bundle: slots_bundle,
+    globals: globalRefs
+  });
+}
+
 /// SUB-MODULE STATE HANDLERS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function handleWizUpdate(vmStateEvent) {
@@ -158,32 +181,13 @@ function handleSlotUpdate(vmStateEvent) {
   //    Need to read `globalRefs` from Wizcore
   if (slots_linescript) {
     const { cur_bdl } = WIZCORE.State();
-    let { slots_bundle } = SLOTCORE.State();
 
-    if (!slots_bundle) {
-      slots_bundle = cur_bdl ? cur_bdl.carelessClone() : [];
-    }
+    // if slots_linescript has changed, we ALWAYS need to
+    // update slots_bundle
+    const slots_bundle = cur_bdl ? cur_bdl.carelessClone() : [];
     newSlotState.slots_bundle = slots_bundle;
 
-    // if we're first setting sel_linenum, use state.sel_linenum becase it doesn't exist in State yet
-    // otherwise fall back to the value set in State
-    const { sel_linenum } = WIZCORE.State();
-    const vmPageLine = WIZCORE.GetVMPageLine(sel_linenum);
-    const { globalRefs } = vmPageLine || {};
-
-    // we have to make changes to the bundle
-    const newSymbols = COMPILER.SymbolizeStatement(slots_linescript);
-    BUNDLER.OpenBundle(slots_bundle);
-    BUNDLER.AddSymbols(newSymbols);
-    BUNDLER.CloseBundle();
-
-    newSlotState.slots_validation = TRANSPILER.ValidateStatement(
-      slots_linescript,
-      {
-        bundle: slots_bundle,
-        globals: globalRefs
-      }
-    );
+    newSlotState.slots_validation = m_generateSlotsValidation(slots_bundle);
   }
 
   if (Object.keys(newSlotState).length > 0) SLOTCORE.SendState(newSlotState);
