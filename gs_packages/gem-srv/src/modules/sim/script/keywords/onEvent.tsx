@@ -20,13 +20,14 @@ export class onEvent extends Keyword {
 
   compile(unit: TKWArguments): TOpcode[] {
     let [kw, eventName, consq] = unit;
-    consq = this.utilFirstValue(consq); // a program name possibly?
+    consq = this.utilFirstValue(consq);
+    if (consq === undefined) consq = [];
+    if (!Array.isArray(consq)) {
+      console.warn(`onEvent: bad consequent; returning []`);
+      consq = [];
+    }
     const { bpName } = BUNDLER.BundlerState();
-    SIMDATA.SubscribeToScriptEvent(
-      String(eventName),
-      bpName,
-      consq as TSMCProgram
-    );
+    SIMDATA.SubscribeToScriptEvent(String(eventName), bpName, consq);
     // this runs in global context inside sim-conditions
     return []; // subscriptions don't need to return any compiled code
   }
