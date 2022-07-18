@@ -41,7 +41,7 @@ import * as ACInstances from 'modules/appcore/ac-instances';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ReportMemory } from 'modules/render/api-render';
 import { IsRunning, RoundHasBeenStarted } from 'modules/sim/api-sim';
-import SIMCTRL from './mod-sim-control';
+import * as SIMCTRL from 'modules/msgex/mx-sim-control';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

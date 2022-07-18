@@ -6,6 +6,9 @@
   'SIM' PhaseMachine. All sim-* modules hook into the SIM PhaseMachine
   independently to participate in the simulation lifecycle.
 
+  Ultimately, these methods are invoked from the GUI routed through
+  mod-sim-control (now named mx-sim-control)
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
@@ -18,15 +21,7 @@ import './sim-agents';
 import './sim-referee';
 import './sim-features';
 import './sim-render';
-import {
-  RoundsReset,
-  RoundInit,
-  RoundStart,
-  RoundStop,
-  StageInit
-} from './sim-rounds';
-
-// import submodules
+import * as ROUNDMGR from './sim-rounds';
 import { GAME_LOOP } from './api-sim-gameloop';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -55,7 +50,7 @@ export const SIMSTATUS = {
 /// RXJS STREAM COMPUTER //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let SIM_FRAME_MS = interval((1 / 30) * 1000);
-let RX_SUB;
+let RX_SUB; // frame step heartbeat provided by RXJS
 let SIM_RATE = 0; // 0 = stopped, 1 = going. HACKY for DEC 1
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_Step(frameCount) {
@@ -64,75 +59,80 @@ function m_Step(frameCount) {
   if (frameCount % 30 === 0) UR.RaiseMessage('SCRIPT_EVENT', { type: 'Tick' });
   /* insert game logic here */
 }
-// Timer PRERUN loop
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Timer PRERUN loop */
 function m_PreRunStep(frameCount) {
   GAME_LOOP.executePhase('GLOOP_PRERUN', frameCount);
 }
-// Timer PLACES loop
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Timer PLACES loop */
 function m_CostumesStep(frameCount) {
   GAME_LOOP.executePhase('GLOOP_COSTUMES', frameCount);
 }
-// Timer POSTRUN loop
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Timer POSTRUN loop */
 function m_PostRunStep(frameCount) {
   GAME_LOOP.executePhase('GLOOP_POSTRUN', frameCount);
 }
 
-/// API METHODS ///////////////////////////////////////////////////////////////
+/// LOAD SIMULATION ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// LOADING CONTROL ///////////////////////////////////////////////////////////
 function Stage() {
   // load agents and assets
   // prep recording buffer
-  (async () => {
-    // Unsubscribe if previously run, otherwise it'll keep running.
+  void (async () => {
+    // disable the step update when staging
     if (RX_SUB) RX_SUB.unsubscribe();
+
+    // load everything, then stage it
     if (DBG) console.log(...PR('Loading Simulation'));
     await GAME_LOOP.executePhase('GLOOP_LOAD');
     if (DBG) console.log(...PR('Simulation Loaded'));
     if (DBG) console.log(...PR('Staging Simulation'));
     await GAME_LOOP.executePhase('GLOOP_STAGED');
     if (DBG) console.log(...PR('Simulation Staged'));
-    StageInit();
+    // also stage the round manager
+    ROUNDMGR.StageInit();
+    // ok, prepare to exit Stage()
     SIMSTATUS.currentLoop = LOOP.STAGED;
     SIMSTATUS.roundHasBeenStarted = false;
     SIMSTATUS.completed = false;
     if (DBG) console.log(...PR('Starting GLOOP_PRERUN Phase'));
-
     // On first staging, do prerun WITHOUT RoundInit
     // so that characters get drawn on screen.
     RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
   })();
 }
 
-/// RUNTIME CONTROL ///////////////////////////////////////////////////////////
+/// SPECIAL MODES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function NextRound() {
-  // stop simulation
-  if (DBG) console.log(...PR('NextRound'));
-  if (RX_SUB) RX_SUB.unsubscribe();
-  SIM_RATE = 0;
-  if (DBG) console.log(...PR('Pre-run Loop Starting'));
-  SIMSTATUS.currentLoop = LOOP.PRERUN;
-  RoundInit(SIMSTATUS);
-  UR.RaiseMessage('SCRIPT_EVENT', { type: 'RoundInit' });
-  RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
-  if (DBG) console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
-}
 /** Runs the GLOOP_COSTUMES Phase where pozyx/ptrack/charcontrol inputs
- *  can pickup and inhabit agents BEFORE the simulation starts runing.
- */
-function Costumes() {
-  if (DBG) console.log(...PR('Costumes!'));
+ *  can pickup and inhabit agents BEFORE the simulation starts running. it's
+ *  invoked from Main as "Pick Characters" */
+function GotoCostumeLoop() {
+  if (DBG) console.log(...PR('GotoCostumeLoop!'));
   // Unsubscribe from PRERUN, otherwise it'll keep running.
   if (RX_SUB) RX_SUB.unsubscribe();
   RX_SUB = SIM_FRAME_MS.subscribe(m_CostumesStep);
   SIMSTATUS.currentLoop = LOOP.COSTUMES;
-  UR.RaiseMessage('SCRIPT_EVENT', { type: 'Costumes' });
+  UR.RaiseMessage('SCRIPT_EVENT', { type: 'Costumes' }); // PickCostumes
 }
-function Run() {
-  // prepare to run simulation and do first-time setup
-  // compiles happen after Run()
-  // but simulation has not started
+
+/// RUNTIME CONTROL ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** This is called by PREP ROUND button, which happens before the round
+ *  has run despite this name */
+function NextRound() {
+  if (DBG) console.log(...PR('NextRound'));
+  // disable the step update when prepping next round
+  if (RX_SUB) RX_SUB.unsubscribe();
+  SIM_RATE = 0;
+  if (DBG) console.log(...PR('Pre-run Loop Starting'));
+  SIMSTATUS.currentLoop = LOOP.PRERUN;
+  ROUNDMGR.RoundInit(SIMSTATUS);
+  UR.RaiseMessage('SCRIPT_EVENT', { type: 'RoundInit' });
+  RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
+  if (DBG) console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** once the simluation is initialized, start the periodic frame update */
@@ -148,25 +148,12 @@ function Start() {
   RX_SUB = SIM_FRAME_MS.subscribe(m_Step);
   SIMSTATUS.currentLoop = LOOP.RUN;
   SIMSTATUS.roundHasBeenStarted = true;
-  RoundStart(Stop);
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  ROUNDMGR.RoundStart(Stop);
   UR.RaiseMessage('SCRIPT_EVENT', { type: 'Start' });
 }
-
-/// MODE CHANGE CONTROL ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Restage() {
-  // application host has changed
-  if (DBG)
-    console.log(...PR('Global Simulation State has changed! Broadcasting SYSEX'));
-  GAME_LOOP.execute('SYSEX');
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Pause() {
-  // set the playback rate from 0 to 10
-  // can we support backing up in the buffer?
-  // can we offer forward simulation from the playback buffer
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** stop the current round */
 function Stop() {
   // stop simulation (pause, allow resume)
   if (DBG) console.log(...PR('Stop'));
@@ -174,12 +161,13 @@ function Stop() {
   SIM_RATE = 0;
   console.log(...PR('Post-run Loop Starting'));
   SIMSTATUS.currentLoop = LOOP.POSTRUN;
-  SIMSTATUS.completed = RoundStop();
+  SIMSTATUS.completed = ROUNDMGR.RoundStop();
   UR.RaiseMessage('SCRIPT_EVENT', { type: 'RoundStop' });
   RX_SUB = SIM_FRAME_MS.subscribe(m_PostRunStep);
   if (DBG) console.log(...PR('Post-run Loop Running...Monitoring Inputs'));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** run the next round after current round */
 function End() {
   // end simulation
   if (DBG) console.log(...PR('End'));
@@ -190,60 +178,59 @@ function End() {
   RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
   if (DBG) console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
 }
-
-/// MODEL LOAD/SAVE CONTROL ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Export() {
-  // grab data from the simulation
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** start from the beginning at round 1 */
 function Reset() {
   // return simulation to starting state, ready to run
-  (async () => {
-    // Orig Code
-    // await GAME_LOOP.executePhase('GLOOP_LOAD');
-
-    // Reset Rounds
-    RoundsReset();
+  void (async () => {
+    ROUNDMGR.RoundsReset();
     SIMSTATUS.completed = false;
-
     // Re-Stage
     Stage(); // results in agentWidgets already in blueprint
   })();
 }
 
-/// UTILITIES /////////////////////////////////////////////////////////////////
+/// STATUS METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function IsRunning() {
   return SIM_RATE > 0;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RoundsCompleted() {
   return SIMSTATUS.completed;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RoundHasBeenStarted() {
   return SIMSTATUS.roundHasBeenStarted;
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// @BEN: this is a legacy startup that Ben should explicitly set somewhere
+/// else UR/APP_STAGE refers to the reference GLOOP in URSYS. If you take this
+/// out, then the sim doesn't draw
 UR.HookPhase('UR/APP_STAGE', Stage);
-UR.HookPhase('UR/APP_RUN', Run);
-UR.HookPhase('UR/APP_RESET', Reset);
-UR.HookPhase('UR/APP_RESTAGE', Restage);
+// UR.HookPhase('UR/APP_RESET', Reset); // never reached in ursys app gloop
+// UR.HookPhase('UR/APP_RUN', Run); // empty function
+// UR.HookPhase('UR/APP_RESTAGE', Restage); // unused function
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// pseudo state machine
 export {
-  Stage,
-  Costumes,
-  Start,
-  Pause,
-  Stop,
-  NextRound,
-  End,
-  Export,
-  Reset,
-  IsRunning,
-  RoundsCompleted,
-  RoundHasBeenStarted
+  Stage, //
+  Start, //
+  Stop, //
+  NextRound, //
+  End, //
+  Reset //
+};
+/// pseudo state machine external side states
+export {
+  GotoCostumeLoop // invoked by "Pick Characters" in Main
+};
+export {
+  IsRunning, // sim is running
+  RoundsCompleted, // number of rounds
+  RoundHasBeenStarted // round is running
 };

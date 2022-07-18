@@ -8,17 +8,17 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
 import { withStyles } from '@material-ui/core/styles';
 
-/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-import UR from '@gemstep/ursys/client';
-import SIMCTRL from './helpers/mod-sim-control';
+import * as SIMCTRL from 'modules/msgex/mx-sim-control';
 import * as PROJSERVER from './helpers/project-server';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import MissionMapEditor from './MissionMapEditor';
 import MissionRun from './MissionRun';
 import PanelSimulation from './components/PanelSimulation';
@@ -32,9 +32,11 @@ import FormTransform from './components/FormTransform';
 import 'lib/css/tracker.css';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // import 'test/unit-parser'; // test parser evaluation
 
 /// STYLES ////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // this is where classes.* for css are defined
 import { useStylesHOC } from './helpers/page-xui-styles';
 import './scrollbar.css';

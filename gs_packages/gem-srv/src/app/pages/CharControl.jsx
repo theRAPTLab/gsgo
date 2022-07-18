@@ -24,9 +24,6 @@ import '../../lib/css/charcontrol.css';
 import PanelSimViewer from './components/PanelSimViewer';
 import DialogConfirm from './components/DialogConfirm';
 
-/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-/// import '../modules/sim/runtime';
-
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('CHARCTRL' /*'TagInput'*/);
