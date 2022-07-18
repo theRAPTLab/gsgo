@@ -226,7 +226,7 @@ function GetBpEditList(projId: string): TBlueprint[] {
 function m_ExtractBlueprintNamesList(bundles: ISMCBundle[]): string[] {
   return bundles.map(b => b.name);
 }
-/** API: Used by mod-sim-control to get array of bpNames for AllAgentsProgram
+/** API: Used by mx-sim-control to get array of bpNames for AllAgentsProgram
  *  to know which blueprints to create agents for.
  *  @returns {string[]} - [ bpName ]
  */
@@ -433,7 +433,7 @@ function SetBlueprints(projId: string, blueprints: TBlueprint[]) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Used to inject Cursor
  *  This runs AFTER other blueprints have been compiled
- *  Initiated by mod-sim-control.SimPlaces
+ *  Initiated by mx-sim-control.SimPlaces
  *
  *  NOTE: Does not trigger state update since this is only used for cursor?
  */

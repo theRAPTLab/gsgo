@@ -15,12 +15,12 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as ACBlueprints from '../appcore/ac-blueprints';
-import InputDef from '../../lib/class-input-def';
-import SyncMap from '../../lib/class-syncmap';
+import * as ACBlueprints from 'modules/appcore/ac-blueprints';
+import InputDef from 'lib/class-input-def';
+import SyncMap from 'lib/class-syncmap';
 import * as DCAGENTS from './dc-sim-agents';
 import { TYPES } from '../step/lib/class-ptrack-endpoint';
-import { DistanceTo, Lerp, Rotate } from '../../lib/util-vector';
+import { DistanceTo, Lerp, Rotate } from 'lib/util-vector';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -340,7 +340,6 @@ export function SetInputStageBounds(width, height) {
   STAGE_WIDTH = width;
   STAGE_HEIGHT = height;
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export async function InputInit(bpname: string) {
   // STEP 1 is to get a "deviceAPI" from a Device Subscription

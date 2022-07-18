@@ -6,6 +6,9 @@
   'SIM' PhaseMachine. All sim-* modules hook into the SIM PhaseMachine
   independently to participate in the simulation lifecycle.
 
+  Ultimately, these methods are invoked from the GUI routed through
+  mod-sim-control (now named mx-sim-control)
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
@@ -112,14 +115,16 @@ function GotoCostumeLoop() {
   if (RX_SUB) RX_SUB.unsubscribe();
   RX_SUB = SIM_FRAME_MS.subscribe(m_CostumesStep);
   SIMSTATUS.currentLoop = LOOP.COSTUMES;
-  UR.RaiseMessage('SCRIPT_EVENT', { type: 'Costumes' });
+  UR.RaiseMessage('SCRIPT_EVENT', { type: 'Costumes' }); // PickCostumes
 }
 
 /// RUNTIME CONTROL ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** This is called by PREP ROUND button, which happens before the round
+ *  has run despite this name */
 function NextRound() {
   if (DBG) console.log(...PR('NextRound'));
-  // disable the step update when prepping next roundf
+  // disable the step update when prepping next round
   if (RX_SUB) RX_SUB.unsubscribe();
   SIM_RATE = 0;
   if (DBG) console.log(...PR('Pre-run Loop Starting'));
