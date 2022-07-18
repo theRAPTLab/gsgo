@@ -16,27 +16,29 @@ import RNG from 'modules/sim/sequencer';
 import * as DCAGENTS from './dc-sim-agents';
 import * as SIMDATA from './dc-sim-data';
 
-/// INTERACTION UPDATE TESTS //////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const INTERACTION_CACHE = new Map<
-  string,
-  {
-    singleTestArgs?: Array<any>;
-    pairTestArgs?: Array<any>;
-    passed: Array<any>; // agents (single) or arrays of agents (pairs)
-  }
->();
+type TestResultsCache = {
+  singleTestArgs?: Array<any>;
+  pairTestArgs?: Array<any>;
+  passed: Array<any>; // agents (single) or arrays of agents (pairs)
+};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_MakeInteractionKey(args: any[]): string {
+const INTERACTION_CACHE = new Map<string, TestResultsCache>();
+
+/// UTILTIES //////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function MakeInteractionKey(args: any[]): string {
   return args.join('|');
 }
+
+/// REGISTER REQUEST FOR TEST RESULTS /////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** used by when keyword to register a new test to run with a specific set
  *  of parameters, if it doesn't already exist. Returns the generated key
- *  so runtime code can request the passing agents
- */
+ *  so runtime code can request the passing agents */
 function RegisterSingleInteraction(testArgs: any[]) {
-  const key = m_MakeInteractionKey(testArgs);
+  const key = MakeInteractionKey(testArgs);
   if (!INTERACTION_CACHE.has(key)) {
     INTERACTION_CACHE.set(key, {
       singleTestArgs: testArgs,
@@ -46,8 +48,9 @@ function RegisterSingleInteraction(testArgs: any[]) {
   return key;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** similar to RegisterSingleInteraction */
 function RegisterPairInteraction(testArgs: any[]) {
-  const key = m_MakeInteractionKey(testArgs);
+  const key = MakeInteractionKey(testArgs);
   if (!INTERACTION_CACHE.has(key)) {
     INTERACTION_CACHE.set(key, {
       pairTestArgs: testArgs,
@@ -56,12 +59,16 @@ function RegisterPairInteraction(testArgs: any[]) {
   }
   return key;
 }
+
+/// REQUEST RESULTS OF TEST ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetInteractionResults(key: string): Array<any> {
   const cn = INTERACTION_CACHE.get(key);
   if (cn === undefined) return [];
   return cn.passed;
 }
+
+/// DICTIONARY ACCESS OR CLEAR ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetAllInteractions() {
   const conditions = INTERACTION_CACHE.values();
@@ -74,11 +81,13 @@ function DeleteAllInteractions() {
 
 /// SET FILTERING /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Durstenfeld Shuffle (shuffles in-place)
- *  also see:
- *  en.wikipedia.org/wiki/Fisher-Yates_shuffle#The_modern_algorithm
- *  stackoverflow.com/a/12646864/2684520
- *  blog.codinghorror.com/the-danger-of-naivete/
+/** To ensure that simulation objects are not always processed in order of
+ *  definition, which would introduce undesirable simulation biases!
+ *
+ *  algorithm: Durstenfeld Shuffle (shuffles in-place)
+ *  - en.wikipedia.org/wiki/Fisher-Yates_shuffle#The_modern_algorithm
+ *  - stackoverflow.com/a/12646864/2684520
+ *  - blog.codinghorror.com/the-danger-of-naivete/
  */
 function ShuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -127,9 +136,13 @@ function PairAgentFilter(A: string, testAB: string, B: string, ...args: any) {
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
+  MakeInteractionKey,
+  //
   RegisterSingleInteraction,
   RegisterPairInteraction,
+  //
   GetInteractionResults,
+  //
   GetAllInteractions,
   DeleteAllInteractions,
   SingleAgentFilter,

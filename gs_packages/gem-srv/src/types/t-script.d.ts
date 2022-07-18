@@ -202,7 +202,6 @@ declare global {
   type TKWArg = number | string | TSM_Method | IToken; // "decoded" tokens
   type TKWArguments = TKWArg[]; // decoded tokens provided to compile functions
   type TScript = TScriptUnit[]; // We use TScriptUnit[] in code
-  type TCompiledStatement = TOpcode[];
   type TUnpackedToken = [type: string, value: any];
 
   /// SYMBOL DATA AND TYPES ///////////////////////////////////////////////////

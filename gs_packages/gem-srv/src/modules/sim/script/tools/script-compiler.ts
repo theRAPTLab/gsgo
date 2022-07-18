@@ -267,10 +267,7 @@ function ValidateExpression(exprAST, globals = {}) {
 /** API: Compile a single ScriptUnit, which invokes the Keyord Processor
  *  to generate a TSMCProgram consisting of TOpcodes. This skips directives
  *  and comments, generating no code. */
-function CompileStatement(
-  stm: TScriptUnit,
-  refs: TSymbolRefs
-): TCompiledStatement {
+function CompileStatement(stm: TScriptUnit, refs: TSymbolRefs): TSMCProgram {
   const fn = 'CompileStatement:';
   const kw = CHECK.KWModuleFromKeywordToken(stm[0]);
   if (!kw) return []; // skips comments, blank lines

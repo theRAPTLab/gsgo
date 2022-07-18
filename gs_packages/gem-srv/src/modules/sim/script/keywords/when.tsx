@@ -11,6 +11,7 @@
 import Keyword from 'lib/class-keyword';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as SIMCOND from 'modules/datacore/dc-sim-conditions';
+import * as BUNDLER from 'script/tools/script-bundler';
 import { ERROR } from 'modules/error/api-error';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -29,35 +30,49 @@ export class when extends Keyword {
   }
 
   compile(kwArgs: TKWArguments): TOpcode[] {
-    const prog = [];
-    /** PAIRED AGENTS WHEN TEST ********************************************/
     const [kw, A, testName, B, ...args] = kwArgs;
-    // assume the last argument is the block
     if (!Array.isArray(args) || args.length === 0)
       ERROR('compiler', { info: 'arg underflow', kwArgs });
-    const consq: TSM_Method = args.pop() as TSM_Method; // this is compiled code
-    // everything looks good otherwise
-    const key = SIMCOND.RegisterPairInteraction([A, testName, B, ...args]);
-    prog.push((agent: IAgent, state: IState) => {
-      const passed = SIMCOND.GetInteractionResults(key);
-      passed.forEach(pairs => {
-        const [aa, bb] = pairs;
-        // PROPOSED FIX
-        // Extra Test: Only run if the passed agents [aa, bb] includes the
-        // current agent.  The when conditional will pass as true if ANY
-        // agent passes.  So even though the current agent may not pass the
-        // test, code is still run for the current agent, using the context
-        // of the pair that DID patch the test.
-        if (aa.id !== agent.id && bb.id !== agent.id) {
-          return;
-        }
-        const ctx = { [A as string]: aa, [B as string]: bb };
-        agent.exec(consq, ctx);
-      }); // foreach
-    });
-    return prog;
+    let consq: TSM_Method = args.pop() as TSM_Method; // fyi: consq is array of functions
+
+    // sanity checks
+    if (consq === undefined) consq = [];
+    if (!Array.isArray(consq)) {
+      console.warn(`when: bad block; overriding with []`, kwArgs);
+      consq = [];
+    }
+    // write test registration during init phase
+    const init = [
+      (agent: IAgent, state: IState) => {
+        SIMCOND.RegisterPairInteraction([A, testName, B, ...args]);
+      }
+    ];
+    BUNDLER.AddToProgramOut(init, 'init');
+    // runtime lookup that should work during update
+    const key = SIMCOND.MakeInteractionKey([A, testName, B, ...args]);
+    const update = [
+      (agent: IAgent, state: IState) => {
+        const passed = SIMCOND.GetInteractionResults(key);
+        passed.forEach(pairs => {
+          const [aa, bb] = pairs;
+          // PROPOSED FIX
+          // Extra Test: Only run if the passed agents [aa, bb] includes the
+          // current agent.  The when conditional will pass as true if ANY
+          // agent passes.  So even though the current agent may not pass the
+          // test, code is still run for the current agent, using the context
+          // of the pair that DID patch the test.
+          if (aa.id !== agent.id && bb.id !== agent.id) {
+            return;
+          }
+          const ctx = { [A as string]: aa, [B as string]: bb };
+          agent.exec(consq, ctx);
+        }); // foreach
+      }
+    ];
+    return update;
   }
 
+  /**
   symbolize(unit: TScriptUnit): TSymbolData {
     // when A test B ...args {block}
     if (unit.length === 5) {

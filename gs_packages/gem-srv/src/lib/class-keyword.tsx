@@ -49,7 +49,7 @@ class Keyword implements IKeyword {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** override in subclass */
-  compile(kwArgs: TKWArguments, refs?: TSymbolRefs): TCompiledStatement {
+  compile(kwArgs: TKWArguments, refs?: TSymbolRefs): TSMCProgram {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

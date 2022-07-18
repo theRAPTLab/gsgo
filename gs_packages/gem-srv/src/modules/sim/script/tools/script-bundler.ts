@@ -42,8 +42,7 @@ function m_CheckNoOpenBundle(prompt: string): void {
 /// BUNDLE STATUS FOR CURRENT TRANSPILER OPERATION ////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return the state of the bundler, which is valid while a blueprint
- *  script is being compiled (e.g. CompileBlueprint())
- */
+ *  script is being compiled (e.g. CompileBlueprint()) */
 function BundlerState() {
   return {
     bpName: CUR_NAME,
@@ -96,11 +95,11 @@ function CloseBundle(): SM_Bundle {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: set the datacore global var CUR_PROGRAM to bdlKey, which tells the
  *  AddProgram(bdl,prog) call where the program should be added */
-function SetProgramOut(str: string): boolean {
+function SetProgramOut(progName: string): boolean {
   const fn = 'SetProgramOut:';
-  if (DBG) console.log(...PR(`${fn} setting bundleType ${str}`));
+  if (DBG) console.log(...PR(`${fn} setting bundleType ${progName}`));
   m_HasCurrentBundle(fn);
-  const bdlKey = str.toUpperCase();
+  const bdlKey = progName.toUpperCase();
   if (CHECK.IsValidBundleProgram(bdlKey)) {
     CUR_PROGRAM = bdlKey;
     return true;
@@ -205,10 +204,8 @@ function SetBundleTags(tags: { [tagName: string]: any }) {
 /// methods that add data
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: add a compiled program to a bundle, based on the current programOut
- *  setting.
- *  note: bundle type because it may not have been set yet.
- */
-function AddProgram(prog: TCompiledStatement) {
+ *  setting. */
+function AddProgram(prog: TSMCProgram) {
   const fn = 'SetProgramOut:';
   const bdl = m_HasCurrentBundle(fn);
   if (typeof bdl !== 'object') throw Error(`${bdl} is not an object`);
@@ -217,16 +214,28 @@ function AddProgram(prog: TCompiledStatement) {
   bdl[CUR_PROGRAM].push(...prog);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: special case when we want to add some code to a specfic named
+ *  program other than the current one */
+function AddToProgramOut(prog: TSMCProgram, progName: string) {
+  const fn = 'AddProgramOut:';
+  const bdl = m_HasCurrentBundle(fn);
+  const bdlKey = progName.toUpperCase();
+  if (!CHECK.IsValidBundleProgram(bdlKey))
+    throw Error(`${fn} invalid progName ${bdlKey}`);
+  if (bdlKey === CUR_PROGRAM)
+    console.warn(`${fn} progname '${bdlKey}' is already the set output`);
+  if (typeof bdl !== 'object') throw Error(`${fn} ${bdl} is not an object`);
+  if (!bdl[bdlKey]) bdl[bdlKey] = [];
+  // console.log(`writing ${prog.length} opcode(s) to [${bdlKey}]`);
+  bdl[bdlKey].push(...prog);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: add properties to symbol table where TBundleSymbols contains
  *  { props, methods, features } that point to a Map<string,gvar> or
  *  Map<string,any[]> respectively:
  *  { features: { [featName]: featModule } }
  *  { props: { [propName]: propType } }
  *  { methods: { [methodName]: methodArgs } }
- *  @param {ISMCBundle} bdl - the bundle to manipulate
- *  @param {TSymbolData} symdata - an object to write into bundle.symbols
- *  @returns void
- *
  */
 function AddSymbols(symdata: TSymbolData) {
   const fn = 'SetProgramOut:';
@@ -404,6 +413,7 @@ export {
   SetBundleTag,
   SetBundleTags,
   AddProgram,
+  AddToProgramOut, //
   AddSymbols,
   SaveScript,
   //
