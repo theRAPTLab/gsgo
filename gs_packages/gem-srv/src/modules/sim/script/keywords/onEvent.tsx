@@ -20,15 +20,27 @@ export class onEvent extends Keyword {
 
   compile(unit: TKWArguments): TOpcode[] {
     let [kw, eventName, consq] = unit;
-    consq = this.utilFirstValue(consq); // a program name possibly?
+    if (consq === undefined) consq = [];
+    if (eventName === undefined) eventName = '<undefined>';
+    if (!Array.isArray(consq)) {
+      console.warn(`onEvent: bad consequent ${eventName}; returning []`, unit);
+      consq = [];
+    }
     const { bpName } = BUNDLER.BundlerState();
-    SIMDATA.SubscribeToScriptEvent(
-      String(eventName),
-      bpName,
-      consq as TSMCProgram
-    );
-    // this runs in global context inside sim-conditions
+    // WARNING: this is setting SIMDATA state during compile, which we will
+    // fix more comprehensively next
+    SIMDATA.SubscribeToScriptEvent(String(eventName), bpName, consq);
     return []; // subscriptions don't need to return any compiled code
+    // BETTER: this will be part of the overhaul of when, onEvent init-time programs
+    // return [
+    //   (agent, state) => {
+    //     SIMDATA.SubscribeToScriptEvent(
+    //       String(eventName),
+    //       bpName,
+    //       consq as TSMCProgram
+    //     );
+    //   }
+    // ];
   }
 
   /** custom validation, overriding the generic validation() method of the
