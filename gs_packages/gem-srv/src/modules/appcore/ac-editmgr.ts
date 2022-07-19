@@ -154,6 +154,30 @@ function m_AddSlotsValidation(newSlotState) {
     globals: globalRefs
   }); // modify by reference
 }
+/** sel_linenum or sel_linepos has changed, so select a new slot */
+function SelectSlot(sel_linenum, sel_linepos) {
+  const newSlotState: TStateObject = {};
+
+  // 1. User has selected new line
+  //    Coordinate wizcore with slotcore: select the new slot_linescript
+  //    run validation and save result if new selected token
+  if (sel_linenum && sel_linenum > 0) {
+    const { script_page } = WIZCORE.State();
+    const { lineScript } = script_page[CHECK.OffsetLineNum(sel_linenum, 'sub')];
+    const new_slots_linescript = lineScript.map(t => ({ ...t }));
+    newSlotState.slots_linescript = new_slots_linescript;
+  }
+  // 2. User has selected new line position
+  //    Coordinate wizcore with slotcore: select the new sel_slotpos
+  if (sel_linepos && sel_linepos > 0) {
+    newSlotState.sel_slotpos = sel_linepos;
+  }
+  // 3. if slots_linescript has changed, we ALWAYS need to
+  //    update slots_bundle
+  m_AddSlotsValidation(newSlotState);
+
+  SLOTCORE.SendState(newSlotState);
+}
 
 /// SUB-MODULE STATE HANDLERS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -217,25 +241,7 @@ function DispatchClick(event) {
     WIZCORE.SendState(newWizState);
 
     // SLOTCORE: notify slotcore
-    // 1. User has selected new line
-    //    Coordinate wizcore with slotcore: select the new slot_linescript
-    //    run validation and save result if new selected token
-    if (sel_linenum && sel_linenum > 0) {
-      const { script_page } = WIZCORE.State();
-      const { lineScript } = script_page[CHECK.OffsetLineNum(sel_linenum, 'sub')];
-      const new_slots_linescript = lineScript.map(t => ({ ...t }));
-      newSlotState.slots_linescript = new_slots_linescript;
-    }
-    // 2. User has selected new line position
-    //    Coordinate wizcore with slotcore: select the new sel_slotpos
-    if (sel_linepos && sel_linepos > 0) {
-      newSlotState.sel_slotpos = sel_linepos;
-    }
-    // 3. if slots_linescript has changed, we ALWAYS need to
-    //    update slots_bundle
-    m_AddSlotsValidation(newSlotState);
-
-    SLOTCORE.SendState(newSlotState);
+    SelectSlot(sel_linenum, sel_linepos);
 
     // EDITMGR
     // STORE.SendState({ selection: 'sel_linenum or sel_linepos' });
@@ -345,8 +351,16 @@ function DispatchClick(event) {
 
 /// SCRIPT PAGE METHODS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API ScriptViewPane delete selected line */
+/** API User clicked "Add Line" on ScriptViewWiz_Block */
+function AddLine(position: VMLineScriptInsertionPosition) {
+  const newLine = WIZCORE.AddLine(position);
+  SelectSlot(newLine, 1);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API ScriptViewWiz_Block delete selected line */
 function DeleteSelectedLine(event) {
   const { script_page, sel_linenum } = WIZCORE.State();
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
@@ -441,11 +455,12 @@ export { State, SendState, SubscribeState, UnsubscribeState, QueueEffect };
 /// EXPORTED EVENT DISPATCHERS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
-  DispatchClick // handles clicks on ScriptVIewPane and SelectEditorSlots
+  DispatchClick // handles clicks on ScriptViewWiz_Block and SelectEditorSlots
 };
 export {
   // wizcore
-  DeleteSelectedLine // handle ScriptViewPane request to delete currently selected script line
+  AddLine, // handle ScriptViewWiz_Block request to add new line
+  DeleteSelectedLine // handle ScriptViewWiz_Block request to delete currently selected script line
 };
 export {
   // slotcore

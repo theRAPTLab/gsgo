@@ -519,6 +519,8 @@ function AddLine(position: VMLineScriptInsertionPosition) {
       ScrollLineIntoView(newLineNum);
     }, 10);
   });
+
+  return newLineNum;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // function DeleteLine() => See ac-editmgr.ts
