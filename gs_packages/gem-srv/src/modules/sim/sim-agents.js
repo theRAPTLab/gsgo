@@ -89,16 +89,6 @@ AGENT_TO_DOBJ.setMapFunctions({
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// INSTANCE DEF
-
-/**
- * From `model.instances` script spec to an instance definition
- */
-const SCRIPT_TO_INSTANCE = new SyncMap({
-  Constructor: InstanceDef,
-  autoGrow: true,
-  name: 'ScriptToInstance'
-});
-
 /**
  * Make or update agent and run its init script.
  * @param {InstanceDef} def
@@ -113,6 +103,15 @@ function MakeAgent(def) {
   if (!agent) agent = TRANSPILER.MakeAgent(def);
   agent.exec(initScript, { agent });
 }
+
+/**
+ * From `model.instances` script spec to an instance definition
+ */
+const SCRIPT_TO_INSTANCE = new SyncMap({
+  Constructor: InstanceDef,
+  autoGrow: true,
+  name: 'ScriptToInstance'
+});
 
 SCRIPT_TO_INSTANCE.setMapFunctions({
   onAdd: (newDef, def) => {
@@ -333,7 +332,7 @@ function VisUpdate(frameTime) {
 UR.HandleMessage('SIM_RESET', AgentReset);
 UR.HandleMessage('SIM_MODE', AgentSelect);
 UR.HandleMessage('AGENT_PROGRAM', AgentProgram);
-UR.HandleMessage('ALL_AGENTS_PROGRAM', AllAgentsProgram); // whole model update
+UR.HandleMessage('ALL_AGENTS_PROGRAM', data => AllAgentsProgram(data)); // whole model update
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

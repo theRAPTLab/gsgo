@@ -89,7 +89,7 @@ function m_FeaturesUpdate(frame) {
   });
 }
 
-/// SIM/GRAPHS_UPDATE -- Runs during PreRun and Costumes as well as regular sim LOOP
+/// SIM/GRAPHS_UPDATE -- Runs during PreRun and CostumeLoop as well as regular sim LOOP
 ///                      Runs after FEATURES_UPDATE so histograms can override graphs
 function m_GraphsUpdate(frame) {
   const agentIds = Array.from(WIDGET_AGENTS.keys());
