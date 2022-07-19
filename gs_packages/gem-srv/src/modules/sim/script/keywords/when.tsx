@@ -72,19 +72,6 @@ export class when extends Keyword {
     return update;
   }
 
-  /**
-  symbolize(unit: TScriptUnit): TSymbolData {
-    // when A test B ...args {block}
-    if (unit.length === 5) {
-      const [, a, , b, ...args] = unit;
-      args.pop(); // last arg is consequent
-      return { globals: { [a as string]: a, [b as string]: b } };
-    }
-    // failed match (note that the length test sucks for detecting
-    // case where there are argument parameters
-    return {};
-  }
-
   /** custom validation, overriding the generic validation() method of the
    *  base Keyword class */
   validate(unit: TScriptUnit): TValidatedScriptUnit {
