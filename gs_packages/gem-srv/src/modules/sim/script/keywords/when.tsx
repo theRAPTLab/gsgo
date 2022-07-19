@@ -16,7 +16,8 @@ import { ERROR } from 'modules/error/api-error';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const OVERRIDE_COMPILER_OUT = false;
+/// whether to force loop code to go into PROGRAM EVENT or not
+const FORCE_INTO_EVENT = true;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -73,7 +74,7 @@ export class when extends Keyword {
         }); // foreach
       }
     ];
-    if (OVERRIDE_COMPILER_OUT) {
+    if (FORCE_INTO_EVENT) {
       BUNDLER.AddToProgramOut(event, 'event');
       return [];
     }
