@@ -13,7 +13,8 @@
   * ac-slotcore
 
   ac-editorceditmgrore is the main click handler for the wizard UI,
-  coordinating clicks across wizcore and slotcore.
+  processing clicks and setting WIZCORE and SLOTCORE states directly as
+  needed.
 
   ---
 
@@ -28,7 +29,7 @@
       d. SLOTCORE._interceptState       ...
       e. EDITMGR.slotUpdate          ...
 
-  2. Select Line
+  2. Select Line / Position
       a. User clicks script_page
       b. EDITMGR.DispatchClick       WIZCORE.SendState({     SLOTCORE.SendState({
                                           sel_linenum             sel_slotpos
@@ -40,29 +41,21 @@
       f. SLOTCORE._interceptState       ...
       g. EDITMGR.slotUpdate                                  ...
 
-  3. Select slot position
+  3. Select Slot Position
+      a. User clicks slot
+
   4. Select Choice
+      a. User clicks item in
+         - EditSymbol
+         - ObjRefSelector
+
   5. Input Choice
+      a. User enters a value into input field
 
   6. Save slot
   7. Save script
-  8. Delete Line
-
-  ORDER OF OPERATIONS
-    EDITMGR.DispatchClick
-
-    WIZCORE._interceptState
-    SLOTCORE._interceptState
-
-    EDITMGR.wizUpdate
-    EDITMGR.slotUpdate
-
-    WIZCORE._interceptState
-    SLOTCORE._interceptState
-
-    EDITMGR.wizUpdate
-    EDITMGR.slotUpdate
-
+  8. Add Line
+  9. Delete Line
 
   ---
 
@@ -115,84 +108,62 @@ function m_ChildOf(child, parent) {
 /// First create the new instance, and extract the methods we plan to use
 const STORE = new StateMgr('EditorCore');
 
-WIZCORE.SubscribeState(handleWizUpdate);
-SLOTCORE.SubscribeState(handleSlotUpdate);
+/// SUB MODULE STATE HANLDERS /////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Current not used
+///
+/// WIZCORE.SubscribeState(handleWizUpdate);
+/// SLOTCORE.SubscribeState(handleSlotUpdate);
+///
+/// function handleWizUpdate(vmStateEvent) {
+///   // const { sel_linenum, sel_linepos, script_text, script_tokens, cur_bdl } =
+///   //   vmStateEvent;
+///   // Do something with state changes, but don't nest state updates!
+/// }
+/// /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// function handleSlotUpdate(vmStateEvent) {
+///   // const { sel_slotpos, slots_validation, slots_linescript } = vmStateEvent;
+///   // Do something with state changes, but don't nest state updates!
+/// }
+
+/// HELPERS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Adds 'slots_validation' and 'slots_bundle' to newSlotState object by reference
+ */
+function m_AddSlotsValidation(newSlotState) {
+  const { slots_linescript } = newSlotState;
+  const { cur_bdl, sel_linenum } = WIZCORE.State();
+
+  // Set slots_bundle
+  const slots_bundle = cur_bdl ? cur_bdl.carelessClone() : [];
+  newSlotState.slots_bundle = slots_bundle; // modify by reference
+
+  // Prep for slots_validation
+  const vmPageLine = WIZCORE.GetVMPageLine(sel_linenum);
+  const { globalRefs } = vmPageLine || {};
+
+  // Update bundle symbols
+  const newSymbols = COMPILER.SymbolizeStatement(slots_linescript);
+  BUNDLER.OpenBundle(slots_bundle);
+  BUNDLER.AddSymbols(newSymbols);
+  BUNDLER.CloseBundle();
+
+  // Set slots_validation
+  newSlotState.slots_validation = TRANSPILER.ValidateStatement(slots_linescript, {
+    bundle: slots_bundle,
+    globals: globalRefs
+  }); // modify by reference
+}
 
 /// SUB-MODULE STATE HANDLERS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function handleWizUpdate(vmStateEvent) {
-  const { sel_linenum, sel_linepos, script_text, script_tokens, cur_bdl } =
-    vmStateEvent;
-  const newSlotState: TStateObject = {};
 
-  // 1. User has selected new line
-  //    Coordinate wizcore with slotcore: select the new slot_linescript
-  //    run validation and save result if new selected token
-  if (sel_linenum && sel_linenum > 0) {
-    const { script_page } = WIZCORE.State();
-    const { lineScript } = script_page[CHECK.OffsetLineNum(sel_linenum, 'sub')];
-    const new_slots_linescript = lineScript.map(t => ({ ...t }));
-    newSlotState.slots_linescript = new_slots_linescript;
-  }
-
-  // 2. User has selected new line position
-  //    Coordinate wizcore with slotcore: select the new sel_slotpos
-  if (sel_linepos && sel_linepos > 0) {
-    newSlotState.sel_slotpos = sel_linepos;
-  }
-
-  if (Object.keys(newSlotState).length > 0) {
-    SLOTCORE.SendState(newSlotState);
-
-    // Fire "selection" when user selects a line or position
-    // so that ScriptEditor, ScriptLine_Pane will update dev validationLog dump
-    STORE.SendState({ selection: 'sel_linenum or sel_linepos' });
-  }
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function handleSlotUpdate(vmStateEvent) {
-  const { sel_slotpos, slots_validation, slots_linescript } = vmStateEvent;
-  const newSlotState: TStateObject = {};
-
-  // 1. if the slot linescript changes, recalculate slots_validation
-  //    Need to read `globalRefs` from Wizcore
-  if (slots_linescript) {
-    const { cur_bdl } = WIZCORE.State();
-    let { slots_bundle } = SLOTCORE.State();
-
-    if (!slots_bundle) {
-      slots_bundle = cur_bdl ? cur_bdl.carelessClone() : [];
-    }
-    newSlotState.slots_bundle = slots_bundle;
-
-    // if we're first setting sel_linenum, use state.sel_linenum becase it doesn't exist in State yet
-    // otherwise fall back to the value set in State
-    const { sel_linenum } = WIZCORE.State();
-    const vmPageLine = WIZCORE.GetVMPageLine(sel_linenum);
-    const { globalRefs } = vmPageLine || {};
-
-    // we have to make changes to the bundle
-    const newSymbols = COMPILER.SymbolizeStatement(slots_linescript);
-    BUNDLER.OpenBundle(slots_bundle);
-    BUNDLER.AddSymbols(newSymbols);
-    BUNDLER.CloseBundle();
-
-    newSlotState.slots_validation = TRANSPILER.ValidateStatement(
-      slots_linescript,
-      {
-        bundle: slots_bundle,
-        globals: globalRefs
-      }
-    );
-  }
-
-  if (Object.keys(newSlotState).length > 0) SLOTCORE.SendState(newSlotState);
-}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// initial values of state have to be defined for constructors of components
 /// that are relying on it, but these are not yet loaded
 STORE._initializeState({
-  selection: '' // placeholder for sel_linenum -- to be implemented in future
+  selection: '' // placeholder for sel_linenum
+  // sel_linenum should be handled by editMgr in the future
   // currently used to trigger state update to show validationLog dump
 });
 
@@ -236,14 +207,39 @@ function DispatchClick(event) {
       SLOTCORE.SendState({ slots_save_dialog_is_open: true });
       return;
     }
-    // notify subscribers of new current line and token index
+
+    // WIZCORE: notify subscribers of new current line and token index
     const [line, pos] = tokenKey.split(',');
-    newWizState.sel_linenum = Number(line); // STATE UPDATE: selected line
-    newWizState.sel_linepos = Number(pos); // STATE UPDATE: selected pos
+    const sel_linenum = Number(line);
+    const sel_linepos = Number(pos);
+    newWizState.sel_linenum = sel_linenum; // STATE UPDATE: selected line
+    newWizState.sel_linepos = sel_linepos; // STATE UPDATE: selected pos
     WIZCORE.SendState(newWizState);
-    newSlotState.sel_slotpos = Number(pos); // STATE UPDATE: selected slot
+
+    // SLOTCORE: notify slotcore
+    // 1. User has selected new line
+    //    Coordinate wizcore with slotcore: select the new slot_linescript
+    //    run validation and save result if new selected token
+    if (sel_linenum && sel_linenum > 0) {
+      const { script_page } = WIZCORE.State();
+      const { lineScript } = script_page[CHECK.OffsetLineNum(sel_linenum, 'sub')];
+      const new_slots_linescript = lineScript.map(t => ({ ...t }));
+      newSlotState.slots_linescript = new_slots_linescript;
+    }
+    // 2. User has selected new line position
+    //    Coordinate wizcore with slotcore: select the new sel_slotpos
+    if (sel_linepos && sel_linepos > 0) {
+      newSlotState.sel_slotpos = sel_linepos;
+    }
+    // 3. if slots_linescript has changed, we ALWAYS need to
+    //    update slots_bundle
+    m_AddSlotsValidation(newSlotState);
+
     SLOTCORE.SendState(newSlotState);
-    const { sel_linenum, sel_linepos } = WIZCORE.State();
+
+    // EDITMGR
+    // STORE.SendState({ selection: 'sel_linenum or sel_linepos' });
+
     if (sel_linenum > 0 && sel_linepos >= 0) {
       // sel_linepos = 0 if user clicked on line number
       return;
@@ -320,6 +316,10 @@ function DispatchClick(event) {
     // REVIEW: Only advance if there are more validation tokens?  Otherwise, we go past the end?
     // newState.sel_slotpos = sel_slotpos + 1;
 
+    // 4. if slots_linescript has changed, we ALWAYS need to
+    //    update slots_bundle
+    m_AddSlotsValidation(newSlotState);
+
     SLOTCORE.SendState(newSlotState);
     return;
   }
@@ -371,7 +371,7 @@ function SaveSlotLineScript(event) {
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
   const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
 
-  // HACK ---------------------------------------------------------------------
+  // HACK Block Support -------------------------------------------------------
   // Insert Block for new block keywords
   const cur_line = script_page[lineIdx];
   const isNewLine =
@@ -390,7 +390,7 @@ function SaveSlotLineScript(event) {
       block: [[{ comment: 'insert code here' }]]
     });
   }
-  // END HACK -----------------------------------------------------------------
+  // END HACK Block Support ---------------------------------------------------
 
   const updatedLine = lsos[lineIdx]; // clone existing line to retain block info
   updatedLine.lineScript = slots_linescript.filter(({ identifier }) => {
