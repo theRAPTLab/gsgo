@@ -14,6 +14,10 @@ import * as SIMCOND from 'modules/datacore/dc-sim-conditions';
 import * as BUNDLER from 'script/tools/script-bundler';
 import { ERROR } from 'modules/error/api-error';
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const OVERRIDE_COMPILER_OUT = false;
+
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export class when extends Keyword {
@@ -50,7 +54,7 @@ export class when extends Keyword {
     BUNDLER.AddToProgramOut(init, 'init');
     // runtime lookup that should work during update
     const key = SIMCOND.MakeInteractionKey([A, testName, B, ...args]);
-    const update = [
+    const event = [
       (agent: IAgent, state: IState) => {
         const passed = SIMCOND.GetInteractionResults(key);
         passed.forEach(pairs => {
@@ -69,7 +73,18 @@ export class when extends Keyword {
         }); // foreach
       }
     ];
-    return update;
+    if (OVERRIDE_COMPILER_OUT) {
+      BUNDLER.AddToProgramOut(event, 'event');
+      return [];
+    }
+    // otherwise just emit, warning if necessary
+    const { programOut } = BUNDLER.BundlerState();
+    if (programOut !== 'EVENT')
+      console.warn(
+        `when: writing loop to ${programOut} instead of expected EVENT`,
+        kwArgs
+      );
+    return event;
   }
 
   /** custom validation, overriding the generic validation() method of the

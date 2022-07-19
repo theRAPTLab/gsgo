@@ -85,6 +85,7 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
     'INPUTS_EXEC',
     // agent/groups autonomous updates
     'AGENTS_UPDATE',
+    'AGENTS_EVENT',
     'GROUPS_UPDATE',
     'FEATURES_UPDATE',
 
