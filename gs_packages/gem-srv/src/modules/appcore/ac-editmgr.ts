@@ -13,7 +13,8 @@
   * ac-slotcore
 
   ac-editorceditmgrore is the main click handler for the wizard UI,
-  coordinating clicks across wizcore and slotcore.
+  processing clicks and setting WIZCORE and SLOTCORE states directly as
+  needed.
 
   ---
 
@@ -28,7 +29,7 @@
       d. SLOTCORE._interceptState       ...
       e. EDITMGR.slotUpdate          ...
 
-  2. Select Line
+  2. Select Line / Position
       a. User clicks script_page
       b. EDITMGR.DispatchClick       WIZCORE.SendState({     SLOTCORE.SendState({
                                           sel_linenum             sel_slotpos
@@ -40,29 +41,21 @@
       f. SLOTCORE._interceptState       ...
       g. EDITMGR.slotUpdate                                  ...
 
-  3. Select slot position
+  3. Select Slot Position
+      a. User clicks slot
+
   4. Select Choice
+      a. User clicks item in
+         - EditSymbol
+         - ObjRefSelector
+
   5. Input Choice
+      a. User enters a value into input field
 
   6. Save slot
   7. Save script
-  8. Delete Line
-
-  ORDER OF OPERATIONS
-    EDITMGR.DispatchClick
-
-    WIZCORE._interceptState
-    SLOTCORE._interceptState
-
-    EDITMGR.wizUpdate
-    EDITMGR.slotUpdate
-
-    WIZCORE._interceptState
-    SLOTCORE._interceptState
-
-    EDITMGR.wizUpdate
-    EDITMGR.slotUpdate
-
+  8. Add Line
+  9. Delete Line
 
   ---
 

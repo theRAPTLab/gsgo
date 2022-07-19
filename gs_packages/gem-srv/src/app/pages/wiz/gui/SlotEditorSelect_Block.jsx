@@ -161,7 +161,6 @@ function SlotEditorSelect_Block(props) {
             onChange={processNumberInput}
             onKeyPress={handleNumberKeypress}
           />
-          ;
         </div>
       );
       break;
@@ -180,7 +179,6 @@ function SlotEditorSelect_Block(props) {
             onChange={processStringInput}
             onKeyPress={handleStringKeypress}
           />
-          ;
         </div>
       );
       break;
@@ -223,7 +221,6 @@ function SlotEditorSelect_Block(props) {
             onChange={processIdentifierInput}
             onKeyPress={handleStringKeypress}
           />
-          ;
         </div>
       );
       break;
@@ -239,7 +236,6 @@ function SlotEditorSelect_Block(props) {
             onChange={processExprInput}
             onKeyPress={handleExprKeypress}
           />
-          ;
         </div>
       );
       break;
