@@ -154,7 +154,9 @@ function m_CompileBlueprints(bpDefs: TBlueprint[]): TBlueprint[] {
  * @param {TBlueprint[]} blueprints - array of blueprint definitions [ {name, scriptText} ]
  * @returns {TBlueprint[]} - bpDefs that all use 'name', not 'id'
  */
-function m_ResetAndCompileBlueprints(blueprints: TBlueprint[]): TBlueprint[] {
+function ResetAndCompileBlueprints(
+  blueprints: TBlueprint[] = STATE._getKey('bpDefs')
+): TBlueprint[] {
   SM_Agent.ClearGlobalAgent();
   SIMAGENTS.ClearDOBJ();
   SIMDATA.DeleteAllScriptEvents();
@@ -421,7 +423,7 @@ STATE.addEffectHook(hook_Effect);
 function SetBlueprints(projId: string, blueprints: TBlueprint[]) {
   // 1. Compile the blueprints
   //    Converts old gemproj data format -- 'id' => 'name'
-  const bpDefs = m_ResetAndCompileBlueprints(blueprints);
+  const bpDefs = ResetAndCompileBlueprints(blueprints);
   // 2. Update datacore
   DCPROJECT.UpdateProjectData({ blueprints }); // note blueprints:blueprints object
 
@@ -477,6 +479,7 @@ function DeleteBlueprint(bpName: string) {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
+  ResetAndCompileBlueprints,
   GetBpDefs,
   GetBlueprint,
   GetBlueprintBundle,

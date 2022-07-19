@@ -86,8 +86,9 @@ function DoSimCostumes() {
 function DoSimReset() {
   if (APISIM.IsRunning()) UR.RaiseMessage('NET:HACK_SIM_STOP'); // stop first
   APISIM.Reset();
-  // Remove existing agents so they are re-created with SimPlaces and AllAgentsProgram
-  AGENTS.DeleteAllAgents();
+  // Clears script event functions, blueprint bundles, agents, global agents,
+  // instances and recompiles the blueprints
+  ACBlueprints.ResetAndCompileBlueprints();
   SimPlaces();
   UR.RaiseMessage('NET:SIM_WAS_RESET'); // Main needs to reset parms
 }
