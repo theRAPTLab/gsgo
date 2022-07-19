@@ -22,14 +22,6 @@ let GLOBAL_INTERACTIONS = [];
 
 /// REGISTER NAMED METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SIMDATA.RegisterWhenTest('dies', a => {
-  if (a.prop.foodLevel.value < 1) {
-    console.log('dead!');
-    return true;
-  }
-  return false;
-});
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  *  DEPRECATED -- This needs to be rewritten
  *                Design issue: How to designate the period?
@@ -216,22 +208,10 @@ SIMDATA.RegisterWhenTest('seesCamouflaged', (a, b) => {
   return canSeeCone && canSeeColor;
 });
 
-/// end of test registration ///
-
-/// LIFECYCLE GAMELOOP METHODS ////////////////////////////////////////////////
+/// UPDATE METHOD HELPERS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** invoked via UR/APP_CONFIGURE */
-function ModuleInit(/* gloop */) {}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Update does two jobs:
- *  (1) handle all the filtering tests once in the gameloop and cache the
- *  resulting pairs of agents that passed. This is so agents don't run the
- *  test over-and-over themselves.
- *  (2) fire the event handler for all events that are currently queued,
- *  then clear the event queue.
- */
-function Update(frame) {
-  // run all the filtering tests and cache the results
+/** cycle through the interaction cache and run tests, saving the results */
+function m_ProcessInteractions() {
   GLOBAL_INTERACTIONS = [...SIMCOND.GetAllInteractions()]; // [ [k,v], [k,v] ]
   GLOBAL_INTERACTIONS.forEach(entry => {
     const { singleTestArgs, pairTestArgs } = entry;
@@ -249,9 +229,12 @@ function Update(frame) {
       throw Error('malformed global_interaction entry');
     }
   });
-
-  // if there any events queued, then invoke the event handler on all
-  // agents that registered for this event.
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** process the events in the event queue, looking up which blueprints have
+ *  defined handlers for the event and sending them the consequent to
+ *  execute */
+function m_ProcessEventQueue() {
   EVENT_QUEUE.forEach((event, idx) => {
     /// these are all the handlers for all the registered blueprint types
     /// that are TOPcode[]. However, we need to get the context of each
@@ -269,23 +252,37 @@ function Update(frame) {
   EVENT_QUEUE = [];
 }
 
-/// SYNCHRONOUS LIFECYCLE /////////////////////////////////////////////////////
+/// LIFECYCLE GAMELOOP METHODS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HookPhase('SIM/CONDITIONS_UPDATE', Update);
-UR.HookPhase('UR/APP_CONFIGURE', ModuleInit);
+/**PHASE MACHINE: SIM/CONDITIONS_UPDATE */
+UR.HookPhase('SIM/CONDITIONS_UPDATE', function Update(frame) {
+  // run all the filtering tests and cache the results
+  m_ProcessInteractions();
+  // if there any events queued, then invoke the event handler on all
+  // agents that registered for this event.
+  m_ProcessEventQueue();
+});
 
-/// ASYNCH MESSAGE ////////////////////////////////////////////////////////////
+/// SCRIPT EVENT HANDLER //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** This is the API for firing a system event that the onEvent keyword can
- *  listen to
- */
+/** This is the API for publishing a system event that can be received by
+ *  blueprint instance. Blueprints register the code to run in the onEvent
+ *  keyword, which makes use of the data structures in SIMDATA (yeah, that
+ *  is a little weird) */
 UR.HandleMessage('SCRIPT_EVENT', event => {
   EVENT_QUEUE.push(event);
 });
 
+/// DUMMY REGISTRATION ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** call this from the importing module to ensure that it is not tree-shaken
+ *  out by webpack and never initializes */
+function Register(parent) {
+  if (DBG) console.log(...PR('MESSAGE EXCHANGE API LOADED'), parent);
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default {
-  ModuleInit,
-  Update
+  Register
 };

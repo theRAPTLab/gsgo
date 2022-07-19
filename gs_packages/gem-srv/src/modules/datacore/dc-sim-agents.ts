@@ -8,7 +8,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import { INSTANCEDEF_ID_START } from 'config/dev-settings';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

@@ -174,7 +174,7 @@ function GetBlueprintSymbols(): TSymbolData {
 function GetBundleOutSymbols() {
   // technically  'THINK', 'EXEC' are also available, but GS1.0 scripts don't
   // use them
-  return ['DEFINE', 'INIT', 'UPDATE', 'CONDITION', 'EVENT'];
+  return CHECK.GetUserProgramNames();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return symbols for tag pragma */

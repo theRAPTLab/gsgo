@@ -387,6 +387,7 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
     const { actions } = message;
     this.execQueue.push(...actions);
   }
+
   /// SIM LIFECYCLE EXECUTION /////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// The agent's BLUEPRINT has the shared update, think, and exec programs
@@ -405,6 +406,14 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
       this.exec(action, ctx);
     });
     this.updateQueue = [];
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Run the agent's EVENT programs */
+  agentEVENT(frameTime: number) {
+    const ctx = { agent: this, [this.blueprint.name]: this };
+    if (this.blueprint && this.blueprint.EVENT) {
+      this.exec(this.blueprint.EVENT, ctx);
+    }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Run the agent's THINK programs */
