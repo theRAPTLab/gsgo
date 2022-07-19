@@ -300,6 +300,13 @@ function AgentsUpdate(frameTime) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function AgentsEvent(frameTime) {
+  const allAgents = DCAGENTS.GetAllAgents();
+  allAgents.forEach(agent => {
+    agent.agentEVENT(frameTime);
+  });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentThink(frameTime) {
   const allAgents = DCAGENTS.GetAllAgents();
   allAgents.forEach(agent => {
@@ -337,6 +344,7 @@ UR.HandleMessage('ALL_AGENTS_PROGRAM', data => AllAgentsProgram(data)); // whole
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.HookPhase('SIM/AGENTS_UPDATE', AgentsUpdate);
+UR.HookPhase('SIM/AGENTS_EVENT', AgentsEvent);
 UR.HookPhase('SIM/AGENTS_THINK', AgentThink);
 UR.HookPhase('SIM/AGENTS_EXEC', AgentExec);
 UR.HookPhase('SIM/VIS_UPDATE', VisUpdate);

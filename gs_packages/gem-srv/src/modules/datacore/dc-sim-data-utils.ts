@@ -139,9 +139,27 @@ const BUNDLE_CONTEXTS = [
   'CONSEQ', // block of code to run if condition true
   'ALTER' // block of code to run if condition false
 ];
+/// used to convert student name to bundle contexts
+const USER_SCRIPT_PROGRAM_NAMES = {
+  'DEFINE': 'DEFINE', // for students, used for defining props and features
+  'INIT': 'INIT', //
+  'UPDATE': 'UPDATE', //
+  'EVENT': 'EVENT' //
+};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return true if this is allowed in a blueprint bundle */
 function IsValidBundleProgram(name: string): boolean {
   return BUNDLE_CONTEXTS.includes(name.toUpperCase());
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return true if this is allowed in a blueprint script */
+function GetUserProgramNames(): string[] {
+  return Object.keys(USER_SCRIPT_PROGRAM_NAMES);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function IsValidUserProgramName(name: string): boolean {
+  if (typeof name !== 'string') return false;
+  return USER_SCRIPT_PROGRAM_NAMES[name.toUpperCase()] !== undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return true if the passed bundle string is valid */
@@ -228,6 +246,8 @@ export {
 export { IsValidSystemEvent, SystemEventList };
 export {
   /// bundle checking utilities
+  GetUserProgramNames,
+  IsValidUserProgramName,
   IsValidBundleProgram,
   IsValidBundleType,
   IsValidBundleTag,

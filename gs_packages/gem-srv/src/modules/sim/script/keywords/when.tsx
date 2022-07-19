@@ -11,7 +11,13 @@
 import Keyword from 'lib/class-keyword';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as SIMCOND from 'modules/datacore/dc-sim-conditions';
+import * as BUNDLER from 'script/tools/script-bundler';
 import { ERROR } from 'modules/error/api-error';
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// whether to force loop code to go into PROGRAM EVENT or not
+const FORCE_INTO_EVENT = true;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -29,45 +35,57 @@ export class when extends Keyword {
   }
 
   compile(kwArgs: TKWArguments): TOpcode[] {
-    const prog = [];
-    /** PAIRED AGENTS WHEN TEST ********************************************/
     const [kw, A, testName, B, ...args] = kwArgs;
-    // assume the last argument is the block
     if (!Array.isArray(args) || args.length === 0)
       ERROR('compiler', { info: 'arg underflow', kwArgs });
-    const consq: TSM_Method = args.pop() as TSM_Method; // this is compiled code
-    // everything looks good otherwise
-    const key = SIMCOND.RegisterPairInteraction([A, testName, B, ...args]);
-    prog.push((agent: IAgent, state: IState) => {
-      const passed = SIMCOND.GetInteractionResults(key);
-      passed.forEach(pairs => {
-        const [aa, bb] = pairs;
-        // PROPOSED FIX
-        // Extra Test: Only run if the passed agents [aa, bb] includes the
-        // current agent.  The when conditional will pass as true if ANY
-        // agent passes.  So even though the current agent may not pass the
-        // test, code is still run for the current agent, using the context
-        // of the pair that DID patch the test.
-        if (aa.id !== agent.id && bb.id !== agent.id) {
-          return;
-        }
-        const ctx = { [A as string]: aa, [B as string]: bb };
-        agent.exec(consq, ctx);
-      }); // foreach
-    });
-    return prog;
-  }
+    let consq: TSM_Method = args.pop() as TSM_Method; // fyi: consq is array of functions
 
-  symbolize(unit: TScriptUnit): TSymbolData {
-    // when A test B ...args {block}
-    if (unit.length === 5) {
-      const [, a, , b, ...args] = unit;
-      args.pop(); // last arg is consequent
-      return { globals: { [a as string]: a, [b as string]: b } };
+    // sanity checks
+    if (consq === undefined) consq = [];
+    if (!Array.isArray(consq)) {
+      console.warn(`when: bad block; overriding with []`, kwArgs);
+      consq = [];
     }
-    // failed match (note that the length test sucks for detecting
-    // case where there are argument parameters
-    return {};
+    // write test registration during init phase
+    const init = [
+      (agent: IAgent, state: IState) => {
+        SIMCOND.RegisterPairInteraction([A, testName, B, ...args]);
+      }
+    ];
+    BUNDLER.AddToProgramOut(init, 'init');
+    // runtime lookup that should work during update
+    const key = SIMCOND.MakeInteractionKey([A, testName, B, ...args]);
+    const event = [
+      (agent: IAgent, state: IState) => {
+        const passed = SIMCOND.GetInteractionResults(key);
+        passed.forEach(pairs => {
+          const [aa, bb] = pairs;
+          // PROPOSED FIX
+          // Extra Test: Only run if the passed agents [aa, bb] includes the
+          // current agent.  The when conditional will pass as true if ANY
+          // agent passes.  So even though the current agent may not pass the
+          // test, code is still run for the current agent, using the context
+          // of the pair that DID patch the test.
+          if (aa.id !== agent.id && bb.id !== agent.id) {
+            return;
+          }
+          const ctx = { [A as string]: aa, [B as string]: bb };
+          agent.exec(consq, ctx);
+        }); // foreach
+      }
+    ];
+    if (FORCE_INTO_EVENT) {
+      BUNDLER.AddToProgramOut(event, 'event');
+      return [];
+    }
+    // otherwise just emit, warning if necessary
+    const { programOut } = BUNDLER.BundlerState();
+    if (programOut !== 'EVENT')
+      console.warn(
+        `when: writing loop to ${programOut} instead of expected EVENT`,
+        kwArgs
+      );
+    return event;
   }
 
   /** custom validation, overriding the generic validation() method of the

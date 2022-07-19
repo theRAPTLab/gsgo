@@ -27,20 +27,17 @@ export class onEvent extends Keyword {
       consq = [];
     }
     const { bpName } = BUNDLER.BundlerState();
-    // WARNING: this is setting SIMDATA state during compile, which we will
-    // fix more comprehensively next
-    SIMDATA.SubscribeToScriptEvent(String(eventName), bpName, consq);
-    return []; // subscriptions don't need to return any compiled code
-    // BETTER: this will be part of the overhaul of when, onEvent init-time programs
-    // return [
-    //   (agent, state) => {
-    //     SIMDATA.SubscribeToScriptEvent(
-    //       String(eventName),
-    //       bpName,
-    //       consq as TSMCProgram
-    //     );
-    //   }
-    // ];
+    const init = [
+      (agent, state) => {
+        SIMDATA.SubscribeToScriptEvent(
+          String(eventName),
+          bpName,
+          consq as TSMCProgram
+        );
+      }
+    ];
+    BUNDLER.AddToProgramOut(init, 'init');
+    return []; // no runtime code emitted
   }
 
   /** custom validation, overriding the generic validation() method of the
