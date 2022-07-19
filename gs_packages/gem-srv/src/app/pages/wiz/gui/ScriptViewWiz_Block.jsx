@@ -5,13 +5,13 @@
 
   Was: ScriptViewPane.jsx
 
-  `sel_linenum` is passed to cause ScriptViewPane to re-render the
+  `sel_linenum` is passed to cause ScriptViewWiz_Block to re-render the
   selected line (to show line add/delete buttons) if the user clicks on an
   existing line.
 
   COMPONENT USAGE
 
-    <ScriptViewPane script_page={script_page} sel_linenum={sel_linenum} />
+    <ScriptViewWiz_Block script_page={script_page} sel_linenum={sel_linenum} />
 
   where script_page is defined in ac-wizcore
 

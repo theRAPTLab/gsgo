@@ -150,6 +150,7 @@ function m_CompileBlueprints(bpDefs: TBlueprint[]): TBlueprint[] {
  * Use this when reseting the simulation.
  * Clears all ScriptEvents, Blueprints, Agents, and Instances
  * and THEN compiles blueprints.
+ * Call with no 'bluerprints' data to reset and recompile existing bluepritns
  * NOTE This will accept old gemproj blueprint formats with "id" and return it converted to "name"
  * @param {TBlueprint[]} blueprints - array of blueprint definitions [ {name, scriptText} ]
  * @returns {TBlueprint[]} - bpDefs that all use 'name', not 'id'
