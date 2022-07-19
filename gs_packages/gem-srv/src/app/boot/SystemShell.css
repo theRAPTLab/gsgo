@@ -7,6 +7,35 @@
 
 :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
+.error-mgr {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  padding: 5em;
+  color: green !important;
+}
+.error-mgr h2 {
+  color: green !important;
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  padding: 1em;
+  font-size: 3em;
+}
+.error-mgr p {
+  color: green !important;
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  padding: 1em;
+  font-size: 2em;
+}
+.error-mgr p + p {
+  color: white !important;
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  font-size: 1em;
+  padding: 2em;
+}
+
 /* CENTERED EVERYTHING
    place-items: center
    <parent>

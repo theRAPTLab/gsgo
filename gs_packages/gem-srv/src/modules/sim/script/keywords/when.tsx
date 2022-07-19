@@ -12,7 +12,7 @@ import Keyword from 'lib/class-keyword';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as SIMCOND from 'modules/datacore/dc-sim-conditions';
 import * as BUNDLER from 'script/tools/script-bundler';
-import { ERROR } from 'modules/error/api-error';
+import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -25,9 +25,10 @@ const PROMPTS = require('./prompts');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const TERM = PROMPTS.makeTerminalOut('U-MFEST', 'TagGreen');
 const ASSET_ID_START = 100;
-const DBG = false;
 let m_assetPath = GS_ASSETS_PATH;
 let m_remoteAssetUrl;
+
+const DBG = false;
 
 /// MODULE HELPERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -98,7 +99,7 @@ function m_ScanAssets(subdirpath) {
         break;
       case 'projects':
         mediaObj = f_ProjectAssets(subdirpath, files);
-        TERM(`project scanAssets mediaObj ${JSON.stringify(mediaObj)}`);
+        if (DBG) TERM(`project scanAssets mediaObj ${JSON.stringify(mediaObj)}`);
         break;
       default:
         mediaObj = { err: `unknown astype ${asType}` };

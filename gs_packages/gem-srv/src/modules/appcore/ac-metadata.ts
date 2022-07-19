@@ -7,6 +7,7 @@
 
 import UR from '@gemstep/ursys/client';
 import * as DCPROJECT from 'modules/datacore/dc-project';
+import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -184,9 +185,16 @@ function Wraps(wall = 'any') {
  */
 function SetMetadata(projId, metadata) {
   if (DBG) console.log(...PR('ac-metadata setting metadata to', metadata));
-  // Update datacore
-  DCPROJECT.UpdateProjectData({ metadata });
-  updateAndPublish(metadata);
+  try {
+    // Update datacore
+    DCPROJECT.UpdateProjectData({ metadata });
+    updateAndPublish(metadata);
+  } catch (caught) {
+    ERROR(`could not set ${projId} metadata`, {
+      source: 'project-init',
+      caught
+    });
+  }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

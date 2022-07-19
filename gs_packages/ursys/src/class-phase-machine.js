@@ -172,18 +172,26 @@ class PhaseMachine {
       let retval = m_InvokeHook(op, hook, ...args);
       if (retval instanceof Promise) {
         icount++;
+        retval.catch(error => {
+          console.log(...PR(`intercept error in o:${op}`));
+          console.log(...PR('attempting to reroute error'), error);
+        });
         promises.push(retval);
       }
     });
 
-    const promiseAll = Promise.all(promises).then(values => {
-      if (DBG.ops && values.length)
-        console.log(
-          ...PR(`[${op}] PROMISES RETVALS  : ${values.length}`, values)
-        );
-      if (this.opTimer) clearTimeout(this.opTimer);
-      return values;
-    });
+    const promiseAll = Promise.all(promises)
+      .then(values => {
+        if (DBG.ops && values.length)
+          console.log(
+            ...PR(`[${op}] PROMISES RETVALS  : ${values.length}`, values)
+          );
+        if (this.opTimer) clearTimeout(this.opTimer);
+        return values;
+      })
+      .catch(error => {
+        console.log(...PR(`intercept Promise.all`), error);
+      });
 
     if (DBG.ops && hooks.length)
       console.log(`[${op}] HANDLERS PROCESSED : ${hooks.length}`);

@@ -69,6 +69,7 @@ import * as SIMAGENTS from 'modules/sim/sim-agents';
 import * as TRANSPILER from '../sim/script/transpiler-v2';
 import { DEBUG_FLAGS } from 'config/dev-settings';
 const { SYMBOLIZE_CALLS: DBG_SC } = DEBUG_FLAGS;
+import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -108,7 +109,7 @@ function m_MergeBlueprint(bpDef: TBlueprint, bpDefs: TBlueprint[]): TBlueprint[]
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Blueprint symbols need to be extracted before they are compiled */
 function m_SymbolizeBlueprints(bpDefs: TBlueprint[]) {
-  console.warn('%cAC Symbolizing Blueprints', 'font-weight:bold');
+  // console.warn('%cAC Symbolizing Blueprints', 'font-weight:bold');
   bpDefs.forEach(b => {
     const script = TRANSPILER.TextToScript(b.scriptText);
     TRANSPILER.SymbolizeBlueprint(script);
@@ -127,23 +128,34 @@ function m_SymbolizeBlueprints(bpDefs: TBlueprint[]) {
  *  @returns {TBlueprint[]} - bpDefs that all use 'name', not 'id'
  */
 function m_CompileBlueprints(bpDefs: TBlueprint[]): TBlueprint[] {
-  if (DBG_SC) console.warn('%cAC Compiling Blueprints', 'font-weight:bold');
+  try {
+    if (DBG_SC) console.warn('%cAC Compiling Blueprints', 'font-weight:bold');
 
-  const scripts = bpDefs.map(({ scriptText }) => {
-    const script = TRANSPILER.TextToScript(scriptText);
-    const bundle = TRANSPILER.SymbolizeBlueprint(script);
-    bundle.saveText(scriptText);
-    return script;
-  });
+    const scripts = bpDefs.map(({ scriptText }) => {
+      const script = TRANSPILER.TextToScript(scriptText);
+      const bundle = TRANSPILER.SymbolizeBlueprint(script);
+      bundle.saveText(scriptText);
+      return script;
+    });
 
-  return scripts.map(script => {
-    const bundle = TRANSPILER.CompileBlueprint(script);
-    TRANSPILER.RegisterBlueprint(bundle); // Save to datacore
-    return {
-      name: bundle.name,
-      scriptText: bundle.text || 'error - m_CompileBlueprint no text'
-    };
-  });
+    return scripts.map(script => {
+      const bundle = TRANSPILER.CompileBlueprint(script);
+      TRANSPILER.RegisterBlueprint(bundle); // Save to datacore
+      return {
+        name: bundle.name,
+        scriptText: bundle.text || 'error - m_CompileBlueprint no text'
+      };
+    });
+  } catch (caught) {
+    ERROR(`fail to compile blueprint def`, {
+      source: 'compiler',
+      data: {
+        bpDefs
+      },
+      where: 'ac-blueprints.m_CompileBlueprint',
+      caught
+    });
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -422,7 +434,8 @@ STATE.addEffectHook(hook_Effect);
  *  @param {[]} blueprints - Array of {name, scripText} from gemproj file
  */
 function SetBlueprints(projId: string, blueprints: TBlueprint[]) {
-  // 1. Compile the blueprints
+    try {
+    // 1. Compile the blueprints
   //    Converts old gemproj data format -- 'id' => 'name'
   const bpDefs = ResetAndCompileBlueprints(blueprints);
   // 2. Update datacore
@@ -431,6 +444,12 @@ function SetBlueprints(projId: string, blueprints: TBlueprint[]) {
   // 3. Update state
   m_UpdateAndPublishBpDefs(bpDefs);
   m_UpdateAndPublishDerivedBpLists();
+  } catch (caught) {
+    ERROR(`could not set ${projId} blueprints`, {
+      source: 'project-init',
+      caught
+    });
+  }
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

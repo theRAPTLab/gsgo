@@ -34,6 +34,8 @@ import {
 } from 'script/tools/symbol-utilities';
 import * as COMPILER from 'script/tools/script-compiler';
 import * as BUNDLER from 'script/tools/script-bundler';
+import ERROR from 'modules/error-mgr';
+
 import { GetTextBuffer } from 'lib/class-textbuffer';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
@@ -149,29 +151,39 @@ STORE._interceptState(state => {
   // (SlotEditor_Block call to ac-editmgr.SaveSlotLineScript)
   // if script_tokens is changing, we also want to emit new script_text
   if (script_tokens && !script_text) {
-    console.log('script-tokens', script_tokens);
-    state.script_tokens = TRANSPILER.EnforceBlueprintPragmas(script_tokens);
-    // also symbolize blueprints -- eg after adding a feature, need to re-symbolize to make feature available
-    TRANSPILER.SymbolizeBlueprint(script_tokens);
-    state.cur_bdl = TRANSPILER.CompileBlueprint(script_tokens);
+    try {
+      state.script_tokens = TRANSPILER.EnforceBlueprintPragmas(script_tokens);
+      // also symbolize blueprints -- eg after adding a feature, need to re-symbolize to make feature available
+      TRANSPILER.SymbolizeBlueprint(script_tokens);
+      state.cur_bdl = TRANSPILER.CompileBlueprint(script_tokens);
 
-    // ...did the name change?  if so, remove the old bundle
-    const { cur_bdl } = STORE.State();
-    if (cur_bdl !== null) {
-      const { name: curName } = cur_bdl;
-      const { name: newName } = state.cur_bdl;
-      if (newName !== curName) SIMDATA.DeleteBlueprintBundle(curName);
+      // ...did the name change?  if so, remove the old bundle
+      const { cur_bdl } = STORE.State();
+      if (cur_bdl !== null) {
+        const { name: curName } = cur_bdl;
+        const { name: newName } = state.cur_bdl;
+        if (newName !== curName) SIMDATA.DeleteBlueprintBundle(curName);
+      }
+
+      // end symbolize
+      const text = TRANSPILER.ScriptToText(state.script_tokens);
+      state.script_text = text;
+      const [vmPage, tokMap] = TRANSPILER.ScriptToLines(state.script_tokens);
+      const programMap = TRANSPILER.ScriptToProgramMap(state.script_tokens);
+      state.script_page = vmPage;
+      state.script_page_needs_saving = true;
+      state.key_to_token = tokMap;
+      state.program_map = programMap; //
+    } catch (caught) {
+      ERROR(`error occurred during script-tokens intercept`, {
+        source: 'appstate',
+        data: {
+          script_tokens
+        },
+        where: 'ac-wizcore._interceptState script_tokens',
+        caught
+      });
     }
-
-    // end symbolize
-    const text = TRANSPILER.ScriptToText(state.script_tokens);
-    state.script_text = text;
-    const [vmPage, tokMap] = TRANSPILER.ScriptToLines(state.script_tokens);
-    const programMap = TRANSPILER.ScriptToProgramMap(state.script_tokens);
-    state.script_page = vmPage;
-    state.script_page_needs_saving = true;
-    state.key_to_token = tokMap;
-    state.program_map = programMap;
   }
 });
 
@@ -377,10 +389,23 @@ function ValidateLine(lineNum: number): TValidatedScriptUnit {
 function ValidatePageLine(vmLine: VMPageLine): TValidatedScriptUnit {
   const { lineScript, globalRefs } = vmLine;
   const { cur_bdl } = STORE.State();
-  return TRANSPILER.ValidateStatement(lineScript, {
-    bundle: cur_bdl,
-    globals: globalRefs
-  });
+  try {
+    return TRANSPILER.ValidateStatement(lineScript, {
+      bundle: cur_bdl,
+      globals: globalRefs
+    });
+  } catch (caught) {
+    ERROR(`could not validate slots_linescript`, {
+      source: 'validator',
+      data: {
+        lineScript,
+        cur_bdl,
+        globalRefs
+      },
+      where: 'ac-wizcore.ValidatePageLine',
+      caught
+    });
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Validate all the lines in the script_page and return the validation

@@ -10,7 +10,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
-import { Evaluate } from 'lib/expr-evaluator';
+import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
 // imports types from t-script.d
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import FLAGS from 'modules/flags';
