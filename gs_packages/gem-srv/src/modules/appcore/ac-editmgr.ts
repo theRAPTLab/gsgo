@@ -108,8 +108,23 @@ function m_ChildOf(child, parent) {
 /// First create the new instance, and extract the methods we plan to use
 const STORE = new StateMgr('EditorCore');
 
-WIZCORE.SubscribeState(handleWizUpdate);
-SLOTCORE.SubscribeState(handleSlotUpdate);
+/// SUB MODULE STATE HANLDERS /////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Current not used
+///
+/// WIZCORE.SubscribeState(handleWizUpdate);
+/// SLOTCORE.SubscribeState(handleSlotUpdate);
+///
+/// function handleWizUpdate(vmStateEvent) {
+///   // const { sel_linenum, sel_linepos, script_text, script_tokens, cur_bdl } =
+///   //   vmStateEvent;
+///   // Do something with state changes, but don't nest state updates!
+/// }
+/// /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// function handleSlotUpdate(vmStateEvent) {
+///   // const { sel_slotpos, slots_validation, slots_linescript } = vmStateEvent;
+///   // Do something with state changes, but don't nest state updates!
+/// }
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
