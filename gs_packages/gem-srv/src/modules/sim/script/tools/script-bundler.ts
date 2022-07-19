@@ -168,7 +168,7 @@ function SetBundleType(type: EBundleType = EBundleType.BLUEPRINT) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: set one of several tags */
 function SetBundleTag(tagName: EBundleTag, tagValue: any): boolean {
-  const fn = 'SetProgramOut:';
+  const fn = 'SetBundleTag:';
   const bdl = m_HasCurrentBundle(fn);
   if (!(bdl instanceof SM_Bundle)) {
     console.warn('arg1 is not a bundle, got:', bdl);
@@ -206,7 +206,7 @@ function SetBundleTags(tags: { [tagName: string]: any }) {
 /** API: add a compiled program to a bundle, based on the current programOut
  *  setting. */
 function AddProgram(prog: TSMCProgram) {
-  const fn = 'SetProgramOut:';
+  const fn = 'AddProgram:';
   const bdl = m_HasCurrentBundle(fn);
   if (typeof bdl !== 'object') throw Error(`${bdl} is not an object`);
   if (!bdl[CUR_PROGRAM]) bdl[CUR_PROGRAM] = [];
@@ -217,7 +217,7 @@ function AddProgram(prog: TSMCProgram) {
 /** API: special case when we want to add some code to a specfic named
  *  program other than the current one */
 function AddToProgramOut(prog: TSMCProgram, progName: string) {
-  const fn = 'AddProgramOut:';
+  const fn = 'AddToProgramOut:';
   const bdl = m_HasCurrentBundle(fn);
   const bdlKey = progName.toUpperCase();
   if (!CHECK.IsValidBundleProgram(bdlKey))
@@ -238,7 +238,7 @@ function AddToProgramOut(prog: TSMCProgram, progName: string) {
  *  { methods: { [methodName]: methodArgs } }
  */
 function AddSymbols(symdata: TSymbolData) {
-  const fn = 'SetProgramOut:';
+  const fn = 'AddSymbols:';
   const bdl = m_HasCurrentBundle(fn);
   if (bdl.symbols === undefined) bdl.symbols = {};
   const _bdlsym = bdl.symbols;
@@ -352,7 +352,7 @@ function HasBlueprintSymbols(bpName: string) {
 function GetSymbolsForObjref(
   objref: IToken
 ): [category: string, parts: string[]] {
-  const fn = 'UnpackObjRef:';
+  const fn = 'GetSymbolsForObjref:';
   let cat: string;
   let [type, ref] = CHECK.UnpackToken(objref);
   if (type === 'identifier' || type === 'jsString') {
