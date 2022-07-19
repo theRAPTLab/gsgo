@@ -22,14 +22,6 @@ let GLOBAL_INTERACTIONS = [];
 
 /// REGISTER NAMED METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SIMDATA.RegisterWhenTest('dies', a => {
-  if (a.prop.foodLevel.value < 1) {
-    console.log('dead!');
-    return true;
-  }
-  return false;
-});
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  *  DEPRECATED -- This needs to be rewritten
  *                Design issue: How to designate the period?
