@@ -59,7 +59,7 @@ function SymbolRefs(): TSymbolRefs {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ClearBundlerState() {
   CUR_NAME = undefined;
-  CUR_PROGRAM = undefined;
+  CUR_PROGRAM = 'INIT'; // default to init always
   CUR_BUNDLE = undefined;
   CUR_GLOBALS = {};
 }
