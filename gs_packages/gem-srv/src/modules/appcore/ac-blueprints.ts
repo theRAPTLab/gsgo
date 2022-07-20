@@ -441,6 +441,11 @@ function SetBlueprints(projId: string, blueprints: TBlueprint[]) {
   //
   // But we still need to set bpDefs
   const bpDefs = m_MigrateBpidToBpName(blueprints);
+  // and we also need to symbolize blueprints
+  bpDefs.map(({ scriptText }) => {
+    const script = TRANSPILER.TextToScript(scriptText);
+    TRANSPILER.SymbolizeBlueprint(script);
+  });
 
   // 2. Update datacore
   DCPROJECT.UpdateProjectData({ blueprints }); // note blueprints:blueprints object
