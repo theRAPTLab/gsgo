@@ -219,7 +219,7 @@ function SlotEditorSelect_Block(props) {
             defaultValue={unitText}
             type="text"
             onChange={processIdentifierInput}
-            onKeyPress={handleStringKeypress}
+            onKeyPress={handleIdentifierKeydown}
           />
         </div>
       );
