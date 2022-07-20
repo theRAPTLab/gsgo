@@ -108,7 +108,6 @@ function m_MergeBlueprint(bpDef: TBlueprint, bpDefs: TBlueprint[]): TBlueprint[]
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Blueprint symbols need to be extracted before they are compiled */
 function m_SymbolizeBlueprints(bpDefs: TBlueprint[]) {
-  console.warn('%cAC Symbolizing Blueprints', 'font-weight:bold');
   bpDefs.forEach(b => {
     const script = TRANSPILER.TextToScript(b.scriptText);
     TRANSPILER.SymbolizeBlueprint(script);
