@@ -374,6 +374,23 @@ function DeleteSelectedLine(event) {
 /// SLOT METHODS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+/** API: Handles form input from SlotEditorSelect_Block */
+function UpdateSlot(data) {
+  const { value, type: key } = data;
+  if (key === 'identifier') {
+    // don't allow leading numbers
+    // spaces are filtered out at the input level
+    if (value === '') return 'identifiers may not be blank';
+    const ch = value.charAt(0);
+    const isDigit = !isNaN(ch) && !isNaN(parseFloat(ch));
+    if (isDigit) return 'identifiers can not start with a number';
+  }
+  const slots_linescript = SLOTCORE.UpdateSlotValueToken(key, value);
+  const newSlotState: TStateObject = {};
+  newSlotState.slots_linescript = slots_linescript;
+  m_AddSlotsValidation(newSlotState);
+  SLOTCORE.SendState(newSlotState);
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: saves the currently edited slot linescript into the current script_tokens
  *  Called by SlotEditor_Blcok
@@ -464,6 +481,7 @@ export {
 };
 export {
   // slotcore
+  UpdateSlot, // handle slot editor key input
   SaveSlotLineScript, // handle slot editor save request
   CancelSlotEdit, // handle slot editor cancel edit
   DeleteSlot // handle slot editor delete extraneous slot
