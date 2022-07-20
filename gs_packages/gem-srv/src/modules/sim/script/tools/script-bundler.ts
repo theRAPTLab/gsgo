@@ -222,7 +222,7 @@ function AddToProgramOut(prog: TSMCProgram, progName: string) {
   const bdlKey = progName.toUpperCase();
   if (!CHECK.IsValidBundleProgram(bdlKey))
     throw Error(`${fn} invalid progName ${bdlKey}`);
-  if (bdlKey === CUR_PROGRAM)
+  if (bdlKey === CUR_PROGRAM && DBG)
     console.warn(`${fn} progname '${bdlKey}' is already the set output`);
   if (typeof bdl !== 'object') throw Error(`${fn} ${bdl} is not an object`);
   if (!bdl[bdlKey]) bdl[bdlKey] = [];
