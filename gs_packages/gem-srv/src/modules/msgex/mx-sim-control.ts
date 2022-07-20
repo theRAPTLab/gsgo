@@ -76,9 +76,9 @@ function SimPlaces() {
     //    Agent displays are automatically updated during SIM/VIS_UPDATE
     // 8. Update Inspectors
     //    Inspectors will be automatically updated during SIM/UI_UPDATE phase
-  } catch (err) {
-    console.error('SimPlaces Error -- bad script?', err);
-    alert(`SimPlaces Error -- bad script? ${err}`);
+  } catch (caught) {
+    console.error('SimPlaces Error -- bad script?', caught);
+    alert(`SimPlaces Error -- bad script? ${caught}`);
   }
 }
 

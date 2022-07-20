@@ -200,9 +200,11 @@ async function Initialize() {
   try {
     SIMCTRL.DoSimReset(); // compile blueprints
     SIMCTRL.SimPlaces(CURRENT_PROJECT);
-  } catch (err) {
-    console.error('Error trying to compile gemscripts:', err);
+  } catch (caught) {
+    console.error('Error trying to compile gemscripts:', caught);
+    alert(`Initialize.SimPlaces Error -- bad script? ${caught}`);
   }
+
   // 3. Register as 'Sim' Device
   // devices templates are defined in class-udevice.js
   const dev = UR.NewDevice('Sim');
