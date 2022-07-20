@@ -244,7 +244,7 @@ function DispatchClick(event) {
     SelectSlot(sel_linenum, sel_linepos);
 
     // EDITMGR
-    // STORE.SendState({ selection: 'sel_linenum or sel_linepos' });
+    STORE.SendState({ selection: 'force ScriptEditor props update' });
 
     if (sel_linenum > 0 && sel_linepos >= 0) {
       // sel_linepos = 0 if user clicked on line number
