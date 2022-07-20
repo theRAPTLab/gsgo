@@ -38,43 +38,48 @@ const DBG = false;
 /** Compiles blueprints after model loading. Also updates the boundary display
  *  (since model might define new boundaries) */
 function SimPlaces() {
-  if (DBG) console.warn(...PR('SimPlaces!'));
-  // 2. Show Boundary
-  const boundary = ACMetadata.GetBoundary();
-  RENDERER.SetBoundary(boundary.width, boundary.height, boundary.bgcolor);
-  // And Set Listeners too
-  UR.RaiseMessage('NET:SET_BOUNDARY', {
-    width: boundary.width,
-    height: boundary.height,
-    bgcolor: boundary.bgcolor
-  });
-  // 3. Update Input System
-  //    Set Input transforms
-  INPUTS.SetInputStageBounds(boundary.width, boundary.height); // dc-inputs
-  //    Set char controlled agents
-  //    This is primarily for Viewers
-  const charcontrolBpidList = ACBlueprints.GetCharControlBpNames();
-  UR.RaiseMessage('NET:SET_CHARCONTROL_BPIDLIST', {
-    bpnames: charcontrolBpidList
-  });
-  // 4. Get current list of blueprint names so AllAgentsProgram knows which
-  //    blueprints to update and remove
-  const blueprintNames = ACBlueprints.GetBpNamesList();
-  // 5. Create/Update All Instances
-  const instancesSpec = ACInstances.GetInstances();
-  UR.RaiseMessage('ALL_AGENTS_PROGRAM', {
-    blueprintNames,
-    instancesSpec
-  });
-  // 6. Update Cursor System
-  //    This needs to happen AFTER instances are created
-  //    since that is when the Cursor SM_Feature is loaded
-  //    which in turn injects the Cursor blueprint.
-  UR.RaiseMessage('COMPILE_CURSORS');
-  // 7. Update Agent Display
-  //    Agent displays are automatically updated during SIM/VIS_UPDATE
-  // 8. Update Inspectors
-  //    Inspectors will be automatically updated during SIM/UI_UPDATE phase
+  try {
+    if (DBG) console.warn(...PR('SimPlaces!'));
+    // 2. Show Boundary
+    const boundary = ACMetadata.GetBoundary();
+    RENDERER.SetBoundary(boundary.width, boundary.height, boundary.bgcolor);
+    // And Set Listeners too
+    UR.RaiseMessage('NET:SET_BOUNDARY', {
+      width: boundary.width,
+      height: boundary.height,
+      bgcolor: boundary.bgcolor
+    });
+    // 3. Update Input System
+    //    Set Input transforms
+    INPUTS.SetInputStageBounds(boundary.width, boundary.height); // dc-inputs
+    //    Set char controlled agents
+    //    This is primarily for Viewers
+    const charcontrolBpidList = ACBlueprints.GetCharControlBpNames();
+    UR.RaiseMessage('NET:SET_CHARCONTROL_BPIDLIST', {
+      bpnames: charcontrolBpidList
+    });
+    // 4. Get current list of blueprint names so AllAgentsProgram knows which
+    //    blueprints to update and remove
+    const blueprintNames = ACBlueprints.GetBpNamesList();
+    // 5. Create/Update All Instances
+    const instancesSpec = ACInstances.GetInstances();
+    UR.RaiseMessage('ALL_AGENTS_PROGRAM', {
+      blueprintNames,
+      instancesSpec
+    });
+    // 6. Update Cursor System
+    //    This needs to happen AFTER instances are created
+    //    since that is when the Cursor SM_Feature is loaded
+    //    which in turn injects the Cursor blueprint.
+    UR.RaiseMessage('COMPILE_CURSORS');
+    // 7. Update Agent Display
+    //    Agent displays are automatically updated during SIM/VIS_UPDATE
+    // 8. Update Inspectors
+    //    Inspectors will be automatically updated during SIM/UI_UPDATE phase
+  } catch (err) {
+    console.error('SimPlaces Error -- bad script?', err);
+    alert(`SimPlaces Error -- bad script? ${err}`);
+  }
 }
 
 /// API WRAPPER: SIM CONTROL //////////////////////////////////////////////////
