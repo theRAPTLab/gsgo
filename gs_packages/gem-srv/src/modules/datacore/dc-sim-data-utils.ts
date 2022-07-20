@@ -139,12 +139,13 @@ const BUNDLE_CONTEXTS = [
   'CONSEQ', // block of code to run if condition true
   'ALTER' // block of code to run if condition false
 ];
-/// used to convert student name to bundle contexts
+/// these are the allowed/required PROGRAM pragmas in a student script
+/// key is the name they use, value is the mapped name (doesn't currently do anything)
 const USER_SCRIPT_PROGRAM_NAMES = {
-  'DEFINE': 'DEFINE', // for students, used for defining props and features
+  // 'DEFINE': 'DEFINE', // for students, used for defining props and features
   'INIT': 'INIT', //
-  'UPDATE': 'UPDATE', //
-  'EVENT': 'EVENT' //
+  'UPDATE': 'UPDATE' //
+  // 'EVENT': 'EVENT' //
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return true if this is allowed in a blueprint bundle */
