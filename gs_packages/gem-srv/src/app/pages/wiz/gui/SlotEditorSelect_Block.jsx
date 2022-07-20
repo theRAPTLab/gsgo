@@ -21,8 +21,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import * as WIZCORE from 'modules/appcore/ac-wizcore';
-import * as SLOTCORE from 'modules/appcore/ac-slotcore';
+import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 
 import { ObjRefSelector_Block } from './ObjRefSelector_Block';
@@ -73,29 +72,45 @@ function SlotEditorSelect_Block(props) {
   const { gsType, methodSig, unitText } = vtok || {}; // gracefully fail if not defined
   const { name, args: methodArgs, info } = methodSig || {}; // gracefully fail if not defined
 
+  // Value Change Handlers
   const processNumberInput = e => {
     e.preventDefault();
-    SLOTCORE.UpdateSlotValue(Number(e.target.value));
+    EDITMGR.UpdateSlot({
+      value: Number(e.target.value),
+      type: 'value'
+    });
   };
   const processStringInput = e => {
     e.preventDefault();
-    SLOTCORE.UpdateSlotString(String(e.target.value));
-  };
-  const processIdentifierInput = e => {
-    e.preventDefault();
-    const err = SLOTCORE.UpdateIdentifier(String(e.target.value));
-    if (err) alert(err);
+    EDITMGR.UpdateSlot({
+      value: String(e.target.value),
+      type: 'string'
+    });
   };
   const processBooleanInput = e => {
     e.preventDefault();
     const toggled = unitText === 'true' ? false : true;
-    SLOTCORE.UpdateSlotBoolean(toggled);
+    EDITMGR.UpdateSlot({
+      value: toggled,
+      type: 'value' // validTokenTypes = value with arg=boolean
+    });
+  };
+  const processIdentifierInput = e => {
+    e.preventDefault();
+    EDITMGR.UpdateSlot({
+      value: String(e.target.value),
+      type: 'identifier'
+    });
   };
   const processExprInput = e => {
     e.preventDefault();
-    SLOTCORE.UpdateSlotExpr(String(e.target.value));
+    EDITMGR.UpdateSlot({
+      value: String(e.target.value),
+      type: 'expr'
+    });
   };
 
+  // Keypress Handlers
   const handleNumberKeypress = e => {
     if (e.key === 'Enter') {
       processNumberInput(e);
@@ -219,7 +234,7 @@ function SlotEditorSelect_Block(props) {
             defaultValue={unitText}
             type="text"
             onChange={processIdentifierInput}
-            onKeyPress={handleStringKeypress}
+            onKeyPress={handleIdentifierKeydown}
           />
         </div>
       );

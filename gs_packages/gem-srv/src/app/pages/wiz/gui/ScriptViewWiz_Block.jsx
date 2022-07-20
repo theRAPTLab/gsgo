@@ -206,13 +206,13 @@ export function ScriptViewWiz_Block(props) {
           <>
             <button
               className="outline btnAddBefore"
-              onClick={e => WIZCORE.AddLine('before')}
+              onClick={e => EDITMGR.AddLine('before')}
             >
               +
             </button>
             <button
               className="outline btnAddAfter"
-              onClick={e => WIZCORE.AddLine('after')}
+              onClick={e => EDITMGR.AddLine('after')}
             >
               +
             </button>

@@ -254,7 +254,9 @@ class CostumePack extends SM_Feature {
 
     // If Physics feature is used, update physics body.
     if (agent.hasFeature('Physics')) {
-      agent.callFeatMethod('Physics', 'init');
+      // if Physics is present then it has already been inited, so
+      // run readCostumesize, not init
+      const dim = agent.callFeatMethod('Physics', 'm_autoSetCostumeSize');
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
