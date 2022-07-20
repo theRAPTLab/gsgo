@@ -147,12 +147,13 @@ class MissionControl extends React.Component {
     // We read the currently selected projId from the URL,
     // and prep project-server to load it.
     // project-server will load on UR/APP_START
-    if (ERR_MGR)
+    if (ERR_MGR) {
       try {
         PROJSERVER.ProjectDataPreInit(this, projId);
       } catch (caught) {
         ERR_MGR.Dump();
       }
+    } else PROJECTSERVER.ProjectDataPreInit(this, projId);
   }
 
   componentWillUnmount() {
