@@ -65,7 +65,7 @@ STORE._interceptState(state => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Local helper  */
-function m_UpdateSlotValueToken(key, value) {
+function UpdateSlotValueToken(key, value) {
   // Update slots_linescript
   const { slots_linescript, sel_slotpos } = State();
   // if the scriptToken already exists, update it byRef
@@ -76,47 +76,17 @@ function m_UpdateSlotValueToken(key, value) {
   // otherwise both keys will be active
   delete slotScriptToken.value;
   delete slotScriptToken.string;
-  delete slotScriptToken.expr;
+  delete slotScriptToken.boolean;
   delete slotScriptToken.identifier;
+  delete slotScriptToken.expr;
   slotScriptToken[key] = value; // We know the scriptToken is a value
   if (sel_slotpos > slots_linescript.length) {
     slots_linescript.push(slotScriptToken); // it's a new token so add it
   }
   const slots_need_saving = true;
   SendState({ slots_linescript, slots_need_saving }); // Update state to trigger validation rerun
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
-function UpdateSlotValue(val) {
-  m_UpdateSlotValueToken('value', val);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
-function UpdateSlotString(val) {
-  m_UpdateSlotValueToken('string', val);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument)
- *  returns true if input validation passed */
-function UpdateIdentifier(val): string {
-  // don't allow leading numbers
-  // spaces are filtered out at the input level
-  if (val === '') return 'identifiers may not be blank';
-  const ch = val.charAt(0);
-  const isDigit = !isNaN(ch) && !isNaN(parseFloat(ch));
-  if (isDigit) return 'identifiers can not start with a number';
-  m_UpdateSlotValueToken('identifier', val);
-  return undefined;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
-function UpdateSlotBoolean(val) {
-  m_UpdateSlotValueToken('value', val);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Called by SelectEditor when user enters a new value (e.g. for a method argument) */
-function UpdateSlotExpr(val) {
-  m_UpdateSlotValueToken('expr', val);
+
+  return slots_linescript;
 }
 /// UI SCREEN HELPERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -132,11 +102,7 @@ export { State, SendState, SubscribeState, UnsubscribeState, QueueEffect };
 /// EXPORTED EVENT DISPATCHERS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
-  UpdateSlotValue, // handle incoming change of slot value (input)
-  UpdateSlotString, // handle incoming change of slot string (input)
-  UpdateIdentifier, // handle incoming change of identifier
-  UpdateSlotBoolean, // handle incoming change of slot boolean (input)
-  UpdateSlotExpr
+  UpdateSlotValueToken // handle incoming change from editMgr
 };
 
 /// EXPORTED VIEWMODEL INFO UTILS //////////////////////////////////////////////
