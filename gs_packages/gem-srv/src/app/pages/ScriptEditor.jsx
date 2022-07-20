@@ -95,14 +95,18 @@ const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
 # TAG isCharControllable true
 # TAG isPozyxControllable true
 # TAG isPTrackControllable false
-# PROGRAM DEFINE
+
+# PROGRAM INIT
 addFeature Costume
 featCall agent.Costume setCostume 'circle.json' 0
 featCall agent.Costume setScale 1
-# PROGRAM EVENT
-// every 5 runAfter [[ ]]
+
 # PROGRAM UPDATE
-// when xxx touches yyy [[ ]]`;
+// code to run every frame
+// when xxx touches yyy [[ ]]
+// every 5 runAfter [[ ]]
+// onEvent Tick [[ ]]
+`;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();

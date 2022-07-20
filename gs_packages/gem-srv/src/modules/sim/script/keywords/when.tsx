@@ -14,11 +14,6 @@ import * as SIMCOND from 'modules/datacore/dc-sim-conditions';
 import * as BUNDLER from 'script/tools/script-bundler';
 import ERROR from 'modules/error-mgr';
 
-/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// whether to force loop code to go into PROGRAM EVENT or not
-const FORCE_INTO_EVENT = true;
-
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export class when extends Keyword {
@@ -37,7 +32,11 @@ export class when extends Keyword {
   compile(kwArgs: TKWArguments): TOpcode[] {
     const [kw, A, testName, B, ...args] = kwArgs;
     if (!Array.isArray(args) || args.length === 0)
-      ERROR('compiler', { info: 'arg underflow', kwArgs });
+      ERROR('missing when block consequent', {
+        source: 'compiler',
+        why: 'arg underflow',
+        data: kwArgs
+      });
     let consq: TSM_Method = args.pop() as TSM_Method; // fyi: consq is array of functions
 
     // sanity checks
@@ -74,18 +73,8 @@ export class when extends Keyword {
         }); // foreach
       }
     ];
-    if (FORCE_INTO_EVENT) {
-      BUNDLER.AddToProgramOut(event, 'event');
-      return [];
-    }
-    // otherwise just emit, warning if necessary
-    const { programOut } = BUNDLER.BundlerState();
-    if (programOut !== 'EVENT')
-      console.warn(
-        `when: writing loop to ${programOut} instead of expected EVENT`,
-        kwArgs
-      );
-    return event;
+    BUNDLER.AddToProgramOut(event, 'event');
+    return [];
   }
 
   /** custom validation, overriding the generic validation() method of the
