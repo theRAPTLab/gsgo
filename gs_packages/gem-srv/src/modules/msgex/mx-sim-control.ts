@@ -147,6 +147,7 @@ function Register(parent?: any) {
 /// direct API methods (see MESSAGE EXCHANGE API for URSYS services)
 export {
   Register, // call this to ensure that module is loaded
+  DoSimReset, // Reset and Recompile
   SimPlaces // simulator environment setup before first draw
 };
 export {

@@ -197,8 +197,12 @@ async function Initialize() {
 
   // 2. Load Model from DB
   await ACProject.LoadProjectFromAsset(CURRENT_PROJECT_ID);
-  SIMCTRL.SimPlaces(CURRENT_PROJECT);
-
+  try {
+    SIMCTRL.DoSimReset(); // compile blueprints
+    SIMCTRL.SimPlaces(CURRENT_PROJECT);
+  } catch (err) {
+    console.error('Error trying to compile gemscripts:', err);
+  }
   // 3. Register as 'Sim' Device
   // devices templates are defined in class-udevice.js
   const dev = UR.NewDevice('Sim');
