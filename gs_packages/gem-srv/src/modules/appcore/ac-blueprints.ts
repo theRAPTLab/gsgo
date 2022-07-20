@@ -116,6 +116,18 @@ function m_SymbolizeBlueprints(bpDefs: TBlueprint[]) {
   console.groupEnd();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Data Migration from old format to new
+ *  old bpDefs = {id, scriptText}
+ *  new bpDefs = {name, scriptText}
+ */
+function m_MigrateBpidToBpName(bpDefs: TBlueprint[]): TBlueprint[] {
+  return bpDefs.map(bp => {
+    let { name, id, scriptText } = bp;
+    if (id && !name) name = id;
+    return { name, scriptText };
+  });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Use this to compile and add additional blueprints to an already running sim
  *  1. Compiles blueprints
  *  2. Registers blueprint with dc-sim-resources
@@ -422,9 +434,15 @@ STATE.addEffectHook(hook_Effect);
  *  @param {[]} blueprints - Array of {name, scripText} from gemproj file
  */
 function SetBlueprints(projId: string, blueprints: TBlueprint[]) {
+  // DON'T COMPILE BLUEPRINTS ON LOAD!!!
+  //
   // 1. Compile the blueprints
   //    Converts old gemproj data format -- 'id' => 'name'
-  const bpDefs = ResetAndCompileBlueprints(blueprints);
+  // const bpDefs = ResetAndCompileBlueprints(blueprints);
+  //
+  // But we still need to set bpDefs
+  const bpDefs = m_MigrateBpidToBpName(blueprints);
+
   // 2. Update datacore
   DCPROJECT.UpdateProjectData({ blueprints }); // note blueprints:blueprints object
 
