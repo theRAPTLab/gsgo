@@ -196,7 +196,10 @@ async function Initialize() {
   }
 
   // 2. Load Model from DB
-  await ACProject.LoadProjectFromAsset(CURRENT_PROJECT_ID);
+  await ACProject.LoadProjectFromAsset(CURRENT_PROJECT_ID).catch(caught => {
+    console.error('Error LoadProjectFromAsset', caught);
+    alert(`Initialize Error -- bad project file? ${caught}`);
+  });
   try {
     SIMCTRL.DoSimReset(); // compile blueprints
     SIMCTRL.SimPlaces(CURRENT_PROJECT);
