@@ -656,6 +656,7 @@ function ScriptUpdate(data) {
     DCAGENTS.GetInstancesType(bpName).forEach(a => DCAGENTS.DeleteAgent(a));
     // Also delete input agents
     DCINPUTS.InputsReset();
+    ACBlueprints.ResetAndCompileBlueprints();
   }
 
   // 5. Inform network devices
