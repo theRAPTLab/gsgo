@@ -298,6 +298,10 @@ function RegisterFeature(fpack: IFeature) {
   FEATURES.set(fpack.name, fpack);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function ResetAllFeatures() {
+  FEATURES.forEach(f => f.reset());
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function DeleteAllFeatures() {
   FEATURES.clear();
 }
@@ -509,6 +513,7 @@ export {
   GetAllFeatures,
   GetFeatureMethod,
   RegisterFeature,
+  ResetAllFeatures,
   DeleteAllFeatures,
   GetFeatureSymbolsFor,
   GetFeatureSymbols

@@ -171,6 +171,7 @@ function ResetAndCompileBlueprints(
 ): TBlueprint[] {
   SM_Agent.ClearGlobalAgent();
   SIMAGENTS.ClearDOBJ();
+  SIMDATA.ResetAllFeatures();
   SIMDATA.DeleteAllScriptEvents();
   SIMDATA.DeleteAllBlueprintBundles();
   DCAGENTS.DeleteAllAgents();
