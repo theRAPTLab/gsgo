@@ -156,28 +156,6 @@ function m_CompileBlueprints(bpDefs: TBlueprint[]): TBlueprint[] {
     };
   });
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Use this when reseting the simulation.
- * Clears all ScriptEvents, Blueprints, Agents, and Instances
- * and THEN compiles blueprints.
- * Call with no 'bluerprints' data to reset and recompile existing bluepritns
- * NOTE This will accept old gemproj blueprint formats with "id" and return it converted to "name"
- * @param {TBlueprint[]} blueprints - array of blueprint definitions [ {name, scriptText} ]
- * @returns {TBlueprint[]} - bpDefs that all use 'name', not 'id'
- */
-function ResetAndCompileBlueprints(
-  blueprints: TBlueprint[] = STATE._getKey('bpDefs')
-): TBlueprint[] {
-  SM_Agent.ClearGlobalAgent();
-  SIMAGENTS.ClearDOBJ();
-  SIMDATA.ResetAllFeatures();
-  SIMDATA.DeleteAllScriptEvents();
-  SIMDATA.DeleteAllBlueprintBundles();
-  DCAGENTS.DeleteAllAgents();
-  DCAGENTS.DeleteAllInstances();
-  return m_CompileBlueprints(blueprints);
-}
 
 /// API ACCESSORS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -429,6 +407,35 @@ STATE.addEffectHook(hook_Effect);
 
 /// UPDATERS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * Use this when reseting the simulation.
+ * Clears all ScriptEvents, Blueprints, Agents, and Instances
+ * and THEN compiles blueprints.
+ * Call with no 'bluerprints' data to reset and recompile existing bluepritns
+ * NOTE This will accept old gemproj blueprint formats with "id" and return it converted to "name"
+ * @param {TBlueprint[]} blueprints - array of blueprint definitions [ {name, scriptText} ]
+ * @returns {TBlueprint[]} - bpDefs that all use 'name', not 'id'
+ */
+function ResetAndCompileBlueprints(
+  blueprints: TBlueprint[] = STATE._getKey('bpDefs')
+): TBlueprint[] {
+  console.error('RESETANDCOMPILE BP', blueprints);
+  SM_Agent.ClearGlobalAgent();
+  SIMAGENTS.ClearDOBJ();
+  SIMDATA.ResetAllFeatures();
+  SIMDATA.DeleteAllScriptEvents();
+  SIMDATA.DeleteAllBlueprintBundles();
+  DCAGENTS.DeleteAllAgents();
+  DCAGENTS.DeleteAllInstances();
+  const bpDefs = m_CompileBlueprints(blueprints);
+  // Update state
+  m_UpdateAndPublishBpDefs(bpDefs);
+  m_UpdateAndPublishDerivedBpLists();
+  return bpDefs;
+}
+
 /** API: Use this to initialize the state
  *  Called by ac-project with gemproj data
  *  @param {[]} blueprints - Array of {name, scripText} from gemproj file
