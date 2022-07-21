@@ -527,6 +527,11 @@ function InstanceRequestEdit(data) {
   //          May not be necessary if we only allow one map editor
   // 1. Set Agent Data
   const agent = DCAGENTS.GetAgentById(data.agentId);
+  if (!agent) {
+    console.warn(
+      ...PR('InstanceRequestEdit on undefined agent agentId', data.agentId)
+    );
+  }
   // 2. If already selected, deselect it.
   if (agent.isSelected) {
     // 2a. Deselect it
