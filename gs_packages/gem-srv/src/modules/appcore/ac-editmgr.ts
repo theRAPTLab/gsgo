@@ -342,6 +342,7 @@ function DispatchClick(event) {
     console.log('clearing sel_linenum and sel_linepos');
     // if nothing processed, then unset selection
     WIZCORE.SendState({ sel_linenum: -1, sel_linepos: -1 });
+    CancelSlotEdit();
     return;
   }
   /** (N) unhandled click oops **********************************************/
