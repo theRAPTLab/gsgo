@@ -236,7 +236,9 @@ class SymbolInterpreter {
     const fn = 'anyString:';
     if (this.detectScanError()) return this.vagueError(token);
     const [type, string] = TOKENIZER.UnpackToken(token);
-    const unitText = TOKENIZER.TokenToString(token);
+    // const unitText = TOKENIZER.TokenToString(token);
+    const unitText = TOKENIZER.TokenToPlainString(token); // no quotes
+
     const gsType = 'string';
     const stype = typeof string;
     if (type === 'string' && stype === 'string')
