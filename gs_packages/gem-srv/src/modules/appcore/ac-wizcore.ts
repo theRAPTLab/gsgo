@@ -149,7 +149,6 @@ STORE._interceptState(state => {
   // (SlotEditor_Block call to ac-editmgr.SaveSlotLineScript)
   // if script_tokens is changing, we also want to emit new script_text
   if (script_tokens && !script_text) {
-    console.log('script-tokens', script_tokens);
     state.script_tokens = TRANSPILER.EnforceBlueprintPragmas(script_tokens);
     // also symbolize blueprints -- eg after adding a feature, need to re-symbolize to make feature available
     TRANSPILER.SymbolizeBlueprint(script_tokens);
