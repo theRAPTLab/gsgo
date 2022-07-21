@@ -284,6 +284,10 @@ class VisionPack extends SM_Feature {
     prop.setMin(0);
     this.featAddProp(agent, 'colorValueDetectionThreshold', prop);
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    VISION_AGENTS.clear();
+  }
 
   /// VISION METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

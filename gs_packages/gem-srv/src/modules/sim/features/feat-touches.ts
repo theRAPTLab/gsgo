@@ -185,6 +185,10 @@ class TouchPack extends SM_Feature {
   decorate(agent) {
     super.decorate(agent);
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    AGENT_TOUCHTYPES.clear();
+  }
 
   /// VISION METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

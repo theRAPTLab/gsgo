@@ -666,6 +666,12 @@ class MovementPack extends SM_Feature {
     // agent.prop.Movement._jitterRotate
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    MOVEMENT_AGENTS.clear();
+    SEEK_AGENTS.clear();
+    INSIDE_AGENTS.clear();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   handleInput() {
     // hook into INPUT phase and do what needs doing for
     // the feature as a whole
