@@ -157,7 +157,10 @@ STORE._interceptState(state => {
     if (cur_bdl !== null) {
       const { name: curName } = cur_bdl;
       const { name: newName } = state.cur_bdl;
-      if (newName !== curName) SIMDATA.DeleteBlueprintBundle(curName);
+      if (newName !== curName) {
+        SIMDATA.DeleteBlueprintBundle(curName);
+        state.cur_bpid = newName;
+      }
     }
 
     // end symbolize
