@@ -168,7 +168,8 @@ export function EditSymbol_Block(props) {
       gsType === 'number' ||
       gsType === 'string' ||
       gsType === 'boolean' ||
-      gsType === 'identifier'
+      gsType === 'identifier' ||
+      gsType === '{...}'
     )
       return '';
 

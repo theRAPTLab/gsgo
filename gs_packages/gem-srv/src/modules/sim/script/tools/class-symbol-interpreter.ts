@@ -236,7 +236,9 @@ class SymbolInterpreter {
     const fn = 'anyString:';
     if (this.detectScanError()) return this.vagueError(token);
     const [type, string] = TOKENIZER.UnpackToken(token);
-    const unitText = TOKENIZER.TokenToString(token);
+    // const unitText = TOKENIZER.TokenToString(token);
+    const unitText = TOKENIZER.TokenToPlainString(token); // no quotes
+
     const gsType = 'string';
     const stype = typeof string;
     if (type === 'string' && stype === 'string')
@@ -1514,6 +1516,24 @@ class SymbolInterpreter {
     const tok = scriptToken;
     // default unit text
     const unitText = TOKENIZER.TokenToUnitText(tok);
+
+    // is this an identifier?
+    if (gsType === 'identifier') {
+      let ident = TOKENIZER.TokenValue(tok, 'identifier');
+      if (typeof ident === 'string')
+        symData = new VSDToken({ arg }, { gsType, unitText });
+      else
+        symData = new VSDToken(
+          {},
+          {
+            gsType,
+            unitText: TOKENIZER.TokenToUnitText(tok),
+            err_code: 'invalid',
+            err_info: `${tokType}:${tokVal} is a malformed identifier`
+          }
+        );
+    }
+
     // is this a literal boolean value from token.value
     if (gsType === 'boolean') {
       let value = TOKENIZER.TokenValue(tok, 'value');

@@ -176,6 +176,10 @@ class CursorPack extends SM_Feature {
       );
     }
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    CURSOR_BLUEPRINTS.clear();
+  }
 
   // `agent` in this case is the character being bound to, rather than
   // the Cursor agent. e.g. to release a Moth, you would call

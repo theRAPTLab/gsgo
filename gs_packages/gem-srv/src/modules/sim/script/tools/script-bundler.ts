@@ -59,7 +59,7 @@ function SymbolRefs(): TSymbolRefs {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ClearBundlerState() {
   CUR_NAME = undefined;
-  CUR_PROGRAM = undefined;
+  CUR_PROGRAM = 'INIT'; // default to init always
   CUR_BUNDLE = undefined;
   CUR_GLOBALS = {};
 }
@@ -222,7 +222,7 @@ function AddToProgramOut(prog: TSMCProgram, progName: string) {
   const bdlKey = progName.toUpperCase();
   if (!CHECK.IsValidBundleProgram(bdlKey))
     throw Error(`${fn} invalid progName ${bdlKey}`);
-  if (bdlKey === CUR_PROGRAM)
+  if (bdlKey === CUR_PROGRAM && DBG)
     console.warn(`${fn} progname '${bdlKey}' is already the set output`);
   if (typeof bdl !== 'object') throw Error(`${fn} ${bdl} is not an object`);
   if (!bdl[bdlKey]) bdl[bdlKey] = [];

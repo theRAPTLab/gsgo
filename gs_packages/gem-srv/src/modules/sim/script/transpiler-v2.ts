@@ -96,23 +96,28 @@ function EnforceBlueprintPragmas(script: TScriptUnit[]): TScriptUnit[] {
   newScript.push(stm);
   // next scan for everything that is a directive at the top
   let scanTags = true;
-  /* READ ***/ [stmNum, stm] = statements.next().value;
+  let entry;
   while (scanTags) {
-    [kw, pragmaType, pragmaKey, ...args] = TOKENIZER.UnpackStatement(stm);
-    if ((kw && kw !== '#') || pragmaType !== 'TAG') {
-      // stop at the first non tag
-      scanTags = false;
+    /* READ ***/ entry = statements.next().value;
+    if (entry !== undefined) {
+      [stmNum, stm] = entry;
+      [kw, pragmaType, pragmaKey, ...args] = TOKENIZER.UnpackStatement(stm);
+      if ((kw && kw !== '#') || pragmaType !== 'TAG') {
+        // stop at the first non tag
+        scanTags = false;
+      } else {
+        pragmaType = pragmaType || '';
+        pragmaType = (pragmaType as string).toUpperCase();
+        pragmaKey = pragmaKey || '';
+        pragmaKey = (pragmaKey as string).toUpperCase();
+        const pkey = pragmaType;
+        if (TAGMAP[pkey] === undefined) TAGMAP[pkey] = {};
+        const pdict = TAGMAP[pkey];
+        pdict[pragmaKey as string] = { stmNum, args };
+        newScript.push(stm);
+      }
     } else {
-      pragmaType = pragmaType || '';
-      pragmaType = (pragmaType as string).toUpperCase();
-      pragmaKey = pragmaKey || '';
-      pragmaKey = (pragmaKey as string).toUpperCase();
-      const pkey = pragmaType;
-      if (TAGMAP[pkey] === undefined) TAGMAP[pkey] = {};
-      const pdict = TAGMAP[pkey];
-      pdict[pragmaKey as string] = { stmNum, args };
-      newScript.push(stm);
-      /* READ ***/ [stmNum, stm] = statements.next().value;
+      scanTags = false;
     }
   }
   // check that required directives are in place
@@ -137,21 +142,22 @@ function EnforceBlueprintPragmas(script: TScriptUnit[]): TScriptUnit[] {
   // check for required program directives
   // while writing the rest of the statements
   const needsProg = new Set(SIMDATA.GetBundleOutSymbols());
-  /* REUSE **/ let entry = [stmNum, stm]; // exit previously still good
-  while (entry) {
-    [stmNum, stm] = entry;
-    let b, c;
-    [kw, b, c] = TOKENIZER.UnpackStatement(stm);
-    kw = kw || '';
-    if (kw && kw === '#') {
-      b = b || '';
-      b = b.toUpperCase();
-      c = c || '';
-      c = c.toUpperCase();
-      if (b === 'PROGRAM') needsProg.delete(c);
+  /* REUSE **/ if (entry !== undefined) {
+    while (entry) {
+      [stmNum, stm] = entry;
+      let b, c;
+      [kw, b, c] = TOKENIZER.UnpackStatement(stm);
+      kw = kw || '';
+      if (kw && kw === '#') {
+        b = b || '';
+        b = b.toUpperCase();
+        c = c || '';
+        c = c.toUpperCase();
+        if (b === 'PROGRAM') needsProg.delete(c);
+      }
+      newScript.push(stm);
+      /* READ ***/ entry = statements.next().value; /*** READ ***/
     }
-    newScript.push(stm);
-    /* READ ***/ entry = statements.next().value; /*** READ ***/
   }
   // add missing program directives at end of script
   needsProg.forEach(progType => {

@@ -157,6 +157,7 @@ declare global {
     // compatibility with SM_Object
     getMethod(mName: string): TSM_FeatureMethod;
     symbolize(): TSymbolData;
+    reset(): void;
   }
   /** SM_Feature methods are either functions or TSMCPrograms */
   type TSM_FeatureMethod = (agent: IAgent, ...any: any[]) => any;

@@ -158,6 +158,10 @@ class CostumePack extends SM_Feature {
     simloop.hook('INPUT', frame => console.log(frame));
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    COSTUME_AGENTS.clear();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Add costume-specific properties to the agent. The feature methods
    *  are defined inside the featurepack instance, not the agent instance
    *  as props are.

@@ -185,6 +185,10 @@ class TouchPack extends SM_Feature {
   decorate(agent) {
     super.decorate(agent);
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    AGENT_TOUCHTYPES.clear();
+  }
 
   /// VISION METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -229,8 +233,8 @@ class TouchPack extends SM_Feature {
     return {
       props: {},
       methods: {
-        monitor: { args: ['targetBlueprintName:string', 'touchTypes:{...}'] },
-        getTouchingAgent: { args: ['touchType:string'] },
+        monitor: { args: ['targetBlueprintName:string', 'touchType:identifier'] },
+        getTouchingAgent: { args: ['touchType:identifier'] },
         clearTouches: { args: ['targetId:string'] }
       }
     };
