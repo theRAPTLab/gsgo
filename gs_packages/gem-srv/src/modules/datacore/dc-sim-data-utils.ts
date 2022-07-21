@@ -40,6 +40,8 @@ function OffsetLineNum(num: number, inc: 'add' | 'sub'): number {
 const GSTYPES: TGSType[] = [
   // see t-script.d "SYMBOL DATA AND TYPES"
   // these are used both for keyword args and method signature args
+  'identifier',
+  //
   'boolean',
   'string',
   'number',

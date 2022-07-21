@@ -290,7 +290,7 @@ function CompileScript(script: TScriptUnit[], refs: TSymbolRefs): TSMCProgram {
   // compile unit-by-unit
   script.forEach((statement, ii) => {
     const objcode = CompileStatement(statement, refs);
-    program.push(...(objcode as TSMCProgram));
+    program.push(...objcode);
   });
   return program;
 }
