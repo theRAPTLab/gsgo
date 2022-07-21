@@ -357,7 +357,7 @@ function DispatchClick(event) {
 /** API User clicked "Add Line" on ScriptViewWiz_Block */
 function AddLine(position: VMLineScriptInsertionPosition) {
   const newLine = WIZCORE.AddLine(position);
-  SelectSlot(newLine, 1);
+  STORE.QueueEffect(() => SelectSlot(newLine, 1));
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
