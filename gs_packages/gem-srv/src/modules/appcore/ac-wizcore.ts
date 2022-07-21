@@ -126,8 +126,7 @@ STORE._interceptState(state => {
     let toks = TRANSPILER.TextToScript(script_text);
     toks = TRANSPILER.EnforceBlueprintPragmas(toks);
     state.script_tokens = toks;
-    TRANSPILER.SymbolizeBlueprint(toks);
-    state.cur_bdl = TRANSPILER.CompileBlueprint(toks);
+    state.cur_bdl = TRANSPILER.SymbolizeBlueprint(toks);
 
     // ...did the name change?  if so, remove the old bundle
     const { cur_bdl } = STORE.State();
@@ -151,8 +150,7 @@ STORE._interceptState(state => {
   if (script_tokens && !script_text) {
     state.script_tokens = TRANSPILER.EnforceBlueprintPragmas(script_tokens);
     // also symbolize blueprints -- eg after adding a feature, need to re-symbolize to make feature available
-    TRANSPILER.SymbolizeBlueprint(script_tokens);
-    state.cur_bdl = TRANSPILER.CompileBlueprint(script_tokens);
+    state.cur_bdl = TRANSPILER.SymbolizeBlueprint(script_tokens);
 
     // ...did the name change?  if so, remove the old bundle
     const { cur_bdl } = STORE.State();
