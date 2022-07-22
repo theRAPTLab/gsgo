@@ -105,6 +105,9 @@ export const ADVANCED_SYMBOLS = [
   // features
   'cursor',
   // agent
+  'x',
+  'y',
+  'scale',
   'statustext',
   'zindex',
   'color',
