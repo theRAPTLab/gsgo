@@ -53,6 +53,10 @@ export const HIDDEN_SYMBOLS = [
   'bodyheight',
   'getbodywidth',
   'getbodyheight',
+  'intersectsWith',
+  'intersectsWithBounds',
+  'intersectsCenterWithBounds',
+  'intersectsCenterWithAgentBounds',
   // agent
   'skin',
   // 'scale', // needed by physics
@@ -93,6 +97,9 @@ export const ADVANCED_SYMBOLS = [
   // features
   'cursor',
   // agent
+  'x',
+  'y',
+  'scale',
   'statustext',
   'zindex',
   'color',
