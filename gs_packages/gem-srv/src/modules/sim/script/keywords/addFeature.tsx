@@ -8,10 +8,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Keyword from 'lib/class-keyword';
-import { addFeature } from 'script/ops/agent-ops';
 import { GetFeature } from 'modules/datacore/dc-sim-data';
-import { RegisterKeyword, GetFeatureSymbolsFor } from 'modules/datacore';
+import { RegisterKeyword } from 'modules/datacore';
 import { TokenToString } from 'script/tools/script-tokenizer';
+import * as BUNDLER from 'script/tools/script-bundler';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -24,11 +24,13 @@ export class AddFeature extends Keyword {
 
   /** create smc blueprint code objects */
   compile(unit: TKWArguments): TOpcode[] {
-    const progout = [];
     const [, featureName] = unit;
     const feat = GetFeature(featureName as string);
-    if (feat !== undefined) progout.push(addFeature(featureName as string));
-    return progout;
+    if (feat !== undefined) {
+      const define = [agent => agent.addFeature(featureName as string)];
+      BUNDLER.AddToProgramOut(define, 'define');
+    }
+    return [];
   }
 
   symbolize(unit: TScriptUnit): TSymbolData {

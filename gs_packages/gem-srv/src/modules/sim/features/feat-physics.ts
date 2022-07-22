@@ -207,6 +207,11 @@ class PhysicsPack extends SM_Feature {
     this.setShape(agent, RECTANGLE);
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    PHYSICS_AGENTS.clear();
+  }
+
   /// PHYSICS HELPERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**

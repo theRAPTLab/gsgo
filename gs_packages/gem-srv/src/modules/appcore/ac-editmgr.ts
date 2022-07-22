@@ -110,17 +110,15 @@ const STORE = new StateMgr('EditorCore');
 
 /// SUB MODULE STATE HANLDERS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+WIZCORE.SubscribeState(handleWizUpdate);
+function handleWizUpdate(vmStateEvent) {
+  const { cur_bpid } = vmStateEvent;
+  if (cur_bpid) STORE.SendState({ bpname: cur_bpid });
+}
 /// Current not used
 ///
-/// WIZCORE.SubscribeState(handleWizUpdate);
-/// SLOTCORE.SubscribeState(handleSlotUpdate);
-///
-/// function handleWizUpdate(vmStateEvent) {
-///   // const { sel_linenum, sel_linepos, script_text, script_tokens, cur_bdl } =
-///   //   vmStateEvent;
-///   // Do something with state changes, but don't nest state updates!
-/// }
 /// /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// SLOTCORE.SubscribeState(handleSlotUpdate);
 /// function handleSlotUpdate(vmStateEvent) {
 ///   // const { sel_slotpos, slots_validation, slots_linescript } = vmStateEvent;
 ///   // Do something with state changes, but don't nest state updates!
@@ -186,9 +184,10 @@ function SelectSlot(sel_linenum, sel_linepos) {
 /// initial values of state have to be defined for constructors of components
 /// that are relying on it, but these are not yet loaded
 STORE._initializeState({
-  selection: '' // placeholder for sel_linenum
+  selection: '', // placeholder for sel_linenum
   // sel_linenum should be handled by editMgr in the future
   // currently used to trigger state update to show validationLog dump
+  bpname: '' // mirrors wizcore cur_bpid
 });
 
 /// DERIVED STATE LOGIC ///////////////////////////////////////////////////////
@@ -342,6 +341,7 @@ function DispatchClick(event) {
     console.log('clearing sel_linenum and sel_linepos');
     // if nothing processed, then unset selection
     WIZCORE.SendState({ sel_linenum: -1, sel_linepos: -1 });
+    CancelSlotEdit();
     return;
   }
   /** (N) unhandled click oops **********************************************/
@@ -356,7 +356,7 @@ function DispatchClick(event) {
 /** API User clicked "Add Line" on ScriptViewWiz_Block */
 function AddLine(position: VMLineScriptInsertionPosition) {
   const newLine = WIZCORE.AddLine(position);
-  SelectSlot(newLine, 1);
+  STORE.QueueEffect(() => SelectSlot(newLine, 1));
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

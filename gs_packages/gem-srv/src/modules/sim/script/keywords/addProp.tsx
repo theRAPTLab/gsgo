@@ -10,6 +10,7 @@
 import Keyword from 'lib/class-keyword';
 import { RegisterKeyword, GetPropTypeCtor } from 'modules/datacore';
 import { TokenToString } from 'script/tools/script-tokenizer';
+import * as BUNDLER from 'script/tools/script-bundler';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -24,10 +25,12 @@ export class AddProp extends Keyword {
   compile(unit: TKWArguments): TOpcode[] {
     const [, propName, propType, initValue] = unit;
     const propCtor = GetPropTypeCtor(propType as TSLit);
-    return [
+    const define = [
       (agent: IAgent) =>
         agent.addProp(propName as string, new propCtor(initValue))
     ];
+    BUNDLER.AddToProgramOut(define, 'define');
+    return [];
   }
 
   /** return symbol structure for this keyword */

@@ -8,6 +8,7 @@
 import UR from '@gemstep/ursys/client';
 import Keyword, { K_EvalRuntimeUnitArgs } from 'lib/class-keyword';
 import { RegisterKeyword } from 'modules/datacore';
+import { TokenToString } from 'script/tools/script-tokenizer';
 
 /// KEYWORD STATIC DECLARATIONS ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,6 +46,22 @@ export class dbgOut extends Keyword {
       if (COUNTER === 0) console.log('dbgOut limiter at', MAX_OUT, 'statements');
     });
     return progout;
+  }
+
+  /** return symbol structure for this keyword */
+  symbolize(unit: TScriptUnit): TSymbolData {
+    const [kwTok, msgTok] = unit;
+    const message = TokenToString(msgTok);
+    return { unitText: message };
+  }
+
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    const [kwTok, msgTok] = unit;
+    const vtoks = [];
+    vtoks.push(this.shelper.anyKeyword(kwTok));
+    vtoks.push(this.shelper.anyString(msgTok));
+    const vlog = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: vlog };
   }
 } // end of keyword definition
 
