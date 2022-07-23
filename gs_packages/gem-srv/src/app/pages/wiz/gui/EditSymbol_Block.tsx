@@ -65,7 +65,7 @@ export const HIDDEN_SYMBOLS = [
   'statusvalue',
   'statusvaluecolor',
   'statusvalueislarge'
-];
+].map(w => w.toLowerCase());
 export const LOCKED_SYMBOLS = [
   '#',
   '_pragma',
@@ -82,7 +82,7 @@ export const LOCKED_SYMBOLS = [
   'update',
   'think',
   'exec'
-];
+].map(w => w.toLowerCase());
 export const ADVANCED_SYMBOLS = [
   // keywords
   'exprpush',
@@ -107,7 +107,7 @@ export const ADVANCED_SYMBOLS = [
   'visible',
   'alpha',
   'isinert'
-];
+].map(w => w.toLowerCase());
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
