@@ -23,7 +23,7 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
   ],
   GLOOP_STAGED: ['STAGED'], // GLOOP_LOAD completed, ready to load model
   GLOOP_PRERUN: [
-    // Set up thet stage
+    // Set up the stage
     // GLOOP_STAGED completed, monitor inputs before run
     'INPUTS_READ',
     'INPUTS_UPDATE',
