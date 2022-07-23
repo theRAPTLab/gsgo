@@ -96,6 +96,10 @@ export const ADVANCED_SYMBOLS = [
   'dbgerror',
   // features
   'cursor',
+  // costume
+  'colorHSVWithinRange',
+  'initHSVColorScale',
+  'getHSVColorScaleColor',
   // agent
   'x',
   'y',
