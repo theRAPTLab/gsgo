@@ -57,7 +57,7 @@ export default function MyApp(props) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
     // URSYS startup
-    (async () => {
+    void (async () => {
       await UR.SystemNetBoot({ netInfo });
       await UR.SystemAppConfig({ autoRun: true });
     })();
