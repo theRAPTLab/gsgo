@@ -202,7 +202,6 @@ async function Initialize() {
   });
   try {
     SIMCTRL.DoSimReset(); // compile blueprints
-    SIMCTRL.SimPlaces(CURRENT_PROJECT);
   } catch (caught) {
     console.error('Error trying to compile gemscripts:', caught);
     alert(`Initialize.SimPlaces Error -- bad script? ${caught}`);
