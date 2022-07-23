@@ -229,7 +229,14 @@ function RoundHasBeenStarted() {
 /// @BEN: this is a legacy startup that Ben should explicitly set somewhere
 /// else UR/APP_STAGE refers to the reference GLOOP in URSYS. If you take this
 /// out, then the sim doesn't draw
-UR.HookPhase('UR/APP_STAGE', Stage);
+
+// BL NOTE: Each app (e.g. Main, ScriptEditor, CharController, Viewer), should call
+// UR.SystemAppConfig({autoRun:true}), which will in turn call api-sim.Stage().
+// If they don't then this call is necessary.  But if you use this call,
+// watch out for overlapping Stage() calls which can result in multiple
+// simultaneous game loops running.  STAGE_IS_BEING_INITED should prevent that.
+// UR.HookPhase('UR/APP_STAGE', Stage);
+
 // UR.HookPhase('UR/APP_RESET', Reset); // never reached in ursys app gloop
 // UR.HookPhase('UR/APP_RUN', Run); // empty function
 // UR.HookPhase('UR/APP_RESTAGE', Restage); // unused function
