@@ -798,7 +798,7 @@ UR.HandleMessage('INSTANCE_HOVEROUT', InstanceHoverOut);
 
 /// UR HOOKS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HookPhase('UR/APP_START', Initialize);
+UR.HookPhase('UR/APP_RUN', Initialize);
 
 /// EXPORT MODULE API /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
