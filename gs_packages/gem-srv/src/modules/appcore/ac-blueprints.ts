@@ -481,6 +481,13 @@ function InjectBlueprint(projId: string, bpDef: TBlueprint) {
   m_CompileBlueprints([bp]);
   // NOTE: Not updating 'blueprints' state, nor writing to db
   // because this is used to insert cursors, which do not need a UI
+
+  // 2. Inform charControl of new blueprints
+  m_UpdateAndPublishDerivedBpLists();
+  const charcontrolBpidList = GetCharControlBpNames();
+  UR.RaiseMessage('NET:SET_CHARCONTROL_BPIDLIST', {
+    bpnames: charcontrolBpidList
+  });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Add new blueprint or update existing blueprint */
