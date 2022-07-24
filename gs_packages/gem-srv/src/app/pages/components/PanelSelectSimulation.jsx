@@ -69,7 +69,6 @@ class PanelSelectSimulation extends React.Component {
         })
     );
     UR.HookPhase('UR/APP_READY', () => {
-      console.error('APP READ, list projects');
       const PROJECT_LOADER = ASSETS.GetLoader('projects');
       PROJECTS = PROJECT_LOADER.getProjectsList();
       this.listProjects(PROJECTS);
