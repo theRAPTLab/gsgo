@@ -32,7 +32,7 @@ const RUNTIME_PATH = Path.join(__dirname, `../${RUNTIME_DIRNAME}`);
 /// configs
 
 const MQTT_URL = 'localhost'; // override in local-settings.json
-const ASSETDIR = 'local'; // override in local-settings.json
+const ASSETDIR = 'art-assets'; // override in local-settings.json
 
 /// DEVELOPER QOL /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -82,6 +82,7 @@ STORE._initializeState({
   cur_prjid: null, // current project id
   cur_bpid: null, // current blueprint
   cur_bdl: null, // current blueprint bundle
+  old_bpid: null, // original blueprint name before rename
 
   // selection-driven data
   sel_symbol: null, // selection-dependent symbol data
@@ -159,6 +160,7 @@ STORE._interceptState(state => {
       const { name: newName } = state.cur_bdl;
       if (newName !== curName) {
         SIMDATA.DeleteBlueprintBundle(curName);
+        state.old_bpid = curName;
         state.cur_bpid = newName;
       }
     }
@@ -546,6 +548,32 @@ function GetProgramContextForLine(lineNum: number): TLineContext {
   return undefined;
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API Save script_page to server */
+function SaveToServer(projId, bpName) {
+  const { script_text, old_bpid } = State();
+  UR.CallMessage('NET:SCRIPT_UPDATE', {
+    projId,
+    script: script_text,
+    origBlueprintName: bpName
+  }).then(result => {
+    const newBpName = result.bpName;
+
+    // BP Renamed, delete old name after saving to server
+    if (old_bpid)
+      UR.RaiseMessage('NET:BLUEPRINT_DELETE', {
+        blueprintName: old_bpid
+      });
+    STORE.SendState({
+      old_bpid: null,
+      script_page_needs_saving: false
+    });
+
+    // select the new script otherwise wizard retains the old script
+    UR.RaiseMessage('SELECT_SCRIPT', { bpName: newBpName });
+  });
+}
+
 /// DEBUG CONSOLE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function PrintDBGConsole(str: string) {
@@ -574,7 +602,8 @@ export {
   WizardTestLine, // handle test line for WizardTextLine tester
   DispatchEditorClick, // handle clicks on editing box
   AddLine, // handle ScriptViewPane request to add a new script line
-  GetProgramContextForLine // given a line number, returns its program context
+  GetProgramContextForLine, // given a line number, returns its program context
+  SaveToServer // send script_page data to server
 };
 
 /// EXPORTED VIEWMODEL INFO UTILS //////////////////////////////////////////////

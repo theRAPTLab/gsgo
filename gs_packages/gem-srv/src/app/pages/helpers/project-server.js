@@ -167,7 +167,7 @@ function DoUnRegisterInspector(data) {
 
 /// PROJECT DATA PRE INIT /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API:
+/** API: Called by Main.componentDidMount
  *  Load application-specific settings (current locale, projId as defined by URL)
  */
 function ProjectDataPreInit(parent, projId) {
@@ -185,7 +185,11 @@ function ProjectDataPreInit(parent, projId) {
 
 /// MAIN INITIALIZATION ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Also hooked to APP_START
+/** API: Hooked on APP_RUN
+ *  Load project data
+ *  Register as a device
+ *  Set up controller listeners
+ */
 async function Initialize() {
   // 1. Check for other 'Sim' devices.
   const devices = UR.GetDeviceDirectory();
@@ -202,7 +206,6 @@ async function Initialize() {
   });
   try {
     SIMCTRL.DoSimReset(); // compile blueprints
-    SIMCTRL.SimPlaces(CURRENT_PROJECT);
   } catch (caught) {
     console.error('Error trying to compile gemscripts:', caught);
     alert(`Initialize.SimPlaces Error -- bad script? ${caught}`);
@@ -798,7 +801,7 @@ UR.HandleMessage('INSTANCE_HOVEROUT', InstanceHoverOut);
 
 /// UR HOOKS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HookPhase('UR/APP_START', Initialize);
+UR.HookPhase('UR/APP_RUN', Initialize);
 
 /// EXPORT MODULE API /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
