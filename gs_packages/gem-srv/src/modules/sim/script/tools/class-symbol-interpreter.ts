@@ -20,7 +20,6 @@ import UR from '@gemstep/ursys/client';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as TOKENIZER from 'script/tools/script-tokenizer';
-import * as COMPILER from 'script/tools/script-compiler';
 import VSDToken from 'script/tools/class-validation-token';
 import { GetFeatureSymbols } from 'modules/datacore/dc-sim-data';
 
@@ -638,8 +637,7 @@ class SymbolInterpreter {
           this.vagueError(arg2)
         ];
       // valid tag
-      const [argHint, argType] = CHECK.UnpackArg(tag);
-      if (argType !== 'boolean')
+      if (valueType !== 'value' || typeof value !== 'boolean')
         return [
           this.goodToken(arg1, symbols, { gsType: 'tag' }),
           this.badToken(
@@ -647,7 +645,7 @@ class SymbolInterpreter {
             {},
             {
               gsType: 'boolean',
-              err_info: `tag value must be boolean not ${argType}`
+              err_info: `tag value must be boolean not ${valueType}`
             }
           )
         ];
