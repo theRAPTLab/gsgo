@@ -24,7 +24,7 @@ import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to i
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('SymbolSelector');
+const PR = UR.PrefixUtil('ES_BLOCK', 'TagDebug');
 
 export const HIDDEN_SYMBOLS = [
   // keywords
@@ -132,8 +132,6 @@ export function EditSymbol_Block(props) {
       if (tok.identifier) SYMBOLS_IN_USE.push(tok.identifier.toLowerCase());
     });
 
-  // this is a managed TextBuffer with name "ScriptContextor"
-
   const allDicts = [];
 
   const { slots_validation } = SLOTCORE.State(); // TValidatedScriptUnit
@@ -166,7 +164,7 @@ export function EditSymbol_Block(props) {
           unitText: "energyLevel"
         }
     */
-    const { unitText, symbolScope, error, gsType, ...dicts } = symbolData;
+    const { unitText, symbolScope, error, gsType, gsName, ...dicts } = symbolData;
     /* `dicts` looks like this: {
           features: {Costume: {…}, Physics: {…}, AgentWidgets: {…}}
           props: {x: {…}, y: {…}, statusText: {…}, eType: {…}, energyLevel: {…}, …}
@@ -211,6 +209,16 @@ export function EditSymbol_Block(props) {
         const rowKey = `${sel_linenum}:${i}`;
         // NEW CODE: Look up from viewData specific to the recursive context
         const vdata = vd[stype];
+
+        // do some helpful crash detection and reporting
+        if (vdata === undefined) {
+          // troubleshooting: check symbol-utilities DecodeSymbolViewData()
+          // 1. sdata is being extracted from symbolData at top
+          // 2. if (sdata) is creating items, list in sv_data
+          console.log(...PR(`tried to load '${stype}' from viewdata:\n`, vdata));
+          return [];
+        }
+
         const { info, items } = vdata;
         // ORIG CODE: Look up from general viewData
         // const { info, items } = viewData[stype];

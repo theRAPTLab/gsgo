@@ -272,6 +272,7 @@ declare global {
     error?: TSymbolError; // debugging if error
     unitText?: string; // the scriptText word associated with symbol
     symbolScope?: Array<keyof TSymbolData>; // 'relevant' scope to iterate by gui
+    gsName?: string; // the 'parameter name/hint' of this token
     gsType?: TGSType; // the gemscript meaning of this token
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -294,7 +295,7 @@ declare global {
   /** Validation Tokens are a wrapper for TSymbolData, and the VSDToken
    *  constructor accepts this subset of TSymbolData propers */
   type TSymbolMeta = {
-    gsType: TGSType;
+    gsArg: TGSArg;
     symbolScope?: Array<keyof TSymbolData>; // which symbol dicts apply to gui display
     unitText?: string;
     err_code?: TValidationErrorCodes;

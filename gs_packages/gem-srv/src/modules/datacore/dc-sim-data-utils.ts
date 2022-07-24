@@ -107,7 +107,10 @@ function AreValidArgs(args: TGSArg[]): boolean {
  *  string meets type requirements, [undefined, undefined] otherwise
  */
 function UnpackArg(arg: TGSArg): TSymUnpackedArg {
-  if (Array.isArray(arg)) return ['{...}', '{list}']; // when keyword uses weird array of args that needs to be fixed
+  if (Array.isArray(arg)) {
+    console.error('UnpackArg: unexpected obsolete array-style arg');
+    return ['{...}', '{list}']; // when keyword uses weird array of args that needs to be fixed
+  }
   if (typeof arg !== 'string') return [undefined, undefined];
   let [name, gsType, ...xtra] = arg.split(':') as TSymUnpackedArg;
   // if there are multiple :, then that is an error
@@ -116,8 +119,9 @@ function UnpackArg(arg: TGSArg): TSymUnpackedArg {
   // a zero-length name is an error except for the
   // multi-argument {args} glob type
   if (name.length === 0) {
-    if (gsType === '{...}') name = '**';
-    else return [undefined, undefined];
+    if (gsType === '{...}') return ['**', gsType];
+    if (gsType) return ['?', gsType];
+    return [undefined, undefined];
   }
   // name and type are good, so return valid unpacked arg
   return [name, gsType];

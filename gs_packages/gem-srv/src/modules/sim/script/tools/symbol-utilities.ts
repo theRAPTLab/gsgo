@@ -28,6 +28,7 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
     error,
     unitText,
     gsType,
+    gsName,
     symbolScope,
     // dicts
     keywords,
@@ -39,7 +40,7 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
     propTypes,
     options,
     events,
-    // pragmas
+    pragmas,
     tags,
     bdlOuts,
     // method arguments
@@ -96,6 +97,13 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
     const items = [...Object.keys(methodSig.args)];
     sv_data.methodSig = {
       info: methodSig.args.join(', '),
+      items
+    };
+  }
+  if (pragmas) {
+    const items = [...Object.keys(pragmas)];
+    sv_data.pragmas = {
+      info: items.join(', '),
       items
     };
   }

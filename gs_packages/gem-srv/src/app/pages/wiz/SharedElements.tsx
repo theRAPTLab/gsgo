@@ -310,7 +310,7 @@ export function GToken(props) {
     </div>
   );
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** tokens displayed in the SelectEditorLineSlot */
 export function GValidationToken(props) {
   const {

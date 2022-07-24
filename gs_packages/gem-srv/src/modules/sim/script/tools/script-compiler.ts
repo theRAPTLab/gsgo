@@ -244,7 +244,7 @@ function ValidateStatement(
   const err = new VSDToken(
     { keywords },
     {
-      gsType: 'keyword',
+      gsArg: ':keyword',
       err_code: 'invalid',
       err_info: `invalid keyword '${kw}'`
     }
