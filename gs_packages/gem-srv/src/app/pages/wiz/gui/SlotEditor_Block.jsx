@@ -98,8 +98,6 @@ class SlotEditor_Block extends React.Component {
   }
 
   componentDidMount() {
-    // start URSYS
-    UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     SLOTCORE.SubscribeState(this.HandleSlotUpdate);
   }
 
