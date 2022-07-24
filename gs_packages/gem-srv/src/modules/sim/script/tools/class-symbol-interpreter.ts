@@ -591,8 +591,12 @@ class SymbolInterpreter {
       }
       // everything is fine
       return [
-        this.goodToken(arg1, a1symbols, { gsType: 'identifier' }),
-        this.goodToken(arg2, a2symbols, { gsType: 'identifier' })
+        this.goodToken(arg1, a1symbols, { gsType: 'identifier' })
+        // HACK: Hide base blueprint from GUI for now because we can't
+        // support optional parameters.  Prevents students from
+        // blowing up the whole blueprint.
+        //
+        // this.goodToken(arg2, a2symbols, { gsType: 'identifier' })
       ];
     }
     // PROGRAM ////////////////////////////////////////////////////////////////
