@@ -638,8 +638,7 @@ class SymbolInterpreter {
           this.vagueError(arg2)
         ];
       // valid tag
-      const [argHint, argType] = CHECK.UnpackArg(tag);
-      if (argType !== 'boolean')
+      if (valueType !== 'value')
         return [
           this.goodToken(arg1, symbols, { gsType: 'tag' }),
           this.badToken(
@@ -647,7 +646,7 @@ class SymbolInterpreter {
             {},
             {
               gsType: 'boolean',
-              err_info: `tag value must be boolean not ${argType}`
+              err_info: `tag value must be boolean not ${valueType}`
             }
           )
         ];
