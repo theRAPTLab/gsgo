@@ -98,7 +98,7 @@ function m_ScanAssets(subdirpath) {
         break;
       case 'projects':
         mediaObj = f_ProjectAssets(subdirpath, files);
-        TERM(`project scanAssets mediaObj ${JSON.stringify(mediaObj)}`);
+        // TERM(`project scanAssets mediaObj ${JSON.stringify(mediaObj)}`);
         break;
       default:
         mediaObj = { err: `unknown astype ${asType}` };
