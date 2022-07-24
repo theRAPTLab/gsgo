@@ -1,0 +1,118 @@
+# BLUEPRINT Tyrannosaurus
+# TAG isCharControllable true
+# TAG isPozyxControllable true
+# TAG isPTrackControllable false
+
+# PROGRAM INIT
+addFeature Costume
+featCall Costume setCostume 'pc_tyrannosaurus.png' 0
+
+addFeature Physics
+
+featProp Physics scale setTo 0.15
+
+addFeature Movement
+featProp Movement useAutoOrientation setTo true
+featProp Movement movementType setTo 'edgeToEdge'
+
+addProp hp Number 60
+prop hp setMax 100
+prop hp setMin 0
+
+addFeature AgentWidgets
+//featCall AgentWidgets bindMeterTo hp
+//featProp AgentWidgets meterColor setTo 65280
+exprPush {{ 'T-Rex #' + agent.id }}
+featPropPop AgentWidgets text
+
+addFeature Touches
+featCall Touches monitor Triceratops b2b
+featCall Touches monitor Parasaurolophus b2b
+featCall Touches monitor Ankylosaurus b2b
+
+addProp state String 'normal'
+
+# PROGRAM UPDATE
+every 1 runAtStart [[
+//gets hungry over time
+    prop agent.hp sub 1
+
+//swap between costumes based on pc state (hungry, dead, scared, normal)
+    ifExpr {{agent.getProp('state').value == 'hungry'}} [[
+      featCall Costume setCostume 'pc_tyrannosaurus_hungry.png' 0
+    ]]
+//  ifExpr {{agent.getProp('state').value == 'dead'}} [[
+//      featCall Costume setCostume 'pc_tyrannosaurus_dead.png' 0
+//  ]]
+    ifExpr {{agent.getProp('state').value == 'normal'}} [[
+      featCall Costume setCostume 'pc_tyrannosaurus.png' 0
+    ]]
+    ifExpr {{agent.getProp('state').value == 'drowning'}} [[
+      featCall Costume setCostume 'pc_tyrannosaurus_drowning.png' 0
+    ]]
+
+
+//change state based on hunger/health
+    ifExpr {{ agent.getProp('hp').value <= 25 && agent.getProp('hp').value > 0 }} [[
+          prop Tyrannosaurus.state setTo 'hungry'
+//      featProp AgentWidgets meterColor setTo 16711680
+    ]]
+    ifExpr {{ agent.getProp('hp').value <= 50 && agent.getProp('hp').value >= 25}} [[
+      prop Tyrannosaurus.state setTo 'hungry'
+//      featProp AgentWidgets meterColor setTo 16737792
+    ]]
+    ifExpr {{ agent.getProp('hp').value > 50 }} [[
+      prop Tyrannosaurus.state setTo 'normal'
+//      featProp AgentWidgets meterColor setTo 65280
+    ]]
+//  ifExpr {{ agent.getProp('hp').value <= 0 }} [[
+//      prop Tyrannosaurus.state setTo 'dead'
+//      featCall Costume setCostume 'pc_tyrannosaurus_dead.png' 0
+//  ]]
+]]
+
+when Tyrannosaurus sees Ankylosaurus [[
+    prop Ankylosaurus.spooked setTo true
+]]
+when Tyrannosaurus doesNotSee Ankylosaurus [[
+    prop Ankylosaurus.spooked setTo false
+]]
+
+when Tyrannosaurus sees Parasaurolophus [[
+    prop Parasaurolophus.spooked setTo true
+]]
+when Tyrannosaurus doesNotSee Parasaurolophus [[
+    prop Parasaurolophus.spooked setTo false
+]]
+
+when Tyrannosaurus sees Triceratops [[
+    prop Triceratops.spooked setTo true
+]]
+when Tyrannosaurus doesNotSee Triceratops [[
+    prop Triceratops.spooked setTo false
+]]
+
+when Tyrannosaurus firstTouches Parasaurolophus [[
+    prop Parasaurolophus.attacked setTo true
+    prop agent.hp add 25
+      prop Parasaurolophus.hp sub 75
+
+ ]]
+
+ when Tyrannosaurus firstTouches Triceratops [[
+    prop Triceratops.attacked setTo true
+    prop agent.hp add 25
+    prop Triceratops.hp sub 75
+
+ ]]
+
+ when Tyrannosaurus firstTouches Ankylosaurus [[
+    prop Ankylosaurus.attacked setTo true
+    prop agent.hp add 25
+    prop Ankylosaurus.hp sub 75
+ ]]
+
+
+
+
+

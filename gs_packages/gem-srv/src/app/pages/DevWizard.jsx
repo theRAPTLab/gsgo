@@ -33,6 +33,7 @@ import * as BLUEPRINT_TESTER from 'test/test-blueprint';
 import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
+import * as GUIHELP from 'app/help/codex';
 import { VER_DEV_WIZ, ENABLE_SYMBOL_TEST_BLUEPRINT } from 'config/dev-settings';
 import { ASSETDIR, DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 // edit mode components

@@ -235,7 +235,7 @@ export {
   StringIsValidTokenType,
   // token evaluation
   DecodeAsDirectiveStatement,
-  KWModuleFromKeywordToken,
+  KeywordFromToken,
   UnpackToken,
   UnpackStatement,
   TokenValue

@@ -147,4 +147,4 @@ export {
 /// forward gscript-tokenizer utilities
 export * from 'script/tools/class-gscript-tokenizer-v2';
 /// forward expression parser
-export * from './class-expr-parser-v2';
+export { ParseExpression } from './class-expr-parser-v2';

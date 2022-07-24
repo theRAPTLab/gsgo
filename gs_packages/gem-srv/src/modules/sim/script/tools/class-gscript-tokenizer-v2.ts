@@ -816,14 +816,14 @@ function DecodeAsDirectiveStatement(stm: TScriptUnit): string[] {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to return the keyword module name from, if it is a keyword token
  *  special keywords use a leading underscore as their filename */
-function KWModuleFromKeywordToken(kwTok: any): string {
-  const fn = 'KWModuleFromKeywordToken:';
+function KeywordFromToken(kwTok: any): string {
+  const fn = 'KeywordFromToken:';
   const [type, value] = UnpackToken(kwTok);
   if (type === 'directive') return '_directive';
   if (type === 'comment') return '_comment';
   if (type === 'line') return '_line';
   if (type !== 'identifier') {
-    console.warn(`${fn} bad token`, kwTok);
+    console.log(`${fn} bad token`, kwTok);
     const err = `${fn} tok '${type}' is not decodeable as a keyword`;
     throw Error(err);
   }
@@ -874,11 +874,6 @@ export {
   //
   UnpackToken // return [type, value]
 };
-export {
-  KWModuleFromKeywordToken,
-  DecodeAsDirectiveStatement,
-  TokenValue,
-  TokenIsType
-};
+export { KeywordFromToken, DecodeAsDirectiveStatement, TokenValue, TokenIsType };
 /// utilities to return whether a particular token is of a particular type
 export { IsNonCodeToken, IsValidToken, StringIsValidTokenType };

@@ -228,6 +228,19 @@ function GetAllKeywords(): string[] {
   return arr;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API UTILITY: return the keyword module associated with the keyword.
+ *  Keywords are case sensitive. */
+function GetKeywordModuleByToken(kwTok: IToken): IKeyword {
+  try {
+    const kw = CHECK.KeywordFromToken(kwTok);
+    const kwp = GetKeyword(kw);
+    return kwp;
+  } catch (caught) {
+    console.warn(caught);
+    return undefined;
+  }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: retrieve unwrapped symbols for keywords  */
 function GetKeywordSymbols() {
   const keywords = GetAllKeywords();
@@ -497,7 +510,13 @@ export {
 };
 /// the transpiler is extendable using "keyword' modules that implement
 /// symbolize, validate, and compile
-export { RegisterKeyword, GetKeyword, GetAllKeywords, GetKeywordSymbols };
+export {
+  RegisterKeyword,
+  GetKeyword,
+  GetAllKeywords,
+  GetKeywordModuleByToken,
+  GetKeywordSymbols
+};
 /// scriptable properties are called "gvars" and have constructors for each type
 export {
   RegisterPropType,
