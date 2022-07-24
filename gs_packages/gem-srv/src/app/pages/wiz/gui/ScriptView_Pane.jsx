@@ -226,7 +226,7 @@ class ScriptView_Pane extends React.Component {
     this.GetTitle = this.GetTitle.bind(this);
     // DEPRECATED?  No one is Raising SCRIPT_UI_CHANGED at the moment?
     this.HandleScriptUIChanged = this.HandleScriptUIChanged.bind(this);
-    this.SendText = this.SendText.bind(this);
+    this.OnSaveToServer = this.OnSaveToServer.bind(this);
     this.OnSelectScriptClick = this.OnSelectScriptClick.bind(this);
     this.HighlightDebugLine = this.HighlightDebugLine.bind(this);
     this.OnDelete = this.OnDelete.bind(this);
@@ -352,8 +352,7 @@ class ScriptView_Pane extends React.Component {
    *    a. SaveAgent saves it to the AGENTS map.
    *    b. SaveAgent saves agents by id, which comes from a counter
    */
-  /// REVIEW: Shouldn't this be handled by Wizcore?
-  SendText() {
+  OnSaveToServer() {
     // abort if slots need saving
     // REVIEW: The more UI-friendly way to do this would probably
     //         be to use a custom dialog that allows you to both
@@ -364,28 +363,15 @@ class ScriptView_Pane extends React.Component {
       return;
     }
 
+    // if we're in code view, update the code script first
     const { viewMode } = this.state;
     const { projId, bpName } = this.props;
     let text;
-    // if we're in code view, send the code script
     if (viewMode === VIEWMODE_CODE) {
       text = this.jar.toString();
       WIZCORE.SendState({ script_text: text });
-    } else {
-      // wizard data
-      text = WIZCORE.State().script_text;
     }
-    UR.CallMessage('NET:SCRIPT_UPDATE', {
-      projId,
-      script: text,
-      origBlueprintName: bpName
-    }).then(result => {
-      const newBpName = result.bpName;
-      WIZCORE.SendState({ script_page_needs_saving: false });
-
-      // select the new script otherwise wizard retains the old script
-      UR.RaiseMessage('SELECT_SCRIPT', { bpName: newBpName });
-    });
+    WIZCORE.SaveToServer(projId, bpName);
   }
 
   OnSelectScriptClick(action) {
@@ -553,7 +539,7 @@ class ScriptView_Pane extends React.Component {
         type="button"
         className={classes.button}
         style={{ alignSelf: 'flex-end' }}
-        onClick={() => this.SendText()}
+        onClick={this.OnSaveToServer}
         disabled={!needsSaving}
       >
         SAVE TO SERVER

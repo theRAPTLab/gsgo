@@ -591,8 +591,12 @@ class SymbolInterpreter {
       }
       // everything is fine
       return [
-        this.goodToken(arg1, a1symbols, { gsType: 'identifier' }),
-        this.goodToken(arg2, a2symbols, { gsType: 'identifier' })
+        this.goodToken(arg1, a1symbols, { gsType: 'identifier' })
+        // HACK: Hide base blueprint from GUI for now because we can't
+        // support optional parameters.  Prevents students from
+        // blowing up the whole blueprint.
+        //
+        // this.goodToken(arg2, a2symbols, { gsType: 'identifier' })
       ];
     }
     // PROGRAM ////////////////////////////////////////////////////////////////
@@ -638,8 +642,7 @@ class SymbolInterpreter {
           this.vagueError(arg2)
         ];
       // valid tag
-      const [argHint, argType] = CHECK.UnpackArg(tag);
-      if (argType !== 'boolean')
+      if (valueType !== 'value')
         return [
           this.goodToken(arg1, symbols, { gsType: 'tag' }),
           this.badToken(
@@ -647,7 +650,7 @@ class SymbolInterpreter {
             {},
             {
               gsType: 'boolean',
-              err_info: `tag value must be boolean not ${argType}`
+              err_info: `tag value must be boolean not ${valueType}`
             }
           )
         ];

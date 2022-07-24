@@ -53,6 +53,10 @@ export const HIDDEN_SYMBOLS = [
   'bodyheight',
   'getbodywidth',
   'getbodyheight',
+  'intersectsWith',
+  'intersectsWithBounds',
+  'intersectsCenterWithBounds',
+  'intersectsCenterWithAgentBounds',
   // agent
   'skin',
   // 'scale', // needed by physics
@@ -61,7 +65,7 @@ export const HIDDEN_SYMBOLS = [
   'statusvalue',
   'statusvaluecolor',
   'statusvalueislarge'
-];
+].map(w => w.toLowerCase());
 export const LOCKED_SYMBOLS = [
   '#',
   '_pragma',
@@ -78,7 +82,7 @@ export const LOCKED_SYMBOLS = [
   'update',
   'think',
   'exec'
-];
+].map(w => w.toLowerCase());
 export const ADVANCED_SYMBOLS = [
   // keywords
   'exprpush',
@@ -92,7 +96,14 @@ export const ADVANCED_SYMBOLS = [
   'dbgerror',
   // features
   'cursor',
+  // costume
+  'colorHSVWithinRange',
+  'initHSVColorScale',
+  'getHSVColorScaleColor',
   // agent
+  'x',
+  'y',
+  'scale',
   'statustext',
   'zindex',
   'color',
@@ -100,7 +111,7 @@ export const ADVANCED_SYMBOLS = [
   'visible',
   'alpha',
   'isinert'
-];
+].map(w => w.toLowerCase());
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -77,14 +77,33 @@ function m_PostRunStep(frameCount) {
 
 /// LOAD SIMULATION ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// This is initially called by UR.SystemAppRun (via UR.SystemAppConfig)
+/// On Main, it is triggered by Main.componentDidMount
+///
+/// APP_RUN will cause project-server to run Initialize,
+/// which will run SIMCTRL.DoSimReset, which in turn triggers
+/// this.Reset() and then this.Stage().  The Reset and second
+/// Stage() call ends up happening while the first
+let STAGE_IS_BEING_INITED = false;
 function Stage() {
+  if (STAGE_IS_BEING_INITED) {
+    console.warn(
+      ...PR(
+        'Stage() was already called and is still in progress!  Skipping.  Please review call order!'
+      )
+    );
+    return;
+  }
+  STAGE_IS_BEING_INITED = true;
   // load agents and assets
   // prep recording buffer
+  if (RX_SUB) {
+    RX_SUB.unsubscribe();
+    RX_SUB = undefined;
+  }
   void (async () => {
-    // disable the step update when staging
-    if (RX_SUB) RX_SUB.unsubscribe();
-
     // load everything, then stage it
+    // NOTE these async loops may take a while to finish executing!!!
     if (DBG) console.log(...PR('Loading Simulation'));
     await GAME_LOOP.executePhase('GLOOP_LOAD');
     if (DBG) console.log(...PR('Simulation Loaded'));
@@ -101,6 +120,7 @@ function Stage() {
     // On first staging, do prerun WITHOUT RoundInit
     // so that characters get drawn on screen.
     RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
+    STAGE_IS_BEING_INITED = false;
   })();
 }
 
@@ -209,7 +229,14 @@ function RoundHasBeenStarted() {
 /// @BEN: this is a legacy startup that Ben should explicitly set somewhere
 /// else UR/APP_STAGE refers to the reference GLOOP in URSYS. If you take this
 /// out, then the sim doesn't draw
-UR.HookPhase('UR/APP_STAGE', Stage);
+
+// BL NOTE: Each app (e.g. Main, ScriptEditor, CharController, Viewer), should call
+// UR.SystemAppConfig({autoRun:true}), which will in turn call api-sim.Stage().
+// If they don't then this call is necessary.  But if you use this call,
+// watch out for overlapping Stage() calls which can result in multiple
+// simultaneous game loops running.  STAGE_IS_BEING_INITED should prevent that.
+// UR.HookPhase('UR/APP_STAGE', Stage);
+
 // UR.HookPhase('UR/APP_RESET', Reset); // never reached in ursys app gloop
 // UR.HookPhase('UR/APP_RUN', Run); // empty function
 // UR.HookPhase('UR/APP_RESTAGE', Restage); // unused function
