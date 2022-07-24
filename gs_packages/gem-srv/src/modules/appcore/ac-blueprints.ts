@@ -421,7 +421,6 @@ STATE.addEffectHook(hook_Effect);
 function ResetAndCompileBlueprints(
   blueprints: TBlueprint[] = STATE._getKey('bpDefs')
 ): TBlueprint[] {
-  console.error('RESETANDCOMPILE BP', blueprints);
   SM_Agent.ClearGlobalAgent();
   SIMAGENTS.ClearDOBJ();
   SIMDATA.ResetAllFeatures();
