@@ -23,7 +23,6 @@
 import UR from '@gemstep/ursys/client';
 import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
-import { Tokenize as TokenizeString } from 'script/tools/class-gscript-tokenizer-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
@@ -32,10 +31,7 @@ import {
   UnpackViewData,
   UnpackSymbolType
 } from 'script/tools/symbol-utilities';
-import * as COMPILER from 'script/tools/script-compiler';
-import * as BUNDLER from 'script/tools/script-bundler';
 import { GetTextBuffer } from 'lib/class-textbuffer';
-import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
 // load state
 const { StateMgr } = UR.class;

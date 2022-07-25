@@ -150,8 +150,8 @@ function ObjRefSelector_Block(props) {
           tokenKey={tokenKey}
           position={position}
           selected={selected}
-          type={type}
-          label={label}
+          type={type} // left column of table
+          label={label} // column subtitle (repeated)
           viewState={code} // error
           error={info} // error
           isSlot
