@@ -203,7 +203,6 @@ class SlotEditor_Block extends React.Component {
         label = t.unitText || GUI_EMPTY_TEXT;
         viewState = t.viewState;
       }
-      type = t.gsName;
 
       selectedError = selected ? error : selectedError;
       selectedHelp = selected ? help : selectedHelp;
@@ -218,7 +217,8 @@ class SlotEditor_Block extends React.Component {
           tokenKey={tokenKey}
           position={position}
           selected={selected}
-          type={type} // over the token box
+          type={t.gsType} // over the token box
+          name={t.gsName} // added
           label={label} // inside the token box
           error={error}
           help={help}
