@@ -65,10 +65,10 @@ export class SM_Boolean extends SM_Object {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 SM_Boolean.Symbols = {
   methods: {
-    setTo: { args: ['value:boolean'] },
-    true: { returns: 'value:boolean' },
-    false: { returns: 'value:boolean' },
-    invert: { returns: 'value:boolean' },
+    setTo: { args: ['true or false:boolean'] },
+    true: { returns: 'if true:boolean' },
+    false: { returns: 'if false:boolean' },
+    invert: { returns: 'inverted:boolean' },
     and: { args: ['comparison:{value}'] },
     or: { args: ['comparison:{value}'] },
     eq: { args: ['comparison:{value}'] },
@@ -82,4 +82,4 @@ SM_Boolean.Symbols = {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterPropType('Boolean', SM_Boolean);
+RegisterPropType('boolean', SM_Boolean);

@@ -36,8 +36,8 @@ export class SM_String extends SM_Object {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 SM_String.Symbols = {
   methods: {
-    setTo: { args: ['value:string'] },
-    eq: { args: ['str:string'], returns: 'isEqual:boolean' },
+    setTo: { args: ['character string:string'] },
+    eq: { args: ['comparison string:string'], returns: 'isEqual:boolean' },
     clear: {}
   }
 };
@@ -45,4 +45,4 @@ SM_String.Symbols = {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterPropType('String', SM_String);
+RegisterPropType('string', SM_String);

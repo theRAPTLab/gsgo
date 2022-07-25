@@ -2,15 +2,15 @@
 
   GUI HELPER MODULE
 
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-import * as TOKENIZER from 'script/tools/script-tokenizer';
 import TypeHelp from './codex-types.yaml';
 import KeywordHelp from './codex-keywords.yaml';
+import FeatureHelp from './codex-features.yaml';
+import GSArgsHelp from './codex-gsargs.yaml';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,9 +64,43 @@ function ForEditorSelection(editorSelection): string[] {
   if (text) help.push(text);
   return help;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: given a feature name and a method name, provide help strings */
+function ForFeatureMethod(fName: string, mName: string) {
+  const feature = FeatureHelp[fName];
+  if (feature === undefined) return { info: `no feature named ${fName}` };
+  const help: any = {};
+  help.info = feature.info || '';
+  const method = feature[mName];
+  if (method === undefined) {
+    help.hint = `undocumented ${mName}`;
+    help.syntax = `undocumented syntax ${mName}`;
+    return help;
+  }
+  help.hint = method.hint || '';
+  help.syntax = method.syntax || '';
+  return help;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: return the default gsArg prompt if it exists. Used by symbol
+ *  interpreter methods */
+function ForSympret(iName: string): TGSArg {
+  const gsArg = GSArgsHelp[iName];
+  return gsArg;
+}
+
+/// TEST FUNCTIONS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// TEMPORARY TEST FUNCTION
+function LookupParent(parent) {
+  console.log('parent', parent);
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
-  ForEditorSelection //
+  ForEditorSelection, //
+  ForFeatureMethod, //
+  ForSympret, //
+  LookupParent
 };

@@ -18,6 +18,7 @@ import UR from '@gemstep/ursys/client';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
+import * as HELP from 'app/help/codex';
 import { GLabelToken, GSymbolToken, StackUnit } from '../SharedElements';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
@@ -210,6 +211,8 @@ export function EditSymbol_Block(props) {
         const rowKey = `${sel_linenum}:${i}`;
         // NEW CODE: Look up from viewData specific to the recursive context
         const vdata = vd[stype];
+        const parent = vd.sm_parent;
+        if (parent) HELP.LookupParent(parent);
 
         // do some helpful crash detection and reporting
         if (vdata === undefined) {

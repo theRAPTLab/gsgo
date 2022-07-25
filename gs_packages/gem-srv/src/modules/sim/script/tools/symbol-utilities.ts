@@ -31,6 +31,7 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
     gsName,
     symbolScope,
     ui_action,
+    sm_parent,
     // dicts
     keywords,
     blueprints,
@@ -52,10 +53,13 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
   } = symbolData;
 
   if (unitText) sv_data.unitText = unitText;
+  if (sm_parent) sv_data.sm_parent = sm_parent;
   if (error)
     sv_data.error = {
       info: `${error.code} - ${error.info}`
     };
+
+  // start processing
   if (keywords)
     sv_data.keywords = {
       info: keywords.join(', '),

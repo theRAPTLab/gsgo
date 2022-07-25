@@ -373,6 +373,7 @@ export function GValidationToken(props) {
 
 /// LABEL TOKEN ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** used for "category dictionaries" for objeerefs in SlotEditor_Block */
 export function GLabelToken(props) {
   const { name, secondary } = props;
   return (
@@ -396,6 +397,7 @@ export function GLabelToken(props) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** the clickable choice token derived from symboldata */
 export function GSymbolToken(props) {
   const { symbolType, choice, unitText, label, locked } = props;
   const cnames = ['gwiz', 'gtoken', 'clickable'];

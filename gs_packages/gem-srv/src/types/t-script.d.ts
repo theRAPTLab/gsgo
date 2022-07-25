@@ -236,6 +236,7 @@ declare global {
   type TSEnum = { enum: string[] }; // special format for enum args (future)
   type TGSArg = `${string}:${TGSType}` | TSEnum;
   type TGSMethodSig = {
+    parent?: string; // featureName, propName
     name?: string;
     args?: TGSArg[];
     returns?: TGSArg;
@@ -275,6 +276,7 @@ declare global {
     unitText?: string; // the scriptText word associated with symbol
     symbolScope?: Array<keyof TSymbolData>; // 'relevant' scope to iterate by gui
     ui_action?: [command: TValidationActionCodes, ...params: any[]];
+    sm_parent?: string; // path to parent sm-object definitions
     gsName?: string; // the 'parameter name/hint' of this token
     gsType?: TGSType; // the gemscript meaning of this token
   };
@@ -300,6 +302,7 @@ declare global {
   type TSymbolMeta = {
     gsArg: TGSArg;
     symbolScope?: Array<keyof TSymbolData>; // which symbol dicts apply to gui display
+    sm_parent?: string; // dotted string path of parent sm object
     ui_action?: [command: TValidationActionCodes, ...params: any[]];
     act_args?: any[]; // oh so hacky
     unitText?: string;
