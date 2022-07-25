@@ -30,6 +30,7 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
     gsType,
     gsName,
     symbolScope,
+    ui_action,
     // dicts
     keywords,
     blueprints,

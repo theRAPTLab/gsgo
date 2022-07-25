@@ -1490,17 +1490,26 @@ class SymbolInterpreter {
       for (let ii = tokenIndex; ii < args.length; ii++) {
         const gsArg = args[ii];
         const [argName, gsType] = CHECK.UnpackArg(gsArg);
-        vtoks.push(
-          new VSDToken(
-            {},
-            {
-              gsArg,
-              unitText: TOKENIZER.TokenToUnitText(tokens[tokenIndex]),
-              err_code: 'empty',
-              err_info: `${fn} method arg${ii} requires ${argName}:${gsType}`
-            }
-          )
-        );
+        if (gsType === 'block') {
+          // not really an error
+          vtoks.push(
+            new VSDToken(
+              {},
+              { unitText: '[[ ]]', gsArg, ui_action: ['ensureBlock'] }
+            )
+          );
+        } else
+          vtoks.push(
+            new VSDToken(
+              {},
+              {
+                gsArg,
+                unitText: TOKENIZER.TokenToUnitText(tokens[tokenIndex]),
+                err_code: 'empty',
+                err_info: `${fn} method arg${ii} requires ${argName}:${gsType}`
+              }
+            )
+          );
       }
     return vtoks;
   }
@@ -1669,6 +1678,33 @@ class SymbolInterpreter {
       );
     }
 
+    // blocks aka consequent, alternate
+    if (gsType === 'block') {
+      symData = new VSDToken(
+        {},
+        {
+          gsArg,
+          ui_action: ['ensureBlock']
+        }
+      );
+    }
+
+    // Events are TSMCPrograms that are declared with the `onEvent` keyword
+    if (gsType === 'event') {
+      const list = SIMDATA.GetAllScriptEventNames();
+      const events = list.map(entry => {
+        const [eventName] = entry;
+        return eventName;
+      });
+      symData = new VSDToken(
+        { events },
+        {
+          gsArg,
+          unitText
+        }
+      );
+    }
+
     // Named tests are TSMCPrograms which must return true/false
     // This is a future GEMSCRIPT 2.0 feature, and are not implemented
     if (gsType === 'test') {
@@ -1697,22 +1733,6 @@ class SymbolInterpreter {
       );
     }
 
-    // Events are TSMCPrograms that are declared with the `onEvent` keyword
-    if (gsType === 'event') {
-      const list = SIMDATA.GetAllScriptEventNames();
-      const events = list.map(entry => {
-        const [eventName] = entry;
-        return eventName;
-      });
-      symData = new VSDToken(
-        { events },
-        {
-          gsArg,
-          unitText
-        }
-      );
-    }
-
     // expressions
     if (gsType === 'expr') {
       symData = new VSDToken(
@@ -1720,19 +1740,6 @@ class SymbolInterpreter {
         {
           err_code: 'debug',
           err_info: 'expr types todo',
-          gsArg,
-          unitText
-        }
-      );
-    }
-
-    // blocks aka consequent, alternate
-    if (gsType === 'block') {
-      symData = new VSDToken(
-        {},
-        {
-          err_code: 'debug',
-          err_info: 'block types todo',
           gsArg,
           unitText
         }

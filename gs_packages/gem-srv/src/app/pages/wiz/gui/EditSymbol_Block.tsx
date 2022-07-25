@@ -164,7 +164,8 @@ export function EditSymbol_Block(props) {
           unitText: "energyLevel"
         }
     */
-    const { unitText, symbolScope, error, gsType, gsName, ...dicts } = symbolData;
+    const { unitText, symbolScope, error, gsType, gsName, ui_action, ...dicts } =
+      symbolData;
     /* `dicts` looks like this: {
           features: {Costume: {…}, Physics: {…}, AgentWidgets: {…}}
           props: {x: {…}, y: {…}, statusText: {…}, eType: {…}, energyLevel: {…}, …}
@@ -178,6 +179,7 @@ export function EditSymbol_Block(props) {
       gsType === 'string' ||
       gsType === 'boolean' ||
       gsType === 'identifier' ||
+      gsType === 'block' ||
       gsType === '{...}'
     )
       return '';
