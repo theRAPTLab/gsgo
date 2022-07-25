@@ -80,7 +80,7 @@
 .gwiz.clickable {
   background-color: rgba(221, 221, 221, 1);
 }
-
+/* line numbers */
 .gwiz.gtoken.first {
   color: gray;
   user-select: none;
@@ -95,7 +95,7 @@
   background-color: rgba(221, 221, 221, 1);
 }
 .gwiz.styleKey {
-  font-weight: bold;
+  font-weight: bold; /* position 1 keyword */
 }
 .gwiz.styleComment {
   color: dimgrey;
@@ -112,6 +112,7 @@
 }
 .gwiz.styleCond {
   background-color: hotpink;
+  color: black;
 }
 .gwiz.valueType {
   color: blue;
@@ -120,18 +121,24 @@
   color: blue;
 }
 .gwiz.stringType {
-  color: maroon;
+  color: blue;
+}
+.gwiz.methodType {
+  font-style: italic;
 }
 .gwiz.exprType {
   color: darkgreen;
 }
-
+.gwiz.objrefType {
+  color: rgb(0, 95, 100);
+  font-weight: bold;
+}
 .gwiz.styleSolid {
   background-color: black;
 }
 .gwiz.styleSyntax {
   white-space: normal;
-  color: lightblue;
+  color: #888;
   font-style: italic;
 }
 .gwiz.styleError {

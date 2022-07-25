@@ -191,19 +191,19 @@ export class SM_Number extends SM_Object {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 SM_Number.Symbols = {
   methods: {
-    setMin: { args: ['nvalue:number'], info: 'minimum value' },
-    setMax: { args: ['nvalue:number'], info: 'maximum value' },
-    setTo: { args: ['nvalue:number'], info: 'assign value' },
+    setMin: { args: ['min value:number'], info: 'minimum value' },
+    setMax: { args: ['max value:number'], info: 'maximum value' },
+    setTo: { args: ['numeric value:number'], info: 'assign value' },
     setToRnd: {
       args: ['min:number', 'max:number', 'asInteger:boolean'],
       info: 'randomize value'
     },
-    add: { args: ['num:number'], info: 'add value to current' },
-    sub: { args: ['num:number'], info: 'sub value to current' }
+    add: { args: ['number:number'], info: 'add value to current' },
+    sub: { args: ['number:number'], info: 'sub value to current' }
   }
 };
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterPropType('Number', SM_Number);
+RegisterPropType('number', SM_Number);

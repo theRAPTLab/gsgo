@@ -173,7 +173,6 @@ function SelectSlot(sel_linenum, sel_linepos) {
   // 3. if slots_linescript has changed, we ALWAYS need to
   //    update slots_bundle
   m_AddSlotsValidation(newSlotState);
-
   SLOTCORE.SendState(newSlotState);
 }
 

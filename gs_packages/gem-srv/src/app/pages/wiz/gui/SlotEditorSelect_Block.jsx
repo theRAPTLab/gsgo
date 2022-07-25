@@ -265,6 +265,16 @@ function SlotEditorSelect_Block(props) {
         </div>
       );
       break;
+    case 'block':
+      editor = (
+        <div className="gsled input">
+          <label>
+            Click here to ensure that a block exists right after this, right here
+            in SlotEditorSelect_Block line case:block
+          </label>
+        </div>
+      );
+      break;
     default:
       editor = (
         <div>

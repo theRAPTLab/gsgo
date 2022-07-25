@@ -162,7 +162,7 @@ function ExtractBlueprintMeta(script: TScriptUnit[]): TBlueprintMeta {
 function SymbolizeStatement(stm: TScriptUnit, line?: number): TSymbolData {
   const fn = 'SymbolizeStatement:';
   if (!stm || (Array.isArray(stm) && stm.length < 1)) return {}; // blank lines emit no symbol info
-  const kw = CHECK.KWModuleFromKeywordToken(stm[0]);
+  const kw = CHECK.KeywordFromToken(stm[0]);
   if (!kw) return {}; // blank lines emit no symbol info
   const kwp = SIMDATA.GetKeyword(kw);
   if (!kwp) {
@@ -233,7 +233,7 @@ function ValidateStatement(
   if (statement.length === 0)
     return { validationTokens: [], validationLog: ['zero-length statement'] };
   const { bundle, globals } = refs || {};
-  const kw = CHECK.KWModuleFromKeywordToken(statement[0]);
+  const kw = CHECK.KeywordFromToken(statement[0]);
   const kwp = SIMDATA.GetKeyword(kw);
   if (kwp !== undefined) {
     kwp.setRefs({ bundle, globals });
@@ -244,7 +244,7 @@ function ValidateStatement(
   const err = new VSDToken(
     { keywords },
     {
-      gsType: 'keyword',
+      gsArg: 'command:keyword',
       err_code: 'invalid',
       err_info: `invalid keyword '${kw}'`
     }
@@ -269,7 +269,7 @@ function ValidateExpression(exprAST, globals = {}) {
  *  and comments, generating no code. */
 function CompileStatement(stm: TScriptUnit, refs: TSymbolRefs): TSMCProgram {
   const fn = 'CompileStatement:';
-  const kw = CHECK.KWModuleFromKeywordToken(stm[0]);
+  const kw = CHECK.KeywordFromToken(stm[0]);
   if (!kw) return []; // skips comments, blank lines
   const kwp = SIMDATA.GetKeyword(kw) || SIMDATA.GetKeyword('keywordErr');
   if (!kwp) throw Error(`${fn} bad keyword ${kw}`);

@@ -132,7 +132,7 @@ async function SystemAppConfig(options = {}) {
   //
   if (options.autoRun) {
     if (DBG) console.log(...PR('info - autoRun to next phase'));
-    SystemAppRun(options);
+    void SystemAppRun(options);
   }
   if (DBG) console.groupEnd();
 }
@@ -165,7 +165,7 @@ async function SystemAppUpdate() {
   await execute('APP_RESTAGE');
   //
   if (DBG) console.groupEnd();
-  SystemAppRun();
+  void SystemAppRun();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: force loop back to run
@@ -176,7 +176,7 @@ async function SystemAppRestage() {
   await execute('APP_RESET');
   //
   if (DBG) console.groupEnd();
-  SystemAppRun();
+  void SystemAppRun();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: end the lifecycle state engine

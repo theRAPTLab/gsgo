@@ -302,7 +302,7 @@ export function GToken(props) {
   if (SPECIAL_IDENTS.includes(label)) classes += ' stylePragma';
   if (SPECIAL_KEYWORDS.includes(label)) classes += ' styleDefine';
   if (CONDITION_KEYWORDS.includes(label)) classes += ' styleCond';
-  classes += ` ${type}Type`;
+  if (type) classes += ` ${type}Type`;
   // if not, emit the token element
   return (
     <div className={classes} data-key={tokenKey}>
@@ -310,7 +310,7 @@ export function GToken(props) {
     </div>
   );
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** tokens displayed in the SelectEditorLineSlot */
 export function GValidationToken(props) {
   const {
@@ -318,6 +318,7 @@ export function GValidationToken(props) {
     position,
     selected,
     type,
+    name,
     label,
     viewState,
     error,
@@ -335,7 +336,7 @@ export function GValidationToken(props) {
   if (SPECIAL_KEYWORDS.includes(label)) classes += ' styleDefine';
   if (CONDITION_KEYWORDS.includes(label)) classes += ' styleCond';
   // set expected data type color, but overriden by viewState
-  classes += ` ${type}Type`;
+  if (type) classes += ` ${type}Type`;
   // slot-specific viewState overrides TValidationErrorCodes
   if (viewState === 'valid') classes += ''; // no style change
   if (viewState === 'invalid') classes += ' styleFlagInvalid';
@@ -352,7 +353,7 @@ export function GValidationToken(props) {
   const displayLabel = String(label); // force convert boolean to string
   const jsx = isSlot ? (
     <>
-      <div className="gwiz gsled meta styleSyntax">{type}</div>
+      <div className="gwiz gsled meta styleSyntax">{name}</div>
       <div className={classes} data-slotkey={tokenKey}>
         {displayLabel}
       </div>
@@ -372,6 +373,7 @@ export function GValidationToken(props) {
 
 /// LABEL TOKEN ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** used for "category dictionaries" for objeerefs in SlotEditor_Block */
 export function GLabelToken(props) {
   const { name, secondary } = props;
   return (
@@ -395,6 +397,7 @@ export function GLabelToken(props) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** the clickable choice token derived from symboldata */
 export function GSymbolToken(props) {
   const { symbolType, choice, unitText, label, locked } = props;
   const cnames = ['gwiz', 'gtoken', 'clickable'];
