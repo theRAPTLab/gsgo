@@ -1981,17 +1981,6 @@ class SymbolInterpreter {
   }
 } // end of SymbolInterpreter class
 
-/// DEBUG TOOLS ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** inspection tool to see simdata defined at runtime */
-UR.AddConsoleTool('simdata', () => {
-  console.log('All Functions', SIMDATA.GetAllWhenTests());
-  console.log('All Tests', SIMDATA.GetAllTests());
-  console.log('All Programs', SIMDATA.GetAllPrograms());
-  console.log('All Features', SIMDATA.GetAllFeatures());
-  console.log('All EventNames', SIMDATA.GetAllScriptEventNames());
-});
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default SymbolInterpreter;

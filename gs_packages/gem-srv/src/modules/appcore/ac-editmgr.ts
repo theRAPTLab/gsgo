@@ -337,7 +337,7 @@ function DispatchClick(event) {
   /** (5) DESELECT IF NON-TOKEN *********************************************/
   const sv = document.getElementById('ScriptWizardView');
   if (m_ChildOf(event.target, sv)) {
-    console.log('clearing sel_linenum and sel_linepos');
+    // console.log('clearing sel_linenum and sel_linepos');
     // if nothing processed, then unset selection
     WIZCORE.SendState({ sel_linenum: -1, sel_linepos: -1 });
     CancelSlotEdit();

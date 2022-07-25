@@ -149,6 +149,7 @@ class SlotEditor_Block extends React.Component {
       slots_save_dialog_is_open
     } = this.state;
     const selectEditorSelection = WIZCORE.SelectedTokenInfo();
+    // appending slot information to SelectedTokenInfo
     if (selectEditorSelection) {
       selectEditorSelection.sel_slotpos = sel_slotpos;
       selectEditorSelection.slots_linescript = slots_linescript;
@@ -179,9 +180,9 @@ class SlotEditor_Block extends React.Component {
       const selected = sel_slotpos === position;
       const scriptToken = slots_linescript[i];
 
-      // const { gsType, methodSig, unitText } = scriptToken || {}; // gracefully fail if not defined
-      // const { name, args: methodArgs, info } = methodSig || {}; // gracefully fail if not defined
-      help = HELP.ForEditorSelection(selectEditorSelection).join('. ');
+      if (selectEditorSelection) {
+        help = HELP.ForEditorSelection(selectEditorSelection).join('. ');
+      }
 
       const t = validationTokens[i];
       if (t.error && scriptToken) {
