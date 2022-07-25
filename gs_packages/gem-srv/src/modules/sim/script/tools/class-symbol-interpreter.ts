@@ -290,12 +290,33 @@ class SymbolInterpreter {
     const unitText = TOKENIZER.TokenToString(token);
     const keywords = SIMDATA.GetKeywordSymbols();
     const symbols = { keywords };
-    const gsArg = HELP.ForSympret('anyKeyword') || 'command:keyword';
-    if (type === 'comment' || type === 'line')
+
+    // the first token in a statement is not always a keyword
+    // that is an identifier token
+
+    // encoded as { comment:'text' }
+    if (type === 'comment')
       return this.goodToken(token, symbols, {
         gsArg: 'comment:{noncode}',
         unitText
       });
+
+    // encoded as { line:'' }
+    if (type === 'line')
+      return this.goodToken(token, symbols, {
+        gsArg: 'blank line:{noncode}',
+        unitText
+      });
+
+    // encoded as { directive: '#' }
+    if (type === 'directive')
+      return this.goodToken(token, symbols, {
+        gsArg: 'directive:pragma',
+        unitText
+      });
+
+    // default gsarg type
+    const gsArg = HELP.ForSympret('anyKeyword') || 'command:keyword';
 
     // this will actually never run because for this method to be called
     // the keyword processor must have already been found
@@ -533,7 +554,7 @@ class SymbolInterpreter {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** valid pragma (encoded as { directive: 'name' }) */
+  /** valid pragma (encoded as { identifier: 'name' }) */
   pragma(token: IToken) {
     if (this.detectScanError()) return this.vagueError(token);
     let [unitText, tokType, prName] = this.extractTokenMeta(token);
@@ -609,7 +630,7 @@ class SymbolInterpreter {
       }
       // everything is fine
       return [
-        this.goodToken(arg1, a1symbols, { gsArg: ':identifier' })
+        this.goodToken(arg1, a1symbols, { gsArg })
         // HACK: Hide base blueprint from GUI for now because we can't
         // support optional parameters.  Prevents students from
         // blowing up the whole blueprint
