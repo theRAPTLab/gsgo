@@ -2,72 +2,80 @@
 
 # PROGRAM DEFINE or INIT
 addProp:
-  input: 'defines a property for use in your blueprint'
+  input: '[addProp] defines a property for use in your blueprint'
   glossary: >
     xxx
 
 addFeature:
-  input: 'adds special abilities to your blueprint'
+  input: '[addFeatures] summons special abilities to your character'
   glossary: >
     xxx
 
 # in any PROGRAM
 prop:
-  input: 'set a property value'
+  input: '[prop] lets you set or modify a property value'
   glossary: >
     xxx
 
 featProp:
-  input: 'set a special ability property value or action'
+  input: '[featProp] lets you set a special ability property value'
+  glossary: >
+    xxx
+
+featCall:
+  input: '[featCall] invokes a special ability'
   glossary: >
     xxx
 
 propPush:
-  input: 'hold a property value on the stack'
+  input: '[propPush] saves a property value on the stack'
   glossary: >
     xxx
 
 propPop:
-  input: 'set the property value from the stack'
+  input: '[propPop] pulls a property value from the stack if one is there'
   glossary: >
     xxx
 
 featPropPush:
-  input: 'hold a special ability prop value on the stack'
+  input: '[featPropPush hold a special ability prop value on the stack'
   glossary: >
     xxx
 
 featPropPop:
-  input: 'set the special ability prop value from the stack'
+  input: '[featPropPop] set the special ability prop value from the stack'
   glossary: >
     xxx
 
 exprPush:
-  input: 'calculate then hold the result on the stack'
+  input: '[exprPush] calculate then hold the result on the stack'
   glossary: >
     xxx
 
 ifExpr:
-  input: 'calculate then run block if it is true'
+  input: '[ifExpr] calculates a formula then run block if it is true'
   glossary: >
     xxx
 
 dbgOut:
-  input: '(advanced) print string to javascript console'
+  input: '[dbgOut] prints to the javascript console'
   glossary: >
     xxx
 
 when:
-  input: 'if two sets of character types pass a test, run a block of code'
+  input: '[when] tests two sets of character types and runs code on the results'
   glossary: >
     xxx
 
 onEvent:
-  input: 'when a system event happens, run a block of code'
+  input: '[onEvent] runs code when the named event occurs'
   glossary: >
     xxx
 
 every:
-  input: 'when seconds timer starts/loops, run a block of code'
+  input: '[every] runs code after a number of seconds has elapsed'
   glossary: >
     xxx
+
+_comment:
+  input: 'Enter some text that describes your code'

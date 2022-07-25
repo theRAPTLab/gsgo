@@ -219,6 +219,7 @@ declare global {
   type TSAgent = `${'blueprint'}` | `${'feature'}` | `${'bdlOut'}` | `${'tag'}`;
   type TSMultiArg = `${'{...}'}`; // multiple arg token marker
   type TSList = `${'{list}'}`; // future
+  type TSNonCode = `${'{noncode}'}`;
   type TSUnknown = `${'{?}'}`; // unknown 'vague' type for validation
   type TGSType =
     | TSLit
@@ -230,7 +231,8 @@ declare global {
     | TSAgent
     | TSMultiArg
     | TSList
-    | TSUnknown;
+    | TSUnknown
+    | TSNonCode;
   type TSEnum = { enum: string[] }; // special format for enum args (future)
   type TGSArg = `${string}:${TGSType}` | TSEnum;
   type TGSMethodSig = {

@@ -15,7 +15,6 @@
 
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import * as TRANSPILER from 'script/transpiler-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';

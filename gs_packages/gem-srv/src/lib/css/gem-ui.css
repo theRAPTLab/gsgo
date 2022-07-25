@@ -138,7 +138,7 @@
 }
 .gwiz.styleSyntax {
   white-space: normal;
-  color: lightblue;
+  color: #888;
   font-style: italic;
 }
 .gwiz.styleError {

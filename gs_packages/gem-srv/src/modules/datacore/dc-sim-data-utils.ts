@@ -57,7 +57,8 @@ const GSTYPES: TGSType[] = [
   '{string}', // composite: literal, objref, or expression producing
   '{any}', // value or string
   //
-  'pragma',
+  'keyword', // special identifier
+  'pragma', // special identifier
   'test', // an identifier that is a saved program name
   'program', // an identifier that is a saved program name
   'event', // an identifier that is a system event nbame
@@ -65,7 +66,8 @@ const GSTYPES: TGSType[] = [
   'feature', // an identifier that is the name of an SMFeature
   'blueprint', // an identifier that is the name of a blueprint bundle
   // placeholder keyword args for use in scriptunits
-  '{...}'
+  '{...}',
+  '{noncode}'
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given an array of TSymbolArgType (or array of arrays TSymbolArgType)

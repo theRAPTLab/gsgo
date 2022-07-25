@@ -3,55 +3,58 @@
 # passed back to the GUI
 
 boolean:
-  input: 'choose true or false'
+  input: 'Choose true or false'
 
 string:
-  input: 'enter characters (do not use quotes)'
+  input: 'Enter characters (do not use quotes)'
 
 number:
-  input: 'enter digits'
+  input: 'Enter digits'
 
 identifier:
-  input: 'enter alphanumeric characters with no spaces or leading numbers'
+  input: 'Enter alphanumeric characters with no spaces or leading numbers'
 
 prop:
-  input: 'choose a property to use'
+  input: 'Choose a property to use'
 
 method:
-  input: 'choose an action to use on previous property'
+  input: 'Choose an action to use on previous property'
 
 propType:
-  input: 'pick the kind of value this prop should hold'
+  input: 'Pick the kind of value this prop should hold'
 
 objref:
-  input: 'select property and optional subproperties'
+  input: 'Select property and optional subproperties'
 
 expr:
-  input: 'enter an arithmetic or logical expression'
+  input: 'Enter an arithmetic or logical expression'
 
 keyword:
-  input: 'choose the GEMSCRIPT command to use for this line'
+  input: 'Choose the GEMSCRIPT command to use for this line'
 
 test:
-  input: 'select one of the following tests'
+  input: 'Select one of the following tests'
 
 program:
-  input: 'this is unused...if you see this oops'
+  input: 'This is unused...if you see this oops'
 
 event:
-  input: 'pick a system event trigger'
+  input: 'Pick a system event trigger'
 
 option:
-  input: 'select from one of the following options'
+  input: 'Select from one of the following options'
 
 blueprint:
-  input: 'select the name of an existing character type'
+  input: 'Select the name of an existing character type'
 
 bdlOut:
-  input: '(advanced) select the program bundle output dict (INIT or UPDATE)'
+  input: 'Select the program bundle output dict (INIT or UPDATE)'
 
 tag:
-  input: '(advanced) select the program tag name'
+  input: 'Select the program tag name'
 
 feature:
-  input: 'choose a feature from the list'
+  input: 'Choose a feature from the list'
+
+'{noncode}':
+  input: ''

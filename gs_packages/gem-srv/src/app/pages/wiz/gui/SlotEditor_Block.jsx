@@ -68,6 +68,7 @@ import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
+import * as HELP from 'app/help/codex';
 import { SlotEditorSelect_Block } from './SlotEditorSelect_Block';
 import Dialog from '../../../pages/components/Dialog';
 import { GValidationToken } from '../SharedElements';
@@ -180,7 +181,7 @@ class SlotEditor_Block extends React.Component {
 
       // const { gsType, methodSig, unitText } = scriptToken || {}; // gracefully fail if not defined
       // const { name, args: methodArgs, info } = methodSig || {}; // gracefully fail if not defined
-      help = `HELP: xxx`;
+      help = HELP.ForEditorSelection(selectEditorSelection).join('. ');
 
       const t = validationTokens[i];
       if (t.error && scriptToken) {

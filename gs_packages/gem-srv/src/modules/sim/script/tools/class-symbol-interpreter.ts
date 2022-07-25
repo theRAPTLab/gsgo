@@ -282,22 +282,36 @@ class SymbolInterpreter {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** returns keyword validation */
   anyKeyword(token: IToken): TSymbolData {
-    const [type, value] = TOKENIZER.UnpackToken(token);
+    const fn = 'anyKeyword:';
+    const [type, kwName] = TOKENIZER.UnpackToken(token); //
     const unitText = TOKENIZER.TokenToString(token);
     const keywords = SIMDATA.GetKeywordSymbols();
     const symbols = { keywords };
-    const gsArg = ':keyword';
+    const gsArg = 'command:keyword';
     if (type === 'comment' || type === 'line')
-      return new VSDToken(symbols, { gsArg, unitText });
+      return this.goodToken(token, symbols, {
+        gsArg: 'comment:{noncode}',
+        unitText
+      });
+
+    // this will actually never run because for this method to be called
+    // the keyword processor must have already been found
+    if (!keywords.includes(kwName)) {
+      return this.badToken(token, symbols, {
+        gsArg,
+        err_code: 'invalid',
+        err_info: `no such command ${kwName}`
+      });
+    }
     if (type !== 'identifier' && type !== 'directive') {
       this.scan_error = true;
-      return new VSDToken(symbols, {
+      return this.badToken(token, symbols, {
         gsArg,
         err_code: 'invalid',
         err_info: 'no keyword token'
       });
     }
-    return new VSDToken(symbols as TSymbolData, { gsArg, unitText });
+    return this.goodToken(token, symbols, { gsArg, unitText });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** allow any valid blueprint in the system */
