@@ -6,12 +6,6 @@
   server!  Other pages (e.g. ScriptEditor, CharController, and Viewer do not
   have direct access to project data)
 
-  @BEN This should be a pure data class that maintains a list of input objects
-  and the agents it updates. I wonder if the notion of "current project" is
-  important to maintain here rather than in ac-project...both cases can
-  be argued for. It was difficult to tease apart exactly what was intended
-  because of the lack of comments.
-
   There are essentially three types of calls handled by dc-project.
 
   1. Initial Project Load
@@ -46,7 +40,6 @@
      AUTOTIMER is to reduce the frequency of updates to no more than
      one per second.
 
-
   3. Create new project file from a template
      On the Login screen, if a user elects to create a new project
      from an existing template file, PanelSelectSimulation calls
@@ -65,14 +58,13 @@ const PR = UR.PrefixUtil('DC-PROJ', 'TagPurple');
 const DBG = false;
 
 let CURRENT_PROJECT: any = {}; // current project instance
-let AUTOTIMER;
+let AUTOTIMER: number;
 
-/// PROJECT DATA FILE IO //////////////////////////////////////////////////////
+/// PROJECT DATA FILE IO SUPPORT METHODS //////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** When the project data is changed, ProjectFileWrite will send the changes
- *  to the server, and the server will update the *.gemproj file.
- */
-async function m_ProjectFileWrite(projId, project) {
+ *  to the server, and the server will update the *.gemproj file. */
+async function m_ProjectFileWrite(projId: string, project: TProject) {
   // REVIEW: Should the url be parameterized, e.g. 'localhost' might be remote?
   const response = await fetch(`http://localhost/assets-update/${projId}`, {
     method: 'PUT',
@@ -87,35 +79,53 @@ async function m_ProjectFileWrite(projId, project) {
   const result = await response.json();
   return result;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Reconstructs project data by merging income updated 'data' with the
+ *  existing CURRENT_PROJECT data.
+ *  When any subset of project data is changed (e.g. metadata, rounds,
+ *  instances, or blueprints), we need to update the whole project data
+ *  object. */
+function m_UpdateProjectFile(data: any = {}): TProject {
+  const project = CURRENT_PROJECT;
+  project.id = data.id || project.id;
+  project.label = data.label || project.label;
+  project.metadata = data.metadata || project.metadata;
+  project.rounds = data.rounds || project.rounds;
+  project.blueprints = data.blueprints || project.blueprints;
+  project.instances = data.instances || project.instances;
+  CURRENT_PROJECT = project;
+  return project;
+}
 
-/** Sends the CURRENT_PROJECT data to the server for writing to disk
+/// PROJECT DATA API METHODS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Sends the CURRENT_PROJECT data to the server for writing to disk
  *  This operates on a delay timer so saves only happen after a pause of
- *  1 second to reduce the frequency of saves.
- */
+ *  1 second to reduce the frequency of saves. */
 function ProjectFileRequestWrite() {
   if (AUTOTIMER) clearInterval(AUTOTIMER);
   AUTOTIMER = setInterval(() => {
     const projId = CURRENT_PROJECT.id;
-    m_ProjectFileWrite(projId, CURRENT_PROJECT);
-    clearInterval(AUTOTIMER);
-    AUTOTIMER = 0;
+    void (async () => {
+      await m_ProjectFileWrite(projId, CURRENT_PROJECT);
+      clearInterval(AUTOTIMER);
+      AUTOTIMER = 0;
+    })();
   }, 1000);
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Read project data from assets and broadcast loaded data to ac-project */
-async function ProjectFileLoadFromAsset(projId) {
+/** API: Read project data from assets and broadcast loaded data to
+ *  ac-project */
+async function ProjectFileLoadFromAsset(projId: string): Promise<TProject> {
   const PROJECT_LOADER = ASSETS.GetLoader('projects');
   const project = await PROJECT_LOADER.getProjectByProjId(projId);
   return project;
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: During Login, a user can elect to create a new project
  *  file out of existing template file.  PanelSelectSimulation
  *  calls this directly.  This will load the template file,
- *  rename it, then write it to disk.
- */
+ *  rename it, then write it to disk. */
 async function ProjectFileCreateFromTemplate(templateId, newfilename) {
   // 1. open the template file
   const PROJECT_LOADER = ASSETS.GetLoader('projects');
@@ -129,63 +139,29 @@ async function ProjectFileCreateFromTemplate(templateId, newfilename) {
   // 3. save as a new file
   return m_ProjectFileWrite(newfilename, project);
 }
-
-/** Reconstructs project data by merging income updated 'data' with the
- *  existing CURRENT_PROJECT data.
- *  When any subset of project data is changed (e.g. metadata, rounds,
- *  instances, or blueprints), we need to update the whole project data
- *  object.
- */
-async function m_UpdateProjectFile(data: any = {}) {
-  const project = CURRENT_PROJECT;
-  project.id = data.id || project.id;
-  project.label = data.label || project.label;
-  project.metadata = data.metadata || project.metadata;
-  project.rounds = data.rounds || project.rounds;
-  project.blueprints = data.blueprints || project.blueprints;
-  project.instances = data.instances || project.instances;
-  CURRENT_PROJECT = project;
-  return project;
-}
-
-/// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/** Stores 'project' in CURRENT_PROJECT */
-function SetCurrentProject(project) {
+/** API: Stores 'project' in CURRENT_PROJECT */
+function SetCurrentProject(project: TProject) {
   CURRENT_PROJECT = project;
 }
-function GetCurrentProject() {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetCurrentProject(): TProject {
   return CURRENT_PROJECT;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Used to update components of the project data file.
  *  Will call m_UpdateProjectFile to merge the components into the main
- *  project file and send it to the server for writing to disk.
- *  @param {object} projData - {id, label, metadata, rounds, blueprints, instances}
- *                            Can be any or all of the keys.
- */
+ *  project file and send it to the server for writing to disk. */
 function UpdateProjectData(projData) {
   if (DBG) console.log('UpdateProjectData', projData);
   return m_UpdateProjectFile(projData);
 }
 
-/// EXPORTS ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export {
-  SetCurrentProject,
-  GetCurrentProject,
-  UpdateProjectData,
-  ProjectFileRequestWrite,
-  ProjectFileLoadFromAsset,
-  ProjectFileCreateFromTemplate
-};
-
-/// TEST CODE /////////////////////////////////////////////////////////////////
+/// EXAMPLE OF USING SERVICE //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// This is used to test the server's ability to handle a project file write.
 function putproject() {
-  console.log('putprojec!t');
+  console.log('putproject');
   fetch('http://localhost/assets-update/aquatic', {
     method: 'PUT',
     body: JSON.stringify({
@@ -202,6 +178,16 @@ function putproject() {
     .then(json => console.log(json))
     .catch(error => console.error(error));
 }
-UR.AddConsoleTool({
-  test_putproject: putproject
-});
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export {
+  SetCurrentProject, //
+  GetCurrentProject,
+  UpdateProjectData
+};
+export {
+  ProjectFileRequestWrite, // write to server
+  ProjectFileLoadFromAsset, // load from server
+  ProjectFileCreateFromTemplate //
+};
