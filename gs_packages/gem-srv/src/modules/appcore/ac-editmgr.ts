@@ -113,7 +113,9 @@ const STORE = new StateMgr('EditorCore');
 WIZCORE.SubscribeState(handleWizUpdate);
 function handleWizUpdate(vmStateEvent) {
   const { cur_bpid } = vmStateEvent;
-  if (cur_bpid) STORE.SendState({ bpname: cur_bpid });
+  if (cur_bpid) {
+    STORE.SendState({ bpname: cur_bpid });
+  }
 }
 /// Current not used
 ///
@@ -392,7 +394,7 @@ function UpdateSlot(data) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: saves the currently edited slot linescript into the current script_tokens
- *  Called by SlotEditor_Blcok
+ *  Called by SlotEditor_Block
  */
 function SaveSlotLineScript(event) {
   const fn = 'SaveSlotLineScript:';
