@@ -101,6 +101,7 @@ export const ADVANCED_SYMBOLS = [
   'initHSVColorScale',
   'getHSVColorScaleColor',
   // agent
+  'agent',
   'x',
   'y',
   'scale',
