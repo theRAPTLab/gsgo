@@ -173,9 +173,14 @@ class ScriptEditor extends React.Component {
       this.CleanupComponents();
       if (SKIP_RELOAD_WARNING) return;
       // Show "Leave site?" dialog
-      e.preventDefault();
-      e.returnValue = ''; // required by Chrome
-      return e;
+      const { script_page_needs_saving } = WIZCORE.State();
+      const { slots_need_saving } = SLOTCORE.State();
+      if (script_page_needs_saving || slots_need_saving) {
+        e.preventDefault();
+        e.returnValue = ''; // required by Chrome
+        return e;
+      }
+      return;
     });
 
     // add top-level click handler
