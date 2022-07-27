@@ -10,7 +10,7 @@ import GEM_ProjectData from 'modules/datacore/class-gemprj-data';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = true;
-const PR = UR.LogUtil('PROJ-V2', 'TagGreen');
+const PR = UR.PrefixUtil('PROJ-V2', 'TagGreen');
 const ERR = UR.ErrorUtil();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROJECT_DATA = new GEM_ProjectData();

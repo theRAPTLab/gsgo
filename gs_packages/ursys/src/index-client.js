@@ -68,7 +68,7 @@ async function RegisterMessages() {
   return LocalNode.ursysRegisterMessages();
 }
 
-/// MAIN API //////////////////////////////////////////////////////////////////
+/// MAIN LIFECYCLE API ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initialize modules that participate in UR EXEC PhaseMachine before running
  *  SystemNetBoot, which starts the URSYS lifecycle.
@@ -86,9 +86,9 @@ async function SystemStart(route) {
   }
   // autoconnect to URSYS network during NET_CONNECT
   PhaseMachine.Hook('UR/NET_CONNECT', () =>
-    new Promise((resolve, reject) =>
-      NETWORK.URNET_Connect({ success: resolve, failure: reject })
-    ).then(data => {
+    new Promise((resolve, reject) => {
+      void NETWORK.URNET_Connect({ success: resolve, failure: reject });
+    }).then(data => {
       console.log(...PR('URNET established. UADDR is stable.'));
       const eps = DATACORE.GetSharedEndPoints();
       LocalNode = eps.LocalNode; // used only for local handle, send, call
@@ -110,42 +110,59 @@ async function SystemStart(route) {
   return Promise.resolve();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** deallocate any system resources assigned during Initialize
- */
+/** deallocate any system resources assigned during Initialize */
 async function SystemStop() {
   if (!URSYS_RUNNING) {
     console.log(...PR('SystemModulesStop: URSYS is not running!!!'));
     return Promise.resolve();
   }
   // close the network
-  await NETWORK.URNET_Close();
+  NETWORK.URNET_Close();
   URSYS_RUNNING = false;
   return Promise.resolve();
 }
 
+/// MESSAGE SENDING API ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** wrap LocalNode functions so we can export them before LocalNode is valid */
 function DeclareMessage(mesgName, dataProps) {
   if (m_EndpointInitialized())
     return LocalNode.declareMessage(mesgName, dataProps);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function HasMessage(mesgName) {
   if (m_EndpointInitialized()) return LocalNode.hasMessage(mesgName);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function HandleMessage(mesgName, listener) {
   if (m_EndpointInitialized()) LocalNode.handleMessage(mesgName, listener);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function UnhandleMessage(mesgName, listener) {
   if (m_EndpointInitialized()) LocalNode.unhandleMessage(mesgName, listener);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function CallMessage(mesgName, inData, options) {
   if (m_EndpointInitialized())
     return LocalNode.callMessage(mesgName, inData, options);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RaiseMessage(mesgName, inData, options) {
   if (m_EndpointInitialized()) LocalNode.raiseMessage(mesgName, inData, options);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SendMessage(mesgName, inData, options) {
   if (m_EndpointInitialized()) LocalNode.sendMessage(mesgName, inData, options);
+}
+
+/// EVENT LOGGING API /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: log a packet to the server. It will write a comma-separated
+ *  @param {string} event - an event name you decide on
+ *  @param {Array.string} items - an array of strings to write in CSV
+ */
+function LogEvent(event, itemsArray) {
+  SendMessage('NET:SRV_LOG_EVENT', { event, items: itemsArray });
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -153,8 +170,6 @@ function SendMessage(mesgName, inData, options) {
 const UR = {
   ...META,
   ...CONST,
-  // FORWARDED LOGGER
-  LOG,
   // NETWORK MESSAGES
   DeclareMessage,
   HasMessage,
@@ -163,6 +178,8 @@ const UR = {
   SendMessage,
   RaiseMessage,
   CallMessage,
+  // EXTERNAL EVENT LOGGING TO RUNTIME DIR
+  LogEvent,
   // FORWARDED GENERIC PHASE MACHINEc
   HookPhase: PhaseMachine.Hook,
   // SYSTEM ENVIRONMENT
@@ -177,6 +194,8 @@ const UR = {
   // SYSTEM STARTUP
   SystemStart,
   SystemStop,
+  // INTERNAL ERROR LOG MODULE
+  LOG,
   // ROUTE INFO
   IsAppRoute: route => URSYS_ROUTE === route,
   AppRoute: () => URSYS_ROUTE,
@@ -204,7 +223,6 @@ const UR = {
   LinkSubsToDevices: DEVICES.LinkSubsToDevices,
   // FORWARDED CONSOLE UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter, // deprecate
-  LogUtil: PROMPTS.makeStyleFormatter,
   ErrorUtil: PROMPTS.makeErrorFormatter,
   WarnUtil: PROMPTS.makeWarningFormatter,
   DPR: PROMPTS.dbgPrint,
