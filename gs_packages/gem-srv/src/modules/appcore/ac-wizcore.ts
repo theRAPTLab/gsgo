@@ -125,14 +125,6 @@ STORE._interceptState(state => {
     state.script_tokens = toks;
     state.cur_bdl = TRANSPILER.SymbolizeBlueprint(toks);
 
-    // ...did the name change?  if so, remove the old bundle
-    const { cur_bdl } = STORE.State();
-    if (cur_bdl !== null) {
-      const { name: curName } = cur_bdl;
-      const { name: newName } = state.cur_bdl;
-      if (newName !== curName) SIMDATA.DeleteBlueprintBundle(curName);
-    }
-
     const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
     const programMap = TRANSPILER.ScriptToProgramMap(toks);
     // INSERT validation tokens to script_page
