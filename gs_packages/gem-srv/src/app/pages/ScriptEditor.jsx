@@ -164,7 +164,9 @@ class ScriptEditor extends React.Component {
     const params = new URLSearchParams(window.location.search.substring(1));
     const projId = params.get('project');
     const bpName = params.get('script');
-    document.title = `GEMSTEP SCRIPT EDITOR: ${projId}`;
+    document.title = bpName
+      ? `"${bpName}" Editor`
+      : `GEMSTEP SCRIPT EDITOR: ${projId}`;
 
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
