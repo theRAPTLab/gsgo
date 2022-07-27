@@ -260,6 +260,7 @@ URNET.IsLocalhost = () => NetPacket.IsLocalhost();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 URNET.NetInfoRoute = () => CFG_URNET_SERVICE;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+URNET.BuildInfo = () => NETINFO.GetBuildInfo();
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

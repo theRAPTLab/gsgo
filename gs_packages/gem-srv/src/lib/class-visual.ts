@@ -31,12 +31,9 @@ import { AdjustmentFilter } from '@pixi/filter-adjustment';
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
 import { OutlineFilter } from '@pixi/filter-outline';
 import { GlowFilter } from '@pixi/filter-glow';
-import * as DATACORE from 'modules/datacore';
 import * as ASSETS from 'modules/asset_core';
-import FLAGS from 'modules/flags';
-import { IVisual } from './t-visual';
-import { IPoolable } from './t-pool.d';
-import { IActable } from './t-script';
+import FLAGS, { DEFAULT_SPRITE } from 'modules/flags';
+// uses types from t-visual, t-pool, t-script
 import { MakeDraggable } from './vis/draggable';
 import { MakeHoverable } from './vis/hoverable';
 import { MakeSelectable } from './vis/selectable';
@@ -179,7 +176,8 @@ class Visual implements IVisual, IPoolable, IActable {
   }
 
   setTexture(name: string, frameKey: string | number) {
-    if (typeof name !== 'string') throw Error('arg1 must be texture asset name');
+    if (name === undefined) name = DEFAULT_SPRITE;
+    if (!name) return; // DEFAULT_SPRITE is '' then don't draw
     try {
       const { rsrc } = SPRITES.getAsset(name);
       // is this a spritesheet?

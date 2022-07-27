@@ -2,7 +2,7 @@ import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { SIMSTATUS } from 'modules/sim/api-sim';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
 import PlayButton from './PlayButton';
@@ -24,7 +24,7 @@ class PanelPlayback extends React.Component {
 
   OnResetClick() {
     this.setState({ isRunning: false });
-    UR.RaiseMessage('NET:HACK_SIM_RESET');
+    UR.RaiseMessage('NET:SIM_RESET');
   }
 
   OnCostumesClick() {

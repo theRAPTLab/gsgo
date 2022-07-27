@@ -5,10 +5,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword from 'lib/class-keyword';
-import { TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword, UtilFirstValue } from 'modules/datacore';
+import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -16,14 +14,14 @@ export class exprPush extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('exprPush');
-    this.args = ['expr:TMethod'];
+    this.args = ['expression:expr'];
   }
 
   /** create smc blueprint code objects
    *  NOTE: when compile is called, all arguments have already been expanded
    *  from {{ }} to a ParseTree
    */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     const [kw, expr] = unit;
     const code = [];
     code.push((agent, state) => {
@@ -32,27 +30,20 @@ export class exprPush extends Keyword {
     });
     return code;
   }
+  /** custom validation, overriding the generic validation() method of the
+   *  base Keyword class  */
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    const vtoks = []; // validation token array
+    const [kwTok, exprTok, ...argToks] = unit; // get arg pattern
+    // returns symbols for each dtok position excepting the keyword
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { expr } = state;
-    return [this.keyword, expr];
+    vtoks.push(this.shelper.anyKeyword(kwTok));
+    vtoks.push(this.shelper.anyExpr(exprTok));
+    vtoks.push(...this.shelper.extraArgsList(argToks)); // handle extra args in line
+    const log = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: log };
   }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any): any {
-    const [kw, expr] = unit;
-    const isEditable = children ? children.isEditable : false;
-    const isInstanceEditor = children ? children.isInstanceEditor : false;
-
-    const jsx = <>exprPush {`'${expr}'`}</>;
-
-    if (!isInstanceEditor || isEditable) {
-      return super.jsx(index, unit, jsx);
-    }
-    return super.jsxMin(index, unit, jsx);
-  }
-} // end of DefProp
+} // end of keyword definiition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

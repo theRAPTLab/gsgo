@@ -5,8 +5,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import * as PIXI from 'pixi.js';
-import { Visual } from 'lib/t-visual';
-import { ISyncMap, ISyncResults } from 'lib/t-pool';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

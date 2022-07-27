@@ -2,7 +2,7 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "bootstrap": "lerna clean -y && lerna bootstrap --hoist",
+    "bootstrap": "lerna clean -y && lerna bootstrap --hoist && lerna run build",
     "audit": "lerna bootstrap && lerna-audit",
     "build": "lerna run build",
     "start": "npm run build && multiview [npm run gem:multi]",
@@ -11,6 +11,9 @@
     "kill": "lerna run kill",
     "mcp": "cd gs_packages/mcp-srv/ && npm run local",
     "gem": "cd gs_packages/gem-srv/ && npm run local",
+    "lint": "lerna run lint",
+    "lint:safety": "lerna run lint:safety",
+    "lint:types": "lerna run lint:types",
     "admin:multi": "lerna run dev:admin --stream --no-prefix",
     "mcp:multi": "lerna run dev:mcp --stream --no-prefix",
     "gem:multi": "lerna run dev:gem --stream --no-prefix",
@@ -20,27 +23,30 @@
     "sridev": "multiview [npm run ursys:multi] [npm run mcp:multi] [npm run gem:multi]"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.4.1",
-    "@typescript-eslint/parser": "^4.4.1",
-    "eslint": "^6.8.0",
-    "eslint-config-airbnb-typescript": "^11.0.0",
-    "eslint-config-prettier": "^6.13.0",
+    "@typescript-eslint/eslint-plugin": "^5.27.1",
+    "@typescript-eslint/parser": "^5.27.1",
+    "eslint": "^8.17.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-typescript": "^2.0.0",
-    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-jsx-a11y": "^6.3.1",
-    "eslint-plugin-react": "^7.20.0",
+    "eslint-plugin-react": "^7.30.0",
     "eslint-plugin-react-hooks": "^4.1.2",
     "lerna": "^3.22.1",
     "lerna-audit": "^1.2.0",
     "multiview": "^3.0.1",
-    "prettier": "^2.0.5",
-    "typescript": "^4.0.3"
+    "prettier": "^2.5.1",
+    "typescript": "^4.7.3",
+    "yaml-loader": "^0.8.0"
   },
   "dependencies": {
     "deepmerge": "^4.2.2",
     "fs-extra": "^8.1.0",
     "ip": "^1.1.5",
-    "minimist": "^1.2.5",
-    "shelljs": "^0.8.4"
+    "minimist": "^1.2.6",
+    "nodemon": "^2.0.19",
+    "shelljs": "^0.8.5",
+    "ts-node": "^10.8.1"
   }
 }

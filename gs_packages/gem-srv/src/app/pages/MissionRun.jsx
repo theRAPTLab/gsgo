@@ -17,10 +17,10 @@ import PanelMap from './components/PanelMap';
 import PanelBlueprints from './components/PanelBlueprints';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
-// import 'modules/tests/test-parser'; // test parser evaluation
+// import 'test/unit-parser'; // test parser evaluation
 
 // this is where classes.* for css are defined
-import { useStylesHOC } from './elements/page-xui-styles';
+import { useStylesHOC } from './helpers/page-xui-styles';
 import './scrollbar.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -52,7 +52,7 @@ class MissionControl extends React.Component {
   }
 
   render() {
-    const { projId, devices, bpidList, minimized, classes } = this.props;
+    const { projId, devices, bpNamesList, minimized, classes } = this.props;
 
     return (
       <>
@@ -62,7 +62,11 @@ class MissionControl extends React.Component {
           isMinimized={minimized}
           onClick={this.OnPanelClick}
         />
-        <PanelBlueprints id="blueprints" projId={projId} bpidList={bpidList} />
+        <PanelBlueprints
+          id="blueprints"
+          projId={projId}
+          bpNamesList={bpNamesList}
+        />
       </>
     );
   }

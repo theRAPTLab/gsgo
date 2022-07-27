@@ -75,6 +75,11 @@ const WebpackLoaders = () => {
           // some static css is in node_modules, so don't exclude it
         },
         {
+          test: /\.yaml$/,
+          include: DIR_INCLUDES,
+          loader: 'yaml-loader'
+        },
+        {
           // allegedly create unified source maps from output .js files from everyone
           // including libraries with their own source maps (?)
           // this loader runs after all js files are produced (?)
@@ -99,21 +104,26 @@ const WebpackLoaders = () => {
           // note: applies only to "imported" images in source code. Doesn't affect
           // static assets copied as-is (see wp.pack.* configs)
           include: DIR_INCLUDES
+        },
+        {
+          test: /\.gemscript$/i,
+          use: 'raw-loader'
         }
       ]
     },
     resolve: {
       // make require() handle both .js and .jsx files (default only .js)
-      extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      extensions: ['.js', '.jsx', '.ts', '.tsx', '.gemscript'],
       // create webapp path aliases for module imports
       // for visual studio code live linting, update eslintrc
       alias: {
         // make sure to check tsconfig.json as well
         config: Path.resolve(__dirname, '../config'),
         script: Path.resolve(__dirname, '../src/modules/sim/script'),
+        modules: Path.resolve(__dirname, '../src/modules'),
         app: Path.resolve(__dirname, '../src/app'),
         lib: Path.resolve(__dirname, '../src/lib'),
-        modules: Path.resolve(__dirname, '../src/modules')
+        test: Path.resolve(__dirname, '../src/test')
       }
     }
   };

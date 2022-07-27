@@ -11,16 +11,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import GFeature from 'lib/class-gfeature';
-import { Register } from 'modules/datacore/dc-features';
-import { IAgent } from 'lib/t-script';
-import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
-import {
-  GetAgentById,
-  GetAgentsByType,
-  GetAllAgents
-} from 'modules/datacore/dc-agents';
-import { GetGlobalAgent } from 'lib/class-gagent';
+import SM_Feature from 'lib/class-sm-feature';
+import { RegisterFeature } from 'modules/datacore/dc-sim-data';
+import { SM_String } from 'script/vars/_all_vars';
+import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,8 +51,7 @@ function m_CompileCursors() {
   });
 
   const CURSOR_BLUEPRINT = {
-    id: 'Cursor',
-    label: 'Cursor',
+    name: 'Cursor',
     scriptText: `# BLUEPRINT Cursor
 # TAG isCharControllable true
 # TAG isPozyxControllable true
@@ -89,20 +82,16 @@ prop zIndex setTo 1000
   UR.RaiseMessage('INJECT_BLUEPRINT', { blueprint: CURSOR_BLUEPRINT });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * On every SIM/INPUTS_EXEC
- * for every Cursor agent, if it hasn't picked up a target already,
- * and it's touching an agent, then pick it up.
- */
+/** On every SIM/INPUTS_EXEC for every Cursor agent, if it hasn't picked up a
+ *  target already, and it's touching an agent, then pick it up. */
 function m_UpdateInhabitAgent(frametime) {
   // Handle the inhabiting programmatically
-  const cursors = GetAgentsByType('Cursor');
+  const cursors = DCAGENTS.GetAgentsByType('Cursor');
   cursors.find(c => {
     // Make sure the target still exists, if it doesn't allow pickup
     if (
       c.prop.isInhabitingTarget.value &&
-      GetAgentById(c.prop.Cursor.cursorTargetId.value)
+      DCAGENTS.GetAgentById(c.prop.Cursor.cursorTargetId.value)
     )
       return false; // cursor already mapped
 
@@ -118,7 +107,7 @@ function m_UpdateInhabitAgent(frametime) {
       if (isTouching && !isTouching.c2c) return false; // not touching this target
 
       // is touching target
-      const target = GetAgentById(id);
+      const target = DCAGENTS.GetAgentById(id);
 
       // if target is missing then it was probably removed even though it's still touching
       if (!target) return false;
@@ -136,7 +125,7 @@ function m_UpdateInhabitAgent(frametime) {
     // not touching anything
     if (!targetId) return false;
     // found target, set target as inhabitingTarget
-    const target = GetAgentById(targetId);
+    const target = DCAGENTS.GetAgentById(targetId);
 
     if (!target) {
       console.error(
@@ -158,10 +147,9 @@ function m_UpdateInhabitAgent(frametime) {
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class CursorPack extends GFeature {
+class CursorPack extends SM_Feature {
   constructor(name) {
     super(name);
-    this.featAddMethod('bindCursor', this.bindCursor);
     this.featAddMethod('releaseCursor', this.releaseCursor);
     UR.HandleMessage('COMPILE_CURSORS', m_CompileCursors);
 
@@ -176,7 +164,7 @@ class CursorPack extends GFeature {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
     super.decorate(agent);
-    this.featAddProp(agent, 'cursorTargetId', new GVarString());
+    this.featAddProp(agent, 'cursorTargetId', new SM_String());
 
     CURSOR_BLUEPRINTS.set(agent.blueprint.name, agent.blueprint.name);
 
@@ -188,30 +176,15 @@ class CursorPack extends GFeature {
       );
     }
   }
-
-  // DEPRECATED!!!
-  // This was only used by the old approach of inserting a `when` script
-  // into the Cursor blueprint.
-  // ----------------
-  //
-  // `agent` in this case is usually the `Cursor` agent.
-  //
-  // This method is generally only used by the Cursor Feature class itself.
-  // Students should not need to use this method.
-  //
-  // 1. First set `cursorTargetId`
-  //    We need to do it this way because we can't pass an agent or agent.id
-  //    as parameter values.
-  // 2. Then call `bindCursor`
-  // bindCursor(agent: IAgent) {
-  //   const targetAgent = GetAgentById(agent.prop.Cursor.cursorTargetId.value);
-  //   targetAgent.cursor = agent;
-  // }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    CURSOR_BLUEPRINTS.clear();
+  }
 
   // `agent` in this case is the character being bound to, rather than
   // the Cursor agent. e.g. to release a Moth, you would call
   //   `featCall Moth.Cursor releaseCursor`
-  // NOTE: dc-agents.DeleteAgent will explicitly release the cursor when
+  // NOTE: dc-sim-agents.DeleteAgent will explicitly release the cursor when
   // an agent is deleted.
   releaseCursor(agent: IAgent) {
     // clear the cursor state
@@ -228,4 +201,4 @@ class CursorPack extends GFeature {
 /// REGISTER FEATURE SINGLETON ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new CursorPack('Cursor');
-Register(INSTANCE);
+RegisterFeature(INSTANCE);

@@ -1,16 +1,26 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Debugging Stack Machine Operations
-  see stack-ops.ts for description of stack machine
+  NOTE: THESE ARE EARLY EXAMPLES USED TO DESIGN THE SCRIPT ENGINE
+  AND THEN IT TURNED OUT WE DIDN'T NEED THESE OPCODES AT ALL
+
+  Stack Machine (SM) Debugging Opcodes
+
+  These opcodes dare used to debug low level stack maching operations
+
+  ---
+
+  A StackMachine opcode is a higher order function returning
+  a function that receives an agent instance and a stack, scope, and
+  conditions object. This function is the "compiled" output of the
+  operation.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IAgent, IState, TOpcode, TOpWait } from 'lib/t-script';
-
 /// DEBUG OPCODES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// support util functions ////////////////////////////////////////////////////
-function u_dump(num: number = 0, stack: any[], prompt: string = '<dump>') {
+function u_dump(num: number, stack: any[], prompt: string) {
+  num = num || 0;
+  prompt = prompt || '<dump>';
   if (num === 0 || num > stack.length) {
     console.log(`${prompt}:`, stack);
     return;
@@ -24,51 +34,28 @@ function u_dump(num: number = 0, stack: any[], prompt: string = '<dump>') {
  *  Optionally dump number of items to dump
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const dbgStack = (num: number = 0, desc: string = 'stack'): TOpcode => {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+export function dbgStack(num: number = 0, desc: string = 'stack') {
+  return (agent: IAgent, STATE: IState): void => {
     const { stack } = STATE;
     u_dump(num, stack, desc);
   };
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const dbgStackCount = (num: number, desc: string = 'dbgStackCount') => {
-  return (agent: IAgent, STATE: IState): TOpWait => {
+export function dbgStackCount(num: number, desc: string = 'dbgStackCount') {
+  return (agent: IAgent, STATE: IState): void => {
     const slen = STATE.stack.length;
-    if (slen !== num) throw Error(`stack.length ${slen}!==${num} (${desc})`);
+    if (slen !== num) throw Error(`stack.length !== ()`);
   };
-};
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Dump the current scope contents to console. Defaults to all.
- *  Optionally dump number of items to dump
- */
-const dbgScope = (num: number = 0): TOpcode => {
-  return (agent: IAgent, STATE: IState): TOpWait => {
-    const { scope } = STATE;
-    u_dump(num, scope, 'scope');
-  };
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const dbgAgent = (match?: string): TOpcode => {
-  return (agent: IAgent): TOpWait => {
-    if ((match && agent.name() === match) || !match)
-      console.log(`agent[${agent.name()}] serialize:`, agent.serialize());
-  };
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** implement a pause */
-const dbgOut = (...args: any): TOpcode => {
-  return (): TOpWait => {
+export function dbgOut(...args: any) {
+  return (): void => {
     console.log(...args);
   };
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** implement a pause */
-const nop = (): TOpcode => {
-  return (): TOpWait => {};
-};
-
-/// EXPORTS ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// debug opcodes
-export { dbgStack, dbgScope, dbgAgent, dbgOut, nop, dbgStackCount };
+export function nop() {
+  return (): void => {};
+}

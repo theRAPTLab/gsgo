@@ -12,47 +12,44 @@ import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as SIM from '../../modules/sim/api-sim';
-import * as ASSETS from '../../modules/asset_core';
 import * as DATACORE from '../../modules/datacore';
+import * as ASSETS from '../../modules/asset_core';
 import * as RENDERER from '../../modules/render/api-render';
-import * as TRANSPILER from '../../modules/sim/script/transpiler';
+import * as TRANSPILER from '../../modules/sim/script/transpiler-v2';
 import * as Prism from '../../lib/vendor/prism';
 import { CodeJar } from '../../lib/vendor/codejar';
 import '../../lib/vendor/prism.css';
+
 // this is where classes.* for css are defined
-import { useStylesHOC } from './elements/page-styles';
+import { useStylesHOC } from './helpers/page-styles';
 
 /// RUN TESTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// see SystemInit.jsx for the test loader
+/// See SystemInit.jsx for the test loader
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('APP');
-const DBG = true;
+const PR = UR.PrefixUtil('COMP');
+const DBG = false;
 
-/// HARDCODED SCRIPT TEXT ///////////////////////////////////////////////////////////
+/// HARDCODED SCRIPT TEXT /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const defaultText = DATACORE.GetDefaultText();
+const defaultText = `# blueprint DevCompiler`;
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HookPhase(
-  'UR/LOAD_ASSETS',
-  () =>
-    new Promise((resolve, reject) => {
-      if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
-      (async () => {
-        // (1) The old asset manager routine
-        // let map = await GLOBAL.LoadAssetsSync('static/00-manifest');
-        if (DBG) console.log(...PR('ASSETS LOADED'));
-        console.log(...PR('Waiting for user input'));
-        // (2) the new asset manager routine
-        await ASSETS.PromiseLoadAssets('auto');
-        resolve();
-      })();
-    })
-);
+UR.HookPhase('UR/LOAD_ASSETS', async () => {
+  if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
+  // (1) The old asset manager routine
+  // let map = await GLOBAL.LoadAssetsSync('00-manifest.json');
+  if (DBG) console.log(...PR('ASSETS LOADED'));
+  console.log(...PR('Waiting for user input'));
+  // (2) the new asset manager routine
+  await ASSETS.PromiseLoadAssets('dev').catch(err => {
+    let shortErr = err.toString().split('\n')[0];
+    console.log(`WARNING: %c${shortErr}`, 'color:red;background-color:yellow');
+  });
+});
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -62,9 +59,9 @@ class Compiler extends React.Component {
     super();
     this.text = defaultText.trim();
     this.source = [];
-    const jsx = TRANSPILER.RenderScript(this.source);
+    const jsx = TRANSPILER.ScriptToJSX(this.source);
     this.state = {
-      jsx,
+      // jsx,
       text: this.text,
       source: '',
       tabIndex: 0
@@ -129,7 +126,7 @@ class Compiler extends React.Component {
 
   // called by message 'SCRIPT_JSX_CHANGED'
   updateJSX(jsx) {
-    this.setState({ jsx });
+    // this.setState({ jsx });
   }
 
   // echo typing in ScriptText to state
@@ -147,16 +144,16 @@ class Compiler extends React.Component {
   // compile source to jsx
   userToJSX() {
     if (DBG) console.group(...PR('toReact'));
-    // this.source = TRANSPILER.ScriptifyText(this.state.text);
-    const jsx = TRANSPILER.RenderScript(this.source);
-    this.setState({ jsx });
+    // this.source = TRANSPILER.TextToScript(this.state.text);
+    // const jsx = TRANSPILER.ScriptToJSX(this.source);
+    // this.setState({ jsx });
     if (DBG) console.groupEnd();
   }
 
   // compile jsx back to source
   userUpdateText() {
     if (DBG) console.group(...PR('toSource'));
-    const text = TRANSPILER.TextifyScript(this.source);
+    const text = TRANSPILER.TextToScript(this.source);
     this.setState({ text });
     this.text = text;
     if (DBG) console.groupEnd();
@@ -165,10 +162,11 @@ class Compiler extends React.Component {
   // compile text to source
   userCompileText() {
     DATACORE.DeleteAllTests();
-    const source = TRANSPILER.ScriptifyText(this.text);
+    const source = TRANSPILER.TextToScript(this.text);
     this.source = source;
     console.groupCollapsed('parsed text');
-    TRANSPILER.ScriptToConsole(source);
+    // deprecated
+    // TRANSPILER.ScriptToConsole(source);
     console.groupEnd();
     this.setState({ source: JSON.stringify(source) });
   }
@@ -186,8 +184,8 @@ class Compiler extends React.Component {
     const bp = TRANSPILER.RegisterBlueprint(bdl);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
     // update local jsx render
-    const jsx = TRANSPILER.RenderScript(this.source);
-    this.setState({ jsx });
+    // const jsx = TRANSPILER.ScriptToJSX(this.source);
+    // this.setState({ jsx });
     SIM.Start();
   }
 
@@ -235,11 +233,8 @@ class Compiler extends React.Component {
       tab = (
         <div id="script-wizard">
           <h3>WIZARD VIEW</h3>
-          {this.state.jsx}
+          deprecated
           <hr />
-          <button type="button" name="updateText" onClick={this.userUpdateText}>
-            Update Blueprint
-          </button>
         </div>
       );
     }
@@ -254,7 +249,7 @@ class Compiler extends React.Component {
           className={clsx(classes.cell, classes.top, classes.devBG)}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          <span style={{ fontSize: '32px' }}>DEV/COMPILER</span>{' '}
+          <span style={{ fontSize: '32px' }}>DEV/COMPILER V2</span>{' '}
           {UR.ConnectionString()}
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
@@ -294,6 +289,7 @@ class Compiler extends React.Component {
     );
   }
 }
+
 /// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.HandleMessage('NET:GEM_COMPILERAPP', data => {

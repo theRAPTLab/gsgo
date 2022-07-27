@@ -25,19 +25,13 @@ import {
   jssPreset,
   ThemeProvider
 } from '@material-ui/core/styles';
+
 /// APPCORE STATE INITIALIZATION //////////////////////////////////////////////
 import '../../modules/appcore';
 /// MAIN APP SHELL ////////////////////////////////////////////////////////////
 import { PACKAGE_NAME } from '../../../config/gem-settings';
 import theme from '../../modules/style/theme';
 import SystemShell from './SystemShell';
-
-/// RUN UNIT TESTS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// import '../../modules/tests/test-expr-parser'; // test parser evaluation
-// import '../../modules/tests/test-script-parser'; // test script parser
-// import '../../modules/tests/test-compiler'; // test compiler
-// import '../../modules/tests/test-script-runtime'; // test runtime keyword functions
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

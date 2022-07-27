@@ -16,17 +16,16 @@
 
 import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
-import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
-import GFeature from 'lib/class-gfeature';
-import { IAgent } from 'lib/t-script';
+import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
+import SM_Feature from 'lib/class-sm-feature';
 import {
   DeleteAgent,
   GetAgentsByType,
   GetAllAgents,
   DefineInstance,
   GetAgentById
-} from 'modules/datacore/dc-agents';
-import { Register } from 'modules/datacore/dc-features';
+} from 'modules/datacore/dc-sim-agents';
+import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
 import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';
@@ -49,7 +48,6 @@ const PR = UR.PrefixUtil('FeatMovement');
 const DBG = false;
 
 let BOUNDS = UR.ReadFlatStateGroups('metadata');
-UR.SubscribeState('metadata', urStateUpdated);
 
 const MOVEWINDOW = 10; // A move will leave `isMoved` active for this number of frames
 const MOVEDISTANCE = 3; // Minimum distance moved before `isMoved` is registered
@@ -265,8 +263,7 @@ function moveJitter(
   agent: IAgent,
   min: number = -5,
   max: number = 5,
-  round: boolean = true,
-  frame: number
+  round: boolean = true
 ) {
   const x = m_random(min, max, round);
   const y = m_random(min, max, round);
@@ -274,12 +271,12 @@ function moveJitter(
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// WANDER
-function moveWander(agent: IAgent, frame: number) {
+function moveWander(agent: IAgent) {
   // Mostly go in the same direction
   // but really change direction once in a while
   const distance = agent.prop.Movement.distance.value;
   let direction = agent.prop.Movement.direction.value;
-  if (m_random() > 0.98) {
+  if (m_random() > 0.98 && agent.prop.Movement.doRandomOnWander.value) {
     direction += m_random(-90, 90);
     agent.prop.Movement.direction.value = direction;
   }
@@ -290,7 +287,7 @@ function moveWander(agent: IAgent, frame: number) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// EDGE to EDGE (of the entire tank / system)
 /// Go in the same direction most of the way across the space, then turn back and do similar
-function moveEdgeToEdge(agent: IAgent, frame: number) {
+function moveEdgeToEdge(agent: IAgent) {
   const bounds = BOUNDS;
   const pad = 5;
   let hwidth = pad; // half width -- default to some padding
@@ -364,7 +361,7 @@ function moveFloat(agent, y: number = -300) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Seek
-function seek(agent: IAgent, target: { x; y }, frame: number) {
+function seek(agent: IAgent, target: { x; y }) {
   // stop seeking if target was removed
   // For input agents, target might be defined, but x and y are not
   if (!target || target.x === undefined || target.y === undefined) return;
@@ -383,22 +380,22 @@ function seek(agent: IAgent, target: { x; y }, frame: number) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// SeekAgent
-function seekAgent(agent: IAgent, frame: number) {
+function seekAgent(agent: IAgent) {
   const targetId = agent.prop.Movement._targetId;
   if (!targetId) return; // no target, just idle
   const target = GetAgentById(targetId);
-  seek(agent, target, frame);
+  seek(agent, target);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// seekAgentOrWander
 function seekAgentOrWander(agent: IAgent, frame: number) {
   const targetId = agent.prop.Movement._targetId;
   if (!targetId) {
-    moveWander(agent, frame); // no target, wander instead
+    moveWander(agent); // no target, wander instead
     return;
   }
   const target = GetAgentById(targetId);
-  seek(agent, target, frame);
+  seek(agent, target);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// wanderUntilAgent
@@ -425,12 +422,12 @@ function wanderUntilAgent(agent: IAgent, frame: number) {
       isInside = true;
     }
   });
-  if (!isInside) moveWander(agent, frame); // no target, wander instead
+  if (!isInside) moveWander(agent); // no target, wander instead
   // else just sit
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Movement Function Library
-const MOVEMENT_FUNCTIONS = new Map([
+const MOVEMENT_FUNCTIONS: Map<string, Function> = new Map([
   ['static', undefined],
   ['wander', moveWander],
   ['edgeToEdge', moveEdgeToEdge],
@@ -606,7 +603,7 @@ UR.HookPhase('SIM/VIS_UPDATE', m_VizUpdate);
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class MovementPack extends GFeature {
+class MovementPack extends SM_Feature {
   constructor(name) {
     super(name);
     if (DBG) console.log(...PR('construct'));
@@ -626,27 +623,30 @@ class MovementPack extends GFeature {
     this.featAddMethod('seekNearestVisibleCone', this.seekNearestVisibleCone);
     this.featAddMethod('seekNearestVisibleColor', this.seekNearestVisibleColor);
     this.featAddMethod('wanderUntilInside', this.wanderUntilInside);
-  }
 
+    UR.SubscribeState('metadata', urStateUpdated);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** This runs once to initialize the feature for all agents */
   initialize(pm) {
     super.initialize(pm);
     pm.hook('INPUT', this.handleInput);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
     super.decorate(agent);
     MOVEMENT_AGENTS.set(agent.id, agent);
-    this.featAddProp(agent, 'movementType', new GVarString('static'));
-    this.featAddProp(agent, 'controller', new GVarString());
-    this.featAddProp(agent, 'direction', new GVarNumber(0)); // degrees
-    this.featAddProp(agent, 'compassDirection', new GVarString()); // readonly
-    this.featAddProp(agent, 'distance', new GVarNumber(0.5));
-    this.featAddProp(agent, 'bounceAngle', new GVarNumber(180));
-    this.featAddProp(agent, 'isMoving', new GVarBoolean());
-    this.featAddProp(agent, 'useAutoOrientation', new GVarBoolean(false));
-    this.featAddProp(agent, 'targetX', new GVarNumber(0)); // so that we can set a location in pieces and go to it
-    this.featAddProp(agent, 'targetY', new GVarNumber(0));
+    this.featAddProp(agent, 'movementType', new SM_String('static'));
+    this.featAddProp(agent, 'controller', new SM_String());
+    this.featAddProp(agent, 'direction', new SM_Number(0)); // degrees
+    this.featAddProp(agent, 'compassDirection', new SM_String()); // readonly
+    this.featAddProp(agent, 'distance', new SM_Number(0.5));
+    this.featAddProp(agent, 'bounceAngle', new SM_Number(180));
+    this.featAddProp(agent, 'doRandomOnWander', new SM_Boolean(true));
+    this.featAddProp(agent, 'isMoving', new SM_Boolean());
+    this.featAddProp(agent, 'useAutoOrientation', new SM_Boolean(false));
+    this.featAddProp(agent, 'targetX', new SM_Number(0)); // so that we can set a location in pieces and go to it
+    this.featAddProp(agent, 'targetY', new SM_Number(0));
 
     // Initialize internal properties
     agent.prop.Movement._lastMove = 0;
@@ -665,21 +665,27 @@ class MovementPack extends GFeature {
     // agent.prop.Movement._targetAngle // cached value so input agents can keep turning between updates
     // agent.prop.Movement._jitterRotate
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    MOVEMENT_AGENTS.clear();
+    SEEK_AGENTS.clear();
+    INSIDE_AGENTS.clear();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   handleInput() {
     // hook into INPUT phase and do what needs doing for
     // the feature as a whole
   }
-
-  setController(agent, x) {
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  setController(agent: IAgent, x: number) {
     if (DBG) console.log(...PR(`setting control to ${x}`));
     agent.getProp('controller').value = x;
   }
-
-  queuePosition(agent, x, y) {
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  queuePosition(agent: IAgent, x: number, y: number) {
     m_QueuePosition(agent, x, y);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // TYPES
   // These are convenience functions.
   // Each can be set separately via featProps.
@@ -722,11 +728,11 @@ class MovementPack extends GFeature {
       }
     }
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setRandomDirection(agent: IAgent) {
     m_setDirection(agent, m_random(0, 360));
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setRandomBoundedPosition(
     agent: IAgent,
     bounds: { left: number; right: number; top: number; bottom: number }
@@ -735,26 +741,26 @@ class MovementPack extends GFeature {
     const y = m_random(bounds.top, bounds.bottom);
     m_QueuePosition(agent, x, y);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setRandomPosition(agent: IAgent) {
     this.setRandomBoundedPosition(agent, BOUNDS);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setRandomPositionX(agent: IAgent) {
     const x = m_random(BOUNDS.left, BOUNDS.right);
     m_QueuePosition(agent, x, agent.prop.y.value);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setRandomPositionY(agent: IAgent) {
     const y = m_random(BOUNDS.top, BOUNDS.bottom);
     m_QueuePosition(agent, agent.prop.x.value, y);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setRandomStart(agent: IAgent) {
     this.setRandomDirection(agent);
     this.setRandomPosition(agent);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setRandomStartPosition(agent: IAgent, width: number, height: number) {
     const hwidth = width / 2;
     const hheight = height / 2;
@@ -765,13 +771,13 @@ class MovementPack extends GFeature {
       bottom: hheight
     });
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   jitterPos(agent, min: number = -5, max: number = 5, round: boolean = true) {
     const x = m_random(min, max, round);
     const y = m_random(min, max, round);
     m_QueuePosition(agent, agent.prop.x.value + x, agent.prop.y.value + y);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // A single trigger that will clear itself after being run
   // The advantage of setting this as a method is that the script
   // doesn't have to clear the flag afterwards.  This makes it
@@ -779,14 +785,14 @@ class MovementPack extends GFeature {
   jitterRotate(agent) {
     agent.prop.Movement._jitterRotate = true;
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   seekNearest(agent: IAgent, targetType: string) {
     // Clear any existing target.  This is especially important between rounds.
     agent.prop.Movement._targetId = undefined;
     SEEK_AGENTS.set(agent.id, { targetType, useVisionCone: false });
     this.setMovementType(agent, 'seekAgent');
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // vision cone visible
   seekNearestVisibleCone(agent: IAgent, targetType: string) {
     // Clear any existing target.  This is especially important between rounds.
@@ -794,7 +800,7 @@ class MovementPack extends GFeature {
     SEEK_AGENTS.set(agent.id, { targetType, useVisionCone: true });
     this.setMovementType(agent, 'seekAgentOrWander');
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // color visible
   seekNearestVisibleColor(agent: IAgent, targetType: string) {
     // Clear any existing target.  This is especially important between rounds.
@@ -802,14 +808,50 @@ class MovementPack extends GFeature {
     SEEK_AGENTS.set(agent.id, { targetType, useVisionColor: true });
     this.setMovementType(agent, 'seekAgentOrWander');
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   wanderUntilInside(agent: IAgent, targetType: string) {
     INSIDE_AGENTS.set(agent.id, { targetType });
     this.setMovementType(agent, 'wanderUntilAgent');
+  }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {
+        movementType: SM_String.Symbols,
+        controller: SM_String.Symbols,
+        direction: SM_Number.Symbols,
+        compassDirection: SM_String.Symbols,
+        distance: SM_Number.Symbols,
+        bounceAngle: SM_Number.Symbols,
+        isMoving: SM_Number.Symbols,
+        useAutoOrientation: SM_Boolean.Symbols,
+        targetX: SM_Number.Symbols,
+        targetY: SM_Number.Symbols
+      },
+      methods: {
+        setController: { args: ['x:number'] },
+        queuePosition: { args: ['x:number', 'y:number'] },
+        setMovementType: { args: ['type:string', 'params:{...}'] },
+        setRandomDirection: {},
+        setRandomPosition: {},
+        setRandomPositionX: {},
+        setRandomPositionY: {},
+        setRandomStart: {},
+        setRandomStartPosition: { args: ['width:number', 'height:number'] },
+        jitterPos: { args: ['min:number', 'max:number', 'round:boolean'] },
+        jitterRotate: {},
+        seekNearest: { args: ['targetType:string'] },
+        seekNearestVisibleCone: { args: ['targetType:string'] },
+        seekNearestVisibleColor: { args: ['targetType:string'] },
+        wanderUntilInside: { args: ['targetType:string'] }
+      }
+    };
   }
 } // end of feature class
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new MovementPack(FEATID);
-Register(INSTANCE);
+RegisterFeature(INSTANCE);

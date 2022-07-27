@@ -24,8 +24,8 @@ const TimerPack = {
 /// URSYS PROMPT //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import UR from '@gemstep/ursys/client';
-import GFeature from 'lib/class-gfeature';
-import { Register } from 'modules/datacore/dc-features';
+import SM_Feature from 'lib/class-sm-feature';
+import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,7 +36,7 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  */
-class TimerPack extends GFeature {
+class TimerPack extends SM_Feature {
   constructor(name) {
     super(name);
     this.featAddMethod('setRoundTimer', this.setRoundTimer);
@@ -50,17 +50,28 @@ class TimerPack extends GFeature {
 
   /// TIMER METHODS ///////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ///
   setRoundTimer(agent: IAgent) {
     console.error('setRoundTimer not implemented yet.');
   }
   stopRound(agent: IAgent) {
     UR.RaiseMessage('NET:HACK_SIM_STOP');
   }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {},
+      methods: {
+        setRoundTimer: {},
+        stopRound: {}
+      }
+    };
+  }
 }
 
-/// import { Register } from 'modules/datacore/dc-features';
+/// import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new TimerPack('Timer');
-Register(INSTANCE);
+RegisterFeature(INSTANCE);

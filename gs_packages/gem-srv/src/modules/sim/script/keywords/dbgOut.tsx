@@ -5,11 +5,10 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import UR from '@gemstep/ursys/client';
-import Keyword, { EvalRuntimeUnitArgs } from 'lib/class-keyword';
-import { TOpcode, TScriptUnit } from 'lib/t-script';
+import Keyword, { K_EvalRuntimeUnitArgs } from 'lib/class-keyword';
 import { RegisterKeyword } from 'modules/datacore';
+import { TokenToString } from 'script/tools/script-tokenizer';
 
 /// KEYWORD STATIC DECLARATIONS ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -31,17 +30,17 @@ export class dbgOut extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('dbgOut');
-    this.args = ['...args'];
+    this.args = ['*:{...}'];
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     const progout = [];
 
     progout.push((agent, state) => {
       if (COUNTER-- > 0) {
         console.log(
-          ...PR(...EvalRuntimeUnitArgs(unit.slice(1), { agent, ...state.ctx }))
+          ...PR(...K_EvalRuntimeUnitArgs(unit.slice(1), { agent, ...state.ctx }))
         );
       }
       if (COUNTER === 0) console.log('dbgOut limiter at', MAX_OUT, 'statements');
@@ -49,23 +48,22 @@ export class dbgOut extends Keyword {
     return progout;
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { error } = state;
-    return [this.keyword, error];
+  /** return symbol structure for this keyword */
+  symbolize(unit: TScriptUnit): TSymbolData {
+    const [kwTok, msgTok] = unit;
+    const message = TokenToString(msgTok);
+    return { unitText: message };
   }
 
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw, ...args] = unit;
-    const isEditable = children ? children.isEditable : false;
-    const isInstanceEditor = children ? children.isInstanceEditor : false;
-    if (!isInstanceEditor || isEditable) {
-      return super.jsx(index, unit, <>{`${kw} ${args}`}</>);
-    }
-    return super.jsxMin(index, unit, <>{`${kw} ${args}`}</>);
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    const [kwTok, msgTok] = unit;
+    const vtoks = [];
+    vtoks.push(this.shelper.anyKeyword(kwTok));
+    vtoks.push(this.shelper.anyString(msgTok));
+    const vlog = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: vlog };
   }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

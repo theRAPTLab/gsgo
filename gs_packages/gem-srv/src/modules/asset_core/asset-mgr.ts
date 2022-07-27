@@ -2,41 +2,50 @@
 
   ASSET MANAGER
 
-  Manages 'AssetLoader classes' that manage assetTypes such as 'sprites',
-  'sounds', etc.
+  ROLE:
+    main API for requesting assets, including loading assets from a remote
+    server
 
-  The main API is just two calls:
+  OPERATIONS:
+    Uses a single entry point: PromiseLoadAssets(url), where url is the
+    location of an Asset Directory that has an Asset Manifest.
 
-  * PromiseLoadAssets(url) - returns promise to load the manifest and
-    tell each loader to load its portion.
-  * GetLoader(assetType) - returns the loader instance for given type.
+    When the promise completes, all assets in the manifest are available.
 
-  See `class-asset-loader` for an example of host.
+    To access a particular type of asset, use GetLoader('asset type')
+    to retrieve a manager upon which you can get the resources by
+    id or by name.
+
+  CONCEPTS:
+    The Asset Manager is responsible for retrieving and parsing the asset
+    manifest, which is a JSON file that groups assets by type. Each group
+    of asset entries is passed to a LOADER that knows how to handle that
+    type of asset.
+
+    Each LOADER is an extension of the base AssetLoader class, which
+    knows how to load assets remotely and store them in a dictionary
+    asynchronously. After everything is loaded, the dictionary can
+    be access through methods like getAssetById() and so forth.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import {
-  TAssetDef,
-  TAssetType,
-  TAssetLoader,
-  TManifest
-} from '../../lib/t-assets';
+// import { TAssetDef, TAssetType, TAssetLoader, TManifest } from 'lib/t-assets';
+import { GS_ASSETS_ROUTE, GS_ASSETS_PATH } from 'config/gem-settings';
 import SpriteLoader from './as-load-sprites';
 import ProjectLoader from './as-load-projects';
-import { GS_ASSETS_ROUTE, GS_ASSETS_PATH } from '../../../config/gem-settings';
-
-/// TYPE DECLARATIONS /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+import AssetLoader from './class-asset-loader';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('ASSETM', 'TagGreen');
-const DBG = true;
-
-/// MODULE HELPERS /////////////////////////////////////////////////////////////
+const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const LOADER_DICT = new Map<TAssetType, TAssetLoader>();
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let ASSET_LOAD_COUNT = 0; // used to detect multiple loads
+
+/// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** returns true for supported loader types */
 function m_IsSupportedType(entry: [TAssetType, TAssetDef[]]): boolean {
@@ -58,45 +67,24 @@ function m_RegisterLoader(loader: TAssetLoader) {
   LOADER_DICT.set(asType, loader);
 }
 
-/// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** utility function to load manifest from a constructed route of the form
- *  http://host:port/assets/subdir
- */
-async function m_LoadManifest(route) {
-  const url = `${route}?manifest`;
-  console.log(...PR('loading', url));
-  let json: any;
-  try {
-    json = await fetch(url).then(async response => {
-      if (!response.ok) throw new Error('network error');
-      let js: TManifest = await response.json();
-      if (Array.isArray(js) && js.length > 0) {
-        if (DBG) console.log('converting json array...');
-        js = js.shift();
-      }
-      return js;
-    });
-    if (DBG) console.log(...PR('success', json));
-    return json as TManifest;
-  } catch (err) {
-    // console.warn(err);
-    json = undefined;
-  }
-  return json;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a manifest, load all asset types. this currently loads from the
+/** API: given a manifest, load all asset types. this currently loads from the
  *  local directory in gs_assets.
  *  @param {string} subdir if set, relative to assets/
  */
-export async function PromiseLoadAssets(subdir: string = '') {
+async function PromiseLoadAssets(subdir: string = '') {
+  if (ASSET_LOAD_COUNT > 0) {
+    console.warn('PromiseLoadAssets() was called more than once, so aborting');
+    return Promise.reject(new Error('asset loads > 0'));
+  }
+  // e.g. route = '/assets
   const route = !subdir ? GS_ASSETS_ROUTE : `${GS_ASSETS_ROUTE}/${subdir}`;
-  const json = await m_LoadManifest(route);
+  console.log('route', route);
+  const json = await AssetLoader.PromiseManifest(route);
   if (json === undefined) {
     const jsonErr = `ERROR: No asset manifest found at "${route}".\n\nTROUBLESHOOTING\n1. Are there assets in '${GS_ASSETS_PATH}/${subdir}?'.\n2. gsgo-settings.json has correct paths?\n3. gem-srv/config/*-settings overrides has correct paths?\n4. Does AssetServer have downloadable assets?`;
     UR.LOG.MissingAsset(jsonErr);
-    alert(jsonErr);
+    console.error(jsonErr);
     return Promise.reject(jsonErr);
   }
   // grab the top-level keys of the manifest (e.g. sprites:[])
@@ -106,13 +94,17 @@ export async function PromiseLoadAssets(subdir: string = '') {
   const promises = [];
   for (const kv of assets) {
     const asType = kv[0]; // avoiding array destructure because old typescript
-    const asList = kv[1] as Array<TAssetDef>;
+    const asList = kv[1];
     // because manifest entries are relative to their directory, we have
     // to add subdir in so loader has correct URL
-    if (subdir)
-      for (const e of asList) {
-        e.assetUrl = `${subdir}/${e.assetUrl}`;
-      }
+
+    // this url rewrite is no longer necessary because AsseLoader.PromiseManifest does
+    // this automatically now
+    // if (subdir)
+    //   for (const e of asList) {
+    //     e.assetUrl = `${subdir}/${e.assetUrl}`;
+    //   }
+
     // create a promise for each asset entry that is loaded
     const loader = m_GetLoaderByType(asType as TAssetType);
     if (loader) {
@@ -124,19 +116,41 @@ export async function PromiseLoadAssets(subdir: string = '') {
     }
   }
   if (DBG) console.groupEnd();
+  ASSET_LOAD_COUNT++;
   return Promise.all(promises);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return the loader class for the given asset type */
-export function GetLoader(asType: TAssetType): any {
+/** API: return the loader class for the given asset type */
+function GetLoader(asType: TAssetType): any {
   return LOADER_DICT.get(asType);
+}
+
+/// TEST FUNCTIONS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** HACK: support ac-wizcore testing. do not use! */
+function DBG_ForceLoadAsset(subdir) {
+  ASSET_LOAD_COUNT = 0;
+  LOADER_DICT.forEach((loader, name) => {
+    loader.reset();
+    console.log('resetting', name, 'assets');
+  });
+  return PromiseLoadAssets(subdir);
 }
 
 /// INITIALIZATION ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// register for every type
-m_RegisterLoader(new SpriteLoader('sprites'));
-m_RegisterLoader(new ProjectLoader('projects'));
+/// register for every type within this asset manager
+m_RegisterLoader(new SpriteLoader());
+m_RegisterLoader(new ProjectLoader());
 
-/// TEST INTERFACE ////////////////////////////////////////////////////////////
+/// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// basic API
+export {
+  GetLoader, // return loader instance by assettype (eg 'sprites')
+  PromiseLoadAssets // loads all assets in directory from manifest
+};
+/// utilities
+export {
+  DBG_ForceLoadAsset // don't use this!!! unstable
+};

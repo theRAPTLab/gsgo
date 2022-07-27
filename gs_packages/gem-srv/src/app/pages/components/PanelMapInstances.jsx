@@ -9,7 +9,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
 import InstanceEditor from './InstanceEditor';

@@ -17,7 +17,7 @@ import EntityObject from './class-entity-object';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('PTRAK');
-export const TYPES = {
+const TYPES = {
   Undefined: '?',
   Object: 'ob',
   People: 'pp',
@@ -35,9 +35,51 @@ let MIN_AGE = 30; // set high so effect is visible. 30 frames before 'alive'
 let SRADIUS = 0.1;
 let CULL_YOUNGLINGS = true;
 
+/// HELPER FUNCTIONS ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** entity is checked against other entities in idsActive
+ *  it's assumed that idsActive does NOT contain entity
+ */
+function m_IsOldestInRadius(entity, seenMap) {
+  let rad2 = SRADIUS * SRADIUS;
+  let result = true;
+  let x2;
+  let y2;
+  seenMap.forEach((k, c) => {
+    if (c === entity) return;
+    x2 = (c.x - entity.x) ** 2;
+    y2 = (c.y - entity.y) ** 2;
+    // is point outside of circle? continue
+    const out = x2 + y2 >= rad2;
+    if (out) return;
+    // otherwise we're inside, so check if older
+    if (entity.age < c.age) {
+      result = false;
+      // merge position with baddies
+      c.x = (c.x + entity.x) / 2;
+      c.y = (c.y + entity.y) / 2;
+    }
+  });
+  return result;
+}
+
+/// ENTITY HELPERS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Convert entity coordinates to gameworld gameworld coordinates.
+ *  entity: { id, x, y, h, nop } - tracker coords
+ *  trackerObject: { id, pos, valid } - game coords
+ */
+function m_TransformAndUpdate(entity) {
+  // tracker space position
+  let x = entity.x;
+  let y = entity.y;
+  let z = entity.h;
+  console.log('entity', ...entity);
+}
+
 /// CLASS DEFINITIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default class PTrackEndpoint {
+class PTrackEndpoint {
   pt_sock: { onmessage?: Function };
   pt_url: string;
   entityDict: Map<string, EntityObject>;
@@ -421,49 +463,7 @@ export default class PTrackEndpoint {
   }
 } // end class
 
-/// HELPER FUNCTIONS ////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** entity is checked against other entities in idsActive
- *  it's assumed that idsActive does NOT contain entity
- */
-function m_IsOldestInRadius(entity, seenMap) {
-  let rad2 = SRADIUS * SRADIUS;
-  let result = true;
-  let x2;
-  let y2;
-  seenMap.forEach((k, c) => {
-    if (c === entity) return;
-    x2 = (c.x - entity.x) ** 2;
-    y2 = (c.y - entity.y) ** 2;
-    // is point outside of circle? continue
-    const out = x2 + y2 >= rad2;
-    if (out) return;
-    // otherwise we're inside, so check if older
-    if (entity.age < c.age) {
-      result = false;
-      // merge position with baddies
-      c.x = (c.x + entity.x) / 2;
-      c.y = (c.y + entity.y) / 2;
-    }
-  });
-  return result;
-}
-
-/// ENTITY HELPERS //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Convert entity coordinates to gameworld gameworld coordinates.
- *  entity: { id, x, y, h, nop } - tracker coords
- *  trackerObject: { id, pos, valid } - game coords
- */
-function m_TransformAndUpdate(entity) {
-  // tracker space position
-  let x = entity.x;
-  let y = entity.y;
-  let z = entity.h;
-
-  console.log('entity', ...entity);
-}
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// see export of default class above
+export default PTrackEndpoint;
+export { TYPES };

@@ -1,0 +1,23 @@
+# help for feature properties and methods
+# these can be used override the defaults define in the feature modules
+
+Costume:
+  info: 'Adds ability to change appearance using art assets'
+  setCostume:
+    hint: 'Change appearance by setting image'
+    syntax: 'sprite file name (flower.json), starting frame number like 0'
+  setPose:
+    hint: 'Change animation frame'
+    syntax: 'frame number like 0'
+
+Physics:
+  info: 'Adds collision checking.'
+  setSize:
+    hint: 'change dimensions in pixels'
+    syntax: 'integer width, integer height'
+
+Movement:
+  info: 'Add different ways to move or be controlled'
+  setMovementType:
+    hint: 'change how a character moves'
+    syntax: 'variable (see wiki)'

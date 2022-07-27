@@ -11,31 +11,30 @@
   Meters
   * Meters can be set directly via featProp 'meter', or
   * Meters can be bound to an agent property using the `bindMeterTo` method.
-  * If you bind to a property, the Feature will automatically calculate
+  * If you bind to a property, the SM_Feature will automatically calculate
     the meter value based on the min and max properties.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { GVarNumber, GVarString, GVarBoolean } from 'modules/sim/vars/_all_vars';
-import GFeature from 'lib/class-gfeature';
-import { IAgent } from 'lib/t-script';
-import { GetAgentById } from 'modules/datacore/dc-agents';
-import { Register } from 'modules/datacore/dc-features';
-import { GetGlobalAgent } from 'lib/class-gagent';
+import {
+  SM_Number,
+  SM_String,
+  SM_Boolean
+} from 'modules/sim/script/vars/_all_vars';
+import SM_Feature from 'lib/class-sm-feature';
+import { GetAgentById } from 'modules/datacore/dc-sim-agents';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
+import SM_Agent from 'lib/class-sm-agent';
 import FLAGS from 'modules/flags';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const FEATID = 'AgentWidgets';
-const PR = UR.PrefixUtil(FEATID);
-const DBG = false;
-
 const WIDGET_AGENTS = new Map();
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /**
  * Returns agent if it exists.
  * If it doesn't exist anymore (e.g. CharControl has dropped), remove it from
@@ -69,7 +68,7 @@ function m_FeaturesUpdate(frame) {
         value = agent.getProp(graphProp).value;
       } else if (agent.prop.AgentWidgets._graphGlobalProp) {
         const graphProp = agent.prop.AgentWidgets._graphGlobalProp;
-        const global = GetGlobalAgent();
+        const global = SM_Agent.GetGlobalAgent();
         value = global.prop[graphProp].value;
       }
       const counter = agent.prop.AgentWidgets._graphCounter++;
@@ -90,7 +89,7 @@ function m_FeaturesUpdate(frame) {
   });
 }
 
-/// SIM/GRAPHS_UPDATE -- Runs during PreRun and Costumes as well as regular sim LOOP
+/// SIM/GRAPHS_UPDATE -- Runs during PreRun and CostumeLoop as well as regular sim LOOP
 ///                      Runs after FEATURES_UPDATE so histograms can override graphs
 function m_GraphsUpdate(frame) {
   const agentIds = Array.from(WIDGET_AGENTS.keys());
@@ -111,7 +110,7 @@ function m_GraphsUpdate(frame) {
       //   agent.prop[agent.prop.AgentWidgets._histogramFeature][
       //     agent.prop.AgentWidgets._histogramProp
       //   ];
-      const GLOBAL_AGENT = GetGlobalAgent();
+      const GLOBAL_AGENT = SM_Agent.GetGlobalAgent();
       const values =
         GLOBAL_AGENT.prop[agent.prop.AgentWidgets._histogramFeature][
           agent.prop.AgentWidgets._histogramProp
@@ -203,7 +202,7 @@ function m_UIUpdate(frame) {
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class WidgetPack extends GFeature {
+class WidgetPack extends SM_Feature {
   //
   constructor(name) {
     super(name);
@@ -224,26 +223,25 @@ class WidgetPack extends GFeature {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
     super.decorate(agent);
-
     // Public Props
-    this.featAddProp(agent, 'text', new GVarString(agent.name)); // default to agent name
-    let prop = new GVarNumber();
+    this.featAddProp(agent, 'text', new SM_String(agent.name)); // default to agent name
+    let prop = new SM_Number();
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'meter', prop);
-    prop = new GVarNumber();
+    prop = new SM_Number();
     this.featAddProp(agent, 'meterColor', prop);
-    this.featAddProp(agent, 'isLargeGraphic', new GVarBoolean(false));
-    prop = new GVarNumber(0);
+    this.featAddProp(agent, 'isLargeGraphic', new SM_Boolean(false));
+    prop = new SM_Number(0);
     this.featAddProp(agent, 'graphValue', prop);
 
     // Bar Graph
-    this.featAddProp(agent, 'barGraphProp', new GVarString()); // this should be a dict prop
-    this.featAddProp(agent, 'barGraphPropFeature', new GVarString());
+    this.featAddProp(agent, 'barGraphProp', new SM_String()); // this should be a dict prop
+    this.featAddProp(agent, 'barGraphPropFeature', new SM_String());
 
     // Private Props
-    this.featAddProp(agent, 'textProp', new GVarString()); // agent prop name that text is bound to
-    this.featAddProp(agent, 'meterProp', new GVarString());
+    this.featAddProp(agent, 'textProp', new SM_String()); // agent prop name that text is bound to
+    this.featAddProp(agent, 'meterProp', new SM_String());
 
     agent.prop.AgentWidgets._graph = [0, 0];
     agent.prop.AgentWidgets._graphProp = undefined;
@@ -254,6 +252,10 @@ class WidgetPack extends GFeature {
     // REGISTER the Agent for updates
     WIDGET_AGENTS.set(agent.id, agent.id);
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    WIDGET_AGENTS.clear();
+  }
 
   /// WIDGET METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -263,15 +265,15 @@ class WidgetPack extends GFeature {
   showMessage(agent: IAgent, message: string) {
     UR.RaiseMessage('SHOW_MESSAGE', { message });
   }
-  bindTextTo(agent: IAgent, propname: string) {
-    agent.prop.AgentWidgets.textProp.setTo(propname);
+  bindTextTo(agent: IAgent, propName: string) {
+    agent.prop.AgentWidgets.textProp.setTo(propName);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// METER
 
-  bindMeterTo(agent: IAgent, propname: string) {
-    agent.prop.AgentWidgets.meterProp.setTo(propname);
+  bindMeterTo(agent: IAgent, propName: string) {
+    agent.prop.AgentWidgets.meterProp.setTo(propName);
   }
   setMeterPosition(agent: IAgent, position: string) {
     let result = FLAGS.POSITION.OUTSIDE_LEFT; // defaults to outside left
@@ -289,16 +291,16 @@ class WidgetPack extends GFeature {
   /**
    *
    * @param agent
-   * @param propname
+   * @param propName
    * @param frequency Number of frames between plotting another point
    *                  Defaults to 30, or once per second
    */
-  bindGraphTo(agent: IAgent, propname: string, frequency: number = 30) {
-    agent.prop.AgentWidgets._graphProp = propname;
+  bindGraphTo(agent: IAgent, propName: string, frequency: number = 30) {
+    agent.prop.AgentWidgets._graphProp = propName;
     agent.prop.AgentWidgets._graphFreq = frequency;
   }
-  bindGraphToGlobalProp(agent: IAgent, propname: string, frequency: number = 30) {
-    agent.prop.AgentWidgets._graphGlobalProp = propname;
+  bindGraphToGlobalProp(agent: IAgent, propName: string, frequency: number = 30) {
+    agent.prop.AgentWidgets._graphGlobalProp = propName;
     agent.prop.AgentWidgets._graphFreq = frequency;
   }
 
@@ -309,16 +311,43 @@ class WidgetPack extends GFeature {
   bindLineGraphHistogramToFeatProp(
     agent: IAgent,
     feature: string,
-    propname: string
+    propName: string
   ) {
     agent.prop.AgentWidgets._histogramFeature = feature;
-    agent.prop.AgentWidgets._histogramProp = propname;
+    agent.prop.AgentWidgets._histogramProp = propName;
   }
 
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {
+        text: SM_String.Symbols,
+        meter: SM_Number.Symbols,
+        meterColor: SM_Number.Symbols,
+        isLargeGraphic: SM_Boolean.Symbols,
+        graphValue: SM_Number.Symbols,
+        barGraphProp: SM_String.Symbols,
+        barGraphPropFeature: SM_String.Symbols,
+        textProp: SM_String.Symbols,
+        meterProp: SM_String.Symbols
+      },
+      methods: {
+        showMessage: { args: ['text:string'] },
+        bindTextTo: { args: ['propName:prop'] },
+        bindMeterTo: { args: ['propName:prop'] },
+        setMeterPosition: { args: ['position:string'] },
+        bindGraphTo: { args: ['propName:prop', 'frequency:number'] },
+        bindGraphToGlobalProp: { args: ['propName:prop', 'frequency:number'] },
+        bindLineGraphHistogramToFeatProp: {
+          args: ['featureName:feature', 'propName:prop']
+        }
+      }
+    };
+  }
 }
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new WidgetPack(FEATID);
-Register(INSTANCE);
+SIMDATA.RegisterFeature(INSTANCE);

@@ -21,14 +21,10 @@ const LOG = require('./client-status');
 // classes
 const PhaseMachine = require('./class-phase-machine');
 const StateGroupMgr = require('./class-state-group-mgr');
+const StateMgr = require('./class-state-mgr');
 //
-const {
-  IsBrowser,
-  IsNode,
-  IsElectron,
-  IsElectronMain,
-  IsElectronRenderer
-} = DTECT;
+const { IsBrowser, IsNode, IsElectron, IsElectronMain, IsElectronRenderer } =
+  DTECT;
 
 /// CONST /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,6 +49,16 @@ let URSYS_RUNNING = false;
 let URSYS_ROUTE = '';
 let LocalNode;
 let NetNode;
+
+/// HELPERS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_EndpointInitialized() {
+  if (LocalNode === undefined || !URSYS_RUNNING) {
+    console.warn('URSYS was used before it was initialized, aborting');
+    return false;
+  }
+  return true;
+}
 
 /// SUPPORT API PART 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -119,25 +125,27 @@ async function SystemStop() {
 
 /** wrap LocalNode functions so we can export them before LocalNode is valid */
 function DeclareMessage(mesgName, dataProps) {
-  return LocalNode.declareMessage(mesgName, dataProps);
+  if (m_EndpointInitialized())
+    return LocalNode.declareMessage(mesgName, dataProps);
 }
 function HasMessage(mesgName) {
-  return LocalNode.hasMessage(mesgName);
+  if (m_EndpointInitialized()) return LocalNode.hasMessage(mesgName);
 }
 function HandleMessage(mesgName, listener) {
-  LocalNode.handleMessage(mesgName, listener);
+  if (m_EndpointInitialized()) LocalNode.handleMessage(mesgName, listener);
 }
 function UnhandleMessage(mesgName, listener) {
-  LocalNode.unhandleMessage(mesgName, listener);
+  if (m_EndpointInitialized()) LocalNode.unhandleMessage(mesgName, listener);
 }
 function CallMessage(mesgName, inData, options) {
-  return LocalNode.callMessage(mesgName, inData, options);
+  if (m_EndpointInitialized())
+    return LocalNode.callMessage(mesgName, inData, options);
 }
 function RaiseMessage(mesgName, inData, options) {
-  LocalNode.raiseMessage(mesgName, inData, options);
+  if (m_EndpointInitialized()) LocalNode.raiseMessage(mesgName, inData, options);
 }
 function SendMessage(mesgName, inData, options) {
-  LocalNode.sendMessage(mesgName, inData, options);
+  if (m_EndpointInitialized()) LocalNode.sendMessage(mesgName, inData, options);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -195,7 +203,10 @@ const UR = {
   SendControlFrame: DEVICES.SendControlFrame,
   LinkSubsToDevices: DEVICES.LinkSubsToDevices,
   // FORWARDED CONSOLE UTILITY
-  PrefixUtil: PROMPTS.makeStyleFormatter,
+  PrefixUtil: PROMPTS.makeStyleFormatter, // deprecate
+  LogUtil: PROMPTS.makeStyleFormatter,
+  ErrorUtil: PROMPTS.makeErrorFormatter,
+  WarnUtil: PROMPTS.makeWarningFormatter,
   DPR: PROMPTS.dbgPrint,
   ColorTagUtil: PROMPTS.colorTagString,
   SetPromptColor: PROMPTS.setPromptColor,
@@ -208,11 +219,11 @@ const UR = {
   WriteState: StateGroupMgr.WriteState,
   SubscribeState: StateGroupMgr.SubscribeState,
   UnsubscribeState: StateGroupMgr.UnsubscribeState,
-  // FORWARDED CLASSES
-  class: { PhaseMachine, StateGroupMgr },
   // FORWARDED CONSOLE DEBUG UTILITIES
   AddConsoleTool: DBGTEST.addConsoleTool, // arg: { [URkey]:f }
-  ConsoleCompareTexts: DBGTEST.consoleCompareTexts // args: text, ref
+  ConsoleCompareTexts: DBGTEST.consoleCompareTexts, // args: text, ref
+  // FORWARDED CLASSES
+  class: { PhaseMachine, StateGroupMgr, StateMgr }
 };
 if (typeof window === 'undefined')
   throw Error(`

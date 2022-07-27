@@ -5,11 +5,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import UR from '@gemstep/ursys/client';
 import Keyword from 'lib/class-keyword';
 
-import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
 const PR = UR.PrefixUtil('KW_ERROR', 'TagYellow');
@@ -20,27 +18,15 @@ export class keywordErr extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('keywordErr');
-    this.args = ['...args'];
+    this.args = ['*:{...}'];
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     console.log(...PR(`'${unit[0]}' is not a valid keyword`));
     return [];
   }
-
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { error } = state;
-    return [this.keyword, error];
-  }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw] = unit;
-    return super.jsx(index, unit, <>unknown keyword: {`'${kw}'`}</>);
-  }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

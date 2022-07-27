@@ -11,10 +11,10 @@ const IS_MOBILE =
   /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
     navigator.userAgent
   );
-if (IS_MOBILE) {
-  console.log('PROMPTS: DETECTED MOBILE BROWSER');
-} else if (!IS_NODE) console.log('PROMPTS: DETECTED DESKTOP BROWSER');
-else console.log('PROMPTS       DETECTED NODE');
+// if (IS_MOBILE) {
+//   console.log('PROMPTS: DETECTED MOBILE BROWSER');
+// } else if (!IS_NODE) console.log('PROMPTS: DETECTED DESKTOP BROWSER');
+// else console.log('PROMPTS       DETECTED NODE');
 
 const DEFAULT_PADDING = IS_NODE
   ? 10 // nodejs
@@ -333,6 +333,32 @@ function makeStyleFormatter(prompt, tagColor) {
   return (str, ...args) => [...outArray, str, ...args];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return an array that can be spread like console.log(...arr) */
+function makeErrorFormatter(pr = '') {
+  const bg = 'rgba(255,0,0,1)';
+  const bga = 'rgba(255,0,0,0.15)';
+  pr = `ERROR ${pr}`.trim();
+  return (str, ...args) => [
+    `%c${pr}%c${str}`,
+    `color:#fff;background-color:${bg};padding:3px 7px 3px 10px;border-radius:10px 0 0 10px;`,
+    `color:${bg};background-color:${bga};padding:3px 5px;`,
+    ...args
+  ];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return an array that can be spread like console.log(...arr) */
+function makeWarningFormatter(pr = '') {
+  const bg = 'rgba(255,150,0,1)';
+  const bga = 'rgba(255,150,0,0.15)';
+  pr = `WARN ${pr}`.trim();
+  return (str, ...args) => [
+    `%c${pr}%c${str}`,
+    `color:#fff;background-color:${bg};padding:3px 7px 3px 10px;border-radius:10px 0 0 10px;`,
+    `color:${bg};background-color:${bga};padding:3px 5px;`,
+    ...args
+  ];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** use like console.log(...debugFormatter('prompt'), 'la la la'); */
 function dbgPrint(pr, bg = 'MediumVioletRed') {
   return [
@@ -424,6 +450,8 @@ module.exports = {
   CSS: CSS_COLORS,
   padString,
   makeStyleFormatter,
+  makeErrorFormatter,
+  makeWarningFormatter,
   dbgPrint,
   makeTerminalOut,
   makeHTMLConsole,

@@ -1,5 +1,12 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+
+
+  DEPRECATED???
+  As of 4/17/22 it appears that no one is using class-project.ts?
+  The functionality is taken over by ac-project?
+
+
   Project Core Data Object
 
   This is the data structure for defining a project (a set of blueprints,

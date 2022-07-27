@@ -1,5 +1,13 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+
+  DEPRECATED
+  The global agent is now accessible directly via script, so the Global
+  SM_Feature is really no longer necessary.
+  e.g. `prop global.sparkCounter add 1`
+  See: https://gitlab.com/stepsys/gem-step/gsgo/-/wikis/Scripting/Global
+
+
   Global is a special-case feature that is accessible to ALL agents in
   the simulation
 
@@ -8,11 +16,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import GFeature from 'lib/class-gfeature';
-import { Register } from 'modules/datacore/dc-features';
-import { IAgent } from 'lib/t-script';
-import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
-import { GetGlobalAgent } from 'lib/class-gagent';
+import SM_Feature from 'lib/class-sm-feature';
+import { RegisterFeature } from 'modules/datacore/dc-sim-data';
+import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
+import SM_Agent from 'lib/class-sm-agent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,7 +29,7 @@ const DBG = true;
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class GlobalPack extends GFeature {
+class GlobalPack extends SM_Feature {
   constructor(name) {
     super(name);
     this.featAddMethod('addGlobalProp', this.addGlobalProp);
@@ -39,34 +46,47 @@ class GlobalPack extends GFeature {
   decorate(agent) {
     super.decorate(agent);
   }
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// GLOBAL AGENT
-
   addGlobalProp(agent: IAgent, pName: string, type: string, value: any) {
-    const global = GetGlobalAgent();
+    const global = SM_Agent.GetGlobalAgent();
     let gvar;
-    if (type === 'String') gvar = new GVarString();
-    if (type === 'Number') gvar = new GVarNumber();
-    if (type === 'Boolean') gvar = new GVarBoolean();
+    if (type === 'String') gvar = new SM_String();
+    if (type === 'Number') gvar = new SM_Number();
+    if (type === 'Boolean') gvar = new SM_Boolean();
     global.addProp(pName, gvar);
     global.prop[pName].setTo(value);
   }
 
   globalProp(agent: IAgent, pName: string, method: string, value: any) {
-    const global = GetGlobalAgent();
+    const global = SM_Agent.GetGlobalAgent();
     global.prop[pName][method](value);
     if (DBG)
       console.log(...PR('globalProp', pName, method, global.prop[pName].value));
   }
 
   getGlobalProp(agent: IAgent, pName: string) {
-    const global = GetGlobalAgent();
+    const global = SM_Agent.GetGlobalAgent();
     return global.prop[pName];
+  }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {},
+      methods: {
+        // REVIEW TODO: 'value' is :any...is it a GVAR?
+        'addGlobalProp': { args: ['pName:string', 'type:string', 'value:gvar'] },
+        // REVIEW TODO: 'value' is :any...is it a GVAR?
+        'globalProp': { args: ['pName:string', 'method:string', 'value:gvar'] },
+        'getGlobalProp': { args: ['pName:string'] }
+      }
+    };
   }
 }
 
 /// REGISTER FEATURE SINGLETON ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new GlobalPack('Global');
-Register(INSTANCE);
+RegisterFeature(INSTANCE);

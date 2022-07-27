@@ -7,23 +7,10 @@
 /*/ required libraries /*/
 import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
-import GFeature from 'lib/class-gfeature';
-import { Register } from 'modules/datacore/dc-features';
-import { IAgent, TSMCProgram } from 'lib/t-script';
-import {
-  GVarBoolean,
-  GVarDictionary,
-  GVarNumber,
-  GVarString
-} from 'modules/sim/vars/_all_vars';
-import {
-  CopyAgentProps,
-  DeleteAgent,
-  GetAgentsByType,
-  GetAllAgents,
-  DefineInstance,
-  GetAgentById
-} from 'modules/datacore/dc-agents';
+import SM_Feature from 'lib/class-sm-feature';
+import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
+import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as TRANSPILER from 'modules/sim/script/transpiler-v2';
 import merge from 'deepmerge';
 
@@ -44,7 +31,7 @@ const AGENTS_TO_CREATE = []; // InstanceDef[]
 function m_Delete(frame) {
   while (AGENTS_TO_REMOVE.length > 0) {
     const id = AGENTS_TO_REMOVE.pop();
-    const agent = GetAgentById(id);
+    const agent = SIMAGENTS.GetAgentById(id);
     if (agent) {
       // Clear isTouching and lastTouched values here
       // because agent will be removed and touch update
@@ -52,7 +39,7 @@ function m_Delete(frame) {
       if (agent.hasFeature('Touches')) {
         agent.callFeatMethod('Touches', 'clearTouches', agent.id);
       }
-      DeleteAgent({
+      SIMAGENTS.DeleteAgent({
         id: agent.id,
         bpid: agent.blueprint.name
       });
@@ -63,11 +50,11 @@ function m_Create(frame) {
   while (AGENTS_TO_CREATE.length > 0) {
     const def = AGENTS_TO_CREATE.pop();
 
-    DefineInstance(def);
+    SIMAGENTS.DefineInstance(def);
     let agent = TRANSPILER.MakeAgent(def);
-    const parent = GetAgentById(def.parentId);
+    const parent = SIMAGENTS.GetAgentById(def.parentId);
     if (parent) {
-      if (def.doClone) CopyAgentProps(parent, agent);
+      if (def.doClone) SIMAGENTS.CopyAgentProps(parent, agent);
       else {
         // just copy x/y
         agent.x = parent.x + RNG() * 8 - 4;
@@ -98,7 +85,7 @@ function m_Create(frame) {
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class PopulationPack extends GFeature {
+class PopulationPack extends SM_Feature {
   constructor(name) {
     super(name);
     // Population Management
@@ -151,26 +138,26 @@ class PopulationPack extends GFeature {
     super.decorate(agent);
 
     // statistics
-    this.featAddProp(agent, 'count', new GVarString());
-    this.featAddProp(agent, 'sum', new GVarString());
-    this.featAddProp(agent, 'avg', new GVarString());
-    this.featAddProp(agent, 'min', new GVarString());
-    this.featAddProp(agent, 'max', new GVarString());
+    this.featAddProp(agent, 'count', new SM_String());
+    this.featAddProp(agent, 'sum', new SM_String());
+    this.featAddProp(agent, 'avg', new SM_String());
+    this.featAddProp(agent, 'min', new SM_String());
+    this.featAddProp(agent, 'max', new SM_String());
 
     // used by countAgentProp without parameters
-    this.featAddProp(agent, 'monitoredAgent', new GVarString());
-    this.featAddProp(agent, 'monitoredAgentProp', new GVarString());
-    this.featAddProp(agent, 'monitoredAgentPropFeature', new GVarString());
+    this.featAddProp(agent, 'monitoredAgent', new SM_String());
+    this.featAddProp(agent, 'monitoredAgentProp', new SM_String());
+    this.featAddProp(agent, 'monitoredAgentPropFeature', new SM_String());
 
     // Used by spawnChild
-    this.featAddProp(agent, 'spawnMutationProp', new GVarString());
-    this.featAddProp(agent, 'spawnMutationPropFeature', new GVarString()); // if prop is a featProp, this is the feature
-    this.featAddProp(agent, 'spawnMutationMaxAdd', new GVarNumber());
-    this.featAddProp(agent, 'spawnMutationMaxSubtract', new GVarNumber());
+    this.featAddProp(agent, 'spawnMutationProp', new SM_String());
+    this.featAddProp(agent, 'spawnMutationPropFeature', new SM_String()); // if prop is a featProp, this is the feature
+    this.featAddProp(agent, 'spawnMutationMaxAdd', new SM_Number());
+    this.featAddProp(agent, 'spawnMutationMaxSubtract', new SM_Number());
 
     // Used by populateBySpawning to set target population levels
-    this.featAddProp(agent, 'targetPopulationSize', new GVarNumber(1));
-    this.featAddProp(agent, 'deleteAfterSpawning', new GVarBoolean(true));
+    this.featAddProp(agent, 'targetPopulationSize', new SM_Number(1));
+    this.featAddProp(agent, 'deleteAfterSpawning', new SM_Boolean(true));
 
     agent.prop.Population._countsByProp = new Map();
   }
@@ -229,7 +216,7 @@ class PopulationPack extends GFeature {
    * @param spawnScript
    */
   getRandomActiveAgent(agent: IAgent, bpname: string): IAgent {
-    const agents = GetAgentsByType(bpname);
+    const agents = SIMAGENTS.GetAgentsByType(bpname);
     if (agents.length < 1) {
       console.error(`Population:getRandomActiveAgent: No ${bpname} agents left!`);
       return undefined; // no agents
@@ -251,7 +238,7 @@ class PopulationPack extends GFeature {
    * Release cursors for ALL agents globally
    */
   releaseAllAgents(agent: IAgent) {
-    const agents = GetAllAgents();
+    const agents = SIMAGENTS.GetAllAgents();
     agents.forEach(a => {
       if (a.hasFeature('Cursor') && a.blueprint.name !== 'Cursor') {
         a.callFeatMethod('Cursor', 'releaseCursor');
@@ -263,7 +250,7 @@ class PopulationPack extends GFeature {
    * Release cursors for ALL inert agents globally
    */
   releaseInertAgents(agent: IAgent) {
-    const agents = GetAllAgents();
+    const agents = SIMAGENTS.GetAllAgents();
     agents.forEach(a => {
       if (a.isInert && a.hasFeature('Cursor'))
         a.callFeatMethod('Cursor', 'releaseCursor');
@@ -273,7 +260,7 @@ class PopulationPack extends GFeature {
    * Turn off visible property for ALL inert agents globally
    */
   hideInertAgents(agent: IAgent) {
-    const agents = GetAllAgents();
+    const agents = SIMAGENTS.GetAllAgents();
     agents.forEach(a => {
       if (a.isInert) {
         // console.error('hiding', a.id);
@@ -285,7 +272,7 @@ class PopulationPack extends GFeature {
    * Remove ALL inert agents globally
    */
   removeInertAgents(agent: IAgent) {
-    const agents = GetAllAgents();
+    const agents = SIMAGENTS.GetAllAgents();
     agents.forEach(a => {
       if (a.isInert) this.removeAgent(a);
     });
@@ -299,7 +286,7 @@ class PopulationPack extends GFeature {
    */
   agentsReproduce(agent: IAgent, bpname: string, spawnScript: string) {
     const deleteAfterSpawning = agent.prop.Population.deleteAfterSpawning.value;
-    const agents = GetAgentsByType(bpname);
+    const agents = SIMAGENTS.GetAgentsByType(bpname);
     const def = {
       mutationPropName: agent.prop.Population.spawnMutationProp.value,
       mutationPropFeature: agent.prop.Population.spawnMutationPropFeature.value,
@@ -349,7 +336,7 @@ class PopulationPack extends GFeature {
     const deleteAfterSpawning = agent.prop.Population.deleteAfterSpawning.value;
     let count = AGENTS_TO_CREATE.length;
     let agentIndex = 0;
-    const agents = GetAgentsByType(bpname);
+    const agents = SIMAGENTS.GetAgentsByType(bpname);
 
     if (agents.length < 1)
       throw Error(
@@ -403,7 +390,7 @@ class PopulationPack extends GFeature {
    * For all agents of type bpname, call program if not inert
    */
   agentsForEachActive(agent: IAgent, bpname: string, program: TSMCProgram) {
-    const agents = GetAgentsByType(bpname);
+    const agents = SIMAGENTS.GetAgentsByType(bpname);
     agents.forEach(a => {
       if (!a.isInert) a.exec(program, { agent: a });
     });
@@ -412,7 +399,7 @@ class PopulationPack extends GFeature {
    * For all agents of type bpname, call program regardless of inert state
    */
   agentsForEach(agent: IAgent, bpname: string, program: TSMCProgram) {
-    const agents = GetAgentsByType(bpname);
+    const agents = SIMAGENTS.GetAgentsByType(bpname);
     agents.forEach(a => a.exec(program, { agent: a }));
   }
 
@@ -427,7 +414,7 @@ class PopulationPack extends GFeature {
    * Returns the number of active (non-inert) agents of a particular blueprint type
    */
   getActiveAgentsCount(agent: IAgent, blueprintName: string) {
-    const agents = GetAgentsByType(blueprintName);
+    const agents = SIMAGENTS.GetAgentsByType(blueprintName);
     let count = 0;
     agents.forEach(a => {
       if (!a.isInert) count++;
@@ -436,8 +423,9 @@ class PopulationPack extends GFeature {
   }
 
   countAgents(agent: IAgent, blueprintName: string) {
-    const agents = GetAgentsByType(blueprintName);
-    agent.getFeatProp(this.name, 'count').setTo(agents.length);
+    const agents = SIMAGENTS.GetAgentsByType(blueprintName);
+    let prop = agent.getFeatProp(this.name, 'count');
+    (prop as SM_Number).setTo(agents.length);
   }
   /**
    * Updates three featProp statistics:
@@ -460,37 +448,40 @@ class PopulationPack extends GFeature {
   countAgentProp(agent: IAgent, blueprintName: string, prop: string) {
     if (blueprintName === undefined)
       blueprintName = agent.prop.Population.monitoredAgent.value;
-    const agents = GetAgentsByType(blueprintName);
+    const agents = SIMAGENTS.GetAgentsByType(blueprintName);
     if (agents.length < 1) return;
     if (prop === undefined) prop = agent.prop.Population.monitoredAgentProp.value;
     const sum = agents
       .map(a => a.getProp(prop).value)
       .reduce((acc, cur) => acc + cur);
-    agent.getFeatProp(this.name, 'count').setTo(agents.length);
-    agent.getFeatProp(this.name, 'sum').setTo(sum);
-    agent
-      .getFeatProp(this.name, 'avg')
-      .setTo(Number(sum / agents.length).toFixed(2));
+    let p = agent.getFeatProp(this.name, 'count');
+    (p as SM_Number).setTo(agents.length);
+    p = agent.getFeatProp(this.name, 'sum');
+    (p as SM_Number).setTo(sum);
+    p = agent.getFeatProp(this.name, 'avg');
+    (p as SM_String).setTo(Number(sum / agents.length).toFixed(2));
   }
   /// Returns the minimum number of agents of type blueprintName
   minAgentProp(agent: IAgent, blueprintName: string, prop: string) {
-    const agents = GetAgentsByType(blueprintName);
+    const agents = SIMAGENTS.GetAgentsByType(blueprintName);
     if (agents.length < 1) return;
     const minimizer = (min, cur) => Math.min(min, cur);
     const min = agents
       .map(a => a.getProp(prop).value)
       .reduce(minimizer, Infinity);
-    agent.getFeatProp(this.name, 'min').setTo(min);
+    let p = agent.getFeatProp(this.name, 'min');
+    (p as SM_Number).setTo(min);
   }
   /// Returns the maximum number of agents of type blueprintName
   maxAgentProp(agent: IAgent, blueprintName: string, prop: string) {
-    const agents = GetAgentsByType(blueprintName);
+    const agents = SIMAGENTS.GetAgentsByType(blueprintName);
     if (agents.length < 1) return;
     const maximizer = (max, cur) => Math.max(max, cur);
     const max = agents
       .map(a => a.getProp(prop).value)
       .reduce(maximizer, -Infinity);
-    agent.getFeatProp(this.name, 'max').setTo(max);
+    let p = agent.getFeatProp(this.name, 'max');
+    (p as SM_Number).setTo(max);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -522,7 +513,7 @@ class PopulationPack extends GFeature {
     prop: string,
     clear: boolean
   ) {
-    const agents = GetAgentsByType(blueprintName);
+    const agents = SIMAGENTS.GetAgentsByType(blueprintName);
     const countsByProp = agent.prop.Population._countsByProp;
 
     // reset count first?
@@ -619,7 +610,7 @@ class PopulationPack extends GFeature {
     const bpname = blueprintName || agent.prop.Population.monitoredAgent.value;
     const feat = feature || agent.prop.Population.monitoredAgentPropFeature.value;
     const prop = featprop || agent.prop.Population.monitoredAgentProp.value;
-    const agents = GetAgentsByType(bpname);
+    const agents = SIMAGENTS.GetAgentsByType(bpname);
     this.m_CountAgentsByFeatPropType(agent, agents, feat, prop, clear);
   }
 
@@ -647,6 +638,63 @@ class PopulationPack extends GFeature {
   //     clear
   //   );
   // }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {
+        'count': SM_Number.Symbols,
+        'sum': SM_Number.Symbols,
+        'avg': SM_Number.Symbols,
+        'min': SM_Number.Symbols,
+        'max': SM_Number.Symbols,
+        'monitoredAgent': SM_String.Symbols,
+        'monitoredAgentProp': SM_String.Symbols,
+        'monitoredAgentPropFeature': SM_String.Symbols,
+        'spawnMutationProp': SM_String.Symbols,
+        'spawnMutationPropFeature': SM_String.Symbols,
+        'spawnMutationMaxAdd': SM_Number.Symbols,
+        'spawnMutationMaxSubtract': SM_Number.Symbols,
+        'targetPopulationSize': SM_Number.Symbols,
+        'deleteAfterSpawning': SM_Number.Symbols
+      },
+      methods: {
+        'createAgent': {
+          args: ['blueprintName:identifier', 'initScript:block']
+        },
+        'spawnChild': { args: ['spawnScript:string', 'def:objref'] },
+        'removeAgent': {},
+        'getRandomActiveAgent': { args: ['bpname:number'] },
+        'releaseAllAgents': {},
+        'releaseInertAgents': {},
+        'hideInertAgents': {},
+        'removeInertAgents': {},
+        'agentsReproduce': { args: ['bpname:string', 'spawnScript:string'] },
+        'oneAgentReproduce': { args: ['bpname:string', 'spawnScript:string'] },
+        'populateBySpawning': { args: ['bpname:string', 'spawnScript:string'] },
+        'agentsForEachActive': { args: ['bpname:string', 'program:program'] },
+        'agentsForEach': { args: ['bpname:string', 'program:program'] },
+        'getActiveAgentsCount': { args: ['blueprintName:string'] },
+        'countAgents': { args: ['blueprintName:string'] },
+        'countAgentProp': { args: ['blueprintName:string', 'prop:string'] },
+        'minAgentProp': { args: ['bpname:string', 'prop:string'] },
+        'maxAgentProp': { args: ['bpname:string', 'prop:string'] },
+        'countAgentsByPropType': {
+          args: ['bpname:string', 'prop:string', 'clear:boolean']
+        },
+        'setAgentsByFeatPropTypeKeys': { args: ['bpname:string', 'keys:{...}'] },
+        'countExistingAgentsByFeatPropType': {
+          args: [
+            'blueprintName:string',
+            'feature:string',
+            'featprop:string',
+            'clear:boolean'
+          ]
+        }
+      }
+    };
+  }
 } // end of feature class
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -655,4 +703,4 @@ class PopulationPack extends GFeature {
 /// REGISTER FEATURE SINGLETON ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new PopulationPack('Population');
-Register(INSTANCE);
+SIMDATA.RegisterFeature(INSTANCE);

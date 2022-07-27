@@ -13,7 +13,7 @@
 import RNG from 'modules/sim/sequencer';
 import { GetAgentsByType } from 'modules/datacore';
 import { ParseExpression } from 'lib/expr-parser';
-import { ISMCBundle } from 'lib/t-script';
+// uses types defined in t-script.d
 import { Evaluate } from 'lib/expr-evaluator';
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
@@ -87,17 +87,17 @@ function MakePairAgentExprTest(exprAB) {
 function SingleAgentConditional(typeA, exprA, bundle: ISMCBundle) {
   const test = MakeAgentExprTest(exprA);
   const [passed, failed] = SingleAgentFilter(typeA, test);
-  const { conseq, alter } = bundle;
-  if (conseq) passed.forEach(agent => agent.queueUpdate(conseq));
-  if (alter) failed.forEach(agent => agent.queueUpdate(alter));
+  const { CONSEQ, ALTER } = bundle;
+  if (CONSEQ) passed.forEach(agent => agent.queueUpdate(CONSEQ));
+  if (ALTER) failed.forEach(agent => agent.queueUpdate(ALTER));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function PairAgentConditional(typeA, typeB, exprAB, bundle: ISMCBundle) {
   const test = MakePairAgentExprTest(exprAB);
   const [passed, failed] = PairAgentFilter(typeA, typeB, test);
-  const { conseq, alter } = bundle;
-  if (conseq) passed.forEach(agent => agent.queueUpdate(conseq));
-  if (alter) failed.forEach(agent => agent.queueUpdate(alter));
+  const { CONSEQ, ALTER } = bundle;
+  if (CONSEQ) passed.forEach(agent => agent.queueUpdate(CONSEQ));
+  if (ALTER) failed.forEach(agent => agent.queueUpdate(ALTER));
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

@@ -45,10 +45,10 @@ class StickyCache {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: Collect input data into a buffer map that for later
    */
-  buffer(collection) {
+  buffer(collection): void {
     if (collection === undefined) {
       console.warn('StickyCache.update arg1 must be collection');
-      return undefined;
+      return;
     }
     const idKey = this.keyProp;
     let arr;

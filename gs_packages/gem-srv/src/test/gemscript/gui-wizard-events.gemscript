@@ -1,0 +1,31 @@
+# BLUEPRINT GraphLostEnergy
+# PROGRAM DEFINE
+prop skin setTo 'onexone.json'
+
+useFeature AgentWidgets
+useFeature Population
+featProp AgentWidgets isLargeGraphic setTo true
+
+useFeature Global
+
+// using a generic name so that it is easier to change later
+addProp lostEnergy Number 500
+prop lostEnergy setMax 1000
+prop lostEnergy setMin 0
+
+featCall AgentWidgets bindGraphTo lostEnergy 30
+
+# PROGRAM INIT
+// make sure something displays with some initial text, on bottom right at first
+prop x setTo 495
+prop y setTo 350
+prop zIndex setTo 300
+
+featProp AgentWidgets text setTo 'Lost Energy From Heat'
+
+# PROGRAM EVENT
+
+onEvent Tick [[
+  exprPush {{ global.getProp('energyReleasedAsHeat').value }}
+  propPop lostEnergy
+]]

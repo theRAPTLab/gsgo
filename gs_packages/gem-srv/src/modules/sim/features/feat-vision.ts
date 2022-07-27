@@ -13,11 +13,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { GVarNumber, GVarString, GVarBoolean } from 'modules/sim/vars/_all_vars';
-import GFeature from 'lib/class-gfeature';
-import { IAgent } from 'lib/t-script';
-import { GetAgentById, GetAgentsByType } from 'modules/datacore/dc-agents';
-import { Register, GetAgentBoundingRect } from 'modules/datacore/dc-features';
+import { SM_Number, SM_Boolean } from 'script/vars/_all_vars';
+import SM_Feature from 'lib/class-sm-feature';
+import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';
 import { ProjectPoint } from 'lib/util-vector';
@@ -34,19 +33,15 @@ const VISION_AGENTS = new Map();
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Returns agent if it exists.
- * If it doesn't exist anymore (e.g. CharControl has dropped), remove it from
- * WIDGET_AGENTS
- * @param agentId
- */
+/** Returns agent if it exists.
+ *  If it doesn't exist anymore (e.g. CharControl has dropped), remove it from
+ *  WIDGET_AGENTS */
 function m_getAgent(agentId): IAgent {
-  const a = GetAgentById(agentId);
+  const a = SIMAGENTS.GetAgentById(agentId);
   if (!a) VISION_AGENTS.delete(agentId);
   return a;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_updateVisionCone(agent): { visionPoly: any[]; visionPath: any[] } {
   // Newly minted agents will not have x and y set until VIS_UPDATE
   if (
@@ -89,7 +84,26 @@ function m_updateVisionCone(agent): { visionPoly: any[]; visionPath: any[] } {
 
   return { visionPoly, visionPath };
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Returns the SCALED bounding rect of the agent
+function m_GetAgentBoundingRect(agent) {
+  // Based on costume
+  if (!agent.hasFeature('Costume'))
+    throw new Error(
+      `m_GetAgentBoundingRect: Tried to use vision on an agent with no costume ${agent.id}`
+    );
+  const { w, h } = agent.callFeatMethod('Costume', 'getScaledBounds');
+  const halfw = w / 2;
+  const halfh = h / 2;
+  return [
+    { x: agent.x - halfw, y: agent.y - halfh },
+    { x: agent.x + halfw, y: agent.y - halfh },
+    { x: agent.x + halfw, y: agent.y + halfh },
+    { x: agent.x - halfw, y: agent.y + halfh }
+  ];
+}
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // REVIEW: Consider using https://github.com/davidfig/pixi-intersects
 function m_IsTargetWithinVisionCone(visionPoly, target): boolean {
   if (
@@ -100,27 +114,21 @@ function m_IsTargetWithinVisionCone(visionPoly, target): boolean {
   )
     return false;
 
-  const targetPoly = GetAgentBoundingRect(target);
+  const targetPoly = m_GetAgentBoundingRect(target);
   // Returns array of intersecting objects, or [] if no intersects
   const result = intersect(visionPoly, targetPoly);
   return result.length > 0;
 }
-
-/**
- * Checks target color against target's background agent color
- * using agent's Vision detection thresholds to determine if the
- * target is visible against its background.
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Checks target color against target's background agent color using agent's
+ *  Vision detection thresholds to determine if the target is visible against
+ *  its background.
  *
- * Checks that target's color is visible regardless of whether or not
- * the target is within the vision one
- * Check both visionCone and color if you need both to be true.
- * The vision-cone-less check is necessary because checking for
- * camouflage when the agent is on top of target (e.g. during eating)
- * means the target is not visible in the visionCone.
- * @param agent
- * @param target
- * @returns
- */
+ *  Checks that target's color is visible regardless of whether or not the
+ *  target is within the vision one Check both visionCone and color if you need
+ *  both to be true. The vision-cone-less check is necessary because checking
+ *  for camouflage when the agent is on top of target (e.g. during eating) means
+ *  the target is not visible in the visionCone.  */
 function m_IsTargetColorVisible(agent: IAgent, target: IAgent) {
   if (
     !agent.hasFeature('Vision') ||
@@ -160,10 +168,7 @@ function m_IsTargetColorVisible(agent: IAgent, target: IAgent) {
 
 /// PHYSICS LOOP ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Vision Update Loop -- Runs once per gameloop
- */
+/** Vision Update Loop -- Runs once per gameloop */
 function m_update(frame) {
   const agentIds = Array.from(VISION_AGENTS.keys());
   agentIds.forEach(agentId => {
@@ -175,7 +180,7 @@ function m_update(frame) {
 
     const { visionPoly, visionPath } = m_updateVisionCone(agent);
 
-    const targets = GetAgentsByType(VISION_AGENTS.get(agentId));
+    const targets = SIMAGENTS.GetAgentsByType(VISION_AGENTS.get(agentId));
     targets.forEach(t => {
       if (agent.id === t.id) return; // skip self
 
@@ -206,7 +211,7 @@ function m_update(frame) {
     }
   });
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_simStop() {
   // Clear vision cone
   const agentIds = Array.from(VISION_AGENTS.keys());
@@ -216,14 +221,14 @@ function m_simStop() {
     agent.debug = undefined;
   });
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_handleScriptEvent(data) {
   if (data.type === 'RoundStop') m_simStop();
 }
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class VisionPack extends GFeature {
+class VisionPack extends SM_Feature {
   //
   constructor(name) {
     super(name);
@@ -238,9 +243,9 @@ class VisionPack extends GFeature {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
     super.decorate(agent);
-    this.featAddProp(agent, 'visionable', new GVarBoolean(true)); // can be seen by Vision feature
+    this.featAddProp(agent, 'visionable', new SM_Boolean(true)); // can be seen by Vision feature
 
-    let prop = new GVarNumber(250);
+    let prop = new SM_Number(250);
     prop.setMax(1000);
     prop.setMin(0);
     this.featAddProp(agent, 'viewDistance', prop);
@@ -250,7 +255,7 @@ class VisionPack extends GFeature {
     // the cone collapses.
     // 'viewAngle' is the measured as 1/2 of viewAngle to the right
     // and left of the orientation.
-    prop = new GVarNumber(45);
+    prop = new SM_Number(45);
     prop.setMax(180);
     prop.setMin(0);
     this.featAddProp(agent, 'viewAngle', prop);
@@ -266,18 +271,22 @@ class VisionPack extends GFeature {
     //      because the difference is 0.1, which is not outside
     //      the detectable range of 0.2
     // Set to 0 to always detect.
-    prop = new GVarNumber(0);
+    prop = new SM_Number(0);
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorHueDetectionThreshold', prop);
-    prop = new GVarNumber(0);
+    prop = new SM_Number(0);
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorSaturationDetectionThreshold', prop);
-    prop = new GVarNumber(0);
+    prop = new SM_Number(0);
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorValueDetectionThreshold', prop);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    VISION_AGENTS.clear();
   }
 
   /// VISION METHODS /////////////////////////////////////////////////////////
@@ -318,17 +327,36 @@ class VisionPack extends GFeature {
     return m_IsTargetColorVisible(agent, target);
   }
 
-  /** This doesn't really do anything, since:
-   *  a. you can't easily call featCall with a specific target agent parameter
-   *     outside of a when
-   *  b. you can't do anything with the return value without using a stack operation
-   */
-  // canSeeCone(agent: IAgent, target: IAgent) {
-  //   return m_IsTargetWithinVisionCone(agent, target);
-  // }
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {
+        'visionable': SM_Number.Symbols,
+        'viewDistance': SM_Number.Symbols,
+        'viewAngle': SM_Number.Symbols,
+        'colorHueDetectionThreshold': SM_Number.Symbols,
+        'colorSaturationDetectionThreshold': SM_Number.Symbols,
+        'colorValueDetectionThreshold': SM_Number.Symbols
+      },
+      methods: {
+        'monitor': { args: ['targetBlueprintName:string'] },
+        'isCamouflaged': {
+          args: [
+            'backgroundColor:number',
+            'hRange:number',
+            'sRange:number',
+            'vRange:number'
+          ]
+        },
+        // REVIEW TODO: target is an IAgent.  Should it be `blueprint`?
+        'canSeeColorOfAgent': { args: ['target:objref'] }
+      }
+    };
+  }
 }
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new VisionPack(FEATID);
-Register(INSTANCE);
+SIMDATA.RegisterFeature(INSTANCE);
