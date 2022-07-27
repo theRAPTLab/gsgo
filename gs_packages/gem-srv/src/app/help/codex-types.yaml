@@ -1,0 +1,60 @@
+# help for argument types  as defined in TSymbolData for argument types used in GEMSCRIPT
+# note: the TGSArg declaration is two parts: 'argName:argType', but argName is not always
+# passed back to the GUI
+
+boolean:
+  input: 'Choose true or false'
+
+string:
+  input: 'Enter characters (do not use quotes)'
+
+number:
+  input: 'Enter digits'
+
+identifier:
+  input: 'Enter alphanumeric characters with no spaces or leading numbers'
+
+prop:
+  input: 'Choose a property to use'
+
+method:
+  input: 'Choose an action to use on previous property'
+
+propType:
+  input: 'Pick the kind of value this prop should hold'
+
+objref:
+  input: 'Select property and optional subproperties'
+
+expr:
+  input: 'Enter an arithmetic or logical expression'
+
+keyword:
+  input: 'Choose the GEMSCRIPT command to use for this line'
+
+test:
+  input: 'Select one of the following tests'
+
+program:
+  input: 'This is unused...if you see this oops'
+
+event:
+  input: 'Pick a system event trigger'
+
+option:
+  input: 'Select from one of the following options'
+
+blueprint:
+  input: 'Select the name of an existing character type'
+
+bdlOut:
+  input: 'Select the program bundle output dict (INIT or UPDATE)'
+
+tag:
+  input: 'Select the program tag name'
+
+feature:
+  input: 'Choose a feature from the list'
+
+'{noncode}':
+  input: ''

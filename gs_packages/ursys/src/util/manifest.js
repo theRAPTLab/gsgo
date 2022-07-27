@@ -25,7 +25,7 @@ const PROMPTS = require('./prompts');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const TERM = PROMPTS.makeTerminalOut('U-MFEST', 'TagGreen');
 const ASSET_ID_START = 100;
-const DBG = true;
+const DBG = false;
 let m_assetPath = GS_ASSETS_PATH;
 let m_remoteAssetUrl;
 
@@ -98,7 +98,7 @@ function m_ScanAssets(subdirpath) {
         break;
       case 'projects':
         mediaObj = f_ProjectAssets(subdirpath, files);
-        TERM(`project scanAssets mediaObj ${JSON.stringify(mediaObj)}`);
+        // TERM(`project scanAssets mediaObj ${JSON.stringify(mediaObj)}`);
         break;
       default:
         mediaObj = { err: `unknown astype ${asType}` };
@@ -284,7 +284,7 @@ async function DeliverManifest(req, res, next) {
     const assetDirs = ASFILE.GetAssetDirs(path);
     if (assetDirs.length > 0) {
       // Assets are in this directory
-      m_AutoGenerateManifest(path, pathname, manifest).then(result => {
+      void m_AutoGenerateManifest(path, pathname, manifest).then(result => {
         res.json(result);
       });
       return;
@@ -320,7 +320,7 @@ async function DeliverManifest(req, res, next) {
       json = json.shift();
       const mpath = Path.join(path, `${GS_MANIFEST_FILENAME}.json`);
       FILE.EnsureDir(path);
-      FILE.WriteJSON(mpath, json, err => {
+      void FILE.WriteJSON(mpath, json, err => {
         if (err) TERM('error:', err);
       });
     }

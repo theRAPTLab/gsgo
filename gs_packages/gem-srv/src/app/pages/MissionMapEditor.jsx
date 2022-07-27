@@ -21,7 +21,7 @@ import PanelBlueprints from './components/PanelBlueprints';
 import PanelMapInstances from './components/PanelMapInstances';
 
 // this is where classes.* for css are defined
-import { useStylesHOC } from './elements/page-xui-styles';
+import { useStylesHOC } from './helpers/page-xui-styles';
 import './scrollbar.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -40,10 +40,6 @@ class MapEditor extends React.Component {
 
   componentDidMount() {}
 
-  componentDidCatch(e) {
-    console.log(e);
-  }
-
   componentWillUnmount() {}
 
   OnPanelClick(id) {
@@ -56,7 +52,7 @@ class MapEditor extends React.Component {
    *  make this happen.
    */
   render() {
-    const { projId, bpidList, classes } = this.props;
+    const { projId, bpNamesList, classes } = this.props;
     if (DBG) console.log(...PR('render', classes));
     return (
       <div
@@ -71,7 +67,7 @@ class MapEditor extends React.Component {
         <PanelBlueprints
           id="blueprints"
           projId={projId}
-          bpidList={bpidList}
+          bpNamesList={bpNamesList}
           enableAdd
         />
         <PanelMapInstances id="instances" />

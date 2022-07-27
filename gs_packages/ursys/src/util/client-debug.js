@@ -9,9 +9,10 @@
 let TOOLS;
 const HFUNCS = []; // stack of hfuncs in ur_handle, which
 const PR = s => [
-  `%c[DBGTOOL] ${s}%c`,
+  `%cUR.AddConsoleTool():%c ${s}`,
   'color:#000;background-color:yellow;padding:3px 5px;border-radius:2px;',
-  'color:auto;background-color:auto;'
+  'color:auto;background-color:auto;',
+  'font-weight:bold;color:green;background-color:yellow;padding:3px 5px;border-radius:2px;'
 ];
 const DBG = false;
 
@@ -20,9 +21,12 @@ const DBG = false;
 /** add obj keys to window object, testing to make sure that it doesn't already
  *  exist in the window.UR object
  */
-function addConsoleTool(obj) {
-  if (typeof obj !== 'object')
-    console.warn(...PR('addConsoleTool: invalid argument', obj));
+function addConsoleTool(arg1, arg2) {
+  if (typeof arg2 === 'function' && typeof arg1 === 'string') {
+    arg1 = { [arg1]: arg2 };
+  }
+  if (typeof arg1 !== 'object')
+    console.warn(...PR('addConsoleTool: invalid argument', arg1));
   if (typeof window === 'undefined') {
     console.warn(
       ...PR('addConsoleTool: non-browser environment detected...aborted.')
@@ -30,7 +34,7 @@ function addConsoleTool(obj) {
     return;
   }
   //---
-  Object.entries(obj).forEach(kv => {
+  Object.entries(arg1).forEach(kv => {
     let args;
     const [key, f] = kv;
     if (typeof f !== 'function')
@@ -42,7 +46,7 @@ function addConsoleTool(obj) {
       parts.forEach((p, ii) => {
         // feedback
         const isLast = ii === parts.length - 1;
-        info += `.${p}`;
+        info += `${p}`;
         // assignment to next
         if (DBG) console.log(p, prop[p]);
         if (prop[p] === undefined) {
@@ -50,14 +54,14 @@ function addConsoleTool(obj) {
             prop[p] = {};
             if (DBG) console.log('adding', info);
           }
-        } else if (isLast) throw Error(`window${info} not empty.`);
+        } else if (isLast) throw Error(`window.${info} not empty.`);
 
         if (isLast) prop[p] = f;
         prop = prop[p];
       });
-      console.log(...PR(`installed window${info}()`));
+      console.log(...PR(`added %c${info}()`));
     } catch (e) {
-      console.warn(...PR(`addConsoleTool: ${e}`));
+      console.warn(...PR(`error ${e}`));
     }
   });
 }

@@ -10,14 +10,7 @@ import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 
 import UR from '@gemstep/ursys/client';
-import { useStylesHOC } from './elements/page-styles';
-
-/// RUN UNIT TESTS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// import '../../modules/tests/test-expr-parser'; // test parser evaluation
-// import '../../modules/tests/test-script-parser'; // test script parser
-// import '../../modules/tests/test-compiler'; // test compiler
-// import '../../modules/tests/test-script-runtime'; // test runtime keyword functions
+import { useStylesHOC } from './helpers/page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -118,15 +111,13 @@ class Home extends React.Component {
               <a href="/app/charcontrol">CHARACTER CONTROLLER</a> - Ported from
               earlier versions FAKETRACK with the new device interface WIP.
             </li>
-            <li>
-              {/* DEPRECATED.  Tracker is now in Main.
-              <a href="/app/tracker">TRACKER SETUP</a> - Prototype app showing the
-              raw PTrack and Pozxy input data. Used to set up transforms and
-              debug. */}
-            </li>
           </ol>
           <h4>DevTools</h4>
           <ol>
+            <li>
+              <a href="/app/dev-wizard">GUI WIZARD</a> - Test renderer for GUI
+              shapes
+            </li>
             <li>
               <a href="/app/dev-tracker">TRACKER</a> - For testing CharControl,
               PTrack, and Renderer Module entities.
@@ -140,8 +131,12 @@ class Home extends React.Component {
               testing. Non-devs should use Character Controller instead.
             </li>
             <li>
-              <a href="/app/dev-compiler-v2">COMPILER V2</a> - ScriptText Compiler
-              / Simulator / Renderer Source (version 2 full tokenization)
+              <a href="/app/dev-compiler">COMPILER V2</a> - ScriptText Compiler /
+              Simulator / Renderer Source (version 2 full tokenization)
+            </li>
+            <li>
+              <a href="/app/dev-codetester">CODE TESTER</a> - Sri&#39;s Janky Unit
+              Tester Framework (non-functional)
             </li>
           </ol>
         </div>

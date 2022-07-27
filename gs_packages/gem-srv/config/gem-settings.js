@@ -17,6 +17,7 @@ const OVERRIDES = require('./local-settings.json');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
 const PACKAGE_NAME = 'GEM_SRV';
 const RUNTIME_DIRNAME = 'runtime';
 const RUNTIME_PATH = Path.join(__dirname, `../${RUNTIME_DIRNAME}`);
@@ -30,7 +31,12 @@ const RUNTIME_PATH = Path.join(__dirname, `../${RUNTIME_DIRNAME}`);
 /// it can be customized per installation and not overwrite other people's
 /// configs
 
-const MQTT_URL = 'localhost';
+const MQTT_URL = 'localhost'; // override in local-settings.json
+const ASSETDIR = 'art-assets'; // override in local-settings.json
+
+/// DEVELOPER QOL /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const SKIP_RELOAD_WARNING = false; // allow skip of 'are you sure' reload
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,23 +45,27 @@ const compositeSettings = {
   // overrides for GEM
   PACKAGE_NAME,
   RUNTIME_DIRNAME,
+  ASSETDIR,
   RUNTIME_PATH, // used only by servers
   MQTT_URL,
-  // overrides from local-settings.json
+  SKIP_RELOAD_WARNING,
+  // apply overrides from local-settings.json if it exists
   ...OVERRIDES
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-for (let [key, val] of Object.entries(OVERRIDES)) {
-  // eslint-disable-next-line no-continue
-  if (key === '_INFO') continue;
-  if (typeof window === 'undefined') console.log(`LOCAL_SET     ${key}: ${val}`);
-  else
-    console.log(
-      `%cLOCAL_SET%c ${key}`,
-      'background-color:red;color:white;padding:2px 4px',
-      'background-color:inherit;color:red',
-      `= ${val}`
-    );
-}
+if (DBG)
+  for (let [key, val] of Object.entries(OVERRIDES)) {
+    // eslint-disable-next-line no-continue
+    if (key === '_INFO') continue;
+    if (typeof window === 'undefined')
+      console.log(`LOCAL_SET     ${key}: ${val}`);
+    else
+      console.log(
+        `%cLOCAL_SET%c ${key}`,
+        'background-color:red;color:white;padding:2px 4px',
+        'background-color:inherit;color:red',
+        `= ${val}`
+      );
+  }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = compositeSettings;

@@ -1,31 +1,116 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The StateGroupMgr class managed collection of "state groups" that are stored
-  in a single master STATE object. The static methods of StateGroup are the
-  external API to find a particular StateGroupMgr.
+  NOTE: This class is likely superceded by class-state-mgr, which has
+  cleaner usage rules. You can continue to use this one though.
 
-  StateGroupMgr instances are created by APPCORE modules, which each handle a
-  particular application-specific set of operations. State is considered as
-  "transient data" that is useful for remembering (1) what "mode" the app is in
-  and (2) providing datastructures that can be rendered directly by the user
-  interface as is. APPCORE is the bridge between pure data models, user
-  interface, and controller/viewmodel logic.
+  CONCEPT
+
+  An application relies on internal variables to indicate what "state" it is
+  in. For example, which viewmode is active and what is currently selected.
+  Multiple parts of the view system need to check this state to display
+  the correct layout.
+
+  The State Group Manager provides a way to managed named sets of "state objects"
+  that can be initialized with starting values and updated/read by
+  multiple components/modules. You can name these sets for the kind of state
+  they hold (e.g. "screenmode"), and then request the state object by the name
+  from anywhere in your code. The API provides ways to change the state object
+  by name and property, as well as allowing for subscriptions to changes.
+
+  StateGroupMgr is used by APPCORE modules, which are bridge modules between
+  the pure UI (e.g. React) front-end and the pure data (e.g. DATACORE).
+
+  ACCESSING VIA URSYS
+
+  This class and its static methods are available through the UR/client,
+  though there is no reason it can't also be used by server-side code.
+
+    import { StateGroupMgr } from '@gemstep/ursys/client'
+
+  RELATED INFORMATION
+
+  APPCORE modules are the only module type that should talk to both data and
+  front-end; you can think of this as the VIEW MODEL in an MVVM architecture.
+  This keeps your implementation clean.
+
+  APPCORE modules are not limited to managing state. They manage any operation
+  that relates data to a front-end component, including intermediate data
+  structures created at runtime, for a well-defined set of operations.
+  You can think of an application is a collection of appcores that have
+  been loaded to support particular features of the front end, managing
+  the read/write from DATACORE modules.
 
   METHODS: see docs/02-arch/02-state.md for operations
 
   NOTES:
+  A nice thing to extend would be "queues of actions" instead of just setting
+  values directly. This would help manage overlapping
+  asynchronous operations.
 
-  This implementation of StateGroupMgr does not maintain "queues" of action
-  calls which would help control overlapping asynchronous operations. When the
-  base version is stable, we'll add that.
+
+  BEN's NOTES on USE:
+
+  In general, you interact with state group manager by having
+  components subscribe to a state group and then update the state
+  via a 'WriteState' URSYS call.
+
+  1.  Subscribing to State
+        UR.SubscribeState(<stateGrp, <handlerFn>);
+        handlerFn(stateObj, cb) { ... }
+
+        e.g.
+        UR.SubscribeState('blueprints', this.urStateUpdated);
+        urStateUpdated(stateObj, cb) {
+          const { bpidList } = stateObj;
+          if (bpidList) this.setState({ bpidList });
+          if (typeof cb === 'function') cb();
+        }
+
+  2.  Changing State
+        UR.WriteState(<stateGrpMgr>, <stateGrp>, <state data>);
+        e.g. UR.WriteState('projects', 'projectNames', projectNames);
+
+        This will call:
+        a. WriteState
+        b. _handleChange
+           -- changeHooks
+              ++  hook_Filter
+        d. _smartUpdate
+           --  updateKey (or updateKeyProp)
+           --  _publishState
+           --  effects
+               ++ hook_Effect
+
+  3.  updateKey
+        Calling `updateKey` directly will skip:
+        * changeHooks / hook_Filter
+        * _publishState
+        * effects / hook_Effect
+
+        Use this to skip hook_Filter and hook_Effect, e.g. to skip a
+        file write call in hook_Effect when initially setting the state.
+
+  4.  _publishState
+        Calling `_publishState` will send the state update to all subscribers
+
+  5.  changeHooks / hook_Filter
+        changeHooks are useful for:
+        * filtering data (e.g. removing invalid or unwanted data) before the state
+          is saved
+        * generating derived properties from the base state (e.g. lists of names)
+        * saving a copy of the data to datacore
+
+  6.  effectHooks / hook_Effect
+        effectHooks are useful for:
+        * Requesting data writes after all states have been updated
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const PROMPT = require('./util/prompts');
 const URDB = require('./client-urdb');
 
-const DBG = true;
+const DBG = false;
 const PR = PROMPT.makeStyleFormatter('STATEGROUP', 'TagDkOrange');
 
 /// REACT STATE COMPATIBLE FLAT OBJECTS ///////////////////////////////////////
@@ -76,7 +161,7 @@ function u_SetStateKeys(stateObj) {
   if (DBG) console.log(...PR(`Writing ${initKeys.length} groups into GSTATE`));
   initKeys.forEach(key => {
     const ng = stateObj[key];
-    if (GSTATE[key]) {
+    if (GSTATE[key] !== undefined) {
       const og = GSTATE[key];
       console.error(...PR(`GSTATE[${key}] collision`));
       console.log(...PR('existing state:', og));
@@ -125,9 +210,6 @@ class StateGroupMgr {
    *  method.
    *  @param {string|object} qsORobj - a GraphQL SDL query string or a state
    *  object
-   *  @param {object} options - options
-   *  @param {boolean} options.publish - whether or not to also publish the
-   *  state change to subscribers
    */
   async initializeState(qs_or_obj) {
     let response;
@@ -350,11 +432,14 @@ class StateGroupMgr {
       }
     }
     const subs = [...this.subs.values()];
+
     subs.forEach(sub =>
       sub(stateObj, () => {
         /* unused callback */
       })
     );
+    // consider this alternative for the above
+    // setTimeout(() => subs.forEach(sub => sub(stateObj)));
   }
 
   /// GSTATE REWRITING ///////////////////////////////////////////////////////////

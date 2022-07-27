@@ -175,38 +175,40 @@ class PhaseMachine {
         promises.push(retval);
       }
     });
-    if (DBG.ops && hooks.length)
-      console.log(...PR(`[${op}] HANDLERS PROCESSED : ${hooks.length}`));
-    if (DBG.ops && icount)
-      console.log(...PR(`[${op}] AWAITING ${icount} PROMISES TO COMPLETE...`));
 
-    // wait for all promises to execute
+    const promiseAll = Promise.all(promises).then(values => {
+      if (DBG.ops && values.length)
+        console.log(
+          ...PR(`[${op}] PROMISES RETVALS  : ${values.length}`, values)
+        );
+      if (this.opTimer) clearTimeout(this.opTimer);
+      return values;
+    });
+
+    if (DBG.ops && hooks.length)
+      console.log(`[${op}] HANDLERS PROCESSED : ${hooks.length}`);
+    if (DBG.ops && icount)
+      console.log(`[${op}] AWAITING ${icount} PROMISES TO COMPLETE...`);
+
+    // timeout timer for phase
     if (this.opTimer) clearTimeout(this.opTimer);
     this.opTimer = setTimeout(() => {
-      console.log(...PR('*** PHASEMACHINE WARNING ***'));
-      this.consolePhaseInfo('Slow Phase Resolution > 7 sec', 'red');
-      console.log(...PR('check phase hooks for lack of promised resolve()'));
+      const phaseInfo = this.consolePhaseInfo(
+        'PHASEMACHINE ERROR: Promises taking > 7 sec to resolve',
+        'red'
+      );
+      console.log('[1] check unresolved promises', promises);
+      console.log(`[2] check '${phaseInfo}' handlers`);
       const err = `
-ERROR: PhaseMachine ${this.currentPhase}/${this.currentOp} failed to complete\n
+ERROR: PhaseMachine '${this.currentPhase}/${this.currentOp}' failed to complete\n
 This is an irrecoverable runtime error.
 1. Check console for error information.
 2. Use your phone to send SCREENSHOT of the error to the devteam for troubleshooting.
       `;
-      alert(err.trim());
+      // alert(err.trim());
+      console.error(err);
     }, 7000);
-    return Promise.all(promises)
-      .then(values => {
-        if (DBG.ops && values.length)
-          console.log(
-            ...PR(`[${op}] PROMISES RETVALS  : ${values.length}`, values)
-          );
-        if (this.opTimer) clearTimeout(this.opTimer);
-        return values;
-      })
-      .catch(err => {
-        console.log(...PR(`[${op}]: ${err}`));
-        throw Error(`[${op}]: ${err}`);
-      });
+    return promiseAll;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -272,11 +274,13 @@ This is an irrecoverable runtime error.
   /** UTILITY: print current phase information to console
    */
   consolePhaseInfo(pr = 'PhaseInfo', bg = 'MediumVioletRed') {
+    const phaseInfo = `${this.NAME}/${this.currentPhase}:${this.currentOp}`;
     console.log(
-      `%c${pr}%c ${this.NAME}/${this.currentPhase}:${this.currentOp}`,
+      `%c${pr}%c`,
       `color:#fff;background-color:${bg};padding:3px 10px;border-radius:10px;`,
       'color:auto;background-color:auto'
     );
+    return phaseInfo;
   }
 }
 

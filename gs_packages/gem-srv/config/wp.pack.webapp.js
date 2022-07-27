@@ -94,8 +94,8 @@ const WebpackPacker = env => {
     // Examples of differences github.com/webpack/webpack/tree/master/examples/source-map
     // Also see here: https://survivejs.com/webpack/building/source-maps/
     // devtool: 'source-map', // terser compatible: online paths and numbers, with source, slowest
-    devtool: 'nosources-source-map', // terser compatible: paths and numbers only, no source.
-    // devtool: 'inline-source-map', // terser compatible: good for local dev, big bundles
+    // devtool: 'nosources-source-map', // terser compatible: paths and numbers only, no source.
+    devtool: 'inline-source-map', // terser compatible: good for local dev, big bundles
     // devtool: 'cheap-module-source-map', // production original source (pretty good)
     // devtool: 'cheap-module-eval-source-map', // dev original source (our original default)
     // devtool: 'cheap-source-map', // transformed lines only production (fast)

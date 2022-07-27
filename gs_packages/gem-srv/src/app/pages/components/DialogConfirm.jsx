@@ -1,3 +1,5 @@
+/// DEPRECATED: Use pico.css-based Dialog.jsx instead!
+
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import Button from '@material-ui/core/Button';
@@ -7,7 +9,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 
 function DialogConfirm(props) {
   const {

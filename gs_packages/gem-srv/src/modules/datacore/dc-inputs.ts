@@ -15,12 +15,12 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as ACBlueprints from '../appcore/ac-blueprints';
-import InputDef from '../../lib/class-input-def';
-import SyncMap from '../../lib/class-syncmap';
-import { DeleteAgent } from './dc-agents';
+import * as ACBlueprints from 'modules/appcore/ac-blueprints';
+import InputDef from 'lib/class-input-def';
+import SyncMap from 'lib/class-syncmap';
+import * as DCAGENTS from './dc-sim-agents';
 import { TYPES } from '../step/lib/class-ptrack-endpoint';
-import { DistanceTo, Lerp, Rotate } from '../../lib/util-vector';
+import { DistanceTo, Lerp, Rotate } from 'lib/util-vector';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -106,7 +106,8 @@ export const PTRACK_TRANSFORM = {
   scaleY: 0,
   translateX: 0,
   translateY: 0,
-  rotation: 0
+  rotation: 0,
+  useAccelerometer: undefined // Not applicable to PTRACK, but defined here for tscript validation
 };
 
 export const POZYX_TRANSFORM = {
@@ -209,11 +210,11 @@ function m_PozyxDampen(
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-function GetDefaultPozyxBpid() {
-  return ACBlueprints.GetPozyxControlDefaultBpid();
+function GetDefaultPozyxBpName() {
+  return ACBlueprints.GetPozyxControlDefaultBpName();
 }
-function GetDefaultPTrackBpid() {
-  return ACBlueprints.GetPTrackControlDefaultBpid();
+function GetDefaultPTrackBpName() {
+  return ACBlueprints.GetPTrackControlDefaultBpName();
 }
 ///////////////////////////////////////////////////////////////////////////////
 /// ENTITY_TO_COBJ (was POZYX_TO_COBJ) /////////////////////////////////////////////////////////////
@@ -233,8 +234,8 @@ ENTITY_TO_COBJ.setMapFunctions({
     // HACK Blueprints into cobj
     cobj.bpid =
       entity.type === TYPES.Pozyx
-        ? GetDefaultPozyxBpid()
-        : GetDefaultPTrackBpid();
+        ? GetDefaultPozyxBpName()
+        : GetDefaultPTrackBpName();
     cobj.label = entity.type === TYPES.Pozyx ? entity.id.substring(2) : entity.id;
     cobj.framesSinceLastUpdate = 0;
   },
@@ -253,8 +254,8 @@ ENTITY_TO_COBJ.setMapFunctions({
     cobj.y = pos.y;
     cobj.bpid =
       entity.type === TYPES.Pozyx
-        ? GetDefaultPozyxBpid()
-        : GetDefaultPTrackBpid();
+        ? GetDefaultPozyxBpName()
+        : GetDefaultPTrackBpName();
     cobj.label = entity.type === TYPES.Pozyx ? entity.id.substring(2) : entity.id;
     cobj.framesSinceLastUpdate = 0;
   },
@@ -339,7 +340,6 @@ export function SetInputStageBounds(width, height) {
   STAGE_WIDTH = width;
   STAGE_HEIGHT = height;
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export async function InputInit(bpname: string) {
   // STEP 1 is to get a "deviceAPI" from a Device Subscription
@@ -403,7 +403,7 @@ export function InputsUpdate() {
   });
   // 2. Process PTrack, Pozyx, FakeTrack Inputs
   //    ENTITY_TO_COBJ is regularly updated by api-input.StartTrackerVisuals
-  if (GetDefaultPozyxBpid() !== undefined) {
+  if (GetDefaultPozyxBpName() !== undefined) {
     InputUpdateEntityTracks();
   }
   // 3. Combine them all
@@ -424,5 +424,5 @@ export function GetInputDefs(): object[] {
  */
 export function InputsReset() {
   const defs = GetInputDefs();
-  defs.forEach(d => DeleteAgent(d));
+  defs.forEach(d => DCAGENTS.DeleteAgent(d));
 }

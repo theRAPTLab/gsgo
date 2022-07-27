@@ -142,8 +142,11 @@ class ExpressionEvaluator {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const exprEval = new ExpressionEvaluator();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Evaluate(expr) {
-  return exprEval.parse(expr);
+function Evaluate(expr, context) {
+  const err = `Do not use 'class-expr-evaluator-v2' use lib/expr-evaluator instead`;
+  console.warn(`%c${err}`, 'color:red;background-color:yellow;padding:1em');
+  throw Error(`${fn} ${err}`);
+  return exprEval.parse(expr, context);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

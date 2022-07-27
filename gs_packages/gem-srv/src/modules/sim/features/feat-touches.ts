@@ -68,15 +68,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { GVarNumber, GVarString, GVarBoolean } from 'modules/sim/vars/_all_vars';
-import GFeature from 'lib/class-gfeature';
-import { IAgent } from 'lib/t-script';
-import {
-  GetAgentById,
-  GetAgentsByType,
-  GetAllAgents
-} from 'modules/datacore/dc-agents';
-import { Register, GetAgentBoundingRect } from 'modules/datacore/dc-features';
+import SM_Feature from 'lib/class-sm-feature';
+import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
+
 import { DistanceTo } from 'lib/util-vector';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -97,7 +92,7 @@ const AGENT_TOUCHTYPES = new Map(); // Touch-enabled Agents
  * @param agentId
  */
 function m_GetAgent(agentId): IAgent {
-  const a = GetAgentById(agentId);
+  const a = SIMAGENTS.GetAgentById(agentId);
   if (!a) AGENT_TOUCHTYPES.delete(agentId);
   return a;
 }
@@ -139,7 +134,7 @@ function m_Update(frame) {
     if (!agent) return;
 
     d_TouchTypes.forEach((touchTypes, bpname) => {
-      const targets = GetAgentsByType(bpname);
+      const targets = SIMAGENTS.GetAgentsByType(bpname);
       targets.forEach(t => {
         // skip self
         if (agentId === t.id) return;
@@ -177,22 +172,26 @@ function m_Update(frame) {
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class TouchPack extends GFeature {
+class TouchPack extends SM_Feature {
   //
   constructor(name) {
     super(name);
     this.featAddMethod('monitor', this.monitor);
     this.featAddMethod('getTouchingAgent', this.getTouchingAgent);
+    this.featAddMethod('clearTouches', this.clearTouches);
     UR.HookPhase('SIM/PHYSICS_THINK', m_Update);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
     super.decorate(agent);
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    AGENT_TOUCHTYPES.clear();
+  }
 
   /// VISION METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ///
   monitor(agent: IAgent, targetBlueprintName: string, ...touchTypes: string[]) {
     // make sure agent has the Physics feature
     if (!agent.hasFeature('Physics'))
@@ -211,7 +210,7 @@ class TouchPack extends GFeature {
     const touchingId = targetIds.find(id => agent.isTouching.get(id)[touchType]);
     if (touchingId) {
       // console.log(agent.id, 'isTouching', touchingId);
-      return GetAgentById(touchingId);
+      return SIMAGENTS.GetAgentById(touchingId);
     }
     return undefined;
   }
@@ -220,16 +219,29 @@ class TouchPack extends GFeature {
   /// Use when deleting an agent otherwise isTouching and lastTouched
   /// are never reset.  See feat-population.m_Delete
   clearTouches(agent: IAgent, targetId: string) {
-    const agents = GetAllAgents();
+    const agents = SIMAGENTS.GetAllAgents();
     agents.forEach(a => {
       // use `delete` not clear to prevent memory leak
       if (a.lastTouched) a.lastTouched.delete(targetId);
       if (a.isTouching) a.isTouching.delete(targetId);
     });
   }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {},
+      methods: {
+        monitor: { args: ['targetBlueprintName:string', 'touchType:identifier'] },
+        getTouchingAgent: { args: ['touchType:identifier'] },
+        clearTouches: { args: ['targetId:string'] }
+      }
+    };
+  }
 }
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new TouchPack(FEATID);
-Register(INSTANCE);
+SIMDATA.RegisterFeature(INSTANCE);

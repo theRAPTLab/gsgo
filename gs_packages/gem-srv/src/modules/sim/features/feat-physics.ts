@@ -19,11 +19,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
-import GFeature from 'lib/class-gfeature';
-import { IAgent } from 'lib/t-script';
-import { GetAgentById } from 'modules/datacore/dc-agents';
-import { Register } from 'modules/datacore/dc-features';
+import { SM_Number, SM_String } from 'script/vars/_all_vars';
+import SM_Feature from 'lib/class-sm-feature';
+import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,7 +44,7 @@ const PHYSICS_AGENTS = new Map();
  * @param agentId
  */
 function m_getAgent(agentId): IAgent {
-  const a = GetAgentById(agentId);
+  const a = SIMAGENTS.GetAgentById(agentId);
   if (!a) PHYSICS_AGENTS.delete(agentId);
   return a;
 }
@@ -111,7 +110,7 @@ function m_Update(frame) {
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class PhysicsPack extends GFeature {
+class PhysicsPack extends SM_Feature {
   //
   constructor(name) {
     super(name);
@@ -122,7 +121,6 @@ class PhysicsPack extends GFeature {
     this.featAddMethod('setRadius', this.setRadius);
     this.featAddMethod('getWidth', this.getWidth);
     this.featAddMethod('getHeight', this.getHeight);
-    this.featAddMethod('getBounds', this.getBounds);
 
     UR.HookPhase('SIM/PHYSICS_UPDATE', m_Update);
   }
@@ -141,47 +139,47 @@ class PhysicsPack extends GFeature {
   decorate(agent) {
     super.decorate(agent);
     // add feature props here
-    this.featAddProp(agent, 'shape', new GVarString(CIRCLE)); // default to small round body
+    this.featAddProp(agent, 'shape', new SM_String(CIRCLE)); // default to small round body
 
     // Student-settable Script Setting
-    let prop = new GVarNumber();
+    let prop = new SM_Number();
     prop.setMax(100);
     prop.setMin(0);
     this.featAddProp(agent, 'radius', prop);
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMin(0);
     this.featAddProp(agent, 'width', prop); // in general, use getWidth
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMin(0);
     this.featAddProp(agent, 'height', prop); // in general, use getHeight
 
     // Private Costume Defaults
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMin(0);
     this.featAddProp(agent, 'costumeWidth', prop); // intended internal use only
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMin(0);
     this.featAddProp(agent, 'costumeHeight', prop); // intended for internal use only
 
     // Private Physics Body
-    prop = new GVarNumber(1); // default to small round body
+    prop = new SM_Number(1); // default to small round body
     prop.setMax(100);
     prop.setMin(0);
     this.featAddProp(agent, 'bodyRadius', prop);
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMin(0);
     this.featAddProp(agent, 'bodyWidth', prop); // intended internal use only
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMin(0);
     this.featAddProp(agent, 'bodyHeight', prop); // intended for internal use only
 
     // shape = [ circle, rectangle ]
-    prop = new GVarNumber(1);
+    prop = new SM_Number(1);
     prop.setMax(100);
     prop.setMin(0);
     this.featAddProp(agent, 'scale', prop); // in general, set featProp directly rather than calling the method
     // scale is absolute scale relative to the base size of the Costume
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMax(100);
     prop.setMin(0);
     this.featAddProp(agent, 'scaleY', prop); // in general, set featProp directly rather than calling the method
@@ -204,10 +202,14 @@ class PhysicsPack extends GFeature {
       this.setWidth(agent, agent.prop.Physics.width.value);
       this.setHeight(agent, agent.prop.Physics.height.value);
     } else {
-      const dim = this.readCostumeSize(agent);
-      this.setSize(agent, dim.width, dim.height); // default to sprite size
+      this.m_autoSetCostumeSize(agent);
     }
     this.setShape(agent, RECTANGLE);
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    PHYSICS_AGENTS.clear();
   }
 
   /// PHYSICS HELPERS /////////////////////////////////////////////////////////
@@ -217,13 +219,37 @@ class PhysicsPack extends GFeature {
    * and saves the results in `costumeWidth` and `costumeHeigh`
    * parameters for use in scaling.
    */
-  readCostumeSize(agent: IAgent): { width: number; height: number } {
+  m_readCostumeSize(agent: IAgent): { width: number; height: number } {
     if (!agent.hasFeature('Costume') || agent.prop.skin.value === undefined)
       return { width: 0, height: 0 }; // no costume
     const { w, h } = agent.callFeatMethod('Costume', 'getBounds');
     agent.prop.Physics.costumeWidth.setTo(w);
     agent.prop.Physics.costumeHeight.setTo(h);
     return { width: w, height: h };
+  }
+  /**
+   * Reads and sets physics size based on costume size
+   */
+  m_autoSetCostumeSize(agent: IAgent): { width: number; height: number } {
+    const dim = this.m_readCostumeSize(agent);
+    this.setSize(agent, dim.width, dim.height); // default to sprite size
+    return { width: dim.width, height: dim.height };
+  }
+
+  /**
+   * Returns the Physics Body bounds, which is scale * width||height
+   * Since sprites are centered, we adjust the x and y
+   */
+  m_GetBounds(agent: IAgent) {
+    // console.log('getting bounds for', agent);
+    const w = this.getBodyWidth(agent);
+    const h = this.getBodyHeight(agent);
+    return {
+      x: agent.x - w / 2,
+      y: agent.y - h / 2,
+      width: w,
+      height: h
+    };
   }
 
   /// PHYSICS METHODS /////////////////////////////////////////////////////////
@@ -288,25 +314,10 @@ class PhysicsPack extends GFeature {
         return agent.prop.Physics.bodyRadius.value * 2;
     }
   }
-  /**
-   * Returns the Physics Body bounds, which is scale * width||height
-   * Since sprites are centered, we adjust the x and y
-   */
-  getBounds(agent: IAgent) {
-    // console.log('getting bounds for', agent);
-    const w = this.getBodyWidth(agent);
-    const h = this.getBodyHeight(agent);
-    return {
-      x: agent.x - w / 2,
-      y: agent.y - h / 2,
-      width: w,
-      height: h
-    };
-  }
   /** Used by sim-conditions for 'touches' test */
   intersectsWith(agent: IAgent, b: IAgent): boolean {
-    const boundsA = this.getBounds(agent);
-    const boundsB = this.getBounds(b);
+    const boundsA = this.m_GetBounds(agent);
+    const boundsB = this.m_GetBounds(b);
     // REVIEW: This currently treats all intersections as rectangules
     // Round objects are not specifically handled.
     return this.intersects(boundsA, boundsB);
@@ -315,7 +326,7 @@ class PhysicsPack extends GFeature {
     agent: IAgent,
     b: { x: number; y: number; width: number; height: number }
   ): boolean {
-    const boundsA = this.getBounds(agent);
+    const boundsA = this.m_GetBounds(agent);
     // REVIEW: This currently treats all intersections as rectangules
     // Round objects are not specifically handled.
     return this.intersects(boundsA, b);
@@ -324,7 +335,7 @@ class PhysicsPack extends GFeature {
     agent: IAgent,
     b: { x: number; y: number; width: number; height: number }
   ): boolean {
-    const boundsA = this.getBounds(agent);
+    const boundsA = this.m_GetBounds(agent);
     const size = 10; // size of the center box.
     const boundsB = {
       x: b.x - size / 2,
@@ -343,13 +354,13 @@ class PhysicsPack extends GFeature {
       width: size,
       height: size
     };
-    const boundsB = this.getBounds(b);
+    const boundsB = this.m_GetBounds(b);
     return this.intersects(centerA, boundsB);
   }
   // bounds of A is inside bounds of B
   isBoundedBy(agentA: IAgent, agentB: IAgent): boolean {
-    const a = this.getBounds(agentA);
-    const b = this.getBounds(agentB);
+    const a = this.m_GetBounds(agentA);
+    const b = this.m_GetBounds(agentB);
     const ahw = a.width / 2;
     const ahh = a.height / 2;
     const bhw = b.width / 2;
@@ -372,9 +383,63 @@ class PhysicsPack extends GFeature {
       a.y + a.height > b.y
     );
   }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  symbolize(): TSymbolData {
+    return {
+      props: {
+        'radius': SM_Number.Symbols,
+        'width': SM_Number.Symbols,
+        'height': SM_Number.Symbols,
+        'costumeWidth': SM_Number.Symbols,
+        'costumeHeight': SM_Number.Symbols,
+        'bodyRadius': SM_Number.Symbols,
+        'bodyWidth': SM_Number.Symbols,
+        'bodyHeight': SM_Number.Symbols,
+        'scale': SM_Number.Symbols,
+        'scaleY': SM_Number.Symbols
+      },
+      methods: {
+        'setShape': { args: ['shape:string'] },
+        'setSize': { args: ['width:number', 'height:number'] },
+        'setRadius': { args: ['radius:number'] },
+        'setWidth': { args: ['width:number'] },
+        'setHeight': { args: ['height:number'] },
+        'getWidth': { returns: 'width:number' },
+        'getHeight': { returns: 'height:number' },
+        'getBodyWidth': { returns: 'width:number' },
+        'getBodyHeight': { returns: 'height:number' },
+        'intersectsWith': {
+          args: ['targetAgent:blueprint'],
+          returns: 'intersects:boolean'
+        },
+        'intersectsWithBounds': {
+          args: ['bounds:{any}'],
+          returns: 'intersects:boolean'
+        },
+        'intersectsCenterWithBounds': {
+          args: ['bounds:{any}'],
+          returns: 'intersects:boolean'
+        },
+        'intersectsCenterWithAgentBounds': {
+          args: ['targetAgent:blueprint'],
+          returns: 'intersects:boolean'
+        },
+        'isBoundedBy': {
+          args: ['targetAgent:blueprint'],
+          returns: 'isBounded:boolean'
+        },
+        'intersects': {
+          args: ['boundsA:{any}', 'boundsB:{any}'],
+          returns: 'isBounded:boolean'
+        }
+      }
+    };
+  }
 }
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new PhysicsPack('Physics');
-Register(INSTANCE);
+SIMDATA.RegisterFeature(INSTANCE);

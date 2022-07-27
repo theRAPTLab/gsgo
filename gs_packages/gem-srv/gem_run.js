@@ -58,8 +58,10 @@ function GEMSRV_Start(opt) {
     silent: true
   });
   TOUT('Starting Development Server...');
-  if (error) TOUT('using repo <detached head>\n');
-  if (stdout) TOUT(`using repo '${stdout.trim()}' branch\n`);
+  let branch;
+  if (error) branch = '<detached head>';
+  if (stdout) branch = `${stdout.trim()}`;
+  TOUT(`using repo branch: ${branch}`);
 
   const URNET_PORT = 2930; // hack to avoid confict with 2929 for admsrv fornow
 
@@ -87,27 +89,32 @@ function GEMSRV_Start(opt) {
     await UR.URNET_Start({
       port: URNET_PORT,
       serverName: 'GEM_SRV',
-      runtimePath: RUNTIME_PATH
+      runtimePath: RUNTIME_PATH,
+      branch
     });
   })();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GEMSRV_Kill() {
-  const { error, stdout } = Shell.exec(
-    `ps | grep "[n]ode gem_run.js" | awk '{ print $1 }'`,
-    {
-      silent: true
-    }
-  );
-  if (error) TOUT('...ERR:', error);
-  if (stdout) {
-    TOUT(
-      `KILL: PID '${stdout.trim()}' appears to be a GEMSRV instance...killing PID!`
-    );
-    Shell.exec(`kill -9 ${stdout}`);
+  let pskill = `ps ax | grep "[n]ode --trace-warnings gem_run.js" | awk '{ print $1 }'`;
+  TOUT(pskill);
+  let result;
+  result = Shell.exec(pskill, {
+    silent: true
+  });
+  if (result.error) TOUT('...ERR:', result.error);
+  const job = result.stdout.trim();
+  if (job) {
+    TOUT(`PID '${job}' appears to be a GEMSRV instance...killing PID!`);
+    pskill = `kill -9 ${job}`;
+    TOUT(pskill);
+    Shell.exec(pskill);
     TOUT('Hopefully that worked');
   } else {
-    TOUT(`KILL: Couldn't find a GEMSRV instance 'node gem_run.js' to kill`);
+    TOUT('---');
+    TOUT("Couldn't find process matching 'node gem_run.js' to kill");
+    TOUT("If you are still having problems, try using 'ps' to find ");
+    TOUT('processes that might be in conflict with GEMSTEP or ask the devs"\n');
   }
 }
 

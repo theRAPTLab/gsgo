@@ -3,7 +3,7 @@ import UR from '@gemstep/ursys/client';
 import * as INPUT from 'modules/input/api-input';
 import { TYPES } from 'modules/step/lib/class-ptrack-endpoint';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 import { ACLocales } from '../../../modules/appcore';
 
 import PanelChrome from './PanelChrome';

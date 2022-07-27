@@ -18,13 +18,12 @@
 import UR from '@gemstep/ursys/client';
 import * as PIXI from 'pixi.js';
 import AssetLoader from './class-asset-loader';
-import { TAssetDef, TAssetType } from '../../lib/t-assets';
-import { GS_ASSETS_ROUTE } from '../../../config/gem-settings';
+import { DEFAULT_SPRITE } from 'modules/flags';
+// import { TAssetDef, TAssetType } from '../../lib/t-assets';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AS-SPRITE');
-const ASSET_URL = `${GS_ASSETS_ROUTE}`;
 const DBG = false;
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
@@ -41,55 +40,25 @@ class SpriteLoader extends AssetLoader {
   _loadCount: number;
 
   /** please initialize queue mechanism through super(type) */
-  constructor(assetType: TAssetType) {
-    super(assetType);
-    console.log(...PR(`creating ${assetType} loader instance...`));
+  constructor() {
+    super('sprites');
+    if (DBG) console.log(...PR(`creating 'sprites' loader instance...`));
     this._loader = new PIXI.Loader();
     this._loadCount = 0;
     this._loadProgress = this._loadProgress.bind(this);
     this._loader.onProgress.add(this._loadProgress);
     this._loadComplete = this._loadComplete.bind(this);
     this._loader.onComplete.add(this._loadComplete);
+
+    // add default sprite
+    const assetId = 1;
+    const assetName = DEFAULT_SPRITE;
+    const assetUrl = `static/spr-${DEFAULT_SPRITE}.png`;
+    this.queueAssetList([{ assetId, assetName, assetUrl }]);
   }
 
   /// INHERITED FROM ASSETLOADER BASE CLASS ///////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ NOTE: you can refer to an asset either by id or name. The id is unique
-      across all loaders, but the name is unique only within their loader.
-
-      The base AssetLoader class manages the dictionary storage and lookup for
-      you with these methods:
-
-      * type() - returns the asset type (e.g. 'sprites')
-      * hasAsset(name) - return true if asset w/ name
-      * hasAssetId(id) - return true if asset w/ id
-      * lookupAssetId(name) - return id associated with name
-
-      When retrieving and storing asset records, these are in the form of
-      TResource which looks like { assetId, assetName, assetURL, ?rsrc, ?error }
-
-      * getAssetById(id) - return asset record for id
-      * getAsset(name) - return asset recod for name
-
-      These special protected methods are used to add an AssetDefinition to a
-      queue managed by the AssetLoader base class:
-
-      * _queueAsset(id,name,url) - add an AssetDef to the queue
-      * _nextAsset() - return the AssetDef at the top of queue, removing it
-      * _saveAsset(assetDef, rsrc, ?error) - save the loaded rsrc
-      * _unloadAsset(name) - remove asset by name to release memory
-      * _unloadAll() - remove all assets in the dictionaries, resetting
-
-      Subclassers use these methods to implement asset-specific loader code,
-      making use of the queue methods listed above"
-
-      * queueAssetList(asList) - optional override. Queue a list of AssetDefs
-      * promiseLoadAssets() - must override. return promise for loading queue
-
-      It's presumed that all assets have a name, an id assigned by the Asset
-      Manifest, and a URL that points to the resource on-disk or on an http
-      server.
-  /*/
+  /// see class-asset-loader for provided methods
 
   /// LOADER-SPECIFIC METHOD OVERRIDES and METHODS ////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -99,8 +68,7 @@ class SpriteLoader extends AssetLoader {
       const { assetId, assetName, assetUrl } = item;
       if (typeof assetId !== 'number') throw Error('bad/missing assetId in list');
       if (!(assetId && assetName && assetUrl)) throw Error('bad asset list');
-      const remoteUrl = `${ASSET_URL}/${assetUrl}`;
-      this._queueAsset(assetId, assetName, remoteUrl);
+      this._queueAsset(assetId, assetName, assetUrl);
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -130,6 +98,11 @@ class SpriteLoader extends AssetLoader {
 
       // (2)
       // now start PIXI loader, which will callback when it's loaded
+      console.groupCollapsed(...PR('[ Hidden PixiJS cache warnings ]'));
+      console.log(
+        "%cNOTE: cache warnings are a debug feature in PixiJS that can't be easily turned off, so we just hide them.",
+        'color:red'
+      );
       this._loader.load(load => {
         const resources = [...Object.entries(load.resources)];
         resources.forEach(kv => {
@@ -147,7 +120,8 @@ class SpriteLoader extends AssetLoader {
         });
         ++this._loadCount;
         resolve(this);
-      });
+        console.groupEnd();
+      }); // end of loadAssets
     };
     return new Promise(loadAssets);
   }
@@ -219,6 +193,12 @@ class SpriteLoader extends AssetLoader {
         )}`
       };
     }
+  }
+  /** erase everything */
+  reset() {
+    super.reset();
+    this._loader = new PIXI.Loader();
+    this._loadCount = 0;
   }
 } // end class
 

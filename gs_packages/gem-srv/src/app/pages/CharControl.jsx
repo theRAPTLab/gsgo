@@ -17,15 +17,12 @@ import {
   Initialize,
   HandleStateChange,
   UpdateDimensions
-} from './elements/mod-charcontrol-ui';
-import { useStylesHOC } from './elements/page-xui-styles';
+} from './helpers/mod-charcontrol-ui';
+import { useStylesHOC } from './helpers/page-xui-styles';
 import './scrollbar.css';
 import '../../lib/css/charcontrol.css';
 import PanelSimViewer from './components/PanelSimViewer';
 import DialogConfirm from './components/DialogConfirm';
-
-/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-/// import '../modules/sim/runtime';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -74,9 +71,8 @@ class CharController extends React.Component {
     };
     this.init = this.init.bind(this);
     this.updateCharControlBpidList = this.updateCharControlBpidList.bind(this);
-    this.handleSetCharControlBpidList = this.handleSetCharControlBpidList.bind(
-      this
-    );
+    this.handleSetCharControlBpidList =
+      this.handleSetCharControlBpidList.bind(this);
     this.requestBPNames = this.requestBPNames.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
     UR.HandleMessage(
@@ -154,7 +150,7 @@ class CharController extends React.Component {
     // will come back before we're ready
     if (DBG) console.log(...PR('requestBPNames'));
     UR.CallMessage('NET:REQ_PROJDATA', {
-      fnName: 'GetCharControlBpidList'
+      fnName: 'GetCharControlBpNames'
     }).then(rdata => this.updateCharControlBpidList(rdata.result));
   }
 

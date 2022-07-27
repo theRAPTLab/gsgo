@@ -8,7 +8,7 @@
 import { AGENTS } from 'modules/datacore';
 import { WORLD } from 'modules/sim/agents/global';
 import Message from './class-sm-message';
-import { IAgent, TSMCProgram } from './t-script';
+// import { IAgent, TSMCProgram } from './t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

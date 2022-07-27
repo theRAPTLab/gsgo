@@ -107,7 +107,8 @@ async function SystemNetBoot() {
   await executePhase('PHASE_INIT');
   // CONNECT TO URNET
   const netInfo = await NETINFO.FetchNetInfo();
-  console.info(...NPR('URNET got connect info:', netInfo));
+  if (DBG)
+    console.info(...NPR('URNET got connect info:', JSON.stringify(netInfo)));
   await executePhase('PHASE_CONNECT'); // NET_CONNECT, NET_REGISTER, NET_READY
   await executePhase('PHASE_LOAD'); // LOAD_DB, LOAD_CONFIG, LOAD_ASSETS
   //
@@ -131,7 +132,7 @@ async function SystemAppConfig(options = {}) {
   //
   if (options.autoRun) {
     if (DBG) console.log(...PR('info - autoRun to next phase'));
-    SystemAppRun(options);
+    void SystemAppRun(options);
   }
   if (DBG) console.groupEnd();
 }
@@ -164,7 +165,7 @@ async function SystemAppUpdate() {
   await execute('APP_RESTAGE');
   //
   if (DBG) console.groupEnd();
-  SystemAppRun();
+  void SystemAppRun();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: force loop back to run
@@ -175,7 +176,7 @@ async function SystemAppRestage() {
   await execute('APP_RESET');
   //
   if (DBG) console.groupEnd();
-  SystemAppRun();
+  void SystemAppRun();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: end the lifecycle state engine

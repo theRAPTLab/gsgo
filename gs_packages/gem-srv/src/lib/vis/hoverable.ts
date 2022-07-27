@@ -1,11 +1,11 @@
 /** given a VOBJ, decorate it to add new features */
 import UR from '@gemstep/ursys/client';
 import { Visual } from 'lib/t-visual';
-import { GetAgentById } from 'modules/datacore/dc-agents';
+import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 
 export function MakeHoverable(vobj: Visual) {
   function onPointerOver(event) {
-    const agent = GetAgentById(vobj.id);
+    const agent = DCAGENTS.GetAgentById(vobj.id);
     if (!agent) {
       console.error(
         'hoverable: Hovered agent not found!!! This should not happen!'
@@ -16,7 +16,7 @@ export function MakeHoverable(vobj: Visual) {
   }
 
   function onPointerOut(event) {
-    const agent = GetAgentById(vobj.id);
+    const agent = DCAGENTS.GetAgentById(vobj.id);
     if (!agent) {
       console.error(
         'hoverable: Hovered agent not found!!! This should not happen!'

@@ -3,13 +3,10 @@ import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as ASSETS from 'modules/asset_core';
-
-import { CreateFileFromTemplate } from 'modules/datacore/dc-project'; // Have to import to load db
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import * as ACProjects from 'modules/appcore/ac-projects'; // Have to import to access state
+import * as DCPROJECT from 'modules/datacore/dc-project';
 
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 import { GS_ASSETS_PROJECT_ROOT } from '../../../../config/gem-settings';
 
 import PanelChrome from './PanelChrome';
@@ -19,6 +16,8 @@ import DialogFilename from './DialogFilename';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('PanelSelectSimulation', 'TagPurple');
 const DBG = true;
+
+let PROJECTS = []; // [ {id, label}, ... ]
 
 /** Returns random 3 digit suffix for filenames */
 function randomSuffix() {
@@ -31,30 +30,22 @@ function randomSuffix() {
 class PanelSelectSimulation extends React.Component {
   constructor() {
     super();
-    const { projectNames } = UR.ReadFlatStateGroups('projects');
     this.state = {
       title: 'Select Project',
       projectTemplates: [],
-      projectFiles: projectNames,
+      projectFiles: [],
       showEnterNameDialog: false,
       filename: '',
       selectedTemplateId: undefined,
       isValidFilename: false
-      // projectNames: [
-      //   // Dummy Data
-      //   { id: 'aquatic', label: 'Aquatic Ecosystems' },
-      //   { id: 'decomposition', label: 'Decomposition' },
-      //   { id: 'particles', label: 'Particles' },
-      //   { id: 'aquatic-blue', label: 'Blue Group Aquatic' }
-      // ]
     };
     this.onSelectTemplate = this.onSelectTemplate.bind(this);
     this.onSelectProject = this.onSelectProject.bind(this);
     this.onCheckValidFilename = this.onCheckValidFilename.bind(this);
     this.onCreateFileFromTemplate = this.onCreateFileFromTemplate.bind(this);
+    this.onUpdateProjectsList = this.onUpdateProjectsList.bind(this);
     this.isFilenameUnique = this.isFilenameUnique.bind(this);
     this.listProjects = this.listProjects.bind(this);
-    this.urStateUpdated = this.urStateUpdated.bind(this);
 
     /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -79,17 +70,17 @@ class PanelSelectSimulation extends React.Component {
     );
     UR.HookPhase('UR/APP_READY', () => {
       const PROJECT_LOADER = ASSETS.GetLoader('projects');
-      this.listProjects(PROJECT_LOADER.getProjectsList());
+      PROJECTS = PROJECT_LOADER.getProjectsList();
+      this.listProjects(PROJECTS);
     });
+    /// URSYS MESSAGE HANDLERS ////////////////////////////////////////////////
+    /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    UR.HandleMessage('NET:PROJECTS_UPDATE', this.onUpdateProjectsList);
   }
 
-  componentDidMount() {
-    UR.SubscribeState('projects', this.urStateUpdated);
-  }
+  componentDidMount() {}
 
-  componentWillUnmount() {
-    UR.UnsubscribeState('projects', this.urStateUpdated);
-  }
+  componentWillUnmount() {}
 
   onSelectTemplate(projId) {
     if (DBG) console.log(...PR('Clicked to Select model ID:', projId));
@@ -124,10 +115,31 @@ class PanelSelectSimulation extends React.Component {
 
   async onCreateFileFromTemplate() {
     const { selectedTemplateId, filename } = this.state;
-    await CreateFileFromTemplate(selectedTemplateId, filename);
+    await DCPROJECT.ProjectFileCreateFromTemplate(selectedTemplateId, filename);
     // then open it
     const { onClick } = this.props;
     onClick(`project=${filename}`);
+  }
+
+  /** UR message handler for PROJECTS_UPDATE
+   *  This is raised by ac-projects running on another app on the
+   *  network when the name or metadata of the project is changed,
+   *  so we need to update the list.
+   */
+  onUpdateProjectsList(data) {
+    if (data.projectNames) {
+      data.projectNames.forEach(p => {
+        const i = PROJECTS.findIndex(P => P.id === p.id);
+        PROJECTS.splice(i, 1, { id: p.id, label: p.label });
+      });
+      this.listProjects(PROJECTS);
+    } else {
+      console.warn(
+        PR,
+        'PROJECTS_UPDATE message received with no projectNames:',
+        data
+      );
+    }
   }
 
   /** Checks current list of project names to make sure name is unique */
@@ -139,23 +151,24 @@ class PanelSelectSimulation extends React.Component {
     return isValidFilename;
   }
 
-  /** projlist = [ ...{id, label, info}] */
+  /** Splits the array of project files in to 'template' files and
+   *  regular 'project' files so that they can be displayed in
+   *  separate lists.
+   *  projlist = [ ...{id, label, info}] */
   listProjects(projlist) {
-    let projectFiles = [];
-    let projectTemplates = [];
+    // sort alphabetically
+    projlist = projlist.sort((a, b) => {
+      if (a.label < b.label) return -1;
+      if (a.label > b.label) return 1;
+      return 0;
+    });
+    const projectFiles = [];
+    const projectTemplates = [];
     projlist.forEach(p => {
       if (p.id.startsWith('_template_')) projectTemplates.push(p);
       else projectFiles.push(p);
     });
     this.setState({ projectTemplates, projectFiles });
-  }
-
-  urStateUpdated(stateObj, cb) {
-    const { projectFiles } = stateObj;
-    if (projectFiles) {
-      this.setState({ projectFiles });
-    }
-    if (typeof cb === 'function') cb();
   }
 
   render() {

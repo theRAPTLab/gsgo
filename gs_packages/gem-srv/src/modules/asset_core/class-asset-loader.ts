@@ -2,35 +2,55 @@
 
   ASSET LOADER BASE CLASS
 
-  Asset loaders handle the fetching and initialization of 'resources' that are
-  stored in an Asset dictionary.
+  ROLE:
+    Loads the contents of a remote asset directory to make resources
+    available to other modules in the application. This base class defines
+    the common operations for asset management.
 
-  The base AssetLoader class provides a standard set of methods for managing an
-  Asset dictionary, including managing a queue of Assets to load.
+  OPERATIONS:
 
-  For assetType-specific code, you should override the promiseLoadAssets()
-  method as necessary.
+    Asset directories have a URL with subdirectories named by type of asset.
+    An Asset Manifest is the list of all the available resources, grouped by
+    type of asset.
 
-  See as-load-sprites.ts for an example implementation that extends the
-  AssetLoader base class.
+    All assets in the manifest have a unique id, a non-unique label, and
+    a URL to the asset file.
+
+    An Asset Loader can parse the manifest into an LOAD_QUEUE which
+    has an entry for each resource to be loaded then saved into a
+    STORAGE DICTIONARY.
+
+    After loading, assets can be retrieved by assetName or by assetId.
+
+  CONCEPTS:
+
+    Loading occurs in two steps: (1) queueing the assets lists to load,
+    then (2) loading the resources referred to in the asset list and storing
+    them in the dictionary.
+
+    To implement a loader, you MUST override promiseLoadAssets() and use
+    the built-in methods for loading the queued resources. It's implemented
+    with the iterator pattern
+
+    let item = _nextAsset(); // has { assetId, assetUrl }
+    while (item!==undefined) {
+      _saveAsset(item);
+      const { assetId, assetUrl } = item;
+      const resource = await yourAsyncLoader(assetUrl)
+      _saveAsset(item, resource)
+      item = _nextAsset()
+    }
+
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  TAssetDef,
-  TAssetType,
-  TAssetId,
-  TAssetName,
-  TAssetURL,
-  TAssetLoader,
-  TResource
-} from '../../lib/t-assets.d';
+// uses types from t-assets.d
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
+const DBG = false;
 
-/// MODULE HELPERS /////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_NewAssetRecord() {
   return { assetUrl: '', assetId: undefined, assetName: undefined };
@@ -38,7 +58,7 @@ function m_NewAssetRecord() {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class AssetLoader extends TAssetLoader {
+class AssetLoader implements TAssetLoader {
   _queue: TAssetDef[]; // the queue of assets to load
   _type: TAssetType; // the kind of asset this instance will manage
   _loadCount: number;
@@ -47,28 +67,28 @@ class AssetLoader extends TAssetLoader {
 
   /** please initialize queue mechanism through super(type) */
   constructor(assetType: TAssetType) {
-    super();
     this._queue = [];
     this._loadCount = 0;
     this._type = assetType;
     this._assetDict = new Map();
     this._nameLookup = new Map();
 
-    // bind helper methods that might be used in a callback
-    // of subclasser using a code library
-    this._err = this._err.bind(this);
+    // bind methods so they work in callbacks
+    this._nextAsset = this._nextAsset.bind(this);
     this._saveAsset = this._saveAsset.bind(this);
+    //
     this._unloadAsset = this._unloadAsset.bind(this);
     this._unloadAll = this._unloadAll.bind(this);
     this._queueAsset = this._queueAsset.bind(this);
-    this._nextAsset = this._nextAsset.bind(this);
-    // these methods might also be called from a callback
+    this._err = this._err.bind(this);
+    //
     this.type = this.type.bind(this);
     this.hasAsset = this.hasAsset.bind(this);
     this.hasAssetId = this.hasAssetId.bind(this);
     this.lookupAssetId = this.lookupAssetId.bind(this);
     this.getAssetById = this.getAssetById.bind(this);
     this.getAsset = this.getAsset.bind(this);
+    //
     this.queueAssetList = this.queueAssetList.bind(this);
     this.promiseLoadAssets = this.promiseLoadAssets.bind(this);
   }
@@ -138,22 +158,22 @@ class AssetLoader extends TAssetLoader {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// All asset loaders use this common interface
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** return the asset type */
+  /** API: return the asset type */
   type(): TAssetType {
     return this._type;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** return true if asset name is in this loader */
+  /** API: return true if asset name is in this loader */
   hasAsset(name: TAssetName): boolean {
     return this._nameLookup.has(name);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** return true is asset id is in this loader */
+  /** API: return true is asset id is in this loader */
   hasAssetId(id: TAssetId): boolean {
     return this._assetDict.has(id);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** given an assetName, return numeric assetId. AssetIds are guaranteed to
+  /** API: given an assetName, return numeric assetId. AssetIds are guaranteed to
    *  be unique across all asset types, but name are unique only within the
    *  the assetType category
    */
@@ -163,21 +183,31 @@ class AssetLoader extends TAssetLoader {
       throw Error(this._err('lookupAssetId() called before assets were loaded'));
     return lookup;
   }
-
-  /** given an assetId, return the saved resource */
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API: given an assetId, return the saved resource */
   getAssetById(id: TAssetId): TResource {
     if (this._nameLookup.size === 0)
       throw Error(this._err('getAssetById() called before assets were loaded'));
     const rsrc = this._assetDict.get(id);
     return rsrc;
   }
-
-  /** given an assetName, return the saved resource */
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API: given an assetName, return the saved resource */
   getAsset(name: TAssetName): TResource {
     if (this._nameLookup.size === 0)
       throw Error(this._err('getAsset() called before assets were loaded'));
     const id = this.lookupAssetId(name);
     return this.getAssetById(id);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  getAssetList(opt = { sort: 'id' }) {
+    return [...Object.keys(this._nameLookup)];
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API: release all assets to reuse instance */
+  reset() {
+    this._unloadAll();
   }
 
   /// LOADER-SPECIFIC OVERRIDES ///////////////////////////////////////////////
@@ -200,22 +230,57 @@ class AssetLoader extends TAssetLoader {
    */
   promiseLoadAssets(): Promise<TAssetDef[]> {
     const i = this._loadCount;
+    // this should be customized
     return new Promise((resolve, reject) => {
       console.log('resolving');
       resolve([]);
     });
   }
+
+  /// STATIC MANIFEST METHOD //////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API: load manifest from a constructed route of the form
+   *  http://host:port/assets/subdir. If you pass the option { raw }, then you
+   *  can get the raw manifest file without the rewritten URLs to assets, which
+   *  is useful for making manual asset files that can move with folder
+   *  reorganization
+   */
+  static async PromiseManifest(
+    assetDir: string,
+    opt = { raw: false }
+  ): Promise<TManifest> {
+    const url = `${assetDir}?manifest`;
+    if (DBG) console.log('loading url', url);
+    let json: any;
+    let manifest: TManifest;
+    try {
+      json = await fetch(url).then(async response => {
+        if (!response.ok) throw new Error('network error');
+        let js: TManifest = await response.json();
+        if (Array.isArray(js) && js.length > 0) {
+          if (DBG) console.log('converting json array...');
+          js = js.shift();
+        }
+        return js;
+      });
+      if (opt.raw) return json as TManifest;
+      manifest = {};
+      for (const [asType, asList] of Object.entries(json)) {
+        (asList as TAssetDef[]).forEach(item => {
+          item.assetUrl = `${assetDir}/${item.assetUrl}`;
+        });
+        manifest[asType] = asList;
+      }
+    } catch (err) {
+      // console.warn(err);
+      manifest = undefined;
+    }
+    if (DBG) console.log('returning manifest', manifest);
+    return manifest;
+  }
 } // end class
-
-/// STATIC METHODS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// INITIALIZATION ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// class to extend
 export default AssetLoader;

@@ -11,7 +11,7 @@ import UR from '@gemstep/ursys/client';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelChrome from './PanelChrome';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 import '../scrollbar.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -67,6 +67,7 @@ class ProjectEditor extends React.Component {
       return boolstr.toLowerCase().trim() === 'true';
     }
 
+    let isMetaData = false;
     const { project } = this.state;
     if (e.target.id === 'id') {
       project.id = val;
@@ -74,10 +75,18 @@ class ProjectEditor extends React.Component {
       project.label = val;
     } else if (e.target.id === 'wrap') {
       project.metadata.wrap = val.split(',').map(w => cleanBoolString(w));
+      isMetaData = true;
     } else {
       project.metadata[e.target.id] = val;
+      isMetaData = true;
     }
-    this.setState({ project }, () => this.SaveProjectData());
+    this.setState({ project }, () => {
+      if (isMetaData) {
+        this.SaveMetaData();
+      } else {
+        this.SaveProjectData();
+      }
+    });
   }
 
   urStateUpdated(stateObj, cb) {
@@ -100,7 +109,11 @@ class ProjectEditor extends React.Component {
 
   SaveProjectData() {
     const { project } = this.state;
-    UR.WriteState('project', 'project', project);
+    UR.CallMessage('PROJDATA_UPDATE', { project });
+  }
+  SaveMetaData() {
+    const { project } = this.state;
+    UR.CallMessage('METADATA_UPDATE', { metadata: project.metadata });
   }
 
   render() {
@@ -135,13 +148,7 @@ class ProjectEditor extends React.Component {
           }}
         >
           <div className={classes.inspectorLabel}>id (url)&nbsp;</div>
-          <div className={classes.inspectorData}>
-            <input
-              id="id"
-              defaultValue={project.id}
-              onChange={this.onFormInputUpdate}
-            />
-          </div>
+          <div className={classes.inspectorData}>{project.id}</div>
           <div className={classes.inspectorLabel}>label&nbsp;</div>
           <div className={classes.inspectorData}>
             <input

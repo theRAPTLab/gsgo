@@ -1,0 +1,413 @@
+/*/ gemstep ui wizard css /*/
+/*/
+    gap is 10px
+    - 10 -130 -250 -360 - column
+    - 70
+    -130
+    -190
+    -250
+    -310
+/*/
+#gui-wizard {
+  --border-color: red;
+  --row0: -10px;
+  --row1: -70px;
+  --row2: -130px;
+  --row3: -190px;
+  --row4: -250px;
+  --row5: -310px;
+  --col0: -10px;
+  --col1: -130px;
+  --col2: -250px;
+  --col3: -370px;
+  --shima: 16px;
+  --shim2a: 30px;
+  --gap: 10px;
+  --primary: rgba(128, 83, 0, 1); /* override pico */
+}
+
+.gunit {
+  float: left;
+  background-image: url('../../app/static/gem-ui-shapes.svg');
+  background-repeat: no-repeat;
+  background-size: auto;
+  min-height: 50px;
+  min-width: 16px;
+  background-origin: border-box;
+  display: grid;
+  place-items: center;
+}
+.glabel {
+  user-select: none;
+}
+.gunit.gk0 {
+  background-position: var(--col0) var(--row1);
+  width: var(--shima);
+}
+.gunit.gk1 {
+  background-position: calc(var(--col1) + var(--shima) + var(--gap)) var(--row1);
+  width: var(--shima);
+}
+.gunit.gk {
+  background-position: calc(var(--col0) - var(--shima)) var(--row0);
+  width: 50px;
+}
+
+.gunit.ga0 {
+  margin-left: -10px;
+  background-position: var(--col2) var(--row3);
+  width: var(--shim2a);
+}
+.gunit.ga1 {
+  background-position: calc(var(--col3) + var(--shim2a) + var(--gap)) var(--row3);
+  width: var(--shim2a);
+}
+.gunit.ga {
+  background-position: calc(var(--col2) - var(--shim2a)) var(--row3);
+  width: 50px;
+}
+
+/** ProgramPrinter CSS **/
+.gwiz {
+  box-sizing: border-box;
+}
+.gwiz.gtoken {
+  display: inline-block;
+  padding: 4px 12px;
+  margin: 1px 1px;
+  user-select: none;
+}
+.gwiz.clickable {
+  background-color: rgba(221, 221, 221, 1);
+}
+/* line numbers */
+.gwiz.gtoken.first {
+  color: gray;
+  user-select: none;
+  min-height: 1em;
+}
+.gwiz.gline {
+  display: block;
+  border-bottom: 1px solid white;
+}
+.gwiz.styleOpen {
+  border: 0px solid #707070;
+  background-color: rgba(221, 221, 221, 1);
+}
+.gwiz.styleKey {
+  font-weight: bold; /* position 1 keyword */
+}
+.gwiz.styleComment {
+  color: dimgrey;
+  background-color: white;
+  font-family: monospace;
+}
+.gwiz.stylePragma {
+  color: white;
+  background-color: teal;
+}
+.gwiz.styleDefine {
+  color: white;
+  background-color: darkslategrey;
+}
+.gwiz.styleCond {
+  background-color: hotpink;
+  color: black;
+}
+.gwiz.valueType {
+  color: blue;
+}
+.gwiz.numberType {
+  color: blue;
+}
+.gwiz.stringType {
+  color: blue;
+}
+.gwiz.methodType {
+  font-style: italic;
+}
+.gwiz.exprType {
+  color: darkgreen;
+}
+.gwiz.objrefType {
+  color: rgb(0, 95, 100);
+  font-weight: bold;
+}
+.gwiz.styleSolid {
+  background-color: black;
+}
+.gwiz.styleSyntax {
+  white-space: normal;
+  color: #888;
+  font-style: italic;
+}
+.gwiz.styleError {
+  white-space: normal;
+  color: red;
+  font-style: italic;
+}
+.gwiz.styleHelp {
+  white-space: normal;
+  color: transparent;
+}
+.gwiz.styleHelp:hover {
+  white-space: normal;
+  color: dimgray;
+  font-style: italic;
+}
+.gwiz.lineLead {
+  min-height: 1em;
+  display: inline-block;
+}
+.gwiz.newline {
+  display: block;
+}
+.gwiz button {
+  width: 44px;
+  height: 12px;
+  background-color: rgba(255, 166, 0, 0.7);
+  line-height: 2px;
+  margin-bottom: 0;
+}
+.gwiz .btnAddBefore {
+  float: left;
+  position: relative;
+  top: -28px;
+  left: 100%; /* http://alistapart.com/article/fauxabsolutepositioning/ */
+  border-width: 2px;
+  margin-left: -100%;
+}
+.gwiz .btnAddAfter {
+  float: left;
+  position: relative;
+  top: 28px;
+  left: 100%; /* http://alistapart.com/article/fauxabsolutepositioning/ */
+  border-width: 2px;
+  margin-left: -100%;
+}
+.gwiz .btnAddEnd {
+  width: 100%;
+}
+.gwiz .btnDelete {
+  float: right;
+  width: 100px;
+  height: 100%;
+  border-width: 2px;
+  font-size: 0.8rem;
+}
+
+.gtoken.selected,
+.gtoken.chosen {
+  background-color: rgba(255, 166, 0, 1) !important; /* orange */
+}
+.gtoken:hover {
+  background-color: rgba(255, 166, 0, 0.5);
+  cursor: pointer;
+}
+.gtoken.locked {
+  color: rgba(0, 0, 0, 0.4);
+}
+.gtoken.locked:hover {
+  background-color: rgba(221, 221, 221, 1);
+  cursor: not-allowed;
+}
+.gline.selected {
+  /* border-bottom: 1px solid rgba(255, 166, 0, 1) !important; orange */
+  background-color: rgba(255, 166, 0, 0.25) !important;
+  border-top: 4px dotted rgba(255, 166, 0, 1);
+  border-bottom: 4px dotted rgba(255, 166, 0, 1);
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.gtoken.selected:hover {
+  background-color: rgba(255, 166, 0, 0.8) !important;
+}
+/* viewState Flags -- needs to override *Type like .gwiz.valueType and .gtoken.selected */
+.gwiz.styleFlagEmpty {
+  color: rgba(0, 0, 255, 0.2);
+  background-color: rgba(0, 0, 0, 0.05);
+  outline: dashed 2px rgba(0, 0, 255, 0.3);
+  outline-offset: -2px; /* border inside div */
+  box-sizing: border-box;
+}
+.gwiz.styleFlagEmpty.selected {
+  outline-color: rgba(0, 0, 255, 1) !important;
+}
+.gwiz.styleFlagInvalid {
+  background-color: rgba(255, 0, 0, 0.3);
+}
+.gtoken.styleFlagInvalid.selected {
+  background-color: rgba(255, 100, 0, 1) !important;
+}
+.gwiz.styleFlagLocked {
+  color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.05);
+  outline: dashed 1px rgba(0, 0, 0, 0.1);
+  outline-offset: -1px; /* border inside div */
+}
+.gwiz.styleFlagLocked:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+  cursor: not-allowed;
+}
+.gwiz.styleFlagDisabled {
+  color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(0, 0, 0, 0.05);
+  outline: dashed 1px rgba(0, 0, 0, 0.1);
+  outline-offset: -1px; /* border inside div */
+}
+.gwiz.styleFlagDisabled.selected {
+}
+.gwiz.styleFlagDisabled:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  cursor: not-allowed;
+}
+.gwiz.styleFlagOverflow {
+  color: rgba(255, 0, 0, 0.2);
+  background-color: rgba(255, 0, 0, 0.1);
+  outline: dashed 2px rgba(255, 0, 0, 0.3);
+  outline-offset: -2px; /* border inside div */
+  text-decoration: line-through;
+}
+.gwiz.styleFlagOverflow.selected {
+  color: rgba(255, 0, 0, 1);
+  outline: dashed 2px rgba(255, 0, 0, 1);
+  background-color: rgba(255, 100, 0, 1) !important;
+}
+/* end viewState Flags */
+/*
+ * Slot Editor
+ */
+.gsled {
+  box-sizing: border-box;
+}
+.gsled.panel {
+  /* main slot editor base panel */
+  padding: 10px;
+  height: 100%;
+  background-color: #666;
+}
+.gsled.panelhelp {
+  /* keyword help against dark gsled bg */
+  color: #ccc;
+  font-style: italic;
+}
+.gsled.tokenList {
+  display: grid;
+  grid-template-rows: auto auto 10px;
+  grid-auto-flow: column;
+  background-color: #eee;
+  padding: 10px 10px 0 10px;
+  margin-top: 10px;
+}
+.gsled.input {
+  padding: 10px;
+}
+.gsled.input input:not([role='switch']) {
+  background-color: #ffedcc; /* override transparent pico theme, but not for switches */
+}
+.gsled.meta {
+  /* help fields above and below slot */
+  display: inline-block;
+  background-color: transparent;
+  padding: 4px 12px;
+  margin: 1px 1px;
+  user-select: none;
+}
+.gsled.meta.selected {
+  padding: 0;
+  margin: 0 1px;
+  background-color: #ffd280;
+}
+.gsled .gwiz.gtoken {
+  margin-bottom: 0; /* choices abutt bottom */
+}
+.gsled.choices {
+  background-color: #ffd280;
+  padding-bottom: 10px;
+}
+.gsled.choiceshelp {
+  /* selected slot help against light choices bg */
+  color: #333;
+  font-style: italic;
+}
+.gsled.choicesline {
+  padding: 10px;
+}
+.gsled.button-bar {
+  display: grid;
+  grid-template-columns: 45% 10% 45%;
+  padding-top: 10px;
+}
+.gsled.objref-choices {
+  margin: 0 1px;
+  padding: 10px;
+  background-color: #ffd28088;
+}
+/* end Slot Editor */
+/*
+ * Dialog
+ */
+dialog footer {
+  text-align: right;
+}
+dialog button {
+  display: inline-block;
+  width: fit-content;
+  margin-left: 10px;
+}
+/*
+ * Pico overrides
+ */
+:root {
+  --line-height: 1.5;
+  --font-weight: 400;
+  --font-size: 16px;
+  --typography-spacing-vertical: 1.5rem;
+  --transition: 0.2s ease-in-out;
+}
+
+#ScriptContextor details.sticky summary::after {
+  background-image: none;
+}
+
+@media (min-width: 576px) {
+  :root {
+    --font-size: 16px;
+  }
+}
+@media (min-width: 768px) {
+  :root {
+    --font-size: 16px;
+  }
+}
+@media (min-width: 992px) {
+  :root {
+    --font-size: 16px;
+  }
+}
+@media (min-width: 1200px) {
+  :root {
+    --font-size: 16px;
+  }
+}
+
+@media print {
+  #leftText {
+    display: none;
+    width: 0;
+  }
+  #gui-wizard {
+    grid-template-columns: 0% auto !important;
+  }
+  #gui-wizard header,
+  #gui-wizard footer {
+    display: none;
+  }
+}
+/*
+ * Pico overrides for CodeJar
+ */
+#app-container pre > code {
+  padding: 0;
+  display: inline;
+}
