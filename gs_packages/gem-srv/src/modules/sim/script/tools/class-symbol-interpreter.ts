@@ -172,7 +172,6 @@ class SymbolInterpreter {
     { gsArg, err_info }: TSymbolMeta
   ) {
     const fn = 'badToken:';
-    const [type, value] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     // inspect in case of lazy use
     let err_code: TValidationErrorCodes;
@@ -182,13 +181,14 @@ class SymbolInterpreter {
     } else {
       err_code = 'invalid';
     }
-    gsArg = gsArg || ':{?}';
+    gsArg = gsArg || '??:{?}';
     symbols = symbols || {};
     // return
     this.scan_error = true;
     return new VSDToken(symbols, {
       gsArg,
       unitText,
+      sm_parent: this.sm_parent,
       err_code,
       err_info
     });
@@ -201,7 +201,7 @@ class SymbolInterpreter {
     { gsArg, symbolScope }: TSymbolMeta
   ): VSDToken {
     const unitText = TOKENIZER.TokenToString(token);
-    gsArg = gsArg || ':{?}';
+    gsArg = gsArg || '??:{?}';
     symbols = symbols || {};
     // return
     return new VSDToken(symbols, {
@@ -297,22 +297,19 @@ class SymbolInterpreter {
     // encoded as { comment:'text' }
     if (type === 'comment')
       return this.goodToken(token, symbols, {
-        gsArg: 'comment:{noncode}',
-        unitText
+        gsArg: 'comment:{noncode}'
       });
 
     // encoded as { line:'' }
     if (type === 'line')
       return this.goodToken(token, symbols, {
-        gsArg: 'blank line:{noncode}',
-        unitText
+        gsArg: 'blank line:{noncode}'
       });
 
     // encoded as { directive: '#' }
     if (type === 'directive')
       return this.goodToken(token, symbols, {
-        gsArg: 'directive:pragma',
-        unitText
+        gsArg: 'directive:pragma'
       });
 
     // default gsarg type
@@ -335,7 +332,7 @@ class SymbolInterpreter {
         err_info: 'no keyword token'
       });
     }
-    return this.goodToken(token, symbols, { gsArg, unitText });
+    return this.goodToken(token, symbols, { gsArg });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** allow any valid blueprint in the system */
