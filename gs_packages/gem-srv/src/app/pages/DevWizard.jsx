@@ -34,7 +34,7 @@ import * as BLUEPRINT_TESTER from 'test/test-blueprint';
 import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
-import { VER_DEV_WIZ, ENABLE_SYMBOL_TEST_BLUEPRINT } from 'config/dev-settings';
+import { VER_TRIAL, ENABLE_SYMBOL_TEST_BLUEPRINT } from 'config/dev-settings';
 import { ASSETDIR, DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 // edit mode components
 import { ScriptTextPane } from './wiz/edit/ScriptTextPane';
@@ -123,16 +123,16 @@ class DevWizard extends React.Component {
   componentDidMount() {
     try {
       if (DBG) console.log(...PR('root component mounted'));
-    document.title = `DEV/WIZARD V.${VER_DEV_WIZ}`;
-    // start URSYS
-    UR.SystemAppConfig({ autoRun: true }); // initialize renderer
-    // add top-level click handler
-    document.addEventListener('click', EDITMGR.DispatchClick);
-    // add a subscriber
-    WIZCORE.SubscribeState(this.handleWizUpdate);
-    SLOTCORE.SubscribeState(this.handleSlotUpdate);
-    m_LoadTestProjectData(WIZCORE);
-     } catch (caught) {
+      document.title = `DEV/WIZARD`;
+      // start URSYS
+      UR.SystemAppConfig({ autoRun: true }); // initialize renderer
+      // add top-level click handler
+      document.addEventListener('click', EDITMGR.DispatchClick);
+      // add a subscriber
+      WIZCORE.SubscribeState(this.handleWizUpdate);
+      SLOTCORE.SubscribeState(this.handleSlotUpdate);
+      m_LoadTestProjectData(WIZCORE);
+    } catch (caught) {
       if (ERR_MGR)
         ERR_MGR(`DevWizard could not mount`, {
           source: 'app',
@@ -181,7 +181,7 @@ class DevWizard extends React.Component {
       );
     return (
       <div id="gui-wizard" style={sGrid}>
-        <DevHeader label="DEV/WIZARD" version={VER_DEV_WIZ} />
+        <DevHeader label="DEV/WIZARD" version={VER_TRIAL} />
         <div style={sLeft}>
           <ScriptViewWiz_Block
             script_page={script_page}

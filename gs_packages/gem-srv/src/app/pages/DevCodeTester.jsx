@@ -13,7 +13,7 @@ import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
-import { VER_DEV_CODETEST } from 'config/dev-settings';
+import { VER_TRIAL } from 'config/dev-settings';
 
 /// RUN UNIT TESTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,7 +57,7 @@ class DevCodeTester extends React.Component {
 
   componentDidMount() {
     if (DBG) console.log(...PR('root component mounted'));
-    document.title = `DEVCODETEST V.${VER_DEV_CODETEST}`;
+    document.title = `DEVCODETEST V.${VER_TRIAL}`;
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     const terminal = new Terminal();
@@ -91,7 +91,7 @@ class DevCodeTester extends React.Component {
     const styles = { ...sGrid, gridTemplateColumns: '25% 75%' };
     return (
       <div id="code-tester" style={styles}>
-        <DevHeader label="DEV/CODETEST" version={VER_DEV_CODETEST} />
+        <DevHeader label="DEV/CODETEST" version={VER_TRIAL} />
         <div style={{ padding: '1em' }}>
           <p style={{ fontSize: '2em' }}>
             <strong>Sri&#39;s Janky Unit Tester</strong>
