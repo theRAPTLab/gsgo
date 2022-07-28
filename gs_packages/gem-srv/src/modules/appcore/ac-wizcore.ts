@@ -379,23 +379,23 @@ function ValidateLine(lineNum: number): TValidatedScriptUnit {
 function ValidatePageLine(vmLine: VMPageLine): TValidatedScriptUnit {
   const { lineScript, globalRefs } = vmLine;
   const { cur_bdl } = STORE.State();
-  try {
-    return TRANSPILER.ValidateStatement(lineScript, {
-      bundle: cur_bdl,
-      globals: globalRefs
-    });
-  } catch (caught) {
-    ERROR(`could not validate slots_linescript`, {
-      source: 'validator',
-      data: {
-        lineScript,
-        cur_bdl,
-        globalRefs
-      },
-      where: 'ac-wizcore.ValidatePageLine',
-      caught
-    });
-  }
+  // try {
+  return TRANSPILER.ValidateStatement(lineScript, {
+    bundle: cur_bdl,
+    globals: globalRefs
+  });
+  // } catch (caught) {
+  //   ERROR(`could not validate slots_linescript`, {
+  //     source: 'validator',
+  //     data: {
+  //       lineScript,
+  //       cur_bdl,
+  //       globalRefs
+  //     },
+  //     where: 'ac-wizcore.ValidatePageLine',
+  //     caught
+  //   });
+  // }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Validate all the lines in the script_page and return the validation
