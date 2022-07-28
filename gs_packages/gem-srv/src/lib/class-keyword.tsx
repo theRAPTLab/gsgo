@@ -223,6 +223,7 @@ class Keyword implements IKeyword {
         error,
         unitText = BAD_UNIT,
         gsType,
+        gsName,
         symbolScope,
         ...symbols
       } = vtok;
@@ -254,15 +255,15 @@ class Keyword implements IKeyword {
    *  add valid symbols */
   invalidToken(code: TValidationErrorCodes, info: string, symbols?: TSymbolData) {
     return new VSDToken(symbols, {
-      gsType: '{?}',
+      gsArg: ':{?}',
       err_code: code,
       err_info: info
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** utility to create a TSymbolData object for valid tokens */
-  validToken(symbols: TSymbolData, gsType: TGSType, unitText: string) {
-    return new VSDToken(symbols, { gsType, unitText });
+  validToken(symbols: TSymbolData, gsArg: TGSArg, unitText: string) {
+    return new VSDToken(symbols, { gsArg, unitText });
   }
 
   /// JSX UTILITIES ///////////////////////////////////////////////////////////

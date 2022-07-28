@@ -31,12 +31,14 @@ export class when extends Keyword {
 
   compile(kwArgs: TKWArguments): TOpcode[] {
     const [kw, A, testName, B, ...args] = kwArgs;
-    if (!Array.isArray(args) || args.length === 0)
-      ERROR('missing when block consequent', {
-        source: 'compiler',
-        why: 'arg underflow',
-        data: kwArgs
-      });
+    if (!Array.isArray(args) || args.length === 0) {
+    //  ERROR('missing when block consequent', {
+    //    source: 'compiler',
+    //    why: 'arg underflow',
+    //    data: kwArgs
+    //  });
+      return[];
+    }
     let consq: TSM_Method = args.pop() as TSM_Method; // fyi: consq is array of functions
 
     // sanity checks

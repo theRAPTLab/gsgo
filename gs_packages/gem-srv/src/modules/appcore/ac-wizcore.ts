@@ -23,7 +23,6 @@
 import UR from '@gemstep/ursys/client';
 import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
-import { Tokenize as TokenizeString } from 'script/tools/class-gscript-tokenizer-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as WIZUTIL from 'modules/appcore/ac-wizcore-util';
@@ -32,12 +31,7 @@ import {
   UnpackViewData,
   UnpackSymbolType
 } from 'script/tools/symbol-utilities';
-import * as COMPILER from 'script/tools/script-compiler';
-import * as BUNDLER from 'script/tools/script-bundler';
-import ERROR from 'modules/error-mgr';
-
 import { GetTextBuffer } from 'lib/class-textbuffer';
-import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
 // load state
 const { StateMgr } = UR.class;
@@ -84,6 +78,7 @@ STORE._initializeState({
   cur_prjid: null, // current project id
   cur_bpid: null, // current blueprint
   cur_bdl: null, // current blueprint bundle
+  old_bpid: null, // original blueprint name before rename
 
   // selection-driven data
   sel_symbol: null, // selection-dependent symbol data
@@ -128,16 +123,7 @@ STORE._interceptState(state => {
     let toks = TRANSPILER.TextToScript(script_text);
     toks = TRANSPILER.EnforceBlueprintPragmas(toks);
     state.script_tokens = toks;
-    TRANSPILER.SymbolizeBlueprint(toks);
-    state.cur_bdl = TRANSPILER.CompileBlueprint(toks);
-
-    // ...did the name change?  if so, remove the old bundle
-    const { cur_bdl } = STORE.State();
-    if (cur_bdl !== null) {
-      const { name: curName } = cur_bdl;
-      const { name: newName } = state.cur_bdl;
-      if (newName !== curName) SIMDATA.DeleteBlueprintBundle(curName);
-    }
+    state.cur_bdl = TRANSPILER.SymbolizeBlueprint(toks);
 
     const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
     const programMap = TRANSPILER.ScriptToProgramMap(toks);
@@ -151,39 +137,42 @@ STORE._interceptState(state => {
   // (SlotEditor_Block call to ac-editmgr.SaveSlotLineScript)
   // if script_tokens is changing, we also want to emit new script_text
   if (script_tokens && !script_text) {
-    try {
-      state.script_tokens = TRANSPILER.EnforceBlueprintPragmas(script_tokens);
-      // also symbolize blueprints -- eg after adding a feature, need to re-symbolize to make feature available
-      TRANSPILER.SymbolizeBlueprint(script_tokens);
-      state.cur_bdl = TRANSPILER.CompileBlueprint(script_tokens);
+  // try {
+    state.script_tokens = TRANSPILER.EnforceBlueprintPragmas(script_tokens);
+    // also symbolize blueprints -- eg after adding a feature, need to re-symbolize to make feature available
+    state.cur_bdl = TRANSPILER.SymbolizeBlueprint(script_tokens);
 
-      // ...did the name change?  if so, remove the old bundle
-      const { cur_bdl } = STORE.State();
-      if (cur_bdl !== null) {
-        const { name: curName } = cur_bdl;
-        const { name: newName } = state.cur_bdl;
-        if (newName !== curName) SIMDATA.DeleteBlueprintBundle(curName);
+    // ...did the name change?  if so, remove the old bundle
+    const { cur_bdl } = STORE.State();
+    if (cur_bdl !== null) {
+      const { name: curName } = cur_bdl;
+      const { name: newName } = state.cur_bdl;
+      if (newName !== curName) {
+        SIMDATA.DeleteBlueprintBundle(curName);
+        state.old_bpid = curName;
+        state.cur_bpid = newName;
       }
-
-      // end symbolize
-      const text = TRANSPILER.ScriptToText(state.script_tokens);
-      state.script_text = text;
-      const [vmPage, tokMap] = TRANSPILER.ScriptToLines(state.script_tokens);
-      const programMap = TRANSPILER.ScriptToProgramMap(state.script_tokens);
-      state.script_page = vmPage;
-      state.script_page_needs_saving = true;
-      state.key_to_token = tokMap;
-      state.program_map = programMap; //
-    } catch (caught) {
-      ERROR(`error occurred during script-tokens intercept`, {
-        source: 'appstate',
-        data: {
-          script_tokens
-        },
-        where: 'ac-wizcore._interceptState script_tokens',
-        caught
-      });
     }
+
+    // end symbolize
+    const text = TRANSPILER.ScriptToText(state.script_tokens);
+    state.script_text = text;
+    const [vmPage, tokMap] = TRANSPILER.ScriptToLines(state.script_tokens);
+    const programMap = TRANSPILER.ScriptToProgramMap(state.script_tokens);
+    state.script_page = vmPage;
+    state.script_page_needs_saving = true;
+    state.key_to_token = tokMap;
+    state.program_map = programMap;
+    // } catch(caught) {
+    //  ERROR(`error occurred during script-tokens intercept`, {
+    //    source: 'appstate',
+    //    data: {
+    //      script_tokens
+    //    },
+    //    where: 'ac-wizcore._interceptState script_tokens',
+    //    caught
+    //  });
+    // }
   }
 });
 
@@ -544,6 +533,8 @@ function AddLine(position: VMLineScriptInsertionPosition) {
       ScrollLineIntoView(newLineNum);
     }, 10);
   });
+
+  return newLineNum;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // function DeleteLine() => See ac-editmgr.ts
@@ -567,6 +558,32 @@ function GetProgramContextForLine(lineNum: number): TLineContext {
   //
   if (foundProgram) return map.get(foundProgram);
   return undefined;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API Save script_page to server */
+function SaveToServer(projId, bpName) {
+  const { script_text, old_bpid } = State();
+  UR.CallMessage('NET:SCRIPT_UPDATE', {
+    projId,
+    script: script_text,
+    origBlueprintName: bpName
+  }).then(result => {
+    const newBpName = result.bpName;
+
+    // BP Renamed, delete old name after saving to server
+    if (old_bpid)
+      UR.RaiseMessage('NET:BLUEPRINT_DELETE', {
+        blueprintName: old_bpid
+      });
+    STORE.SendState({
+      old_bpid: null,
+      script_page_needs_saving: false
+    });
+
+    // select the new script otherwise wizard retains the old script
+    UR.RaiseMessage('SELECT_SCRIPT', { bpName: newBpName });
+  });
 }
 
 /// DEBUG CONSOLE /////////////////////////////////////////////////////////////
@@ -597,7 +614,8 @@ export {
   WizardTestLine, // handle test line for WizardTextLine tester
   DispatchEditorClick, // handle clicks on editing box
   AddLine, // handle ScriptViewPane request to add a new script line
-  GetProgramContextForLine // given a line number, returns its program context
+  GetProgramContextForLine, // given a line number, returns its program context
+  SaveToServer // send script_page data to server
 };
 
 /// EXPORTED VIEWMODEL INFO UTILS //////////////////////////////////////////////

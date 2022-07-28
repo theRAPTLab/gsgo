@@ -1,0 +1,24 @@
+# default gsArg types and prompts
+
+anyNumber: 'number:number'
+anyString: 'string:string'
+anyBoolean: 'boolean:boolean'
+anyKeyword: 'keyword:keyword'
+
+anyBlueprintName: 'any blueprint:blueprint'
+anyFeatureName: 'pick feature:feature'
+anySystemEvent: 'available event:event'
+anyWhenTest: 'available test:test'
+anyExpr: 'expression string:expr'
+everyOption: 'timer option:identifier'
+pragma: 'control setting:pragma'
+
+simplePropName: 'new prop name:prop'
+anyPropType: 'pick type:propType'
+agentFeature: 'agent feature:objref'
+agentFeatureList: 'available feature:feature'
+agentObjRef: 'agent prop:objref'
+featObjRef: 'feature prop:objref'
+featRef: 'feature:objref'
+objRef: 'sim object:objref'
+methodName: 'sim object method:method'

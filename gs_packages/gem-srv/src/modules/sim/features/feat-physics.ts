@@ -202,10 +202,14 @@ class PhysicsPack extends SM_Feature {
       this.setWidth(agent, agent.prop.Physics.width.value);
       this.setHeight(agent, agent.prop.Physics.height.value);
     } else {
-      const dim = this.readCostumeSize(agent);
-      this.setSize(agent, dim.width, dim.height); // default to sprite size
+      this.m_autoSetCostumeSize(agent);
     }
     this.setShape(agent, RECTANGLE);
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    PHYSICS_AGENTS.clear();
   }
 
   /// PHYSICS HELPERS /////////////////////////////////////////////////////////
@@ -215,7 +219,7 @@ class PhysicsPack extends SM_Feature {
    * and saves the results in `costumeWidth` and `costumeHeigh`
    * parameters for use in scaling.
    */
-  readCostumeSize(agent: IAgent): { width: number; height: number } {
+  m_readCostumeSize(agent: IAgent): { width: number; height: number } {
     if (!agent.hasFeature('Costume') || agent.prop.skin.value === undefined)
       return { width: 0, height: 0 }; // no costume
     const { w, h } = agent.callFeatMethod('Costume', 'getBounds');
@@ -223,6 +227,15 @@ class PhysicsPack extends SM_Feature {
     agent.prop.Physics.costumeHeight.setTo(h);
     return { width: w, height: h };
   }
+  /**
+   * Reads and sets physics size based on costume size
+   */
+  m_autoSetCostumeSize(agent: IAgent): { width: number; height: number } {
+    const dim = this.m_readCostumeSize(agent);
+    this.setSize(agent, dim.width, dim.height); // default to sprite size
+    return { width: dim.width, height: dim.height };
+  }
+
   /**
    * Returns the Physics Body bounds, which is scale * width||height
    * Since sprites are centered, we adjust the x and y

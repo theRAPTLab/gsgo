@@ -40,6 +40,8 @@ function OffsetLineNum(num: number, inc: 'add' | 'sub'): number {
 const GSTYPES: TGSType[] = [
   // see t-script.d "SYMBOL DATA AND TYPES"
   // these are used both for keyword args and method signature args
+  'identifier',
+  //
   'boolean',
   'string',
   'number',
@@ -55,7 +57,8 @@ const GSTYPES: TGSType[] = [
   '{string}', // composite: literal, objref, or expression producing
   '{any}', // value or string
   //
-  'pragma',
+  'keyword', // special identifier
+  'pragma', // special identifier
   'test', // an identifier that is a saved program name
   'program', // an identifier that is a saved program name
   'event', // an identifier that is a system event nbame
@@ -63,7 +66,8 @@ const GSTYPES: TGSType[] = [
   'feature', // an identifier that is the name of an SMFeature
   'blueprint', // an identifier that is the name of a blueprint bundle
   // placeholder keyword args for use in scriptunits
-  '{...}'
+  '{...}',
+  '{noncode}'
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given an array of TSymbolArgType (or array of arrays TSymbolArgType)
@@ -105,7 +109,10 @@ function AreValidArgs(args: TGSArg[]): boolean {
  *  string meets type requirements, [undefined, undefined] otherwise
  */
 function UnpackArg(arg: TGSArg): TSymUnpackedArg {
-  if (Array.isArray(arg)) return ['{...}', '{list}']; // when keyword uses weird array of args that needs to be fixed
+  if (Array.isArray(arg)) {
+    console.error('UnpackArg: unexpected obsolete array-style arg');
+    return ['{...}', '{list}']; // when keyword uses weird array of args that needs to be fixed
+  }
   if (typeof arg !== 'string') return [undefined, undefined];
   let [name, gsType, ...xtra] = arg.split(':') as TSymUnpackedArg;
   // if there are multiple :, then that is an error
@@ -114,8 +121,9 @@ function UnpackArg(arg: TGSArg): TSymUnpackedArg {
   // a zero-length name is an error except for the
   // multi-argument {args} glob type
   if (name.length === 0) {
-    if (gsType === '{...}') name = '**';
-    else return [undefined, undefined];
+    if (gsType === '{...}') return ['**', gsType];
+    if (gsType) return ['?', gsType];
+    return [undefined, undefined];
   }
   // name and type are good, so return valid unpacked arg
   return [name, gsType];
@@ -139,12 +147,13 @@ const BUNDLE_CONTEXTS = [
   'CONSEQ', // block of code to run if condition true
   'ALTER' // block of code to run if condition false
 ];
-/// used to convert student name to bundle contexts
+/// these are the allowed/required PROGRAM pragmas in a student script
+/// key is the name they use, value is the mapped name (doesn't currently do anything)
 const USER_SCRIPT_PROGRAM_NAMES = {
-  'DEFINE': 'DEFINE', // for students, used for defining props and features
+  // 'DEFINE': 'DEFINE', // for students, used for defining props and features
   'INIT': 'INIT', //
-  'UPDATE': 'UPDATE', //
-  'EVENT': 'EVENT' //
+  'UPDATE': 'UPDATE' //
+  // 'EVENT': 'EVENT' //
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return true if this is allowed in a blueprint bundle */
@@ -232,7 +241,7 @@ export {
   StringIsValidTokenType,
   // token evaluation
   DecodeAsDirectiveStatement,
-  KWModuleFromKeywordToken,
+  KeywordFromToken,
   UnpackToken,
   UnpackStatement,
   TokenValue

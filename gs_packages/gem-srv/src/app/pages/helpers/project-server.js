@@ -167,7 +167,7 @@ function DoUnRegisterInspector(data) {
 
 /// PROJECT DATA PRE INIT /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API:
+/** API: Called by Main.componentDidMount
  *  Load application-specific settings (current locale, projId as defined by URL)
  */
 function ProjectDataPreInit(parent, projId) {
@@ -185,7 +185,11 @@ function ProjectDataPreInit(parent, projId) {
 
 /// MAIN INITIALIZATION ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Also hooked to APP_START
+/** API: Hooked on APP_RUN
+ *  Load project data
+ *  Register as a device
+ *  Set up controller listeners
+ */
 async function Initialize() {
   // 1. Check for other 'Sim' devices.
   const devices = UR.GetDeviceDirectory();
@@ -196,8 +200,16 @@ async function Initialize() {
   }
 
   // 2. Load Model from DB
-  await ACProject.LoadProjectFromAsset(CURRENT_PROJECT_ID);
-  SIMCTRL.SimPlaces(CURRENT_PROJECT);
+  await ACProject.LoadProjectFromAsset(CURRENT_PROJECT_ID).catch(caught => {
+    console.error('Error LoadProjectFromAsset', caught);
+    alert(`Initialize Error -- bad project file? ${caught}`);
+  });
+  try {
+    SIMCTRL.DoSimReset(); // compile blueprints
+  } catch (caught) {
+    console.error('Error trying to compile gemscripts:', caught);
+    alert(`Initialize.SimPlaces Error -- bad script? ${caught}`);
+  }
 
   // 3. Register as 'Sim' Device
   // devices templates are defined in class-udevice.js
@@ -518,6 +530,11 @@ function InstanceRequestEdit(data) {
   //          May not be necessary if we only allow one map editor
   // 1. Set Agent Data
   const agent = DCAGENTS.GetAgentById(data.agentId);
+  if (!agent) {
+    console.warn(
+      ...PR('InstanceRequestEdit on undefined agent agentId', data.agentId)
+    );
+  }
   // 2. If already selected, deselect it.
   if (agent.isSelected) {
     // 2a. Deselect it
@@ -647,6 +664,7 @@ function ScriptUpdate(data) {
     DCAGENTS.GetInstancesType(bpName).forEach(a => DCAGENTS.DeleteAgent(a));
     // Also delete input agents
     DCINPUTS.InputsReset();
+    ACBlueprints.ResetAndCompileBlueprints();
   }
 
   // 5. Inform network devices
@@ -783,7 +801,7 @@ UR.HandleMessage('INSTANCE_HOVEROUT', InstanceHoverOut);
 
 /// UR HOOKS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HookPhase('UR/APP_START', Initialize);
+UR.HookPhase('UR/APP_RUN', Initialize);
 
 /// EXPORT MODULE API /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

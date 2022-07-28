@@ -22,7 +22,6 @@
       "gs_packages/gem-srv/LICENSE": true,
       "gs_packages/gem-srv/node_modules": true,
       "gs_packages/gem-srv/package-lock.json": true,
-      "gs_packages/mcp-srv": true,
       "gs_packages/test-data": true,
       "gs_packages/x-playground": true,
       "lerna-debug.log": true,

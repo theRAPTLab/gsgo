@@ -468,7 +468,10 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
   exec(m: TSM_Method, context?: TAnyObject, ...args: any[]): any {
     if (m === undefined) return undefined;
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    const ctx = { agent: this, global: SM_Agent.GLOBAL_AGENT };
+
+    const agentName = this.blueprint.name;
+    // when might need to run exec_smc
+    const ctx = { agent: this, [agentName]: this, global: SM_Agent.GLOBAL_AGENT };
     Object.assign(ctx, context);
     if (Array.isArray(m)) return this.exec_smc(m, ctx, ...args);
     if (typeof m === 'object') {

@@ -18,6 +18,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import { UnpackArg } from 'modules/datacore/dc-sim-data-utils';
+
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -32,18 +34,29 @@ class VSDToken implements TSymbolData {
   //
   constructor(symbols?: TSymbolData, opt?: TSymbolMeta) {
     // if we want to remember the original scriptText word
-    const { unitText, symbolScope, gsType, err_code, err_info } = opt || {};
+    const { unitText, symbolScope, gsArg, ui_action, err_code, err_info } =
+      opt || {};
+    const [gsName, gsType] = UnpackArg(gsArg);
+    // console.log('unpacking', unitText, `${gsName}:${gsType}`);
     if (unitText !== undefined) (this as any).unitText = unitText; // unitText can be empty string
     if (Array.isArray(symbolScope)) (this as any).symbolScope = symbolScope;
     if (gsType) (this as any).gsType = gsType;
+    if (gsName) (this as any).gsName = gsName;
     if (err_code || err_info) {
       (this as any).error = {
         code: err_code,
         info: err_info
       };
     }
-    // add symbol data
+    if (Array.isArray(ui_action)) {
+      const [command, ...params] = ui_action;
+      (this as any).action = {
+        command, // a command of type TValidationActionCodes
+        params // optional command parameters
+      };
+    }
     if (symbols) {
+      // add symbol data
       const symbolKeys = [...Object.keys(symbols)];
       symbolKeys.forEach(key => {
         this[key] = symbols[key];

@@ -8,23 +8,28 @@
 
 /// STABLE KEYWORDS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// USE DURING PROGRAM DEFINE
-export * from './addProp'; // use during DEFINE to name a prop
-export * from './addFeature'; // use during DEFINE to import a feature
-// /*DEPRECATED*/ export * from './useFeature'; // import a feature
-// export * from './addTest'; // add a named test
+/// USE DURING PROGRAM DEFINE or INIT
+export * from './addProp'; // define a property before use
+export * from './addFeature'; // specify a feature before use
 
-/// USE DURING PROGRAM UPDATE
+/// USE DURING PROGRAM DEFINE, INIT, or UPDATE
 export * from './prop'; // prop_objref method args
 export * from './call'; // prop_objref method args (same as prop?)
-/*DEPRECATED*/ export * from './featProp'; // objref method args
-/*DEPRECATED*/ export * from './featCall'; // objref method args
+export * from './featProp'; // objref method args
+export * from './featCall'; // objref method args
 
-// utility keywords
-/*DEPRECATED*/ export * from './propPush'; // push prop value onto data stack
-/*DEPRECATED*/ export * from './propPop'; // pop prop value onto data stack
-/*DEPRECATED*/ export * from './featPropPush'; // objref method args
-/*DEPRECATED*/ export * from './featPropPop'; // objref method args
+/// V1.0 SHORTCUT KEYWORDS
+/// these will eventually be replaced by improvements to the parser
+/// but are necessary for now
+export * from './propPush'; // push prop value onto data stack
+export * from './propPop'; // pop prop value onto data stack
+export * from './featPropPush'; // objref method args
+export * from './featPropPop'; // objref method args
+export * from './exprPush'; // push expr onto data stack
+export * from './ifExpr'; // run code conditionally
+
+// console debug keywords (deprecated but still in use)
+export * from './dbgOut';
 
 // conditional keywords
 export * from './if'; // run code conditionally
@@ -43,13 +48,8 @@ export * from './_directive'; // compiler control
 
 // utility keywords
 export * from './randomPos'; // randomizes position
-/*DEPRECATED*/ export * from './exprPush'; // push expr onto data stack
-
-// conditional keywords
-/*DEPRECATED*/ export * from './ifExpr'; // run code conditionally
 
 // debug keywords (very slow performance)
-export * from './dbgOut';
 export * from './dbgTick';
 export * from './dbgStack';
 export * from './dbgContext';

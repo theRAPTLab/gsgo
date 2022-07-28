@@ -75,6 +75,11 @@ const WebpackLoaders = () => {
           // some static css is in node_modules, so don't exclude it
         },
         {
+          test: /\.yaml$/,
+          include: DIR_INCLUDES,
+          loader: 'yaml-loader'
+        },
+        {
           // allegedly create unified source maps from output .js files from everyone
           // including libraries with their own source maps (?)
           // this loader runs after all js files are produced (?)

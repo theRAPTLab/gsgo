@@ -660,7 +660,9 @@ class PopulationPack extends SM_Feature {
         'deleteAfterSpawning': SM_Number.Symbols
       },
       methods: {
-        'createAgent': { args: ['blueprintName:string', 'initScript:string'] },
+        'createAgent': {
+          args: ['blueprintName:identifier', 'initScript:block']
+        },
         'spawnChild': { args: ['spawnScript:string', 'def:objref'] },
         'removeAgent': {},
         'getRandomActiveAgent': { args: ['bpname:number'] },

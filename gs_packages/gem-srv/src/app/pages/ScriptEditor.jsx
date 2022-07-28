@@ -245,8 +245,18 @@ class ScriptEditor extends React.Component {
   }
 
   HandleEditMgrUpdate(vmStateEvent) {
-    const { selection } = vmStateEvent;
+    const { selection, bpname } = vmStateEvent;
     if (selection) this.setState({ selection });
+    if (bpname) {
+      const { projId } = this.state;
+      // add script to URL
+      window.history.pushState(
+        {},
+        '',
+        `/app/scripteditor?project=${projId}&script=${bpname}`
+      );
+      this.setState({ bpName: bpname });
+    }
   }
 
   /**

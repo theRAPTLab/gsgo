@@ -140,6 +140,9 @@ class SM_Feature implements IFeature {
   getMethod(mName: string): TSM_FeatureMethod {
     return this.featGetMethod(mName);
   }
+
+  /** override to reset data on sim reset */
+  reset() {}
 } // end of class
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

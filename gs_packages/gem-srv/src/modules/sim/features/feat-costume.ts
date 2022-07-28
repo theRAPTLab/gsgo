@@ -158,6 +158,10 @@ class CostumePack extends SM_Feature {
     simloop.hook('INPUT', frame => console.log(frame));
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    COSTUME_AGENTS.clear();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Add costume-specific properties to the agent. The feature methods
    *  are defined inside the featurepack instance, not the agent instance
    *  as props are.
@@ -254,7 +258,9 @@ class CostumePack extends SM_Feature {
 
     // If Physics feature is used, update physics body.
     if (agent.hasFeature('Physics')) {
-      agent.callFeatMethod('Physics', 'init');
+      // if Physics is present then it has already been inited, so
+      // run readCostumesize, not init
+      const dim = agent.callFeatMethod('Physics', 'm_autoSetCostumeSize');
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -483,10 +489,10 @@ class CostumePack extends SM_Feature {
         colorScaleSteps: SM_Number.Symbols
       },
       methods: {
-        setCostume: { args: ['costumeName:string', 'poseName:number'] },
-        setPose: { args: ['poseName:number'] },
+        setCostume: { args: ['costumeSprite:string', 'poseFrame:number'] },
+        setPose: { args: ['poseFrame:number'] },
         setAnimatedCostume: { args: ['costumeName:string', 'frameRate:number'] },
-        setScale: { args: ['scale:number'] },
+        setScale: { args: ['scaleMultiplier:number'] },
         setGlow: { args: ['seconds:number'] },
         getColorHSV: {
           returns: ['hue:number', 'saturation:number', 'value:number']

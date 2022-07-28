@@ -109,12 +109,23 @@ function m_MergeBlueprint(bpDef: TBlueprint, bpDefs: TBlueprint[]): TBlueprint[]
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Blueprint symbols need to be extracted before they are compiled */
 function m_SymbolizeBlueprints(bpDefs: TBlueprint[]) {
-  // console.warn('%cAC Symbolizing Blueprints', 'font-weight:bold');
   bpDefs.forEach(b => {
     const script = TRANSPILER.TextToScript(b.scriptText);
     TRANSPILER.SymbolizeBlueprint(script);
   });
   console.groupEnd();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Data Migration from old format to new
+ *  old bpDefs = {id, scriptText}
+ *  new bpDefs = {name, scriptText}
+ */
+function m_MigrateBpidToBpName(bpDefs: TBlueprint[]): TBlueprint[] {
+  return bpDefs.map(bp => {
+    let { name, id, scriptText } = bp;
+    if (id && !name) name = id;
+    return { name, scriptText };
+  });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Use this to compile and add additional blueprints to an already running sim
@@ -156,27 +167,6 @@ function m_CompileBlueprints(bpDefs: TBlueprint[]): TBlueprint[] {
       caught
     });
   }
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Use this when reseting the simulation.
- * Clears all ScriptEvents, Blueprints, Agents, and Instances
- * and THEN compiles blueprints.
- * Call with no 'bluerprints' data to reset and recompile existing bluepritns
- * NOTE This will accept old gemproj blueprint formats with "id" and return it converted to "name"
- * @param {TBlueprint[]} blueprints - array of blueprint definitions [ {name, scriptText} ]
- * @returns {TBlueprint[]} - bpDefs that all use 'name', not 'id'
- */
-function ResetAndCompileBlueprints(
-  blueprints: TBlueprint[] = STATE._getKey('bpDefs')
-): TBlueprint[] {
-  SM_Agent.ClearGlobalAgent();
-  SIMAGENTS.ClearDOBJ();
-  SIMDATA.DeleteAllScriptEvents();
-  SIMDATA.DeleteAllBlueprintBundles();
-  DCAGENTS.DeleteAllAgents();
-  DCAGENTS.DeleteAllInstances();
-  return m_CompileBlueprints(blueprints);
 }
 
 /// API ACCESSORS //////////////////////////////////////////////////////////////
@@ -429,27 +419,66 @@ STATE.addEffectHook(hook_Effect);
 
 /// UPDATERS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * Use this when reseting the simulation.
+ * Clears all ScriptEvents, Blueprints, Agents, and Instances
+ * and THEN compiles blueprints.
+ * Call with no 'bluerprints' data to reset and recompile existing bluepritns
+ * NOTE This will accept old gemproj blueprint formats with "id" and return it converted to "name"
+ * @param {TBlueprint[]} blueprints - array of blueprint definitions [ {name, scriptText} ]
+ * @returns {TBlueprint[]} - bpDefs that all use 'name', not 'id'
+ */
+function ResetAndCompileBlueprints(
+  blueprints: TBlueprint[] = STATE._getKey('bpDefs')
+): TBlueprint[] {
+  SM_Agent.ClearGlobalAgent();
+  SIMAGENTS.ClearDOBJ();
+  SIMDATA.ResetAllFeatures();
+  SIMDATA.DeleteAllScriptEvents();
+  SIMDATA.DeleteAllBlueprintBundles();
+  DCAGENTS.DeleteAllAgents();
+  DCAGENTS.DeleteAllInstances();
+  const bpDefs = m_CompileBlueprints(blueprints);
+  // Update state
+  m_UpdateAndPublishBpDefs(bpDefs);
+  m_UpdateAndPublishDerivedBpLists();
+  return bpDefs;
+}
+
 /** API: Use this to initialize the state
  *  Called by ac-project with gemproj data
  *  @param {[]} blueprints - Array of {name, scripText} from gemproj file
  */
 function SetBlueprints(projId: string, blueprints: TBlueprint[]) {
-    try {
-    // 1. Compile the blueprints
+  // DON'T COMPILE BLUEPRINTS ON LOAD!!!
+  //
+  // 1. Compile the blueprints
   //    Converts old gemproj data format -- 'id' => 'name'
-  const bpDefs = ResetAndCompileBlueprints(blueprints);
+  // const bpDefs = ResetAndCompileBlueprints(blueprints);
+  //
+  // But we still need to set bpDefs
+  // try {
+  const bpDefs = m_MigrateBpidToBpName(blueprints);
+  // and we also need to symbolize blueprints
+  bpDefs.map(({ scriptText }) => {
+    const script = TRANSPILER.TextToScript(scriptText);
+    TRANSPILER.SymbolizeBlueprint(script);
+  });
+
   // 2. Update datacore
   DCPROJECT.UpdateProjectData({ blueprints }); // note blueprints:blueprints object
 
   // 3. Update state
   m_UpdateAndPublishBpDefs(bpDefs);
   m_UpdateAndPublishDerivedBpLists();
-  } catch (caught) {
-    ERROR(`could not set ${projId} blueprints`, {
-      source: 'project-init',
-      caught
-    });
-  }
+  // } catch (caught) {
+  //  ERROR(`could not set ${projId} blueprints`, {
+  //    source: 'project-init',
+  //    caught
+  //  });
+  // }
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -470,6 +499,13 @@ function InjectBlueprint(projId: string, bpDef: TBlueprint) {
   m_CompileBlueprints([bp]);
   // NOTE: Not updating 'blueprints' state, nor writing to db
   // because this is used to insert cursors, which do not need a UI
+
+  // 2. Inform charControl of new blueprints
+  m_UpdateAndPublishDerivedBpLists();
+  const charcontrolBpidList = GetCharControlBpNames();
+  UR.RaiseMessage('NET:SET_CHARCONTROL_BPIDLIST', {
+    bpnames: charcontrolBpidList
+  });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Add new blueprint or update existing blueprint */

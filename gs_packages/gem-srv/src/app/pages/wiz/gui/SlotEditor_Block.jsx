@@ -68,6 +68,7 @@ import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
+import * as HELP from 'app/help/codex';
 import { SlotEditorSelect_Block } from './SlotEditorSelect_Block';
 import Dialog from '../../../pages/components/Dialog';
 import { GValidationToken } from '../SharedElements';
@@ -98,8 +99,6 @@ class SlotEditor_Block extends React.Component {
   }
 
   componentDidMount() {
-    // start URSYS
-    UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     SLOTCORE.SubscribeState(this.HandleSlotUpdate);
   }
 
@@ -150,6 +149,7 @@ class SlotEditor_Block extends React.Component {
       slots_save_dialog_is_open
     } = this.state;
     const selectEditorSelection = WIZCORE.SelectedTokenInfo();
+    // appending slot information to SelectedTokenInfo
     if (selectEditorSelection) {
       selectEditorSelection.sel_slotpos = sel_slotpos;
       selectEditorSelection.slots_linescript = slots_linescript;
@@ -180,9 +180,9 @@ class SlotEditor_Block extends React.Component {
       const selected = sel_slotpos === position;
       const scriptToken = slots_linescript[i];
 
-      // const { gsType, methodSig, unitText } = scriptToken || {}; // gracefully fail if not defined
-      // const { name, args: methodArgs, info } = methodSig || {}; // gracefully fail if not defined
-      help = `HELP: xxx`;
+      if (selectEditorSelection) {
+        help = HELP.ForEditorSelection(selectEditorSelection).join('. ');
+      }
 
       const t = validationTokens[i];
       if (t.error && scriptToken) {
@@ -205,7 +205,6 @@ class SlotEditor_Block extends React.Component {
         label = t.unitText || GUI_EMPTY_TEXT;
         viewState = t.viewState;
       }
-      type = t.gsType;
 
       selectedError = selected ? error : selectedError;
       selectedHelp = selected ? help : selectedHelp;
@@ -220,8 +219,9 @@ class SlotEditor_Block extends React.Component {
           tokenKey={tokenKey}
           position={position}
           selected={selected}
-          type={type}
-          label={label}
+          type={t.gsType} // over the token box
+          name={t.gsName} // added
+          label={label} // inside the token box
           error={error}
           help={help}
           viewState={viewState}

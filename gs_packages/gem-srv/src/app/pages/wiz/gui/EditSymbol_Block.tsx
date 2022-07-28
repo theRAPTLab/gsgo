@@ -15,16 +15,16 @@
 
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import * as TRANSPILER from 'script/transpiler-v2';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
+import * as HELP from 'app/help/codex';
 import { GLabelToken, GSymbolToken, StackUnit } from '../SharedElements';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('SymbolSelector');
+const PR = UR.PrefixUtil('ES_BLOCK', 'TagDebug');
 
 export const HIDDEN_SYMBOLS = [
   // keywords
@@ -53,6 +53,10 @@ export const HIDDEN_SYMBOLS = [
   'bodyheight',
   'getbodywidth',
   'getbodyheight',
+  'intersectsWith',
+  'intersectsWithBounds',
+  'intersectsCenterWithBounds',
+  'intersectsCenterWithAgentBounds',
   // agent
   'skin',
   // 'scale', // needed by physics
@@ -61,7 +65,7 @@ export const HIDDEN_SYMBOLS = [
   'statusvalue',
   'statusvaluecolor',
   'statusvalueislarge'
-];
+].map(w => w.toLowerCase());
 export const LOCKED_SYMBOLS = [
   '#',
   '_pragma',
@@ -78,7 +82,7 @@ export const LOCKED_SYMBOLS = [
   'update',
   'think',
   'exec'
-];
+].map(w => w.toLowerCase());
 export const ADVANCED_SYMBOLS = [
   // keywords
   'exprpush',
@@ -92,7 +96,15 @@ export const ADVANCED_SYMBOLS = [
   'dbgerror',
   // features
   'cursor',
+  // costume
+  'colorHSVWithinRange',
+  'initHSVColorScale',
+  'getHSVColorScaleColor',
   // agent
+  'agent',
+  'x',
+  'y',
+  'scale',
   'statustext',
   'zindex',
   'color',
@@ -100,7 +112,7 @@ export const ADVANCED_SYMBOLS = [
   'visible',
   'alpha',
   'isinert'
-];
+].map(w => w.toLowerCase());
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -120,8 +132,6 @@ export function EditSymbol_Block(props) {
     vmPageLine.lineScript.forEach(tok => {
       if (tok.identifier) SYMBOLS_IN_USE.push(tok.identifier.toLowerCase());
     });
-
-  // this is a managed TextBuffer with name "ScriptContextor"
 
   const allDicts = [];
 
@@ -155,7 +165,8 @@ export function EditSymbol_Block(props) {
           unitText: "energyLevel"
         }
     */
-    const { unitText, symbolScope, error, gsType, ...dicts } = symbolData;
+    const { unitText, symbolScope, error, gsType, gsName, ui_action, ...dicts } =
+      symbolData;
     /* `dicts` looks like this: {
           features: {Costume: {…}, Physics: {…}, AgentWidgets: {…}}
           props: {x: {…}, y: {…}, statusText: {…}, eType: {…}, energyLevel: {…}, …}
@@ -168,7 +179,9 @@ export function EditSymbol_Block(props) {
       gsType === 'number' ||
       gsType === 'string' ||
       gsType === 'boolean' ||
-      gsType === 'identifier'
+      gsType === 'identifier' ||
+      gsType === 'block' ||
+      gsType === '{...}'
     )
       return '';
 
@@ -199,6 +212,18 @@ export function EditSymbol_Block(props) {
         const rowKey = `${sel_linenum}:${i}`;
         // NEW CODE: Look up from viewData specific to the recursive context
         const vdata = vd[stype];
+        const parent = vd.sm_parent;
+        if (parent) HELP.LookupParent(parent);
+
+        // do some helpful crash detection and reporting
+        if (vdata === undefined) {
+          // troubleshooting: check symbol-utilities DecodeSymbolViewData()
+          // 1. sdata is being extracted from symbolData at top
+          // 2. if (sdata) is creating items, list in sv_data
+          console.log(...PR(`tried to load '${stype}' from viewdata:\n`, vdata));
+          return [];
+        }
+
         const { info, items } = vdata;
         // ORIG CODE: Look up from general viewData
         // const { info, items } = viewData[stype];

@@ -157,6 +157,7 @@ declare global {
     // compatibility with SM_Object
     getMethod(mName: string): TSM_FeatureMethod;
     symbolize(): TSymbolData;
+    reset(): void;
   }
   /** SM_Feature methods are either functions or TSMCPrograms */
   type TSM_FeatureMethod = (agent: IAgent, ...any: any[]) => any;
@@ -218,6 +219,7 @@ declare global {
   type TSAgent = `${'blueprint'}` | `${'feature'}` | `${'bdlOut'}` | `${'tag'}`;
   type TSMultiArg = `${'{...}'}`; // multiple arg token marker
   type TSList = `${'{list}'}`; // future
+  type TSNonCode = `${'{noncode}'}`;
   type TSUnknown = `${'{?}'}`; // unknown 'vague' type for validation
   type TGSType =
     | TSLit
@@ -229,10 +231,12 @@ declare global {
     | TSAgent
     | TSMultiArg
     | TSList
-    | TSUnknown;
+    | TSUnknown
+    | TSNonCode;
   type TSEnum = { enum: string[] }; // special format for enum args (future)
   type TGSArg = `${string}:${TGSType}` | TSEnum;
   type TGSMethodSig = {
+    parent?: string; // featureName, propName
     name?: string;
     args?: TGSArg[];
     returns?: TGSArg;
@@ -271,6 +275,9 @@ declare global {
     error?: TSymbolError; // debugging if error
     unitText?: string; // the scriptText word associated with symbol
     symbolScope?: Array<keyof TSymbolData>; // 'relevant' scope to iterate by gui
+    ui_action?: [command: TValidationActionCodes, ...params: any[]];
+    sm_parent?: string; // path to parent sm-object definitions
+    gsName?: string; // the 'parameter name/hint' of this token
     gsType?: TGSType; // the gemscript meaning of this token
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -293,8 +300,11 @@ declare global {
   /** Validation Tokens are a wrapper for TSymbolData, and the VSDToken
    *  constructor accepts this subset of TSymbolData propers */
   type TSymbolMeta = {
-    gsType: TGSType;
+    gsArg: TGSArg;
     symbolScope?: Array<keyof TSymbolData>; // which symbol dicts apply to gui display
+    sm_parent?: string; // dotted string path of parent sm object
+    ui_action?: [command: TValidationActionCodes, ...params: any[]];
+    act_args?: any[]; // oh so hacky
     unitText?: string;
     err_code?: TValidationErrorCodes;
     err_info?: string;
@@ -322,6 +332,10 @@ declare global {
     code: TValidationErrorCodes;
     info: string;
   };
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** when a vtoken indicates that some action is required to validate,
+   *  the uiAction code is set */
+  type TValidationActionCodes = 'ensureBlock';
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** describes the type of error that occurred during parsing so it can be
    *  rendered in the GUI */

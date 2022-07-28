@@ -47,36 +47,33 @@ function CurrentAssetUrl(): string {
 /** API: return array of string project ids (.gemprj files) using the
  *  current PROJECTS asset loader instance. Filters by label string, so
  *  useful for narrowing down the list of matches according to the displayed
- *  label
- */
+ *  label */
 function GetProjectList(filterString?: string): TProjectList[] {
   return PROJECT_DATA.getProjectList(filterString);
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return { id, metadata, blueprints, instances, rounds, label }
- *  for the given project id (.gemprj files)
- */
+ *  for the given project id (.gemprj files) */
 function GetProject(prjId: string): TProject {
   CUR_PRJID = prjId;
   CUR_PRJ = PROJECT_DATA.getProject(prjId);
   return CUR_PRJ;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return the blueprint object { id, label, scriptText } for the
- *  given projectId and blueprintId
- */
+ *  given projectId and blueprintId */
 function GetProjectBlueprint(prjId: string, bpName: string): TBlueprint {
   CUR_PRJID = prjId;
   CUR_BPNAME = bpName;
   CUR_BP = PROJECT_DATA.getProjectBlueprint(prjId, bpName);
   return CUR_BP;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return the current project information */
 function CurrentProject() {
   return CUR_PRJ;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return the current project information */
 function CurrentBlueprint(): TBlueprint {
   const prj = CurrentProject();
@@ -92,6 +89,16 @@ UR.AddConsoleTool('projects', () => {
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { LoadAssetDirectory, CurrentAssetUrl };
-export { GetProjectList, GetProject, GetProjectBlueprint };
-export { CurrentProject, CurrentBlueprint };
+export {
+  LoadAssetDirectory, //
+  CurrentAssetUrl
+};
+export {
+  GetProjectList, //
+  GetProject,
+  GetProjectBlueprint
+};
+export {
+  CurrentProject, //
+  CurrentBlueprint
+};
