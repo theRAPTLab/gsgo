@@ -18,7 +18,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { Evaluate } from 'lib/expr-evaluator';
+import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
 import SymbolInterpreter from 'script/tools/class-symbol-interpreter';
 import * as BUNDLER from 'script/tools/script-bundler';
 import VSDToken from 'script/tools/class-validation-token';

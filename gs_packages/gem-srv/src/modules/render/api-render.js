@@ -14,6 +14,7 @@ import Visual, {
 import SyncMap from 'lib/class-syncmap';
 import { SetModelRP, SetTrackerRP, SetAnnotRP } from 'modules/datacore/dc-render';
 import FLAGS from 'modules/flags';
+import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -332,13 +333,24 @@ function ReportMemory(frametime) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let renderFrames = 0;
+let ABORT_RENDER = false;
 function Render() {
-  if (!RP_DOBJ_TO_VOBJ) return;
-  RP_DOBJ_TO_VOBJ.mapObjects();
-  // RP_PTRAK_TO_VOBJ.mapObjects(); // in api-input right now
-  // RP_PTRAK_TO_VOBJ.mapObjects();
-  const synced = RP_DOBJ_TO_VOBJ.getMappedObjects();
-  // HCON.plot(`renderer synced ${synced.length} DOBJS to Sprites`, 2);
+  if (ABORT_RENDER) return;
+  try {
+    if (!RP_DOBJ_TO_VOBJ) return;
+    RP_DOBJ_TO_VOBJ.mapObjects();
+    // RP_PTRAK_TO_VOBJ.mapObjects(); // in api-input right now
+    // RP_PTRAK_TO_VOBJ.mapObjects();
+    const synced = RP_DOBJ_TO_VOBJ.getMappedObjects();
+    // HCON.plot(`renderer synced ${synced.length} DOBJS to Sprites`, 2);
+  } catch (caught) {
+    ABORT_RENDER = true;
+    ERROR(`render system error...aborting frame updates`, {
+      source: 'renderer',
+      where: 'api-render.Render',
+      caught
+    });
+  }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

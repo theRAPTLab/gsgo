@@ -11,6 +11,7 @@
 import GScriptTokenizer, {
   UnpackToken
 } from 'script/tools/class-gscript-tokenizer-v2';
+import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,8 +47,19 @@ function StatementToText(statement: TScriptUnit, indent: number = 0): string {
 function TextToScript(text: string = ''): TScriptUnit[] {
   // this will throw an error string of '{err} @row:col'
   if (typeof text !== 'string') return [];
+  // try {
   const script = STRTOK.tokenize(text.trim());
   return script;
+  // } catch (caught) {
+  //   ERROR(`could not convert text to script`, {
+  //     source: 'tokenizer',
+  //     data: {
+  //       text
+  //     },
+  //     where: 'script-tokenizer.TextToScript',
+  //     caught
+  //   });
+  // }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: given a string, convert to statemment. Should not be any linefeeds

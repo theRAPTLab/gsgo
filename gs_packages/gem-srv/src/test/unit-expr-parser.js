@@ -7,9 +7,9 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import ExpressionParser from 'lib/class-expr-parser';
+import ExpressionParser from 'script/class-expr-parser-v2';
 import parse from 'jsep';
-import { Evaluate } from 'lib/expr-evaluator';
+import { Evaluate } from 'script/class-expr-evaluator-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
