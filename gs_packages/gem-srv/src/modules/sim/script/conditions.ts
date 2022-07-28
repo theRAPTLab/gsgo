@@ -12,9 +12,9 @@
 
 import RNG from 'modules/sim/sequencer';
 import { GetAgentsByType } from 'modules/datacore';
-import { ParseExpression } from 'lib/expr-parser';
+import { ParseExpression } from 'script/tools/class-expr-parser-v2';
 // uses types defined in t-script.d
-import { Evaluate } from 'lib/expr-evaluator';
+import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
 import ERROR from 'modules/error-mgr';
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
