@@ -489,11 +489,11 @@ class SymbolInterpreter {
     // and catch any thrown errors
     let gotError: string;
     let ast;
-    try {
-      ast = TOKENIZER.ParseExpression(exprString);
-    } catch (caught) {
-      gotError = caught.toString();
-    }
+    // try {
+    ast = TOKENIZER.ParseExpression(exprString);
+    // } catch (caught) {
+    //   gotError = caught.toString();
+    // }
     // if any errors got thrown, expression didn't validate
     if (gotError)
       return this.badToken(token, symbols, {

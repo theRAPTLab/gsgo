@@ -32,6 +32,7 @@ import {
   UnpackSymbolType
 } from 'script/tools/symbol-utilities';
 import { GetTextBuffer } from 'lib/class-textbuffer';
+import ERROR from 'modules/error-mgr';
 
 // load state
 const { StateMgr } = UR.class;
@@ -137,7 +138,7 @@ STORE._interceptState(state => {
   // (SlotEditor_Block call to ac-editmgr.SaveSlotLineScript)
   // if script_tokens is changing, we also want to emit new script_text
   if (script_tokens && !script_text) {
-  // try {
+    // try {
     state.script_tokens = TRANSPILER.EnforceBlueprintPragmas(script_tokens);
     // also symbolize blueprints -- eg after adding a feature, need to re-symbolize to make feature available
     state.cur_bdl = TRANSPILER.SymbolizeBlueprint(script_tokens);
@@ -163,15 +164,15 @@ STORE._interceptState(state => {
     state.script_page_needs_saving = true;
     state.key_to_token = tokMap;
     state.program_map = programMap;
-    // } catch(caught) {
-    //  ERROR(`error occurred during script-tokens intercept`, {
-    //    source: 'appstate',
-    //    data: {
-    //      script_tokens
-    //    },
-    //    where: 'ac-wizcore._interceptState script_tokens',
-    //    caught
-    //  });
+    // } catch (caught) {
+    //   ERROR(`error occurred during script-tokens intercept`, {
+    //     source: 'appstate',
+    //     data: {
+    //       script_tokens
+    //     },
+    //     where: 'ac-wizcore._interceptState script_tokens',
+    //     caught
+    //   });
     // }
   }
 });

@@ -210,14 +210,14 @@ addEffectHook(hook_Effect);
  *  Will not call DCPROJECT.ProjectFileRequestWrite.
  */
 function SetInstances(projId, instances) {
-  try {
-    updateAndPublish(instances);
-  } catch (caught) {
-    ERROR(`could not publish ${projId} instances`, {
-      source: 'project-init',
-      caught
-    });
-  }
+  // try {
+  updateAndPublish(instances);
+  // } catch (caught) {
+  //   ERROR(`could not publish ${projId} instances`, {
+  //     source: 'project-init',
+  //     caught
+  //   });
+  // }
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

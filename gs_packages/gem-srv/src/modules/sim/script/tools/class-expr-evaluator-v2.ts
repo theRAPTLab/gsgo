@@ -134,20 +134,20 @@ class ExpressionEvaluator {
 const exprEval = new ExpressionEvaluator();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Evaluate(exprAst, context) {
-  try {
-    return exprEval.evaluate(exprAst, context);
-  } catch (caught) {
-    const globalObjs = Object.keys(context).join(',');
-    const err = `${caught.toString()} w/globals:{${globalObjs}}`;
-    if (DBG)
-      console.warn(
-        `%cEXPR EVALUATE ${err}`,
-        'color:black;background-color:rgba(0,0,0,0.2);padding:1em',
-        context
-      );
-    // eslint-disable-next-line @typescript-eslint/no-throw-literal
-    throw err;
-  }
+  // try {
+  return exprEval.evaluate(exprAst, context);
+  // } catch (caught) {
+  //   const globalObjs = Object.keys(context).join(',');
+  //   const err = `${caught.toString()} w/globals:{${globalObjs}}`;
+  //   if (DBG)
+  //     console.warn(
+  //       `%cEXPR EVALUATE ${err}`,
+  //       'color:black;background-color:rgba(0,0,0,0.2);padding:1em',
+  //       context
+  //     );
+  //   // eslint-disable-next-line @typescript-eslint/no-throw-literal
+  //   throw err;
+  // }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

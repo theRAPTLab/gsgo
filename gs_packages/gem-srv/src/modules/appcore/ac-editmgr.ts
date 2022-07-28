@@ -149,19 +149,19 @@ function m_AddSlotsValidation(newSlotState) {
   BUNDLER.AddSymbols(newSymbols);
   BUNDLER.CloseBundle();
 
- try {
+  //  try {
   // Set slots_validation
   newSlotState.slots_validation = TRANSPILER.ValidateStatement(slots_linescript, {
     bundle: slots_bundle,
     globals: globalRefs
   }); // modify by reference
-   } catch (caught) {
-      ERROR(`could not validate slots_linescript`, {
-        source: 'validator',
-        where: 'ac-editmgr.handleSlotUpdate',
-        caught
-      });
-    }
+  //  } catch (caught) {
+  //     ERROR(`could not validate slots_linescript`, {
+  //       source: 'validator',
+  //       where: 'ac-editmgr.handleSlotUpdate',
+  //       caught
+  //     });
+  //   }
 }
 /** sel_linenum or sel_linepos has changed, so select a new slot */
 function SelectSlot(sel_linenum, sel_linepos) {

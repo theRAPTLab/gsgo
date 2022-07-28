@@ -185,16 +185,16 @@ function Wraps(wall = 'any') {
  */
 function SetMetadata(projId, metadata) {
   if (DBG) console.log(...PR('ac-metadata setting metadata to', metadata));
-  try {
-    // Update datacore
-    DCPROJECT.UpdateProjectData({ metadata });
-    updateAndPublish(metadata);
-  } catch (caught) {
-    ERROR(`could not set ${projId} metadata`, {
-      source: 'project-init',
-      caught
-    });
-  }
+  // try {
+  // Update datacore
+  DCPROJECT.UpdateProjectData({ metadata });
+  updateAndPublish(metadata);
+  // } catch (caught) {
+  //   ERROR(`could not set ${projId} metadata`, {
+  //     source: 'project-init',
+  //     caught
+  //   });
+  // }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

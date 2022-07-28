@@ -139,34 +139,34 @@ function m_MigrateBpidToBpName(bpDefs: TBlueprint[]): TBlueprint[] {
  *  @returns {TBlueprint[]} - bpDefs that all use 'name', not 'id'
  */
 function m_CompileBlueprints(bpDefs: TBlueprint[]): TBlueprint[] {
-  try {
-    if (DBG_SC) console.warn('%cAC Compiling Blueprints', 'font-weight:bold');
+  // try {
+  if (DBG_SC) console.warn('%cAC Compiling Blueprints', 'font-weight:bold');
 
-    const scripts = bpDefs.map(({ scriptText }) => {
-      const script = TRANSPILER.TextToScript(scriptText);
-      const bundle = TRANSPILER.SymbolizeBlueprint(script);
-      bundle.saveText(scriptText);
-      return script;
-    });
+  const scripts = bpDefs.map(({ scriptText }) => {
+    const script = TRANSPILER.TextToScript(scriptText);
+    const bundle = TRANSPILER.SymbolizeBlueprint(script);
+    bundle.saveText(scriptText);
+    return script;
+  });
 
-    return scripts.map(script => {
-      const bundle = TRANSPILER.CompileBlueprint(script);
-      TRANSPILER.RegisterBlueprint(bundle); // Save to datacore
-      return {
-        name: bundle.name,
-        scriptText: bundle.text || 'error - m_CompileBlueprint no text'
-      };
-    });
-  } catch (caught) {
-    ERROR(`fail to compile blueprint def`, {
-      source: 'compiler',
-      data: {
-        bpDefs
-      },
-      where: 'ac-blueprints.m_CompileBlueprint',
-      caught
-    });
-  }
+  return scripts.map(script => {
+    const bundle = TRANSPILER.CompileBlueprint(script);
+    TRANSPILER.RegisterBlueprint(bundle); // Save to datacore
+    return {
+      name: bundle.name,
+      scriptText: bundle.text || 'error - m_CompileBlueprint no text'
+    };
+  });
+  // } catch (caught) {
+  //   ERROR(`fail to compile blueprint def`, {
+  //     source: 'compiler',
+  //     data: {
+  //       bpDefs
+  //     },
+  //     where: 'ac-blueprints.m_CompileBlueprint',
+  //     caught
+  //   });
+  // }
 }
 
 /// API ACCESSORS //////////////////////////////////////////////////////////////

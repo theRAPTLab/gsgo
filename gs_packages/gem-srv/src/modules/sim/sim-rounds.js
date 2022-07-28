@@ -86,7 +86,8 @@ function RoundsReset() {
 /** at api-sim NextRound(), update timers accordingly and load the next
  *  round's set of data and scripts */
 function RoundInit(SIMSTATUS) {
-  try {  RSIMSTATUS = SIMSTATUS;
+  // try {
+  RSIMSTATUS = SIMSTATUS;
   console.log(...PR('RoundInit!'));
   ROUNDS_INDEX++;
   ROUNDS_COUNTER++;
@@ -102,19 +103,19 @@ function RoundInit(SIMSTATUS) {
     }
     m_RunScript(round.initScript);
   }
-  } catch (caught) {
-    ERROR(`could not run round init script`, {
-      source: 'runtime',
-      data: {
-        round,
-        RSIMSTATUS,
-        ROUNDS_INDEX,
-        ROUNDS_COUNTER
-      },
-      where: 'sim-rounds.RoundInit',
-      caught
-    });
-  }
+  // } catch (caught) {
+  //   ERROR(`could not run round init script`, {
+  //     source: 'runtime',
+  //     data: {
+  //       round,
+  //       RSIMSTATUS,
+  //       ROUNDS_INDEX,
+  //       ROUNDS_COUNTER
+  //     },
+  //     where: 'sim-rounds.RoundInit',
+  //     caught
+  //   });
+  // }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** at api-sim start, start timing */
@@ -124,7 +125,7 @@ function RoundStart(stopfn) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** at api-sim stop, stop counting and do some stuff */
 function RoundStop() {
-  try {
+  // try {
   console.log(...PR('RoundStop!'));
   m_StopRoundTimer();
   const round = ACRounds.GetRoundDef(ROUNDS_INDEX);
@@ -136,33 +137,33 @@ function RoundStop() {
     m_RunScript(round.endScript);
   }
 
-    // Prep for Next Round
+  // Prep for Next Round
 
-    // If there are more rounds, not complete
-    if (ROUNDS_INDEX + 1 < ACRounds.GetRoundCount()) return false;
+  // If there are more rounds, not complete
+  if (ROUNDS_INDEX + 1 < ACRounds.GetRoundCount()) return false;
 
-    // If rounds loop, not complete
-    // (Rounds loop by default if 'noloop' is not defined or set to true)
-    if (ACRounds.RoundsShouldLoop()) {
-      ROUNDS_INDEX = -1;
-      return false;
-    }
-
-    // No more rounds
-    return true;
-  } catch (caught) {
-    ERROR(`could not run round stop script`, {
-      source: 'runtime',
-      data: {
-        round,
-        RSIMSTATUS,
-        ROUNDS_INDEX,
-        ROUNDS_COUNTER
-      },
-      where: 'sim-rounds.Roundstop',
-      caught
-    });
+  // If rounds loop, not complete
+  // (Rounds loop by default if 'noloop' is not defined or set to true)
+  if (ACRounds.RoundsShouldLoop()) {
+    ROUNDS_INDEX = -1;
+    return false;
   }
+
+  // No more rounds
+  return true;
+  // } catch (caught) {
+  //   ERROR(`could not run round stop script`, {
+  //     source: 'runtime',
+  //     data: {
+  //       round,
+  //       RSIMSTATUS,
+  //       ROUNDS_INDEX,
+  //       ROUNDS_COUNTER
+  //     },
+  //     where: 'sim-rounds.Roundstop',
+  //     caught
+  //   });
+  // }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

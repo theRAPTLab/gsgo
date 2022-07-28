@@ -70,24 +70,24 @@ function CompileText(text: string, refs: TSymbolRefs): TSMCProgram {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Given a lineScript in text form and a bundle with symbols, validate it */
 function ValidateLineText(line: string, bdl: SM_Bundle): TValidatedScriptUnit {
-  try {
-    const [lineScript] = TOKENIZER.TextToScript(line);
-    const vtoks = COMPILER.ValidateStatement(lineScript, {
-      bundle: bdl,
-      globals: {}
-    });
-    return vtoks;
-  } catch (caught) {
-    ERROR(`could not validate text string`, {
-      source: 'validator',
-      data: {
-        line,
-        bundle: bdl
-      },
-      where: 'transpiler.ValidateLineText',
-      caught
-    });
-  }
+  // try {
+  const [lineScript] = TOKENIZER.TextToScript(line);
+  const vtoks = COMPILER.ValidateStatement(lineScript, {
+    bundle: bdl,
+    globals: {}
+  });
+  return vtoks;
+  // } catch (caught) {
+  //   ERROR(`could not validate text string`, {
+  //     source: 'validator',
+  //     data: {
+  //       line,
+  //       bundle: bdl
+  //     },
+  //     where: 'transpiler.ValidateLineText',
+  //     caught
+  //   });
+  // }
 }
 
 /// SCRIPT UTILITIES //////////////////////////////////////////////////////////

@@ -146,15 +146,15 @@ function RoundsShouldLoop() {
 /// UPDATERS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SetRounds(projId, rounds = []) {
-  try {
-    DCPROJECT.UpdateProjectData({ rounds });
-    updateAndPublish(rounds);
-  } catch (caught) {
-    ERROR(`could not set ${projId} rounds data`, {
-      source: 'project-init',
-      caught
-    });
-  }
+  // try {
+  DCPROJECT.UpdateProjectData({ rounds });
+  updateAndPublish(rounds);
+  // } catch (caught) {
+  //   ERROR(`could not set ${projId} rounds data`, {
+  //     source: 'project-init',
+  //     caught
+  //   });
+  // }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

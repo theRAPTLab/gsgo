@@ -97,27 +97,27 @@ function DecodeStatement(
   statement: TScriptUnit,
   refs: TSymbolRefs
 ): TKWArguments {
-  try {
-    const dUnit: TScriptUnit = statement.map((tok, line) => {
-      if (line === 0) {
-        const arg = DecodeToken(tok, refs);
-        if (typeof arg === 'object' && arg.comment) return '_comment';
-        return arg;
-      }
-      return DecodeToken(tok, refs);
-    });
-    return dUnit;
-  } catch (caught) {
-    ERROR(`could not decode statement`, {
-      source: 'decoder',
-      data: {
-        statement,
-        refs
-      },
-      where: 'script-compiler.DecodeStatement',
-      caught
-    });
-  }
+  // try {
+  const dUnit: TScriptUnit = statement.map((tok, line) => {
+    if (line === 0) {
+      const arg = DecodeToken(tok, refs);
+      if (typeof arg === 'object' && arg.comment) return '_comment';
+      return arg;
+    }
+    return DecodeToken(tok, refs);
+  });
+  return dUnit;
+  // } catch (caught) {
+  //   ERROR(`could not decode statement`, {
+  //     source: 'decoder',
+  //     data: {
+  //       statement,
+  //       refs
+  //     },
+  //     where: 'script-compiler.DecodeStatement',
+  //     caught
+  //   });
+  // }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: given an array of scriptunits, scan the top-level statements for _pragma
