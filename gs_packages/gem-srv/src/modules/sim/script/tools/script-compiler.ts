@@ -30,6 +30,7 @@ import UR from '@gemstep/ursys/client';
 // uses types in t-script.d
 import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 import SM_Bundle from 'lib/class-sm-bundle';
+import ERROR from 'modules/error-mgr';
 
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as BUNDLER from 'script/tools/script-bundler';
@@ -37,7 +38,7 @@ import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import SM_Agent from 'lib/class-sm-agent';
 import VSDToken from 'script/tools/class-validation-token';
 import { ParseExpression } from './class-expr-parser-v2';
-import { Evaluate } from 'lib/expr-evaluator';
+import { Evaluate } from './class-expr-evaluator-v2';
 import { DEBUG_FLAGS } from 'config/dev-settings';
 const { SYMBOLIZE_CALLS: DBG_SC } = DEBUG_FLAGS;
 
@@ -96,6 +97,7 @@ function DecodeStatement(
   statement: TScriptUnit,
   refs: TSymbolRefs
 ): TKWArguments {
+  // try {
   const dUnit: TScriptUnit = statement.map((tok, line) => {
     if (line === 0) {
       const arg = DecodeToken(tok, refs);
@@ -105,6 +107,17 @@ function DecodeStatement(
     return DecodeToken(tok, refs);
   });
   return dUnit;
+  // } catch (caught) {
+  //   ERROR(`could not decode statement`, {
+  //     source: 'decoder',
+  //     data: {
+  //       statement,
+  //       refs
+  //     },
+  //     where: 'script-compiler.DecodeStatement',
+  //     caught
+  //   });
+  // }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: given an array of scriptunits, scan the top-level statements for _pragma

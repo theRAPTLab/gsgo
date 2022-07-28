@@ -214,6 +214,7 @@ SIMDATA.RegisterWhenTest('seesCamouflaged', (a, b) => {
 function m_ProcessInteractions() {
   GLOBAL_INTERACTIONS = [...SIMCOND.GetAllInteractions()]; // [ [k,v], [k,v] ]
   GLOBAL_INTERACTIONS.forEach(entry => {
+    // try {
     const { singleTestArgs, pairTestArgs } = entry;
     if (singleTestArgs !== undefined) {
       // SINGLE AGENT TEST FILTER
@@ -228,6 +229,16 @@ function m_ProcessInteractions() {
     } else {
       throw Error('malformed global_interaction entry');
     }
+    // } catch (caught) {
+    //   ERROR(`could not dispatch global interaction`, {
+    //     source: 'runtime',
+    //     data: {
+    //       pairTestArgs
+    //     },
+    //     where: 'sim-conditions.Update GLOBAL_INTERACTIONS',
+    //     caught
+    //   });
+    // }
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -239,6 +250,7 @@ function m_ProcessEventQueue() {
     /// these are all the handlers for all the registered blueprint types
     /// that are TOPcode[]. However, we need to get the context of each
     /// blueprint and run them per-agent
+    // try {
     const handlers = SIMDATA.GetHandlersForScriptEvent(event.type);
     handlers.forEach(h => {
       const { agentType, handler } = h;
@@ -248,6 +260,17 @@ function m_ProcessEventQueue() {
         agent.exec(handler, ctx);
       });
     });
+    // } catch (caught) {
+    //   ERROR(`could not dispatch agent event`, {
+    //     source: 'runtime',
+    //     data: {
+    //       event,
+    //       idx
+    //     },
+    //     where: 'sim-conditions.Update EVENT_QUEUE',
+    //     caught
+    //   });
+    // }
   });
   EVENT_QUEUE = [];
 }

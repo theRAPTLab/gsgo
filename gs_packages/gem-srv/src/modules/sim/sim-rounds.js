@@ -10,6 +10,7 @@ import * as ACRounds from 'modules/appcore/ac-rounds';
 import { SM_Number } from 'modules/sim/script/vars/_all_vars';
 import SM_Agent from 'lib/class-sm-agent';
 import * as TRANSPILER from './script/transpiler-v2';
+import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -85,6 +86,7 @@ function RoundsReset() {
 /** at api-sim NextRound(), update timers accordingly and load the next
  *  round's set of data and scripts */
 function RoundInit(SIMSTATUS) {
+  // try {
   RSIMSTATUS = SIMSTATUS;
   console.log(...PR('RoundInit!'));
   ROUNDS_INDEX++;
@@ -101,6 +103,19 @@ function RoundInit(SIMSTATUS) {
     }
     m_RunScript(round.initScript);
   }
+  // } catch (caught) {
+  //   ERROR(`could not run round init script`, {
+  //     source: 'runtime',
+  //     data: {
+  //       round,
+  //       RSIMSTATUS,
+  //       ROUNDS_INDEX,
+  //       ROUNDS_COUNTER
+  //     },
+  //     where: 'sim-rounds.RoundInit',
+  //     caught
+  //   });
+  // }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** at api-sim start, start timing */
@@ -110,6 +125,7 @@ function RoundStart(stopfn) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** at api-sim stop, stop counting and do some stuff */
 function RoundStop() {
+  // try {
   console.log(...PR('RoundStop!'));
   m_StopRoundTimer();
   const round = ACRounds.GetRoundDef(ROUNDS_INDEX);
@@ -135,6 +151,19 @@ function RoundStop() {
 
   // No more rounds
   return true;
+  // } catch (caught) {
+  //   ERROR(`could not run round stop script`, {
+  //     source: 'runtime',
+  //     data: {
+  //       round,
+  //       RSIMSTATUS,
+  //       ROUNDS_INDEX,
+  //       ROUNDS_COUNTER
+  //     },
+  //     where: 'sim-rounds.Roundstop',
+  //     caught
+  //   });
+  // }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

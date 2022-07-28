@@ -7,6 +7,7 @@
 
 import UR from '@gemstep/ursys/client';
 import * as DCPROJECT from 'modules/datacore/dc-project';
+import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -209,7 +210,14 @@ addEffectHook(hook_Effect);
  *  Will not call DCPROJECT.ProjectFileRequestWrite.
  */
 function SetInstances(projId, instances) {
+  // try {
   updateAndPublish(instances);
+  // } catch (caught) {
+  //   ERROR(`could not publish ${projId} instances`, {
+  //     source: 'project-init',
+  //     caught
+  //   });
+  // }
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -120,6 +120,9 @@
 .gwiz.numberType {
   color: blue;
 }
+.gwiz.booleanType {
+  color: blue;
+}
 .gwiz.stringType {
   color: blue;
 }

@@ -2,6 +2,7 @@
 
   URSYS CLIENT-SIDE LOGGER
   capture logged categories for later review
+  for network logging, see index-client
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -16,15 +17,15 @@ const DBG = false;
 const PR = PROMPTS.makeStyleFormatter('LOGGER');
 const MISSING = [];
 
-/// LOG ERRORS ////////////////////////////////////////////////////////////////
+/// LOG ASSET ERRORS //////////////////////////////////////////////////////////
+/** API: used by asset manager if it's unable to load an asset */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function MissingAsset(str) {
   const mStatusString = PhaseMachine.GetMachineStates();
   MISSING.push(`'${str}' during ${mStatusString}`);
 }
-
-/// PRINT ERRORS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** console debug utility to list missing assets */
 if (DBG)
   addConsoleTool({
     'dump_missing_assets': () => {

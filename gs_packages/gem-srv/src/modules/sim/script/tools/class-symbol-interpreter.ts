@@ -22,7 +22,7 @@ import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as TOKENIZER from 'script/tools/script-tokenizer';
 import * as HELP from 'app/help/codex';
 import VSDToken from 'script/tools/class-validation-token';
-import { GetFeatureSymbols } from 'modules/datacore/dc-sim-data';
+import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -172,7 +172,6 @@ class SymbolInterpreter {
     { gsArg, err_info }: TSymbolMeta
   ) {
     const fn = 'badToken:';
-    const [type, value] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     // inspect in case of lazy use
     let err_code: TValidationErrorCodes;
@@ -182,13 +181,14 @@ class SymbolInterpreter {
     } else {
       err_code = 'invalid';
     }
-    gsArg = gsArg || ':{?}';
+    gsArg = gsArg || '??:{?}';
     symbols = symbols || {};
     // return
     this.scan_error = true;
     return new VSDToken(symbols, {
       gsArg,
       unitText,
+      sm_parent: this.sm_parent,
       err_code,
       err_info
     });
@@ -201,7 +201,7 @@ class SymbolInterpreter {
     { gsArg, symbolScope }: TSymbolMeta
   ): VSDToken {
     const unitText = TOKENIZER.TokenToString(token);
-    gsArg = gsArg || ':{?}';
+    gsArg = gsArg || '??:{?}';
     symbols = symbols || {};
     // return
     return new VSDToken(symbols, {
@@ -297,22 +297,19 @@ class SymbolInterpreter {
     // encoded as { comment:'text' }
     if (type === 'comment')
       return this.goodToken(token, symbols, {
-        gsArg: 'comment:{noncode}',
-        unitText
+        gsArg: 'comment:{noncode}'
       });
 
     // encoded as { line:'' }
     if (type === 'line')
       return this.goodToken(token, symbols, {
-        gsArg: 'blank line:{noncode}',
-        unitText
+        gsArg: 'blank line:{noncode}'
       });
 
     // encoded as { directive: '#' }
     if (type === 'directive')
       return this.goodToken(token, symbols, {
-        gsArg: 'directive:pragma',
-        unitText
+        gsArg: 'directive:pragma'
       });
 
     // default gsarg type
@@ -335,7 +332,7 @@ class SymbolInterpreter {
         err_info: 'no keyword token'
       });
     }
-    return this.goodToken(token, symbols, { gsArg, unitText });
+    return this.goodToken(token, symbols, { gsArg });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** allow any valid blueprint in the system */
@@ -492,11 +489,11 @@ class SymbolInterpreter {
     // and catch any thrown errors
     let gotError: string;
     let ast;
-    try {
-      ast = TOKENIZER.ParseExpression(exprString);
-    } catch (err) {
-      gotError = err.toString();
-    }
+    // try {
+    ast = TOKENIZER.ParseExpression(exprString);
+    // } catch (caught) {
+    //   gotError = caught.toString();
+    // }
     // if any errors got thrown, expression didn't validate
     if (gotError)
       return this.badToken(token, symbols, {
@@ -672,8 +669,8 @@ class SymbolInterpreter {
           }),
           this.vagueError(arg2)
         ];
-      const tag = SIMDATA.IsBundleTagName(tagName);
-      if (tag === undefined)
+      let goodTagName = SIMDATA.IsBundleTagName(tagName);
+      if (goodTagName === undefined)
         return [
           this.badToken(arg1, symbols, {
             gsArg,
@@ -682,7 +679,9 @@ class SymbolInterpreter {
           this.vagueError(arg2)
         ];
       // valid tag
-      if (valueType !== 'value' || typeof value !== 'boolean')
+      let tag = tags[tagName];
+      const [argHint, argType] = CHECK.UnpackArg(tag);
+      if (argType !== 'boolean')
         return [
           this.goodToken(arg1, symbols, { gsArg }),
           this.badToken(
@@ -1001,7 +1000,7 @@ class SymbolInterpreter {
     //   return this.goodToken(token, { features: {} }, { gsArg });
     // }
 
-    const allFeatureSymbols = GetFeatureSymbols();
+    const allFeatureSymbols = SIMDATA.GetFeatureSymbols();
     const featuresList = [...Object.keys(allFeatureSymbols)];
     let [matchType, featureName] = TOKENIZER.UnpackToken(token);
     const unitText = Array.isArray(featureName)

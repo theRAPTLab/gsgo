@@ -24,12 +24,11 @@
 
 import UR from '@gemstep/ursys/client';
 import AssetLoader from './class-asset-loader';
-// import { TAssetDef, TAssetType } from '../../lib/t-assets';
+import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AS-PROJECT');
-const DBG = false;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -132,11 +131,10 @@ class ProjectLoader extends AssetLoader {
     const projassets = [...this._assetDict.values()];
     const projasset = projassets.find(a => {
       if (!a.rsrc) {
-        console.error(
-          ...PR(
-            `getProjectByProjId for project '${projId}' could not find a valid 'rsrc' entry -- review gemproj file or promiseLoadAssets`
-          )
-        );
+        ERROR(`could not load resources for ${projId}`, {
+          source: 'assets',
+          data: { a }
+        });
         return undefined;
       }
       return a.rsrc.id === projId;
