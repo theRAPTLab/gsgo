@@ -76,10 +76,11 @@ function LogLine(...args) {
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 let LOG = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Handle incoming log events
- */
+/** API: Handle incoming log events, output them as delimited fields
+ *  as defined in server-logger (current it is set to tabs so it copy/pastes
+ *  easily into Excel */
 LOG.PKT_LogEvent = pkt => {
-  let { event, items } = pkt.Data();
+  let { event, items } = pkt.getData();
   if (DBG) console.log(TOUT, pkt.getInfo(), event, ...items);
   LogLine(pkt.getInfo(), event || '-', ...items);
   return { OK: true };

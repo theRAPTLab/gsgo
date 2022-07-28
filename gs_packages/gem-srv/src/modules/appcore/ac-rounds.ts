@@ -7,6 +7,7 @@
 
 import UR from '@gemstep/ursys/client';
 import * as DCPROJECT from 'modules/datacore/dc-project';
+import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -145,8 +146,15 @@ function RoundsShouldLoop() {
 /// UPDATERS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SetRounds(projId, rounds = []) {
+  // try {
   DCPROJECT.UpdateProjectData({ rounds });
   updateAndPublish(rounds);
+  // } catch (caught) {
+  //   ERROR(`could not set ${projId} rounds data`, {
+  //     source: 'project-init',
+  //     caught
+  //   });
+  // }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

@@ -53,7 +53,7 @@ let mu_wss; // websocket server
 /// MESSAGE BROKER STARTUP API ////////////////////////////////////////////////
 /** stop network */
 async function StopNetwork() {
-  m_StopSocketServer();
+  void m_StopSocketServer();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Initializes the web socket server using the options passed-in
@@ -157,14 +157,14 @@ function ConnectAck(socket) {
  * @param {Object} socket messaging socket
  * @param {string} json text-encoded NetPacket
  */
-function ProcessMessage(socket, json) {
+async function ProcessMessage(socket, json) {
   let pkt = new NetPacket(json);
   // figure out what to do
   switch (pkt.getType()) {
     case 'msig':
     case 'msend':
     case 'mcall':
-      m_RouteMessage(socket, pkt);
+      await m_RouteMessage(socket, pkt);
       break;
     case 'state':
       // m_HandleState(socket, pkt);

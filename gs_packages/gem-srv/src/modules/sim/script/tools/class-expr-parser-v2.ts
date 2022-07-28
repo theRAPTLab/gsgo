@@ -1,6 +1,3 @@
-/* eslint-disable func-names */
-/* eslint-disable no-prototype-builtins */
-/* eslint-disable no-cond-assign */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   This code is ported from jsep and adapted to produce our desired output
@@ -10,10 +7,8 @@
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-const string = 'class-expr-parser';
-const charAtFunc = string.charAt;
-const charCodeAtFunc = string.charCodeAt;
+const charAtFunc = String().charAt;
+const charCodeAtFunc = String().charCodeAt;
 
 const COMPOUND = 'Compound';
 const IDENTIFIER = 'Identifier';
@@ -135,17 +130,18 @@ const isIdentifierPart = function (ch) {
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class ExpressionParser {
+  expr: string;
+  index: number;
+  lastIndex: number;
+  length: number;
+
   constructor() {
     this.expr = '';
     this.index = 0;
     this.lastIndex = this.index;
     this.length = 0;
   }
-  /////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////
-  /** PARSER *****************************************************************/
+
   parse(expr) {
     this.expr = expr;
     this.length = this.expr.length;
@@ -689,22 +685,17 @@ class ExpressionParser {
   }
 }
 
+/// STATIC METHODS  //////////////////////////////////////////////////////////'
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const exprParser = new ExpressionParser();
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function ParseExpression(expr) {
+  return exprParser.parse(expr);
+}
+
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// CLASS
 export default ExpressionParser;
-export { isIdentifierPart, isIdentifierStart, isDecimalDigit };
-export {
-  unary_ops,
-  binary_ops,
-  PERIOD_CODE,
-  COMMA_CODE,
-  SQUOTE_CODE,
-  DQUOTE_CODE,
-  OPAREN_CODE,
-  CPAREN_CODE,
-  OBRACK_CODE,
-  CBRACK_CODE,
-  QUMARK_CODE,
-  SEMCOL_CODE,
-  COLON_CODE
-};
+/// UTILITY METHOD
+export { ParseExpression };
