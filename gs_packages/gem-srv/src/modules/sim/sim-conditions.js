@@ -214,19 +214,30 @@ SIMDATA.RegisterWhenTest('seesCamouflaged', (a, b) => {
 function m_ProcessInteractions() {
   GLOBAL_INTERACTIONS = [...SIMCOND.GetAllInteractions()]; // [ [k,v], [k,v] ]
   GLOBAL_INTERACTIONS.forEach(entry => {
-    const { singleTestArgs, pairTestArgs } = entry;
-    if (singleTestArgs !== undefined) {
-      // SINGLE AGENT TEST FILTER
-      const [A, testName, ...args] = singleTestArgs;
-      const [passed] = SIMCOND.SingleAgentFilter(A, testName, ...args);
-      entry.passed = passed;
-    } else if (pairTestArgs !== undefined) {
-      // PAIR AGENT TEST FILTER
-      const [A, testName, B, ...args] = pairTestArgs;
-      const [passed] = SIMCOND.PairAgentFilter(A, testName, B, ...args);
-      entry.passed = passed;
-    } else {
-      throw Error('malformed global_interaction entry');
+    try {
+      const { singleTestArgs, pairTestArgs } = entry;
+      if (singleTestArgs !== undefined) {
+        // SINGLE AGENT TEST FILTER
+        const [A, testName, ...args] = singleTestArgs;
+        const [passed] = SIMCOND.SingleAgentFilter(A, testName, ...args);
+        entry.passed = passed;
+      } else if (pairTestArgs !== undefined) {
+        // PAIR AGENT TEST FILTER
+        const [A, testName, B, ...args] = pairTestArgs;
+        const [passed] = SIMCOND.PairAgentFilter(A, testName, B, ...args);
+        entry.passed = passed;
+      } else {
+        throw Error('malformed global_interaction entry');
+      }
+    } catch (caught) {
+      ERROR(`could not dispatch global interaction`, {
+        source: 'runtime',
+        data: {
+          pairTestArgs
+        },
+        where: 'sim-conditions.Update GLOBAL_INTERACTIONS',
+        caught
+      });
     }
   });
 }
@@ -239,15 +250,27 @@ function m_ProcessEventQueue() {
     /// these are all the handlers for all the registered blueprint types
     /// that are TOPcode[]. However, we need to get the context of each
     /// blueprint and run them per-agent
-    const handlers = SIMDATA.GetHandlersForScriptEvent(event.type);
-    handlers.forEach(h => {
-      const { agentType, handler } = h;
-      const agents = SIMAGENTS.GetAgentsByType(agentType);
-      agents.forEach(agent => {
-        const ctx = { agent, [agentType]: agent };
-        agent.exec(handler, ctx);
+    try {
+      const handlers = SIMDATA.GetHandlersForScriptEvent(event.type);
+      handlers.forEach(h => {
+        const { agentType, handler } = h;
+        const agents = SIMAGENTS.GetAgentsByType(agentType);
+        agents.forEach(agent => {
+          const ctx = { agent, [agentType]: agent };
+          agent.exec(handler, ctx);
+        });
       });
-    });
+    } catch (caught) {
+      ERROR(`could not dispatch agent event`, {
+        source: 'runtime',
+        data: {
+          event,
+          idx
+        },
+        where: 'sim-conditions.Update EVENT_QUEUE',
+        caught
+      });
+    }
   });
   EVENT_QUEUE = [];
 }

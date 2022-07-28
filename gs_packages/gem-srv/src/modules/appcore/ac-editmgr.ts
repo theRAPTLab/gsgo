@@ -79,6 +79,7 @@ import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as COMPILER from 'script/tools/script-compiler';
 import * as BUNDLER from 'script/tools/script-bundler';
+import ERROR from 'modules/error-mgr';
 
 import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
@@ -148,11 +149,19 @@ function m_AddSlotsValidation(newSlotState) {
   BUNDLER.AddSymbols(newSymbols);
   BUNDLER.CloseBundle();
 
+ try {
   // Set slots_validation
   newSlotState.slots_validation = TRANSPILER.ValidateStatement(slots_linescript, {
     bundle: slots_bundle,
     globals: globalRefs
   }); // modify by reference
+   } catch (caught) {
+      ERROR(`could not validate slots_linescript`, {
+        source: 'validator',
+        where: 'ac-editmgr.handleSlotUpdate',
+        caught
+      });
+    }
 }
 /** sel_linenum or sel_linepos has changed, so select a new slot */
 function SelectSlot(sel_linenum, sel_linepos) {

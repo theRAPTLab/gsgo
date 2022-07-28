@@ -15,6 +15,7 @@ import { GetAgentsByType } from 'modules/datacore';
 import { ParseExpression } from 'lib/expr-parser';
 // uses types defined in t-script.d
 import { Evaluate } from 'lib/expr-evaluator';
+import ERROR from 'modules/error-mgr';
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,15 +71,37 @@ function PairAgentFilter(typeA, typeB, testAB) {
 /** return a testA function for the passed expression */
 function MakeAgentExprTest(exprA) {
   const isAST = typeof exprA === 'object' && exprA.type;
-  const ast = isAST ? exprA : ParseExpression(exprA);
-  return agent => Evaluate(ast, { A: agent });
+  try {
+    const ast = isAST ? exprA : ParseExpression(exprA);
+    return agent => Evaluate(ast, { A: agent });
+  } catch (caught) {
+    ERROR(`failed to make agent expression ${exprA}`, {
+      source: 'expression',
+      data: {
+        expr: exprA
+      },
+      where: 'conditions.MakeAgentExprTest',
+      caught
+    });
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return a testAB function for the passed expression */
 function MakePairAgentExprTest(exprAB) {
-  const isAST = typeof exprAB === 'object' && exprAB.type;
-  const ast = isAST ? exprAB : ParseExpression(exprAB);
-  return (a, b) => Evaluate(ast, { A: a, B: b });
+  try {
+    const isAST = typeof exprAB === 'object' && exprAB.type;
+    const ast = isAST ? exprAB : ParseExpression(exprAB);
+    return (a, b) => Evaluate(ast, { A: a, B: b });
+  } catch (caught) {
+    ERROR(`failed to make pair agent expression test ${exprAB}`, {
+      source: 'expression',
+      data: {
+        expr: exprAB
+      },
+      where: 'conditions.MakePairAgentExprTest',
+      caught
+    });
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a type, a conditional expression, and tmethods to run after

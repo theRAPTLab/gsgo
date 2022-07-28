@@ -22,7 +22,7 @@ import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as TOKENIZER from 'script/tools/script-tokenizer';
 import * as HELP from 'app/help/codex';
 import VSDToken from 'script/tools/class-validation-token';
-import { GetFeatureSymbols } from 'modules/datacore/dc-sim-data';
+import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -494,8 +494,8 @@ class SymbolInterpreter {
     let ast;
     try {
       ast = TOKENIZER.ParseExpression(exprString);
-    } catch (err) {
-      gotError = err.toString();
+    } catch (caught) {
+      gotError = caught.toString();
     }
     // if any errors got thrown, expression didn't validate
     if (gotError)
@@ -672,8 +672,8 @@ class SymbolInterpreter {
           }),
           this.vagueError(arg2)
         ];
-      const tag = SIMDATA.IsBundleTagName(tagName);
-      if (tag === undefined)
+      let goodTagName = SIMDATA.IsBundleTagName(tagName);
+      if (goodTagName === undefined)
         return [
           this.badToken(arg1, symbols, {
             gsArg,
@@ -682,7 +682,9 @@ class SymbolInterpreter {
           this.vagueError(arg2)
         ];
       // valid tag
-      if (valueType !== 'value' || typeof value !== 'boolean')
+      let tag = tags[tagName];
+      const [argHint, argType] = CHECK.UnpackArg(tag);
+      if (argType !== 'boolean')
         return [
           this.goodToken(arg1, symbols, { gsArg }),
           this.badToken(
@@ -1001,7 +1003,7 @@ class SymbolInterpreter {
     //   return this.goodToken(token, { features: {} }, { gsArg });
     // }
 
-    const allFeatureSymbols = GetFeatureSymbols();
+    const allFeatureSymbols = SIMDATA.GetFeatureSymbols();
     const featuresList = [...Object.keys(allFeatureSymbols)];
     let [matchType, featureName] = TOKENIZER.UnpackToken(token);
     const unitText = Array.isArray(featureName)

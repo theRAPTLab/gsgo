@@ -28,6 +28,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as SIM from 'modules/sim/api-sim'; // DO NOT REMOVE
+import { ERR_MGR } from 'modules/error-mgr';
 import * as PROJ_v2 from 'modules/datacore/dc-project-v2';
 import * as BLUEPRINT_TESTER from 'test/test-blueprint';
 import * as EDITMGR from 'modules/appcore/ac-editmgr';
@@ -120,7 +121,8 @@ class DevWizard extends React.Component {
   }
 
   componentDidMount() {
-    if (DBG) console.log(...PR('root component mounted'));
+    try {
+      if (DBG) console.log(...PR('root component mounted'));
     document.title = `DEV/WIZARD V.${VER_DEV_WIZ}`;
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
@@ -130,6 +132,14 @@ class DevWizard extends React.Component {
     WIZCORE.SubscribeState(this.handleWizUpdate);
     SLOTCORE.SubscribeState(this.handleSlotUpdate);
     m_LoadTestProjectData(WIZCORE);
+     } catch (caught) {
+      if (ERR_MGR)
+        ERR_MGR(`DevWizard could not mount`, {
+          source: 'app',
+          caught
+        });
+      else throw caught;
+    }
   }
 
   componentWillUnmount() {

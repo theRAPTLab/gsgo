@@ -12,6 +12,7 @@ import Keyword from 'lib/class-keyword';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as SIMCOND from 'modules/datacore/dc-sim-conditions';
 import * as BUNDLER from 'script/tools/script-bundler';
+import ERROR from 'modules/error-mgr';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -31,8 +32,12 @@ export class when extends Keyword {
   compile(kwArgs: TKWArguments): TOpcode[] {
     const [kw, A, testName, B, ...args] = kwArgs;
     if (!Array.isArray(args) || args.length === 0) {
-      console.error(`when: bad consequent`);
-      return [];
+    //  ERROR('missing when block consequent', {
+    //    source: 'compiler',
+    //    why: 'arg underflow',
+    //    data: kwArgs
+    //  });
+      return[];
     }
     let consq: TSM_Method = args.pop() as TSM_Method; // fyi: consq is array of functions
 
