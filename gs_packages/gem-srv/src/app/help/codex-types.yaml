@@ -56,5 +56,8 @@ tag:
 feature:
   input: 'Choose a feature from the list'
 
+pragma:
+  input: 'See the wiki for help'
+
 '{noncode}':
   input: ''

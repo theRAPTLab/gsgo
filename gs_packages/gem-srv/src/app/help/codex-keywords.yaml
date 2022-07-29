@@ -7,7 +7,7 @@ addProp:
     xxx
 
 addFeature:
-  input: '[addFeatures] summons special abilities to your character'
+  input: '[addFeature] summons special abilities to your character'
   glossary: >
     xxx
 
@@ -79,3 +79,10 @@ every:
 
 _comment:
   input: 'Enter some text that describes your code'
+  glossary: >
+    xxx
+
+_directive:
+  input: '[#] directives tell GEMSTEP how to treat your code'
+  glossary: >
+    xxx
