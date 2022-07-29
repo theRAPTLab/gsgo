@@ -162,7 +162,11 @@ class SlotEditor_Block extends React.Component {
 
     /// 2. Nothing selected
     if (!slots_validation)
-      return <div className="gsled panel panelhelp">{L10N.MSG_SELECT_TOKEN}</div>;
+      return (
+        <div id="SEB_empty" className="gsled panel panelhelp">
+          {L10N.MSG_SELECT_TOKEN}
+        </div>
+      );
 
     /// 3. Process each validation token
     const { validationTokens } = slots_validation;
@@ -233,6 +237,7 @@ class SlotEditor_Block extends React.Component {
     /// slots - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const slotsjsx = (
       <div
+        id="SEB_slots"
         className="gsled tokenList"
         style={{
           gridTemplateColumns: `repeat(${validationTokenCount},auto)`
@@ -244,7 +249,7 @@ class SlotEditor_Block extends React.Component {
 
     /// choices - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const choicesjsx = (
-      <div className="gsled choices">
+      <div id="SEB_choices" className="gsled choices">
         <div className="gsled choicesline gwiz styleError">{selectedError}</div>
         {extraTokenName && (
           <div className="gsled choicesline gwiz styleError">
@@ -260,7 +265,7 @@ class SlotEditor_Block extends React.Component {
 
     /// control bar - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const controlbarjsx = (
-      <div className="gsled button-bar">
+      <div id="SEB_cancelsave" className="gsled button-bar">
         <button type="button" className="secondary" onClick={this.CancelSlotEdit}>
           Cancel
         </button>
@@ -278,7 +283,11 @@ class SlotEditor_Block extends React.Component {
     /// help - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const keywordHelp =
       'Use the "prop" keyword to set properties to specific values and do simple arithmetic.';
-    const helpjsx = <div className="gsled panelhelp">{keywordHelp}</div>;
+    const helpjsx = (
+      <div id="SEB_help" className="gsled panelhelp">
+        {keywordHelp}
+      </div>
+    );
 
     /// save dialog - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // -- Save Dialog Display Data

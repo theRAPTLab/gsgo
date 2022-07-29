@@ -72,8 +72,13 @@ function ForEditorSelection(editorSelection): string[] {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: return the default gsArg prompt if it exists. Used by symbol
  *  interpreter methods */
-function ForSympret(iName: string): TGSArg {
-  const gsArg = GSArgsHelp[iName];
+function ForGSArg(sympretName: string): TGSArg {
+  const fn = 'ForGSArg:';
+  const gsArg = GSArgsHelp[sympretName];
+  if (gsArg === undefined) {
+    console.warn(`${fn} ${sympretName} not in dict`);
+    return '??:{?}';
+  }
   return gsArg;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -113,6 +118,6 @@ UR.AddConsoleTool('help', (fname, mname) => {
 export {
   ForEditorSelection, //
   ForFeatureMethod, //
-  ForSympret, //
+  ForGSArg, //
   LookupParent
 };

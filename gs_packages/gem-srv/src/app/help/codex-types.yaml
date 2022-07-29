@@ -48,16 +48,13 @@ blueprint:
   input: 'Select the name of an existing character type'
 
 bdlOut:
-  input: 'Select the program bundle output dict (INIT or UPDATE)'
+  input: 'Select the program type to INIT or UPDATE'
 
 tag:
-  input: 'Select the program tag name'
+  input: 'Select a movement control setting'
 
 feature:
   input: 'Choose a feature from the list'
-
-pragma:
-  input: 'See the wiki for help'
 
 '{noncode}':
   input: ''

@@ -68,7 +68,7 @@ export const HIDDEN_SYMBOLS = [
 ].map(w => w.toLowerCase());
 export const LOCKED_SYMBOLS = [
   '#',
-  '_pragma',
+  '_directive',
   'blueprint',
   'tag',
   'ischarcontrollable',
