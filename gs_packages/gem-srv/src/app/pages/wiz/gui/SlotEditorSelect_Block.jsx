@@ -161,7 +161,6 @@ function SlotEditorSelect_Block(props) {
             onChange={processIdentifierInput}
             onKeyDown={handleIdentifierKeydown}
           />
-          ;
         </div>
       );
       break;

@@ -556,7 +556,7 @@ class SymbolInterpreter {
     if (this.detectScanError()) return this.vagueError(token);
     let [unitText, tokType, prName] = this.extractTokenMeta(token);
     // convert old identifier into a objref array
-    const gsArg = HELP.ForSympret('pragma') || ':pragma';
+    const gsArg = HELP.ForSympret('pragma') || '??:pragma';
     const pragmas = SIMDATA.GetPragmaMethodSymbols();
     const symbols = { pragmas };
     if (tokType !== 'identifier')
@@ -582,7 +582,8 @@ class SymbolInterpreter {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** valid pragma arguments, called right after pragma() */
   pragmaArgs(tokens: IToken[]) {
-    // expect scope to be set to method args structure
+    // expect scope to be set to method args structure: { name, ags }
+
     // program name
     // tag name value
     // blueprint name base

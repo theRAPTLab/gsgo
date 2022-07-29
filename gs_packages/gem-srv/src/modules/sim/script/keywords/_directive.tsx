@@ -67,14 +67,7 @@ export class _directive extends Keyword {
     const [kwTok, dirTok, ...argToks] = unit; // get arg pattern
     vtoks.push(this.shelper.anyKeyword(kwTok));
     vtoks.push(this.shelper.pragma(dirTok));
-    // HACK Hide Blueprint subclasses to prevent novice editor error!!!
-    if (String(dirTok.identifier).toLowerCase() === 'blueprint') {
-      // only show blueprint name, skip base name
-      vtoks.push(...this.shelper.pragmaArgs([argToks[0]]));
-    } else {
-      // show all parameters
-      vtoks.push(...this.shelper.pragmaArgs(argToks));
-    }
+    vtoks.push(...this.shelper.pragmaArgs(argToks));
     const log = this.makeValidationLog(vtoks);
     return { validationTokens: vtoks, validationLog: log };
   }
