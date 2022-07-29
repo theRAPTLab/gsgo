@@ -679,9 +679,7 @@ class SymbolInterpreter {
           this.vagueError(arg2)
         ];
       // valid tag
-      let tag = tags[tagName];
-      const [argHint, argType] = CHECK.UnpackArg(tag);
-      if (argType !== 'boolean')
+      if (valueType !== 'value' || typeof value !== 'boolean')
         return [
           this.goodToken(arg1, symbols, { gsArg }),
           this.badToken(
