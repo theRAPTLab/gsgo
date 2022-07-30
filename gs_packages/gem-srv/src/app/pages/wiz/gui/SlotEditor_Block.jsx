@@ -50,9 +50,9 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 /*
     Slot Help
-    RATIONALE: This should be a secondary help system, the primary one being for the
-                main "Keyword Help".  But in addition to the general keyword help,
-                as studenters data for individual slots, they'll need help understanding
+    RATIONALE: This should be a secondary helpDict system, the primary one being for the
+                main "Keyword Help".  But in addition to the general keyword helpDict,
+                as studenters data for individual slots, they'll need helpDict understanding
                 what each individual slot piece is.
 
                 This should show either:
@@ -178,14 +178,14 @@ class SlotEditor_Block extends React.Component {
       let type;
       let viewState;
       let error;
-      let help;
+      let helpDict;
       const position = CHECK.OffsetLineNum(i, 'add');
       const tokenKey = `${sel_linenum},${position}`;
       const selected = sel_slotpos === position;
       const scriptToken = slots_linescript[i];
 
       if (selectEditorSelection) {
-        help = HELP.ForEditorSelection(selectEditorSelection).join('. ');
+        helpDict = HELP.ForEditorSelection(selectEditorSelection) || {};
       }
 
       const t = validationTokens[i];
@@ -211,7 +211,8 @@ class SlotEditor_Block extends React.Component {
       }
 
       selectedError = selected ? error : selectedError;
-      selectedHelp = selected ? help : selectedHelp;
+      selectedHelp = selected ? helpDict.gsType : selectedHelp;
+      if (position === 1) selectedHelp = `${helpDict.keyword}. ${selectedHelp}`;
 
       // show Delete button if this is the currently selected token
       if (selected && t.error && t.error.code === 'extra')
@@ -227,7 +228,7 @@ class SlotEditor_Block extends React.Component {
           name={t.gsName} // added
           label={label} // inside the token box
           error={error}
-          help={help}
+          help={'wakawaka'}
           viewState={viewState}
           isSlot
         />

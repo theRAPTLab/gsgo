@@ -16,7 +16,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import * as SYMUTIL from 'script/tools/symbol-utilities';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as HELP from 'app/help/codex';
 import { GLabelToken, GSymbolToken, StackUnit } from '../SharedElements';
@@ -113,6 +113,10 @@ export const ADVANCED_SYMBOLS = [
   'alpha',
   'isinert'
 ].map(w => w.toLowerCase());
+export const IGNORED_TYPES = ['{noncode}'].map(w => w.toLowerCase());
+
+/// COMPONENT HELPERS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -121,7 +125,7 @@ export function EditSymbol_Block(props) {
   const { selection = {}, locked } = props;
   const { sel_linenum, sel_linepos, vmPageLine, sel_slotpos } = selection;
   const label = `options for token ${sel_linenum}:${sel_linepos}`;
-  let symbolType;
+  let symbolType = '';
 
   // Keep track of symbols being used in the original script line,
   // especially advanced or hidden symbols, so that we can show
@@ -142,37 +146,39 @@ export function EditSymbol_Block(props) {
     // console.log(vdata);
 
     // ORIG
-    // const vIndex = sel_linepos - 1;
+    // const selectedSlot = sel_linepos - 1;
     // BL: Use slot position instead of lineposition (sel_linepos)
     //     so that we display the currently selected slot type?
     if (sel_slotpos < 0) return 'Click on a word above to edit it.'; // clicked ScriptView, not SelectEditorLineSlot
-    const vIndex = CHECK.OffsetLineNum(sel_slotpos, 'sub');
+    const selectedSlot = CHECK.OffsetLineNum(sel_slotpos, 'sub');
 
     const validationTokens = slots_validation
       ? slots_validation.validationTokens
       : [];
 
     // no more validation tokens
-    if (vIndex >= validationTokens.length)
+    if (selectedSlot >= validationTokens.length)
       return <StackUnit label="No options" type="symbol" open sticky />;
 
-    const symbolData: TSymbolData = validationTokens[vIndex] || {}; // indx into line
-    /* symbolData has the current symbol data to convert into viewdata
-       `symbolData` looks like this: {
+    const symbolData: TSymbolData = validationTokens[selectedSlot] || {};
+    // filter out all the metadata from the symbolData, consolidating
+    // the actual dictionaries of symbol types in `symbolDicts`
+    const {
+      unitText, // text representation of current scriptToken
+      symbolScope, // name of symbol dict that this unitText matches with
+      error, // true if there was an error, contains 'code' and 'info'
+      gsType, // the GEMSCRIPT type expected for this slot
+      gsName, // the GEMSCRIPT short name of this parameter
+      ui_action, // after-action trigger (not used)
+      ...symbolDicts
+    } = symbolData;
+    /* `symbolDicts` looks like this: {
           features: {Costume: {…}, Physics: {…}, AgentWidgets: {…}}
-          gsType: "objref"
           props: {x: {…}, y: {…}, statusText: {…}, eType: {…}, energyLevel: {…}, …}
-          unitText: "energyLevel"
         }
     */
-    const { unitText, symbolScope, error, gsType, gsName, ui_action, ...dicts } =
-      symbolData;
-    /* `dicts` looks like this: {
-          features: {Costume: {…}, Physics: {…}, AgentWidgets: {…}}
-          props: {x: {…}, y: {…}, statusText: {…}, eType: {…}, energyLevel: {…}, …}
-        }
-    */
-    symbolType = gsType;
+
+    symbolType = HELP.ForTypeInfo(gsType).name;
 
     // Don't render choices if the current selection should be an input form
     if (
@@ -182,53 +188,43 @@ export function EditSymbol_Block(props) {
       gsType === 'identifier' ||
       gsType === 'block' ||
       gsType === '{...}'
-    )
+    ) {
       return '';
+    }
 
-    // See symbol-utilities.DecodeSymbolViewData
-    const viewData = WIZCORE.DecodeSymbolViewData(symbolData); // returns the list of symbolnames for a particular symbol
-    /* TODO: it would be nice to make unitText indicate it's the current value */
-    // VALIDATION TOKENS are stored by key in the dicts
-    // e.g. Keywords, Props, Methods, etc
-    /* `viewData` looks like this at this point: {
-            features: {info: 'Costume, Physics, AgentWidgets', items: ['Costume', 'AgentWidgets', 'Population']}
-            props: {info: 'x, y, statusText, eType, energyLevel, energyUse', items: Array(6)}
-            unitText: "energyLevel"
-        }
-    */
+    /// EMBEDDED FUNCTION /////////////////////////////////////////////////////
+    /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    /** Renders jsx for each category of symbol and each individual selectable
+     *  symbol in a two column grid format. Used for both the top level `props`
+     *  and recursive (e.g. `feature.Costume`) props */
+    function f_render_choices(
+      sd: TSymbolData,
+      vd: TSymbolViewData,
+      parentLabel = ''
+    ): JSX.Element[] {
+      // declarations
+      const categoryDicts = []; // the list of symbol dictionaries to stack
 
-    /**
-     * Renders jsx for each category of symbol and each individual selectable symbol
-     * in a two column grid format.
-     * Used for both the top level `props` and recursive (e.g. `feature.Costume`) props
-     * @param {object} sd - symbolData dicts
-     * @param {object} vd - viewData
-     * @param {string} parentLabel - extra label for features, e.g. "Costume"
-     * @returns jsx
-     */
-    function f_render_choices(sd, vd, parentLabel = '') {
-      const categoryDicts = [];
+      // iterate over all the keys in the symbolData, which will be things like
+      // props, blueprints, anything definable in TSymbolData
       Object.keys(sd).forEach((stype, i) => {
         const rowKey = `${sel_linenum}:${i}`;
-        // NEW CODE: Look up from viewData specific to the recursive context
-        const vdata = vd[stype];
-        const parent = vd.sm_parent;
-        if (parent) HELP.LookupParent(parent);
-
-        // do some helpful crash detection and reporting
+        const vdata = vd[stype]; // { items, info }
         if (vdata === undefined) {
           // troubleshooting: check symbol-utilities DecodeSymbolViewData()
           // 1. sdata is being extracted from symbolData at top
           // 2. if (sdata) is creating items, list in sv_data
-          console.log(...PR(`tried to load '${stype}' from viewdata:\n`, vdata));
+          console.error(
+            ...PR(`tried to load '${stype}' from viewdata:\n`, vdata)
+          );
           return [];
         }
 
-        const { info, items } = vdata;
-        // ORIG CODE: Look up from general viewData
-        // const { info, items } = viewData[stype];
+        // prepare to sort through
         const choices = []; // this is the list of choices
         const expertChoices = []; // hack to show expert keywords in a different area
+        const items = vdata.items;
+
         // get all the choices for this symbol type
         items.forEach(choice => {
           const choiceKey = `${stype}:${choice || GUI_EMPTY_TEXT}`;
@@ -244,14 +240,14 @@ export function EditSymbol_Block(props) {
               locked={symbolIsLocked}
             />
           );
+          // 1. If the choice is supposed to be hidden, but
+          //    is currently in use in the original script line,
+          //    show it in the "expert" section so that it
+          //    can be reselected
           if (
             HIDDEN_SYMBOLS.includes(choice.toLowerCase()) &&
             SYMBOLS_IN_USE.includes(choice.toLowerCase())
           ) {
-            // 1. If the choice is supposed to be hidden, but
-            //    is currently in use in the original script line,
-            //    show it in the "expert" section so that it
-            //    can be reselected
             expertChoices.push(tok);
           } else if (HIDDEN_SYMBOLS.includes(choice.toLowerCase())) {
             // 2. Hide unsupported and deprecated keywords
@@ -263,31 +259,29 @@ export function EditSymbol_Block(props) {
             // 4. Regular keyword
             choices.push(tok);
           }
-        });
-        // push a left-most label with symbolType with all the symbols
-        // this will be displayed in a two-column grid in the render function
-        // so the left will be the same height as the right
+        }); // end items.forEach
+
+        // choices and expertChoices are now populated with items from the
+        // current symbols, so push them as two sections onto categoryDicts
         categoryDicts.push(
           <div key={rowKey} style={{ display: 'contents' }}>
             <GLabelToken
               key={rowKey}
-              name={parentLabel ? `${parentLabel}\n${symbolType}` : symbolType}
+              name={parentLabel ? `${parentLabel}` : symbolType}
             />
             <div style={{ display: 'flex', flexWrap: 'wrap' }}>
               {[...choices]}
             </div>
           </div>
         );
+        // if there are expertChoices push those too
         if (expertChoices.length > 0) {
-          // Expert
           categoryDicts.push(
             <div key={`adv${rowKey}`} style={{ display: 'contents' }}>
               <GLabelToken
                 key={`adv${rowKey}`}
                 name={
-                  parentLabel
-                    ? `expert ${parentLabel}\n${symbolType}`
-                    : `expert ${symbolType}`
+                  parentLabel ? `expert ${parentLabel}` : `expert ${symbolType}`
                 }
                 secondary
               />
@@ -297,38 +291,33 @@ export function EditSymbol_Block(props) {
             </div>
           );
         }
-      });
+      }); // loop Object.keys(sd).forEach to get next symbol table dictionary
+
+      // categoryDicts contains a stack of all the choices with all the symbolData
+      // dictionary contents
       return categoryDicts;
     }
 
-    // Features need special handling.
-    // By default, symbol-utilities.DecodeSymbolViewData converts features into a shallow
-    // list of Features available in the blueprint, e.g. "Costume", "AgentWidgets".
-    // But what we actually want are a list of the methods and props for each
-    // specific feature, e.g. 'Costume.costumeName'.  So we do some extra processing
-    // to recursively reach into each feature to determine the props and
-    // methods.
-    //
-    // Walk down dicts
-    // 1. if the key is 'features', recursively expand its props and methods.
-    // 2. if the key is plain `props`, just expand it normally
-    Object.entries(dicts).forEach(
-      ([dictName, v]: [keyof TSymbolData, TSymbolData]) => {
-        if (Array.isArray(symbolScope) && !symbolScope.includes(dictName)) return;
-        const sd = {};
-        sd[dictName] = v;
-        allDicts.push(f_render_choices(sd, viewData, dictName));
-        // console.groupEnd();
-      }
-    );
+    // returns the list of symbolnames for a particular symbol
+    const viewData: TSymbolViewData = SYMUTIL.DecodeSymbolViewData(symbolData);
+    /* TODO: it would be nice to make unitText indicate it's the current value */
+    // VALIDATION TOKENS are stored by key in the symbolDicts
+    // Walk down all symbol dictionaries found in validation token symbols
+    Object.entries(symbolDicts).forEach(entry => {
+      const [dictName, dict] = entry as [keyof TSymbolData, TSymbolData];
+      if (Array.isArray(symbolScope) && !symbolScope.includes(dictName)) return;
+      allDicts.push(f_render_choices({ [dictName]: dict }, viewData, dictName));
+    });
   }
 
   /// RENDER //////////////////////////////////////////////////////////////////
   /// drawn as "SCRIPT LINE EDITOR"
   /// [SYMBOL TYPE] symbol symbol symbol
-  const prompt = `SELECT A ${symbolType}`;
+  const prompt = symbolType
+    ? `SELECT A ${symbolType.toUpperCase()}`
+    : 'CHANGE KEYWORD?';
   return (
-    <StackUnit label={prompt} type="symbol" open sticky>
+    <StackUnit id="ES_symbols" label={prompt} type="symbol" open sticky>
       {allDicts.map((row, i) => {
         const key = `${sel_linenum}.${i}`;
         return (

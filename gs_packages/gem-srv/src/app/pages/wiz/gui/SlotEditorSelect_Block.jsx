@@ -152,7 +152,7 @@ function SlotEditorSelect_Block(props) {
   switch (gsType) {
     case 'identifier':
       editor = (
-        <div className="gsled input">
+        <div id="SES_ident" className="gsled input">
           <label>Enter a {gsType}</label>
           <input
             key={tkey}
@@ -166,7 +166,7 @@ function SlotEditorSelect_Block(props) {
       break;
     case 'number':
       editor = (
-        <div className="gsled input">
+        <div id="SES_num" className="gsled input">
           <label>Enter a {gsType}</label>
           <input
             key={tkey}
@@ -184,7 +184,7 @@ function SlotEditorSelect_Block(props) {
       // to "undefined"
       const defaultString = unitText === 'undefined' ? '' : unitText; // show blank rather than 'undefined' if unitText is not defined
       editor = (
-        <div className="gsled input">
+        <div id="SES_str" className="gsled input">
           <label>Enter a {gsType}</label>
           <input
             key={tkey}
@@ -207,6 +207,7 @@ function SlotEditorSelect_Block(props) {
       */
       editor = (
         <div
+          id="SES_bool"
           className="gsled input"
           style={{ display: 'grid', gridTemplateColumns: '50px 50px 50px' }}
         >
@@ -226,7 +227,7 @@ function SlotEditorSelect_Block(props) {
       break;
     case 'prop':
       editor = (
-        <div className="gsled input">
+        <div id="SES_prop" className="gsled input">
           <label>Enter a propName identifier</label>
           <input
             key={tkey}
@@ -241,7 +242,7 @@ function SlotEditorSelect_Block(props) {
     case 'expr':
       const defaultExpr = unitText.replace(/^{{\s/, '').replace(/\s}}$/, '');
       editor = (
-        <div className="gsled input">
+        <div id="SES_expr" className="gsled input">
           <label>Enter an expression string</label>
           <input
             key={tkey}
@@ -266,7 +267,7 @@ function SlotEditorSelect_Block(props) {
       break;
     case 'block':
       editor = (
-        <div className="gsled input">
+        <div id="SES_block" className="gsled input">
           <label>
             Click here to ensure that a block exists right after this, right here
             in SlotEditorSelect_Block line case:block
@@ -276,7 +277,7 @@ function SlotEditorSelect_Block(props) {
       break;
     default:
       editor = (
-        <div>
+        <div id="SES_default">
           <EditSymbol_Block
             selection={selection}
             expectedType={gsType}

@@ -297,19 +297,19 @@ class SymbolInterpreter {
     // encoded as { comment:'text' }
     if (type === 'comment')
       return this.goodToken(token, symbols, {
-        gsArg: 'comment:{noncode}'
+        gsArg: HELP.ForGSArg('comment')
       });
 
     // encoded as { line:'' }
     if (type === 'line')
       return this.goodToken(token, symbols, {
-        gsArg: 'blank line:{noncode}'
+        gsArg: HELP.ForGSArg('line')
       });
 
     // encoded as { directive: '#' }
     if (type === 'directive')
       return this.goodToken(token, symbols, {
-        gsArg: 'system directive:pragma'
+        gsArg: HELP.ForGSArg('directive')
       });
 
     // default gsarg type
@@ -597,42 +597,43 @@ class SymbolInterpreter {
       const a1symbols = {};
       const [baseType, baseName] = CHECK.UnpackToken(arg2);
       const a2symbols = {};
-      const gsArg = 'character name:identifier';
+      const gsArg = HELP.ForGSArg('pragma_blueprint_arg1');
       // at minimum we expect arg1 to be the name of the blueprint being defined
       if (bpType !== 'identifier')
         return [
           this.badToken(arg1, a1symbols, {
             gsArg,
             err_info: `expected blueprint name`
-          }),
-          this.vagueError(arg2)
+          })
+          // HACK: hide base blueprint for GS 1.0
+          // this.vagueError(arg2)
         ];
       // if there is an arg2, then check validity
       if (arg2 !== undefined) {
         if (baseType !== 'identifier')
           return [
-            this.goodToken(arg1, a1symbols, { gsArg }),
-            this.badToken(arg2, a2symbols, {
-              gsArg: 'base character:identifier',
-              err_info: `expected an identifier`
-            })
+            this.goodToken(arg1, a1symbols, { gsArg })
+            // HACK: hide base blueprint for GS 1.0
+            // this.badToken(arg2, a2symbols, {
+            //   gsArg: HELP.ForGSArg('pragma_blueprint_arg2'),
+            //   err_info: `expected an identifier`
+            // })
           ];
         const base = SIMDATA.GetBlueprintSymbolsFor(baseName);
         if (base === undefined)
           return [
-            this.goodToken(arg1, a1symbols, { gsArg }),
-            this.badToken(arg2, a2symbols, {
-              gsArg,
-              err_info: `${baseName} is not an existing blueprint`
-            })
+            this.goodToken(arg1, a1symbols, { gsArg })
+            // HACK: hide base blueprint for GS 1.0
+            // this.badToken(arg2, a2symbols, {
+            //   gsArg: HELP.ForGSArg('pragma_blueprint_arg2'),
+            //   err_info: `${baseName} is not an existing blueprint`
+            // })
           ];
       }
       // everything is fine
       return [
         this.goodToken(arg1, a1symbols, { gsArg })
-        // HACK: Hide base blueprint from GUI for now because we can't
-        // support optional parameters.  Prevents students from
-        // blowing up the whole blueprint
+        // HACK: hide base blueprint for GS 1.0
         // this.goodToken(arg2, a2symbols, { gsArg: ':identifier' })
       ];
     }
@@ -640,7 +641,7 @@ class SymbolInterpreter {
     if (name === 'PROGRAM') {
       const bdlOuts = SIMDATA.GetBundleOutSymbols();
       const [, bundleOut] = CHECK.UnpackToken(arg1);
-      const gsArg = 'program type:bdlOut';
+      const gsArg = HELP.ForGSArg('pragma_program_arg');
       // good bundle program
       if (CHECK.IsValidBundleProgram(bundleOut.toUpperCase())) {
         return [this.goodToken(arg1, { bdlOuts }, { gsArg })];
@@ -663,7 +664,7 @@ class SymbolInterpreter {
       const symbols = { tags } as TSymbolData;
       const [tagType, tagName] = CHECK.UnpackToken(arg1);
       const [valueType, value] = CHECK.UnpackToken(arg2);
-      const gsArg = 'controller spec:tag';
+      const gsArg = HELP.ForGSArg('pragma_tag_arg1');
       if (tagType !== 'identifier')
         return [
           this.badToken(arg1, symbols, {
@@ -689,7 +690,7 @@ class SymbolInterpreter {
             arg2,
             {},
             {
-              gsArg: 'setting:boolean',
+              gsArg: HELP.ForGSArg('pragma_tag_arg2'),
               err_info: `tag value must be boolean not ${valueType}`
             }
           )
@@ -697,7 +698,7 @@ class SymbolInterpreter {
       // got this far, it's probably ok!
       return [
         this.goodToken(arg1, symbols, { gsArg }),
-        this.goodToken(arg2, {}, { gsArg: 'setting:boolean' })
+        this.goodToken(arg2, {}, { gsArg: HELP.ForGSArg('pragma_tag_arg2') })
       ];
     }
     // UNHANDLED //////////////////////////////////////////////////////////////

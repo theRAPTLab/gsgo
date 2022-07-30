@@ -78,11 +78,16 @@ every:
     xxx
 
 _comment:
-  input: 'Enter some text that describes your code'
+  input: 'debug: comment lines are currently uneditable'
   glossary: >
     xxx
 
 _directive:
   input: '[#] directives tell GEMSTEP how to treat your code'
+  glossary: >
+    xxx
+
+_line:
+  input: 'blank lines can be changed into keyword lines by selecting one above'
   glossary: >
     xxx
