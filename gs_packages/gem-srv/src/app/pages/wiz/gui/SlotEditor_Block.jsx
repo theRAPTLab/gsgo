@@ -212,7 +212,9 @@ class SlotEditor_Block extends React.Component {
 
       selectedError = selected ? error : selectedError;
       selectedHelp = selected ? helpDict.gsType : selectedHelp;
-      if (position === 1) selectedHelp = `${helpDict.keyword}. ${selectedHelp}`;
+      if (position === 1 && helpDict) {
+        selectedHelp = `${helpDict.keyword}. ${selectedHelp}`;
+      }
 
       // show Delete button if this is the currently selected token
       if (selected && t.error && t.error.code === 'extra')
