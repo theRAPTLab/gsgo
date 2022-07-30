@@ -144,7 +144,7 @@ function SlotEditorSelect_Block(props) {
   const tkey = `${selection.sel_linenum},${selection.sel_slotpos}`;
 
   // necessary to prevent NaN error if unitText is undefined
-  let defaultNumber = Number(unitText);
+  let defaultNumber: any = Number(unitText);
   defaultNumber = Number.isNaN(defaultNumber) ? '' : defaultNumber; // make sure it's number
 
   // locked
@@ -217,10 +217,10 @@ function SlotEditorSelect_Block(props) {
           </label>
           <input
             key={tkey}
-            defaultChecked={unitText === 'true' ? 'checked' : undefined}
+            checked={unitText === 'true'}
             type="checkbox"
             role="switch"
-            onInput={processBooleanInput}
+            onChange={processBooleanInput}
           />
           <label style={{ textAlign: 'left', paddingLeft: '10px' }}>true</label>
         </div>

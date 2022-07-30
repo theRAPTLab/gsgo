@@ -155,7 +155,7 @@ export function EditSymbol_Block(props) {
     // const selectedSlot = sel_linepos - 1;
     // BL: Use slot position instead of lineposition (sel_linepos)
     //     so that we display the currently selected slot type?
-    if (sel_slotpos < 0) return 'Click on a word above to edit it.'; // clicked ScriptView, not SelectEditorLineSlot
+    if (sel_slotpos < 0) return <p>Click on a word above to edit it.</p>; // clicked ScriptView, not SelectEditorLineSlot
     const selectedSlot = CHECK.OffsetLineNum(sel_slotpos, 'sub');
 
     const validationTokens = slots_validation
@@ -196,7 +196,7 @@ export function EditSymbol_Block(props) {
       gsType === 'block' ||
       gsType === '{...}'
     ) {
-      return '';
+      return undefined;
     }
 
     /// EMBEDDED FUNCTION /////////////////////////////////////////////////////
