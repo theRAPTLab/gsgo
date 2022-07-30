@@ -26,6 +26,7 @@ import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 
 import { ObjRefSelector_Block } from './ObjRefSelector_Block';
 import { LOCKED_SYMBOLS, EditSymbol_Block } from './EditSymbol_Block';
+import { StackUnit } from '../SharedElements';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
