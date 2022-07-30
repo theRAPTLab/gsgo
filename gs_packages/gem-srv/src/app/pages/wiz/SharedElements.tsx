@@ -233,6 +233,19 @@ export function StackText(props) {
   };
   return <div style={s}>{children}</div>;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function HelpLabel(props) {
+  const { prompt, info, pad = '20px' } = props;
+  return (
+    <StackUnit
+      label={prompt}
+      type="editor"
+      style={{ padding: `0 ${pad} 20px ${pad}` }}
+    >
+      {info}
+    </StackUnit>
+  );
+}
 
 /// TOKEN LINES ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
