@@ -75,7 +75,7 @@ option:
 blueprint:
   name: 'character type'
   input: 'Select the name of an existing character type'
-  info: '---'
+  info: 'This refers to ALL of the characters in the system that have been created by the named blueprint.'
 
 bdlOut:
   name: 'program type'

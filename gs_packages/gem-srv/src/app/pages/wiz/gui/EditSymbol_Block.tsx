@@ -19,7 +19,12 @@ import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as SYMUTIL from 'script/tools/symbol-utilities';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as HELP from 'app/help/codex';
-import { GLabelToken, GSymbolToken, StackUnit } from '../SharedElements';
+import {
+  GLabelToken,
+  GSymbolToken,
+  StackUnit,
+  StackText
+} from '../SharedElements';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -126,6 +131,7 @@ export function EditSymbol_Block(props) {
   const { sel_linenum, sel_linepos, vmPageLine, sel_slotpos } = selection;
   const label = `options for token ${sel_linenum}:${sel_linepos}`;
   let symbolType = '';
+  let helpInfo = '';
 
   // Keep track of symbols being used in the original script line,
   // especially advanced or hidden symbols, so that we can show
@@ -179,6 +185,7 @@ export function EditSymbol_Block(props) {
     */
 
     symbolType = HELP.ForTypeInfo(gsType).name;
+    helpInfo = HELP.ForTypeInfo(gsType).info;
 
     // Don't render choices if the current selection should be an input form
     if (
@@ -317,23 +324,37 @@ export function EditSymbol_Block(props) {
     ? `SELECT A ${symbolType.toUpperCase()}`
     : 'CHANGE KEYWORD?';
   return (
-    <StackUnit id="ES_symbols" label={prompt} type="symbol" open sticky>
-      {allDicts.map((row, i) => {
-        const key = `${sel_linenum}.${i}`;
-        return (
-          <div
-            className="gline"
-            key={key}
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '100px 1fr',
-              gap: '1px'
-            }}
-          >
-            {row}
-          </div>
-        );
-      })}
-    </StackUnit>
+    <div id="ES_symbols">
+      <StackUnit
+        label={prompt}
+        type="editor"
+        style={{ padding: '0 20px 20px 20px' }}
+      >
+        {helpInfo}
+      </StackUnit>
+      <StackText
+        type="symbol"
+        open
+        sticky
+        style={{ padding: '0 20px 20px 20px' }}
+      >
+        {allDicts.map((row, i) => {
+          const key = `${sel_linenum}.${i}`;
+          return (
+            <div
+              className="gline"
+              key={key}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '100px 1fr',
+                gap: '1px'
+              }}
+            >
+              {row}
+            </div>
+          );
+        })}
+      </StackText>
+    </div>
   );
 }
