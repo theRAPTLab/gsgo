@@ -3,58 +3,96 @@
 # passed back to the GUI
 
 boolean:
+  name: 'boolean value'
   input: 'Choose true or false'
+  info: 'Booleans can store true or false values'
 
 string:
+  name: 'string value'
   input: 'Enter characters (do not use quotes)'
+  info: 'Strings are used to store alphanumeric characters'
 
 number:
-  input: 'Enter digits'
+  name: 'numeric value'
+  input: 'Enter digits. You may use a decimal point if you need non-integer numbers'
+  info: 'Numbers can store decimals and floating point values'
 
 identifier:
+  name: 'identifier'
   input: 'Enter alphanumeric characters with no spaces or leading numbers'
+  info: 'An identifier is a name that has (or will have) a special meaning to GEMSCRIPT'
 
 prop:
+  name: 'property name'
   input: 'Choose a property to use'
+  info: 'Properties can be boolean, string, or number. Every character has its own copy.'
 
 method:
-  input: 'Choose an action to use on previous property'
+  name: 'method name'
+  input: 'Available methods are determined by preceding property or feature'
+  info: 'A method is an action that can be performed by a property or features'
 
 propType:
+  name: 'property type'
   input: 'Pick the kind of value this prop should hold'
+  info: 'A property type declares the kind of values a named property can use, like string or number'
 
 objref:
-  input: 'Select property and optional subproperties'
+  name: 'object reference'
+  input: 'Select an item from each column to specify the property you want to use'
+  info: 'Object references refer to properties and methods that are INSIDE something else. This provides a way of organizing related properties and methods.'
 
 expr:
+  name: 'expression string'
   input: 'Enter an arithmetic or logical expression'
+  info: 'Expressions perform arithmetic and comparisons with properties and other values'
 
 keyword:
-  input: 'Choose the GEMSCRIPT command to use for this line'
+  name: 'command keyword'
+  input: 'Warning: if you change this keyword, the rest of the line will have to be updated!'
+  info: 'A keyword is the basic GEMSCRIPT command. There is one keyword per line, and collection of lines is called a script.'
 
 test:
+  name: 'test name'
   input: 'Select one of the following tests'
+  info: 'Tests are pre-defined operations that are given some inputs and return either true or false'
 
 program:
+  name: 'stored program name'
   input: 'This is unused...if you see this oops'
+  info: 'Stored programs are pre-defined code and you should not be seeing this info at all because they are not implemented!'
 
 event:
-  input: 'Pick a system event trigger'
+  name: 'system event name'
+  input: 'Pick a system event name'
+  info: 'System events are pre-defined actions that your code can respond to, such as Tick'
 
 option:
+  name: 'option'
   input: 'Select from one of the following options'
+  info: 'Options are pre-defined lists of choices that must be exactly specified'
 
 blueprint:
+  name: 'character type'
   input: 'Select the name of an existing character type'
+  info: 'This refers to ALL of the characters in the system that have been created by the named blueprint.'
 
 bdlOut:
-  input: 'Select the program bundle output dict (INIT or UPDATE)'
+  name: 'program type'
+  input: 'Select the program type to INIT or UPDATE'
+  info: 'The program type tells GEMSTEP to run your code just once (INIT) or in a loop (UPDATE)'
 
 tag:
-  input: 'Select the program tag name'
+  name: 'movement control'
+  input: 'Select a movement control setting'
+  info: 'Your script can be controlled by your body movement or an iPad by setting a tag!'
 
 feature:
+  name: 'feature power pack'
   input: 'Choose a feature from the list'
+  info: 'GEMSTEP organizes advanced abilities for your scripting in Features. Examples of features are Physics, Animation, graphics, and others.'
 
 '{noncode}':
+  name: ''
   input: ''
+  info: ''

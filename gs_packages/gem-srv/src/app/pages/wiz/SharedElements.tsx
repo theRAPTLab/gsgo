@@ -28,16 +28,24 @@ const SPECIAL_IDENTS = [
 ];
 const SPECIAL_KEYWORDS = ['useFeature', 'addFeature', 'addProp'];
 const CONDITION_KEYWORDS = ['every', 'when'];
+const SUMMARY = {
+  color: 'rgba(0, 59, 118, 0.88)',
+  fontWeight: 'bold'
+  // backgroundColor: 'rgba(0, 59, 118, 0.25)',
+  // margin: '-10px -10px -5px -10px',
+  // padding: '10px 10px 5px 10px'
+};
 const INFO_TYPES = {
   blueprint: {},
   symbol: {
-    summary: {
-      color: 'rgba(0, 59, 118, 0.88)',
-      fontWeight: 'bold'
-      // backgroundColor: 'rgba(0, 59, 118, 0.25)',
-      // margin: '-10px -10px -5px -10px',
-      // padding: '10px 10px 5px 10px'
-    }
+    summary: SUMMARY
+  },
+  editor: {
+    details: {
+      border: 'none',
+      padding: 0
+    },
+    summary: SUMMARY
   },
   dev: {},
   note: {}
@@ -224,6 +232,20 @@ export function StackText(props) {
     ...style
   };
   return <div style={s}>{children}</div>;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function HelpLabel(props) {
+  const { prompt, info, open = true, pad = '20px' } = props;
+  return (
+    <StackUnit
+      label={prompt}
+      type="editor"
+      open={open}
+      style={{ padding: `0 ${pad} 20px ${pad}` }}
+    >
+      {info}
+    </StackUnit>
+  );
 }
 
 /// TOKEN LINES ///////////////////////////////////////////////////////////////

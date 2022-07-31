@@ -32,6 +32,9 @@
           ScriptLine_Pane:panel       (ScriptEditPane)
             SlotEditor_Block          (SelectEditorSlots)
               SlotEditorSelect_Block  (SelectEditor)
+                EditSymbol_Block
+                or
+                ObjRefSelector_Block
 
       Script Selector View
 

@@ -57,6 +57,9 @@ const GSTYPES: TGSType[] = [
   '{string}', // composite: literal, objref, or expression producing
   '{any}', // value or string
   //
+  'bdlOut', // # PROGRAM arg
+  'tag', // # TAG arg
+  //
   'keyword', // special identifier
   'pragma', // special identifier
   'test', // an identifier that is a saved program name

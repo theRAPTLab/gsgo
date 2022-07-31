@@ -55,7 +55,6 @@ const DBG = false;
 class SM_Feature implements IFeature {
   meta: { name: string };
   method: SM_Dict;
-  static Symbols?: TSymbolData;
 
   /// SETUP ///////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -131,18 +130,48 @@ class SM_Feature implements IFeature {
 
   /// SM_OBJECT COMPATIBILITY API /////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** override to provide feature symbols */
-  symbolize(): TSymbolData {
-    return {};
-  }
-
   /** Alias getGetMethod for SM_Object interface */
   getMethod(mName: string): TSM_FeatureMethod {
     return this.featGetMethod(mName);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** override to reset data on sim reset */
   reset() {}
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** provide instance version of Symbolize static method for compat */
+  symbolize() {
+    return SM_Feature.Symbolize();
+  }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** utility to write a 'name' property into any methods dictionary as a copy
+   *  of its key, so we don't have to define the same data it twice (once as a
+   *  key, once as a name */
+  static _SymbolizeNames(symbols: TSymbolData): TSymbolData {
+    const fn = 'SMFeature.SymbolizeNames:';
+    const { methods } = symbols || {};
+    if (methods === undefined) return;
+    Object.keys(methods).forEach(methodKey => {
+      if (methods[methodKey].name === undefined) {
+        methods[methodKey].name = methodKey;
+        if (DBG)
+          console.log(
+            `${fn} copying ${methodKey} into name:`,
+            methods[methodKey]
+          );
+      }
+    });
+    return symbols;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** static method to return symbol data */
+  static Symbolize(): TSymbolData {
+    return SM_Feature._SymbolizeNames(SM_Feature.Symbols);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** static symbol declarations */
+  static Symbols: TSymbolData = {}; // symbol data
 } // end of class
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

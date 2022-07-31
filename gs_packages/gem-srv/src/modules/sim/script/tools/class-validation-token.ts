@@ -37,7 +37,6 @@ class VSDToken implements TSymbolData {
     const { unitText, symbolScope, gsArg, ui_action, err_code, err_info } =
       opt || {};
     const [gsName, gsType] = UnpackArg(gsArg);
-    // console.log('unpacking', unitText, `${gsName}:${gsType}`);
     if (unitText !== undefined) (this as any).unitText = unitText; // unitText can be empty string
     if (Array.isArray(symbolScope)) (this as any).symbolScope = symbolScope;
     if (gsType) (this as any).gsType = gsType;
