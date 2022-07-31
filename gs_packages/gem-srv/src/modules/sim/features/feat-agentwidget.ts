@@ -152,8 +152,8 @@ function m_UIUpdate(frame) {
     // 2. Update Meter
     //    Meters can be set directly via 'meter' featProp,
     //    or the meter can be bound to an agent property
-    const meterProp = agent.getFeatProp(FEATID, 'meterProp').value;
-    const meter = agent.getFeatProp(FEATID, 'meter').value;
+    const meterProp = agentWgt.meterProp.value;
+    const meter = agentWgt.meter.value;
     const meterColor = agent.getFeatProp(FEATID, 'meterColor').value;
     const isLargeGraphic = agent.getFeatProp(FEATID, 'isLargeGraphic').value;
     if (meterProp !== undefined) {
@@ -209,7 +209,6 @@ class WidgetPack extends SM_Feature {
   constructor(name) {
     super(name);
     this.featAddMethod('showMessage', this.showMessage);
-    this.featAddMethod('bindMeterTo', this.bindMeterTo);
     this.featAddMethod('setMeterPosition', this.setMeterPosition);
     this.featAddMethod('bindGraphTo', this.bindGraphTo);
     this.featAddMethod('bindGraphToGlobalProp', this.bindGraphToGlobalProp);
@@ -231,6 +230,7 @@ class WidgetPack extends SM_Feature {
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'meter', prop);
+    this.featAddProp(agent, 'meterProp', new SM_String());
     prop = new SM_Number();
     this.featAddProp(agent, 'meterColor', prop);
     this.featAddProp(agent, 'isLargeGraphic', new SM_Boolean(false));
@@ -242,8 +242,6 @@ class WidgetPack extends SM_Feature {
     this.featAddProp(agent, 'barGraphPropFeature', new SM_String());
 
     // Private Props
-    this.featAddProp(agent, 'meterProp', new SM_String());
-
     agent.prop.AgentWidgets._graph = [0, 0];
     agent.prop.AgentWidgets._graphProp = undefined;
     agent.prop.AgentWidgets._graphFreq = 0;
@@ -269,10 +267,6 @@ class WidgetPack extends SM_Feature {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// METER
-
-  bindMeterTo(agent: IAgent, propName: string) {
-    agent.prop.AgentWidgets.meterProp.setTo(propName);
-  }
   setMeterPosition(agent: IAgent, position: string) {
     let result = FLAGS.POSITION.OUTSIDE_LEFT; // defaults to outside left
     if (position === 'outside-left') result = FLAGS.POSITION.OUTSIDE_LEFT;
@@ -336,16 +330,15 @@ class WidgetPack extends SM_Feature {
       text: SM_String.Symbols,
       textProp: SM_String.Symbols,
       meter: SM_Number.Symbols,
+      meterProp: SM_String.Symbols,
       meterColor: SM_Number.Symbols,
       isLargeGraphic: SM_Boolean.Symbols,
       graphValue: SM_Number.Symbols,
       barGraphProp: SM_String.Symbols,
-      barGraphPropFeature: SM_String.Symbols,
-      meterProp: SM_String.Symbols
+      barGraphPropFeature: SM_String.Symbols
     },
     methods: {
       showMessage: { args: ['text:string'] },
-      bindMeterTo: { args: ['propName:prop'] },
       setMeterPosition: { args: ['position:string'] },
       bindGraphTo: { args: ['propName:prop', 'frequency:number'] },
       bindGraphToGlobalProp: { args: ['propName:prop', 'frequency:number'] },
