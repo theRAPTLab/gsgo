@@ -55,7 +55,7 @@ class PanelSelectSimulation extends React.Component {
         new Promise((resolve, reject) => {
           if (DBG)
             console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
-          (async () => {
+          void (async () => {
             await ASSETS.PromiseLoadAssets(GS_ASSETS_PROJECT_ROOT).catch(err => {
               reject(
                 new Error(
