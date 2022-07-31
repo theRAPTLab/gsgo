@@ -15,6 +15,7 @@
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let m_objcount = 100; // smobject id creator
+const DBG = false;
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -34,9 +35,9 @@ class SM_Object implements ISM_Object {
   meta: { type: symbol; name?: string };
   prop: SM_Dict;
   method: SM_Dict;
-  //
-  static Symbols: TSymbolData; // symbol data
-  //
+
+  /// SETUP ///////////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   constructor(initValue?: any) {
     // init is a literal value
     this._value = initValue;
@@ -48,6 +49,7 @@ class SM_Object implements ISM_Object {
     this.prop = {};
     this.method = {};
   }
+  /// BUILT-IN GETTERS AND SETTERS ////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   get value() {
     return this._value;
@@ -62,6 +64,8 @@ class SM_Object implements ISM_Object {
   set name(value) {
     this.meta.name = value;
   }
+
+  /// API: SIM OBJECTS ////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Add a named property to SMC_Object prop map */
   addProp(pName: string, gvar: ISM_Object): ISM_Object {
@@ -98,11 +102,41 @@ class SM_Object implements ISM_Object {
   getMethod(key: string): TSM_Method {
     return this.method[key];
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Return symbol data, override in subclassers */
-  symbolize(): TSymbolData {
-    return {};
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** utility to write a 'name' property into any methods dictionary as a copy
+   *  of its key, so we don't have to define the same data it twice (once as a
+   *  key, once as a name */
+  static _SymbolizeNames(symbols: TSymbolData): TSymbolData {
+    const fn = 'SMObject.SymbolizeNames:';
+    const { methods } = symbols || {};
+    if (methods === undefined) return;
+    Object.keys(methods).forEach(methodKey => {
+      if (methods[methodKey].name === undefined) {
+        methods[methodKey].name = methodKey;
+        if (DBG)
+          console.log(
+            `${fn} copying ${methodKey} into name:`,
+            methods[methodKey]
+          );
+      }
+    });
+    return symbols;
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** static method to return symbol data */
+  static Symbolize(): TSymbolData {
+    return SM_Object._SymbolizeNames(SM_Object.Symbols);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** instance method to return symbol data */
+  symbolize(): TSymbolData {
+    return SM_Object.Symbolize();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** static symbol declarations */
+  static Symbols: TSymbolData = {}; // symbol data
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

@@ -319,32 +319,44 @@ class WidgetPack extends SM_Feature {
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  symbolize(): TSymbolData {
-    return {
-      props: {
-        text: SM_String.Symbols,
-        meter: SM_Number.Symbols,
-        meterColor: SM_Number.Symbols,
-        isLargeGraphic: SM_Boolean.Symbols,
-        graphValue: SM_Number.Symbols,
-        barGraphProp: SM_String.Symbols,
-        barGraphPropFeature: SM_String.Symbols,
-        textProp: SM_String.Symbols,
-        meterProp: SM_String.Symbols
-      },
-      methods: {
-        showMessage: { args: ['text:string'] },
-        bindTextTo: { args: ['propName:prop'] },
-        bindMeterTo: { args: ['propName:prop'] },
-        setMeterPosition: { args: ['position:string'] },
-        bindGraphTo: { args: ['propName:prop', 'frequency:number'] },
-        bindGraphToGlobalProp: { args: ['propName:prop', 'frequency:number'] },
-        bindLineGraphHistogramToFeatProp: {
-          args: ['featureName:feature', 'propName:prop']
-        }
-      }
-    };
+  /** static method to return symbol data */
+  static Symbolize(): TSymbolData {
+    return SM_Feature._SymbolizeNames(WidgetPack.Symbols);
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** instance method to return symbol data */
+  symbolize(): TSymbolData {
+    return WidgetPack.Symbolize();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static _CachedSymbols: TSymbolData;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** declaration of base symbol data; methods will be modified to include
+   *  the name parameter in each methodSignature */
+  static Symbols: TSymbolData = {
+    props: {
+      text: SM_String.Symbols,
+      meter: SM_Number.Symbols,
+      meterColor: SM_Number.Symbols,
+      isLargeGraphic: SM_Boolean.Symbols,
+      graphValue: SM_Number.Symbols,
+      barGraphProp: SM_String.Symbols,
+      barGraphPropFeature: SM_String.Symbols,
+      textProp: SM_String.Symbols,
+      meterProp: SM_String.Symbols
+    },
+    methods: {
+      showMessage: { args: ['text:string'] },
+      bindTextTo: { args: ['propName:prop'] },
+      bindMeterTo: { args: ['propName:prop'] },
+      setMeterPosition: { args: ['position:string'] },
+      bindGraphTo: { args: ['propName:prop', 'frequency:number'] },
+      bindGraphToGlobalProp: { args: ['propName:prop', 'frequency:number'] },
+      bindLineGraphHistogramToFeatProp: {
+        args: ['featureName:feature', 'propName:prop']
+      }
+    }
+  };
 }
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////

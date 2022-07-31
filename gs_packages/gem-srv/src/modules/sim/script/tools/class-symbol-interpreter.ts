@@ -220,7 +220,7 @@ class SymbolInterpreter {
     if (this.detectScanError()) return this.vagueError(token);
     const [type, value] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
-    const gsArg = HELP.ForSympret('anyNumber') || ':number';
+    const gsArg = HELP.ForGSArg('anyNumber') || ':number';
     const vtype = typeof value;
     if (type === 'value' && vtype === 'number')
       return new VSDToken({}, { gsArg, unitText });
@@ -242,7 +242,7 @@ class SymbolInterpreter {
     const [type, string] = TOKENIZER.UnpackToken(token);
     // const unitText = TOKENIZER.TokenToString(token);
     const unitText = TOKENIZER.TokenToPlainString(token); // no quotes
-    const gsArg = HELP.ForSympret('anyString') || ':string';
+    const gsArg = HELP.ForGSArg('anyString') || ':string';
     const stype = typeof string;
     if (type === 'string' && stype === 'string')
       return new VSDToken({}, { gsArg, unitText });
@@ -263,7 +263,7 @@ class SymbolInterpreter {
     if (this.detectScanError()) return this.vagueError(token);
     const [type, boolean] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
-    const gsArg = HELP.ForSympret('anyBoolean') || ':boolean';
+    const gsArg = HELP.ForGSArg('anyBoolean') || ':boolean';
     const btype = typeof boolean;
     if (type === 'boolean' && btype === 'boolean')
       return new VSDToken({}, { gsArg, unitText });
@@ -297,23 +297,23 @@ class SymbolInterpreter {
     // encoded as { comment:'text' }
     if (type === 'comment')
       return this.goodToken(token, symbols, {
-        gsArg: 'comment:{noncode}'
+        gsArg: HELP.ForGSArg('comment')
       });
 
     // encoded as { line:'' }
     if (type === 'line')
       return this.goodToken(token, symbols, {
-        gsArg: 'blank line:{noncode}'
+        gsArg: HELP.ForGSArg('line')
       });
 
     // encoded as { directive: '#' }
     if (type === 'directive')
       return this.goodToken(token, symbols, {
-        gsArg: 'directive:pragma'
+        gsArg: HELP.ForGSArg('directive')
       });
 
     // default gsarg type
-    const gsArg = HELP.ForSympret('anyKeyword') || 'command:keyword';
+    const gsArg = HELP.ForGSArg('anyKeyword') || 'command:keyword';
 
     // this will actually never run because for this method to be called
     // the keyword processor must have already been found
@@ -340,7 +340,7 @@ class SymbolInterpreter {
     const fn = 'anyBlueprintName:';
     if (this.detectScanError()) return this.vagueError(token);
     const [type, bpName] = TOKENIZER.UnpackToken(token);
-    const gsArg = HELP.ForSympret('anyBlueprintName') || ':blueprint';
+    const gsArg = HELP.ForGSArg('anyBlueprintName') || ':blueprint';
     const bpSymbols = SIMDATA.GetBlueprintSymbols();
     const symbols: TSymbolData = { blueprints: bpSymbols as any };
     if (type !== 'identifier') {
@@ -371,7 +371,7 @@ class SymbolInterpreter {
     const [type, fName] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
     const features = SIMDATA.GetFeatureSymbols();
-    const gsArg = HELP.ForSympret('anyFeatureName') || ':feature';
+    const gsArg = HELP.ForGSArg('anyFeatureName') || ':feature';
     if (type !== 'identifier') {
       this.scan_error = true;
       return new VSDToken(features, {
@@ -401,7 +401,7 @@ class SymbolInterpreter {
     eventName = eventName.toUpperCase();
     const unitText = TOKENIZER.TokenToString(token);
     const eventNames = SIMDATA.GetAllScriptEventNames();
-    const gsArg = HELP.ForSympret('anySystemEvent') || ':event';
+    const gsArg = HELP.ForGSArg('anySystemEvent') || ':event';
     const symbols = { events: eventNames };
     // wrong token type
     if (type !== 'identifier') {
@@ -437,7 +437,7 @@ class SymbolInterpreter {
   anyWhenTest(token: IToken): TSymbolData {
     if (this.detectScanError()) return this.vagueError(token);
     let [type, testName] = TOKENIZER.UnpackToken(token);
-    const gsArg = HELP.ForSympret('anyWhenTest') || ':test'; // note: the generic name for anything that returns T/F
+    const gsArg = HELP.ForGSArg('anyWhenTest') || ':test'; // note: the generic name for anything that returns T/F
     const whenTestSymbols = SIMDATA.GetWhenTestSymbols();
     const symbols = { methods: whenTestSymbols };
     // console.log('whenTestSymbols', whenTestSymbols);
@@ -461,7 +461,7 @@ class SymbolInterpreter {
     if (this.detectScanError()) return this.vagueError(token);
     const [type, unitText] = TOKENIZER.UnpackToken(token);
     const exprString = TOKENIZER.TokenToPlainString(token);
-    const gsArg = HELP.ForSympret('anyExpr') || ':expr';
+    const gsArg = HELP.ForGSArg('anyExpr') || ':expr';
     if (type !== 'expr')
       return this.badToken(
         token,
@@ -525,7 +525,7 @@ class SymbolInterpreter {
     const fn = 'everyOption:';
     const [type, optFlag] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
-    const gsArg = HELP.ForSympret('everyOption') || ':option';
+    const gsArg = HELP.ForGSArg('everyOption') || ':option';
     const symbols = { options: ['runAtStart', 'runAfter'] }; // hardcoded symbols
     if (type === undefined) {
       return new VSDToken(symbols, { gsArg, unitText: '' });
@@ -551,12 +551,14 @@ class SymbolInterpreter {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** valid pragma (encoded as { identifier: 'name' }) */
+  /** valid pragma (encoded as { identifier: 'name' }) and comes after
+   *  everyKeyword keyword #, where name is program, tag, or blueprint
+   */
   pragma(token: IToken) {
     if (this.detectScanError()) return this.vagueError(token);
     let [unitText, tokType, prName] = this.extractTokenMeta(token);
     // convert old identifier into a objref array
-    const gsArg = HELP.ForSympret('pragma') || ':pragma';
+    const gsArg = HELP.ForGSArg(`pragma_${prName.toLowerCase()}`) || '?:{?}';
     const pragmas = SIMDATA.GetPragmaMethodSymbols();
     const symbols = { pragmas };
     if (tokType !== 'identifier')
@@ -582,7 +584,7 @@ class SymbolInterpreter {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** valid pragma arguments, called right after pragma() */
   pragmaArgs(tokens: IToken[]) {
-    // expect scope to be set to method args structure
+    // expect scope to be set to method args structure: { name, ags }
     // program name
     // tag name value
     // blueprint name base
@@ -595,53 +597,55 @@ class SymbolInterpreter {
       const a1symbols = {};
       const [baseType, baseName] = CHECK.UnpackToken(arg2);
       const a2symbols = {};
-      const gsArg = 'characterName:identifier';
+      const gsArg = HELP.ForGSArg('pragma_blueprint_arg1');
       // at minimum we expect arg1 to be the name of the blueprint being defined
       if (bpType !== 'identifier')
         return [
           this.badToken(arg1, a1symbols, {
             gsArg,
             err_info: `expected blueprint name`
-          }),
-          this.vagueError(arg2)
+          })
+          // HACK: hide base blueprint for GS 1.0
+          // this.vagueError(arg2)
         ];
       // if there is an arg2, then check validity
       if (arg2 !== undefined) {
         if (baseType !== 'identifier')
           return [
-            this.goodToken(arg1, a1symbols, { gsArg }),
-            this.badToken(arg2, a2symbols, {
-              gsArg: 'baseCharacterName:identifier',
-              err_info: `expected an identifier`
-            })
+            this.goodToken(arg1, a1symbols, { gsArg })
+            // HACK: hide base blueprint for GS 1.0
+            // this.badToken(arg2, a2symbols, {
+            //   gsArg: HELP.ForGSArg('pragma_blueprint_arg2'),
+            //   err_info: `expected an identifier`
+            // })
           ];
         const base = SIMDATA.GetBlueprintSymbolsFor(baseName);
         if (base === undefined)
           return [
-            this.goodToken(arg1, a1symbols, { gsArg }),
-            this.badToken(arg2, a2symbols, {
-              gsArg,
-              err_info: `${baseName} is not an existing blueprint`
-            })
+            this.goodToken(arg1, a1symbols, { gsArg })
+            // HACK: hide base blueprint for GS 1.0
+            // this.badToken(arg2, a2symbols, {
+            //   gsArg: HELP.ForGSArg('pragma_blueprint_arg2'),
+            //   err_info: `${baseName} is not an existing blueprint`
+            // })
           ];
       }
       // everything is fine
       return [
         this.goodToken(arg1, a1symbols, { gsArg })
-        // HACK: Hide base blueprint from GUI for now because we can't
-        // support optional parameters.  Prevents students from
-        // blowing up the whole blueprint
+        // HACK: hide base blueprint for GS 1.0
         // this.goodToken(arg2, a2symbols, { gsArg: ':identifier' })
       ];
     }
     // PROGRAM ////////////////////////////////////////////////////////////////
     if (name === 'PROGRAM') {
       const bdlOuts = SIMDATA.GetBundleOutSymbols();
-      const [type, bundleOut] = CHECK.UnpackToken(arg1);
-      const gsArg = 'programSection:bdlOut';
+      const [, bundleOut] = CHECK.UnpackToken(arg1);
+      const gsArg = HELP.ForGSArg('pragma_program_arg');
       // good bundle program
-      if (CHECK.IsValidBundleProgram(bundleOut.toUpperCase()))
+      if (CHECK.IsValidBundleProgram(bundleOut.toUpperCase())) {
         return [this.goodToken(arg1, { bdlOuts }, { gsArg })];
+      }
       // not a valid bundle program
       return [
         this.badToken(
@@ -660,7 +664,7 @@ class SymbolInterpreter {
       const symbols = { tags } as TSymbolData;
       const [tagType, tagName] = CHECK.UnpackToken(arg1);
       const [valueType, value] = CHECK.UnpackToken(arg2);
-      const gsArg = 'controllerType:tag';
+      const gsArg = HELP.ForGSArg('pragma_tag_arg1');
       if (tagType !== 'identifier')
         return [
           this.badToken(arg1, symbols, {
@@ -679,16 +683,14 @@ class SymbolInterpreter {
           this.vagueError(arg2)
         ];
       // valid tag
-      let tag = tags[tagName];
-      const [argHint, argType] = CHECK.UnpackArg(tag);
-      if (argType !== 'boolean')
+      if (valueType !== 'value' || typeof value !== 'boolean')
         return [
           this.goodToken(arg1, symbols, { gsArg }),
           this.badToken(
             arg2,
             {},
             {
-              gsArg: 'enableControl:boolean',
+              gsArg: HELP.ForGSArg('pragma_tag_arg2'),
               err_info: `tag value must be boolean not ${valueType}`
             }
           )
@@ -696,7 +698,7 @@ class SymbolInterpreter {
       // got this far, it's probably ok!
       return [
         this.goodToken(arg1, symbols, { gsArg }),
-        this.goodToken(arg2, {}, { gsArg: 'enableControl:boolean' })
+        this.goodToken(arg2, {}, { gsArg: HELP.ForGSArg('pragma_tag_arg2') })
       ];
     }
     // UNHANDLED //////////////////////////////////////////////////////////////
@@ -715,7 +717,7 @@ class SymbolInterpreter {
   simplePropName(token: IToken) {
     const [type, value] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
-    const gsArg = HELP.ForSympret('simplePropName') || ':prop';
+    const gsArg = HELP.ForGSArg('simplePropName') || ':prop';
     if (type !== 'identifier') {
       this.scan_error = true;
       return this.badToken(
@@ -739,7 +741,7 @@ class SymbolInterpreter {
     // check it's a valid propType
     const [type, propType] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
-    const gsArg = HELP.ForSympret('anyPropType') || ':propType';
+    const gsArg = HELP.ForGSArg('anyPropType') || ':propType';
 
     if (this.detectScanError())
       return new VSDToken(
@@ -929,7 +931,7 @@ class SymbolInterpreter {
   agentFeature(token: IToken): TSymbolData {
     // error checking & type overrides
     const fn = 'agentFeature:';
-    const gsArg = HELP.ForSympret('agentFeature') || ':objref';
+    const gsArg = HELP.ForGSArg('agentFeature') || ':objref';
     this.resetScope(); // points to the bundle.symbols to start
     let [matchType, featureName] = TOKENIZER.UnpackToken(token);
     const unitText = Array.isArray(featureName)
@@ -989,7 +991,7 @@ class SymbolInterpreter {
   agentFeatureList(token: IToken): TSymbolData {
     // error checking & type overrides
     const fn = 'agentFeatureList:';
-    const gsArg = HELP.ForSympret('agentFeatureList') || ':feature';
+    const gsArg = HELP.ForGSArg('agentFeatureList') || ':feature';
     this.resetScope(); // points to the bundle.symbols to start
 
     // No need to do this check.  We want the full list of features,
@@ -1073,7 +1075,7 @@ class SymbolInterpreter {
     const fn = 'agentObjRef:';
     if (this.detectScanError()) return this.vagueError(token);
     const [unitText, tokType, propRef] = this.extractTokenMeta(token);
-    const gsArg = HELP.ForSympret('agentObjRef') || ':objref';
+    const gsArg = HELP.ForGSArg('agentObjRef') || ':objref';
     // construct expected symbols
     let blueprints = SIMDATA.GetBlueprintSymbols();
     const agentName = this.getBundleName();
@@ -1138,7 +1140,7 @@ class SymbolInterpreter {
     if (this.detectScanError()) return this.vagueError(token);
     let [unitText, tokType, propRef] = this.extractTokenMeta(token);
     // convert old identifier into a objref array
-    const gsArg = HELP.ForSympret('featObjRef') || ':objref';
+    const gsArg = HELP.ForGSArg('featObjRef') || ':objref';
     // figure out what we got
     if (tokType === 'identifier') {
       tokType = 'objref';
@@ -1216,7 +1218,7 @@ class SymbolInterpreter {
     if (this.detectScanError()) return this.vagueError(token);
     let [unitText, tokType, propRef] = this.extractTokenMeta(token);
     // convert old identifier into a objref array
-    const gsArg = HELP.ForSympret('featRef') || ':objref';
+    const gsArg = HELP.ForGSArg('featRef') || ':objref';
     // figure out what we got
     let [bpName, featureName, methodName] = propRef;
     let blueprints = SIMDATA.GetBlueprintSymbols();
@@ -1276,7 +1278,7 @@ class SymbolInterpreter {
   objRef(token: IToken): TSymbolData {
     // error checking & type overrides
     const fn = 'objRef:';
-    const gsArg = HELP.ForSympret('objref') || ':objref';
+    const gsArg = HELP.ForGSArg('objref') || ':objref';
     this.resetScope();
     let [matchType, parts] = TOKENIZER.UnpackToken(token);
     if (DBG) console.log(...PR(`${fn}: ${matchType}:${parts}`));
@@ -1365,7 +1367,7 @@ class SymbolInterpreter {
   /** given an existing symboldata scope set in this.cur_scope, looks for a method. */
   methodName(token: IToken): TSymbolData {
     const fn = 'methodName:';
-    const gsArg = HELP.ForSympret('methodName') || ':method';
+    const gsArg = HELP.ForGSArg('methodName') || ':method';
     let [matchType, methodName] = TOKENIZER.UnpackToken(token);
     if (DBG) console.log(...PR(`${fn}: ${matchType}:${methodName}`));
 
@@ -1489,8 +1491,6 @@ class SymbolInterpreter {
     const methodSignature: TGSMethodSig = this.cur_scope[methodName];
     // TODO: some keywords (e.g. 'when') may have multiple arrays
     const { args } = methodSignature;
-    // if (args === undefined) debugger;
-    methodSignature.name = methodName; // add optional methodName to TSymbolData
 
     // SCOPE ARGS 2: general validation tokens for each argument
     // this loop structure is weird because we have to handle overflow

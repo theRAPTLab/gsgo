@@ -69,7 +69,6 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
   lastTouched: any;
   isTouching: any;
   statusObject: StatusObject;
-  static Symbols: TSymbolData;
 
   //
   constructor(agentName = '<anon>', id?: string | number) {
@@ -221,10 +220,6 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
   }
   set statusValueIsLarge(mode: boolean) {
     this.prop.statusValueIsLarge.setTo(mode);
-  }
-  /** Returns symbol data */
-  symbolize(): TSymbolData {
-    return SM_Agent.Symbols;
   }
 
   /// MOVEMENT MODES //////////////////////////////////////////////////////////
@@ -525,19 +520,31 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
       SM_Agent.GLOBAL_AGENT = new SM_Agent('GlobalAgent');
     return SM_Agent.GLOBAL_AGENT;
   }
-  // end of Agent class
-}
 
-/// STATIC VARIABLES //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// module-time initialization of symbols
-const props = [...UNIVERSAL_PROPS, ...INTERNAL_PROPS];
-const dict = {};
-for (let { name, type } of props) {
-  const symbols = SIMDATA.GetPropTypeSymbolsFor(type);
-  dict[name] = symbols;
-}
-SM_Agent.Symbols = { props: dict };
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** static method to return symbol data */
+  static Symbolize(): TSymbolData {
+    if (!SM_Agent.Symbols) {
+      const props = [...UNIVERSAL_PROPS, ...INTERNAL_PROPS];
+      const dict = {};
+      for (let { name, type } of props) {
+        const symbols = SIMDATA.GetPropTypeSymbolsFor(type);
+        dict[name] = symbols;
+      }
+      SM_Agent.Symbols = { props: dict };
+    }
+    return SM_Agent.Symbols;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** instance method to return symbol data */
+  symbolize(): TSymbolData {
+    return SM_Agent.Symbolize();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** will be written by Symbolize()...all agents have the same base symbols */
+  static Symbols: TSymbolData;
+} // end of Agent class
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

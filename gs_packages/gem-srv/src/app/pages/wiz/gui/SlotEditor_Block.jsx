@@ -50,9 +50,9 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 /*
     Slot Help
-    RATIONALE: This should be a secondary help system, the primary one being for the
-                main "Keyword Help".  But in addition to the general keyword help,
-                as studenters data for individual slots, they'll need help understanding
+    RATIONALE: This should be a secondary helpDict system, the primary one being for the
+                main "Keyword Help".  But in addition to the general keyword helpDict,
+                as studenters data for individual slots, they'll need helpDict understanding
                 what each individual slot piece is.
 
                 This should show either:
@@ -84,6 +84,7 @@ const L10N = {};
 L10N.TOKEN = 'word'; // script word on script_page
 L10N.LINE = 'line'; // script line
 L10N.MSG_SELECT_TOKEN = `Click on a ${L10N.LINE} on the left to edit it.`;
+L10N.initCap = ref => L10N[ref][0].toUpperCase() + L10N[ref].slice(1);
 
 /// ROOT APPLICATION COMPONENT ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -162,7 +163,11 @@ class SlotEditor_Block extends React.Component {
 
     /// 2. Nothing selected
     if (!slots_validation)
-      return <div className="gsled panel panelhelp">{L10N.MSG_SELECT_TOKEN}</div>;
+      return (
+        <div id="SEB_empty" className="gsled panel panelhelp">
+          {L10N.MSG_SELECT_TOKEN}
+        </div>
+      );
 
     /// 3. Process each validation token
     const { validationTokens } = slots_validation;
@@ -174,14 +179,14 @@ class SlotEditor_Block extends React.Component {
       let type;
       let viewState;
       let error;
-      let help;
+      let helpDict;
       const position = CHECK.OffsetLineNum(i, 'add');
       const tokenKey = `${sel_linenum},${position}`;
       const selected = sel_slotpos === position;
       const scriptToken = slots_linescript[i];
 
       if (selectEditorSelection) {
-        help = HELP.ForEditorSelection(selectEditorSelection).join('. ');
+        helpDict = HELP.ForEditorSelection(selectEditorSelection) || {};
       }
 
       const t = validationTokens[i];
@@ -207,7 +212,10 @@ class SlotEditor_Block extends React.Component {
       }
 
       selectedError = selected ? error : selectedError;
-      selectedHelp = selected ? help : selectedHelp;
+      selectedHelp = selected && helpDict ? helpDict.gsType : selectedHelp;
+      if (position === 1 && helpDict) {
+        selectedHelp = `${helpDict.keyword}. ${selectedHelp}`;
+      }
 
       // show Delete button if this is the currently selected token
       if (selected && t.error && t.error.code === 'extra')
@@ -223,7 +231,7 @@ class SlotEditor_Block extends React.Component {
           name={t.gsName} // added
           label={label} // inside the token box
           error={error}
-          help={help}
+          help={'wakawaka'}
           viewState={viewState}
           isSlot
         />
@@ -233,6 +241,7 @@ class SlotEditor_Block extends React.Component {
     /// slots - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const slotsjsx = (
       <div
+        id="SEB_slots"
         className="gsled tokenList"
         style={{
           gridTemplateColumns: `repeat(${validationTokenCount},auto)`
@@ -244,7 +253,7 @@ class SlotEditor_Block extends React.Component {
 
     /// choices - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const choicesjsx = (
-      <div className="gsled choices">
+      <div id="SEB_choices" className="gsled choices">
         <div className="gsled choicesline gwiz styleError">{selectedError}</div>
         {extraTokenName && (
           <div className="gsled choicesline gwiz styleError">
@@ -260,7 +269,7 @@ class SlotEditor_Block extends React.Component {
 
     /// control bar - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const controlbarjsx = (
-      <div className="gsled button-bar">
+      <div id="SEB_cancelsave" className="gsled button-bar">
         <button type="button" className="secondary" onClick={this.CancelSlotEdit}>
           Cancel
         </button>
@@ -270,15 +279,20 @@ class SlotEditor_Block extends React.Component {
           disabled={!slots_need_saving}
           onClick={this.SaveSlot}
         >
-          Save
+          Save {L10N.initCap('LINE')}
         </button>
       </div>
     );
 
     /// help - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    const keywordHelp =
-      'Use the "prop" keyword to set properties to specific values and do simple arithmetic.';
-    const helpjsx = <div className="gsled panelhelp">{keywordHelp}</div>;
+    const keywordHelp = `Click on a word to edit it. Click "Save ${L10N.initCap(
+      'LINE'
+    )}" to save changes to the line. "Save to Server" will update the Character script for everyone.`; // placeholder help
+    const helpjsx = (
+      <div id="SEB_help" className="gsled panelhelp">
+        {keywordHelp}
+      </div>
+    );
 
     /// save dialog - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // -- Save Dialog Display Data

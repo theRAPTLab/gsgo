@@ -22,7 +22,7 @@ let ASSETS_LOADED = false;
 UR.HookPhase('UR/LOAD_ASSETS', () => {
   return new Promise((resolve, reject) => {
     if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
-    (async () => {
+    void (async () => {
       await ASSETS.PromiseLoadAssets(GS_ASSETS_PROJECT_ROOT);
       if (DBG) console.log(...PR('ASSETS LOADED'));
       ASSETS_LOADED = true;

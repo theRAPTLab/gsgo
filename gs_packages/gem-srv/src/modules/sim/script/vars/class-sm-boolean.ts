@@ -1,7 +1,15 @@
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  The SM_Boolean Prop Type can do common boolean operations and also
+  support experimental "fuzzy" operators
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+
 import SM_Object from 'lib/class-sm-object';
-// uses types defined in t-script.d
 import { RegisterPropType } from 'modules/datacore';
 
+/// CLASS DEFINITION //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export class SM_Boolean extends SM_Object {
   fuzzy: number;
   constructor(initial = true, fuzzy = 0) {
@@ -56,28 +64,38 @@ export class SM_Boolean extends SM_Object {
     return this;
   }
 
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** static method to return symbol data */
+  static Symbolize(): TSymbolData {
+    if (!SM_Boolean._CachedSymbols)
+      SM_Boolean._CachedSymbols = SM_Object._SymbolizeNames(SM_Boolean.Symbols);
+    return SM_Boolean._CachedSymbols;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** instance method to return symbol data */
   symbolize(): TSymbolData {
     return SM_Boolean.Symbols;
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static _CachedSymbols: TSymbolData;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static Symbols: TSymbolData = {
+    methods: {
+      setTo: { args: ['true or false:boolean'] },
+      true: { returns: 'if true:boolean' },
+      false: { returns: 'if false:boolean' },
+      invert: { returns: 'inverted:boolean' },
+      and: { args: ['comparison:{value}'] },
+      or: { args: ['comparison:{value}'] },
+      eq: { args: ['comparison:{value}'] },
+      slightlyTrue: { returns: 'value:boolean' },
+      mostlyTrue: { returns: 'value:boolean' },
+      slightlyFalse: { returns: 'value:boolean' },
+      mostlyFalse: { returns: 'value:boolean' }
+    }
+  };
 }
-
-/// SYMBOLS ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SM_Boolean.Symbols = {
-  methods: {
-    setTo: { args: ['true or false:boolean'] },
-    true: { returns: 'if true:boolean' },
-    false: { returns: 'if false:boolean' },
-    invert: { returns: 'inverted:boolean' },
-    and: { args: ['comparison:{value}'] },
-    or: { args: ['comparison:{value}'] },
-    eq: { args: ['comparison:{value}'] },
-    slightlyTrue: { returns: 'value:boolean' },
-    mostlyTrue: { returns: 'value:boolean' },
-    slightlyFalse: { returns: 'value:boolean' },
-    mostlyFalse: { returns: 'value:boolean' }
-  }
-};
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
