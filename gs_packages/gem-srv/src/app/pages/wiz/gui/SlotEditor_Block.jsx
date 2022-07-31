@@ -211,7 +211,7 @@ class SlotEditor_Block extends React.Component {
       }
 
       selectedError = selected ? error : selectedError;
-      selectedHelp = selected ? helpDict.gsType : selectedHelp;
+      selectedHelp = selected && helpDict ? helpDict.gsType : selectedHelp;
       if (position === 1 && helpDict) {
         selectedHelp = `${helpDict.keyword}. ${selectedHelp}`;
       }
