@@ -328,6 +328,7 @@ export function EditSymbol_Block(props) {
       <StackUnit
         label={prompt}
         type="editor"
+        open
         style={{ padding: '0 20px 20px 20px' }}
       >
         {helpInfo}

@@ -157,7 +157,7 @@ function SlotEditorSelect_Block(props) {
     case 'identifier':
       editor = (
         <div id="SES_ident" className="gsled input">
-          <HelpLabel prompt={helpPrompt} info={helpInfo} pad="5px" />
+          <HelpLabel prompt={helpPrompt} info={helpInfo} open pad="5px" />
           <input
             key={tkey}
             defaultValue={unitText}
@@ -171,7 +171,7 @@ function SlotEditorSelect_Block(props) {
     case 'number':
       editor = (
         <div id="SES_num" className="gsled input">
-          <HelpLabel prompt={helpPrompt} info={helpInfo} pad="5px" />
+          <HelpLabel prompt={helpPrompt} info={helpInfo} open pad="5px" />
           <input
             key={tkey}
             defaultValue={defaultNumber}
@@ -189,7 +189,7 @@ function SlotEditorSelect_Block(props) {
       const defaultString = unitText === 'undefined' ? '' : unitText; // show blank rather than 'undefined' if unitText is not defined
       editor = (
         <div id="SES_str" className="gsled input">
-          <HelpLabel prompt={helpPrompt} info={helpInfo} pad="5px" />
+          <HelpLabel prompt={helpPrompt} info={helpInfo} open pad="5px" />
           <input
             key={tkey}
             defaultValue={defaultString}
@@ -211,7 +211,7 @@ function SlotEditorSelect_Block(props) {
       */
       editor = (
         <div id="SES_bool">
-          <HelpLabel prompt={helpPrompt} info={helpInfo} pad="10px" />
+          <HelpLabel prompt={helpPrompt} info={helpInfo} open pad="10px" />
           <div
             className="gsled input"
             style={{ display: 'grid', gridTemplateColumns: '50px 50px 50px' }}
@@ -249,7 +249,7 @@ function SlotEditorSelect_Block(props) {
       const defaultExpr = unitText.replace(/^{{\s/, '').replace(/\s}}$/, '');
       editor = (
         <div id="SES_expr" className="gsled input">
-          <HelpLabel prompt={helpPrompt} info={helpInfo} pad="5px" />
+          <HelpLabel prompt={helpPrompt} info={helpInfo} open pad="5px" />
           <input
             key={tkey}
             defaultValue={defaultExpr}
@@ -274,7 +274,7 @@ function SlotEditorSelect_Block(props) {
     case 'block':
       editor = (
         <div id="SES_block" className="gsled input">
-          <HelpLabel prompt={helpPrompt} info={helpInfo} pad="5px" />
+          <HelpLabel prompt={helpPrompt} info={helpInfo} open pad="5px" />
           <label>
             Click here to ensure that a block exists right after this, right here
             in SlotEditorSelect_Block line case:block

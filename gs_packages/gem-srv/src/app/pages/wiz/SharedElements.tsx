@@ -235,11 +235,12 @@ export function StackText(props) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function HelpLabel(props) {
-  const { prompt, info, pad = '20px' } = props;
+  const { prompt, info, open = true, pad = '20px' } = props;
   return (
     <StackUnit
       label={prompt}
       type="editor"
+      open={open}
       style={{ padding: `0 ${pad} 20px ${pad}` }}
     >
       {info}

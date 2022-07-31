@@ -203,7 +203,7 @@ function ObjRefSelector_Block(props) {
   const helpInfo = HELP.ForTypeInfo('objref').info;
   return (
     <div style={{ padding: '0 20px' }}>
-      <StackUnit label={prompt} type="editor">
+      <StackUnit label={prompt} type="editor" open>
         {helpInfo}
       </StackUnit>
       <div
