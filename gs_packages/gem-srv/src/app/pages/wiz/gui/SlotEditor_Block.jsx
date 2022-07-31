@@ -84,6 +84,7 @@ const L10N = {};
 L10N.TOKEN = 'word'; // script word on script_page
 L10N.LINE = 'line'; // script line
 L10N.MSG_SELECT_TOKEN = `Click on a ${L10N.LINE} on the left to edit it.`;
+L10N.initCap = ref => L10N[ref][0].toUpperCase() + L10N[ref].slice(1);
 
 /// ROOT APPLICATION COMPONENT ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -278,14 +279,15 @@ class SlotEditor_Block extends React.Component {
           disabled={!slots_need_saving}
           onClick={this.SaveSlot}
         >
-          Save
+          Save {L10N.initCap('LINE')}
         </button>
       </div>
     );
 
     /// help - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    const keywordHelp =
-      'Use the "prop" keyword to set properties to specific values and do simple arithmetic.';
+    const keywordHelp = `Click on a word to edit it. Click "Save ${L10N.initCap(
+      'LINE'
+    )}" to save changes to the line. "Save to Server" will update the Character script for everyone.`; // placeholder help
     const helpjsx = (
       <div id="SEB_help" className="gsled panelhelp">
         {keywordHelp}
