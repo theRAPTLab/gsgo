@@ -135,15 +135,17 @@ function m_UIUpdate(frame) {
     const agent = m_getAgent(agentId);
     if (!agent) return;
 
+    const agentWgt = agent.prop.AgentWidgets;
+
     // 1. Update Text
     //    Text can either be set directly via the `text` featProp,
     //    or, text can be bound to an agent property.
     let text;
-    const textProp = agent.getFeatProp(FEATID, 'textProp').value;
+    const textProp = agentWgt.textProp.value;
     if (textProp !== undefined) {
       text = agent.getProp(textProp).value;
     } else {
-      text = agent.getFeatProp(FEATID, 'text').value;
+      text = agentWgt.text.value;
     }
     agent.prop.statusText.setTo(text);
 
@@ -207,7 +209,6 @@ class WidgetPack extends SM_Feature {
   constructor(name) {
     super(name);
     this.featAddMethod('showMessage', this.showMessage);
-    this.featAddMethod('bindTextTo', this.bindTextTo);
     this.featAddMethod('bindMeterTo', this.bindMeterTo);
     this.featAddMethod('setMeterPosition', this.setMeterPosition);
     this.featAddMethod('bindGraphTo', this.bindGraphTo);
@@ -225,6 +226,7 @@ class WidgetPack extends SM_Feature {
     super.decorate(agent);
     // Public Props
     this.featAddProp(agent, 'text', new SM_String(agent.name)); // default to agent name
+    this.featAddProp(agent, 'textProp', new SM_String()); // agent prop name that text is bound to
     let prop = new SM_Number();
     prop.setMax(1);
     prop.setMin(0);
@@ -240,7 +242,6 @@ class WidgetPack extends SM_Feature {
     this.featAddProp(agent, 'barGraphPropFeature', new SM_String());
 
     // Private Props
-    this.featAddProp(agent, 'textProp', new SM_String()); // agent prop name that text is bound to
     this.featAddProp(agent, 'meterProp', new SM_String());
 
     agent.prop.AgentWidgets._graph = [0, 0];
@@ -264,9 +265,6 @@ class WidgetPack extends SM_Feature {
    */
   showMessage(agent: IAgent, message: string) {
     UR.RaiseMessage('SHOW_MESSAGE', { message });
-  }
-  bindTextTo(agent: IAgent, propName: string) {
-    agent.prop.AgentWidgets.textProp.setTo(propName);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -336,18 +334,17 @@ class WidgetPack extends SM_Feature {
   static Symbols: TSymbolData = {
     props: {
       text: SM_String.Symbols,
+      textProp: SM_String.Symbols,
       meter: SM_Number.Symbols,
       meterColor: SM_Number.Symbols,
       isLargeGraphic: SM_Boolean.Symbols,
       graphValue: SM_Number.Symbols,
       barGraphProp: SM_String.Symbols,
       barGraphPropFeature: SM_String.Symbols,
-      textProp: SM_String.Symbols,
       meterProp: SM_String.Symbols
     },
     methods: {
       showMessage: { args: ['text:string'] },
-      bindTextTo: { args: ['propName:prop'] },
       bindMeterTo: { args: ['propName:prop'] },
       setMeterPosition: { args: ['position:string'] },
       bindGraphTo: { args: ['propName:prop', 'frequency:number'] },
