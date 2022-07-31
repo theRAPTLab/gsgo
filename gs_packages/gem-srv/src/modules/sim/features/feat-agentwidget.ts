@@ -158,8 +158,8 @@ function m_UIUpdate(frame) {
     const isLargeGraphic = agent.getFeatProp(FEATID, 'isLargeGraphic').value;
     if (meterProp !== undefined) {
       // Calculate meter value based on property max value
-      const { max, min } = agent.prop[meterProp];
-      const val = (agent.getProp(meterProp).value - min) / (max - min);
+      const { value: meterValue, max = 1, min = 0 } = agent.prop[meterProp];
+      const val = (meterValue - min) / (max - min);
       agent.prop.statusValue.setTo(val);
     } else if (meter) {
       agent.prop.statusValue.setTo(meter);
