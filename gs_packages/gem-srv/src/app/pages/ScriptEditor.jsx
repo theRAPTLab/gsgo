@@ -126,6 +126,7 @@ class ScriptEditor extends React.Component {
     this.state = {
       isReady: false,
       noMain: true,
+      projectWasSwitched: false,
       panelConfiguration: 'select',
       projId: '',
       bpEditList: [],
@@ -148,12 +149,13 @@ class ScriptEditor extends React.Component {
     this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
-    this.OnSelectScript = this.OnSelectScript.bind(this);
+    this.SelectScript = this.SelectScript.bind(this);
     this.HandleScriptUpdate = this.HandleScriptUpdate.bind(this);
     this.PostSendMessage = this.PostSendMessage.bind(this);
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
+    this.HandleConfirmReload = this.HandleConfirmReload.bind(this);
     // Sent by PanelSelectAgent
-    UR.HandleMessage('SELECT_SCRIPT', this.OnSelectScript);
+    UR.HandleMessage('SELECT_SCRIPT', this.SelectScript);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
     UR.HandleMessage('NET:BLUEPRINTS_UPDATE', this.HandleBlueprintsUpdate);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
@@ -164,50 +166,11 @@ class ScriptEditor extends React.Component {
 
   componentDidMount() {
     if (DBG) console.log(...PR('componentDidMount'));
-    const params = new URLSearchParams(window.location.search.substring(1));
-    const projId = params.get('project');
-    const bpName = params.get('script');
-    document.title = bpName
-      ? `"${bpName}" Editor`
-      : `GEMSTEP SCRIPT EDITOR: ${projId}`;
 
-    // start URSYS
+    // 1. INITIALIZE LISTENERS
+    //    a. start URSYS
     UR.SystemAppConfig({ autoRun: true });
-
-    window.addEventListener('beforeunload', e => {
-      this.CleanupComponents();
-      if (SKIP_RELOAD_WARNING) return;
-      // Show "Leave site?" dialog
-      const { script_page_needs_saving } = WIZCORE.State();
-      const { slots_need_saving } = SLOTCORE.State();
-      if (script_page_needs_saving || slots_need_saving) {
-        e.preventDefault();
-        e.returnValue = ''; // required by Chrome
-        return e;
-      }
-      return;
-    });
-
-    // add top-level click handler
-    document.addEventListener('click', EDITMGR.DispatchClick);
-
-    // state listeners
-    EDITMGR.SubscribeState(this.HandleEditMgrUpdate);
-
-    // don't bother subscribing to 'blueprints' changes
-    // ac-blueprints is running on MAIN, not ScriptEditor so our
-    // instance won't register change events
-    // UR.SubscribeState('blueprints', this.UrBlueprintStateUpdated);
-
-    // Set model section
-    let { panelConfiguration, script } = this.state;
-    if (bpName === '') {
-      // New Script
-      panelConfiguration = 'script';
-      script = SCRIPT_TEMPLATE;
-    }
-    this.setState({ panelConfiguration, projId, bpName, script });
-
+    //    b. APP HOOKS
     UR.HookPhase('UR/APP_START', async () => {
       const devAPI = UR.SubscribeDeviceSpec({
         selectify: device => device.meta.uclass === 'Sim',
@@ -223,6 +186,47 @@ class ScriptEditor extends React.Component {
         }
       });
     });
+    //    c. beforeunload
+    window.addEventListener('beforeunload', e => {
+      this.CleanupComponents();
+      if (SKIP_RELOAD_WARNING) return;
+      // Show "Leave site?" dialog
+      const { script_page_needs_saving } = WIZCORE.State();
+      const { slots_need_saving } = SLOTCORE.State();
+      if (script_page_needs_saving || slots_need_saving) {
+        e.preventDefault();
+        e.returnValue = ''; // required by Chrome
+        return e;
+      }
+      return;
+    });
+    //    d. add top-level click handler
+    document.addEventListener('click', EDITMGR.DispatchClick);
+    //    e. state listeners
+    EDITMGR.SubscribeState(this.HandleEditMgrUpdate);
+    // don't bother subscribing to 'blueprints' changes
+    // ac-blueprints is running on MAIN, not ScriptEditor so our
+    // instance won't register change events
+    // UR.SubscribeState('blueprints', this.UrBlueprintStateUpdated);
+
+    // 2. PROCESS URL
+    const params = new URLSearchParams(window.location.search.substring(1));
+    const projId = params.get('project');
+    const bpName = params.get('script');
+    document.title = bpName
+      ? `"${bpName}" Editor`
+      : `GEMSTEP SCRIPT EDITOR: ${projId}`;
+    let { panelConfiguration, script } = this.state;
+    if (bpName === '') {
+      // New Script
+      panelConfiguration = 'script';
+      script = SCRIPT_TEMPLATE;
+    }
+    this.setState({ panelConfiguration, projId, bpName, script });
+
+    // NOTE: The script is selected with the UpdateBpEditList callback
+    //       e.g. we select the script only after we receive the list of
+    //       available scripts
   }
 
   componentDidCatch(e) {
@@ -237,7 +241,7 @@ class ScriptEditor extends React.Component {
 
   CleanupComponents() {
     this.UnRegisterInstances();
-    UR.UnhandleMessage('SELECT_SCRIPT', this.OnSelectScript);
+    UR.UnhandleMessage('SELECT_SCRIPT', this.SelectScript);
     UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
     UR.UnhandleMessage('NET:BLUEPRINTS_UPDATE', this.HandleBlueprintsUpdate);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
@@ -301,23 +305,38 @@ class ScriptEditor extends React.Component {
     const { bpName } = this.state;
     // clear all bundles to remove deleted bundles
     SIMDATA.DeleteAllBlueprintBundles();
+    // symbolize all blueprints!
     bpEditList.forEach(thing => {
       const { name, scriptText } = thing;
       const script = TRANSPILER.TextToScript(scriptText);
       TRANSPILER.SymbolizeBlueprint(script);
     });
     this.setState({ bpEditList }, () => {
-      // always call OnSelectScript.  if bpName is '', we load a blank TEMPLATE script
-      this.OnSelectScript({ bpName });
+      // make sure the script exists
+      const bpExists = bpEditList.find(thing => thing.name === bpName);
+      if (bpExists) {
+        this.SelectScript({ bpName });
+      } else {
+        // script does not exist!  force selector
+        this.setState({ bpName: null });
+      }
     });
   }
 
   HandleProjectUpdate(data) {
     // Project data has been updated externally, re-request bp data if the
     // the updated project was what we have open
+    const newProjId = (data && data.project && data.project.id) || '';
     const { projId } = this.state;
-    if (data && data.project && data.project.id && data.project.id === projId)
+    // Main selected a new project?
+    const projectWasSwitched = newProjId !== projId;
+    if (projectWasSwitched) {
+      // show project was switched dialog to inform reload
+      this.setState({ projectWasSwitched, projId: newProjId });
+    } else {
+      // just update the list of bpNames
       this.RequestBpEditList(projId);
+    }
   }
 
   UnRegisterInstances() {
@@ -398,12 +417,18 @@ class ScriptEditor extends React.Component {
   }
 
   /**
-   * Call with stringId=undefined to go to selection screen
+   * Call with `data` undefined to go to selection screen
+   * Call with bpName = '' to create a new script
+   * Called by:
+   *  - SELECT_SCRIPT via PanelSelectBlueprint
+   *  - SELECT_SCRIPT after script deletion by ScriptView_Pane
+   *  - SELECT_SCRIPT after wizcore save to server
+   *  - HandleConfirmReload after project is switched by Main
    * @param {string} data { bpName }
    */
-  OnSelectScript(data) {
+  SelectScript(data = {}) {
     const { bpName } = data;
-    if (DBG) console.warn(...PR('OnSelectScript', data));
+    if (DBG) console.warn(...PR('SelectScript', data));
     this.UnRegisterInstances();
     const { bpEditList = [], projId } = this.state;
     if (bpEditList === undefined || bpEditList.length < 1) {
@@ -459,14 +484,29 @@ class ScriptEditor extends React.Component {
     });
   }
 
+  // DialogaProjectSwitch User confirms reload
+  HandleConfirmReload() {
+    const { projId } = this.state;
+    // add script to URL
+    this.setState({ projectWasSwitched: false });
+    this.SelectScript(); // force selector
+  }
+
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
    *  The base styles from page-styles are overidden with inline styles to
    *  make this happen.
    */
   render() {
     if (DBG) console.log(...PR('render'));
-    const { noMain, panelConfiguration, projId, bpEditList, bpName, selection } =
-      this.state;
+    const {
+      noMain,
+      projectWasSwitched,
+      panelConfiguration,
+      projId,
+      bpEditList,
+      bpName,
+      selection
+    } = this.state;
     const { classes } = this.props;
 
     const DialogNoMain = (
@@ -475,6 +515,16 @@ class ScriptEditor extends React.Component {
         message={`Waiting for a "Main" project to load...`}
         yesMessage=""
         noMessage=""
+      />
+    );
+
+    const DialogProjectSwitch = (
+      <DialogConfirm
+        open={projectWasSwitched}
+        message={`Main has switched to a new project "${projId}".  Please select a new Character to edit.`}
+        yesMessage="OK"
+        noMessage=""
+        onClose={this.HandleConfirmReload}
       />
     );
 
@@ -552,6 +602,7 @@ class ScriptEditor extends React.Component {
           </div>
         </div> */}
         {DialogNoMain}
+        {DialogProjectSwitch}
       </div>
     );
   }

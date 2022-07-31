@@ -104,6 +104,8 @@ function urProjectStateUpdated(stateObj, cb) {
   if (DBG) console.log(...PR('urProjectStateUpdated', stateObj));
   const { project } = stateObj;
   CURRENT_PROJECT = project;
+  // Broadcast update to Script Editors so they'll refresh
+  UR.RaiseMessage('NET:UPDATE_MODEL', { project });
   if (typeof cb === 'function') cb();
 }
 
