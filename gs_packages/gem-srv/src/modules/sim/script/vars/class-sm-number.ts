@@ -1,9 +1,7 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The SM_Number class can do simple arithmetic and logical comparisons
+  The SM_Number Prop Type can do simple arithmetic and logical comparisons
   with literal numbers.
-
-  In our first prototype, we do not support arbitrary expressions.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -68,9 +66,10 @@ function u_RND(min: number, max: number, integer: boolean): number {
   const val = u_rnd(min, max);
   return integer ? Math.round(val) : val;
 }
+
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class SM_Number extends SM_Object {
+export class SM_Number extends SM_Object implements ISM_Object {
   nvalue: number;
   min: number;
   max: number;
@@ -182,26 +181,37 @@ export class SM_Number extends SM_Object {
   clear() {
     this.value = null;
   }
-  symbolize(): TSymbolData {
-    return SM_Number.Symbols;
-  }
-}
 
-/// SYMBOLS ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SM_Number.Symbols = {
-  methods: {
-    setMin: { args: ['min value:number'], info: 'minimum value' },
-    setMax: { args: ['max value:number'], info: 'maximum value' },
-    setTo: { args: ['numeric value:number'], info: 'assign value' },
-    setToRnd: {
-      args: ['min:number', 'max:number', 'asInteger:boolean'],
-      info: 'randomize value'
-    },
-    add: { args: ['number:number'], info: 'add value to current' },
-    sub: { args: ['number:number'], info: 'sub value to current' }
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** static method to return symbol data */
+  static Symbolize(): TSymbolData {
+    if (!SM_Number._CachedSymbols)
+      SM_Number._CachedSymbols = SM_Object._SymbolizeNames(SM_Number.Symbols);
+    return SM_Number._CachedSymbols;
   }
-};
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** instance method to return symbol data */
+  symbolize(): TSymbolData {
+    return SM_Number.Symbolize();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static _CachedSymbols: TSymbolData;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static Symbols: TSymbolData = {
+    methods: {
+      setMin: { args: ['min value:number'], info: 'minimum value' },
+      setMax: { args: ['max value:number'], info: 'maximum value' },
+      setTo: { args: ['numeric value:number'], info: 'assign value' },
+      setToRnd: {
+        args: ['min:number', 'max:number', 'asInteger:boolean'],
+        info: 'randomize value'
+      },
+      add: { args: ['number:number'], info: 'add value to current' },
+      sub: { args: ['number:number'], info: 'sub value to current' }
+    }
+  };
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

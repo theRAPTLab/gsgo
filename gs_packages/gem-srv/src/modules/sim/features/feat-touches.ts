@@ -229,16 +229,28 @@ class TouchPack extends SM_Feature {
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  symbolize(): TSymbolData {
-    return {
-      props: {},
-      methods: {
-        monitor: { args: ['targetBlueprintName:string', 'touchType:identifier'] },
-        getTouchingAgent: { args: ['touchType:identifier'] },
-        clearTouches: { args: ['targetId:string'] }
-      }
-    };
+  /** static method to return symbol data */
+  static Symbolize(): TSymbolData {
+    return SM_Feature._SymbolizeNames(TouchPack.Symbols);
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** instance method to return symbol data */
+  symbolize(): TSymbolData {
+    return TouchPack.Symbolize();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static _CachedSymbols: TSymbolData;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** declaration of base symbol data; methods will be modified to include
+   *  the name parameter in each methodSignature */
+  static Symbols: TSymbolData = {
+    props: {},
+    methods: {
+      monitor: { args: ['targetBlueprintName:string', 'touchType:identifier'] },
+      getTouchingAgent: { args: ['touchType:identifier'] },
+      clearTouches: { args: ['targetId:string'] }
+    }
+  };
 }
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////

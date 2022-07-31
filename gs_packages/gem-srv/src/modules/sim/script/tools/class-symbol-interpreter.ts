@@ -1491,8 +1491,6 @@ class SymbolInterpreter {
     const methodSignature: TGSMethodSig = this.cur_scope[methodName];
     // TODO: some keywords (e.g. 'when') may have multiple arrays
     const { args } = methodSignature;
-    // if (args === undefined) debugger;
-    methodSignature.name = methodName; // add optional methodName to TSymbolData
 
     // SCOPE ARGS 2: general validation tokens for each argument
     // this loop structure is weird because we have to handle overflow

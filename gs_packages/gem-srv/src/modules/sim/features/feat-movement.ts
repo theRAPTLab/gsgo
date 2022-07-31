@@ -816,39 +816,51 @@ class MovementPack extends SM_Feature {
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  symbolize(): TSymbolData {
-    return {
-      props: {
-        movementType: SM_String.Symbols,
-        controller: SM_String.Symbols,
-        direction: SM_Number.Symbols,
-        compassDirection: SM_String.Symbols,
-        distance: SM_Number.Symbols,
-        bounceAngle: SM_Number.Symbols,
-        isMoving: SM_Number.Symbols,
-        useAutoOrientation: SM_Boolean.Symbols,
-        targetX: SM_Number.Symbols,
-        targetY: SM_Number.Symbols
-      },
-      methods: {
-        setController: { args: ['x:number'] },
-        queuePosition: { args: ['x:number', 'y:number'] },
-        setMovementType: { args: ['type:string', 'params:{...}'] },
-        setRandomDirection: {},
-        setRandomPosition: {},
-        setRandomPositionX: {},
-        setRandomPositionY: {},
-        setRandomStart: {},
-        setRandomStartPosition: { args: ['width:number', 'height:number'] },
-        jitterPos: { args: ['min:number', 'max:number', 'round:boolean'] },
-        jitterRotate: {},
-        seekNearest: { args: ['targetType:string'] },
-        seekNearestVisibleCone: { args: ['targetType:string'] },
-        seekNearestVisibleColor: { args: ['targetType:string'] },
-        wanderUntilInside: { args: ['targetType:string'] }
-      }
-    };
+  /** static method to return symbol data */
+  static Symbolize(): TSymbolData {
+    return SM_Feature._SymbolizeNames(MovementPack.Symbols);
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** instance method to return symbol data */
+  symbolize(): TSymbolData {
+    return MovementPack.Symbolize();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static _CachedSymbols: TSymbolData;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** declaration of base symbol data; methods will be modified to include
+   *  the name parameter in each methodSignature */
+  static Symbols: TSymbolData = {
+    props: {
+      movementType: SM_String.Symbols,
+      controller: SM_String.Symbols,
+      direction: SM_Number.Symbols,
+      compassDirection: SM_String.Symbols,
+      distance: SM_Number.Symbols,
+      bounceAngle: SM_Number.Symbols,
+      isMoving: SM_Number.Symbols,
+      useAutoOrientation: SM_Boolean.Symbols,
+      targetX: SM_Number.Symbols,
+      targetY: SM_Number.Symbols
+    },
+    methods: {
+      setController: { args: ['x:number'] },
+      queuePosition: { args: ['x:number', 'y:number'] },
+      setMovementType: { args: ['type:string', 'params:{...}'] },
+      setRandomDirection: {},
+      setRandomPosition: {},
+      setRandomPositionX: {},
+      setRandomPositionY: {},
+      setRandomStart: {},
+      setRandomStartPosition: { args: ['width:number', 'height:number'] },
+      jitterPos: { args: ['min:number', 'max:number', 'round:boolean'] },
+      jitterRotate: {},
+      seekNearest: { args: ['targetType:string'] },
+      seekNearestVisibleCone: { args: ['targetType:string'] },
+      seekNearestVisibleColor: { args: ['targetType:string'] },
+      wanderUntilInside: { args: ['targetType:string'] }
+    }
+  };
 } // end of feature class
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////

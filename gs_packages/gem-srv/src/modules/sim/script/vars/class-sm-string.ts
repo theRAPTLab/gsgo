@@ -1,6 +1,7 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The SM_String class does simple comparisons
+  The SM_String Prop Type contains a string and supports strict equality
+  comparisons only
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -27,20 +28,31 @@ export class SM_String extends SM_Object {
   clear() {
     this.value = '';
   }
-  symbolize(): TSymbolData {
-    return SM_String.Symbols;
-  }
-}
 
-/// SYMBOLS ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SM_String.Symbols = {
-  methods: {
-    setTo: { args: ['character string:string'] },
-    eq: { args: ['comparison string:string'], returns: 'isEqual:boolean' },
-    clear: {}
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** static method to return symbol data */
+  static Symbolize(): TSymbolData {
+    if (!SM_String._CachedSymbols)
+      SM_String._CachedSymbols = SM_Object._SymbolizeNames(SM_String.Symbols);
+    return SM_String._CachedSymbols;
   }
-};
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** instance method to return symbol data */
+  symbolize(): TSymbolData {
+    return SM_String.Symbolize();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static _CachedSymbols: TSymbolData;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static Symbols: TSymbolData = {
+    methods: {
+      setTo: { args: ['character string:string'] },
+      eq: { args: ['comparison string:string'], returns: 'isEqual:boolean' },
+      clear: {}
+    }
+  };
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
