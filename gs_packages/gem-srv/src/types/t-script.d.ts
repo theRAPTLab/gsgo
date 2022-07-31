@@ -37,9 +37,9 @@ declare global {
     getMethod: (name: string) => TSM_Method;
     getProp: (name: string) => ISM_Object;
     getPropValue: (name: string) => any;
-    symbolize?: () => TSymbolData;
     get value(): any;
     set value(val: any);
+    symbolize: () => TSymbolData;
     value: any;
     name: string;
   }

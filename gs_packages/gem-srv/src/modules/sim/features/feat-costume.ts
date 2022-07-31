@@ -470,75 +470,87 @@ class CostumePack extends SM_Feature {
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  symbolize(): TSymbolData {
-    return {
-      props: {
-        counter: SM_Number.Symbols,
-        // costumeName: SM_String.Symbols, // should be private variable
-        currentFrame: SM_Number.Symbols,
-        flipX: SM_Boolean.Symbols,
-        flipY: SM_Boolean.Symbols,
-        colorHue: SM_Number.Symbols,
-        colorSaturation: SM_Number.Symbols,
-        colorValue: SM_Number.Symbols,
-        colorScaleIndex: SM_Number.Symbols,
-        colorScaleHue: SM_Number.Symbols,
-        colorScaleSaturation: SM_Number.Symbols,
-        colorScaleValue: SM_Number.Symbols,
-        colorScaleType: SM_String.Symbols,
-        colorScaleSteps: SM_Number.Symbols
-      },
-      methods: {
-        setCostume: { args: ['costumeSprite:string', 'poseFrame:number'] },
-        setPose: { args: ['poseFrame:number'] },
-        setAnimatedCostume: { args: ['costumeName:string', 'frameRate:number'] },
-        setScale: { args: ['scaleMultiplier:number'] },
-        setGlow: { args: ['seconds:number'] },
-        getColorHSV: {
-          returns: ['hue:number', 'saturation:number', 'value:number']
-        },
-        setColorize: { args: ['red:number', 'green:number', 'blue:number'] },
-        setColorizeHSV: { args: ['hue:number', 'sat:number', 'val:number'] },
-        randomizeColor: {
-          args: ['dRed:number', 'dGreen:number', 'dBlue:number']
-        },
-        randomizeColorHSV: {
-          args: ['dHue:number', 'dSat:number', 'dVal:number']
-        },
-        colorHSVWithinRange: {
-          args: [
-            'col1:number',
-            'col2:number',
-            'dHue:number',
-            'dSat:number',
-            'dVal:number'
-          ]
-        },
-        resetColorize: {},
-        initHSVColorScale: {
-          args: [
-            'hue:number',
-            'saturation:number',
-            'value:number',
-            'type:string',
-            'steps:number'
-          ]
-        },
-        getHSVColorScaleColor: {
-          args: ['index:number'],
-          returns: 'color:number'
-        },
-        getBounds: {
-          returns: ['width:number', 'height:number']
-        },
-        getScaledBounds: {
-          returns: ['width:number', 'height:number']
-        },
-        test: {},
-        thinkHook: {}
-      }
-    };
+  /** static method to return symbol data */
+  static Symbolize(): TSymbolData {
+    return SM_Feature._SymbolizeNames(CostumePack.Symbols);
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** instance method to return symbol data */
+  symbolize(): TSymbolData {
+    return CostumePack.Symbolize();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static _CachedSymbols: TSymbolData;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** declaration of base symbol data; methods will be modified to include
+   *  the name parameter in each methodSignature */
+  static Symbols: TSymbolData = {
+    props: {
+      counter: SM_Number.Symbols,
+      // costumeName: SM_String.Symbols, // should be private variable
+      currentFrame: SM_Number.Symbols,
+      flipX: SM_Boolean.Symbols,
+      flipY: SM_Boolean.Symbols,
+      colorHue: SM_Number.Symbols,
+      colorSaturation: SM_Number.Symbols,
+      colorValue: SM_Number.Symbols,
+      colorScaleIndex: SM_Number.Symbols,
+      colorScaleHue: SM_Number.Symbols,
+      colorScaleSaturation: SM_Number.Symbols,
+      colorScaleValue: SM_Number.Symbols,
+      colorScaleType: SM_String.Symbols,
+      colorScaleSteps: SM_Number.Symbols
+    },
+    methods: {
+      setCostume: { args: ['costumeSprite:string', 'poseFrame:number'] },
+      setPose: { args: ['poseFrame:number'] },
+      setAnimatedCostume: { args: ['costumeName:string', 'frameRate:number'] },
+      setScale: { args: ['scaleMultiplier:number'] },
+      setGlow: { args: ['seconds:number'] },
+      getColorHSV: {
+        returns: ['hue:number', 'saturation:number', 'value:number']
+      },
+      setColorize: { args: ['red:number', 'green:number', 'blue:number'] },
+      setColorizeHSV: { args: ['hue:number', 'sat:number', 'val:number'] },
+      randomizeColor: {
+        args: ['dRed:number', 'dGreen:number', 'dBlue:number']
+      },
+      randomizeColorHSV: {
+        args: ['dHue:number', 'dSat:number', 'dVal:number']
+      },
+      colorHSVWithinRange: {
+        args: [
+          'col1:number',
+          'col2:number',
+          'dHue:number',
+          'dSat:number',
+          'dVal:number'
+        ]
+      },
+      resetColorize: {},
+      initHSVColorScale: {
+        args: [
+          'hue:number',
+          'saturation:number',
+          'value:number',
+          'type:string',
+          'steps:number'
+        ]
+      },
+      getHSVColorScaleColor: {
+        args: ['index:number'],
+        returns: 'color:number'
+      },
+      getBounds: {
+        returns: ['width:number', 'height:number']
+      },
+      getScaledBounds: {
+        returns: ['width:number', 'height:number']
+      },
+      test: {},
+      thinkHook: {}
+    }
+  };
 }
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////

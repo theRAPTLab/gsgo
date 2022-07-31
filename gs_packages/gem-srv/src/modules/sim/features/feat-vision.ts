@@ -329,31 +329,43 @@ class VisionPack extends SM_Feature {
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  symbolize(): TSymbolData {
-    return {
-      props: {
-        'visionable': SM_Number.Symbols,
-        'viewDistance': SM_Number.Symbols,
-        'viewAngle': SM_Number.Symbols,
-        'colorHueDetectionThreshold': SM_Number.Symbols,
-        'colorSaturationDetectionThreshold': SM_Number.Symbols,
-        'colorValueDetectionThreshold': SM_Number.Symbols
-      },
-      methods: {
-        'monitor': { args: ['targetBlueprintName:string'] },
-        'isCamouflaged': {
-          args: [
-            'backgroundColor:number',
-            'hRange:number',
-            'sRange:number',
-            'vRange:number'
-          ]
-        },
-        // REVIEW TODO: target is an IAgent.  Should it be `blueprint`?
-        'canSeeColorOfAgent': { args: ['target:objref'] }
-      }
-    };
+  /** static method to return symbol data */
+  static Symbolize(): TSymbolData {
+    return SM_Feature._SymbolizeNames(VisionPack.Symbols);
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** instance method to return symbol data */
+  symbolize(): TSymbolData {
+    return VisionPack.Symbolize();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static _CachedSymbols: TSymbolData;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** declaration of base symbol data; methods will be modified to include
+   *  the name parameter in each methodSignature */
+  static Symbols: TSymbolData = {
+    props: {
+      'visionable': SM_Number.Symbols,
+      'viewDistance': SM_Number.Symbols,
+      'viewAngle': SM_Number.Symbols,
+      'colorHueDetectionThreshold': SM_Number.Symbols,
+      'colorSaturationDetectionThreshold': SM_Number.Symbols,
+      'colorValueDetectionThreshold': SM_Number.Symbols
+    },
+    methods: {
+      'monitor': { args: ['targetBlueprintName:string'] },
+      'isCamouflaged': {
+        args: [
+          'backgroundColor:number',
+          'hRange:number',
+          'sRange:number',
+          'vRange:number'
+        ]
+      },
+      // REVIEW TODO: target is an IAgent.  Should it be `blueprint`?
+      'canSeeColorOfAgent': { args: ['target:objref'] }
+    }
+  };
 }
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////

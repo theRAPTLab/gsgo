@@ -23,11 +23,12 @@ export class AddProp extends Keyword {
 
   /** create smc blueprint code objects */
   compile(unit: TKWArguments): TOpcode[] {
+    // note: compile receives decoded args, not tokens
     const [, propName, propType, initValue] = unit;
     const propCtor = GetPropTypeCtor(propType as TSLit);
     const define = [
       (agent: IAgent) =>
-        agent.addProp(propName as string, new propCtor(initValue))
+        agent.addProp(propName as string, new propCtor(initValue as any))
     ];
     BUNDLER.AddToProgramOut(define, 'define');
     return [];
@@ -45,7 +46,7 @@ export class AddProp extends Keyword {
       console.warn('addProp unrecognized propType', propType);
       return {};
     }
-    const propClassSymbols = propClass.Symbols;
+    const propClassSymbols = propClass.Symbolize();
     if (propClassSymbols === undefined) {
       console.warn('addProp symbolize missing symbols', propClass);
       return {};

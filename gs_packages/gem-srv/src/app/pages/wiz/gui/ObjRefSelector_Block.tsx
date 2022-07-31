@@ -20,7 +20,8 @@ import React from 'react';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
-import { GValidationToken, GSymbolToken } from '../SharedElements';
+import * as HELP from 'app/help/codex';
+import { StackUnit, GValidationToken, GSymbolToken } from '../SharedElements';
 import { HIDDEN_SYMBOLS, ADVANCED_SYMBOLS } from './EditSymbol_Block';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
@@ -198,9 +199,15 @@ function ObjRefSelector_Block(props) {
   });
 
   const tokenCount = vtoks.length;
+  const prompt = `EDIT ${HELP.ForTypeInfo('objref').name.toUpperCase()}`;
+  const helpInfo = HELP.ForTypeInfo('objref').info;
   return (
     <div style={{ padding: '0 20px' }}>
+      <StackUnit label={prompt} type="editor" open>
+        {helpInfo}
+      </StackUnit>
       <div
+        id="ORS_select"
         className="gsled tokenList"
         style={{
           gridTemplateColumns: `repeat(${tokenCount},1fr)`,
