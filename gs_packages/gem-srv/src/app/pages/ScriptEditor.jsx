@@ -167,7 +167,9 @@ class ScriptEditor extends React.Component {
     const params = new URLSearchParams(window.location.search.substring(1));
     const projId = params.get('project');
     const bpName = params.get('script');
-    document.title = `GEMSTEP SCRIPT EDITOR: ${projId}`;
+    document.title = bpName
+      ? `"${bpName}" Editor`
+      : `GEMSTEP SCRIPT EDITOR: ${projId}`;
 
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
@@ -176,9 +178,14 @@ class ScriptEditor extends React.Component {
       this.CleanupComponents();
       if (SKIP_RELOAD_WARNING) return;
       // Show "Leave site?" dialog
-      e.preventDefault();
-      e.returnValue = ''; // required by Chrome
-      return e;
+      const { script_page_needs_saving } = WIZCORE.State();
+      const { slots_need_saving } = SLOTCORE.State();
+      if (script_page_needs_saving || slots_need_saving) {
+        e.preventDefault();
+        e.returnValue = ''; // required by Chrome
+        return e;
+      }
+      return;
     });
 
     // add top-level click handler
