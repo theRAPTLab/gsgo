@@ -64,14 +64,15 @@ function m_FeaturesUpdate(frame) {
       // New plot point based every _graphFreq per second
       // This won't update if _graphFreq is 0
       let value;
-      if (agentWgt.graphProp) {
+      if (agentWgt.graphProp && agentWgt.graphProp.value) {
         const prop = agent.prop[agentWgt.graphProp.value];
         value = prop ? prop.value : 0; // default to 0
-      } else if (agent.prop.AgentWidgets._graphGlobalProp) {
-        const graphProp = agent.prop.AgentWidgets._graphGlobalProp;
+      } else if (agentWgt.graphGlobalProp && agentWgt.graphGlobalProp.value) {
+        const graphProp = agentWgt.graphGlobalProp.value;
         const global = SM_Agent.GetGlobalAgent();
         value = global.prop[graphProp].value;
       }
+      value = value || 0; // default to 0 (value can be undefined on first frame)
       const counter = agent.prop.AgentWidgets._graphCounter++;
       if (Number.isNaN(value))
         throw new Error(`${agent.name} tried to graph a NaN value.`);
@@ -234,6 +235,7 @@ class WidgetPack extends SM_Feature {
     prop = new SM_Number(0);
     this.featAddProp(agent, 'graphValue', prop);
     this.featAddProp(agent, 'graphProp', new SM_String()); // agent prop name that text is bound to
+    this.featAddProp(agent, 'graphGlobalProp', new SM_String()); // agent prop name that text is bound to
     prop = new SM_Number(30);
     this.featAddProp(agent, 'graphFrequency', prop);
 
@@ -245,7 +247,6 @@ class WidgetPack extends SM_Feature {
     agent.prop.AgentWidgets._graph = [0, 0];
     agent.prop.AgentWidgets._graphCounter = 0;
     agent.prop.AgentWidgets._graphValueOld = 0;
-    agent.prop.AgentWidgets._graphGlobalProp = undefined;
     // REGISTER the Agent for updates
     WIDGET_AGENTS.set(agent.id, agent.id);
   }
@@ -278,17 +279,6 @@ class WidgetPack extends SM_Feature {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// GRAPH
 
-  /**
-   *
-   * @param agent
-   * @param propName
-   * @param frequency Number of frames between plotting another point
-   *                  Defaults to 30, or once per second
-   */
-  bindGraphToGlobalProp(agent: IAgent, propName: string, frequency: number = 30) {
-    agent.prop.AgentWidgets._graphGlobalProp = propName;
-    agent.prop.AgentWidgets._graphFreq = frequency;
-  }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// HISTOGRAMS
@@ -329,6 +319,7 @@ class WidgetPack extends SM_Feature {
       isLargeGraphic: SM_Boolean.Symbols,
       graphValue: SM_Number.Symbols,
       graphProp: SM_String.Symbols,
+      graphGlobalProp: SM_String.Symbols,
       graphFrequency: SM_Number.Symbols,
       barGraphProp: SM_String.Symbols,
       barGraphPropFeature: SM_String.Symbols
@@ -336,7 +327,6 @@ class WidgetPack extends SM_Feature {
     methods: {
       showMessage: { args: ['text:string'] },
       setMeterPosition: { args: ['position:string'] },
-      bindGraphToGlobalProp: { args: ['propName:prop', 'frequency:number'] },
       bindLineGraphHistogramToFeatProp: {
         args: ['featureName:feature', 'propName:prop']
       }
