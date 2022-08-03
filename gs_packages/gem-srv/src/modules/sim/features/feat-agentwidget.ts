@@ -277,10 +277,6 @@ class WidgetPack extends SM_Feature {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// GRAPH
-
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// HISTOGRAMS
 
   /// This expects the featprop to be a dictionary
