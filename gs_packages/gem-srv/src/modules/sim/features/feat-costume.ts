@@ -144,12 +144,6 @@ class CostumePack extends SM_Feature {
     this.featAddMethod('randomizeColorHSV', this.randomizeColorHSV);
     this.featAddMethod('colorHSVWithinRange', this.colorHSVWithinRange);
     this.featAddMethod('resetColorize', this.resetColorize);
-    this.featAddMethod('test', this.test);
-    this.featAddMethod('thinkHook', agent => {
-      const prop = agent.prop.Costume.counter;
-      prop.add(1);
-      if (prop.value === 0) console.log(`${agent.name} is CostumeThinking`);
-    });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** This runs once to initialize the feature for all agents */
@@ -170,13 +164,6 @@ class CostumePack extends SM_Feature {
     super.decorate(agent);
     // add feature props here
     let prop = new SM_Number(0);
-    // initialize a counter in the agent
-    // it will be checked during 'thinkHook' when it's invoked via a
-    // featureHook keyword
-    prop.setMax(120);
-    prop.setMin(0);
-    prop.setWrap();
-    this.featAddProp(agent, 'counter', prop); // used by thinkhook example above
     this.featAddProp(agent, 'costumeName', new SM_String('default'));
     prop = new SM_Number(0);
     prop.setWrap();
@@ -464,9 +451,6 @@ class CostumePack extends SM_Feature {
     const scaleY = agent.scaleY || scale;
     return { w: scale * w, h: scaleY * h };
   }
-  test(agent: IAgent) {
-    console.log('GOT AGENT', agent.name, 'from FEATURE', this.name);
-  }
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -546,9 +530,7 @@ class CostumePack extends SM_Feature {
       },
       getScaledBounds: {
         returns: ['width:number', 'height:number']
-      },
-      test: {},
-      thinkHook: {}
+      }
     }
   };
 }
