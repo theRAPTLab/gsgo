@@ -47,17 +47,7 @@ export const HIDDEN_SYMBOLS = [
   'usefeature', // deprecated.  use 'addFeature'
   // features
   'global',
-  // costume
-  'getbounds',
-  'getscaledbounds',
-  'test',
-  'thinkhook',
   // physics
-  'bodyradius',
-  'bodywidth',
-  'bodyheight',
-  'getbodywidth',
-  'getbodyheight',
   'intersectsWith',
   'intersectsWithBounds',
   'intersectsCenterWithBounds',
@@ -102,14 +92,28 @@ export const ADVANCED_SYMBOLS = [
   // features
   'cursor',
   // costume
+  'currentFrame',
+  'colorHue',
+  'colorSaturation',
+  'colorValue',
+  'colorScaleIndex',
+  'colorScaleHue',
+  'colorScaleSaturation',
+  'colorScaleValue',
+  'colorScaleType',
+  'colorScaleSteps',
   'colorHSVWithinRange',
   'initHSVColorScale',
   'getHSVColorScaleColor',
+  // physics
+  'bodyradius',
+  'bodywidth',
+  'bodyheight',
+  'bodyshape',
   // agent
   'agent',
   'x',
   'y',
-  'scale',
   'statustext',
   'zindex',
   'color',

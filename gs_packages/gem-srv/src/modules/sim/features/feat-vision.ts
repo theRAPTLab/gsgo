@@ -92,7 +92,7 @@ function m_GetAgentBoundingRect(agent) {
     throw new Error(
       `m_GetAgentBoundingRect: Tried to use vision on an agent with no costume ${agent.id}`
     );
-  const { w, h } = agent.callFeatMethod('Costume', 'getScaledBounds');
+  const { w, h } = agent.callFeatMethod('Costume', '_getScaledBounds');
   const halfw = w / 2;
   const halfh = h / 2;
   return [
