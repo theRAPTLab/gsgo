@@ -55,7 +55,7 @@ class GlobalPack extends SM_Feature {
     if (type_lcase === 'string') gvar = new SM_String();
     if (type_lcase === 'number') gvar = new SM_Number();
     if (type_lcase === 'boolean') gvar = new SM_Boolean();
-    global.addProp(pName, gvar);
+    if (global.getProp(pName) === undefined) global.addProp(pName, gvar);
     global.prop[pName].setTo(value);
   }
 
