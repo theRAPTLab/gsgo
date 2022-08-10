@@ -55,12 +55,21 @@ function m_CalculateScale(agent: IAgent): { scale: number; scaleY: number } {
   const sh = agent.prop.Costume._spriteHeight;
   //   user defined `size` sets both width and height
   const size = agent.prop.Costume.size.value;
+  let sizew; // retain aspect ratio when sizing
+  let sizeh; // retain aspect ratio when sizing
+  if (sw > sh) {
+    sizew = size;
+    sizeh = (sh / sw) * size;
+  } else {
+    sizew = (sw / sh) * size;
+    sizeh = size;
+  }
   //   user defined w/h is used to scale the original sprite
   //   and overrides size
   const uw = agent.prop.Costume.width.value;
   const uh = agent.prop.Costume.height.value;
-  const spriteScale = uw ? uw / sw : size ? size / sw : 1;
-  const spriteScaleY = uh ? uh / sh : size ? size / sh : 1;
+  const spriteScale = uw ? uw / sw : size ? sizew / sw : 1;
+  const spriteScaleY = uh ? uh / sh : size ? sizeh / sh : 1;
   //   user defined scale is applied on to of current scale
   const us = agent.prop.Costume.scale.value; // "u"ser
   const usY = agent.prop.Costume.scaleY.value;
