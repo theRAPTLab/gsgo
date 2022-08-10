@@ -105,6 +105,14 @@ export const ADVANCED_SYMBOLS = [
   'colorHSVWithinRange',
   'initHSVColorScale',
   'getHSVColorScaleColor',
+  // movement
+  'bounceAngle',
+  'setRandomPositionX',
+  'setRandomPositionY',
+  'seekNearest',
+  'seekNearestVisibleCone',
+  'seekNearestVisibleColor',
+  'wanderUntilInside',
   // physics
   'bodyradius',
   'bodywidth',

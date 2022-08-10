@@ -388,6 +388,8 @@ function seekAgent(agent: IAgent) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// seekAgentOrWander
+/// -- Move toward the target agent until the targetId
+///    is removed (e.g. if you lost sight of it).  Then just wander.
 function seekAgentOrWander(agent: IAgent, frame: number) {
   const targetId = agent.prop.Movement._targetId;
   if (!targetId) {
@@ -608,7 +610,6 @@ class MovementPack extends SM_Feature {
     super(name);
     if (DBG) console.log(...PR('construct'));
     this.handleInput = this.handleInput.bind(this);
-    this.featAddMethod('setController', this.setController);
     this.featAddMethod('queuePosition', this.queuePosition);
     this.featAddMethod('setMovementType', this.setMovementType);
     this.featAddMethod('setRandomDirection', this.setRandomDirection);
@@ -637,7 +638,6 @@ class MovementPack extends SM_Feature {
     super.decorate(agent);
     MOVEMENT_AGENTS.set(agent.id, agent);
     this.featAddProp(agent, 'movementType', new SM_String('static'));
-    this.featAddProp(agent, 'controller', new SM_String());
     this.featAddProp(agent, 'direction', new SM_Number(0)); // degrees
     this.featAddProp(agent, 'compassDirection', new SM_String()); // readonly
     this.featAddProp(agent, 'distance', new SM_Number(0.5));
@@ -675,11 +675,6 @@ class MovementPack extends SM_Feature {
   handleInput() {
     // hook into INPUT phase and do what needs doing for
     // the feature as a whole
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  setController(agent: IAgent, x: number) {
-    if (DBG) console.log(...PR(`setting control to ${x}`));
-    agent.getProp('controller').value = x;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   queuePosition(agent: IAgent, x: number, y: number) {
@@ -833,7 +828,6 @@ class MovementPack extends SM_Feature {
   static Symbols: TSymbolData = {
     props: {
       movementType: SM_String.Symbols,
-      controller: SM_String.Symbols,
       direction: SM_Number.Symbols,
       compassDirection: SM_String.Symbols,
       distance: SM_Number.Symbols,
@@ -844,7 +838,6 @@ class MovementPack extends SM_Feature {
       targetY: SM_Number.Symbols
     },
     methods: {
-      setController: { args: ['x:number'] },
       queuePosition: { args: ['x:number', 'y:number'] },
       setMovementType: { args: ['type:string', 'params:{...}'] },
       setRandomDirection: {},
