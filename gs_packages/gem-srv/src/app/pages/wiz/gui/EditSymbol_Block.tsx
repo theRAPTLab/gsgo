@@ -102,6 +102,8 @@ export const ADVANCED_SYMBOLS = [
   'colorScaleValue',
   'colorScaleType',
   'colorScaleSteps',
+  'setAnimatedCostume',
+  'getColorHSV',
   'colorHSVWithinRange',
   'initHSVColorScale',
   'getHSVColorScaleColor',
