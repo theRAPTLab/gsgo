@@ -144,6 +144,8 @@ export const ADVANCED_SYMBOLS = [
   'countAgentsByPropType',
   'setAgentsByFeatPropTypeKeys',
   'countExistingAgentsByFeatPropType',
+  // vision
+  'vision',
   // agent
   'agent',
   'x',
