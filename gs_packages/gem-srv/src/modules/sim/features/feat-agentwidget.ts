@@ -58,17 +58,24 @@ function m_FeaturesUpdate(frame) {
     if (!agent) return;
     const agentWgt = agent.prop.AgentWidgets;
 
+    const graphPropValue = agentWgt.graphProp && agentWgt.graphProp.value;
+    const graphGlobalPropValue =
+      agentWgt.graphGlobalProp && agentWgt.graphGlobalProp.value;
     // Add new Graph values
-    if (frame % agentWgt.graphFrequency.value === 0) {
+    if (
+      (graphPropValue || graphGlobalPropValue) && // only plot if these have been set
+      frame % agentWgt.graphFrequency.value === 0
+    ) {
       // Time-based Graphs
-      // New plot point based every _graphFreq per second
-      // This won't update if _graphFreq is 0
+      // New plot point based every graphFrequency per second
+      // This won't update if graphFrequency is 0
+      // (it defaults to 30 though)
       let value;
-      if (agentWgt.graphProp && agentWgt.graphProp.value) {
-        const prop = agent.prop[agentWgt.graphProp.value];
+      if (graphPropValue) {
+        const prop = agent.prop[graphPropValue];
         value = prop ? prop.value : 0; // default to 0
-      } else if (agentWgt.graphGlobalProp && agentWgt.graphGlobalProp.value) {
-        const graphProp = agentWgt.graphGlobalProp.value;
+      } else if (graphGlobalPropValue) {
+        const graphProp = graphGlobalPropValue;
         const global = SM_Agent.GetGlobalAgent();
         value = global.prop[graphProp].value;
       }
@@ -209,7 +216,6 @@ class WidgetPack extends SM_Feature {
     super(name);
     this.featAddMethod('showMessage', this.showMessage);
     this.featAddMethod('setMeterPosition', this.setMeterPosition);
-    this.featAddMethod('bindGraphToGlobalProp', this.bindGraphToGlobalProp);
     this.featAddMethod(
       'bindLineGraphHistogramToFeatProp',
       this.bindLineGraphHistogramToFeatProp
