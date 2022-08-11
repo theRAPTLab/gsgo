@@ -248,9 +248,12 @@ function m_ProcessPosition(agent, frame) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// VIZ_UPDATE
 function m_SetPosition(agent, frame) {
-  const x = agent.prop.Movement._x || agent.x; // Fall back to x, set by MapEditor
-  const y = agent.prop.Movement._y || agent.y; // Fall back to y, set by MapEditor
+  const x =
+    agent.prop.Movement._x !== undefined ? agent.prop.Movement._x : agent.x; // Fall back to x, set by MapEditor
+  const y =
+    agent.prop.Movement._y !== undefined ? agent.prop.Movement._y : agent.y; // Fall back to y, set by MapEditor
   if (x === undefined || y === undefined) return; // Movement not set, so ignore
   agent.prop.x.value = x;
   agent.prop.y.value = y;
