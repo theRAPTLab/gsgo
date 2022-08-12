@@ -57,8 +57,7 @@ const MOVEDISTANCE = 3; // Minimum distance moved before `isMoved` is registered
 
 /// Movement Agent Manager
 const MOVEMENT_AGENTS = new Map();
-const SEEK_AGENTS = new Map();
-const INSIDE_AGENTS = new Map();
+const SEEKING_AGENTS = new Map(); // agents that are actively seeking something
 
 /// MOVING_AGENTS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -159,6 +158,7 @@ function m_QueuePosition(agent, x, y) {
   agent.prop.Movement._y = yy;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// FEATURES_EXEC
 /// Calculate derived properties
 function m_ProcessPosition(agent, frame) {
   // REVIEW
@@ -262,12 +262,10 @@ function m_SetPosition(agent, frame) {
 /// MOVEMENT TYPES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// JITTER
-function moveJitter(
-  agent: IAgent,
-  min: number = -5,
-  max: number = 5,
-  round: boolean = true
-) {
+function moveJitter(agent: IAgent) {
+  const min = -agent.prop.Movement.jitterDistance.value;
+  const max = agent.prop.Movement.jitterDistance.value;
+  const round = true;
   const x = m_random(min, max, round);
   const y = m_random(min, max, round);
   m_QueuePosition(agent, agent.prop.x.value + x, agent.prop.y.value + y);
@@ -331,6 +329,14 @@ function moveEdgeToEdge(agent: IAgent) {
   agent.prop.Movement._y = y;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// moveSetLocation -- set position immediately (don't move there)
+function moveSetLocation(agent: IAgent) {
+  // grab the targetX and targetY
+  const x = agent.prop.Movement.targetX.value;
+  const y = agent.prop.Movement.targetY.value;
+  m_QueuePosition(agent, x, y);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// goLocation
 function moveGoLocation(agent: IAgent) {
   // move toward targetX and targetY at speed of distance
@@ -382,18 +388,18 @@ function seek(agent: IAgent, target: { x; y }) {
   m_setDirection(agent, angle);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// SeekAgent
-function seekAgent(agent: IAgent) {
+/// _seekAgent
+function _seekAgent(agent: IAgent) {
   const targetId = agent.prop.Movement._targetId;
   if (!targetId) return; // no target, just idle
   const target = GetAgentById(targetId);
   seek(agent, target);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// seekAgentOrWander
+/// _seekAgentOrWander
 /// -- Move toward the target agent until the targetId
 ///    is removed (e.g. if you lost sight of it).  Then just wander.
-function seekAgentOrWander(agent: IAgent, frame: number) {
+function _seekAgentOrWander(agent: IAgent, frame: number) {
   const targetId = agent.prop.Movement._targetId;
   if (!targetId) {
     moveWander(agent); // no target, wander instead
@@ -405,24 +411,33 @@ function seekAgentOrWander(agent: IAgent, frame: number) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// wanderUntilAgent
 function wanderUntilAgent(agent: IAgent, frame: number) {
-  if (!INSIDE_AGENTS.has(agent.id)) {
+  // Requires Touches
+  const fn = `wanderUntilAgent`;
+  if (!agent.hasFeature('Physics')) console.error(fn, 'requires Physics!');
+  if (!agent.hasFeature('Touches'))
+    console.error(fn, 'requires Touches monitoring "binb"!');
+  // if (!INSIDE_AGENTS.has(agent.id)) {
+  if (!agent.prop.Movement.targetCharacterType.value) {
     console.error(
-      'Feature Movement: wanderUntilAgent could not find a registered targetType for',
+      fn,
+      'could not find a registered targetType for',
       agent.id,
       agent.blueprint.name,
       '. Perhaps its freshly spawned/cloned and you did not set the "wanderUntilInside" targetType yet?  Reverting movement type to static.'
     );
-    agent.prop.Movement.movementType.setTo('static');
+    agent.prop.Movement.movementType.setTo('stop');
     return;
   }
-  const targetType = INSIDE_AGENTS.get(agent.id).targetType;
+  const targetType = agent.prop.Movement.targetCharacterType.value;
   const targets = GetAgentsByType(targetType);
   let isInside = false;
   targets.forEach(target => {
+    // for some reason `target.id` is a number not a string?
+    const targetId = String(target.id);
     if (
       agent.isTouching &&
-      agent.isTouching.get(target.id) &&
-      agent.isTouching.get(target.id).binb
+      agent.isTouching.get(targetId) &&
+      agent.isTouching.get(targetId).binb
     ) {
       isInside = true;
     }
@@ -433,15 +448,16 @@ function wanderUntilAgent(agent: IAgent, frame: number) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Movement Function Library
 const MOVEMENT_FUNCTIONS: Map<string, Function> = new Map([
-  ['static', undefined],
-  ['wander', moveWander],
-  ['edgeToEdge', moveEdgeToEdge],
-  ['goLocation', moveGoLocation],
-  ['jitter', moveJitter],
-  ['float', moveFloat],
-  ['seekAgent', seekAgent],
-  ['seekAgentOrWander', seekAgentOrWander],
-  ['wanderUntilAgent', wanderUntilAgent]
+  ['stop'.toLowerCase(), undefined],
+  ['wander'.toLowerCase(), moveWander],
+  ['edgeToEdge'.toLowerCase(), moveEdgeToEdge],
+  ['setLocation'.toLowerCase(), moveSetLocation],
+  ['goLocation'.toLowerCase(), moveGoLocation],
+  ['jitter'.toLowerCase(), moveJitter],
+  ['float'.toLowerCase(), moveFloat],
+  ['wanderUntilAgent'.toLowerCase(), wanderUntilAgent],
+  ['_seekAgent'.toLowerCase(), _seekAgent], // internal method!
+  ['_seekAgentOrWander'.toLowerCase(), _seekAgentOrWander] // internal method!
 ]);
 
 /// SEEK ALGORITHMS ///////////////////////////////////////////////////////////
@@ -485,10 +501,10 @@ function m_FindNearbyAgents(agent, targetType) {
 
 /// UPDATES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+/// PHYSICS_UPDATE
 function m_PhysicsUpdate(frame) {
   // 1. Cache Distances
-  SEEK_AGENTS.forEach((options, id) => {
+  SEEKING_AGENTS.forEach((options, id) => {
     const agent = GetAgentById(id);
     if (!agent) return;
     const targets = GetAgentsByType(options.targetType);
@@ -498,9 +514,10 @@ function m_PhysicsUpdate(frame) {
     });
   });
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// FEATURES_THINK
 function m_FeaturesThinkSeek(frame) {
-  SEEK_AGENTS.forEach((options, id) => {
+  SEEKING_AGENTS.forEach((options, id) => {
     // REVIEW: Distance calculation should ideally only happen once and be cached
 
     const agent = GetAgentById(id);
@@ -546,6 +563,7 @@ function m_FeaturesThinkSeek(frame) {
     }
   });
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_InputsUpdate(frame) {
   // 2. Decide on Movement
   const agents = [...MOVEMENT_AGENTS.values()];
@@ -555,6 +573,7 @@ function m_InputsUpdate(frame) {
     if (agent.cursor) m_QueuePosition(agent, agent.cursor.x, agent.cursor.y);
   });
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_FeaturesThink(frame) {
   // 1. Process Seek agents: Find target Agent
   m_FeaturesThinkSeek(frame);
@@ -571,11 +590,13 @@ function m_FeaturesThink(frame) {
     // ignore AI movement if inert
     if (agent.isInert) return;
     // handle movement
-    const moveFn = MOVEMENT_FUNCTIONS.get(agent.prop.Movement.movementType.value);
+    const moveFn = MOVEMENT_FUNCTIONS.get(
+      agent.prop.Movement.movementType.value.toLowerCase()
+    );
     if (moveFn) moveFn(agent, frame);
   });
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_FeaturesExec(frame) {
   // 3. Calculate derived properties (e.g. isMoving)
   const agents = [...MOVEMENT_AGENTS.values()];
@@ -584,7 +605,7 @@ function m_FeaturesExec(frame) {
     m_ProcessPosition(agent, frame);
   });
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_VizUpdate(frame) {
   // 4. Apply Positions
   const agents = [...MOVEMENT_AGENTS.values()];
@@ -613,8 +634,9 @@ class MovementPack extends SM_Feature {
     super(name);
     if (DBG) console.log(...PR('construct'));
     this.handleInput = this.handleInput.bind(this);
+    // this.featAddMethod('setController', this.setController);
     this.featAddMethod('queuePosition', this.queuePosition);
-    this.featAddMethod('setMovementType', this.setMovementType);
+    // this.featAddMethod('setMovementType', this.setMovementType);
     this.featAddMethod('setRandomDirection', this.setRandomDirection);
     this.featAddMethod('setRandomPosition', this.setRandomPosition);
     this.featAddMethod('setRandomPositionX', this.setRandomPositionX);
@@ -626,7 +648,6 @@ class MovementPack extends SM_Feature {
     this.featAddMethod('seekNearest', this.seekNearest);
     this.featAddMethod('seekNearestVisibleCone', this.seekNearestVisibleCone);
     this.featAddMethod('seekNearestVisibleColor', this.seekNearestVisibleColor);
-    this.featAddMethod('wanderUntilInside', this.wanderUntilInside);
 
     UR.SubscribeState('metadata', urStateUpdated);
   }
@@ -640,16 +661,18 @@ class MovementPack extends SM_Feature {
   decorate(agent) {
     super.decorate(agent);
     MOVEMENT_AGENTS.set(agent.id, agent);
-    this.featAddProp(agent, 'movementType', new SM_String('static'));
+    this.featAddProp(agent, 'movementType', new SM_String('stop'));
     this.featAddProp(agent, 'direction', new SM_Number(0)); // degrees
     this.featAddProp(agent, 'compassDirection', new SM_String()); // readonly
     this.featAddProp(agent, 'distance', new SM_Number(0.5));
+    this.featAddProp(agent, 'jitterDistance', new SM_Number(5)); // degrees
     this.featAddProp(agent, 'bounceAngle', new SM_Number(180));
     this.featAddProp(agent, 'doRandomOnWander', new SM_Boolean(true));
     this.featAddProp(agent, 'isMoving', new SM_Boolean());
     this.featAddProp(agent, 'useAutoOrientation', new SM_Boolean(false));
     this.featAddProp(agent, 'targetX', new SM_Number(0)); // so that we can set a location in pieces and go to it
     this.featAddProp(agent, 'targetY', new SM_Number(0));
+    this.featAddProp(agent, 'targetCharacterType', new SM_String()); // readonly
 
     // Initialize internal properties
     agent.prop.Movement._lastMove = 0;
@@ -671,8 +694,7 @@ class MovementPack extends SM_Feature {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   reset() {
     MOVEMENT_AGENTS.clear();
-    SEEK_AGENTS.clear();
-    INSIDE_AGENTS.clear();
+    SEEKING_AGENTS.clear();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   handleInput() {
@@ -684,48 +706,9 @@ class MovementPack extends SM_Feature {
     m_QueuePosition(agent, x, y);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // TYPES
+  // MOVEMENTTYPE METHODS
   // These are convenience functions.
   // Each can be set separately via featProps.
-  setMovementType(agent: IAgent, type: string, ...params) {
-    agent.getFeatProp(FEATID, 'movementType').value = type;
-    if (params.length > 0) {
-      switch (type) {
-        case 'static':
-          SEEK_AGENTS.delete(agent.id);
-          break;
-        case 'wander':
-          SEEK_AGENTS.delete(agent.id);
-          // first param is distance
-          agent.getFeatProp(FEATID, 'distance').value = params[0];
-          break;
-        case 'edgeToEdge':
-          SEEK_AGENTS.delete(agent.id);
-          agent.getFeatProp(FEATID, 'distance').value = params[0];
-          agent.getFeatProp(FEATID, 'direction').value = params[1];
-
-          if (params.length > 2) {
-            agent.getFeatProp(FEATID, 'bounceAngle').value = params[2];
-            if (params[3] === 'rand')
-              agent.getFeatProp(FEATID, 'direction').value = m_random(0, 180);
-          }
-          break;
-        case 'goLocation':
-          SEEK_AGENTS.delete(agent.id);
-          agent.getFeatProp(FEATID, 'distance').value = params[0];
-          break;
-        case 'jitter':
-          SEEK_AGENTS.delete(agent.id);
-          break;
-        case 'wanderUntilAgent':
-          SEEK_AGENTS.delete(agent.id);
-          break;
-        case 'seekAgent':
-        case 'seekAgentOrWander':
-        default:
-      }
-    }
-  }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setRandomDirection(agent: IAgent) {
     m_setDirection(agent, m_random(0, 360));
@@ -787,30 +770,26 @@ class MovementPack extends SM_Feature {
   seekNearest(agent: IAgent, targetType: string) {
     // Clear any existing target.  This is especially important between rounds.
     agent.prop.Movement._targetId = undefined;
-    SEEK_AGENTS.set(agent.id, { targetType, useVisionCone: false });
-    this.setMovementType(agent, 'seekAgent');
+    SEEKING_AGENTS.set(agent.id, { targetType, useVisionCone: false });
+    agent.prop.Movement.movementType.setTo('_seekAgent');
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // vision cone visible
   seekNearestVisibleCone(agent: IAgent, targetType: string) {
     // Clear any existing target.  This is especially important between rounds.
     agent.prop.Movement._targetId = undefined;
-    SEEK_AGENTS.set(agent.id, { targetType, useVisionCone: true });
-    this.setMovementType(agent, 'seekAgentOrWander');
+    SEEKING_AGENTS.set(agent.id, { targetType, useVisionCone: true });
+    agent.prop.Movement.movementType.setTo('_seekAgentOrWander');
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // color visible
   seekNearestVisibleColor(agent: IAgent, targetType: string) {
     // Clear any existing target.  This is especially important between rounds.
     agent.prop.Movement._targetId = undefined;
-    SEEK_AGENTS.set(agent.id, { targetType, useVisionColor: true });
-    this.setMovementType(agent, 'seekAgentOrWander');
+    SEEKING_AGENTS.set(agent.id, { targetType, useVisionColor: true });
+    agent.prop.Movement.movementType.setTo('_seekAgentOrWander');
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  wanderUntilInside(agent: IAgent, targetType: string) {
-    INSIDE_AGENTS.set(agent.id, { targetType });
-    this.setMovementType(agent, 'wanderUntilAgent');
-  }
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -834,27 +813,29 @@ class MovementPack extends SM_Feature {
       direction: SM_Number.Symbols,
       compassDirection: SM_String.Symbols,
       distance: SM_Number.Symbols,
+      jitterDistance: SM_Number.Symbols,
       bounceAngle: SM_Number.Symbols,
       isMoving: SM_Number.Symbols,
       useAutoOrientation: SM_Boolean.Symbols,
       targetX: SM_Number.Symbols,
-      targetY: SM_Number.Symbols
+      targetY: SM_Number.Symbols,
+      targetCharacterType: SM_String.Symbols
     },
     methods: {
+      // setController: { args: ['x:number'] },
       queuePosition: { args: ['x:number', 'y:number'] },
-      setMovementType: { args: ['type:string', 'params:{...}'] },
-      setRandomDirection: {},
-      setRandomPosition: {},
-      setRandomPositionX: {},
-      setRandomPositionY: {},
-      setRandomStart: {},
+      // setMovementType: { args: ['type:string', 'params:{...}'] },
+      setRandomDirection: {}, // => use agent.prop.Movement.direction.value setToRnd 0 360
+      setRandomPosition: {}, // keep b/c of bounds checking
+      setRandomPositionX: {}, // keep b/c of bounds checking
+      setRandomPositionY: {}, // keep b/c of bounds checking
+      setRandomStart: {}, // => use direction + random Position?
       setRandomStartPosition: { args: ['width:number', 'height:number'] },
       jitterPos: { args: ['min:number', 'max:number', 'round:boolean'] },
       jitterRotate: {},
       seekNearest: { args: ['targetType:string'] },
       seekNearestVisibleCone: { args: ['targetType:string'] },
-      seekNearestVisibleColor: { args: ['targetType:string'] },
-      wanderUntilInside: { args: ['targetType:string'] }
+      seekNearestVisibleColor: { args: ['targetType:string'] }
     }
   };
 } // end of feature class
