@@ -57,22 +57,21 @@ function m_CompileCursors() {
 # TAG isPozyxControllable true
 
 # PROGRAM DEFINE
-useFeature Costume
-featCall Costume setCostume 'circle.json' 0
+addFeature Costume
+featProp Costume costumeName setTo 'circle.json'
+featProp Costume size setTo 10
 featCall Costume setColorizeHSV 1 1 1
 featCall Costume randomizeColorHSV 1 0 0
 
-useFeature Physics
-featProp Physics scale setTo 0.05
+addFeature Movement
 
-useFeature Movement
+addFeature Cursor
 
-useFeature Cursor
-
-useFeature Touches
+addFeature Physics
+addFeature Touches
 ${touchscripts}
 
-useFeature AgentWidgets
+addFeature AgentWidgets
 
 // always on top
 prop zIndex setTo 1000

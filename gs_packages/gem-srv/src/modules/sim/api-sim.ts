@@ -49,14 +49,16 @@ export const SIMSTATUS = {
 
 /// RXJS STREAM COMPUTER //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let SIM_FRAME_MS = interval((1 / 30) * 1000);
+export const SIM_TICKS_PER_SEC = 30; // key sim frame rate definition
+let SIM_FRAME_MS = interval((1 / SIM_TICKS_PER_SEC) * 1000);
 let RX_SUB; // frame step heartbeat provided by RXJS
 let SIM_RATE = 0; // 0 = stopped, 1 = going. HACKY for DEC 1
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_Step(frameCount) {
   /* insert conditional run control here */
   GAME_LOOP.executePhase('GLOOP', frameCount);
-  if (frameCount % 30 === 0) UR.RaiseMessage('SCRIPT_EVENT', { type: 'Tick' });
+  if (frameCount % SIM_TICKS_PER_SEC === 0)
+    UR.RaiseMessage('SCRIPT_EVENT', { type: 'Tick' });
   /* insert game logic here */
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

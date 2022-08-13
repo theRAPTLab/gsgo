@@ -51,10 +51,11 @@ class GlobalPack extends SM_Feature {
   addGlobalProp(agent: IAgent, pName: string, type: string, value: any) {
     const global = SM_Agent.GetGlobalAgent();
     let gvar;
-    if (type === 'String') gvar = new SM_String();
-    if (type === 'Number') gvar = new SM_Number();
-    if (type === 'Boolean') gvar = new SM_Boolean();
-    global.addProp(pName, gvar);
+    const type_lcase = type ? type.toLowerCase() : '';
+    if (type_lcase === 'string') gvar = new SM_String();
+    if (type_lcase === 'number') gvar = new SM_Number();
+    if (type_lcase === 'boolean') gvar = new SM_Boolean();
+    if (global.getProp(pName) === undefined) global.addProp(pName, gvar);
     global.prop[pName].setTo(value);
   }
 

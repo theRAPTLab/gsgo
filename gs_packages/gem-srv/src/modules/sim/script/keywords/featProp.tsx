@@ -58,6 +58,15 @@ export class featProp extends Keyword {
     // into an actual call
     let callRef;
 
+    function safeGetFeatProp(agent, featName, pName, mName, prms) {
+      try {
+        return agent.getFeatProp(featName as string, pName)[mName](...prms);
+      } catch (err) {
+        console.error(
+          `featProp Error in line: "${kw} ${featName} ${pName} ${mName} ${prms}"`
+        );
+      }
+    }
     if (len === 1) {
       /** IMPLICIT REF *******************************************************/
       /// e.g. 'Costume' is interpreted as 'agent.Costume'
@@ -69,7 +78,7 @@ export class featProp extends Keyword {
         ...prms
       ) => {
         const featName = ref[0];
-        return agent.getFeatProp(featName as string, pName)[mName](...prms);
+        return safeGetFeatProp(agent, featName, pName, mName, prms);
       };
     } else if (len === 2) {
       /** EXPLICIT REF *******************************************************/
@@ -85,7 +94,7 @@ export class featProp extends Keyword {
         const bpName = ref[0];
         const c = context[bpName as string]; // SM_Agent context
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
-        return c.getFeatProp(featName, pName)[mName](...prms);
+        return safeGetFeatProp(agent, featName, pName, mName, prms);
       };
     } else if (len === 3) {
       /** NEW EXTENDED REF REQUIRED ******************************************/
@@ -93,12 +102,12 @@ export class featProp extends Keyword {
       callRef = (agent: IAgent, context: any, mName: string, ...prms) => {
         const bpName = ref[0];
         const featName = ref[1];
-        const propName = ref[2];
+        const pName = ref[2];
         const c = context[bpName as string]; // SM_Agent context
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         // ref[0] = blueprint, ref[1] = feature, ref[2] = prop
         // we use our own decoded propname rather than looking for the passed version
-        return c.getFeatProp(featName, propName)[mName](...prms);
+        return safeGetFeatProp(agent, featName, pName, mName, prms);
       };
     } else {
       console.warn('error parse ref', ref);

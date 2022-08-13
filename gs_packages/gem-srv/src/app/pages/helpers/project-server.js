@@ -42,6 +42,7 @@ import * as ACInstances from 'modules/appcore/ac-instances';
 import { ReportMemory } from 'modules/render/api-render';
 import { IsRunning, RoundHasBeenStarted } from 'modules/sim/api-sim';
 import * as SIMCTRL from 'modules/msgex/mx-sim-control';
+import { SIM_TICKS_PER_SEC } from 'modules/sim/api-sim';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -104,6 +105,8 @@ function urProjectStateUpdated(stateObj, cb) {
   if (DBG) console.log(...PR('urProjectStateUpdated', stateObj));
   const { project } = stateObj;
   CURRENT_PROJECT = project;
+  // Broadcast update to Script Editors so they'll refresh
+  UR.RaiseMessage('NET:UPDATE_MODEL', { project });
   if (typeof cb === 'function') cb();
 }
 
@@ -125,7 +128,7 @@ function urBlueprintStateUpdated(stateObj, cb) {
  *  We keep this list small to keep from flooding the net with data.
  */
 function SendInspectorUpdate(frametime) {
-  if (frametime % 30 !== 0) return;
+  if (frametime % SIM_TICKS_PER_SEC !== 0) return;
   // walk down agents and broadcast results for monitored agents
   const agents = DCAGENTS.GetAllAgents();
   // Send all instances, but minmize non-monitored
