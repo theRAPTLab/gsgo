@@ -17,8 +17,8 @@ import { GetLoader } from 'modules/asset_core/asset-mgr';
 import { Clamp } from 'lib/util-vector';
 import { HSVfromRGB, RGBfromHSV, HSVfromHEX, HEXfromHSV } from 'lib/util-color';
 import * as ASSETS from 'modules/asset_core';
+import { SIM_TICKS_PER_SEC } from 'modules/sim/api-sim';
 
-///
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('FeatCostume');
@@ -160,7 +160,7 @@ function m_Update(frame) {
 
     // Set GLOW
     if (agent.prop.Costume.glow.value > 0) {
-      agent.prop.Costume.glow.sub(1 / 30); // frame rate
+      agent.prop.Costume.glow.sub(1 / SIM_TICKS_PER_SEC); // frame rate
       agent.isGlowing = true;
     } else {
       agent.isGlowing = false;
