@@ -78,7 +78,7 @@ import { DistanceTo } from 'lib/util-vector';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const FEATID = 'Touches';
 const PR = UR.PrefixUtil(FEATID);
-const DBG = true;
+const DBG = false;
 
 const AGENT_TOUCHTYPES = new Map(); // Touch-enabled Agents
 
