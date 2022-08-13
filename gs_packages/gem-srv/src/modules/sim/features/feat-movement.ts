@@ -590,9 +590,11 @@ function m_FeaturesThink(frame) {
     // ignore AI movement if inert
     if (agent.isInert) return;
     // handle movement
-    const moveFn = MOVEMENT_FUNCTIONS.get(
-      agent.prop.Movement.movementType.value.toLowerCase()
-    );
+    const moveType = agent.prop.Movement.movementType.value.toLowerCase();
+    const moveFn = MOVEMENT_FUNCTIONS.get(moveType);
+    // cancel seek?  NOTE: seek stops one frame after
+    if (!['seekAgent', 'seekAgentOrWander'].includes(moveType))
+      SEEKING_AGENTS.delete(agent.id);
     if (moveFn) moveFn(agent, frame);
   });
 }
