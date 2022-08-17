@@ -339,6 +339,7 @@
 .gsled.button-bar {
   display: grid;
   grid-template-columns: 45% 10% 45%;
+  width: 60%;
   padding-top: 10px;
 }
 .gsled.objref-choices {

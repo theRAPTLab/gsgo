@@ -278,6 +278,7 @@ class SlotEditor_Block extends React.Component {
           type="button"
           disabled={!slots_need_saving}
           onClick={this.SaveSlot}
+          style={{ fontWeight: `${slots_need_saving ? 'bold' : 'normal'}` }}
         >
           Save {L10N.initCap('LINE')}
         </button>
@@ -320,10 +321,15 @@ class SlotEditor_Block extends React.Component {
 
     return (
       <div className="gsled panel">
-        <div className="gsled panelhelp">EDIT LINE: {num}</div>
+        <div
+          className="gsled panelhelp"
+          style={{ display: 'flex', justifyContent: 'space-between' }}
+        >
+          EDIT LINE: {num}
+          {controlbarjsx}
+        </div>
         {slotsjsx}
         {choicesjsx}
-        {controlbarjsx}
         {helpjsx}
         {confirmSaveDialog}
       </div>
