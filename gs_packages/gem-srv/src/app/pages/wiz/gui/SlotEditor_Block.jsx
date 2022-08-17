@@ -325,7 +325,9 @@ class SlotEditor_Block extends React.Component {
           className="gsled panelhelp"
           style={{ display: 'flex', justifyContent: 'space-between' }}
         >
-          EDIT LINE: {num}
+          <span>
+            LINE <b>{num}</b>
+          </span>
           {controlbarjsx}
         </div>
         {slotsjsx}
