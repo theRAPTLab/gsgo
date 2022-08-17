@@ -1,4 +1,4 @@
-# help for argument types  as defined in TSymbolData for argument types used in GEMSCRIPT
+# help for argument types as defined in TSymbolData for argument types used in GEMSCRIPT
 # note: the TGSArg declaration is two parts: 'argName:argType', but argName is not always
 # passed back to the GUI
 
@@ -9,7 +9,7 @@ boolean:
 
 string:
   name: 'string value'
-  input: 'Enter characters (do not use quotes)'
+  input: 'Enter text (do not use quotes)'
   info: 'Strings are used to store alphanumeric characters'
 
 number:
@@ -48,9 +48,9 @@ expr:
   info: 'Expressions perform arithmetic and comparisons with properties and other values'
 
 keyword:
-  name: 'command keyword'
+  name: 'command "keyword"'
   input: 'Warning: if you change this keyword, the rest of the line will have to be updated!'
-  info: 'A keyword is the basic GEMSCRIPT command. There is one keyword per line, and collection of lines is called a script.'
+  info: 'A "keyword" is the basic GEMSCRIPT command. There is one keyword per line, and collection of lines is called a script.'
 
 test:
   name: 'test name'
