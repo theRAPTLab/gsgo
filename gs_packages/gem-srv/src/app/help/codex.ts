@@ -12,6 +12,8 @@ import TypeHelp from './codex-types.yaml';
 import KeywordHelp from './codex-keywords.yaml';
 import FeatureHelp from './codex-features.yaml';
 import GSArgsHelp from './codex-gsargs.yaml';
+import ConditionHelp from './codex-conditions.yaml';
+import EventHelp from './codex-events.yaml';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -51,6 +53,20 @@ function m_GetTypeHelp(gsType: string) {
   const type_help = TypeHelp[gsType];
   if (type_help === undefined) return {};
   return type_help;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return help for when condition tests */
+function m_GetConditionHelp(condition: string) {
+  const cond_help = ConditionHelp[condition];
+  if (cond_help === undefined) return {};
+  return cond_help;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return help for onEvent events */
+function m_GetEventHelp(event: string) {
+  const event_help = EventHelp[String(event).toLowerCase()];
+  if (event_help === undefined) return {};
+  return event_help;
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
