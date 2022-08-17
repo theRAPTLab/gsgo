@@ -251,10 +251,10 @@ class TouchPack extends SM_Feature {
   static Symbols: TSymbolData = {
     props: {},
     methods: {
-      clearTouches: { args: ['targetId:string'] }
       monitor: { args: ['targetBlueprintName:string', 'touchType:identifier'] }
       // INTERNAL USE ONLY
       // _getTouchingAgent: { args: ['touchType:identifier'] },
+      // clearTouches: { args: ['targetId:string'] }
     }
   };
 }
