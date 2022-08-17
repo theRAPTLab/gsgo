@@ -149,7 +149,7 @@ function m_IsTargetColorVisible(agent: IAgent, target: IAgent) {
   const vRange = agent.prop.Vision.colorValueDetectionThreshold.value;
   const backgroundAgent = target.callFeatMethod(
     'Touches',
-    'getTouchingAgent',
+    '_getTouchingAgent',
     'binb'
   ); // the target is touching a background agent
   if (DBG) console.log(target.id, 'backgroundAgent', backgroundAgent);
