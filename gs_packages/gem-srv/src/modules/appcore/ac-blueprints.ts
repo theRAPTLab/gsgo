@@ -487,6 +487,7 @@ function SetBlueprints(projId: string, blueprints: TBlueprint[]) {
  *  Initiated by mx-sim-control.SimPlaces
  *
  *  NOTE: Does not trigger state update since this is only used for cursor?
+ *  NOTE: Currently projId is ignored!  This saves to the current project.
  */
 function InjectBlueprint(projId: string, bpDef: TBlueprint) {
   // Add new blueprint
