@@ -71,7 +71,7 @@ import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as HELP from 'app/help/codex';
 import { SlotEditorSelect_Block } from './SlotEditorSelect_Block';
 import Dialog from '../../../pages/components/Dialog';
-import { GValidationToken } from '../SharedElements';
+import { GValidationToken, StackUnit } from '../SharedElements';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -286,10 +286,25 @@ class SlotEditor_Block extends React.Component {
     );
 
     /// help - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    const keywordHelp = `Click on a word to edit it. Click "Save ${L10N.initCap(
-      'LINE'
-    )}" to save changes to the line. "Save to Server" will update the Character script for everyone.`; // placeholder help
-    const helpjsx = (
+    const generalSlotEditorHelp = (
+      <>
+        Editing Line {num}
+        <br />
+        Click on a word to edit it.
+        <br />
+        Click &quot;Save {L10N.initCap('LINE')}&quot; (below) to save changes to
+        this line ({num}).
+        <br />
+        Click &quot;Save to Server&quot; (left panel, bottom) to save the whole
+        Character script for everyone.
+      </>
+    ); // placeholder help
+    const generalSlotEditorHelpJsx = (
+      <div id="SEB_help" className="gsled panelhelp">
+        {generalSlotEditorHelp}
+      </div>
+    );
+    const keywordHelpJsx = (
       <div id="SEB_help" className="gsled panelhelp">
         {keywordHelp}
       </div>
@@ -319,15 +334,34 @@ class SlotEditor_Block extends React.Component {
       />
     );
 
+    /// line number - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const lineNumLabel = (
+      <span style={{ color: 'white' }}>
+        LINE <b>{num}</b>
+      </span>
+    );
+
+    /// render - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     return (
       <div className="gsled panel">
         <div
           className="gsled panelhelp"
           style={{ display: 'flex', justifyContent: 'space-between' }}
         >
-          <span>
-            LINE <b>{num}</b>
-          </span>
+          <StackUnit
+            type="editor"
+            label={lineNumLabel}
+            open
+            style={{ color: 'white' }}
+          >
+            {generalSlotEditorHelpJsx}
+          </StackUnit>
+        </div>
+        <div
+          className="gsled panelhelp"
+          style={{ display: 'flex', justifyContent: 'right' }}
+        >
+          <div> </div>
           {controlbarjsx}
         </div>
         {slotsjsx}
