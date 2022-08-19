@@ -175,7 +175,7 @@ function m_ProcessPosition(agent, frame) {
   // via setting agent.x/agent.y in an initScript.
   if (x === undefined || y === undefined) {
     // agent.prop.Movement._x/y was not defined, so fall back to default
-    x = agent.x === undefined ? 0 : agent.x; // if agent.x is undefined, ball back to 0
+    x = agent.x === undefined ? 0 : agent.x; // if agent.x is undefined, fall back to 0
     y = agent.y === undefined ? 0 : agent.y;
   }
 
@@ -255,6 +255,8 @@ function m_SetPosition(agent, frame) {
   const y =
     agent.prop.Movement._y !== undefined ? agent.prop.Movement._y : agent.y; // Fall back to y, set by MapEditor
   if (x === undefined || y === undefined) return; // Movement not set, so ignore
+  agent.prop.Movement._x = x; // if Movement._x wasn't previously set, update it now
+  agent.prop.Movement._y = y;
   agent.prop.x.value = x;
   agent.prop.y.value = y;
 }
@@ -682,13 +684,13 @@ class MovementPack extends SM_Feature {
     // 45 degrees to the left and right of center for a total 90 degree
     // field of vision = 0.785398
 
-    // Other Internal Properties
-    // Set default values
-    agent.prop.Movement._x = agent.x;
-    agent.prop.Movement._y = agent.y;
+    // Set _x and _y to undefined at first so that
+    // viz_update.SetPositiion can know to use agent.x
+    agent.prop.Movement._x = undefined; // the next x postion.  Call it `_nextX`?
+    agent.prop.Movement._y = undefined;
 
-    // agent.prop.Movement._x // the next x postion.  Call it `_nextX`?
-    // agent.prop.Movement._y
+    // Other Internal Properties
+    // Set default values?
     // agent.prop.Movement._targetId // id of seek target
     // agent.prop.Movement._targetAngle // cached value so input agents can keep turning between updates
     // agent.prop.Movement._jitterRotate
