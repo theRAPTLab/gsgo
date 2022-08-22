@@ -63,6 +63,7 @@
 */
 
 import React from 'react';
+import merge from 'deepmerge';
 import UR from '@gemstep/ursys/client';
 import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
@@ -157,7 +158,6 @@ class SlotEditor_Block extends React.Component {
       selectEditorSelection.slots_validation = slots_validation;
     }
     let selectedError = '';
-    let selectedHelp = '';
     const num = String(sel_linenum).padStart(3, '0');
     if (DBG) console.log('SlotEditor slots_validation', slots_validation);
 
@@ -169,6 +169,12 @@ class SlotEditor_Block extends React.Component {
         </div>
       );
 
+    /// 3. HELP Declarations
+    let generalHelp = 'default generalHelp'; // generic help for the gsType
+    let selectedChoiceHelp = 'default selectedChoiceHelp'; // help for the selected choice (not slot)
+    let keywordHelp;
+    let featName; // used to track featCall methods
+
     /// 3. Process each validation token
     const { validationTokens } = slots_validation;
     const tokenList = [];
@@ -179,15 +185,11 @@ class SlotEditor_Block extends React.Component {
       let type;
       let viewState;
       let error;
-      let helpDict;
+      // let helpDict;
       const position = CHECK.OffsetLineNum(i, 'add');
       const tokenKey = `${sel_linenum},${position}`;
-      const selected = sel_slotpos === position;
+      const isSelected = sel_slotpos === position;
       const scriptToken = slots_linescript[i];
-
-      if (selectEditorSelection) {
-        helpDict = HELP.ForEditorSelection(selectEditorSelection) || {};
-      }
 
       const t = validationTokens[i];
       if (t.error && scriptToken) {
@@ -211,14 +213,69 @@ class SlotEditor_Block extends React.Component {
         viewState = t.viewState;
       }
 
-      selectedError = selected ? error : selectedError;
-      selectedHelp = selected && helpDict ? helpDict.gsType : selectedHelp;
-      if (position === 1 && helpDict) {
-        selectedHelp = `${helpDict.keyword}. ${selectedHelp}`;
+      selectedError = isSelected ? error : selectedError;
+
+      // HELP
+      let tokenHelpText;
+      // -- featCall HACK - - - - - - - - - - - - - - - - - -
+      // peek at keyword.  If it's a featCall, we need to
+      // pull out the feature name to pass on to m_generateTokenHelp
+      if (i === 0) {
+        // is keyword
+        if (t.unitText === 'featCall') {
+          const objref_tok = validationTokens[1].unitText.split('.');
+          // featName will be passed to HELP.ForChoice as the parentLabel
+          // This is how we tell HELP to look up a featMethod instead of regular prop method
+          featName = objref_tok.length > 1 ? objref_tok[1] : objref_tok[0];
+        }
+        if (t.unitText === 'when') {
+          // A 'test' method will call up conditions tests
+          featName = 'test';
+        }
       }
 
+      // -- Helper - - - - - - - - - - - - - - - - - -
+      function m_generateTokenHelp(token, helpDict, parentLabel) {
+        // REVIEW: Can we use simple HELP call?
+
+        const help = HELP.ForChoice(token.gsType, token.unitText, parentLabel);
+        const helpTxt = help
+          ? help.info || help.input || help.name
+          : 'notok found';
+        return helpTxt;
+      }
+      // - - - - - - - - - - - - - - - - - - - - - -
+      //
+      // -- only generate help for the currently selected item
+      if (selectEditorSelection && isSelected) {
+        const helpDict = HELP.ForEditorSelection(selectEditorSelection) || {};
+        if (!helpDict)
+          throw new Error(
+            `SlotEditor_Block could not find help for ${selectEditorSelection}`
+          );
+        // HELP 1: General -- shows in Choices area
+        generalHelp = helpDict.gsInput;
+        // HELP 2: tokenHelp shows as popup on hover -- shows in Slot area
+        tokenHelpText = m_generateTokenHelp(t, helpDict, featName);
+        const selectedTokenLabel = t.unitText;
+        // HELP 3: Selected -- shows in Choices area
+        //         'Selected' is usually the token!
+        selectedChoiceHelp = `SELECTED: ${
+          selectedTokenLabel ? selectedTokenLabel : ''
+        }${tokenHelpText ? ': ' + tokenHelpText : ''}`;
+      } else {
+        // NOT Currently selected token, but We still need to generate tokenHelp for the other slots
+        // HELP 2: tokenHelp shows as popup on hover -- shows in Slot area
+        const SEselection = merge.all([selectEditorSelection]); // clone
+        SEselection.sel_slotpos = position; // set sel_slotpos for the other non-selected slots
+        const helpDict = HELP.ForEditorSelection(SEselection) || {};
+        tokenHelpText = m_generateTokenHelp(t, helpDict, featName);
+      }
+
+      if (i === 0) keywordHelp = tokenHelpText;
+
       // show Delete button if this is the currently selected token
-      if (selected && t.error && t.error.code === 'extra')
+      if (isSelected && t.error && t.error.code === 'extra')
         extraTokenName = t.unitText;
 
       tokenList.push(
@@ -226,64 +283,17 @@ class SlotEditor_Block extends React.Component {
           key={tokenKey}
           tokenKey={tokenKey}
           position={position}
-          selected={selected}
+          selected={isSelected}
           type={t.gsType} // over the token box
           name={t.gsName} // added
           label={label} // inside the token box
           error={error}
-          help={'wakawaka'}
+          help={tokenHelpText}
           viewState={viewState}
           isSlot
         />
       );
     }
-
-    /// slots - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    const slotsjsx = (
-      <div
-        id="SEB_slots"
-        className="gsled tokenList"
-        style={{
-          gridTemplateColumns: `repeat(${validationTokenCount},auto)`
-        }}
-      >
-        {tokenList}
-      </div>
-    );
-
-    /// choices - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    const choicesjsx = (
-      <div id="SEB_choices" className="gsled choices">
-        <div className="gsled choicesline gwiz styleError">{selectedError}</div>
-        {extraTokenName && (
-          <div className="gsled choicesline gwiz styleError">
-            <button onClick={this.DeleteSlot} style={{ width: 'fit-content' }}>
-              DELETE &quot;{extraTokenName}&quot;
-            </button>
-          </div>
-        )}
-        <SlotEditorSelect_Block selection={selectEditorSelection} />
-        <div className="gsled choicesline choiceshelp">{selectedHelp}</div>
-      </div>
-    );
-
-    /// control bar - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    const controlbarjsx = (
-      <div id="SEB_cancelsave" className="gsled button-bar">
-        <button type="button" className="secondary" onClick={this.CancelSlotEdit}>
-          Cancel
-        </button>
-        &nbsp;
-        <button
-          type="button"
-          disabled={!slots_need_saving}
-          onClick={this.SaveSlot}
-          style={{ fontWeight: `${slots_need_saving ? 'bold' : 'normal'}` }}
-        >
-          Save {L10N.initCap('LINE')}
-        </button>
-      </div>
-    );
 
     /// help - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const generalSlotEditorHelp = (
@@ -304,9 +314,58 @@ class SlotEditor_Block extends React.Component {
         {generalSlotEditorHelp}
       </div>
     );
-    const keywordHelpJsx = (
-      <div id="SEB_help" className="gsled panelhelp">
-        {keywordHelp}
+
+    /// slots - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const slotsjsx = (
+      <div id="SEB_slots" className="gsled tokenList">
+        <div
+          className="gsled tokenList choiceshelp"
+          style={{ paddingBottom: '20px', marginTop: '0' }}
+        >
+          {keywordHelp}
+        </div>
+        <div
+          className="gsled tokenListItems"
+          style={{
+            gridTemplateColumns: `repeat(${validationTokenCount},auto)`
+          }}
+        >
+          {tokenList}
+        </div>
+      </div>
+    );
+
+    /// choices - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const choicesjsx = (
+      <div id="SEB_choices" className="gsled choices">
+        <div className="gsled choicesline gwiz styleError">{selectedError}</div>
+        {extraTokenName && (
+          <div className="gsled choicesline gwiz styleError">
+            <button onClick={this.DeleteSlot} style={{ width: 'fit-content' }}>
+              DELETE &quot;{extraTokenName}&quot;
+            </button>
+          </div>
+        )}
+        <SlotEditorSelect_Block selection={selectEditorSelection} />
+        <div className="gsled choicesline choiceshelp">{selectedChoiceHelp}</div>
+      </div>
+    );
+
+    /// control bar - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const controlbarjsx = (
+      <div id="SEB_cancelsave" className="gsled button-bar">
+        <button type="button" className="secondary" onClick={this.CancelSlotEdit}>
+          Cancel
+        </button>
+        &nbsp;
+        <button
+          type="button"
+          disabled={!slots_need_saving}
+          onClick={this.SaveSlot}
+          style={{ fontWeight: `${slots_need_saving ? 'bold' : 'normal'}` }}
+        >
+          Save {L10N.initCap('LINE')}
+        </button>
       </div>
     );
 
@@ -361,12 +420,13 @@ class SlotEditor_Block extends React.Component {
           className="gsled panelhelp"
           style={{ display: 'flex', justifyContent: 'right' }}
         >
-          <div> </div>
           {controlbarjsx}
         </div>
         {slotsjsx}
+        <div className="gsled choices choicesline choiceshelp">
+          INSTRUCTIONS: {generalHelp}
+        </div>
         {choicesjsx}
-        {helpjsx}
         {confirmSaveDialog}
       </div>
     );

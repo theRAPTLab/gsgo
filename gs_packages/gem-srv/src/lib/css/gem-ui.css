@@ -214,6 +214,30 @@
   background-color: rgba(221, 221, 221, 1);
   cursor: not-allowed;
 }
+.gtokenhelp {
+  display: none;
+}
+.gtoken:hover .gtokenhelp {
+  display: block;
+  position: absolute;
+  color: darkslategray;
+  background: yellow;
+  bottom: 10px;
+  padding: 5px;
+  font-style: italic;
+  font-weight: normal;
+  border-radius: 5px;
+  box-shadow: 5px 5px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  opacity: 1 !important; /* override "expert" */
+}
+.gtoken:hover .gtokenhelp.gtokenhelpslot {
+  top: 10px;
+  bottom: revert; /* show popup on bottom if slot */
+}
+.gtokenhelpWrapper {
+  position: relative;
+}
 .gline.selected {
   /* border-bottom: 1px solid rgba(255, 166, 0, 1) !important; orange */
   background-color: rgba(255, 166, 0, 0.25) !important;
@@ -295,12 +319,14 @@
   font-style: italic;
 }
 .gsled.tokenList {
+  margin-top: 10px;
+  padding: 10px 10px 0 10px;
+  background-color: #eee;
+}
+.gsled.tokenListItems {
   display: grid;
   grid-template-rows: auto auto 10px;
   grid-auto-flow: column;
-  background-color: #eee;
-  padding: 10px 10px 0 10px;
-  margin-top: 10px;
 }
 .gsled.input {
   padding: 10px;
@@ -327,6 +353,8 @@
 .gsled.choices {
   background-color: #ffd280;
   padding-bottom: 10px;
+  border-left: 10px solid #eee;
+  border-right: 10px solid #eee;
 }
 .gsled.choiceshelp {
   /* selected slot help against light choices bg */

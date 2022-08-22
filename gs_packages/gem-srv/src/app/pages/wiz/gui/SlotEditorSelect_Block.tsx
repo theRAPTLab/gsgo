@@ -150,6 +150,7 @@ function SlotEditorSelect_Block(props) {
 
   // locked
   const locked = unitText && LOCKED_SYMBOLS.includes(unitText.toLowerCase());
+
   let { name: helpPrompt, info: helpInfo } = HELP.ForTypeInfo(gsType);
   helpPrompt = `ENTER ${helpPrompt}`.toUpperCase();
 

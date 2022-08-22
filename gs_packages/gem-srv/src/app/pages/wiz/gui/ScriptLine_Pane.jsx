@@ -129,7 +129,7 @@ export function ScriptLine_Pane(props) {
       <SlotEditor_Block />
       {/* then back to business */}
       {/* spacer to push Console down to bottom */}
-      <div style={{ flexGrow: 1 }}>&nbsp;</div>
+      {/* <div style={{ flexGrow: 1 }}>&nbsp;</div>
       <div style={{ backgroundColor: '#eee' }}>
         <Console
           title="DEV: AVAILABLE SYMBOL INFO"
@@ -137,7 +137,7 @@ export function ScriptLine_Pane(props) {
           rows={7}
           open
         />
-      </div>
+      </div> */}
       {/* <DevNotes /> */}
       {/* <DevNotice /> */}
     </FlexStack>
