@@ -49,7 +49,7 @@ expr:
 
 keyword:
   name: 'command "keyword"'
-  input: 'Warning: if you change this keyword, the rest of the line will have to be updated!'
+  input: 'Select a keyword. Warning: if you change this keyword, the rest of the line will have to be updated!'
   info: 'A "keyword" is the basic GEMSCRIPT command. There is one keyword per line, and collection of lines is called a script.'
 
 test:
@@ -96,3 +96,37 @@ feature:
   name: ''
   input: ''
   info: ''
+
+# HACK: methods
+# Technically these are not TSymbolData
+# Review: Where should we move these?
+# -- number
+setMin:
+  name: 'number method'
+  input: 'Select a method'
+  info: 'Sets the minimum value this property is allowed to have.  If you try to set the property below this value, the property will be automatically changed to this value'
+setMax:
+  name: 'number method'
+  input: 'Select a method'
+  info: 'Sets the maximum value this property is allowed to have.  If you try to set the property above this value, the property will be automatically changed to this value'
+setTo:
+  name: 'string or number method'
+  input: 'Select a method'
+  info: 'Sets the property to a value'
+setToRnd:
+  name: 'number method'
+  input: 'Select a method'
+  info: 'Sets the property to a random value'
+add:
+  name: 'number method'
+  input: 'Select a method'
+  info: 'Sets the property to the current value + the add value'
+sub:
+  name: 'number method'
+  input: 'Select a method'
+  info: 'Sets the property to the current value - the sub value'
+# -- string
+clear:
+  name: 'string method'
+  input: 'Select a method'
+  info: 'Sets the property to be an empty string'
