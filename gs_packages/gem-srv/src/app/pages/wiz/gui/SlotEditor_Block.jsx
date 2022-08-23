@@ -263,10 +263,10 @@ class SlotEditor_Block extends React.Component {
         selectedChoiceHelp = `SELECTED: ${
           selectedTokenLabel ? selectedTokenLabel : ''
         }${tokenHelpText ? ': ' + tokenHelpText : ''}`;
-      } else {
+      } else if (selectEditorSelection) {
         // NOT Currently selected token, but We still need to generate tokenHelp for the other slots
         // HELP 2: tokenHelp shows as popup on hover -- shows in Slot area
-        const SEselection = merge.all([selectEditorSelection]); // clone
+        const SEselection = merge.all([selectEditorSelection || {}]); // clone, catch undefined selectEditorSelection
         SEselection.sel_slotpos = position; // set sel_slotpos for the other non-selected slots
         const helpDict = HELP.ForEditorSelection(SEselection) || {};
         tokenHelpText = m_generateTokenHelp(t, helpDict, featName);
