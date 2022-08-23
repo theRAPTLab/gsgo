@@ -457,7 +457,7 @@ export function GSymbolToken(props) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** same as GSymbolToken with hoverable help text */
 export function GSymbolTokenHelp(props) {
-  const { symbolType, choice, unitText, label, help, locked } = props;
+  const { symbolType, choice, unitText, label, help, locked, isAdvanced } = props;
   const cnames = ['gwiz', 'gtoken', 'clickable'];
 
   // Label Override
@@ -472,6 +472,7 @@ export function GSymbolTokenHelp(props) {
   if (unitText === displayLabel) cnames.push('chosen');
   const token = `${symbolType}-${choice}`;
   if (locked) cnames.push('locked');
+  if (isAdvanced) cnames.push('styleAdvanced');
 
   return (
     <div className={cnames.join(' ')} data-choice={token}>

@@ -186,7 +186,7 @@ function ObjRefSelector_Block(props) {
         if (HIDDEN_SYMBOLS.includes(key.toLowerCase())) return;
         if (ADVANCED_SYMBOLS.includes(key.toLowerCase())) {
           advanced.push(
-            <div style={{ opacity: 0.3 }} key={key}>
+            <div key={key}>
               <GSymbolTokenHelp
                 key={key}
                 symbolType={key}
@@ -194,6 +194,7 @@ function ObjRefSelector_Block(props) {
                 choice={optionLabel} // value returned when selected e.g. 'bp.feat.prop'
                 label={key} // human readable display
                 help={optionHelpTxt}
+                isAdvanced
               />
             </div>
           );

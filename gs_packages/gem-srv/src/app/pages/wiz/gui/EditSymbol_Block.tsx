@@ -305,6 +305,18 @@ export function EditSymbol_Block(props) {
           const helpTxt = help
             ? help.info || help.input || help.name
             : 'notok found';
+          // 1. If the choice is supposed to be hidden, but
+          //    is currently in use in the original script line,
+          //    show it in the "expert" section so that it
+          //    can be reselected
+          let isAdvanced = false;
+          if (
+            (HIDDEN_SYMBOLS.includes(choice.toLowerCase()) &&
+              SYMBOLS_IN_USE.includes(choice.toLowerCase())) ||
+            ADVANCED_SYMBOLS.includes(choice.toLowerCase())
+          ) {
+            isAdvanced = true;
+          }
           const tok = (
             <GSymbolTokenHelp
               key={choiceKey}
@@ -313,23 +325,15 @@ export function EditSymbol_Block(props) {
               choice={choice || GUI_EMPTY_TEXT}
               help={helpTxt}
               locked={symbolIsLocked}
+              isAdvanced={isAdvanced}
             />
           );
-          // 1. If the choice is supposed to be hidden, but
-          //    is currently in use in the original script line,
-          //    show it in the "expert" section so that it
-          //    can be reselected
-          if (
-            HIDDEN_SYMBOLS.includes(choice.toLowerCase()) &&
-            SYMBOLS_IN_USE.includes(choice.toLowerCase())
-          ) {
+          //   2. Show expert keywords
+          if (isAdvanced) {
             expertChoices.push(tok);
           } else if (HIDDEN_SYMBOLS.includes(choice.toLowerCase())) {
-            // 2. Hide unsupported and deprecated keywords
+            // 3. Hide unsupported and deprecated keywords
             return;
-          } else if (ADVANCED_SYMBOLS.includes(choice.toLowerCase())) {
-            // 3. Show expert keywords
-            expertChoices.push(tok);
           } else {
             // 4. Regular keyword
             choices.push(tok);
@@ -362,7 +366,7 @@ export function EditSymbol_Block(props) {
                 }
                 secondary
               />
-              <div style={{ display: 'flex', flexWrap: 'wrap', opacity: '0.8' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                 {[...expertChoices]}
               </div>
             </div>

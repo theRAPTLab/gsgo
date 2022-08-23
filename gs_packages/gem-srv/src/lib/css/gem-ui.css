@@ -235,6 +235,10 @@
   top: 10px;
   bottom: revert; /* show popup on bottom if slot */
 }
+.gtoken.styleAdvanced {
+  color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(221, 221, 221, 0.3);
+}
 .gtokenhelpWrapper {
   position: relative;
 }
