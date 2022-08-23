@@ -230,6 +230,7 @@ function ObjRefSelector_Block(props) {
         id="ORS_select"
         className="gsled tokenList"
         style={{
+          display: 'grid',
           gridTemplateColumns: `repeat(${tokenCount},1fr)`,
           gridTemplateRows: 'auto auto',
           gridAutoFlow: 'row',
