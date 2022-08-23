@@ -249,13 +249,16 @@ function ForChoice(gsType: string, selectedValue: string, parentLabel?: string) 
   // c. for a prop (in which case, 'parentLabel' is not set)
   if (['method', 'methods'].includes(type)) {
     if (parentLabel === 'test') {
-      // b. look up 'when condition test'
+      // for b. look up 'when condition test'
       return m_GetConditionHelp(selectedValue);
     } else if (parentLabel) {
-      // a. look up `featCall` method
+      // for a. look up `featCall` method
       return m_GetFeaturePropHelp(selectedValue, parentLabel);
+    } else if (selectedValue === undefined) {
+      // for d. empty slot still
+      type = 'method';
     } else {
-      // c. look up regular `prop` method
+      // for c. look up regular `prop` method
       type = selectedValue;
     }
   }
