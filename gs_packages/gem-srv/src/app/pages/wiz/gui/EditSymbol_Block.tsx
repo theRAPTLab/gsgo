@@ -428,7 +428,7 @@ export function EditSymbol_Block(props) {
               key={key}
               style={{
                 display: 'grid',
-                gridTemplateColumns: '100px 1fr',
+                gridTemplateColumns: '110px 1fr',
                 gap: '1px'
               }}
             >
