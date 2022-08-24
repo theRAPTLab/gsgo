@@ -140,8 +140,6 @@ function ObjRefSelector_Block(props) {
     const label = tok.selectedText || GUI_EMPTY_TEXT;
     const selected = tok.selectedText === label; // always selected, so don't show selected
 
-    const help = 'wtf help';
-
     // 1. Selected ObjRef Slot (e.g. agent, feature, prop, method)
     // unitText is the parentLabel, e.g. agent.Costume.costumeName
     // need to pass for featProp
@@ -224,7 +222,13 @@ function ObjRefSelector_Block(props) {
   const prompt = `EDIT ${HELP.ForTypeInfo('objref').name.toUpperCase()}`;
   const helpInfo = HELP.ForTypeInfo('objref').info;
   return (
-    <div style={{ padding: '0 20px' }}>
+    <div
+      style={{
+        margin: '0 10px',
+        padding: '10px',
+        backgroundColor: 'rgba(255,255,255,0.25'
+      }}
+    >
       <StackUnit label={prompt} type="editor" open>
         {helpInfo}
       </StackUnit>
@@ -236,7 +240,8 @@ function ObjRefSelector_Block(props) {
           gridTemplateColumns: `repeat(${tokenCount},1fr)`,
           gridTemplateRows: 'auto auto',
           gridAutoFlow: 'row',
-          paddingBottom: '10px'
+          paddingBottom: '10px',
+          backgroundColor: 'transparent'
         }}
       >
         {tokenList}

@@ -398,7 +398,14 @@ export function EditSymbol_Block(props) {
     ? `SELECT A ${symbolType.toUpperCase()}`
     : 'SELECT A KEYWORD';
   return (
-    <div id="ES_symbols">
+    <div
+      id="ES_symbols"
+      style={{
+        margin: '0 10px',
+        padding: '10px 0',
+        backgroundColor: 'rgba(255,255,255,0.25'
+      }}
+    >
       <StackUnit
         label={prompt}
         type="editor"
