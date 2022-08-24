@@ -214,6 +214,7 @@ export function StackUnit(props) {
       onClick={e => {
         if (sticky) e.preventDefault();
       }}
+      data-theme="dark"
     >
       <summary style={summary}>{label}</summary>
       {children}
