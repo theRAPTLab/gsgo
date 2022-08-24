@@ -411,29 +411,35 @@ function SaveSlotLineScript(event) {
   const { slots_linescript } = SLOTCORE.State();
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
   const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
+  const updatedLine = lsos[lineIdx]; // clone existing line to retain block info
 
   // HACK Block Support -------------------------------------------------------
-  // Insert Block for new block keywords
-  const cur_line = script_page[lineIdx];
-  const isNewLine =
-    cur_line &&
-    cur_line.lineScript &&
-    cur_line.lineScript[0] &&
-    cur_line.lineScript[0].hasOwnProperty('line');
+  // When adding a new line, insert a block if the it's required
   const new_kw_tok = slots_linescript ? slots_linescript[0] : {};
   const new_kw = new_kw_tok ? new_kw_tok.identifier : '';
+  let isBlockCommand = false;
+  // 1. Is a block command? e.g. 'every','ifexpr', 'onevent', 'when'?
   if (
-    isNewLine &&
     ['every', 'ifexpr', 'onevent', 'when'].includes(String(new_kw).toLowerCase())
-  ) {
-    // insert block!!!
+  )
+    isBlockCommand = true;
+  // 2. Is block command? e.g. 'createAgent' or 'spawnChild' featCall
+  if (String(new_kw).toLowerCase() === 'featcall') {
+    slots_linescript.forEach(tok => {
+      if (['createAgent', 'spawnChild'].includes(tok.identifier))
+        isBlockCommand = true;
+    });
+  }
+  // 3. Already has a block?
+  const hasBlock = updatedLine.marker === 'start';
+  // 4. Add a block if needed!
+  if (isBlockCommand && !hasBlock) {
     slots_linescript.push({
       block: [[{ comment: 'insert code here' }]]
     });
   }
   // END HACK Block Support ---------------------------------------------------
 
-  const updatedLine = lsos[lineIdx]; // clone existing line to retain block info
   updatedLine.lineScript = slots_linescript.filter(({ identifier }) => {
     // SelectEditorLineSlot() treats lineScript tokens as "view data" and
     // stores { identifier:'' } as part of its GUI operation, but this is an
