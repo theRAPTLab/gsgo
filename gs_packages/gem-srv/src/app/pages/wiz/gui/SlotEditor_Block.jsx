@@ -338,7 +338,9 @@ class SlotEditor_Block extends React.Component {
     /// choices - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const choicesjsx = (
       <div id="SEB_choices" className="gsled choices">
-        <div className="gsled choicesline gwiz styleError">{selectedError}</div>
+        {selectedError && (
+          <div className="gsled choicesline gwiz styleError">{selectedError}</div>
+        )}
         {extraTokenName && (
           <div className="gsled choicesline gwiz styleError">
             <button onClick={this.DeleteSlot} style={{ width: 'fit-content' }}>
