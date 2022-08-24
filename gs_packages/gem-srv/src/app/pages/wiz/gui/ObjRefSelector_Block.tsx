@@ -162,6 +162,7 @@ function ObjRefSelector_Block(props) {
           position={position}
           selected={selected}
           type={type} // left column of table
+          name={type} // syntax label
           label={label} // column subtitle (repeated)
           viewState={code} // error
           error={info} // error
