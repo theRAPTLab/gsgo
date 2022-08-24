@@ -81,8 +81,8 @@ function m_CalculateScale(agent: IAgent): { scale: number; scaleY: number } {
 
   //   if Physics is present, set physics private body values
   if (agent.prop.Physics) {
-    const bw = sw * newScale; // "b"ody
-    const bh = sh * newScaleY;
+    const bw = sw * Math.abs(newScale); // "b"ody
+    const bh = sh * Math.abs(newScaleY);
     agent.prop.Physics._bodyWidth = bw;
     agent.prop.Physics._bodyHeight = bh;
     agent.prop.Physics._bodyRadius = bw / 2;
