@@ -138,6 +138,11 @@ function m_Update(frame) {
       targets.forEach(t => {
         // skip self
         if (agentId === t.id) return;
+
+        // make sure target agent also has Physics feature
+        if (!t.hasFeature('Physics'))
+          throw new Error(`Touches requires Physics for ${t.name}!`);
+
         let c2c;
         let c2b;
         let b2b;
@@ -195,7 +200,7 @@ class TouchPack extends SM_Feature {
   monitor(agent: IAgent, targetBlueprintName: string, ...touchTypes: string[]) {
     // make sure agent has the Physics feature
     if (!agent.hasFeature('Physics'))
-      throw new Error('Touches requires Physics!');
+      throw new Error(`Touches requires Physics for ${agent.name}!`);
     if (touchTypes.length < 1)
       throw new Error('Touches monitor requires a touchType!');
     const d_TouchTypes = AGENT_TOUCHTYPES.get(agent.id) || new Map();

@@ -253,7 +253,7 @@
   cursor: not-allowed;
 }
 .gwiz.styleFlagDisabled {
-  color: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.3);
   background-color: rgba(0, 0, 0, 0.05);
   outline: dashed 1px rgba(0, 0, 0, 0.1);
   outline-offset: -1px; /* border inside div */

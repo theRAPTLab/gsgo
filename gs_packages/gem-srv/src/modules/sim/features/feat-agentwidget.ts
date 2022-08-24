@@ -56,21 +56,30 @@ function m_FeaturesUpdate(frame) {
   agentIds.forEach(agentId => {
     const agent = m_getAgent(agentId);
     if (!agent) return;
+    const agentWgt = agent.prop.AgentWidgets;
 
+    const graphPropValue = agentWgt.graphProp && agentWgt.graphProp.value;
+    const graphGlobalPropValue =
+      agentWgt.graphGlobalProp && agentWgt.graphGlobalProp.value;
     // Add new Graph values
-    if (frame % agent.prop.AgentWidgets._graphFreq === 0) {
+    if (
+      (graphPropValue || graphGlobalPropValue) && // only plot if these have been set
+      frame % agentWgt.graphFrequency.value === 0
+    ) {
       // Time-based Graphs
-      // New plot point based every _graphFreq per second
-      // This won't update if _graphFreq is 0
+      // New plot point based every graphFrequency per second
+      // This won't update if graphFrequency is 0
+      // (it defaults to 30 though)
       let value;
-      if (agent.prop.AgentWidgets._graphProp) {
-        const graphProp = agent.prop.AgentWidgets._graphProp;
-        value = agent.getProp(graphProp).value;
-      } else if (agent.prop.AgentWidgets._graphGlobalProp) {
-        const graphProp = agent.prop.AgentWidgets._graphGlobalProp;
+      if (graphPropValue) {
+        const prop = agent.prop[graphPropValue];
+        value = prop ? prop.value : 0; // default to 0
+      } else if (graphGlobalPropValue) {
+        const graphProp = graphGlobalPropValue;
         const global = SM_Agent.GetGlobalAgent();
         value = global.prop[graphProp].value;
       }
+      value = value || 0; // default to 0 (value can be undefined on first frame)
       const counter = agent.prop.AgentWidgets._graphCounter++;
       if (Number.isNaN(value))
         throw new Error(`${agent.name} tried to graph a NaN value.`);
@@ -100,7 +109,7 @@ function m_GraphsUpdate(frame) {
 
     // HACK: LineGraph Histogram
     // If Histogram has been defined, this will override any line graphs
-    // Just hacking this in for Moths for now.  Impelmentation is really
+    // Just hacking this in for Moths for now.  Implementation is really
     // problematic
     if (agent.prop.AgentWidgets._histogramFeature) {
       // SUPER HACK
@@ -134,30 +143,31 @@ function m_UIUpdate(frame) {
   agentIds.forEach(agentId => {
     const agent = m_getAgent(agentId);
     if (!agent) return;
+    const agentWgt = agent.prop.AgentWidgets;
 
     // 1. Update Text
     //    Text can either be set directly via the `text` featProp,
     //    or, text can be bound to an agent property.
     let text;
-    const textProp = agent.getFeatProp(FEATID, 'textProp').value;
+    const textProp = agentWgt.textProp.value;
     if (textProp !== undefined) {
-      text = agent.getProp(textProp).value;
+      text = agent.prop[textProp].value;
     } else {
-      text = agent.getFeatProp(FEATID, 'text').value;
+      text = agentWgt.text.value;
     }
     agent.prop.statusText.setTo(text);
 
     // 2. Update Meter
     //    Meters can be set directly via 'meter' featProp,
     //    or the meter can be bound to an agent property
-    const meterProp = agent.getFeatProp(FEATID, 'meterProp').value;
-    const meter = agent.getFeatProp(FEATID, 'meter').value;
+    const meterProp = agentWgt.meterProp.value;
+    const meter = agentWgt.meter.value;
     const meterColor = agent.getFeatProp(FEATID, 'meterColor').value;
     const isLargeGraphic = agent.getFeatProp(FEATID, 'isLargeGraphic').value;
     if (meterProp !== undefined) {
       // Calculate meter value based on property max value
-      const { max, min } = agent.prop[meterProp];
-      const val = (agent.getProp(meterProp).value - min) / (max - min);
+      const { value: meterValue, max = 1, min = 0 } = agent.prop[meterProp];
+      const val = (meterValue - min) / (max - min);
       agent.prop.statusValue.setTo(val);
     } else if (meter) {
       agent.prop.statusValue.setTo(meter);
@@ -173,9 +183,7 @@ function m_UIUpdate(frame) {
     if (l > 2) {
       // l > 2 to ignore first default value of [0,0]
       // only draw graph if there is data
-      agent.prop.statusHistory = agent.prop.AgentWidgets._graph.slice(
-        Math.max(l - max, 0)
-      );
+      agent.prop.statusHistory = agentWgt._graph.slice(Math.max(l - max, 0));
     }
 
     // 4. Update Bar Graph
@@ -207,11 +215,7 @@ class WidgetPack extends SM_Feature {
   constructor(name) {
     super(name);
     this.featAddMethod('showMessage', this.showMessage);
-    this.featAddMethod('bindTextTo', this.bindTextTo);
-    this.featAddMethod('bindMeterTo', this.bindMeterTo);
     this.featAddMethod('setMeterPosition', this.setMeterPosition);
-    this.featAddMethod('bindGraphTo', this.bindGraphTo);
-    this.featAddMethod('bindGraphToGlobalProp', this.bindGraphToGlobalProp);
     this.featAddMethod(
       'bindLineGraphHistogramToFeatProp',
       this.bindLineGraphHistogramToFeatProp
@@ -225,30 +229,30 @@ class WidgetPack extends SM_Feature {
     super.decorate(agent);
     // Public Props
     this.featAddProp(agent, 'text', new SM_String(agent.name)); // default to agent name
+    this.featAddProp(agent, 'textProp', new SM_String()); // agent prop name that text is bound to
     let prop = new SM_Number();
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'meter', prop);
+    this.featAddProp(agent, 'meterProp', new SM_String());
     prop = new SM_Number();
     this.featAddProp(agent, 'meterColor', prop);
     this.featAddProp(agent, 'isLargeGraphic', new SM_Boolean(false));
     prop = new SM_Number(0);
     this.featAddProp(agent, 'graphValue', prop);
+    this.featAddProp(agent, 'graphProp', new SM_String()); // agent prop name that text is bound to
+    this.featAddProp(agent, 'graphGlobalProp', new SM_String()); // agent prop name that text is bound to
+    prop = new SM_Number(30);
+    this.featAddProp(agent, 'graphFrequency', prop);
 
     // Bar Graph
     this.featAddProp(agent, 'barGraphProp', new SM_String()); // this should be a dict prop
     this.featAddProp(agent, 'barGraphPropFeature', new SM_String());
 
     // Private Props
-    this.featAddProp(agent, 'textProp', new SM_String()); // agent prop name that text is bound to
-    this.featAddProp(agent, 'meterProp', new SM_String());
-
     agent.prop.AgentWidgets._graph = [0, 0];
-    agent.prop.AgentWidgets._graphProp = undefined;
-    agent.prop.AgentWidgets._graphFreq = 0;
     agent.prop.AgentWidgets._graphCounter = 0;
     agent.prop.AgentWidgets._graphValueOld = 0;
-    agent.prop.AgentWidgets._graphGlobalProp = undefined;
     // REGISTER the Agent for updates
     WIDGET_AGENTS.set(agent.id, agent.id);
   }
@@ -265,16 +269,9 @@ class WidgetPack extends SM_Feature {
   showMessage(agent: IAgent, message: string) {
     UR.RaiseMessage('SHOW_MESSAGE', { message });
   }
-  bindTextTo(agent: IAgent, propName: string) {
-    agent.prop.AgentWidgets.textProp.setTo(propName);
-  }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// METER
-
-  bindMeterTo(agent: IAgent, propName: string) {
-    agent.prop.AgentWidgets.meterProp.setTo(propName);
-  }
   setMeterPosition(agent: IAgent, position: string) {
     let result = FLAGS.POSITION.OUTSIDE_LEFT; // defaults to outside left
     if (position === 'outside-left') result = FLAGS.POSITION.OUTSIDE_LEFT;
@@ -283,25 +280,6 @@ class WidgetPack extends SM_Feature {
     if (position === 'inside-right') result = FLAGS.POSITION.INSIDE_RIGHT;
     if (position === 'outside-right') result = FLAGS.POSITION.OUTSIDE_RIGHT;
     agent.statusObject.position = result;
-  }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// GRAPH
-
-  /**
-   *
-   * @param agent
-   * @param propName
-   * @param frequency Number of frames between plotting another point
-   *                  Defaults to 30, or once per second
-   */
-  bindGraphTo(agent: IAgent, propName: string, frequency: number = 30) {
-    agent.prop.AgentWidgets._graphProp = propName;
-    agent.prop.AgentWidgets._graphFreq = frequency;
-  }
-  bindGraphToGlobalProp(agent: IAgent, propName: string, frequency: number = 30) {
-    agent.prop.AgentWidgets._graphGlobalProp = propName;
-    agent.prop.AgentWidgets._graphFreq = frequency;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -336,22 +314,21 @@ class WidgetPack extends SM_Feature {
   static Symbols: TSymbolData = {
     props: {
       text: SM_String.Symbols,
+      textProp: SM_String.Symbols,
       meter: SM_Number.Symbols,
+      meterProp: SM_String.Symbols,
       meterColor: SM_Number.Symbols,
       isLargeGraphic: SM_Boolean.Symbols,
       graphValue: SM_Number.Symbols,
+      graphProp: SM_String.Symbols,
+      graphGlobalProp: SM_String.Symbols,
+      graphFrequency: SM_Number.Symbols,
       barGraphProp: SM_String.Symbols,
-      barGraphPropFeature: SM_String.Symbols,
-      textProp: SM_String.Symbols,
-      meterProp: SM_String.Symbols
+      barGraphPropFeature: SM_String.Symbols
     },
     methods: {
       showMessage: { args: ['text:string'] },
-      bindTextTo: { args: ['propName:prop'] },
-      bindMeterTo: { args: ['propName:prop'] },
       setMeterPosition: { args: ['position:string'] },
-      bindGraphTo: { args: ['propName:prop', 'frequency:number'] },
-      bindGraphToGlobalProp: { args: ['propName:prop', 'frequency:number'] },
       bindLineGraphHistogramToFeatProp: {
         args: ['featureName:feature', 'propName:prop']
       }

@@ -2,11 +2,18 @@
 
   The Physics Class!
 
-  `shape` defines the type of boundary: radius vs height/width
-  `shape` defaults to CIRCLE.
+  Setting the costume size will also set the default physics body dimensions.
+  If you need manual control of the physics body dimensions, you can
+  override the physics body dimensions using the `bodyWidth`. `bodyHeight` and
+  `bodyRadiu` properties.
 
-  You generally want to define Costume and sprite before `init`ing Physics
-  so that the size can be automatically set.
+  When calculating intersects (e.g. for Touches), we use the internal
+  dimensions by default (_bodyWidth, _bodyHeight, _bodyRadius).  But if
+  the user-defined properties have been set (bodyWidth, bodyHeight, bodyRadius),
+  they will override the internal dimensions.
+
+  `bodyShape` defines the type of boundary: radius vs height/width
+  `bodyShape` defaults to RECTANGLE.
 
   Eventually this might cover:
   * Boundaries
@@ -54,8 +61,6 @@ function m_getAgent(agentId): IAgent {
 
 /**
  * Physics Update Loop -- Runs once per gameloop
- * Sets physics body and agent scale based on an application of
- * user-defined scale to user-defined width / height
  */
 function m_Update(frame) {
   const agentIds = Array.from(PHYSICS_AGENTS.keys());
@@ -64,46 +69,6 @@ function m_Update(frame) {
     if (!agent) {
       // console.error('could not find', agentId, 'Probably removed?');
       return;
-    }
-    // 1. Get Costume Defaults
-    const cw = agent.getFeatProp('Physics', 'costumeWidth').value;
-    const ch = agent.getFeatProp('Physics', 'costumeHeight').value;
-    //    Get User-Defined W/H Overrides (defaults to costume size if not set explicitly)
-    const w = agent.callFeatMethod('Physics', 'getWidth'); //  use featMethod
-    const h = agent.callFeatMethod('Physics', 'getHeight'); // because might be circle
-    //    Get Current Scale Overrides
-    const scale = agent.getFeatProp('Physics', 'scale').value;
-    const scaleY = agent.getFeatProp('Physics', 'scaleY').value || scale;
-
-    //    Calculate new size (apply scale to user-defined w/h)
-    let newW;
-    let newH;
-    if (scale) {
-      newW = scale * w; // apply scale on top of width overrides
-      newH = scaleY * h;
-    } else {
-      newW = w;
-      newH = h;
-    }
-
-    // 2. Update Physics Body
-    agent.prop.Physics.bodyWidth.setTo(newW);
-    agent.prop.Physics.bodyHeight.setTo(newH);
-
-    // 3. Calculate New Scale
-    let newScale = newW / cw;
-    let newScaleY = newH / ch;
-
-    // 4. Handle Flips
-    if (agent.hasFeature('Costume')) {
-      newScale = agent.prop.Costume.flipX.value ? -newScale : newScale;
-      newScaleY = agent.prop.Costume.flipY.value ? -newScaleY : newScaleY;
-    }
-
-    // 5. Update Agent Scale if necessary
-    if (newScale !== agent.scale || newScaleY !== agent.scaleY) {
-      agent.scale = newScale;
-      agent.scaleY = newScaleY;
     }
   });
 }
@@ -114,14 +79,6 @@ class PhysicsPack extends SM_Feature {
   //
   constructor(name) {
     super(name);
-    // REVIEW: Is it necessary for these to be accessible to students/scripts?
-    // should these just be private methods?
-    this.featAddMethod('setShape', this.setShape);
-    this.featAddMethod('setSize', this.setSize);
-    this.featAddMethod('setRadius', this.setRadius);
-    this.featAddMethod('getWidth', this.getWidth);
-    this.featAddMethod('getHeight', this.getHeight);
-
     UR.HookPhase('SIM/PHYSICS_UPDATE', m_Update);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -138,51 +95,24 @@ class PhysicsPack extends SM_Feature {
    */
   decorate(agent) {
     super.decorate(agent);
-    // add feature props here
-    this.featAddProp(agent, 'shape', new SM_String(CIRCLE)); // default to small round body
 
-    // Student-settable Script Setting
+    // Advanced: User-defined physics body dimensions -- overrides internal values
     let prop = new SM_Number();
-    prop.setMax(100);
-    prop.setMin(0);
-    this.featAddProp(agent, 'radius', prop);
-    prop = new SM_Number();
-    prop.setMin(0);
-    this.featAddProp(agent, 'width', prop); // in general, use getWidth
-    prop = new SM_Number();
-    prop.setMin(0);
-    this.featAddProp(agent, 'height', prop); // in general, use getHeight
-
-    // Private Costume Defaults
-    prop = new SM_Number();
-    prop.setMin(0);
-    this.featAddProp(agent, 'costumeWidth', prop); // intended internal use only
-    prop = new SM_Number();
-    prop.setMin(0);
-    this.featAddProp(agent, 'costumeHeight', prop); // intended for internal use only
-
-    // Private Physics Body
-    prop = new SM_Number(1); // default to small round body
     prop.setMax(100);
     prop.setMin(0);
     this.featAddProp(agent, 'bodyRadius', prop);
     prop = new SM_Number();
     prop.setMin(0);
-    this.featAddProp(agent, 'bodyWidth', prop); // intended internal use only
+    this.featAddProp(agent, 'bodyWidth', prop);
     prop = new SM_Number();
     prop.setMin(0);
-    this.featAddProp(agent, 'bodyHeight', prop); // intended for internal use only
+    this.featAddProp(agent, 'bodyHeight', prop);
+    this.featAddProp(agent, 'bodyShape', new SM_String(RECTANGLE)); // CIRCLE || RECTANGLE
 
-    // shape = [ circle, rectangle ]
-    prop = new SM_Number(1);
-    prop.setMax(100);
-    prop.setMin(0);
-    this.featAddProp(agent, 'scale', prop); // in general, set featProp directly rather than calling the method
-    // scale is absolute scale relative to the base size of the Costume
-    prop = new SM_Number();
-    prop.setMax(100);
-    prop.setMin(0);
-    this.featAddProp(agent, 'scaleY', prop); // in general, set featProp directly rather than calling the method
+    // private variables
+    agent.prop.Physics._bodyWidth = 1;
+    agent.prop.Physics._bodyHeight = 1;
+    agent.prop.Physics._bodyRadius = 1;
 
     // Init
     this.init(agent);
@@ -193,18 +123,9 @@ class PhysicsPack extends SM_Feature {
 
   /**
    * Init
-   * Automatically initializes Physics with the default
-   * values based on the current Costume.
    */
   init(agent: IAgent) {
-    // if size was previously set, use that, otherwise, default to sprite size
-    if (agent.prop.Physics.width.value !== undefined) {
-      this.setWidth(agent, agent.prop.Physics.width.value);
-      this.setHeight(agent, agent.prop.Physics.height.value);
-    } else {
-      this.m_autoSetCostumeSize(agent);
-    }
-    this.setShape(agent, RECTANGLE);
+    // do something
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -214,27 +135,6 @@ class PhysicsPack extends SM_Feature {
 
   /// PHYSICS HELPERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /**
-   * Checks the currently set costume sprite for its size
-   * and saves the results in `costumeWidth` and `costumeHeigh`
-   * parameters for use in scaling.
-   */
-  m_readCostumeSize(agent: IAgent): { width: number; height: number } {
-    if (!agent.hasFeature('Costume') || agent.prop.skin.value === undefined)
-      return { width: 0, height: 0 }; // no costume
-    const { w, h } = agent.callFeatMethod('Costume', 'getBounds');
-    agent.prop.Physics.costumeWidth.setTo(w);
-    agent.prop.Physics.costumeHeight.setTo(h);
-    return { width: w, height: h };
-  }
-  /**
-   * Reads and sets physics size based on costume size
-   */
-  m_autoSetCostumeSize(agent: IAgent): { width: number; height: number } {
-    const dim = this.m_readCostumeSize(agent);
-    this.setSize(agent, dim.width, dim.height); // default to sprite size
-    return { width: dim.width, height: dim.height };
-  }
 
   /**
    * Returns the Physics Body bounds, which is scale * width||height
@@ -242,8 +142,8 @@ class PhysicsPack extends SM_Feature {
    */
   m_GetBounds(agent: IAgent) {
     // console.log('getting bounds for', agent);
-    const w = this.getBodyWidth(agent);
-    const h = this.getBodyHeight(agent);
+    const w = this._getBodyWidth(agent);
+    const h = this._getBodyHeight(agent);
     return {
       x: agent.x - w / 2,
       y: agent.y - h / 2,
@@ -257,61 +157,28 @@ class PhysicsPack extends SM_Feature {
   /** Invoked through featureCall script command. To invoke via script:
    *  featCall Physics setRadius value
    */
-  setShape(agent: IAgent, shape: string) {
-    agent.prop.Physics.shape.setTo(shape);
-  }
-  /**
-   * Convenience function for setting width/height variables.
-   * The actual application of the size happens during m_update.
-   * This is the same as calling `featProp Physics width setTo n`
-   * followed by `featProp Physics height setTo n`
-   */
-  setSize(agent: IAgent, width: number, height: number = width) {
-    this.setWidth(agent, width);
-    this.setHeight(agent, height);
-  }
-  setRadius(agent: IAgent, radius: number) {
-    agent.prop.Physics.radius.setTo(radius);
-  }
-  /**
-   * NOTE: This only saves a local value.  The physics body and agent visual
-   * are updated during m_update.
-   */
-  setWidth(agent: IAgent, num: number) {
-    agent.prop.Physics.width.setTo(num);
-  }
-  /**
-   * NOTE: This only saves a local value.  The physics body and agent visual
-   * are updated during m_update.
-   */
-  setHeight(agent: IAgent, num: number) {
-    agent.prop.Physics.height.setTo(num);
-  }
-  getRadius(agent: IAgent): number {
-    return agent.prop.Physics.radius.value;
-  }
-  getWidth(agent: IAgent): number {
-    return agent.prop.Physics.width.value;
-  }
-  getHeight(agent: IAgent): number {
-    return agent.prop.Physics.height.value;
-  }
-  getBodyWidth(agent: IAgent): number {
-    switch (agent.prop.Physics.shape.value) {
+  _getBodyWidth(agent: IAgent): number {
+    switch (agent.prop.Physics.bodyShape.value) {
       case RECTANGLE:
-        return agent.prop.Physics.bodyWidth.value;
+        return (
+          agent.prop.Physics.bodyWidth.value || agent.prop.Physics._bodyWidth
+        );
       case CIRCLE:
       default:
         return agent.prop.Physics.bodyRadius.value * 2;
     }
   }
-  getBodyHeight(agent: IAgent): number {
-    switch (agent.prop.Physics.shape.value) {
+  _getBodyHeight(agent: IAgent): number {
+    switch (agent.prop.Physics.bodyShape.value) {
       case RECTANGLE:
-        return agent.prop.Physics.bodyHeight.value;
+        return (
+          agent.prop.Physics.bodyHeight.value || agent.prop.Physics._bodyHeight
+        );
       case CIRCLE:
       default:
-        return agent.prop.Physics.bodyRadius.value * 2;
+        return agent.prop.Physics.bodyRadius.value
+          ? agent.prop.Physics.bodyRadius.value * 2
+          : agent.prop.Physics._bodyRadius * 2;
     }
   }
   /** Used by sim-conditions for 'touches' test */
@@ -402,51 +269,36 @@ class PhysicsPack extends SM_Feature {
    *  the name parameter in each methodSignature */
   static Symbols: TSymbolData = {
     props: {
-      'radius': SM_Number.Symbols,
-      'width': SM_Number.Symbols,
-      'height': SM_Number.Symbols,
-      'costumeWidth': SM_Number.Symbols,
-      'costumeHeight': SM_Number.Symbols,
       'bodyRadius': SM_Number.Symbols,
       'bodyWidth': SM_Number.Symbols,
       'bodyHeight': SM_Number.Symbols,
-      'scale': SM_Number.Symbols,
-      'scaleY': SM_Number.Symbols
+      'bodyShape': SM_Number.Symbols
     },
     methods: {
-      'setShape': { args: ['shape:string'] },
-      'setSize': { args: ['width:number', 'height:number'] },
-      'setRadius': { args: ['radius:number'] },
-      'setWidth': { args: ['width:number'] },
-      'setHeight': { args: ['height:number'] },
-      'getWidth': { returns: 'width:number' },
-      'getHeight': { returns: 'height:number' },
-      'getBodyWidth': { returns: 'width:number' },
-      'getBodyHeight': { returns: 'height:number' },
-      'intersectsWith': {
-        args: ['targetAgent:blueprint'],
-        returns: 'intersects:boolean'
-      },
-      'intersectsWithBounds': {
-        args: ['bounds:{any}'],
-        returns: 'intersects:boolean'
-      },
-      'intersectsCenterWithBounds': {
-        args: ['bounds:{any}'],
-        returns: 'intersects:boolean'
-      },
-      'intersectsCenterWithAgentBounds': {
-        args: ['targetAgent:blueprint'],
-        returns: 'intersects:boolean'
-      },
-      'isBoundedBy': {
-        args: ['targetAgent:blueprint'],
-        returns: 'isBounded:boolean'
-      },
-      'intersects': {
-        args: ['boundsA:{any}', 'boundsB:{any}'],
-        returns: 'isBounded:boolean'
-      }
+      // 'intersectsWith': {
+      //   args: ['targetAgent:blueprint'],
+      //   returns: 'intersects:boolean'
+      // },
+      // 'intersectsWithBounds': {
+      //   args: ['bounds:{any}'],
+      //   returns: 'intersects:boolean'
+      // },
+      // 'intersectsCenterWithBounds': {
+      //   args: ['bounds:{any}'],
+      //   returns: 'intersects:boolean'
+      // },
+      // 'intersectsCenterWithAgentBounds': {
+      //   args: ['targetAgent:blueprint'],
+      //   returns: 'intersects:boolean'
+      // },
+      // 'isBoundedBy': {
+      //   args: ['targetAgent:blueprint'],
+      //   returns: 'isBounded:boolean'
+      // },
+      // 'intersects': {
+      //   args: ['boundsA:{any}', 'boundsB:{any}'],
+      //   returns: 'isBounded:boolean'
+      // }
     }
   };
 }
