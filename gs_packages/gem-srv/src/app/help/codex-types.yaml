@@ -2,6 +2,11 @@
 # note: the TGSArg declaration is two parts: 'argName:argType', but argName is not always
 # passed back to the GUI
 
+pragma:
+  name: 'pragma'
+  input: 'This command is required by the system and cannot be changed.'
+  info: 'This command is required by the system and cannot be changed.'
+
 boolean:
   name: 'boolean value'
   input: 'Choose true or false'
@@ -10,12 +15,12 @@ boolean:
 string:
   name: 'string value'
   input: 'Enter text (do not use quotes)'
-  info: 'Strings are used to store alphanumeric characters'
+  info: 'Strings are used to store letters and numbers'
 
 number:
   name: 'numeric value'
-  input: 'Enter digits. You may use a decimal point if you need non-integer numbers'
-  info: 'Numbers can store decimals and floating point values'
+  input: 'Enter digits. You may use a decimal point'
+  info: 'Number properties can store numbers, including decimal points'
 
 identifier:
   name: 'identifier'
@@ -25,17 +30,17 @@ identifier:
 prop:
   name: 'property name'
   input: 'Choose a property to use'
-  info: 'Properties can be boolean, string, or number. Every character has its own copy.'
+  info: 'Properties can be boolean, string, or number. Every character has its own copy of the property.'
 
 method:
   name: 'method name'
-  input: 'Available methods are determined by preceding property or feature'
+  input: 'Available methods are determined by the property type or feature'
   info: 'A method is an action that can be performed by a property or features'
 
 propType:
   name: 'property type'
-  input: 'Pick the kind of value this prop should hold'
-  info: 'A property type declares the kind of values a named property can use, like string or number'
+  input: 'Pick the kind of value this prop should hold (string, number, or boolean)'
+  info: 'A property type declares the kind of values a named property can use. This can be a string, number, or boolean.'
 
 objref:
   name: 'object reference'
@@ -74,7 +79,7 @@ option:
 
 blueprint:
   name: 'character type'
-  input: 'Select the name of an existing character type'
+  input: 'Select the character name to change it'
   info: 'This refers to ALL of the characters in the system that have been created by the named blueprint.'
 
 bdlOut:
