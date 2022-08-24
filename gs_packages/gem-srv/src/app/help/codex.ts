@@ -272,7 +272,14 @@ function ForChoice(gsType: string, selectedValue: string, parentLabel?: string) 
   if (type === 'blueprints') type = 'blueprint';
   if (type === 'propName') type = 'prop';
   // -- `propType` is SlotEditor_Block / 'propTypes'` is EditSymbol_Block
-  if (['propType', 'propTypes'].includes(type)) type = selectedValue;
+  if (['propType', 'propTypes'].includes(type)) {
+    if (selectedValue === undefined || selectedValue === '') {
+      // for empty slot
+      type = 'propType';
+    } else {
+      type = selectedValue;
+    }
+  }
   const { name = '-', info = '-', input = '-' } = m_GetTypeHelp(type) || {};
   return { name, info, input };
 }
