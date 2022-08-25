@@ -59,8 +59,9 @@ export const HIDDEN_SYMBOLS = [
   'isinhabitingtarget',
   'statusvalue',
   'statusvaluecolor',
-  'statusvalueislarge'
+  'statusvalueislarge',
   // methods
+  'if'
 ].map(w => w.toLowerCase());
 export const LOCKED_SYMBOLS = [
   '#',
