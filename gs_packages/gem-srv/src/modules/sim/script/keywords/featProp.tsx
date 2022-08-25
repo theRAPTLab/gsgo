@@ -58,7 +58,8 @@ export class featProp extends Keyword {
     // into an actual call
     let callRef;
 
-    function safeGetFeatProp(agent, featName, pName, mName, prms) {
+    // Show useful debug output if GetFeatProp fails
+    function GetFeatPropWithDebug(agent, featName, pName, mName, prms) {
       try {
         return agent.getFeatProp(featName as string, pName)[mName](...prms);
       } catch (err) {
@@ -78,7 +79,7 @@ export class featProp extends Keyword {
         ...prms
       ) => {
         const featName = ref[0];
-        return safeGetFeatProp(agent, featName, pName, mName, prms);
+        return GetFeatPropWithDebug(agent, featName, pName, mName, prms);
       };
     } else if (len === 2) {
       /** EXPLICIT REF *******************************************************/
@@ -94,7 +95,7 @@ export class featProp extends Keyword {
         const bpName = ref[0];
         const c = context[bpName as string]; // SM_Agent context
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
-        return safeGetFeatProp(agent, featName, pName, mName, prms);
+        return GetFeatPropWithDebug(agent, featName, pName, mName, prms);
       };
     } else if (len === 3) {
       /** NEW EXTENDED REF REQUIRED ******************************************/
@@ -107,7 +108,7 @@ export class featProp extends Keyword {
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         // ref[0] = blueprint, ref[1] = feature, ref[2] = prop
         // we use our own decoded propname rather than looking for the passed version
-        return safeGetFeatProp(agent, featName, pName, mName, prms);
+        return GetFeatPropWithDebug(agent, featName, pName, mName, prms);
       };
     } else {
       console.warn('error parse ref', ref);
