@@ -114,6 +114,7 @@ export class featProp extends Keyword {
       callRef = () => {};
     }
     if (len === 3) {
+      // Different call parameters if len===3
       const [, objRef, mName, ...mArgs] = dtoks;
       return [
         (agent: IAgent, state: IState) => {
