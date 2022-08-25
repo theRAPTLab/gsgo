@@ -420,7 +420,9 @@ function SaveSlotLineScript(event) {
   let isBlockCommand = false;
   // 1. Is a block command? e.g. 'every','ifexpr', 'onevent', 'when'?
   if (
-    ['every', 'ifexpr', 'onevent', 'when'].includes(String(new_kw).toLowerCase())
+    ['every', 'ifexpr', 'ifprop', 'iffeatprop', 'onevent', 'when'].includes(
+      String(new_kw).toLowerCase()
+    )
   )
     isBlockCommand = true;
   // 2. Is block command? e.g. 'createAgent' or 'spawnChild' featCall

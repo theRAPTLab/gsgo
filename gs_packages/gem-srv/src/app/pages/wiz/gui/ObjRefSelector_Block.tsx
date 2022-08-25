@@ -61,7 +61,7 @@ function ObjRefSelector_Block(props) {
 
   // 4. Generate validation tokens for objref
   const vtoks = []; // validation token array
-  if (keyword === 'prop' || keyword === 'propPop' || keyword === 'propPush') {
+  if (['prop', 'propPop', 'propPush', 'ifProp'].includes(keyword)) {
     // PROP OBJREF
     const [bpName, propName] = bits;
     // Part 1: bpName
@@ -99,9 +99,7 @@ function ObjRefSelector_Block(props) {
     });
 
     if (
-      keyword === 'featProp' ||
-      keyword === 'featPropPop' ||
-      keyword === 'featPropPush'
+      ['featProp', 'featPropPop', 'featPropPush', 'ifFeatProp'].includes(keyword)
     ) {
       // FEAT PROP OBJREF
       // Part 3: featProp

@@ -36,7 +36,6 @@ export const HIDDEN_SYMBOLS = [
   // keywords
   'randompos',
   'dbgtick',
-  'if',
   'call',
   '_line',
   '_directive',
@@ -60,9 +59,8 @@ export const HIDDEN_SYMBOLS = [
   'isinhabitingtarget',
   'statusvalue',
   'statusvaluecolor',
-  'statusvalueislarge',
+  'statusvalueislarge'
   // methods
-  'eq'
 ].map(w => w.toLowerCase());
 export const LOCKED_SYMBOLS = [
   '#',
