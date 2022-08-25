@@ -55,7 +55,7 @@ expr:
 keyword:
   name: 'command "keyword"'
   input: 'Select a keyword. Warning: if you change this keyword, the rest of the line will have to be updated!'
-  info: 'A "keyword" is the basic GEMSCRIPT command. There is one keyword per line, and collection of lines is called a script.'
+  info: 'A "keyword" is the basic GEMSCRIPT command. There is one keyword per line, and a collection of lines is called a script.'
 
 test:
   name: 'test name'
