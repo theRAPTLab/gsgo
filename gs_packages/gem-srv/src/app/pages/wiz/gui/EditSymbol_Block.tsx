@@ -61,7 +61,11 @@ export const HIDDEN_SYMBOLS = [
   'statusvaluecolor',
   'statusvalueislarge',
   // methods
-  'if'
+  'if',
+  'slightlytrue',
+  'mostlytrue',
+  'slightlyfalse',
+  'mostlyfalse'
 ].map(w => w.toLowerCase());
 export const LOCKED_SYMBOLS = [
   '#',
