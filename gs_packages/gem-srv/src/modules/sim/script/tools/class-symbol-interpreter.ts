@@ -1083,7 +1083,7 @@ class SymbolInterpreter {
     // agentName is not necessarily the current bundle
     // but whatever is specified in the token propRef!
     let agentName = this.getBundleName(); // fallback to bundle
-    if (token.objref) {
+    if (token && token.objref) {
       if (Array.isArray(propRef)) {
         // if propRef is an array, then the agent name is the first item
         // if the reference is the generic 'agent' then we use the bundle name
