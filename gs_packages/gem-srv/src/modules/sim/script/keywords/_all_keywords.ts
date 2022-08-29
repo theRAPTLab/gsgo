@@ -27,6 +27,8 @@ export * from './featPropPush'; // objref method args
 export * from './featPropPop'; // objref method args
 export * from './exprPush'; // push expr onto data stack
 export * from './ifExpr'; // run code conditionally
+export * from './ifProp'; // run code conditionally
+export * from './ifFeatProp'; // run code conditionally
 
 // console debug keywords (deprecated but still in use)
 export * from './dbgOut';

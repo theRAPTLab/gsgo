@@ -25,6 +25,9 @@ export class SM_String extends SM_Object {
   eq(str: string) {
     return new SM_Boolean(this.value === str);
   }
+  noteq(str: string) {
+    return new SM_Boolean(this.value !== str);
+  }
   clear() {
     this.value = '';
   }
@@ -49,6 +52,10 @@ export class SM_String extends SM_Object {
     methods: {
       setTo: { args: ['character string:string'] },
       eq: { args: ['comparison string:string'], returns: 'isEqual:boolean' },
+      notEq: {
+        args: ['comparison string:string'],
+        returns: 'isNotEqual:boolean'
+      },
       clear: {}
     }
   };

@@ -47,6 +47,11 @@ export class SM_Boolean extends SM_Object {
     this.value = this.value === comparison;
     return this;
   }
+  notEq(comparison: any): SM_Boolean {
+    if (!this.fuzzy) throw Error("'equal' incompatible with fuzzy logic");
+    this.value = this.value !== comparison;
+    return this;
+  }
   slightlyTrue(): SM_Boolean {
     this.value = this.value && this.fuzzy > 0 && this.fuzzy < 0.25;
     return this;
@@ -89,6 +94,7 @@ export class SM_Boolean extends SM_Object {
       and: { args: ['comparison:{value}'] },
       or: { args: ['comparison:{value}'] },
       eq: { args: ['comparison:{value}'] },
+      notEq: { args: ['comparison:{value}'] },
       slightlyTrue: { returns: 'value:boolean' },
       mostlyTrue: { returns: 'value:boolean' },
       slightlyFalse: { returns: 'value:boolean' },

@@ -21,7 +21,7 @@ import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as HELP from 'app/help/codex';
-import { StackUnit, GValidationToken, GSymbolToken } from '../SharedElements';
+import { StackUnit, GValidationToken, GSymbolTokenHelp } from '../SharedElements';
 import { HIDDEN_SYMBOLS, ADVANCED_SYMBOLS } from './EditSymbol_Block';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
@@ -53,7 +53,6 @@ function ObjRefSelector_Block(props) {
   if (!Array.isArray(bits)) bits = [bits];
 
   // 3. Look up the keyword to figure out what kind of validation tokens to use
-  let objRefType;
   const keywordTok =
     validationTokens && Array.isArray(validationTokens)
       ? validationTokens[0]
@@ -62,7 +61,7 @@ function ObjRefSelector_Block(props) {
 
   // 4. Generate validation tokens for objref
   const vtoks = []; // validation token array
-  if (keyword === 'prop' || keyword === 'propPop' || keyword === 'propPush') {
+  if (['prop', 'propPop', 'propPush', 'ifProp'].includes(keyword)) {
     // PROP OBJREF
     const [bpName, propName] = bits;
     // Part 1: bpName
@@ -100,9 +99,7 @@ function ObjRefSelector_Block(props) {
     });
 
     if (
-      keyword === 'featProp' ||
-      keyword === 'featPropPop' ||
-      keyword === 'featPropPush'
+      ['featProp', 'featPropPop', 'featPropPush', 'ifFeatProp'].includes(keyword)
     ) {
       // FEAT PROP OBJREF
       // Part 3: featProp
@@ -141,6 +138,15 @@ function ObjRefSelector_Block(props) {
     const label = tok.selectedText || GUI_EMPTY_TEXT;
     const selected = tok.selectedText === label; // always selected, so don't show selected
 
+    // 1. Selected ObjRef Slot (e.g. agent, feature, prop, method)
+    // unitText is the parentLabel, e.g. agent.Costume.costumeName
+    // need to pass for featProp
+    //   (e.g. if this is featProp value, we need to look up
+    //    which feature the featProp came out)
+    const selectedTokenHelp = HELP.ForChoice(type, label, unitText);
+    const selectedTokenHelpTxt = selectedTokenHelp
+      ? selectedTokenHelp.input || selectedTokenHelp.info // favor instructions (input)?
+      : 'token help not found';
     tokenList.push(
       <div
         key={tokenKey}
@@ -152,41 +158,53 @@ function ObjRefSelector_Block(props) {
           position={position}
           selected={selected}
           type={type} // left column of table
+          name={type} // syntax label
           label={label} // column subtitle (repeated)
           viewState={code} // error
           error={info} // error
           isSlot
+          help={selectedTokenHelpTxt}
         />
       </div>
     );
 
+    // 2. Choices for ObjRef Slot (e.g. bpnames, features )
     const options = [];
     const advanced = [];
     if (tok.options)
-      Object.keys(tok.options).forEach(k => {
-        const optionLabel = tok.parentLabel ? `${tok.parentLabel}.${k}` : k || '';
-        if (HIDDEN_SYMBOLS.includes(k.toLowerCase())) return;
-        if (ADVANCED_SYMBOLS.includes(k.toLowerCase())) {
+      Object.keys(tok.options).forEach(key => {
+        const optionLabel = tok.parentLabel
+          ? `${tok.parentLabel}.${key}`
+          : key || '';
+        const optionHelp = HELP.ForChoice(type, key, tok.parentLabel);
+        const optionHelpTxt = optionHelp
+          ? optionHelp.info || optionHelp.name
+          : 'option help not found';
+        if (HIDDEN_SYMBOLS.includes(key.toLowerCase())) return;
+        if (ADVANCED_SYMBOLS.includes(key.toLowerCase())) {
           advanced.push(
-            <div style={{ opacity: 0.3 }} key={k}>
-              <GSymbolToken
-                key={k}
-                symbolType={k}
+            <div key={key}>
+              <GSymbolTokenHelp
+                key={key}
+                symbolType={key}
                 unitText={label} // currently selected text
                 choice={optionLabel} // value returned when selected e.g. 'bp.feat.prop'
-                label={k} // human readable display
+                label={key} // human readable display
+                help={optionHelpTxt}
+                isAdvanced
               />
             </div>
           );
           return;
         }
         options.push(
-          <GSymbolToken
-            key={k}
-            symbolType={k}
+          <GSymbolTokenHelp
+            key={key}
+            symbolType={key}
             unitText={label} // currently selected text
             choice={optionLabel} // value returned when selected e.g. 'bp.feat.prop'
-            label={k} // human readable display
+            label={key} // human readable display
+            help={optionHelpTxt}
           />
         );
       });
@@ -202,7 +220,13 @@ function ObjRefSelector_Block(props) {
   const prompt = `EDIT ${HELP.ForTypeInfo('objref').name.toUpperCase()}`;
   const helpInfo = HELP.ForTypeInfo('objref').info;
   return (
-    <div style={{ padding: '0 20px' }}>
+    <div
+      style={{
+        margin: '0 10px',
+        padding: '10px',
+        backgroundColor: 'rgba(255,255,255,0.25'
+      }}
+    >
       <StackUnit label={prompt} type="editor" open>
         {helpInfo}
       </StackUnit>
@@ -210,10 +234,12 @@ function ObjRefSelector_Block(props) {
         id="ORS_select"
         className="gsled tokenList"
         style={{
+          display: 'grid',
           gridTemplateColumns: `repeat(${tokenCount},1fr)`,
           gridTemplateRows: 'auto auto',
           gridAutoFlow: 'row',
-          paddingBottom: '10px'
+          paddingBottom: '10px',
+          backgroundColor: 'transparent'
         }}
       >
         {tokenList}

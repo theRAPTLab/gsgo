@@ -214,6 +214,7 @@ export function StackUnit(props) {
       onClick={e => {
         if (sticky) e.preventDefault();
       }}
+      data-theme="dark"
     >
       <summary style={summary}>{label}</summary>
       {children}
@@ -377,7 +378,17 @@ export function GValidationToken(props) {
     <>
       <div className="gwiz gsled meta styleSyntax">{name}</div>
       <div className={classes} data-slotkey={tokenKey}>
+        {!isSlot && ( // show help on top if not a slot editor
+          <div className="gtokenhelpWrapper">
+            <div className="gtokenhelp">{help}</div>
+          </div>
+        )}
         {displayLabel}
+        {isSlot && ( // show help on bottom if we're a slot editor
+          <div className="gtokenhelpWrapper">
+            <div className="gtokenhelp gtokenhelpslot">{help}</div>
+          </div>
+        )}
       </div>
       <div className={`gwiz gsled meta ${selected ? 'selected' : ''}`}>
         &nbsp;
@@ -386,8 +397,8 @@ export function GValidationToken(props) {
       <div className="gwiz gslot-ed meta styleHelp">{help}</div> */}
     </>
   ) : (
-    <div className={classes} data-key={tokenKey}>
-      {displayLabel}
+    <div className={classes} data-key={tokenKey} title={help}>
+      {displayLabel} {help}
     </div>
   );
   return jsx;
@@ -421,7 +432,7 @@ export function GLabelToken(props) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** the clickable choice token derived from symboldata */
 export function GSymbolToken(props) {
-  const { symbolType, choice, unitText, label, locked } = props;
+  const { symbolType, choice, unitText, label, help, locked } = props;
   const cnames = ['gwiz', 'gtoken', 'clickable'];
 
   // Label Override
@@ -439,6 +450,36 @@ export function GSymbolToken(props) {
 
   return (
     <div className={cnames.join(' ')} data-choice={token}>
+      {displayLabel} {help}
+    </div>
+  );
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** same as GSymbolToken with hoverable help text */
+export function GSymbolTokenHelp(props) {
+  const { symbolType, choice, unitText, label, help, locked, isAdvanced } = props;
+  const cnames = ['gwiz', 'gtoken', 'clickable'];
+
+  // Label Override
+  // <blueprint>.<propName> hack
+  // If 'label' is present, then we're overriding the default
+  // 'choice' display with a simplified label.
+  // The goal is to keep the display simple.  e.g. while the
+  // choice should be 'Bee.energyLevel' we're showing just
+  // 'energyLevel'.
+  const displayLabel = label || choice; // 'label' will override choice
+
+  if (unitText === displayLabel) cnames.push('chosen');
+  const token = `${symbolType}-${choice}`;
+  if (locked) cnames.push('locked');
+  if (isAdvanced) cnames.push('styleAdvanced');
+
+  return (
+    <div className={cnames.join(' ')} data-choice={token}>
+      <div className="gtokenhelpWrapper">
+        <div className="gtokenhelp">{help}</div>
+      </div>
       {displayLabel}
     </div>
   );
