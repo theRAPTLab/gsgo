@@ -149,6 +149,7 @@ function ObjRefSelector_Block(props) {
     const selectedTokenHelpTxt = selectedTokenHelp
       ? selectedTokenHelp.input || selectedTokenHelp.info // favor instructions (input)?
       : 'token help not found';
+    const isRightSide = position / vtoks.length >= 0.5;
     tokenList.push(
       <div
         key={tokenKey}
@@ -166,6 +167,7 @@ function ObjRefSelector_Block(props) {
           error={info} // error
           isSlot
           help={selectedTokenHelpTxt}
+          isRightSide={isRightSide}
         />
       </div>
     );
@@ -194,6 +196,7 @@ function ObjRefSelector_Block(props) {
                 label={key} // human readable display
                 help={optionHelpTxt}
                 isAdvanced
+                isEditSymbol
               />
             </div>
           );
@@ -207,6 +210,7 @@ function ObjRefSelector_Block(props) {
             choice={optionLabel} // value returned when selected e.g. 'bp.feat.prop'
             label={key} // human readable display
             help={optionHelpTxt}
+            isEditSymbol
           />
         );
       });

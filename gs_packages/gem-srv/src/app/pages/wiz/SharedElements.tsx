@@ -341,12 +341,14 @@ export function GValidationToken(props) {
     position,
     selected,
     type,
-    name,
+    name, // slot syntax
     label,
     viewState,
     error,
     help,
-    isSlot
+    syntaxHelp,
+    isSlot,
+    isRightSide
   } = props;
   let classes = selected
     ? 'gwiz gtoken styleOpen selected'
@@ -373,20 +375,31 @@ export function GValidationToken(props) {
   // special custom combination viewStates
   if (viewState === 'empty-editing' || label === GUI_EMPTY_TEXT)
     classes += ' styleFlagEmpty';
+
+  // help classes
+  let helpclasses = 'gtokenhelp';
+  if (isSlot) helpclasses += ' gtokenhelpslot';
+  if (isRightSide) helpclasses += ' styleRight';
+
   const displayLabel = String(label); // force convert boolean to string
   const jsx = isSlot ? (
     <>
-      <div className="gwiz gsled meta styleSyntax">{name}</div>
+      <div className="gwiz gsled meta styleSyntax">
+        <div className="gtokenhelpWrapper">
+          <div className={helpclasses}>{syntaxHelp}</div>
+        </div>
+        {name}
+      </div>
       <div className={classes} data-slotkey={tokenKey}>
         {!isSlot && ( // show help on top if not a slot editor
           <div className="gtokenhelpWrapper">
-            <div className="gtokenhelp">{help}</div>
+            <div className={helpclasses}>{help}</div>
           </div>
         )}
         {displayLabel}
         {isSlot && ( // show help on bottom if we're a slot editor
           <div className="gtokenhelpWrapper">
-            <div className="gtokenhelp gtokenhelpslot">{help}</div>
+            <div className={helpclasses}>{help}</div>
           </div>
         )}
       </div>
@@ -417,7 +430,8 @@ export function GLabelToken(props) {
         backgroundColor: secondary ? '#003b7630' : '#003b76e0',
         color: 'white',
         fontWeight: 'bold',
-        minWidth: '100px'
+        minWidth: '100px',
+        cursor: 'default'
       }}
       onClick={e => {
         e.preventDefault();
@@ -458,7 +472,17 @@ export function GSymbolToken(props) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** same as GSymbolToken with hoverable help text */
 export function GSymbolTokenHelp(props) {
-  const { symbolType, choice, unitText, label, help, locked, isAdvanced } = props;
+  const {
+    symbolType,
+    choice,
+    unitText,
+    label,
+    help,
+    locked,
+    isAdvanced,
+    isRightSide,
+    isEditSymbol
+  } = props;
   const cnames = ['gwiz', 'gtoken', 'clickable'];
 
   // Label Override
@@ -475,10 +499,15 @@ export function GSymbolTokenHelp(props) {
   if (locked) cnames.push('locked');
   if (isAdvanced) cnames.push('styleAdvanced');
 
+  // help classes
+  let helpclasses = 'gtokenhelp';
+  if (isRightSide) helpclasses += ' styleRight';
+  if (isEditSymbol) helpclasses += ' styleEditSymbol';
+
   return (
     <div className={cnames.join(' ')} data-choice={token}>
       <div className="gtokenhelpWrapper">
-        <div className="gtokenhelp">{help}</div>
+        <div className={helpclasses}>{help}</div>
       </div>
       {displayLabel}
     </div>

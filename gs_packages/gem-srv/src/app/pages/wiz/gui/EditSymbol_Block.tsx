@@ -326,6 +326,7 @@ export function EditSymbol_Block(props) {
               help={helpTxt}
               locked={symbolIsLocked}
               isAdvanced={isAdvanced}
+              isEditSymbol
             />
           );
           //   2. Show expert keywords
