@@ -210,7 +210,12 @@ function ForTypeInfo(gsType: TGSType): { [any: string]: any } {
 /// SIMPLE API ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: given gsType, return help for EditSymbol choices */
-function ForChoice(gsType: string, selectedValue: string, parentLabel?: string) {
+function ForChoice(
+  gsType: string,
+  selectedValue: string,
+  parentLabel?: string
+): { name?: string; info?: string; input?: string } {
+  const EMPTY = '-';
   let type = gsType;
 
   if (DBG)
@@ -226,7 +231,12 @@ function ForChoice(gsType: string, selectedValue: string, parentLabel?: string) 
   // 'keyword' is for SlotEditor_Block
   // 'keywords' is for EditSymbol_Block
   if (['keyword', 'keywords'].includes(type)) {
-    return { input: m_GetKeywordHelp(selectedValue) };
+    if (selectedValue === '' || selectedValue === undefined) {
+      // blank line so just return type info
+      // fall back to default
+    } else {
+      return { input: m_GetKeywordHelp(selectedValue) };
+    }
   }
   // FeatureHelp
   // 'feature' is for SlotEditor_Block
@@ -280,8 +290,8 @@ function ForChoice(gsType: string, selectedValue: string, parentLabel?: string) 
       type = selectedValue;
     }
   }
-  const { name = '-', info = '-', input = '-' } = m_GetTypeHelp(type) || {};
-  return { name, info, input };
+  const { name, info, input } = m_GetTypeHelp(type) || {};
+  return { name, info, input }; // allow undefined
 }
 
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
