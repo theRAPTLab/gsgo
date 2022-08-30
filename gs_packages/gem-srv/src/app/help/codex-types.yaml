@@ -34,7 +34,7 @@ prop:
 
 method:
   name: 'method name'
-  input: 'Available methods are determined by the property type or feature'
+  input: 'Select a method (action).  Available methods are determined by the property type or feature selected.'
   info: 'A method is an action that can be performed by a property or features'
 
 propType:
