@@ -47,9 +47,13 @@ export class SM_String extends SM_Object {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   static Symbols: TSymbolData = {
     methods: {
-      setTo: { args: ['character string:string'] },
-      eq: { args: ['comparison string:string'], returns: 'isEqual:boolean' },
-      clear: {}
+      setTo: { args: [`string:string`], info: 'Sets the property to a value' },
+      eq: {
+        args: ['comparison string:string'],
+        info: 'Returns whether this property is equal to the passed value',
+        returns: 'isEqual:boolean'
+      },
+      clear: { info: 'Clears the current property value' }
     }
   };
 }

@@ -82,13 +82,19 @@ export class SM_Boolean extends SM_Object {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   static Symbols: TSymbolData = {
     methods: {
-      setTo: { args: ['true or false:boolean'] },
+      setTo: {
+        args: ['true or false:boolean'],
+        info: 'Sets the property to a value'
+      },
       true: { returns: 'if true:boolean' },
       false: { returns: 'if false:boolean' },
       invert: { returns: 'inverted:boolean' },
       and: { args: ['comparison:{value}'] },
       or: { args: ['comparison:{value}'] },
-      eq: { args: ['comparison:{value}'] },
+      eq: {
+        args: ['comparison:{value}'],
+        info: 'Returns whether this property is equal to the passed value'
+      },
       slightlyTrue: { returns: 'value:boolean' },
       mostlyTrue: { returns: 'value:boolean' },
       slightlyFalse: { returns: 'value:boolean' },
