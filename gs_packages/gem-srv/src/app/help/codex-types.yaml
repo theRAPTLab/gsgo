@@ -102,36 +102,17 @@ feature:
   input: ''
   info: ''
 
-# HACK: methods
+# HACK: featMethods
 # Technically these are not TSymbolData
 # Review: Where should we move these?
-# -- number
-setMin:
-  name: 'number method'
-  input: 'Select a method'
-  info: 'Sets the minimum value this property is allowed to have.  If you try to set the property below this value, the property will be automatically changed to this value'
-setMax:
-  name: 'number method'
-  input: 'Select a method'
-  info: 'Sets the maximum value this property is allowed to have.  If you try to set the property above this value, the property will be automatically changed to this value'
-setTo:
-  name: 'string or number method'
-  input: 'Select a method'
-  info: 'Sets the property to a value'
-setToRnd:
-  name: 'number method'
-  input: 'Select a method'
-  info: 'Sets the property to a random value'
-add:
-  name: 'number method'
-  input: 'Select a method'
-  info: 'Sets the property to the current value + the add value'
-sub:
-  name: 'number method'
-  input: 'Select a method'
-  info: 'Sets the property to the current value - the sub value'
-# -- string
-clear:
-  name: 'string method'
-  input: 'Select a method'
-  info: 'Sets the property to be an empty string'
+#
+# -- Features (General)
+targetBlueprintName:
+  name: 'target blueprint name'
+  input: 'Enter an existing character name'
+  info: 'Sets the character for this method to act upon'
+# -- Touches
+touchType:
+  name: 'touch type'
+  input: 'Enter a type of touch to monitor: "b2b" is bounds to bounds, "binb" is bounds in bounds, "c2c" is center to center, "c2b" is center to bounds'
+  info: 'Sets the type of touches to monitor:  "b2b" is bounds to bounds, "binb" is bounds in bounds, "c2c" is center to center, "c2b" is center to bounds'
