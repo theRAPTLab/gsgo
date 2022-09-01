@@ -5,6 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import merge from 'deepmerge';
 import SM_Object from 'lib/class-sm-object';
 import { RegisterPropType } from 'modules/datacore';
 
@@ -71,6 +72,19 @@ export class SM_Boolean extends SM_Object {
     if (!SM_Boolean._CachedSymbols)
       SM_Boolean._CachedSymbols = SM_Object._SymbolizeNames(SM_Boolean.Symbols);
     return SM_Boolean._CachedSymbols;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   * Override generic 'SM_Boolean' method args with custom args
+   * @param {object} methodsArgs { <method>: <argstring> }
+   *                    e.g. { setTo: ['movementTypeString:string']}
+   */
+  static SymbolizeCustom(methodsArgs): TSymbolData {
+    const symbols: TSymbolData = merge.all([SM_Boolean.Symbolize()]);
+    Object.entries(methodsArgs).forEach(([mKey, mVal]: [string, any]) => {
+      symbols.methods[mKey].args = mVal;
+    });
+    return symbols;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** instance method to return symbol data */

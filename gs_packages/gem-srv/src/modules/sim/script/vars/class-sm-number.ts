@@ -5,6 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import merge from 'deepmerge';
 import RNG from 'modules/sim/sequencer';
 import SM_Object from 'lib/class-sm-object';
 // uses types defined in t-script.d
@@ -190,6 +191,20 @@ export class SM_Number extends SM_Object implements ISM_Object {
       SM_Number._CachedSymbols = SM_Object._SymbolizeNames(SM_Number.Symbols);
     return SM_Number._CachedSymbols;
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   * Override generic 'SM_Number' method args with custom args
+   * @param {object} methodsArgs { <method>: <argnumber> }
+   *                    e.g. { setTo: ['degreesNumber:number']}
+   */
+  static SymbolizeCustom(methodsArgs): TSymbolData {
+    const symbols: TSymbolData = merge.all([SM_Number.Symbolize()]);
+    Object.entries(methodsArgs).forEach(([mKey, mVal]: [string, any]) => {
+      symbols.methods[mKey].args = mVal;
+    });
+    return symbols;
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** instance method to return symbol data */
   symbolize(): TSymbolData {

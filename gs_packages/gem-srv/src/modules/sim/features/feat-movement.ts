@@ -813,8 +813,13 @@ class MovementPack extends SM_Feature {
    *  the name parameter in each methodSignature */
   static Symbols: TSymbolData = {
     props: {
-      movementType: SM_String.Symbols,
-      direction: SM_Number.Symbols,
+      movementType: SM_String.SymbolizeCustom({
+        setTo: ['movementTypeString:string']
+      }),
+      direction: SM_Number.SymbolizeCustom({
+        setTo: ['degreesNumber:number']
+      }),
+      // direction: SM_Number.Symbols,
       compassDirection: SM_String.Symbols,
       distance: SM_Number.Symbols,
       jitterDistance: SM_Number.Symbols,

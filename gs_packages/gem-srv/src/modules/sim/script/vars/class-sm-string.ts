@@ -5,6 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import merge from 'deepmerge';
 import SM_Object from 'lib/class-sm-object';
 // uses types defined in t-script.d
 import { RegisterPropType } from 'modules/datacore';
@@ -37,6 +38,20 @@ export class SM_String extends SM_Object {
       SM_String._CachedSymbols = SM_Object._SymbolizeNames(SM_String.Symbols);
     return SM_String._CachedSymbols;
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   * Override generic 'SM_String' method args with custom args
+   * @param {object} methodsArgs { <method>: <argstring> }
+   *                    e.g. { setTo: ['movementTypeString:string']}
+   */
+  static SymbolizeCustom(methodsArgs): TSymbolData {
+    const symbols: TSymbolData = merge.all([SM_String.Symbolize()]);
+    Object.entries(methodsArgs).forEach(([mKey, mVal]: [string, any]) => {
+      symbols.methods[mKey].args = mVal;
+    });
+    return symbols;
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** instance method to return symbol data */
   symbolize(): TSymbolData {
