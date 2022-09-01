@@ -101,18 +101,3 @@ feature:
   name: ''
   input: ''
   info: ''
-
-# HACK: featMethods
-# Technically these are not TSymbolData
-# Review: Where should we move these?
-#
-# -- Features (General)
-targetBlueprintName:
-  name: 'target blueprint name'
-  input: 'Enter an existing character name'
-  info: 'Sets the character for this method to act upon'
-# -- Touches
-touchType:
-  name: 'touch type'
-  input: 'Enter a type of touch to monitor: "b2b" is bounds to bounds, "binb" is bounds in bounds, "c2c" is center to center, "c2b" is center to bounds'
-  info: 'Sets the type of touches to monitor:  "b2b" is bounds to bounds, "binb" is bounds in bounds, "c2c" is center to center, "c2b" is center to bounds'
