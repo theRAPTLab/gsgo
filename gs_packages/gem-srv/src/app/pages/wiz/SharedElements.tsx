@@ -320,7 +320,7 @@ export function GToken(props) {
     : 'gwiz gtoken styleOpen';
   // special types? use additional classes
   if (type === 'identifier' && position === 0) classes += ' styleKey';
-  if (type === 'comment') classes += ' styleComment';
+  if (type === '{noncode}') classes += ' styleComment';
   if (type === 'directive') classes += ' stylePragma';
   if (SPECIAL_IDENTS.includes(label)) classes += ' stylePragma';
   if (SPECIAL_KEYWORDS.includes(label)) classes += ' styleDefine';
@@ -355,7 +355,7 @@ export function GValidationToken(props) {
     : 'gwiz gtoken styleOpen';
   // special types? use additional classes
   if (type === 'identifier' && position === 0) classes += ' styleKey';
-  if (type === 'comment') classes += ' styleComment';
+  if (type === '{noncode}') classes += ' styleComment';
   if (type === 'directive') classes += ' stylePragma';
   if (SPECIAL_IDENTS.includes(label)) classes += ' stylePragma';
   if (SPECIAL_KEYWORDS.includes(label)) classes += ' styleDefine';
