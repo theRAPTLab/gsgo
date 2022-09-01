@@ -81,10 +81,10 @@ function m_GetAllFeaturesHelp() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return help for specific featProp
- *  @param {string} parentLabel -- `Costume` or `agent.Costume`
+ *  @param {string} featObjRef -- `Costume` or `agent.Costume`
  */
-function m_GetFeaturePropHelp(featPropName: string, parentLabel: string) {
-  const parents = parentLabel ? parentLabel.split('.') : [];
+function m_GetFeaturePropHelp(featPropName: string, featObjRef: string) {
+  const parents = featObjRef ? featObjRef.split('.') : [];
   let featName;
   if (parents.length === 1) {
     // <feature>
@@ -101,7 +101,7 @@ function m_GetFeaturePropHelp(featPropName: string, parentLabel: string) {
   if (fp_help && fp_help.info !== undefined) {
     return fp_help;
   }
-  return `no featPorp help found for ${parentLabel}.${featPropName}`;
+  return `no featPorp help found for ${featObjRef}.${featPropName}`;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return help for when condition tests */
