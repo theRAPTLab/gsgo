@@ -101,3 +101,18 @@ feature:
   name: ''
   input: ''
   info: ''
+
+# HANDLE GVAR arg types
+min value:
+  name: 'min value'
+  input: 'Enter the minimum value allowed for this property'
+  info: 'Sets the lowest value allowed for the property'
+max value:
+  name: 'max value'
+  input: 'Enter the maximum value allowed for this property'
+  info: 'Sets the highest value allowed for the property'
+asInteger:
+  name: 'asInteger'
+  input: 'Select true to generate a random integer, false to generate a random decimal number'
+  info: 'Determines the type of random number to generate: an integer or a decimal'
+
