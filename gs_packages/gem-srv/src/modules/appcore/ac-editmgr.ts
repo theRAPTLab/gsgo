@@ -244,7 +244,7 @@ function DispatchClick(event) {
     // WIZCORE: notify subscribers of new current line and token index
     const [line, pos] = tokenKey.split(',');
     const sel_linenum = Number(line);
-    const sel_linepos = Number(pos);
+    const sel_linepos = Number(pos) || 1; // if click on line number, default to keyword
     newWizState.sel_linenum = sel_linenum; // STATE UPDATE: selected line
     newWizState.sel_linepos = sel_linepos; // STATE UPDATE: selected pos
     WIZCORE.SendState(newWizState);
@@ -420,7 +420,9 @@ function SaveSlotLineScript(event) {
   let isBlockCommand = false;
   // 1. Is a block command? e.g. 'every','ifexpr', 'onevent', 'when'?
   if (
-    ['every', 'ifexpr', 'onevent', 'when'].includes(String(new_kw).toLowerCase())
+    ['every', 'ifexpr', 'ifprop', 'iffeatprop', 'onevent', 'when'].includes(
+      String(new_kw).toLowerCase()
+    )
   )
     isBlockCommand = true;
   // 2. Is block command? e.g. 'createAgent' or 'spawnChild' featCall

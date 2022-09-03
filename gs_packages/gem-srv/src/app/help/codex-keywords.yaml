@@ -88,6 +88,6 @@ _directive:
     xxx
 
 _line:
-  input: 'blank lines can be changed into keyword lines by selecting one above'
+  input: 'select a keyword'
   glossary: >
     xxx

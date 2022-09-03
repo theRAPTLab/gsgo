@@ -182,7 +182,7 @@ class TouchPack extends SM_Feature {
   constructor(name) {
     super(name);
     this.featAddMethod('monitor', this.monitor);
-    this.featAddMethod('getTouchingAgent', this.getTouchingAgent);
+    this.featAddMethod('_getTouchingAgent', this._getTouchingAgent);
     this.featAddMethod('clearTouches', this.clearTouches);
     UR.HookPhase('SIM/PHYSICS_THINK', m_Update);
   }
@@ -209,7 +209,7 @@ class TouchPack extends SM_Feature {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// Returns the first agent that matches the touchtype
-  getTouchingAgent(agent: IAgent, touchType: string) {
+  _getTouchingAgent(agent: IAgent, touchType: string) {
     if (!agent.isTouching) return undefined;
     const targetIds = [...agent.isTouching.keys()];
     const touchingId = targetIds.find(id => agent.isTouching.get(id)[touchType]);
@@ -251,9 +251,10 @@ class TouchPack extends SM_Feature {
   static Symbols: TSymbolData = {
     props: {},
     methods: {
-      monitor: { args: ['targetBlueprintName:string', 'touchType:identifier'] },
-      getTouchingAgent: { args: ['touchType:identifier'] },
-      clearTouches: { args: ['targetId:string'] }
+      monitor: { args: ['targetBlueprintName:string', 'touchType:identifier'] }
+      // INTERNAL USE ONLY
+      // _getTouchingAgent: { args: ['touchType:identifier'] },
+      // clearTouches: { args: ['targetId:string'] }
     }
   };
 }

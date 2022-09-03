@@ -40,7 +40,14 @@ export class prop extends Keyword {
   /** create smc blueprint code objects */
   compile(dtoks: TScriptUnit, refs: TSymbolRefs): TOpcode[] {
     const [kw, objref, methodName, ...args] = dtoks;
-    /*** TESTING CODE ***/
+    /***
+     * TESTING CODE
+     * A "universal object reference"
+     * This was an attempt to simplify GEMSCRIPT so that featCall, featProp,
+     * call, and prop could all be called via a single keyword.
+     * We were not quite able to get it working.
+     * This will be a GEMSCRIPT 2.0 feature.
+     */
     if (USE_NEW_DEREF) {
       let derefProp: Function;
       try {

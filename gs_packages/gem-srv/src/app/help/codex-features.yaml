@@ -1,23 +1,312 @@
 # help for feature properties and methods
 # these can be used override the defaults define in the feature modules
 
+# REVIEW
+# --  Do we want to use 'hint'?
+
+# STYLE NOTES
+# --  No '.' after `info`!!! Periods are added in code.
+
+AgentWidgets:
+  info: 'Adds text labels, meters, and graph labels'
+
+  # AgentWidgets props
+  text:
+    info: 'tbd'
+  textProp:
+    info: 'tbd'
+  meter:
+    info: 'tbd'
+  meterProp:
+    info: 'tbd'
+  meterColor:
+    info: 'tbd'
+  isLargeGraphic:
+    info: 'tbd'
+  graphValue:
+    info: 'tbd'
+  graphProp:
+    info: 'tbd'
+  graphGlobalProp:
+    info: 'tbd'
+  graphFrequency:
+    info: 'tbd'
+  barGraphProp:
+    info: 'tbd'
+  barGraphPropFeature:
+    info: 'tbd'
+
+  # AgentWidgets methods
+  showMessage:
+    info: 'tbd'
+  setMeterPosition:
+    info: 'tbd'
+  bindLineGraphHistogramToFeatProp:
+    info: 'tbd'
+
 Costume:
   info: 'Adds ability to change appearance using art assets'
-  setCostume:
+
+  # Costume props
+  costumeName:
+    info: 'sets the filename for the costume image (.json or .png)'
+  size:
+    info: 'size (in pixels/world units) to set the costume to.  Sets width or height, whichever is the largest dimension.'
+  width:
+    info: 'width (in pixels/world units) to set the costume to'
+  height:
+    info: 'width (in pixels/world units) to set the costume to'
+  scale:
+    info: 'increase or decrease the size of the costume as a proportional value. 1 = default size, 2 = twice as large, 0.5 = half size'
+  flipX:
+    info: 'flip the costume on the x axis'
+  flipY:
+    info: 'flip the costume on the y axis'
+  glow:
+    info: 'set costume to glow for n number of seconds'
+  currentFrame:
+    info: 'tbd'
+  colorHue:
+    info: 'tbd'
+  colorSaturation:
+    info: 'tbd'
+  colorValue:
+    info: 'tbd'
+  colorScaleIndex:
+    info: 'tbd'
+  colorScaleHue:
+    info: 'tbd'
+  colorScaleSaturation:
+    info: 'tbd'
+  colorScaleValue:
+    info: 'tbd'
+  colorScaleType:
+    info: 'tbd'
+  colorScaleSteps:
+    info: 'tbd'
+
+  # Costume methods
+  setAnimatedCostume:
+    # REVIEW: Get rid of `hint`???
     hint: 'Change appearance by setting image'
+    info: 'Animate character using a series of images.'
     syntax: 'sprite file name (flower.json), starting frame number like 0'
-  setPose:
-    hint: 'Change animation frame'
+  setColorize:
+    hint: 'Apply a color filter to the character'
+    info: 'Apply a color filter to the character'
+    syntax: 'frame number like 0'
+  setColorizeHSV:
+    hint: 'Apply a color filter to the character'
+    info: 'Apply a color filter to the character'
+    syntax: 'frame number like 0'
+  randomizeColor:
+    hint: 'Apply a color filter to the character'
+    info: 'Apply a color filter to the character'
+    syntax: 'frame number like 0'
+  randomizeColorHSV:
+    hint: 'Apply a color filter to the character'
+    info: 'Apply a color filter to the character'
+    syntax: 'frame number like 0'
+  colorHSVWithinRange:
+    hint: 'Apply a color filter to the character'
+    info: 'Apply a color filter to the character'
+    syntax: 'frame number like 0'
+  resetColorize:
+    hint: 'Apply a color filter to the character'
+    info: 'Apply a color filter to the character'
+    syntax: 'frame number like 0'
+  initHSVColorScale:
+    hint: 'Apply a color filter to the character'
+    info: 'Apply a color filter to the character'
+    syntax: 'frame number like 0'
+  getHSVColorScaleColor:
+    hint: 'Apply a color filter to the character'
+    info: 'Apply a color filter to the character'
     syntax: 'frame number like 0'
 
-Physics:
-  info: 'Adds collision checking.'
-  setSize:
-    hint: 'change dimensions in pixels'
-    syntax: 'integer width, integer height'
+Cursor:
+  info: 'Adds ability for the character to be controlled by a generic "cursor" via Pozyx or PTrack.  Used to allow Pozyx/PTrack to pick up and drop characters during a simulation run.'
 
 Movement:
   info: 'Add different ways to move or be controlled'
-  setMovementType:
+
+  # Movement props
+  movementType:
+    info: 'movementType help'
+  direction:
+    info: 'movementType help'
+  compassDirection:
+    info: 'movementType help'
+  distance:
+    info: 'movementType help'
+  jitterDistance:
+    info: 'movementType help'
+  bounceAngle:
+    info: 'movementType help'
+  doRandomOnWander:
+    info: 'movementType help'
+  isMoving:
+    info: 'movementType help'
+  useAutoOrientation:
+    info: 'movementType help'
+  targetX:
+    info: 'movementType help'
+  targetY:
+    info: 'movementType help'
+  targetCharacterType:
+    info: 'movementType help'
+
+  # Movement methods
+  queuePosition:
     hint: 'change how a character moves'
+    info: 'set character at a x,y position'
     syntax: 'variable (see wiki)'
+  setRandomDirection:
+    info: 'xxx'
+  setRandomPosition:
+    info: 'xxx'
+  setRandomPositionX:
+    info: 'xxx'
+  setRandomPositionY:
+    info: 'xxx'
+  setRandomStart:
+    info: 'xxx'
+  setRandomStartPosition:
+    info: 'xxx'
+  jitterPos:
+    info: 'xxx'
+  jitterRotate:
+    info: 'xxx'
+  seekNearest:
+    info: 'xxx'
+  seekNearestVisibleCone:
+    info: 'xxx'
+  seekNearestVisibleColor:
+    info: 'xxx'
+
+Physics:
+  info: 'Adds character measurements for collision checking'
+
+  # Physics props
+  bodyRadius:
+    hint: 'change dimensions in pixels'
+    info: 'change dimensions in pixels'
+    syntax: 'integer width, integer height'
+  bodyWidth:
+    info: 'xxx'
+  bodyHeight:
+    info: 'xxx'
+  bodyShape:
+    info: 'circle or rectangle'
+
+  # Physics methods
+  # (none)
+
+Population:
+  info: 'Adds ways to generate and manage spawned characters and statistical information'
+
+  # Population props
+  count:
+    info: 'xxx'
+  sum:
+    info: 'xxx'
+  avg:
+    info: 'xxx'
+  min:
+    info: 'xxx'
+  max:
+    info: 'xxx'
+  monitoredAgent:
+    info: 'xxx'
+  monitoredAgentProp:
+    info: 'xxx'
+  monitoredAgentPropFeature:
+    info: 'xxx'
+  spawnMutationProp:
+    info: 'xxx'
+  spawnMutationPropFeature:
+    info: 'xxx'
+  spawnMutationMaxAdd:
+    info: 'xxx'
+  spawnMutationMaxSubtract:
+    info: 'xxx'
+  targetPopulationSize:
+    info: 'xxx'
+  deleteAfterSpawning:
+    info: 'xxx'
+
+  # Population methods
+  createAgent:
+    info: 'createAgent'
+  spawnChild:
+    info: 'spawnChild'
+  removeAgent:
+    info: 'removeAgent'
+  getRandomActiveAgent:
+    info: 'getRandomActiveAgent'
+  releaseAllAgents:
+    info: 'releaseAllAgents'
+  releaseInertAgents:
+    info: 'releaseInertAgents'
+  hideInertAgents:
+    info: 'hideInertAgents'
+  removeInertAgents:
+    info: 'removeInertAgents'
+  agentsReproduce:
+    info: 'agentsReproduce'
+  oneAgentReproduce:
+    info: 'oneAgentReproduce'
+  populateBySpawning:
+    info: 'populateBySpawning'
+  agentsForEachActive:
+    info: 'agentsForEachActive'
+  agentsForEach:
+    info: 'agentsForEach'
+  getActiveAgentsCount:
+    info: 'getActiveAgentsCount'
+  countAgents:
+    info: 'countAgents'
+  countAgentProp:
+    info: 'countAgentProp'
+  minAgentProp:
+    info: 'minAgentProp'
+  maxAgentProp:
+    info: 'maxAgentProp'
+  countAgentsByPropType:
+    info: 'countAgentsByPropType'
+  setAgentsByFeatPropTypeKeys:
+    info: 'setAgentsByFeatPropTypeKeys'
+  countExistingAgentsByFeatPropType:
+    info: 'countExistingAgentsByFeatPropType'
+
+Touches:
+  info: 'Adds tests to detect when characters touch each other'
+  # Touches props (none)
+  # Touches methods
+  monitor:
+    info: 'Detect touches with another character (b2b = bounds to bounds, c2b = center to bounds, c2c = center to center, binb = bounds inside bounds)'
+
+Vision:
+  info: 'Adds ability for characters to detect what is front of them'
+
+  # Vision props
+  visionable:
+    info: 'visionable'
+  viewDistance:
+    info: 'viewDistance'
+  viewAngle:
+    info: 'viewAngle'
+  colorHueDetectionThreshold:
+    info: 'colorHueDetectionThreshold'
+  colorSaturationDetectionThreshold:
+    info: 'colorSaturationDetectionThreshold'
+  colorValueDetectionThreshold:
+    info: 'colorValueDetectionThreshold'
+
+  # Vision methods
+  monitor:
+    info: 'xx'
+  isCamouflaged:
+    info: 'xx'
+  canSeeColorOfAgent:
+    info: 'xx'

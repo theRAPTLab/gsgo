@@ -22,6 +22,7 @@ import * as HELP from 'app/help/codex';
 import {
   GLabelToken,
   GSymbolToken,
+  GSymbolTokenHelp,
   StackUnit,
   StackText
 } from '../SharedElements';
@@ -35,7 +36,6 @@ export const HIDDEN_SYMBOLS = [
   // keywords
   'randompos',
   'dbgtick',
-  'if',
   'call',
   '_line',
   '_directive',
@@ -59,7 +59,13 @@ export const HIDDEN_SYMBOLS = [
   'isinhabitingtarget',
   'statusvalue',
   'statusvaluecolor',
-  'statusvalueislarge'
+  'statusvalueislarge',
+  // methods
+  'if',
+  'slightlytrue',
+  'mostlytrue',
+  'slightlyfalse',
+  'mostlyfalse'
 ].map(w => w.toLowerCase());
 export const LOCKED_SYMBOLS = [
   '#',
@@ -173,7 +179,7 @@ export function EditSymbol_Block(props) {
   const { sel_linenum, sel_linepos, vmPageLine, sel_slotpos } = selection;
   const label = `options for token ${sel_linenum}:${sel_linepos}`;
   let symbolType = '';
-  let helpInfo = '';
+  let slotTypeHelpText = '';
 
   // Keep track of symbols being used in the original script line,
   // especially advanced or hidden symbols, so that we can show
@@ -208,6 +214,23 @@ export function EditSymbol_Block(props) {
     if (selectedSlot >= validationTokens.length)
       return <StackUnit label="No options" type="symbol" open sticky />;
 
+    // HELP
+    // featCall HACK
+    // peek at keyword.  If it's a featCall, we need to
+    // pull out the feature name to pass on to f_render_choices
+    let featName;
+    const kw_tok = validationTokens[0];
+    if (kw_tok.unitText === 'featCall') {
+      const objref_tok = validationTokens[1].unitText.split('.');
+      // featName will be passed to HELP.ForChoice as the parentLabel
+      // This is how we tell HELP to look up a featMethod instead of regular prop method
+      featName = objref_tok.length > 1 ? objref_tok[1] : objref_tok[0];
+    }
+    if (kw_tok.unitText === 'when') {
+      // A 'test' method will call up conditions tests
+      featName = 'test';
+    }
+
     const symbolData: TSymbolData = validationTokens[selectedSlot] || {};
     // filter out all the metadata from the symbolData, consolidating
     // the actual dictionaries of symbol types in `symbolDicts`
@@ -226,8 +249,9 @@ export function EditSymbol_Block(props) {
         }
     */
 
+    // HELP
     symbolType = HELP.ForTypeInfo(gsType).name;
-    helpInfo = HELP.ForTypeInfo(gsType).info;
+    slotTypeHelpText = HELP.ForTypeInfo(gsType).info;
 
     // Don't render choices if the current selection should be an input form
     if (
@@ -249,14 +273,14 @@ export function EditSymbol_Block(props) {
     function f_render_choices(
       sd: TSymbolData,
       vd: TSymbolViewData,
-      parentLabel = ''
+      categoryLabel = ''
     ): JSX.Element[] {
       // declarations
       const categoryDicts = []; // the list of symbol dictionaries to stack
 
       // iterate over all the keys in the symbolData, which will be things like
       // props, blueprints, anything definable in TSymbolData
-      Object.keys(sd).forEach((stype, i) => {
+      Object.keys(sd).forEach((stype: TGSType, i) => {
         const rowKey = `${sel_linenum}:${i}`;
         const vdata = vd[stype]; // { items, info }
         if (vdata === undefined) {
@@ -280,30 +304,39 @@ export function EditSymbol_Block(props) {
           // if EditSymbol is locked, it overrides ALL symbol choices
           const symbolIsLocked =
             locked || LOCKED_SYMBOLS.includes(choice.toLowerCase());
-          const tok = (
-            <GSymbolToken
-              key={choiceKey}
-              symbolType={stype}
-              unitText={unitText}
-              choice={choice || GUI_EMPTY_TEXT}
-              locked={symbolIsLocked}
-            />
-          );
+          const help = HELP.ForChoice(stype, choice, featName);
+          const helpTxt = help
+            ? help.info || help.input || help.name
+            : 'notok found';
           // 1. If the choice is supposed to be hidden, but
           //    is currently in use in the original script line,
           //    show it in the "expert" section so that it
           //    can be reselected
+          let isAdvanced = false;
           if (
-            HIDDEN_SYMBOLS.includes(choice.toLowerCase()) &&
-            SYMBOLS_IN_USE.includes(choice.toLowerCase())
+            (HIDDEN_SYMBOLS.includes(choice.toLowerCase()) &&
+              SYMBOLS_IN_USE.includes(choice.toLowerCase())) ||
+            ADVANCED_SYMBOLS.includes(choice.toLowerCase())
           ) {
+            isAdvanced = true;
+          }
+          const tok = (
+            <GSymbolTokenHelp
+              key={choiceKey}
+              symbolType={stype}
+              unitText={unitText}
+              choice={choice || GUI_EMPTY_TEXT}
+              help={helpTxt}
+              locked={symbolIsLocked}
+              isAdvanced={isAdvanced}
+            />
+          );
+          //   2. Show expert keywords
+          if (isAdvanced) {
             expertChoices.push(tok);
           } else if (HIDDEN_SYMBOLS.includes(choice.toLowerCase())) {
-            // 2. Hide unsupported and deprecated keywords
+            // 3. Hide unsupported and deprecated keywords
             return;
-          } else if (ADVANCED_SYMBOLS.includes(choice.toLowerCase())) {
-            // 3. Show expert keywords
-            expertChoices.push(tok);
           } else {
             // 4. Regular keyword
             choices.push(tok);
@@ -316,7 +349,7 @@ export function EditSymbol_Block(props) {
           <div key={rowKey} style={{ display: 'contents' }}>
             <GLabelToken
               key={rowKey}
-              name={parentLabel ? `${parentLabel}` : symbolType}
+              name={categoryLabel ? `${categoryLabel}` : symbolType}
             />
             <div style={{ display: 'flex', flexWrap: 'wrap' }}>
               {[...choices]}
@@ -330,11 +363,13 @@ export function EditSymbol_Block(props) {
               <GLabelToken
                 key={`adv${rowKey}`}
                 name={
-                  parentLabel ? `expert ${parentLabel}` : `expert ${symbolType}`
+                  categoryLabel
+                    ? `expert ${categoryLabel}`
+                    : `expert ${symbolType}`
                 }
                 secondary
               />
-              <div style={{ display: 'flex', flexWrap: 'wrap', opacity: '0.7' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                 {[...expertChoices]}
               </div>
             </div>
@@ -364,16 +399,23 @@ export function EditSymbol_Block(props) {
   /// [SYMBOL TYPE] symbol symbol symbol
   const prompt = symbolType
     ? `SELECT A ${symbolType.toUpperCase()}`
-    : 'CHANGE KEYWORD?';
+    : 'SELECT A KEYWORD';
   return (
-    <div id="ES_symbols">
+    <div
+      id="ES_symbols"
+      style={{
+        margin: '0 10px',
+        padding: '10px 0',
+        backgroundColor: 'rgba(255,255,255,0.25'
+      }}
+    >
       <StackUnit
         label={prompt}
         type="editor"
         open
         style={{ padding: '0 20px 20px 20px' }}
       >
-        {helpInfo}
+        {slotTypeHelpText}
       </StackUnit>
       <StackText
         type="symbol"
@@ -389,7 +431,7 @@ export function EditSymbol_Block(props) {
               key={key}
               style={{
                 display: 'grid',
-                gridTemplateColumns: '100px 1fr',
+                gridTemplateColumns: '110px 1fr',
                 gap: '1px'
               }}
             >
