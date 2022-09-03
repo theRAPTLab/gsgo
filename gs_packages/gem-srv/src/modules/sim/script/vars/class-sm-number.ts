@@ -167,6 +167,9 @@ export class SM_Number extends SM_Object implements ISM_Object {
   eq(num: number) {
     return new SM_Boolean(this.value === num);
   }
+  notEq(num: number) {
+    return new SM_Boolean(this.value !== num);
+  }
   gt(num: number) {
     return new SM_Boolean(this.value > num);
   }
@@ -254,6 +257,23 @@ export class SM_Number extends SM_Object implements ISM_Object {
       subRndInt: {
         args: ['min value:number', 'max value:number'],
         info: 'Changes the current value by subtracting a random integer between the min and max values passed'
+      },
+      div: { args: ['number:number'], info: 'divide current by value' },
+      mul: { args: ['number:number'], info: 'multiple current by value' },
+      eq: { args: ['number:number'], info: 'returns current equal to value' },
+      notEq: {
+        args: ['number:number'],
+        info: 'returns current not equal to value'
+      },
+      gt: { args: ['number:number'], info: 'returns current greater than value' },
+      lt: { args: ['number:number'], info: 'returns current less than value' },
+      gte: {
+        args: ['number:number'],
+        info: 'returns current greater than or equal to value'
+      },
+      lte: {
+        args: ['number:number'],
+        info: 'returns current less than or equal to value'
       }
     }
   };

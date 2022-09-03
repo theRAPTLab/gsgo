@@ -28,6 +28,17 @@ export class ifKeyword extends Keyword {
     });
     return code;
   }
+
+  /** custom keyword validator */
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    // addProp propName number appropriateValue
+    const [kwTok, exprTok, cnsTok, altTok] = unit;
+    const vtoks = [];
+    vtoks.push(this.shelper.anyKeyword(kwTok));
+    vtoks.push(this.shelper.anyExpr(exprTok));
+    const vlog = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: vlog };
+  }
 } // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

@@ -277,7 +277,7 @@ function ForChoice(
       // for a. look up `featCall` method
       return m_GetFeaturePropHelp(selectedValue, parentLabel);
     } else if (selectedValue === undefined) {
-      // for d. empty slot still
+      // for d. empty slot
       type = 'method';
     } else {
       // for c. look up regular `prop` method

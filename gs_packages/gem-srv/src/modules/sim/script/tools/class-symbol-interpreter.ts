@@ -1081,10 +1081,27 @@ class SymbolInterpreter {
     const gsArg = HELP.ForGSArg('agentObjRef') || ':objref';
     // construct expected symbols
     let blueprints = SIMDATA.GetBlueprintSymbols();
-    const agentName = this.getBundleName();
+
+    // DEREF PROPNAME
+    // agentName is not necessarily the current bundle
+    // but whatever is specified in the token propRef!
+    let agentName = this.getBundleName(); // fallback to bundle
+    if (token && token.objref) {
+      if (Array.isArray(propRef)) {
+        // if propRef is an array, then the agent name is the first item
+        // if the reference is the generic 'agent' then we use the bundle name
+        if (propRef[0] !== 'agent') {
+          agentName = propRef[0];
+        }
+      } else if (propRef !== undefined) {
+        // propRef is just a reference to the prop, e.g. 'energyLevel'
+        agentName = propRef;
+      }
+    }
     const agent = { agent: SIMDATA.GetBlueprintBundle(agentName).symbols };
     blueprints = { ...blueprints, ...agent };
-    let props = this.getBundlePropSymbols();
+
+    let props = agent.agent.props;
     const symbols: TSymbolData = {
       blueprints,
       props // default to agent
@@ -1151,8 +1168,7 @@ class SymbolInterpreter {
     }
     let [bpName, featureName, propName] = propRef;
     let blueprints = SIMDATA.GetBlueprintSymbols();
-    const agentName = this.getBundleName();
-    const agent = { agent: SIMDATA.GetBlueprintBundle(agentName).symbols };
+    const agent = { agent: SIMDATA.GetBlueprintBundle(bpName).symbols };
     blueprints = { ...blueprints, ...agent };
     // Object.assign(blueprints, { agent }); // insert the blueprint for agent
     // PART 1 should be agent or Blueprint

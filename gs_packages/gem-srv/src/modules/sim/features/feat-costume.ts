@@ -18,6 +18,7 @@ import { Clamp } from 'lib/util-vector';
 import { HSVfromRGB, RGBfromHSV, HSVfromHEX, HEXfromHSV } from 'lib/util-color';
 import * as ASSETS from 'modules/asset_core';
 import { SIM_TICKS_PER_SEC } from 'modules/sim/api-sim';
+import { DEFAULT_SPRITE } from 'modules/flags';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -238,7 +239,7 @@ class CostumePack extends SM_Feature {
     super.decorate(agent);
     // add feature props here
     let prop = new SM_Number(0);
-    this.featAddProp(agent, 'costumeName', new SM_String('default'));
+    this.featAddProp(agent, 'costumeName', new SM_String(DEFAULT_SPRITE));
     prop = new SM_Number(0);
     prop.setWrap();
     prop.setMin(0);

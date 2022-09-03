@@ -36,7 +36,6 @@ export const HIDDEN_SYMBOLS = [
   // keywords
   'randompos',
   'dbgtick',
-  'if',
   'call',
   '_line',
   '_directive',
@@ -62,7 +61,11 @@ export const HIDDEN_SYMBOLS = [
   'statusvaluecolor',
   'statusvalueislarge',
   // methods
-  'eq'
+  'if',
+  'slightlytrue',
+  'mostlytrue',
+  'slightlyfalse',
+  'mostlyfalse'
 ].map(w => w.toLowerCase());
 export const LOCKED_SYMBOLS = [
   '#',
@@ -438,7 +441,7 @@ export function EditSymbol_Block(props) {
               key={key}
               style={{
                 display: 'grid',
-                gridTemplateColumns: '100px 1fr',
+                gridTemplateColumns: '110px 1fr',
                 gap: '1px'
               }}
             >
