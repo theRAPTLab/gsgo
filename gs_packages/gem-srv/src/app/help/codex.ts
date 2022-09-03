@@ -298,11 +298,12 @@ function ForChoice(
   // TypeHelp return normal type help
   // -- special handling to map non TSymbolData gsTypes to existing TSymbolData types
   if (type === 'blueprints') type = 'blueprint';
-  // -- `propType` is SlotEditor_Block / 'propTypes'` is EditSymbol_Block
+
+  // -- `propType` is SlotEditor_Block
+  // -- 'propTypes'` is EditSymbol_Block
   if (['propType', 'propTypes'].includes(type)) {
     if (selectedValue === undefined || selectedValue === '') {
-      // for empty slot
-      type = 'propType';
+      type = 'propType'; // for empty slot
     } else {
       type = selectedValue;
     }
