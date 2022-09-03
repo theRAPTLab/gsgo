@@ -329,7 +329,7 @@ class WidgetPack extends SM_Feature {
       barGraphPropFeature: SM_String.Symbols
     },
     methods: {
-      showMessage: { args: ['text:string'] },
+      showMessage: { args: ['messageString:string'] },
       setMeterPosition: { args: ['position:string'] },
       bindLineGraphHistogramToFeatProp: {
         args: ['featureName:feature', 'propName:prop']

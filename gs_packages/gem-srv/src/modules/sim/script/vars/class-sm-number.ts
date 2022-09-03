@@ -224,20 +224,36 @@ export class SM_Number extends SM_Object implements ISM_Object {
         info: 'Sets the maximum value allowed for this property.  If you try to set the property above this value, the property will be automatically changed to this value'
       },
       setTo: {
-        args: ['numeric value:number'],
+        args: ['number:number'],
         info: 'Sets the property to a value'
       },
       setToRnd: {
-        args: ['min:number', 'max:number', 'asInteger:boolean'],
+        args: ['min value:number', 'max value:number', 'asInteger:boolean'],
         info: 'Sets the property to a random value'
       },
       add: {
         args: ['number:number'],
         info: 'Changes the current value by adding the passed value'
       },
+      addRnd: {
+        args: ['min value:number', 'max value:number'],
+        info: 'Changes the current value by adding a random number (could be float/decimal) between the min and max values passed'
+      },
+      addRndInt: {
+        args: ['min value:number', 'max value:number'],
+        info: 'Changes the current value by adding a random integer between the min and max values passed'
+      },
       sub: {
         args: ['number:number'],
         info: 'Changes the current value by subtracting the passed value'
+      },
+      subRnd: {
+        args: ['min value:number', 'max value:number'],
+        info: 'Changes the current value by subtracting a random number (could be float/decimal) between the min and max values passed'
+      },
+      subRndInt: {
+        args: ['min value:number', 'max value:number'],
+        info: 'Changes the current value by subtracting a random integer between the min and max values passed'
       }
     }
   };

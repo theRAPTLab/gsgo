@@ -194,7 +194,7 @@ class SlotEditor_Block extends React.Component {
     let keyword; // used to detect `featProp` and `featCall` for feat method arg help
     let keywordHelpTxt; // same help for ALL slots tokens
     let instructionsHelpTxt = <></>; // generic instructions for the gsType
-    let selectedChoiceHelpTxt = 'default selectedChoiceHelp'; // help for the selected choice (not slot)
+    let selectedChoiceHelpTxt; // help for the selected choice (not slot)
     let featName; // used to track featCall methods
 
     /// 4. Process each validation token
@@ -275,7 +275,9 @@ class SlotEditor_Block extends React.Component {
       //    The tokenizer will set unitText to the string "undefined", so we want to convert it to
       //    an undefined object else "undefined" will be displayed as a value
       const selectedValue =
-        vtok.unitText === 'undefined' ? undefined : vtok.unitText;
+        vtok.unitText === 'undefined' || vtok.unitText === ''
+          ? undefined
+          : vtok.unitText;
       // -- 1. Get Help Text Objects: gsNameHelp and gsTypeHelp
       let gsNameHelp;
       let gsTypeHelp;
@@ -289,41 +291,70 @@ class SlotEditor_Block extends React.Component {
         gsTypeHelp = HELP.ForChoice(vtok.gsType, selectedValue, featName);
       }
       //    1B. gsNameHelp
+      gsNameHelp = HELP.ForChoice(vtok.gsName, undefined); // selectedValue = undefined to force type lookup
       if (
-        !['keyword', 'method'].includes(vtok.gsType) &&
-        ['featCall', 'featProp'].includes(keyword)
+        ['featCall', 'featProp'].includes(keyword) &&
+        !['string', 'number', 'boolean'].includes(vtok.gsName) &&
+        !['keyword', 'objref', 'method'].includes(vtok.gsType)
       ) {
-        // is a feature prop arg or feature method arg, so we want to use
+        // Special handler for feature-defined property subtypes
+        // for `featCall` or `featProp` line arguments
+        // This could be:
+        // * a feature prop (e.g. 'movementType')
+        // * a feature prop method arg (e.g. 'movementTypeString')
+        // * a feature method arg (e.g. monitor 'touchType')
+        //
+        // ignore standard GVAR 'string', 'number', 'boolean' -- ForChoice
+        // ignoring the `keyword` -- b/c that should be a keyword lookup
+        // ignore the `objref` -- b/c that is handled by ForChoice
+        // ignore the `method` -- b/c that is handled by ForChoice
+        // is a feature prop arg or feature prop method arg,
+        // or a feature method arg, so we want to use
         // the featProp lookup.
         // We have to do this here and not in ForChoice b/c we don't have
         // access to the keyword and featName
+        // Custom featProp GVAR subtypes can be defined in the feature
+        // e.g. `touchTypes` and `costumeName` so that they provide
+        // specialized help (e.g. enumerate types of touches)
         gsNameHelp = HELP.ForFeatProp(vtok.gsName, featName); // selectedValue triggers featPropHelp
-      } else {
-        gsNameHelp = HELP.ForChoice(vtok.gsName, undefined); // selectedValue = undefined to force type lookup
+        // for featProp method args (GVARs) that have not been subtyped
+        // e.g. plain GVARs, not subtyped like 'touchType'
+        // fall back to standard type
+        //
+        // We're doing all this so that feature-specific prop help
+        // can be stored with codex-features
       }
       // -- 2. Map results to help types
-      if (i === 0) keywordHelpTxt = gsTypeHelp.input; // establish keywordHelp if this is the keyword
+      if (i === 0) keywordHelpTxt = gsTypeHelp.info; // establish keywordHelp if this is the keyword
       syntaxHelpTxt =
-        gsNameHelp.info ||
-        'GSNAME NOT FOUND, FALLING BACK TO TYPE.INFO:' + gsTypeHelp.info; // fall back to gsTypeHellp if there's no gsName help
+        'GSNAME.info: ' + gsNameHelp.info ||
+        'GSNAME NOT FOUND, FALLING BACK TO TYPE.INFO: ' + gsTypeHelp.info; // fall back to gsTypeHellp if there's no gsName help
       tokenHelpTxt =
         selectedValue === undefined
-          ? gsTypeHelp.input // if slot is empty, show input instructions
-          : gsTypeHelp.info || gsTypeHelp.input; // fall back to 'input' if no 'info' (keywords only have input defined)
+          ? gsTypeHelp.input
+            ? 'GSTYPE.input (no selectedValue): ' + gsTypeHelp.input
+            : 'fallbackGSNAME.input: ' + gsNameHelp.input // if slot is empty, show input instructions
+          : `GSTYPE.info (${selectedValue}): ` + gsTypeHelp.info ||
+            'fallbackGSTYPE.input: ' + gsTypeHelp.input; // fall back to 'input' if no 'info' (keywords only have input defined)
       if (isSelected) {
         // establish the instructions and selected choice help IF this curr
         instructionsHelpTxt = (
           <>
-            {gsTypeHelp.input && (
+            {/* instructions should always be syntax? {gsTypeHelp.input && gsTypeHelp.input !== gsNameHelp.input && (
               <>
                 {gsTypeHelp.input}
                 <br />
               </>
             )}
-            {gsNameHelp.input}
+
+            Fall back on gsTypeHelp if specific syntax help is not availble
+            e.g. for 'featCall Movmement queuePostion x y' fall back on using
+            'number' instructions for 'x'.  Useful for subtyped gvars. */}
+            {gsNameHelp.input ? gsNameHelp.input : gsTypeHelp.input}
           </>
         );
-        selectedChoiceHelpTxt = gsTypeHelp.info;
+        // only show selectedChoiceHelp if something is selected
+        selectedChoiceHelpTxt = selectedValue ? gsTypeHelp.info : '';
       }
 
       // show Delete button if this is the currently selected token
@@ -422,7 +453,7 @@ class SlotEditor_Block extends React.Component {
         )}
         <SlotEditorSelect_Block selection={selectEditorSelection} />
         <div className="gsled choicesline choiceshelp">
-          {selectedChoiceHelpTxt}
+          SELECTED: {selectedChoiceHelpTxt}
         </div>
       </div>
     );

@@ -47,7 +47,7 @@ objref:
   input: 'Select an item from each column to specify the property you want to use'
   info: 'Object references refer to properties and methods that are INSIDE something else. This provides a way of organizing related properties and methods.'
 
-expr:
+expr: &exprstr
   name: 'expression string'
   input: 'Enter an arithmetic or logical expression'
   info: 'Expressions perform arithmetic and comparisons with properties and other values'
@@ -79,7 +79,7 @@ option:
 
 blueprint:
   name: 'character type'
-  input: 'Select the character name to change it'
+  input: 'Select one of the available characters types'
   info: 'This refers to ALL of the characters in the system that have been created by the named blueprint.'
 
 bdlOut:
@@ -101,3 +101,51 @@ feature:
   name: ''
   input: ''
   info: ''
+
+# HANDLE GVAR arg types
+min value:
+  name: 'min value'
+  input: 'Enter the minimum value allowed for this property'
+  info: 'Sets the lowest value allowed for the property'
+max value:
+  name: 'max value'
+  input: 'Enter the maximum value allowed for this property'
+  info: 'Sets the highest value allowed for the property'
+asInteger:
+  name: 'asInteger'
+  input: 'Select true to generate a random integer, false to generate a random decimal number'
+  info: 'Determines the type of random number to generate: an integer or a decimal'
+
+# HANDLE code-gsargs arg/gsName types
+# REVIEW
+# Placeholder -- this might not be the right place?
+prop name: # setting a new prop name, in contraast to `prop` which selects an existing name
+  name: 'prop name'
+  input: 'Enter a new custom property name'
+  info: 'A "prop name" creates a new custom property name. Every character has its own copy of the property.'
+select blueprint: # `prop` objref
+  name: 'select blueprint'
+  input: 'Select a blueprint'
+  info: 'A character blueprint defined for this project'
+select prop: # `prop` objref
+  name: 'select prop'
+  input: 'Select a prop'
+  info: 'A custom prop that has been defined for the selected character'
+select feature: # `featProp` objref
+  name: 'select feature'
+  input: 'Select a feature'
+  info: 'Use features to add advanced abilities'
+select feature prop: # not the keyword `featProp`
+  name: 'feature prop'
+  input: 'Choose a feature prop from the list'
+  info: 'Use feature props to make use of features'
+expression string: # `ifExpr`
+  *exprstr
+seconds:
+  name: 'seconds'
+  input: 'Enter number of seconds'
+  info: 'Sets number of seconds. Can be decimal, e.g. "0.5"'
+timer option:
+  name: 'timer option'
+  input: 'Enter "runAtStart" to have the "every" code run immediately.  Leave blank to run after the specified seconds have elapsed.'
+  info: 'Determines whether the "every" code runs immediately at the start of the simulation, or after the specified seconds have passed'
