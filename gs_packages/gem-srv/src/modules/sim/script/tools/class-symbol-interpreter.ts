@@ -214,13 +214,16 @@ class SymbolInterpreter {
 
   /// SCOPE-INDEPENDENT LITERAL VALIDATORS ////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** use to validate a token that can be any number */
-  anyNumber(token: IToken): TSymbolData {
+  /** use to validate a token that can be any number
+   *  use `arg` to override the default gsArgs type.
+   *  e.g. for "every" we call `this.shelper.anyNumber(periodTok, 'seconds')`
+   */
+  anyNumber(token: IToken, arg: string = 'anyNumber'): TSymbolData {
     const fn = 'anyNumber:';
     if (this.detectScanError()) return this.vagueError(token);
     const [type, value] = TOKENIZER.UnpackToken(token);
     const unitText = TOKENIZER.TokenToString(token);
-    const gsArg = HELP.ForGSArg('anyNumber') || ':number';
+    const gsArg = HELP.ForGSArg(arg) || ':number';
     const vtype = typeof value;
     if (type === 'value' && vtype === 'number')
       return new VSDToken({}, { gsArg, unitText });
