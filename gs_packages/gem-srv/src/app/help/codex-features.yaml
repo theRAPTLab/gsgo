@@ -41,7 +41,7 @@ AgentWidgets:
     info: 'tbd'
   bindLineGraphHistogramToFeatProp:
     info: 'tbd'
-  # AgentWidgets method props
+  # AgentWidgets method args
   labelString:
     name: 'labelString'
     input: '"labelString" is text that will be displayed below the character'
@@ -190,6 +190,11 @@ Movement:
     info: 'xxx'
   seekNearestVisibleColor:
     info: 'xxx'
+  # Movement method args
+  x:
+    info: 'x (horizontal) position in pixels/world units'
+  y:
+    info: 'y (vertical) position in pixels/world units'
 
 Physics:
   info: 'Adds character measurements for collision checking'
