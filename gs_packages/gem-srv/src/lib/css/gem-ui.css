@@ -98,9 +98,10 @@
   font-weight: bold; /* position 1 keyword */
 }
 .gwiz.styleComment {
-  color: dimgrey;
-  background-color: white;
+  color: hotpink;
+  background-color: rgba(0, 0, 0, 0.05);
   font-family: monospace;
+  font-style: italic;
 }
 .gwiz.stylePragma {
   color: white;
@@ -111,8 +112,8 @@
   background-color: darkslategrey;
 }
 .gwiz.styleCond {
-  background-color: hotpink;
-  color: black;
+  background-color: teal;
+  color: white;
 }
 .gwiz.valueType {
   color: blue;
