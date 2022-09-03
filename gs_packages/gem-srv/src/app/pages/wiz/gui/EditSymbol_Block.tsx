@@ -88,6 +88,7 @@ export const ADVANCED_SYMBOLS = [
   'proppush',
   'featproppop',
   'featproppush',
+  'ifExpr',
   'dbgout',
   'dbgstack',
   'dbgcontext',
