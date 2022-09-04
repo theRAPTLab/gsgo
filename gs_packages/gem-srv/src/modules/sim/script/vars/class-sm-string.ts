@@ -23,10 +23,10 @@ export class SM_String extends SM_Object {
     this.value = str;
     return this;
   }
-  eq(str: string) {
+  equal(str: string) {
     return new SM_Boolean(this.value === str);
   }
-  noteq(str: string) {
+  notEqual(str: string) {
     return new SM_Boolean(this.value !== str);
   }
   clear() {
@@ -66,12 +66,12 @@ export class SM_String extends SM_Object {
   static Symbols: TSymbolData = {
     methods: {
       setTo: { args: [`string:string`], info: 'Sets the property to a value' },
-      eq: {
+      equal: {
         args: ['comparison string:string'],
         info: 'Returns whether this property is equal to the passed value',
         returns: 'isEqual:boolean'
       },
-      notEq: {
+      notEqual: {
         args: ['comparison string:string'],
         returns: 'isNotEqual:boolean'
       },
