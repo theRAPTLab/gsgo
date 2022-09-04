@@ -43,12 +43,12 @@ export class SM_Boolean extends SM_Object {
     this.value |= comparison;
     return this;
   }
-  eq(comparison: any): SM_Boolean {
+  equal(comparison: any): SM_Boolean {
     if (!this.fuzzy) throw Error("'equal' incompatible with fuzzy logic");
     this.value = this.value === comparison;
     return this;
   }
-  notEq(comparison: any): SM_Boolean {
+  notEqual(comparison: any): SM_Boolean {
     if (!this.fuzzy) throw Error("'equal' incompatible with fuzzy logic");
     this.value = this.value !== comparison;
     return this;
@@ -110,11 +110,11 @@ export class SM_Boolean extends SM_Object {
       invert: { returns: 'inverted:boolean' },
       and: { args: ['comparison:{value}'] },
       or: { args: ['comparison:{value}'] },
-      eq: {
+      equal: {
         args: ['comparison:{value}'],
         info: 'Returns whether this property is equal to the passed value'
       },
-      notEq: { args: ['comparison:{value}'] },
+      notEqual: { args: ['comparison:{value}'] },
       slightlyTrue: { returns: 'value:boolean' },
       mostlyTrue: { returns: 'value:boolean' },
       slightlyFalse: { returns: 'value:boolean' },
