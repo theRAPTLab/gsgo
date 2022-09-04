@@ -164,22 +164,22 @@ export class SM_Number extends SM_Object implements ISM_Object {
     u_CheckMinMax(this);
     return this;
   }
-  eq(num: number) {
+  equal(num: number) {
     return new SM_Boolean(this.value === num);
   }
-  notEq(num: number) {
+  notEqual(num: number) {
     return new SM_Boolean(this.value !== num);
   }
-  gt(num: number) {
+  greaterThan(num: number) {
     return new SM_Boolean(this.value > num);
   }
-  lt(num: number) {
+  lessThan(num: number) {
     return new SM_Boolean(this.value < num);
   }
-  gte(num: number) {
+  greaterThanOrEqual(num: number) {
     return new SM_Boolean(this.value >= num);
   }
-  lte(num: number) {
+  lessThanOrEqual(num: number) {
     return new SM_Boolean(this.value <= num);
   }
   clear() {
@@ -260,18 +260,24 @@ export class SM_Number extends SM_Object implements ISM_Object {
       },
       div: { args: ['number:number'], info: 'divide current by value' },
       mul: { args: ['number:number'], info: 'multiple current by value' },
-      eq: { args: ['number:number'], info: 'returns current equal to value' },
-      notEq: {
+      equal: { args: ['number:number'], info: 'returns current equal to value' },
+      notEqual: {
         args: ['number:number'],
         info: 'returns current not equal to value'
       },
-      gt: { args: ['number:number'], info: 'returns current greater than value' },
-      lt: { args: ['number:number'], info: 'returns current less than value' },
-      gte: {
+      greaterThan: {
+        args: ['number:number'],
+        info: 'returns current greater than value'
+      },
+      lessThan: {
+        args: ['number:number'],
+        info: 'returns current less than value'
+      },
+      greaterThanOrEqual: {
         args: ['number:number'],
         info: 'returns current greater than or equal to value'
       },
-      lte: {
+      lessThanOrEqual: {
         args: ['number:number'],
         info: 'returns current less than or equal to value'
       }
