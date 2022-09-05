@@ -47,20 +47,41 @@
       1.  SLOTCORE.UpdateSlotValue handles the inputs directly from SelectEditor.
           ...which updates `slots_linescript`
 
+
+  HELP
+
+    There are 5 different kind of help on this page (not including the help
+    in embedded ObjRefSelector_Block or EditSymbol_Block):
+
+      1. keywordHelpTxt        => static | Overall help for the selected keyword
+      2. syntaxHelpTxt         => hover  | Help for the hovered slot, explain what the slot is
+      3. tokenHelpTxt
+         -- empty slot         => hover  | Instructions for the empty slot
+         -- selected item      => hover  | Information on the current selected slot item
+      4. instructionsHelpTxt   => static | Instructions for the selected slot
+      5. selectedChoiceHelpTxt => static | Information on the selected choice
+
+    The source of the help information comes from different validation tokens.
+    Most help is keyed off of the validation token's gsType property.
+    Syntax help is keyed off the validation token's gsName property, since
+    that can be set to feature-specific reference, e.g. `touchTypeString`
+    options for the Touches.touchType prop.
+
+      1. keywordHelpTxt        => keyword.info => keywordTok.gsType.info
+      2. syntaxHelpTxt         => tok.gsName.info
+      3. tokenHelpTxt
+         -- empty slot         => tok.gsType.input
+         -- selected item      => tok.gsType.info
+      4. instructionsHelpTxt   => tok.gsType.input
+      5. selectedChoiceHelpTxt => tok.gsType.info
+
+    Most help lookup involves a call to HELP/codex.ForChoice, passing the
+    current type information (gsType or gsName).
+    The exception are methods.  ValidationTokens contain help information
+    for the GVar and feature methods, so these are read directly from
+    the validation tokens.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-/*
-    Slot Help
-    RATIONALE: This should be a secondary helpDict system, the primary one being for the
-                main "Keyword Help".  But in addition to the general keyword helpDict,
-                as studenters data for individual slots, they'll need helpDict understanding
-                what each individual slot piece is.
-
-                This should show either:
-                a. The choice token being hovered over (e.g. x or energyType)
-                b. If no hover, then it should show the currently selected choice
-
-    REVIEW: Retreive from validation token?
-*/
 
 import React from 'react';
 import merge from 'deepmerge';
@@ -78,7 +99,7 @@ import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to i
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-const PR = UR.PrefixUtil('DEWIZ', 'TagApp');
+const PR = UR.PrefixUtil('SLOTEDITOR', 'TagApp');
 
 /// LOCALIZATION
 const L10N = {};
@@ -159,9 +180,9 @@ class SlotEditor_Block extends React.Component {
     }
     let selectedError = '';
     const num = String(sel_linenum).padStart(3, '0');
-    if (DBG) console.log('SlotEditor slots_validation', slots_validation);
+    if (DBG) console.log(...PR('SlotEditor slots_validation', slots_validation));
 
-    /// 2. Nothing selected
+    /// 2. Nothing selected, render blank line
     if (!slots_validation)
       return (
         <div id="SEB_empty" className="gsled panel panelhelp">
@@ -170,12 +191,13 @@ class SlotEditor_Block extends React.Component {
       );
 
     /// 3. HELP Declarations
-    let generalHelp = 'default generalHelp'; // generic help for the gsType
-    let selectedChoiceHelp = 'default selectedChoiceHelp'; // help for the selected choice (not slot)
-    let keywordHelp;
+    let keyword; // used to detect `featProp` and `featCall` for feat method arg help
+    let keywordHelpTxt; // same help for ALL slots tokens
+    let instructionsHelpTxt = <></>; // generic instructions for the gsType
+    let selectedChoiceHelpTxt; // help for the selected choice (not slot)
     let featName; // used to track featCall methods
 
-    /// 3. Process each validation token
+    /// 4. Process each validation token
     const { validationTokens } = slots_validation;
     const tokenList = [];
     const validationTokenCount = validationTokens.length;
@@ -185,98 +207,161 @@ class SlotEditor_Block extends React.Component {
       let type;
       let viewState;
       let error;
-      // let helpDict;
       const position = CHECK.OffsetLineNum(i, 'add');
       const tokenKey = `${sel_linenum},${position}`;
       const isSelected = sel_slotpos === position;
       const scriptToken = slots_linescript[i];
 
-      const t = validationTokens[i];
-      if (t.error && scriptToken) {
+      const vtok = validationTokens[i];
+      if (vtok.error && scriptToken) {
         // 1. Error with an entered value
         //    if there's an error in the token, show the current unitText value,
         //    but fall back to gsType if there's no value
-        label = t.unitText || t.gsType || label;
-        viewState = t.error.code;
-        error = t.error.info;
-      } else if (t.error) {
+        label = vtok.unitText || vtok.gsType || label;
+        viewState = vtok.error.code;
+        error = vtok.error.info;
+      } else if (vtok.error) {
         // 2. Error because no value
         //    if there is not current value, show the expected gsType, else show syntax label
-        label = t.gsType || label;
+        label = vtok.gsType || label;
         // if the error is vague, use vague, else use empty
-        if (t.error.code === 'vague') viewState = 'vague';
+        if (vtok.error.code === 'vague') viewState = 'vague';
         else viewState = 'empty-editing';
-        error = t.error.info;
+        error = vtok.error.info;
       } else {
         // 3. No error, just show token
-        label = t.unitText || GUI_EMPTY_TEXT;
-        viewState = t.viewState;
+        label = vtok.unitText || GUI_EMPTY_TEXT;
+        viewState = vtok.viewState;
       }
-
       selectedError = isSelected ? error : selectedError;
 
       // HELP
-      let tokenHelpText;
-      // -- featCall HACK - - - - - - - - - - - - - - - - - -
-      // peek at keyword.  If it's a featCall, we need to
+      let tokenHelpTxt;
+      let syntaxHelpTxt;
+      // Save off `keyword` and `featName` for processing of subsequent line tokens
+      // HELP needs to know to look up a featMethod instead of regular prop method
+      // To do that, featName needs to be passed to HELP.ForChoice as the parentLabel
+      // To determine featName, peek at keyword.  If it's a featCall, we need to
       // pull out the feature name to pass on to m_generateTokenHelp
       if (i === 0) {
         // is keyword
-        if (t.unitText === 'featCall') {
-          const objref_tok = validationTokens[1].unitText.split('.');
-          // featName will be passed to HELP.ForChoice as the parentLabel
-          // This is how we tell HELP to look up a featMethod instead of regular prop method
+        keyword = vtok.unitText;
+        // deref featName
+        if (['featCall', 'featProp'].includes(vtok.unitText)) {
+          const objref_tok =
+            validationTokens.length > 1
+              ? validationTokens[1].unitText.split('.')
+              : [];
           featName = objref_tok.length > 1 ? objref_tok[1] : objref_tok[0];
         }
-        if (t.unitText === 'when') {
-          // A 'test' method will call up conditions tests
-          featName = 'test';
-        }
+        if (vtok.unitText === 'when') featName = 'test'; // A 'test' method will call up conditions tests
       }
 
-      // -- Helper - - - - - - - - - - - - - - - - - -
-      function m_generateTokenHelp(token, helpDict, parentLabel) {
-        // REVIEW: Can we use simple HELP call?
+      // show help on right side if this token is on the right
+      const isRightSide = i / validationTokenCount >= 0.5;
 
-        const help = HELP.ForChoice(token.gsType, token.unitText, parentLabel);
-        const helpTxt = help
-          ? help.info || help.input || help.name
-          : 'notok found';
-        return helpTxt;
+      // NEW SIMPLER HELP  - - - - - - - - - - - - - - - - - -
+      // One of the challenges here is that we need to look at the context
+      // of the whole script line in order to understand what to ask for.
+      // e.g. a "string" can be different things depending on the keyword
+      // and method and the feature and the feature method or feature prop
+      // being referenced on the script line.
+      // -- 0. Set initial values
+      if (i === 0 && vtok.unitText === '') {
+        // BLANK LINE, force keyword
+        vtok.gsName = vtok.gsType = 'keyword';
+        vtok.unitText = undefined;
       }
-      // - - - - - - - - - - - - - - - - - - - - - -
-      //
-      // -- only generate help for the currently selected item
-      if (selectEditorSelection && isSelected) {
-        const helpDict = HELP.ForEditorSelection(selectEditorSelection) || {};
-        if (!helpDict)
-          throw new Error(
-            `SlotEditor_Block could not find help for ${selectEditorSelection}`
-          );
-        // HELP 1: General -- shows in Choices area
-        generalHelp = helpDict.gsInput;
-        // HELP 2: tokenHelp shows as popup on hover -- shows in Slot area
-        tokenHelpText = m_generateTokenHelp(t, helpDict, featName);
-        const selectedTokenLabel = t.unitText;
-        // HELP 3: Selected -- shows in Choices area
-        //         'Selected' is usually the token!
-        selectedChoiceHelp = `SELECTED: ${
-          selectedTokenLabel ? selectedTokenLabel : ''
-        }${tokenHelpText ? ': ' + tokenHelpText : ''}`;
-      } else if (selectEditorSelection) {
-        // NOT Currently selected token, but We still need to generate tokenHelp for the other slots
-        // HELP 2: tokenHelp shows as popup on hover -- shows in Slot area
-        const SEselection = merge.all([selectEditorSelection || {}]); // clone, catch undefined selectEditorSelection
-        SEselection.sel_slotpos = position; // set sel_slotpos for the other non-selected slots
-        const helpDict = HELP.ForEditorSelection(SEselection) || {};
-        tokenHelpText = m_generateTokenHelp(t, helpDict, featName);
+      //    The tokenizer will set unitText to the string "undefined", so we want to convert it to
+      //    an undefined object else "undefined" will be displayed as a value
+      const selectedValue =
+        vtok.unitText === 'undefined' || vtok.unitText === ''
+          ? undefined
+          : vtok.unitText;
+      // -- 1. Get Help Text Objects: gsNameHelp and gsTypeHelp
+      let gsNameHelp;
+      let gsTypeHelp;
+      //    1A. gsTypeHelp
+      gsTypeHelp = HELP.ForChoice(vtok.gsType, selectedValue, featName);
+      if (vtok.gsType === 'method' && selectedValue && keyword !== 'featCall') {
+        // Special handling for GVar and featProp methods
+        // method help is defined in the Symbols declaration for GVars and featProps
+        // so just look that up directly from the validation token rather than relying on the codex
+        gsTypeHelp =
+          vtok.methods && vtok.methods[selectedValue]
+            ? vtok.methods[selectedValue]
+            : gsTypeHelp; // fall back to generic help if not found
       }
+      //    1B. gsNameHelp
+      gsNameHelp = HELP.ForChoice(vtok.gsName, undefined); // selectedValue = undefined to force type lookup
+      if (
+        ['featCall', 'featProp'].includes(keyword) &&
+        !['string', 'number', 'boolean'].includes(vtok.gsName) &&
+        !['keyword', 'objref', 'method'].includes(vtok.gsType)
+      ) {
+        // Special handler for feature-defined property subtypes
+        // for `featCall` or `featProp` line arguments
+        // This could be:
+        // * a feature prop (e.g. 'movementType')
+        // * a feature prop method arg (e.g. 'movementTypeString')
+        // * a feature method arg (e.g. monitor 'touchType')
+        //
+        // ignore standard GVAR 'string', 'number', 'boolean' -- ForChoice
+        // ignoring the `keyword` -- b/c that should be a keyword lookup
+        // ignore the `objref` -- b/c that is handled by ForChoice
+        // ignore the `method` -- b/c that is handled by ForChoice
+        // is a feature prop arg or feature prop method arg,
+        // or a feature method arg, so we want to use
+        // the featProp lookup.
+        // We have to do this here and not in ForChoice b/c we don't have
+        // access to the keyword and featName
+        // Custom featProp GVAR subtypes can be defined in the feature
+        // e.g. `touchTypes` and `costumeName` so that they provide
+        // specialized help (e.g. enumerate types of touches)
+        gsNameHelp = HELP.ForFeatProp(vtok.gsName, featName); // selectedValue triggers featPropHelp
+        // for featProp method args (GVARs) that have not been subtyped
+        // e.g. plain GVARs, not subtyped like 'touchType'
+        // fall back to standard type
+        //
+        // We're doing all this so that feature-specific prop help
+        // can be stored with codex-features
+      }
+      // -- 2. Map results to help types
+      if (i === 0) keywordHelpTxt = gsTypeHelp.info; // establish keywordHelp if this is the keyword
+      syntaxHelpTxt =
+        'GSNAME.info: ' + gsNameHelp.info ||
+        'GSNAME NOT FOUND, FALLING BACK TO TYPE.INFO: ' + gsTypeHelp.info; // fall back to gsTypeHellp if there's no gsName help
+      tokenHelpTxt =
+        selectedValue === undefined
+          ? gsTypeHelp.input
+            ? 'GSTYPE.input (no selectedValue): ' + gsTypeHelp.input
+            : 'fallbackGSNAME.input: ' + gsNameHelp.input // if slot is empty, show input instructions
+          : `GSTYPE.info (${selectedValue}): ` + gsTypeHelp.info ||
+            'fallbackGSTYPE.input: ' + gsTypeHelp.input; // fall back to 'input' if no 'info' (keywords only have input defined)
+      if (isSelected) {
+        // establish the instructions and selected choice help IF this curr
+        instructionsHelpTxt = (
+          <>
+            {/* instructions should always be syntax? {gsTypeHelp.input && gsTypeHelp.input !== gsNameHelp.input && (
+              <>
+                {gsTypeHelp.input}
+                <br />
+              </>
+            )}
 
-      if (i === 0) keywordHelp = tokenHelpText;
+            Fall back on gsTypeHelp if specific syntax help is not availble
+            e.g. for 'featCall Movmement queuePostion x y' fall back on using
+            'number' instructions for 'x'.  Useful for subtyped gvars. */}
+            {gsNameHelp.input ? gsNameHelp.input : gsTypeHelp.input}
+          </>
+        );
+        // only show selectedChoiceHelp if something is selected
+        selectedChoiceHelpTxt = selectedValue ? gsTypeHelp.info : '';
+      }
 
       // show Delete button if this is the currently selected token
-      if (isSelected && t.error && t.error.code === 'extra')
-        extraTokenName = t.unitText;
+      if (isSelected && vtok.error && vtok.error.code === 'extra')
+        extraTokenName = vtok.unitText;
 
       tokenList.push(
         <GValidationToken
@@ -284,19 +369,21 @@ class SlotEditor_Block extends React.Component {
           tokenKey={tokenKey}
           position={position}
           selected={isSelected}
-          type={t.gsType} // over the token box
-          name={t.gsName} // added
+          type={vtok.gsType} // over the token box
+          name={vtok.gsName} // added
           label={label} // inside the token box
           error={error}
-          help={tokenHelpText}
+          syntaxHelp={syntaxHelpTxt}
+          help={tokenHelpTxt}
           viewState={viewState}
           isSlot
+          isRightSide={isRightSide} // force help popup to right align
         />
       );
     }
 
-    /// help - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    const generalSlotEditorHelp = (
+    /// line edit help - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const lineEditHelp = (
       <>
         Editing Line {num}
         <br />
@@ -309,9 +396,27 @@ class SlotEditor_Block extends React.Component {
         Character script for everyone.
       </>
     ); // placeholder help
-    const generalSlotEditorHelpJsx = (
+    const lineEditHelpJsx = (
       <div id="SEB_help" className="gsled panelhelp">
-        {generalSlotEditorHelp}
+        {lineEditHelp}
+      </div>
+    );
+
+    /// button bar (cancel / save )- - - - - - - - - - - - - - - - - - - - - -
+    const buttonbarjsx = (
+      <div id="SEB_cancelsave" className="gsled button-bar">
+        <button type="button" className="secondary" onClick={this.CancelSlotEdit}>
+          Cancel
+        </button>
+        &nbsp;
+        <button
+          type="button"
+          disabled={!slots_need_saving}
+          onClick={this.SaveSlot}
+          style={{ fontWeight: `${slots_need_saving ? 'bold' : 'normal'}` }}
+        >
+          Save {L10N.initCap('LINE')}
+        </button>
       </div>
     );
 
@@ -322,7 +427,7 @@ class SlotEditor_Block extends React.Component {
           className="gsled tokenList choiceshelp"
           style={{ paddingBottom: '20px', marginTop: '0' }}
         >
-          {keywordHelp}
+          {keywordHelpTxt}
         </div>
         <div
           className="gsled tokenListItems"
@@ -349,25 +454,9 @@ class SlotEditor_Block extends React.Component {
           </div>
         )}
         <SlotEditorSelect_Block selection={selectEditorSelection} />
-        <div className="gsled choicesline choiceshelp">{selectedChoiceHelp}</div>
-      </div>
-    );
-
-    /// control bar - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    const controlbarjsx = (
-      <div id="SEB_cancelsave" className="gsled button-bar">
-        <button type="button" className="secondary" onClick={this.CancelSlotEdit}>
-          Cancel
-        </button>
-        &nbsp;
-        <button
-          type="button"
-          disabled={!slots_need_saving}
-          onClick={this.SaveSlot}
-          style={{ fontWeight: `${slots_need_saving ? 'bold' : 'normal'}` }}
-        >
-          Save {L10N.initCap('LINE')}
-        </button>
+        <div className="gsled choicesline choiceshelp">
+          SELECTED: {selectedChoiceHelpTxt}
+        </div>
       </div>
     );
 
@@ -415,18 +504,19 @@ class SlotEditor_Block extends React.Component {
             open
             style={{ color: 'white' }}
           >
-            {generalSlotEditorHelpJsx}
+            {lineEditHelpJsx}
           </StackUnit>
         </div>
         <div
           className="gsled panelhelp"
           style={{ display: 'flex', justifyContent: 'right' }}
         >
-          {controlbarjsx}
+          {buttonbarjsx}
         </div>
         {slotsjsx}
         <div className="gsled choices choicesline choiceshelp">
-          INSTRUCTIONS: {generalHelp}
+          INSTRUCTIONS: <br />
+          {instructionsHelpTxt}
         </div>
         {choicesjsx}
         {confirmSaveDialog}

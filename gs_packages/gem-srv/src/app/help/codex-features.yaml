@@ -9,7 +9,6 @@
 
 AgentWidgets:
   info: 'Adds text labels, meters, and graph labels'
-
   # AgentWidgets props
   text:
     info: 'tbd'
@@ -35,7 +34,6 @@ AgentWidgets:
     info: 'tbd'
   barGraphPropFeature:
     info: 'tbd'
-
   # AgentWidgets methods
   showMessage:
     info: 'tbd'
@@ -43,10 +41,14 @@ AgentWidgets:
     info: 'tbd'
   bindLineGraphHistogramToFeatProp:
     info: 'tbd'
+  # AgentWidgets method args
+  labelString:
+    name: 'labelString'
+    input: '"labelString" is text that will be displayed below the character'
+    info: '"labelString" is text that will be displayed below the character'
 
 Costume:
   info: 'Adds ability to change appearance using art assets'
-
   # Costume props
   costumeName:
     info: 'sets the filename for the costume image (.json or .png)'
@@ -84,7 +86,6 @@ Costume:
     info: 'tbd'
   colorScaleSteps:
     info: 'tbd'
-
   # Costume methods
   setAnimatedCostume:
     # REVIEW: Get rid of `hint`???
@@ -129,33 +130,39 @@ Cursor:
 
 Movement:
   info: 'Add different ways to move or be controlled'
-
   # Movement props
   movementType:
     info: 'movementType help'
   direction:
-    info: 'movementType help'
+    info: 'direction help'
   compassDirection:
-    info: 'movementType help'
+    info: 'compassDirection help'
   distance:
-    info: 'movementType help'
+    info: 'distance help'
   jitterDistance:
-    info: 'movementType help'
+    info: 'jitterDistance help'
   bounceAngle:
-    info: 'movementType help'
+    info: 'bounceAngle help'
   doRandomOnWander:
-    info: 'movementType help'
+    info: 'doRandomOnWander help'
   isMoving:
-    info: 'movementType help'
+    info: 'isMoving help'
   useAutoOrientation:
-    info: 'movementType help'
+    info: 'useAutoOrientation help'
   targetX:
-    info: 'movementType help'
+    info: 'targetX help'
   targetY:
-    info: 'movementType help'
+    info: 'targetY help'
   targetCharacterType:
-    info: 'movementType help'
-
+    info: 'targetCharacterType help'
+  # Movement prop args
+  movementTypeString:
+    info: '"movementTypeString" value determines how a character will move'
+    input: 'Valid movementTypes are: "stop", "wander", "edgeToEdge", "setLocation", "goLocation", "jitter"'
+  degreesNumber:
+    name: 'degreesNumber'
+    input: '"degreesNumber" ranges from 0 to 360'
+    info: '"degreesNumber" value determines the direction a character faces'
   # Movement methods
   queuePosition:
     hint: 'change how a character moves'
@@ -183,10 +190,14 @@ Movement:
     info: 'xxx'
   seekNearestVisibleColor:
     info: 'xxx'
+  # Movement method args
+  x:
+    info: 'x (horizontal) position in pixels/world units'
+  y:
+    info: 'y (vertical) position in pixels/world units'
 
 Physics:
   info: 'Adds character measurements for collision checking'
-
   # Physics props
   bodyRadius:
     hint: 'change dimensions in pixels'
@@ -198,13 +209,11 @@ Physics:
     info: 'xxx'
   bodyShape:
     info: 'circle or rectangle'
-
   # Physics methods
   # (none)
 
 Population:
   info: 'Adds ways to generate and manage spawned characters and statistical information'
-
   # Population props
   count:
     info: 'xxx'
@@ -234,7 +243,6 @@ Population:
     info: 'xxx'
   deleteAfterSpawning:
     info: 'xxx'
-
   # Population methods
   createAgent:
     info: 'createAgent'
@@ -281,15 +289,23 @@ Population:
 
 Touches:
   info: 'Adds tests to detect when characters touch each other'
-  # Touches props (none)
-  # Touches methods
+  # props (none)
+  # methods
   monitor:
     info: 'Detect touches with another character (b2b = bounds to bounds, c2b = center to bounds, c2c = center to center, binb = bounds inside bounds)'
+  # method args
+  targetBlueprintName:
+    name: 'target blueprint name'
+    info: 'Sets the character for this method to act upon'
+    input: 'Use an existing character name'
+  touchType:
+    name: 'touch type'
+    info: 'Sets the type of touches to monitor:  "b2b" is bounds to bounds, "binb" is bounds in bounds, "c2c" is center to center, "c2b" is center to bounds'
+    input: 'Valid touch types: "b2b" is bounds to bounds, "binb" is bounds in bounds, "c2c" is center to center, "c2b" is center to bounds'
 
 Vision:
   info: 'Adds ability for characters to detect what is front of them'
-
-  # Vision props
+  # props
   visionable:
     info: 'visionable'
   viewDistance:
@@ -302,8 +318,7 @@ Vision:
     info: 'colorSaturationDetectionThreshold'
   colorValueDetectionThreshold:
     info: 'colorValueDetectionThreshold'
-
-  # Vision methods
+  # methods
   monitor:
     info: 'xx'
   isCamouflaged:

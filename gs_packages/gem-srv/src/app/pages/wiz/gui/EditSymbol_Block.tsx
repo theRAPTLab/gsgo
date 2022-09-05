@@ -91,6 +91,7 @@ export const ADVANCED_SYMBOLS = [
   'proppush',
   'featproppop',
   'featproppush',
+  'ifExpr',
   'dbgout',
   'dbgstack',
   'dbgcontext',
@@ -304,7 +305,15 @@ export function EditSymbol_Block(props) {
           // if EditSymbol is locked, it overrides ALL symbol choices
           const symbolIsLocked =
             locked || LOCKED_SYMBOLS.includes(choice.toLowerCase());
-          const help = HELP.ForChoice(stype, choice, featName);
+          let help;
+          if (stype === 'methods') {
+            // Special handling for methods
+            // method help is defined in the Symbols declaration for GVars and Features
+            // so just look that up directly from the validation token rather than relying on the codex
+            help = sd && sd.methods ? sd.methods[choice] : {};
+          } else {
+            help = HELP.ForChoice(stype, choice, featName);
+          }
           const helpTxt = help
             ? help.info || help.input || help.name
             : 'notok found';
@@ -329,6 +338,7 @@ export function EditSymbol_Block(props) {
               help={helpTxt}
               locked={symbolIsLocked}
               isAdvanced={isAdvanced}
+              isEditSymbol
             />
           );
           //   2. Show expert keywords
@@ -387,7 +397,7 @@ export function EditSymbol_Block(props) {
     /* TODO: it would be nice to make unitText indicate it's the current value */
     // VALIDATION TOKENS are stored by key in the symbolDicts
     // Walk down all symbol dictionaries found in validation token symbols
-    Object.entries(symbolDicts).forEach(entry => {
+    Object.entries(symbolDicts).forEach((entry, i) => {
       const [dictName, dict] = entry as [keyof TSymbolData, TSymbolData];
       if (Array.isArray(symbolScope) && !symbolScope.includes(dictName)) return;
       allDicts.push(f_render_choices({ [dictName]: dict }, viewData, dictName));

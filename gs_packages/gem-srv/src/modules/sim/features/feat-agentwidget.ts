@@ -313,7 +313,9 @@ class WidgetPack extends SM_Feature {
    *  the name parameter in each methodSignature */
   static Symbols: TSymbolData = {
     props: {
-      text: SM_String.Symbols,
+      text: SM_String.SymbolizeCustom({
+        setTo: ['labelString:string']
+      }),
       textProp: SM_String.Symbols,
       meter: SM_Number.Symbols,
       meterProp: SM_String.Symbols,
@@ -327,7 +329,7 @@ class WidgetPack extends SM_Feature {
       barGraphPropFeature: SM_String.Symbols
     },
     methods: {
-      showMessage: { args: ['text:string'] },
+      showMessage: { args: ['messageString:string'] },
       setMeterPosition: { args: ['position:string'] },
       bindLineGraphHistogramToFeatProp: {
         args: ['featureName:feature', 'propName:prop']

@@ -592,7 +592,7 @@ function m_FeaturesThink(frame) {
     // ignore AI movement if inert
     if (agent.isInert) return;
     // handle movement
-    const moveType = agent.prop.Movement.movementType.value.toLowerCase();
+    const moveType = String(agent.prop.Movement.movementType.value).toLowerCase();
     const moveFn = MOVEMENT_FUNCTIONS.get(moveType);
     // cancel seek?  NOTE: seek stops one frame after
     if (!['seekAgent', 'seekAgentOrWander'].includes(moveType))
@@ -640,7 +640,6 @@ class MovementPack extends SM_Feature {
     this.handleInput = this.handleInput.bind(this);
     // this.featAddMethod('setController', this.setController);
     this.featAddMethod('queuePosition', this.queuePosition);
-    // this.featAddMethod('setMovementType', this.setMovementType);
     this.featAddMethod('setRandomDirection', this.setRandomDirection);
     this.featAddMethod('setRandomPosition', this.setRandomPosition);
     this.featAddMethod('setRandomPositionX', this.setRandomPositionX);
@@ -664,7 +663,6 @@ class MovementPack extends SM_Feature {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
     super.decorate(agent);
-    MOVEMENT_AGENTS.set(agent.id, agent);
     this.featAddProp(agent, 'movementType', new SM_String('stop'));
     this.featAddProp(agent, 'direction', new SM_Number(0)); // degrees
     this.featAddProp(agent, 'compassDirection', new SM_String()); // readonly
@@ -694,6 +692,8 @@ class MovementPack extends SM_Feature {
     // agent.prop.Movement._targetId // id of seek target
     // agent.prop.Movement._targetAngle // cached value so input agents can keep turning between updates
     // agent.prop.Movement._jitterRotate
+
+    MOVEMENT_AGENTS.set(agent.id, agent);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   reset() {
@@ -806,6 +806,7 @@ class MovementPack extends SM_Feature {
   symbolize(): TSymbolData {
     return MovementPack.Symbolize();
   }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   static _CachedSymbols: TSymbolData;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -813,8 +814,13 @@ class MovementPack extends SM_Feature {
    *  the name parameter in each methodSignature */
   static Symbols: TSymbolData = {
     props: {
-      movementType: SM_String.Symbols,
-      direction: SM_Number.Symbols,
+      movementType: SM_String.SymbolizeCustom({
+        setTo: ['movementTypeString:string']
+      }),
+      direction: SM_Number.SymbolizeCustom({
+        setTo: ['degreesNumber:number']
+      }),
+      // direction: SM_Number.Symbols,
       compassDirection: SM_String.Symbols,
       distance: SM_Number.Symbols,
       jitterDistance: SM_Number.Symbols,
@@ -828,7 +834,6 @@ class MovementPack extends SM_Feature {
     methods: {
       // setController: { args: ['x:number'] },
       queuePosition: { args: ['x:number', 'y:number'] },
-      // setMovementType: { args: ['type:string', 'params:{...}'] },
       setRandomDirection: {}, // => use agent.prop.Movement.direction.value setToRnd 0 360
       setRandomPosition: {}, // keep b/c of bounds checking
       setRandomPositionX: {}, // keep b/c of bounds checking

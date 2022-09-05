@@ -98,9 +98,10 @@
   font-weight: bold; /* position 1 keyword */
 }
 .gwiz.styleComment {
-  color: dimgrey;
-  background-color: white;
+  color: hotpink;
+  background-color: rgba(0, 0, 0, 0.05);
   font-family: monospace;
+  font-style: italic;
 }
 .gwiz.stylePragma {
   color: white;
@@ -111,8 +112,8 @@
   background-color: darkslategrey;
 }
 .gwiz.styleCond {
-  background-color: hotpink;
-  color: black;
+  background-color: teal;
+  color: white;
 }
 .gwiz.valueType {
   color: blue;
@@ -217,11 +218,13 @@
 .gtokenhelp {
   display: none;
 }
-.gtoken:hover .gtokenhelp {
+.gtoken:hover .gtokenhelp,
+.meta:hover .gtokenhelp {
   display: block;
   position: absolute;
   color: darkslategray;
   background: yellow;
+  min-width: 300px;
   bottom: 10px;
   padding: 5px;
   font-style: italic;
@@ -242,6 +245,15 @@
 .gtokenhelpWrapper {
   position: relative;
 }
+.gtokenhelp.styleRight {
+  right: 0px;
+}
+.gtokenhelp.styleEditSymbol {
+  left: -100%;
+  right: -100%;
+  min-width: 100px !important;
+}
+
 .gline.selected {
   /* border-bottom: 1px solid rgba(255, 166, 0, 1) !important; orange */
   background-color: rgba(255, 166, 0, 0.25) !important;
