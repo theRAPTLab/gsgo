@@ -1167,10 +1167,27 @@ class SymbolInterpreter {
       propRef = [propRef];
     }
     let [bpName, featureName, propName] = propRef;
+    console.log(
+      '################### featObjRef',
+      token,
+      bpName,
+      'PROPREF',
+      propRef
+    );
     let blueprints = SIMDATA.GetBlueprintSymbols();
+    // Catch propRef = "undefined" string
+    // When first adding a featProp line, 'token' will be "undefined"
+    // if `token` is undefined this.extractTokenMeta returns[ unitText, undefined, 'undefined']
+    // which then destructures to bpName = "u", featureName = "n", this ends up creating a
+    // blueprint "u" when GetBlueprintBundle is called.
+    // Instead, if `profRef` is "undefined" we want to return a bad token and the list
+    // of available blueprints to select from.
+    if (propRef === 'undefined')
+      return this.badToken(token, { blueprints } as TSymbolData, {
+        gsArg,
+        err_info: `objref[1] must be 'agent' or a blueprint name`
+      });
     const agent = { agent: SIMDATA.GetBlueprintBundle(bpName).symbols };
-    blueprints = { ...blueprints, ...agent };
-    // Object.assign(blueprints, { agent }); // insert the blueprint for agent
     // PART 1 should be agent or Blueprint
     if (bpName === undefined)
       return this.badToken(token, { blueprints } as TSymbolData, {
