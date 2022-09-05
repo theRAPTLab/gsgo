@@ -1,8 +1,8 @@
 # help for feature properties and methods
 # these can be used override the defaults define in the feature modules
 
-# REVIEW
-# --  Do we want to use 'hint'?
+# NOTES
+# --  As of 9/2022 `.hint` and `.syntax` are not being used
 
 # STYLE NOTES
 # --  No '.' after `info`!!! Periods are added in code.

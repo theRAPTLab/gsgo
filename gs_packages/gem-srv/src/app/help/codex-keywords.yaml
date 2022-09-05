@@ -1,5 +1,8 @@
 # help for keyword modules as exported in script/keywords/_all_keywords.ts
 
+# NOTES
+# --  As of 9/2022 `.glossary` is not being used
+
 # PROGRAM DEFINE or INIT
 addProp:
   info: '[addProp] defines a property for use in your blueprint'
