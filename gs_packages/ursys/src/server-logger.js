@@ -86,6 +86,14 @@ LOG.PKT_LogEvent = pkt => {
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Handle incoming json stream, output them as individual lines */
+LOG.PKT_LogJSON = pkt => {
+  let { event, json } = pkt.getData();
+  if (DBG) console.log(TOUT, pkt.getInfo(), event, json);
+  LogLine(pkt.getInfo(), event || '-', json);
+  return { OK: true };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Write to log as delimited arguments
  */
 LOG.Write = LogLine;
