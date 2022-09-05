@@ -282,13 +282,15 @@ class SlotEditor_Block extends React.Component {
       let gsNameHelp;
       let gsTypeHelp;
       //    1A. gsTypeHelp
+      gsTypeHelp = HELP.ForChoice(vtok.gsType, selectedValue, featName);
       if (vtok.gsType === 'method' && selectedValue && keyword !== 'featCall') {
         // Special handling for GVar and featProp methods
         // method help is defined in the Symbols declaration for GVars and featProps
         // so just look that up directly from the validation token rather than relying on the codex
-        gsTypeHelp = vtok.methods ? vtok.methods[selectedValue] : {};
-      } else {
-        gsTypeHelp = HELP.ForChoice(vtok.gsType, selectedValue, featName);
+        gsTypeHelp =
+          vtok.methods && vtok.methods[selectedValue]
+            ? vtok.methods[selectedValue]
+            : gsTypeHelp; // fall back to generic help if not found
       }
       //    1B. gsNameHelp
       gsNameHelp = HELP.ForChoice(vtok.gsName, undefined); // selectedValue = undefined to force type lookup
