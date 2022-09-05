@@ -251,7 +251,7 @@
 .gtokenhelp.styleEditSymbol {
   left: -100%;
   right: -100%;
-  min-width: inherit !important;
+  min-width: 100px !important;
 }
 
 .gline.selected {
