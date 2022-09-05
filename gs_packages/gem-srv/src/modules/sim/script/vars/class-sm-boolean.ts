@@ -108,13 +108,13 @@ export class SM_Boolean extends SM_Object {
       true: { returns: 'if true:boolean' },
       false: { returns: 'if false:boolean' },
       invert: { returns: 'inverted:boolean' },
-      and: { args: ['comparison:{value}'] },
-      or: { args: ['comparison:{value}'] },
+      and: { args: ['boolean:boolean'] },
+      or: { args: ['boolean:boolean'] },
       equal: {
-        args: ['comparison:{value}'],
+        args: ['boolean:boolean'],
         info: 'Returns whether this property is equal to the passed value'
       },
-      notEqual: { args: ['comparison:{value}'] },
+      notEqual: { args: ['boolean:boolean'] },
       slightlyTrue: { returns: 'value:boolean' },
       mostlyTrue: { returns: 'value:boolean' },
       slightlyFalse: { returns: 'value:boolean' },
