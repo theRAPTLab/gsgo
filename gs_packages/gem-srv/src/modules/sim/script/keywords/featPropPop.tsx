@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import Keyword, { K_DerefFeatureProp } from 'lib/class-keyword';
+import Keyword from 'lib/class-keyword';
 import { RegisterKeyword } from 'modules/datacore';
 import SM_Agent from 'lib/class-sm-agent';
 

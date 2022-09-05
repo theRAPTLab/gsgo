@@ -2,92 +2,100 @@
 
 # PROGRAM DEFINE or INIT
 addProp:
-  input: '[addProp] defines a property for use in your blueprint'
+  info: '[addProp] defines a property for use in your blueprint'
   glossary: >
     xxx
 
 addFeature:
-  input: '[addFeature] summons special abilities to your character'
+  info: '[addFeature] will add properties and features to your character. mouse over the features below to see what each does.'
   glossary: >
     xxx
 
 # in any PROGRAM
 prop:
-  input: '[prop] lets you set or modify a property value'
+  info: '[prop] lets you set or modify a property value'
   glossary: >
     xxx
 
 featProp:
-  input: '[featProp] lets you set a special ability property value'
+  info: '[featProp] lets you set a special ability property value'
   glossary: >
     xxx
 
 featCall:
-  input: '[featCall] invokes a special ability'
+  info: '[featCall] invokes a special ability'
   glossary: >
     xxx
 
 propPush:
-  input: '[propPush] saves a property value on the stack'
+  info: '[propPush] saves a property value on the stack'
   glossary: >
     xxx
 
 propPop:
-  input: '[propPop] pulls a property value from the stack if one is there'
+  info: '[propPop] pulls a property value from the stack if one is there'
   glossary: >
     xxx
 
 featPropPush:
-  input: '[featPropPush hold a special ability prop value on the stack'
+  info: '[featPropPush] hold a special ability prop value on the stack'
   glossary: >
     xxx
 
 featPropPop:
-  input: '[featPropPop] set the special ability prop value from the stack'
+  info: '[featPropPop] set the special ability prop value from the stack'
   glossary: >
     xxx
 
 exprPush:
-  input: '[exprPush] calculate then hold the result on the stack'
+  info: '[exprPush] calculate then hold the result on the stack'
   glossary: >
     xxx
 
 ifExpr:
-  input: '[ifExpr] calculates a formula then run block if it is true'
+  info: '[ifExpr] calculates a formula then run block if it is true'
   glossary: >
     xxx
 
 dbgOut:
-  input: '[dbgOut] prints to the javascript console'
+  info: '[dbgOut] prints to the javascript console'
   glossary: >
     xxx
 
+dbgStack:
+  info: '[dbgStack] prints the current stack to the javascript console'
+
+dbgContext:
+  info: '[dbgContext] prints the current agent/state context to the javascript console'
+
+dbgError:
+  info: '[dbgError] prints the error message to the javascript console'
+
 when:
-  input: '[when] tests two sets of character types and runs code on the results'
+  info: '[when] tests two sets of character types and runs code on the results'
   glossary: >
     xxx
 
 onEvent:
-  input: '[onEvent] runs code when the named event occurs'
+  info: '[onEvent] runs code when the named event occurs'
   glossary: >
     xxx
 
 every:
-  input: '[every] runs code after a number of seconds has elapsed'
+  info: '[every] runs code after a number of seconds has elapsed'
   glossary: >
     xxx
 
 _comment:
-  input: 'debug: comment lines are currently uneditable'
-  glossary: >
-    xxx
+  info: 'debug: comment lines help describe the code. They are not yet editable except in code view'
+  glossary: ''
 
 _directive:
-  input: '[#] directives tell GEMSTEP how to treat your code'
+  info: '[#] directives tell GEMSTEP how to treat your code'
   glossary: >
     xxx
 
 _line:
-  input: 'select a keyword'
+  info: 'select a keyword'
   glossary: >
     xxx

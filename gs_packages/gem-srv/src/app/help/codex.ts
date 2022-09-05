@@ -37,9 +37,9 @@ function m_GetAllKeywordsHelp() {
 /* lookup keyword help from codex-keywords.yaml dictionary */
 function m_GetKeywordHelp(kw: string) {
   const kw_help = KeywordHelp[kw];
-  if (kw_help && kw_help.input !== undefined) {
-    if (DBG) console.log(`%c${kw_help.input}`, 'font-size:0.8;color:blue');
-    return kw_help.input;
+  if (kw_help && kw_help.info !== undefined) {
+    if (DBG) console.log(`%c${kw_help.info}`, 'font-size:0.8;color:blue');
+    return kw_help.info;
   }
   return `no keyword help found for ${kw}`;
 }
@@ -81,10 +81,10 @@ function m_GetAllFeaturesHelp() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return help for specific featProp
- *  @param {string} parentLabel -- `Costume` or `agent.Costume`
+ *  @param {string} featObjRef -- `Costume` or `agent.Costume`
  */
-function m_GetFeaturePropHelp(featPropName: string, parentLabel: string) {
-  const parents = parentLabel ? parentLabel.split('.') : [];
+function m_GetFeaturePropHelp(featPropName: string, featObjRef: string) {
+  const parents = featObjRef ? featObjRef.split('.') : [];
   let featName;
   if (parents.length === 1) {
     // <feature>
@@ -101,7 +101,7 @@ function m_GetFeaturePropHelp(featPropName: string, parentLabel: string) {
   if (fp_help && fp_help.info !== undefined) {
     return fp_help;
   }
-  return `no featPorp help found for ${parentLabel}.${featPropName}`;
+  return `no featPorp help found for ${featObjRef}.${featPropName}`;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return help for when condition tests */
@@ -203,14 +203,19 @@ function ForFeatureMethod(fName: string, mName: string) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: given a gsType, return help strings associated with it */
 function ForTypeInfo(gsType: TGSType): { [any: string]: any } {
-  const { name = '-', info = '-' } = m_GetTypeHelp(gsType) || {};
-  return { name, info };
+  const { name = '-', info = '-', input = '-' } = m_GetTypeHelp(gsType) || {};
+  return { name, info, input };
 }
 
 /// SIMPLE API ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: given gsType, return help for EditSymbol choices */
-function ForChoice(gsType: string, selectedValue: string, parentLabel?: string) {
+function ForChoice(
+  gsType: string,
+  selectedValue: string,
+  parentLabel?: string
+): { name?: string; info?: string; input?: string } {
+  const EMPTY = '-';
   let type = gsType;
 
   if (DBG)
@@ -222,27 +227,44 @@ function ForChoice(gsType: string, selectedValue: string, parentLabel?: string) 
       'PARENTLABEL:',
       parentLabel
     );
-  // KeywordHelp
-  // 'keyword' is for SlotEditor_Block
-  // 'keywords' is for EditSymbol_Block
+
+  // Keyword Help
   if (['keyword', 'keywords'].includes(type)) {
-    return { input: m_GetKeywordHelp(selectedValue) };
+    // KeywordHelp
+    // 'keyword' is for SlotEditor_Block
+    // 'keywords' is for EditSymbol_Block
+    if (selectedValue === '' || selectedValue === undefined) {
+      // no keyword selected yet,
+      // so this is a blank line so just return type info
+      // fall back to default
+    } else {
+      return { info: m_GetKeywordHelp(selectedValue) };
+    }
   }
   // FeatureHelp
-  // 'feature' is for SlotEditor_Block
+  // // 'feature' is for SlotEditor_Block
   // 'featuresList' is for EditSymbol_Block
   // 'featName' is for ObjRefSelector_Block
-  if (['feature', 'featuresList', 'featName'].includes(type)) {
+  // 'select feature prop' is for ObjRefSelector_Block
+  // if (['feature', 'featuresList', 'featName'].includes(type)) {
+  if (['featuresList', 'featName'].includes(type)) {
     return m_GetFeatureHelp(selectedValue);
+  }
+  // 'feature' is for SlotEditor_Block
+  // 'select feature' is for ObjRefSelector_Block
+  if (['feature', 'select feature'].includes(type) && selectedValue) {
+    // argument for keyword like 'addFeature'
+    return m_GetFeatureHelp(selectedValue);
+    // default to returning 'feature' type info if no selected value
   }
 
   // 'featProp' is for EditSymbol_Block
-  // if (['featProp', 'method'].includes(type)) {
-  if (['featProp'].includes(type)) {
+  // 'select feature prop' is for ObjRefSelector Blcok
+  if (['featProp', 'select feature prop'].includes(type) && selectedValue) {
     return m_GetFeaturePropHelp(selectedValue, parentLabel);
   }
 
-  // 'method' is for SLotEditor_Block, e.g. 'setTo'
+  // 'method' is for SlotEditor_Block, e.g. 'setTo'
   // 'methods' is for EditSymbol_Block, but it might be:
   // a. for a featCall (in which case 'parentLabel' will be set to the feature name)
   // b. for a when condition test (`parentLabel` = test)
@@ -267,23 +289,37 @@ function ForChoice(gsType: string, selectedValue: string, parentLabel?: string) 
     return m_GetEventHelp(selectedValue);
   }
 
+  // 'test' is for SlotEditor_Block (EditSymbol is handled by 'method' above)
+  //  if no selectedValue fall back to generic 'test' info
+  if (type === 'test' && selectedValue) {
+    return m_GetConditionHelp(selectedValue);
+  }
+
   // TypeHelp return normal type help
   // -- special handling to map non TSymbolData gsTypes to existing TSymbolData types
   if (type === 'blueprints') type = 'blueprint';
-  if (type === 'propName') type = 'prop';
-  // -- `propType` is SlotEditor_Block / 'propTypes'` is EditSymbol_Block
+
+  // -- `propType` is SlotEditor_Block
+  // -- 'propTypes'` is EditSymbol_Block
   if (['propType', 'propTypes'].includes(type)) {
     if (selectedValue === undefined || selectedValue === '') {
-      // for empty slot
-      type = 'propType';
+      type = 'propType'; // for empty slot
     } else {
       type = selectedValue;
     }
   }
-  const { name = '-', info = '-', input = '-' } = m_GetTypeHelp(type) || {};
-  return { name, info, input };
-}
 
+  const { name, info, input } = m_GetTypeHelp(type) || {};
+  return { name, info, input }; // allow undefined
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: given gsType, return help for EditSymbol choices */
+function ForFeatProp(
+  gsType: string,
+  featObjRef: string
+): { name?: string; info?: string; input?: string } {
+  return m_GetFeaturePropHelp(gsType, featObjRef);
+}
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// TEMPORARY TEST FUNCTION
@@ -307,5 +343,6 @@ export {
   ForTypeInfo,
   LookupParent,
   // SIMPLE API
-  ForChoice
+  ForChoice,
+  ForFeatProp
 };

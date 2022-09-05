@@ -5,6 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import merge from 'deepmerge';
 import RNG from 'modules/sim/sequencer';
 import SM_Object from 'lib/class-sm-object';
 // uses types defined in t-script.d
@@ -163,22 +164,22 @@ export class SM_Number extends SM_Object implements ISM_Object {
     u_CheckMinMax(this);
     return this;
   }
-  eq(num: number) {
+  equal(num: number) {
     return new SM_Boolean(this.value === num);
   }
-  notEq(num: number) {
+  notEqual(num: number) {
     return new SM_Boolean(this.value !== num);
   }
-  gt(num: number) {
+  greaterThan(num: number) {
     return new SM_Boolean(this.value > num);
   }
-  lt(num: number) {
+  lessThan(num: number) {
     return new SM_Boolean(this.value < num);
   }
-  gte(num: number) {
+  greaterThanOrEqual(num: number) {
     return new SM_Boolean(this.value >= num);
   }
-  lte(num: number) {
+  lessThanOrEqual(num: number) {
     return new SM_Boolean(this.value <= num);
   }
   clear() {
@@ -194,6 +195,20 @@ export class SM_Number extends SM_Object implements ISM_Object {
     return SM_Number._CachedSymbols;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   * Override generic 'SM_Number' method args with custom args
+   * @param {object} methodsArgs { <method>: <argnumber> }
+   *                    e.g. { setTo: ['degreesNumber:number']}
+   */
+  static SymbolizeCustom(methodsArgs): TSymbolData {
+    const symbols: TSymbolData = merge.all([SM_Number.Symbolize()]);
+    Object.entries(methodsArgs).forEach(([mKey, mVal]: [string, any]) => {
+      symbols.methods[mKey].args = mVal;
+    });
+    return symbols;
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** instance method to return symbol data */
   symbolize(): TSymbolData {
     return SM_Number.Symbolize();
@@ -203,29 +218,66 @@ export class SM_Number extends SM_Object implements ISM_Object {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   static Symbols: TSymbolData = {
     methods: {
-      setMin: { args: ['min value:number'], info: 'minimum value' },
-      setMax: { args: ['max value:number'], info: 'maximum value' },
-      setTo: { args: ['numeric value:number'], info: 'assign value' },
-      setToRnd: {
-        args: ['min:number', 'max:number', 'asInteger:boolean'],
-        info: 'randomize value'
+      setMin: {
+        args: ['min value:number'],
+        info: 'Sets the minimum value allowed for this property.  If you try to set the property below this value, the property will be automatically changed to this value'
       },
-      add: { args: ['number:number'], info: 'add value to current' },
-      sub: { args: ['number:number'], info: 'sub value to current' },
+      setMax: {
+        args: ['max value:number'],
+        info: 'Sets the maximum value allowed for this property.  If you try to set the property above this value, the property will be automatically changed to this value'
+      },
+      setTo: {
+        args: ['number:number'],
+        info: 'Sets the property to a value'
+      },
+      setToRnd: {
+        args: ['min value:number', 'max value:number', 'asInteger:boolean'],
+        info: 'Sets the property to a random value'
+      },
+      add: {
+        args: ['number:number'],
+        info: 'Changes the current value by adding the passed value'
+      },
+      addRnd: {
+        args: ['min value:number', 'max value:number'],
+        info: 'Changes the current value by adding a random number (could be float/decimal) between the min and max values passed'
+      },
+      addRndInt: {
+        args: ['min value:number', 'max value:number'],
+        info: 'Changes the current value by adding a random integer between the min and max values passed'
+      },
+      sub: {
+        args: ['number:number'],
+        info: 'Changes the current value by subtracting the passed value'
+      },
+      subRnd: {
+        args: ['min value:number', 'max value:number'],
+        info: 'Changes the current value by subtracting a random number (could be float/decimal) between the min and max values passed'
+      },
+      subRndInt: {
+        args: ['min value:number', 'max value:number'],
+        info: 'Changes the current value by subtracting a random integer between the min and max values passed'
+      },
       div: { args: ['number:number'], info: 'divide current by value' },
       mul: { args: ['number:number'], info: 'multiple current by value' },
-      eq: { args: ['number:number'], info: 'returns current equal to value' },
-      notEq: {
+      equal: { args: ['number:number'], info: 'returns current equal to value' },
+      notEqual: {
         args: ['number:number'],
         info: 'returns current not equal to value'
       },
-      gt: { args: ['number:number'], info: 'returns current greater than value' },
-      lt: { args: ['number:number'], info: 'returns current less than value' },
-      gte: {
+      greaterThan: {
+        args: ['number:number'],
+        info: 'returns current greater than value'
+      },
+      lessThan: {
+        args: ['number:number'],
+        info: 'returns current less than value'
+      },
+      greaterThanOrEqual: {
         args: ['number:number'],
         info: 'returns current greater than or equal to value'
       },
-      lte: {
+      lessThanOrEqual: {
         args: ['number:number'],
         info: 'returns current less than or equal to value'
       }

@@ -32,6 +32,15 @@ export class dbgError extends Keyword {
     });
     return progout;
   }
+
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    const [kwTok, errTok] = unit;
+    const vtoks = [];
+    vtoks.push(this.shelper.anyKeyword(kwTok));
+    vtoks.push(this.shelper.anyString(errTok));
+    const vlog = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: vlog };
+  }
 } // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

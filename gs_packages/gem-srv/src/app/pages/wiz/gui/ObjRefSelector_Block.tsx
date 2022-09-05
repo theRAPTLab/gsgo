@@ -67,7 +67,7 @@ function ObjRefSelector_Block(props) {
     // Part 1: bpName
     vtoks.push({
       selectedText: bpName,
-      type: 'blueprint',
+      type: 'select blueprint',
       options: vtok.blueprints
     });
     // part 2: bpProps
@@ -76,7 +76,7 @@ function ObjRefSelector_Block(props) {
     vtoks.push({
       selectedText: propName,
       parentLabel: bpName,
-      type: 'propName',
+      type: 'select prop',
       options: bpProps
     }); // propName
   } else {
@@ -85,7 +85,7 @@ function ObjRefSelector_Block(props) {
     // Part 1: bpName
     vtoks.push({
       selectedText: bpName,
-      type: 'blueprint',
+      type: 'select blueprint',
       options: vtok.blueprints
     });
     // Part 2: featName
@@ -94,7 +94,7 @@ function ObjRefSelector_Block(props) {
     vtoks.push({
       selectedText: featName,
       parentLabel: bpName,
-      type: 'featName',
+      type: 'select feature',
       options: featList
     });
 
@@ -109,7 +109,7 @@ function ObjRefSelector_Block(props) {
       vtoks.push({
         selectedText: featProp,
         parentLabel: `${bpName}.${featName}`,
-        type: 'featProp',
+        type: 'select feature prop',
         options: featProps
       });
     }
@@ -143,10 +143,13 @@ function ObjRefSelector_Block(props) {
     // need to pass for featProp
     //   (e.g. if this is featProp value, we need to look up
     //    which feature the featProp came out)
-    const selectedTokenHelp = HELP.ForChoice(type, label, unitText);
+    const syntaxHelp = HELP.ForTypeInfo(type);
+    const syntaxHelpTxt = syntaxHelp.info || syntaxHelp.name;
+    const selectedTokenHelp = HELP.ForChoice(type, tok.selectedText, unitText);
     const selectedTokenHelpTxt = selectedTokenHelp
       ? selectedTokenHelp.input || selectedTokenHelp.info // favor instructions (input)?
       : 'token help not found';
+    const isRightSide = position / vtoks.length >= 0.5;
     tokenList.push(
       <div
         key={tokenKey}
@@ -162,8 +165,10 @@ function ObjRefSelector_Block(props) {
           label={label} // column subtitle (repeated)
           viewState={code} // error
           error={info} // error
-          isSlot
+          syntaxHelp={syntaxHelpTxt}
           help={selectedTokenHelpTxt}
+          isSlot
+          isRightSide={isRightSide}
         />
       </div>
     );
@@ -176,7 +181,9 @@ function ObjRefSelector_Block(props) {
         const optionLabel = tok.parentLabel
           ? `${tok.parentLabel}.${key}`
           : key || '';
-        const optionHelp = HELP.ForChoice(type, key, tok.parentLabel);
+        const deref = tok.parentLabel ? tok.parentLabel.split('.') : [];
+        const featName = deref.length > 1 ? deref[1] : deref[0];
+        const optionHelp = HELP.ForChoice(type, key, featName);
         const optionHelpTxt = optionHelp
           ? optionHelp.info || optionHelp.name
           : 'option help not found';
@@ -192,6 +199,7 @@ function ObjRefSelector_Block(props) {
                 label={key} // human readable display
                 help={optionHelpTxt}
                 isAdvanced
+                isEditSymbol
               />
             </div>
           );
@@ -205,6 +213,7 @@ function ObjRefSelector_Block(props) {
             choice={optionLabel} // value returned when selected e.g. 'bp.feat.prop'
             label={key} // human readable display
             help={optionHelpTxt}
+            isEditSymbol
           />
         );
       });

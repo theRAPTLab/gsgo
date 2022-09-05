@@ -111,7 +111,7 @@ export class every extends Keyword {
     // every
 
     vtoks.push(this.shelper.anyKeyword(kwTok));
-    vtoks.push(this.shelper.anyNumber(periodTok));
+    vtoks.push(this.shelper.anyNumber(periodTok, 'seconds'));
     vtoks.push(this.shelper.everyOption(optTestTok));
     vtoks.push(...this.shelper.extraArgsList(argToks)); // handle extra args in line
     const log = this.makeValidationLog(vtoks);

@@ -5,6 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import merge from 'deepmerge';
 import SM_Object from 'lib/class-sm-object';
 import { RegisterPropType } from 'modules/datacore';
 
@@ -42,12 +43,12 @@ export class SM_Boolean extends SM_Object {
     this.value |= comparison;
     return this;
   }
-  eq(comparison: any): SM_Boolean {
+  equal(comparison: any): SM_Boolean {
     if (!this.fuzzy) throw Error("'equal' incompatible with fuzzy logic");
     this.value = this.value === comparison;
     return this;
   }
-  notEq(comparison: any): SM_Boolean {
+  notEqual(comparison: any): SM_Boolean {
     if (!this.fuzzy) throw Error("'equal' incompatible with fuzzy logic");
     this.value = this.value !== comparison;
     return this;
@@ -78,6 +79,19 @@ export class SM_Boolean extends SM_Object {
     return SM_Boolean._CachedSymbols;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   * Override generic 'SM_Boolean' method args with custom args
+   * @param {object} methodsArgs { <method>: <argstring> }
+   *                    e.g. { setTo: ['movementTypeString:string']}
+   */
+  static SymbolizeCustom(methodsArgs): TSymbolData {
+    const symbols: TSymbolData = merge.all([SM_Boolean.Symbolize()]);
+    Object.entries(methodsArgs).forEach(([mKey, mVal]: [string, any]) => {
+      symbols.methods[mKey].args = mVal;
+    });
+    return symbols;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** instance method to return symbol data */
   symbolize(): TSymbolData {
     return SM_Boolean.Symbols;
@@ -87,14 +101,20 @@ export class SM_Boolean extends SM_Object {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   static Symbols: TSymbolData = {
     methods: {
-      setTo: { args: ['true or false:boolean'] },
+      setTo: {
+        args: ['true or false:boolean'],
+        info: 'Sets the property to a value'
+      },
       true: { returns: 'if true:boolean' },
       false: { returns: 'if false:boolean' },
       invert: { returns: 'inverted:boolean' },
-      and: { args: ['comparison:{value}'] },
-      or: { args: ['comparison:{value}'] },
-      eq: { args: ['comparison:{value}'] },
-      notEq: { args: ['comparison:{value}'] },
+      and: { args: ['boolean:boolean'] },
+      or: { args: ['boolean:boolean'] },
+      equal: {
+        args: ['boolean:boolean'],
+        info: 'Returns whether this property is equal to the passed value'
+      },
+      notEqual: { args: ['boolean:boolean'] },
       slightlyTrue: { returns: 'value:boolean' },
       mostlyTrue: { returns: 'value:boolean' },
       slightlyFalse: { returns: 'value:boolean' },
