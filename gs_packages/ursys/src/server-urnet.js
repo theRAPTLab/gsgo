@@ -76,6 +76,7 @@ function StartNetwork(options = {}) {
   // REGISTER SERVER-BASED MESSAGE HANDLERS
   LOGGER.Write('registering network services');
   UR_HandleMessage('NET:SRV_LOG_EVENT', LOGGER.PKT_LogEvent);
+  UR_HandleMessage('NET:SRV_LOG_JSON', LOGGER.PKT_LogJSON);
   UR_HandleMessage('NET:SRV_REG_HANDLERS', PKT_RegisterHandler);
   UR_HandleMessage('NET:SRV_SESSION_LOGIN', PKT_SessionLogin);
   UR_HandleMessage('NET:SRV_SESSION_LOGOUT', PKT_SessionLogout);

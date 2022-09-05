@@ -19,6 +19,8 @@ import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler-v2';
 import ERROR from 'modules/error-mgr';
 
+import { LOG_DISPLAY_OBJECTS } from 'config/gem-settings';
+
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM_AGENTS');
@@ -345,6 +347,7 @@ function VisUpdate(frameTime) {
   AGENT_TO_DOBJ.mapObjects();
   const dobjs = AGENT_TO_DOBJ.getMappedObjects();
   RENDERER.UpdateDisplayList(dobjs);
+  if (LOG_DISPLAY_OBJECTS) UR.LogJSON('DISPLAYLIST', dobjs);
   UR.SendMessage('NET:DISPLAY_LIST', dobjs);
 }
 

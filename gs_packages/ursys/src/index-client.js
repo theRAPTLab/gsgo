@@ -164,6 +164,13 @@ function SendMessage(mesgName, inData, options) {
 function LogEvent(event, itemsArray) {
   SendMessage('NET:SRV_LOG_EVENT', { event, items: itemsArray });
 }
+/** API: log a packet to the server. It will write a comma-separated
+ *  @param {string} event - an event name you decide on
+ *  @param {object} json - a javscript object
+ */
+function LogJSON(event, json) {
+  SendMessage('NET:SRV_LOG_JSON', { event, json: JSON.stringify(json) });
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -180,6 +187,7 @@ const UR = {
   CallMessage,
   // EXTERNAL EVENT LOGGING TO RUNTIME DIR
   LogEvent,
+  LogJSON,
   // FORWARDED GENERIC PHASE MACHINEc
   HookPhase: PhaseMachine.Hook,
   // SYSTEM ENVIRONMENT
