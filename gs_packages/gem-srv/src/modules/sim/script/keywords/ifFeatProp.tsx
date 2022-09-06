@@ -73,7 +73,7 @@ export class ifFeatProp extends Keyword {
         const bpName = ref[0];
         const c = context[bpName as string]; // SM_Agent context
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
-        return GetFeatPropWithDebug(agent, featName, pName, mName, prms);
+        return GetFeatPropWithDebug(c, featName, pName, mName, prms);
       };
     } else if (len === 3) {
       /** NEW EXTENDED REF REQUIRED ******************************************/
@@ -86,7 +86,7 @@ export class ifFeatProp extends Keyword {
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         // ref[0] = blueprint, ref[1] = feature, ref[2] = prop
         // we use our own decoded propname rather than looking for the passed version
-        return GetFeatPropWithDebug(agent, featName, pName, mName, prms);
+        return GetFeatPropWithDebug(c, featName, pName, mName, prms);
       };
     } else {
       console.warn('error parse ref', ref);
