@@ -405,23 +405,26 @@ class Visual implements IVisual, IPoolable, IActable {
    * the bounds of the sprite for placing the text
    */
   setText(str: string) {
-
-    // Remove any old text
-    // We have to remove the child and reset it to update the text?
-    this.container.removeChild(this.text);
-    if (this.text) this.text.destroy();
-
-    this.text = new PIXI.Text(str, style);
-    this.textContent = str; // cache
-
-    // position text bottom centered
-    const textBounds = this.text.getBounds();
-    const spacer = 5;
-    const x = -textBounds.width / 2;
-    const y = this.sprite.height / 2 + spacer;
-    this.text.position.set(x, y);
-
-    this.container.addChild(this.text);
+    if (!str) return;
+    if (this.textContent !== str) {
+      // Create/recreate the text if it changed
+      // -- Remove any old text
+      //    We have to remove the child and reset it to update the text?
+      this.container.removeChild(this.text);
+      if (this.text) this.text.destroy();
+      // -- Create new text
+      this.text = new PIXI.Text(str, style);
+      this.textContent = str; // cache
+      this.container.addChild(this.text);
+    }
+    if (this.text) {
+      // position text bottom centered
+      const textBounds = this.text.getBounds();
+      const spacer = 5;
+      const x = -textBounds.width / 2;
+      const y = this.sprite.height / 2 + spacer;
+      this.text.position.set(x, y);
+    }
   }
 
   removeText() {
