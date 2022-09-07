@@ -3,6 +3,8 @@
   The SM_Boolean Prop Type can do common boolean operations and also
   support experimental "fuzzy" operators
 
+  fuzzy is undefined by default.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import merge from 'deepmerge';
@@ -13,7 +15,7 @@ import { RegisterPropType } from 'modules/datacore';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export class SM_Boolean extends SM_Object {
   fuzzy: number;
-  constructor(initial = true, fuzzy = 0) {
+  constructor(initial = true, fuzzy = undefined) {
     super();
     this.meta.type = Symbol.for('SM_Boolean');
     this.value = initial;
@@ -34,22 +36,23 @@ export class SM_Boolean extends SM_Object {
     return this.value;
   }
   and(comparison: any): SM_Boolean {
-    if (!this.fuzzy) throw Error("'and' incompatible with fuzzy logic");
+    if (this.fuzzy) throw Error("'and' incompatible with fuzzy logic");
     this.value &= comparison;
     return this;
   }
   or(comparison: any): SM_Boolean {
-    if (!this.fuzzy) throw Error("'or' incompatible with fuzzy logic");
+    if (this.fuzzy) throw Error("'or' incompatible with fuzzy logic");
     this.value |= comparison;
     return this;
   }
   equal(comparison: any): SM_Boolean {
-    if (!this.fuzzy) throw Error("'equal' incompatible with fuzzy logic");
+    if (this.fuzzy)
+      throw Error(`'equal' incompatible with fuzzy logic.  fuzzy=${this.fuzzy}`);
     this.value = this.value === comparison;
     return this;
   }
   notEqual(comparison: any): SM_Boolean {
-    if (!this.fuzzy) throw Error("'equal' incompatible with fuzzy logic");
+    if (this.fuzzy) throw Error("'equal' incompatible with fuzzy logic");
     this.value = this.value !== comparison;
     return this;
   }
