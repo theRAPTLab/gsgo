@@ -35,7 +35,7 @@ import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import { VER_TRIAL, ENABLE_SYMBOL_TEST_BLUEPRINT } from 'config/dev-settings';
-import { ASSETDIR, DEV_PRJID, DEV_BPID } from 'config/gem-settings';
+import { GS_ASSETS_PROJECT_ROOT, DEV_PRJID, DEV_BPID } from 'config/gem-settings';
 // edit mode components
 import { ScriptTextPane } from './wiz/edit/ScriptTextPane';
 import { ScriptViewWiz_Block } from './wiz/gui/ScriptViewWiz_Block';
@@ -63,10 +63,10 @@ const PR = UR.PrefixUtil('DEWIZ', 'TagApp');
 UR.HookPhase('UR/LOAD_ASSETS', async () => {
   // return promise to hold LOAD_ASSETS until done
   console.log(
-    `%cInitializing 'assets/${ASSETDIR}' as project source...`,
+    `%cInitializing 'assets/${GS_ASSETS_PROJECT_ROOT}' as project source...`,
     'background-color:rgba(255,0,0,0.15);color:red;padding:1em 2em'
   );
-  return PROJ_v2.LoadAssetDirectory(`/assets/${ASSETDIR}/`);
+  return PROJ_v2.LoadAssetDirectory(`/assets/${GS_ASSETS_PROJECT_ROOT}/`);
 });
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
@@ -90,9 +90,9 @@ function m_LoadTestProjectData() {
   const cur_prjid = DEV_PRJID;
   const cur_bpid = DEV_BPID;
   let out = `%cLooking for '${DEV_PRJID}.prj' with blueprint name '${DEV_BPID}' `;
-  out += `in 'assets/${ASSETDIR}'...`;
+  out += `in 'assets/${GS_ASSETS_PROJECT_ROOT}'...`;
   out += '%c\n\n';
-  out += `If you see an error, check that ASSETDIR, DEV_PRJID, and DEV_BPID `;
+  out += `If you see an error, check that GS_ASSETS_PROJECT_ROOT, DEV_PRJID, and DEV_BPID `;
   out += `are correctly defined in local-settings.json`;
   // This retrieves the uncompiled/unbundled bpDef object {name, scriptText} from gem proj
   console.log(

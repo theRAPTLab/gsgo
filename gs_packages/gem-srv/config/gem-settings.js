@@ -32,7 +32,6 @@ const RUNTIME_PATH = Path.join(__dirname, `../${RUNTIME_DIRNAME}`);
 /// configs
 
 const MQTT_URL = 'localhost'; // override in local-settings.json
-const ASSETDIR = 'art-assets'; // override in local-settings.json
 
 const LOG_DISPLAY_OBJECTS = false; // logs all display objects to disk
 // WARNING This can affect performance and eat up a LOT of disk space
@@ -49,7 +48,6 @@ const compositeSettings = {
   // overrides for GEM
   PACKAGE_NAME,
   RUNTIME_DIRNAME,
-  ASSETDIR,
   RUNTIME_PATH, // used only by servers
   MQTT_URL,
   SKIP_RELOAD_WARNING,
