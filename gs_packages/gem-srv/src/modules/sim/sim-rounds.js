@@ -10,6 +10,7 @@ import * as ACRounds from 'modules/appcore/ac-rounds';
 import { SM_Number } from 'modules/sim/script/vars/_all_vars';
 import SM_Agent from 'lib/class-sm-agent';
 import * as TRANSPILER from './script/transpiler-v2';
+import { REFEREE } from 'modules/sim/agents/global';
 import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -33,15 +34,13 @@ function m_StartRoundTimer(stopfn) {
   if (DBG) console.log(...PR('Start Timer'));
   if (!ROUND_TIMER_START_VALUE) return;
 
-  const GLOBAL_AGENT = SM_Agent.GetGlobalAgent();
-
   TIMER_COUNTER = 0;
-  GLOBAL_AGENT.prop.roundTime.setTo(0); // reset between rounds
+  REFEREE.prop.roundTime.setTo(0); // reset between rounds
 
   const size = 1000; // every second -- Interval size matches sim rate
   TIMER = interval(size).subscribe(count => {
     TIMER_COUNTER++;
-    GLOBAL_AGENT.prop.roundTime.setTo(TIMER_COUNTER);
+    REFEREE.prop.roundTime.setTo(TIMER_COUNTER);
     RSIMSTATUS.timer = ROUND_TIMER_START_VALUE - TIMER_COUNTER;
     if (TIMER_COUNTER >= ROUND_TIMER_START_VALUE) stopfn();
   });
@@ -57,9 +56,9 @@ function m_StopRoundTimer() {
 function m_RunScript(scriptText) {
   if (scriptText) {
     const refs = { bundle: {}, globals: {} };
+    const script = TRANSPILER.TextToScript(scriptText);
     const program = TRANSPILER.CompileText(scriptText, refs);
-    const GLOBAL_AGENT = SM_Agent.GetGlobalAgent();
-    GLOBAL_AGENT.exec(program, { agent: GLOBAL_AGENT });
+    REFEREE.exec(program, { agent: REFEREE });
   }
 }
 
@@ -68,12 +67,10 @@ function m_RunScript(scriptText) {
 /** Called api-sim during Stage() to hack-in stuff to the global agent if it
  *  doesn't exist */
 function StageInit() {
-  const GLOBAL_AGENT = SM_Agent.GetGlobalAgent();
-  if (!GLOBAL_AGENT.hasFeature('Population'))
-    GLOBAL_AGENT.addFeature('Population');
-  if (!GLOBAL_AGENT.getProp('roundTime')) {
+  if (!REFEREE.hasFeature('Population')) REFEREE.addFeature('Population');
+  if (!REFEREE.getProp('roundTime')) {
     const prop = new SM_Number();
-    GLOBAL_AGENT.addProp('roundTime', prop);
+    REFEREE.addProp('roundTime', prop);
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -86,6 +83,7 @@ function RoundsReset() {
 /** at api-sim NextRound(), update timers accordingly and load the next
  *  round's set of data and scripts */
 function RoundInit(SIMSTATUS) {
+  // 2022-0905 DISABLE `try` so errors will be reported for debugging
   // try {
   RSIMSTATUS = SIMSTATUS;
   console.log(...PR('RoundInit!'));
@@ -125,6 +123,7 @@ function RoundStart(stopfn) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** at api-sim stop, stop counting and do some stuff */
 function RoundStop() {
+  // 2022-0905 DISABLE `try` so errors will be reported for debugging
   // try {
   console.log(...PR('RoundStop!'));
   m_StopRoundTimer();

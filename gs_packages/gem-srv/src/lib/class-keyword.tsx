@@ -444,7 +444,8 @@ function K_DerefProp(refArg): DerefMethod {
           )} Context is ${JSON.stringify(context)}`
         );
       const p: ISM_Object = c.getProp(ref[1]);
-      if (p === undefined) throw Error(`missing prop '${ref[1]}'`);
+      if (p === undefined)
+        throw Error(`missing prop '${ref[1]}' from agent '${c}'`);
       return p;
     };
   } else {

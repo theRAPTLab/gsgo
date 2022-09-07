@@ -1188,6 +1188,7 @@ class SymbolInterpreter {
         err_info: `objref[1] must be 'agent' or a blueprint name`
       });
     const agent = { agent: SIMDATA.GetBlueprintBundle(bpName).symbols };
+    blueprints = { ...blueprints, ...agent }; // add the blueprint for "agent" also
     // PART 1 should be agent or Blueprint
     if (bpName === undefined)
       return this.badToken(token, { blueprints } as TSymbolData, {
