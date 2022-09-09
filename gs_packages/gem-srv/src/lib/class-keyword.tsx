@@ -434,7 +434,7 @@ function K_DerefProp(refArg): DerefMethod {
     };
   } else if (len === 2) {
     /** EXPLICIT REF *******************************************************/
-    /// e.g. 'agent.x' or 'Bee.x'
+    /// e.g. 'agent.x' or 'Bee.x' or 'global.x'
     deref = (agent: IAgent, context: any) => {
       const c = ref[0] === 'agent' ? agent : context[ref[0]];
       if (c === undefined)

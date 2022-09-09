@@ -275,6 +275,8 @@ class PhysicsPack extends SM_Feature {
       'bodyShape': SM_Number.Symbols
     },
     methods: {
+      // INTERNAL USE ONLY -- do not expose to GUI
+      //
       // 'intersectsWith': {
       //   args: ['targetAgent:blueprint'],
       //   returns: 'intersects:boolean'
