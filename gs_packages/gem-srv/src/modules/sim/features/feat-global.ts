@@ -2,9 +2,11 @@
 
 
   DEPRECATED
-  The global agent is now accessible directly via script, so the Global
+  The global agent is now accessible directly via script, via the
+  GlobalAgent agent that is injected during project load.  So the Global
   SM_Feature is really no longer necessary.
-  e.g. `prop global.sparkCounter add 1`
+  * Add global props by editing the GlobalAgent
+  * Reference global props anywhere: `prop global.sparkCounter add 1`
   See: https://gitlab.com/stepsys/gem-step/gsgo/-/wikis/Scripting/Global
 
 

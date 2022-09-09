@@ -453,6 +453,8 @@ function ResetAndCompileBlueprints(
  */
 function SetBlueprints(projId: string, blueprints: TBlueprint[]) {
   // DON'T COMPILE BLUEPRINTS ON LOAD!!!
+  // (If there are compile errors Main will stop running
+  // and ScriptEditor will no longer be able to edit scripts)
   //
   // 1. Compile the blueprints
   //    Converts old gemproj data format -- 'id' => 'name'
@@ -467,7 +469,19 @@ function SetBlueprints(projId: string, blueprints: TBlueprint[]) {
     TRANSPILER.SymbolizeBlueprint(script);
   });
 
-  // 2. Update datacore
+  // 2. Inject Special Blueprints
+  //    GlobalAgent -- agent is created in aim-agents.AllAgentsProgram()
+  if (!bpDefs.find(d => d.name === 'GlobalAgent')) {
+    const globalScript = `# BLUEPRINT GlobalAgent
+# PROGRAM INIT
+addFeature Population`;
+    const scriptBdl = TRANSPILER.TextToScript(globalScript);
+    TRANSPILER.SymbolizeBlueprint(scriptBdl);
+    bpDefs.push({ name: 'GlobalAgent', scriptText: globalScript });
+  }
+  // End Symbolize Global
+
+  // 3. Update datacore
   DCPROJECT.UpdateProjectData({ blueprints }); // note blueprints:blueprints object
 
   // 3. Update state
