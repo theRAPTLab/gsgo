@@ -247,9 +247,10 @@ export function AllAgentsProgram(data) {
   //    so SCRIPT_TO_INSTANCE (below) will not create it.
   //    Instead, we have to manually create it.
   const globalBpDef = ACBlueprints.GetBlueprint('GlobalAgent');
+  const id = ACInstances.GetInstanceUID();
   const globalInstanceDef = {
-    id: '1000',
     bpid: 'GlobalAgent',
+    id,
     label: globalBpDef.name,
     initScript: ''
   };
