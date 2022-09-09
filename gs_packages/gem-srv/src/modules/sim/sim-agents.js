@@ -253,6 +253,7 @@ export function AllAgentsProgram(data) {
     id,
     label: globalBpDef.name,
     initScript: ''
+    initScript: globalBpDef.initScript
   };
   const globalAgent = MakeAgent(globalInstanceDef);
   SM_Agent.GLOBAL_AGENT = globalAgent;
