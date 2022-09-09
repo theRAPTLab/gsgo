@@ -476,10 +476,11 @@ function SetBlueprints(projId: string, blueprints: TBlueprint[]) {
   if (!bpDefs.find(d => d.name === GLOBAL_AGENT_NAME)) {
     const globalScript = `# BLUEPRINT ${GLOBAL_AGENT_NAME}
 # PROGRAM INIT
-addFeature Population`;
+addFeature Population
+prop visible setTo false`;
     const scriptBdl = TRANSPILER.TextToScript(globalScript);
     TRANSPILER.SymbolizeBlueprint(scriptBdl);
-    bpDefs.push({ name: 'GlobalAgent', scriptText: globalScript });
+    bpDefs.push({ name: GLOBAL_AGENT_NAME, scriptText: globalScript });
   }
   // End Symbolize Global
 
