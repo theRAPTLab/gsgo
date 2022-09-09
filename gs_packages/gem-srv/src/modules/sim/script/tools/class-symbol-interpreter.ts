@@ -22,6 +22,7 @@ import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as TOKENIZER from 'script/tools/script-tokenizer';
 import * as HELP from 'app/help/codex';
 import VSDToken from 'script/tools/class-validation-token';
+import { GLOBAL_AGENT_NAME } from 'modules/appcore/ac-blueprints';
 import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

@@ -76,6 +76,8 @@ import ERROR from 'modules/error-mgr';
 const PR = UR.PrefixUtil('AC-BPRNT', 'TagCyan');
 const DBG = false;
 
+const GLOBAL_AGENT_NAME = 'global';
+
 /// The module name will be used as args for UR.ReadStateGroups
 const STATE = new UR.class.StateGroupMgr('blueprints');
 /// StateGroup keys must be unique across the entire app
@@ -471,8 +473,8 @@ function SetBlueprints(projId: string, blueprints: TBlueprint[]) {
 
   // 2. Inject Special Blueprints
   //    GlobalAgent -- agent is created in aim-agents.AllAgentsProgram()
-  if (!bpDefs.find(d => d.name === 'GlobalAgent')) {
-    const globalScript = `# BLUEPRINT GlobalAgent
+  if (!bpDefs.find(d => d.name === GLOBAL_AGENT_NAME)) {
+    const globalScript = `# BLUEPRINT ${GLOBAL_AGENT_NAME}
 # PROGRAM INIT
 addFeature Population`;
     const scriptBdl = TRANSPILER.TextToScript(globalScript);
@@ -550,6 +552,8 @@ function DeleteBlueprint(bpName: string) {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
+  GLOBAL_AGENT_NAME,
+  //
   ResetAndCompileBlueprints,
   GetBpDefs,
   GetBlueprint,

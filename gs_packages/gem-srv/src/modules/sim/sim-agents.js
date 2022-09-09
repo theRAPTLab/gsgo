@@ -18,6 +18,7 @@ import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as ACBlueprints from 'modules/appcore/ac-blueprints';
+import * as ACInstances from 'modules/appcore/ac-instances';
 import ERROR from 'modules/error-mgr';
 
 import { LOG_DISPLAY_OBJECTS } from 'config/gem-settings';
@@ -246,13 +247,12 @@ export function AllAgentsProgram(data) {
   //    `instancesSpec` does not include the global agent
   //    so SCRIPT_TO_INSTANCE (below) will not create it.
   //    Instead, we have to manually create it.
-  const globalBpDef = ACBlueprints.GetBlueprint('GlobalAgent');
+  const globalBpDef = ACBlueprints.GetBlueprint(ACBlueprints.GLOBAL_AGENT_NAME);
   const id = ACInstances.GetInstanceUID();
   const globalInstanceDef = {
-    bpid: 'GlobalAgent',
     id,
+    bpid: ACBlueprints.GLOBAL_AGENT_NAME,
     label: globalBpDef.name,
-    initScript: ''
     initScript: globalBpDef.initScript
   };
   const globalAgent = MakeAgent(globalInstanceDef);

@@ -19,6 +19,7 @@ import SM_Message from './class-sm-message';
 import SM_Object from './class-sm-object';
 import SM_State from './class-sm-state';
 import StatusObject from './class-status-object';
+import { GLOBAL_AGENT_NAME } from 'modules/appcore/ac-blueprints';
 
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -516,12 +517,12 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
   static GLOBAL_AGENT: SM_Agent;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   static ClearGlobalAgent() {
-    SM_Agent.GLOBAL_AGENT = new SM_Agent('GlobalAgent');
+    SM_Agent.GLOBAL_AGENT = new SM_Agent(GLOBAL_AGENT_NAME);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   static GetGlobalAgent() {
     if (SM_Agent.GLOBAL_AGENT === undefined)
-      SM_Agent.GLOBAL_AGENT = new SM_Agent('GlobalAgent');
+      SM_Agent.GLOBAL_AGENT = new SM_Agent(GLOBAL_AGENT_NAME);
     return SM_Agent.GLOBAL_AGENT;
   }
 
