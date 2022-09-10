@@ -11,7 +11,6 @@
 import './features/feat-agentwidget';
 import './features/feat-costume';
 import './features/feat-cursor';
-import './features/feat-global';
 import './features/feat-movement';
 import './features/feat-physics';
 import './features/feat-population';

@@ -79,7 +79,6 @@ async function PromiseLoadAssets(subdir: string = '') {
   }
   // e.g. route = '/assets
   const route = !subdir ? GS_ASSETS_ROUTE : `${GS_ASSETS_ROUTE}/${subdir}`;
-  console.log('route', route);
   const json = await AssetLoader.PromiseManifest(route);
   if (json === undefined) {
     const jsonErr = `ERROR: No asset manifest found at "${route}".\n\nTROUBLESHOOTING\n1. Are there assets in '${GS_ASSETS_PATH}/${subdir}?'.\n2. gsgo-settings.json has correct paths?\n3. gem-srv/config/*-settings overrides has correct paths?\n4. Does AssetServer have downloadable assets?`;

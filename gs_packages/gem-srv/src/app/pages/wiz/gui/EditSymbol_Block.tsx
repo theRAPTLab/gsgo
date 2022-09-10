@@ -45,8 +45,6 @@ export const HIDDEN_SYMBOLS = [
   'stackmul',
   'stackdiv',
   'usefeature', // deprecated.  use 'addFeature'
-  // features
-  'global',
   // physics
   'intersectsWith',
   'intersectsWithBounds',
@@ -98,6 +96,7 @@ export const ADVANCED_SYMBOLS = [
   'dbgerror',
   // features
   'cursor',
+  'global',
   // costume
   'currentFrame',
   'colorHue',
