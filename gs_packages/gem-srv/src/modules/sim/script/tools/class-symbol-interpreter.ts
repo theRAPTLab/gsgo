@@ -1083,30 +1083,41 @@ class SymbolInterpreter {
     // construct expected symbols
     let blueprints = SIMDATA.GetBlueprintSymbols();
 
+    // A tokenized empty token is the string "undefined", so we need to convert
+    // it to type undefined, or the destructuring will result in a 'u' for bpName
+    const cleanedPropRef = propRef === 'undefined' ? undefined : propRef;
+
     // DEREF PROPNAME
-    // agentName is not necessarily the current bundle
+    // propRef might be ['energyLevel'], ['agent','energyLevel'], ]'Fish','energyLevel'], or ['Algae','energyLevel']
+    // bpName is not necessarily the current bundle
     // but whatever is specified in the token propRef!
+    let bpName;
+    let propName;
     let agentName = this.getBundleName(); // fallback to bundle
     if (token && token.objref) {
-      if (Array.isArray(propRef)) {
+      if (Array.isArray(cleanedPropRef)) {
         // if propRef is an array, then the agent name is the first item
         // if the reference is the generic 'agent' then we use the bundle name
-        if (propRef[0] !== 'agent') {
-          agentName = propRef[0];
-        }
-      } else if (propRef !== undefined) {
+        [bpName, propName] = cleanedPropRef;
+      } else if (cleanedPropRef !== undefined) {
         // propRef is just a reference to the prop, e.g. 'energyLevel'
-        agentName = propRef;
+        bpName = agentName;
+        propName = cleanedPropRef;
       }
     }
-    const agent = { agent: SIMDATA.GetBlueprintBundle(agentName).symbols };
+    bpName = bpName === 'agent' ? agentName : bpName; // map 'agent' to the current bundle's bpName
+    // inject `agent` matching the current agent name
+    const agent = {
+      agent: SIMDATA.GetBlueprintBundle(agentName).symbols
+    };
     blueprints = { ...blueprints, ...agent };
-
-    let props = agent.agent.props;
+    const bp = blueprints[bpName] || {};
+    const props = bp.props;
     const symbols: TSymbolData = {
       blueprints,
       props // default to agent
     } as TSymbolData;
+
     if (this.detectTypeError(gsArg, token)) {
       return this.badToken(token, symbols, {
         gsArg,
@@ -1116,7 +1127,6 @@ class SymbolInterpreter {
     // we want to use our custom symbol dict for processing
     this.setCurrentScope(symbols);
     // check validity
-    let [bpName, propName] = propRef;
     // PART 1 should be agent or Blueprint
     const goodBlueprint =
       bpName === 'agent' || SIMDATA.HasBlueprintBundle(bpName);
@@ -1262,6 +1272,7 @@ class SymbolInterpreter {
     // figure out what we got
     let [bpName, featureName, methodName] = propRef;
     let blueprints = SIMDATA.GetBlueprintSymbols();
+    // inject 'agent' matching the current bundle
     const agentName = this.getBundleName();
     const agent = { agent: SIMDATA.GetBlueprintBundle(agentName).symbols };
     blueprints = { ...blueprints, ...agent };
