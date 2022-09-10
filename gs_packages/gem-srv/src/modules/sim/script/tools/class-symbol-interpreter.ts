@@ -1176,6 +1176,10 @@ class SymbolInterpreter {
       propRef
     );
     let blueprints = SIMDATA.GetBlueprintSymbols();
+    // inject 'agent' matching the current bundle
+    let agentName = this.getBundleName(); // fallback to bundle
+    const agent = { agent: SIMDATA.GetBlueprintBundle(agentName).symbols };
+    blueprints = { ...blueprints, ...agent }; // add the blueprint for "agent" also
     // Catch propRef = "undefined" string
     // When first adding a featProp line, 'token' will be "undefined"
     // if `token` is undefined this.extractTokenMeta returns[ unitText, undefined, 'undefined']
@@ -1188,8 +1192,6 @@ class SymbolInterpreter {
         gsArg,
         err_info: `objref[1] must be 'agent' or a blueprint name`
       });
-    const agent = { agent: SIMDATA.GetBlueprintBundle(bpName).symbols };
-    blueprints = { ...blueprints, ...agent }; // add the blueprint for "agent" also
     // PART 1 should be agent or Blueprint
     if (bpName === undefined)
       return this.badToken(token, { blueprints } as TSymbolData, {
