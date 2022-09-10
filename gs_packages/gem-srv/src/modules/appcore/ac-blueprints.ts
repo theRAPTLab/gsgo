@@ -477,7 +477,7 @@ function SetBlueprints(projId: string, blueprints: TBlueprint[]) {
     const globalScript = `# BLUEPRINT ${GLOBAL_AGENT_NAME}
 # PROGRAM INIT
 addFeature Population
-prop visible setTo false`;
+prop ${GLOBAL_AGENT_NAME}.visible setTo false`;
     const scriptBdl = TRANSPILER.TextToScript(globalScript);
     TRANSPILER.SymbolizeBlueprint(scriptBdl);
     bpDefs.push({ name: GLOBAL_AGENT_NAME, scriptText: globalScript });
