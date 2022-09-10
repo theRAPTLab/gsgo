@@ -90,6 +90,7 @@ class PanelBlueprints extends React.Component {
 
     // Hide special blueprints
     const hide = ['Cursor'];
+    if (enableAdd) hide.push('global'); // Do not allow 'global' instance to be created
     const filteredbpNamesList = bpNamesList.filter(bp => !hide.includes(bp));
 
     // sort alphabetically
