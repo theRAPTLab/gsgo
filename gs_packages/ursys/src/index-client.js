@@ -16,7 +16,7 @@ const DBGTEST = require('./util/client-debug');
 const DATACORE = require('./client-datacore');
 const DTECT = require('./common/ur-detect');
 const CONST = require('./common/ur-constants');
-const LOG = require('./client-status');
+const LOG = require('./client-logger');
 
 // classes
 const PhaseMachine = require('./class-phase-machine');

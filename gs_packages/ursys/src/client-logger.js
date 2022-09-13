@@ -79,8 +79,8 @@ function LoggingEnabled(boolLog) {
     throw Error(`${fn} arg must be boolean (true means enabled)`);
   }
   // report logging changes
-  if (!LOGGING_ENABLED && boolLog) LogEvent('LOGGING', ['ENABLED']);
-  if (LOGGING_ENABLED && !boolLog) LogEvent('LOGGING', ['DISABLED']);
+  if (!LOGGING_ENABLED && boolLog) LogEvent('CLIENT_LOG', ['ENABLED']);
+  if (LOGGING_ENABLED && !boolLog) LogEvent('CLIENT_LOG', ['DISABLED']);
   LOGGING_ENABLED = boolLog;
   // always return the state
   return LOGGING_ENABLED;
