@@ -302,7 +302,7 @@ export function AgentProgram(blueprint) {
   // Mostly used by PanelInstances and Inspectors
   UR.RaiseMessage('NET:INSTANCES_UPDATE', { instances });
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ClearDOBJ() {
   AGENT_TO_DOBJ.clearMappedObjects();
 }
@@ -340,7 +340,7 @@ function AgentExec(frameTime) {
 function AgentReset(frameTime) {
   /* reset agent */
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function VisUpdate(frameTime) {
   const allAgents = DCAGENTS.GetAllAgents();
   AGENT_TO_DOBJ.syncFromArray(allAgents);

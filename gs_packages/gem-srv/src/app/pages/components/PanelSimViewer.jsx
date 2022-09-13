@@ -19,6 +19,8 @@ const FCON = UR.HTMLConsoleUtil('console-bottom');
 const DBG = true;
 let ASSETS_LOADED = false;
 
+/// SYSTEM EVENT HOOKS ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.HookPhase('UR/LOAD_ASSETS', () => {
   return new Promise((resolve, reject) => {
     if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
