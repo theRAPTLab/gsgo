@@ -186,6 +186,7 @@ const UR = {
   LOG,
   LogEvent: LOG.LogEvent,
   LogJSON: LOG.LogJSON,
+  LogEnabled: LOG.LogEnabled,
   // ROUTE INFO
   IsAppRoute: route => URSYS_ROUTE === route,
   AppRoute: () => URSYS_ROUTE,

@@ -65,13 +65,13 @@ function LogJSON(event, json) {
   SendMessage('NET:SRV_LOG_JSON', { event, json: JSON.stringify(json) });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Set or Unset LoggingEnabled flag. Call without argument to just
+/** API: Set or Unset LogEnabled flag. Call without argument to just
  *  retrieve the current status of the logger
  *  @param {boolean} boolLog - if true/false, set the state. can be undefined
  *  @returns boolean - always current state of the logging
  */
-function LoggingEnabled(boolLog) {
-  const fn = 'LoggingEnabled:';
+function LogEnabled(boolLog) {
+  const fn = 'LogEnabled:';
   // if called without arg, then just return state
   if (boolLog === undefined) return LOGGING_ENABLED;
   // make sure arg is boolean, hard crash if not
@@ -89,7 +89,7 @@ function LoggingEnabled(boolLog) {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  LoggingEnabled, // call without arg to just get status
+  LogEnabled, // call without arg to just get status
   LogEvent, // write to the current log
   LogJSON, // write to the
   //
