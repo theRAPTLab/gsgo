@@ -109,7 +109,8 @@ const WebpackLoaders = () => {
           test: /\.gemscript$/i,
           use: 'raw-loader'
         }
-      ]
+      ],
+      noParse: [require.resolve('typescript/lib/typescript.js')] // see https://github.com/microsoft/TypeScript/issues/39436
     },
     resolve: {
       // make require() handle both .js and .jsx files (default only .js)
