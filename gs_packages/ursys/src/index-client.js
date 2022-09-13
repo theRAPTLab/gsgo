@@ -155,23 +155,6 @@ function SendMessage(mesgName, inData, options) {
   if (m_EndpointInitialized()) LocalNode.sendMessage(mesgName, inData, options);
 }
 
-/// EVENT LOGGING API /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: log a packet to the server. It will write a comma-separated
- *  @param {string} event - an event name you decide on
- *  @param {Array.string} items - an array of strings to write in CSV
- */
-function LogEvent(event, itemsArray) {
-  SendMessage('NET:SRV_LOG_EVENT', { event, items: itemsArray });
-}
-/** API: log a packet to the server. It will write a comma-separated
- *  @param {string} event - an event name you decide on
- *  @param {object} json - a javscript object
- */
-function LogJSON(event, json) {
-  SendMessage('NET:SRV_LOG_JSON', { event, json: JSON.stringify(json) });
-}
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UR = {
@@ -185,9 +168,6 @@ const UR = {
   SendMessage,
   RaiseMessage,
   CallMessage,
-  // EXTERNAL EVENT LOGGING TO RUNTIME DIR
-  LogEvent,
-  LogJSON,
   // FORWARDED GENERIC PHASE MACHINEc
   HookPhase: PhaseMachine.Hook,
   // SYSTEM ENVIRONMENT
@@ -202,8 +182,10 @@ const UR = {
   // SYSTEM STARTUP
   SystemStart,
   SystemStop,
-  // INTERNAL ERROR LOG MODULE
+  // LOGGING MODULE
   LOG,
+  LogEvent: LOG.LogEvent,
+  LogJSON: LOG.LogJSON,
   // ROUTE INFO
   IsAppRoute: route => URSYS_ROUTE === route,
   AppRoute: () => URSYS_ROUTE,
