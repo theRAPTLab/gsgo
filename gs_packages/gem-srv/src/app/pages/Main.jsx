@@ -103,7 +103,7 @@ class MissionControl extends React.Component {
     UR.HandleMessage('NET:SIM_WAS_RESET', this.OnSimWasReset);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
     UR.HandleMessage('SHOW_MESSAGE', this.DoShowMessage);
-    UR.HandleMessage('METADATA_LOAD', this.UpdateWebCamSetting);
+    UR.HandleMessage('WEBCAM_UPDATE', this.UpdateWebCamSetting);
 
     // Instance Interaction Handlers
     this.HandleDragEnd = this.HandleDragEnd.bind(this);
@@ -269,7 +269,7 @@ class MissionControl extends React.Component {
     });
   }
 
-  /// Triggered by METADATA_LOAD
+  /// Triggered by WEBCAM_UPDATE
   UpdateWebCamSetting() {
     const metadata = ACMetadata.GetMetadata();
     this.setState({ showWebCam: metadata.showWebCam });
