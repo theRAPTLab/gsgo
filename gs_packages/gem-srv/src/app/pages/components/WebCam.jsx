@@ -82,6 +82,7 @@ let video;
 let transformedVideo;
 let ctx;
 let cameraStream;
+let streamStarting = false;
 
 /// COMPONENT DEFINITION //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -170,7 +171,6 @@ export default function WebCam(props) {
       }
     };
 
-    let streamStarting = false;
     const streamWebcam = () => {
       // Prevent multiple calls from asking for user permission multiple times
       if (streamStarting) return;
