@@ -245,7 +245,7 @@ function Init(element) {
   SetAnnotRP(RP_PTRAK_TO_VOBJ);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function HookResize(element) {
+function HookResize(element, cb) {
   // element is usually window
   element.addEventListener(
     'resize',
@@ -261,6 +261,8 @@ function HookResize(element) {
         Root.y = PIXI_APP.screen.height / 2;
         Root.pivot.x = 0; //root.width / 2;
         Root.pivot.y = 0; // root.height / 2;
+        if (cb && typeof cb === 'function')
+          return cb(renderRoot.offsetWidth, renderRoot.offsetHeight);
       } else {
         console.log('note: no #root-renderer to resize');
       }
