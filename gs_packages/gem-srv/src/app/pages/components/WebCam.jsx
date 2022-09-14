@@ -10,9 +10,15 @@
   You should be able to select the camera source using
   Chrome's "Privacy and security" > "Site settings" > "Camera".
 
+
+  Activating
+  ----------
   The "WebCam" checkbox on Main (navbar) will turn the camera on
   and off.
 
+
+  Calibration
+  -----------
   When the camera is on, you can use the sliders to change:
   * Scale
   * Translation (x/y offset)
@@ -29,6 +35,31 @@
   the relevant metadata values from one project to another if the
   projects are the same size.  If the projects are not the same
   size, the mappings may be off.
+
+
+  How It Works
+  ------------
+  Basically this works by adding a <video> component that
+  streams video from the webcam, then transforms and copies
+  images from that video onto a canvas 30 frames per second.
+
+  PanelSimulation places the video canvas behind the simulation.
+  This is necessary so that the agent instances remain
+  selectable by the mouse.
+
+
+  Project Design Considerations
+  -----------------------------
+  The layering of the video UNDERNEATH the simulation layer
+  means that the simulation layer needs to be transparent.
+  This has some serious implications for project design:
+  * If a project is using a solid color background, we
+    render that background with a 50% alpha so that
+    the video is visible underneath.
+  * This will be a problem for projects (like decmoposition)
+    that use a solid background image.  The video will
+    be hidden on these projects.  The workaround is
+    set alpha to 0.5 on background agents.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
