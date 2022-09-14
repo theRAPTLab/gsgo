@@ -16,6 +16,7 @@ import { withStyles } from '@material-ui/core/styles';
 
 import * as SIMCTRL from 'modules/msgex/mx-sim-control';
 import * as PROJSERVER from './helpers/project-server';
+import * as ACMetadata from 'modules/appcore/ac-metadata';
 import { ERR_MGR } from 'modules/error-mgr';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
@@ -31,6 +32,7 @@ import DialogConfirm from './components/DialogConfirm';
 import PanelTracker from './components/PanelTracker';
 import FormTransform from './components/FormTransform';
 import 'lib/css/tracker.css';
+import 'lib/css/gem-ui.css';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -75,7 +77,8 @@ class MissionControl extends React.Component {
       runIsMinimized: true,
       scriptsNeedUpdate: false,
       openRedirectDialog: false,
-      dialogMessage: undefined
+      dialogMessage: undefined,
+      showWebCam: false
     };
 
     // Initialization
@@ -93,11 +96,14 @@ class MissionControl extends React.Component {
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.PostMessage = this.PostMessage.bind(this);
     this.DoShowMessage = this.DoShowMessage.bind(this);
+    this.UpdateWebCamSetting = this.UpdateWebCamSetting.bind(this);
+    this.SaveWebCamSetting = this.SaveWebCamSetting.bind(this);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
     UR.HandleMessage('NET:SIM_WAS_RESET', this.OnSimWasReset);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
     UR.HandleMessage('SHOW_MESSAGE', this.DoShowMessage);
+    UR.HandleMessage('METADATA_LOAD', this.UpdateWebCamSetting);
 
     // Instance Interaction Handlers
     this.HandleDragEnd = this.HandleDragEnd.bind(this);
@@ -263,6 +269,21 @@ class MissionControl extends React.Component {
     });
   }
 
+  /// Triggered by METADATA_LOAD
+  UpdateWebCamSetting() {
+    const metadata = ACMetadata.GetMetadata();
+    this.setState({ showWebCam: metadata.showWebCam });
+  }
+
+  SaveWebCamSetting(e) {
+    const metadata = ACMetadata.GetMetadata();
+    metadata.showWebCam = e.target.checked;
+    this.setState({ showWebCam: e.target.checked });
+    PROJSERVER.UpdateMetadata({ metadata });
+    // Force WebCam to update
+    UR.CallMessage('WEBCAM_UPDATE');
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// INSTANCE INTERACTION HANDLERS
   ///
@@ -379,7 +400,8 @@ class MissionControl extends React.Component {
       runIsMinimized,
       scriptsNeedUpdate,
       openRedirectDialog,
-      dialogMessage
+      dialogMessage,
+      showWebCam
     } = this.state;
     const { classes } = this.props;
     const { width, height, bgcolor } = PROJSERVER.GetBoundary();
@@ -400,6 +422,45 @@ class MissionControl extends React.Component {
           {panelConfiguration === 'edit' ? 'SAVE' : 'SETUP'}
         </button>
       </>
+    );
+
+    const jsxNavToolBar = (
+      <div
+        style={{
+          display: 'flex',
+          flexGrow: '1',
+          justifyContent: 'space-between',
+          alignItems: 'baseline'
+        }}
+      >
+        <span style={{ fontSize: '32px' }}>MAIN {projId}</span>{' '}
+        {UR.ConnectionString()}
+        <a
+          href="#"
+          role="button"
+          className="secondary outline"
+          onClick={this.OnToggleTracker}
+        >
+          tracker
+        </a>
+        <a
+          href="#"
+          role="button"
+          className="secondary outline"
+          onClick={this.OnExport}
+        >
+          export
+        </a>
+        <label>
+          WebCam:
+          <input
+            type="checkbox"
+            checked={showWebCam}
+            onChange={this.SaveWebCamSetting}
+          />
+        </label>
+        &emsp;
+      </div>
     );
 
     const jsxRunOrEdit = (
@@ -470,18 +531,7 @@ class MissionControl extends React.Component {
           className={clsx(classes.cell, classes.top)}
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
-          <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>MAIN {projId}</span>{' '}
-            {UR.ConnectionString()}
-            &emsp;
-            <button type="button" onClick={this.OnToggleTracker}>
-              tracker
-            </button>
-            &emsp;
-            <button type="button" onClick={this.OnExport}>
-              export
-            </button>
-          </div>
+          {jsxNavToolBar}
           <Link
             to={{ pathname: `/app/project?project=${projId}` }}
             className={classes.navButton}
