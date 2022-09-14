@@ -293,6 +293,7 @@ function SetBoundary(width, height, bgcolor = 0x000000) {
   boundaryRect.endFill();
 
   RescaleToFit(width, height);
+  UR.CallMessage('BOUNDARY_UPDATE'); // tell PanelSimulation to recalculate size
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetPixiAppScreenSize() {
