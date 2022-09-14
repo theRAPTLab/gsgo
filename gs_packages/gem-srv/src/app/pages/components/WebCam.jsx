@@ -73,12 +73,10 @@ export default function WebCam(props) {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// run once on component did mount
   useEffect(() => {
-    UR.HandleMessage('METADATA_LOAD', LoadMetaData); // Called by ac-metadata when it first loads
     UR.HandleMessage('WEBCAM_UPDATE', LoadMetaData); // Called by Main when 'WebCam' checkbox changes
 
     // returned function is called on component unmount
     return () => {
-      UR.UnhandleMessage('METADATA_LOAD', LoadMetaData); // Called by ac-metadata when it first loads
       UR.UnhandleMessage('WEBCAM_UPDATE', LoadMetaData); // Called by Main when 'WebCam' checkbox changes
     };
   }, []); // [] ensures useEffect runs just once
