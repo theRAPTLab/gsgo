@@ -30,7 +30,7 @@ STATE.initializeState({
       roundsCanLoop: false,
       // webcam settings
       showWebCam: true,
-      scaleX: 0.5,
+      scaleX: 1,
       scaleY: 1,
       translateX: 0,
       translateY: 0,
@@ -195,6 +195,19 @@ function Wraps(wall = 'any') {
 function SetMetadata(projId, metadata) {
   if (DBG) console.log(...PR('ac-metadata setting metadata to', metadata));
   // try {
+  // Migration: Add webcam settings if they're missing
+  metadata.showWebCam =
+    metadata.showWebCam !== undefined ? metadata.showWebCam : false;
+  metadata.scaleX = metadata.scaleX !== undefined ? metadata.scaleX : 1;
+  metadata.scaleY = metadata.scaleY !== undefined ? metadata.scaleY : 1;
+  metadata.translateX =
+    metadata.translateX !== undefined ? metadata.translateX : 0;
+  metadata.translateY =
+    metadata.translateY !== undefined ? metadata.translateY : 0;
+  metadata.rotate = metadata.rotate !== undefined ? metadata.rotate : 0;
+  metadata.mirrorX = metadata.mirrorX !== undefined ? metadata.mirrorX : false;
+  metadata.mirrorY = metadata.mirrorX !== undefined ? metadata.mirrorX : false;
+
   // Update datacore
   DCPROJECT.UpdateProjectData({ metadata });
   updateAndPublish(metadata);
