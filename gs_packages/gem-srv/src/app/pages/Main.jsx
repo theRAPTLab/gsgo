@@ -435,22 +435,12 @@ class MissionControl extends React.Component {
       >
         <span style={{ fontSize: '32px' }}>MAIN {projId}</span>{' '}
         {UR.ConnectionString()}
-        <a
-          href="#"
-          role="button"
-          className="secondary outline"
-          onClick={this.OnToggleTracker}
-        >
+        <button role="button" onClick={this.OnToggleTracker}>
           tracker
-        </a>
-        <a
-          href="#"
-          role="button"
-          className="secondary outline"
-          onClick={this.OnExport}
-        >
+        </button>
+        <button role="button" onClick={this.OnExport}>
           export
-        </a>
+        </button>
         <label>
           WebCam:
           <input
