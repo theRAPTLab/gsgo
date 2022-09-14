@@ -77,6 +77,7 @@ const DESIRED_VIDEOSTREAM_WIDTH = 1024;
 const DESIRED_VIDEOSTREAM_HEIGHT = 768;
 
 let AUTOTIMER;
+let LOOPER;
 
 let video;
 let transformedVideo;
@@ -236,7 +237,8 @@ export default function WebCam(props) {
     const drawWidth = transformedVideo.width;
 
     // LOOP!!!!  Copy video frames from <video> to <canvas> at 30fps
-    setInterval(() => {
+    if (LOOPER) clearInterval(LOOPER);
+    LOOPER = setInterval(() => {
       // Black fill the buffer to prevent lingering visual artifacts should
       // the user scale the image below the canvas dimensions
       ctx.setTransform(1, 0, 0, 1, 0, 0);
