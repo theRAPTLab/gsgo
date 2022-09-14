@@ -27,7 +27,16 @@ STATE.initializeState({
       wrap: [false, false],
       bounce: false,
       bgcolor: '0x006666',
-      roundsCanLoop: false
+      roundsCanLoop: false,
+      // webcam settings
+      showWebCam: true,
+      scaleX: 0.5,
+      scaleY: 1,
+      translateX: 0,
+      translateY: 0,
+      rotate: 0,
+      mirrorX: false,
+      mirrorY: false
     }
   ]
 });
