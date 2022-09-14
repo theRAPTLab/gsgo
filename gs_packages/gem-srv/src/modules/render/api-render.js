@@ -295,6 +295,15 @@ function SetBoundary(width, height, bgcolor = 0x000000) {
   RescaleToFit(width, height);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetPixiAppScreenSize() {
+  const renderRoot = document.getElementById('root-renderer');
+  return { width: renderRoot.offsetWidth, height: renderRoot.offsetHeight };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetPixiRootScale() {
+  return { x: CONTAINERS.Root.scale.x, y: CONTAINERS.Root.scale.y };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SetGlobalConfig(opt) {
   const { actable } = opt;
   SETTINGS.actable = actable || false; // default non-interative
@@ -361,6 +370,8 @@ export {
   Init,
   HookResize,
   SetBoundary,
+  GetPixiAppScreenSize,
+  GetPixiRootScale,
   UpdateDisplayList,
   UpdatePTrackList,
   UpdateAnnotationList,
