@@ -556,7 +556,11 @@ class MissionControl extends React.Component {
             {jsxLeft}
           </div>
         </div>
-        <div id="console-main" className={classes.main}>
+        <div
+          id="console-main"
+          className={classes.main}
+          style={{ overflow: 'hidden' }}
+        >
           <PanelSimulation
             id="sim"
             width={width}
