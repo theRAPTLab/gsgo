@@ -272,10 +272,9 @@ function HookResize(element, cb) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Rescales Root to fit in PIXI_DIV
 function RescaleToFit(width, height = width) {
-  const pad = 20; // add padding so you can see the edges
   const scaleFactor = Math.min(
-    PIXI_DIV.offsetWidth / (width + pad),
-    PIXI_DIV.offsetHeight / (height + pad)
+    PIXI_DIV.offsetWidth / width,
+    PIXI_DIV.offsetHeight / height
   );
   CONTAINERS.Root.scale.set(scaleFactor);
 }
