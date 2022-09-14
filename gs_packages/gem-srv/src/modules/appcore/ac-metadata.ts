@@ -198,7 +198,11 @@ function SetMetadata(projId, metadata) {
   // Update datacore
   DCPROJECT.UpdateProjectData({ metadata });
   updateAndPublish(metadata);
-  UR.CallMessage('METADATA_LOAD');
+
+  // Explicitly raise WEBCAM_UPDATE so that Main and WebCam
+  // will update.  NOTE this is not a general METADATA update.
+  UR.CallMessage('WEBCAM_UPDATE');
+
   // } catch (caught) {
   //   ERROR(`could not set ${projId} metadata`, {
   //     source: 'project-init',

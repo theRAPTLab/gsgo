@@ -54,7 +54,11 @@ function Init(element) {
   PIXI_APP = new PIXI.Application({
     width: size,
     height: size,
-    backgroundColor: 0x222222
+    transparent: true,
+    useContextAlpha: true // needed to make background color transparent
+    // backgroundAlpha: 0.1, // doesn't seem to do anything
+    // clearBeforeRender: true, // doesn't seem to do anything
+    // backgroundColor: 0xff0000,
   });
   // CSS styling
   document.body.style.margin = '0px';
@@ -288,10 +292,11 @@ function SetBoundary(width, height, bgcolor = 0x000000) {
     CONTAINERS.Boundary = boundaryRect;
     CONTAINERS.Root.addChild(boundaryRect);
   }
-  boundaryRect.beginFill(bgcolor);
+  const alpha = SETTINGS.showWebCam ? 0.5 : 1;
+  boundaryRect.clear();
+  boundaryRect.beginFill(bgcolor, alpha);
   boundaryRect.drawRect(-width / 2, -height / 2, width, height);
   boundaryRect.endFill();
-
   RescaleToFit(width, height);
   UR.CallMessage('BOUNDARY_UPDATE'); // tell PanelSimulation to recalculate size
 }
@@ -306,8 +311,9 @@ function GetPixiRootScale() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SetGlobalConfig(opt) {
-  const { actable } = opt;
+  const { actable, showWebCam } = opt;
   SETTINGS.actable = actable || false; // default non-interative
+  SETTINGS.showWebCam = showWebCam || false;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let updateFrames = 0;

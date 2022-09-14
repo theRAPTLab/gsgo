@@ -4,6 +4,7 @@ import UR from '@gemstep/ursys/client';
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as ASSETS from 'modules/asset_core';
 import * as RENDERER from 'modules/render/api-render';
+import * as ACMetadata from 'modules/appcore/ac-metadata';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../helpers/page-xui-styles';
 import { GS_ASSETS_PROJECT_ROOT } from '../../../../config/gem-settings';
@@ -42,8 +43,10 @@ class PanelSimulation extends React.Component {
       psHeight: 512,
       psScale: { x: 1, y: 1 }
     };
+    this.updateWebCamSetting = this.updateWebCamSetting.bind(this);
     this.setBoundary = this.setBoundary.bind(this);
     this.updateSize = this.updateSize.bind(this);
+    UR.HandleMessage('WEBCAM_UPDATE', this.updateWebCamSetting); // Called by Main when 'WebCam' checkbox changes
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -61,7 +64,18 @@ class PanelSimulation extends React.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  componentWillUnmount() {}
+  componentWillUnmount() {
+    UR.UnhandleMessage('WEBCAM_UPDATE', this.updateWebCamSetting); // Called by Main when 'WebCam' checkbox changes
+  }
+
+  /// Triggered by WEBCAM_UPDATE
+  updateWebCamSetting() {
+    const metadata = ACMetadata.GetMetadata();
+    if (metadata.showWebCam !== undefined) {
+      RENDERER.SetGlobalConfig({ showWebCam: metadata.showWebCam });
+      this.setBoundary(); // force renderer background redraw to update alpha
+    }
+  }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// Re-center the sim renderer AND the webcam when the window resizes
