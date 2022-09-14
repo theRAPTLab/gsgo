@@ -812,6 +812,7 @@ export {
   ProjectDataPreInit,
   //
   ExportProject,
+  UpdateMetadata,
   //
   GetPozyxBPNames,
   GetBoundary,
