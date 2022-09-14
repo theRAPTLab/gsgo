@@ -382,13 +382,13 @@ export default function WebCam(props) {
           <input
             id="mirror-x"
             type="checkbox"
-            value={m.mirrorX}
+            checked={m.mirrorX}
             onChange={UpdateForm}
           />
           <input
             id="mirror-y"
             type="checkbox"
-            value={m.mirrorY}
+            checked={m.mirrorY}
             onChange={UpdateForm}
           />
         </div>

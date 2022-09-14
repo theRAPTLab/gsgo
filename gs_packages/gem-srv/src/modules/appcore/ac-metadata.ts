@@ -206,7 +206,7 @@ function SetMetadata(projId, metadata) {
     metadata.translateY !== undefined ? metadata.translateY : 0;
   metadata.rotate = metadata.rotate !== undefined ? metadata.rotate : 0;
   metadata.mirrorX = metadata.mirrorX !== undefined ? metadata.mirrorX : false;
-  metadata.mirrorY = metadata.mirrorX !== undefined ? metadata.mirrorX : false;
+  metadata.mirrorY = metadata.mirrorY !== undefined ? metadata.mirrorY : false;
 
   // Update datacore
   DCPROJECT.UpdateProjectData({ metadata });
