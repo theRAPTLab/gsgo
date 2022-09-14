@@ -198,6 +198,7 @@ function SetMetadata(projId, metadata) {
   // Update datacore
   DCPROJECT.UpdateProjectData({ metadata });
   updateAndPublish(metadata);
+  UR.CallMessage('METADATA_LOAD');
   // } catch (caught) {
   //   ERROR(`could not set ${projId} metadata`, {
   //     source: 'project-init',
