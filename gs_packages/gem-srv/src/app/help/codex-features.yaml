@@ -61,7 +61,7 @@ Costume:
   flipX:
     info: 'Flip the costume on the x axis (horizontally).'
   flipY:
-    info: 'flip the costume on the y axis (vertically).'
+    info: 'Flip the costume on the y axis (vertically).'
   glow:
     info: 'Set costume to glow for n number of seconds. If you set this to 0 it will stop glowing immediately.'
   currentFrame:
