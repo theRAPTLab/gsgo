@@ -312,8 +312,9 @@ function GetPixiRootScale() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SetGlobalConfig(opt) {
   const { actable, showWebCam } = opt;
-  SETTINGS.actable = actable || false; // default non-interative
-  SETTINGS.showWebCam = showWebCam || false;
+  SETTINGS.actable = actable !== undefined ? actable : SETTINGS.actable || false; // default non-interative
+  SETTINGS.showWebCam =
+    showWebCam !== undefined ? showWebCam : SETTINGS.showWebCam || false;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let updateFrames = 0;
