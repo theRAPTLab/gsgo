@@ -5,100 +5,110 @@
 
 # PROGRAM DEFINE or INIT
 addProp:
-  info: '[addProp] defines a property for use in your blueprint'
+  info: '[addProp] defines a new property for this type of character. This can be a number, string, or boolean.'
   glossary: >
     xxx
 
 addFeature:
-  info: '[addFeature] will add properties and features to your character. mouse over the features below to see what each does.'
+  info: '[addFeature] will add a collection of properties and features to your character. Mouse over the features below to see what each does.'
   glossary: >
     xxx
 
 # in any PROGRAM
 prop:
-  info: '[prop] lets you set or modify a property value'
+  info: '[prop] lets you set or modify a property value for this specific character.'
   glossary: >
     xxx
 
 featProp:
-  info: '[featProp] lets you set a special ability property value'
+  info: '[featProp] lets you set or modify a property that is part of one of the features added to this specific character.'
   glossary: >
     xxx
 
 featCall:
-  info: '[featCall] invokes a special ability'
+  info: '[featCall] uses a function (special ability) of one of the features added to this character.'
   glossary: >
     xxx
 
 propPush:
-  info: '[propPush] saves a property value on the stack'
+  info: '[propPush] saves this value to a list. Use propPop to take the value off thee list and assign it to a property.'
   glossary: >
     xxx
 
 propPop:
-  info: '[propPop] pulls a property value from the stack if one is there'
+  info: '[propPop] pulls a property value from the list (a stack) and assigns it to the property. Use propPush to put values on the list.'
   glossary: >
     xxx
 
 featPropPush:
-  info: '[featPropPush] hold a special ability prop value on the stack'
+  info: '[featPropPush] saves this feature value to a list (a stack). Use propPop to take the value off thee list and assign it to a property.'
   glossary: >
     xxx
 
 featPropPop:
-  info: '[featPropPop] set the special ability prop value from the stack'
+  info: '[featPropPop] pulls a property value from the list (a stack) and assigns it to the featProperty. Use featPropPush propPush to put values on the list.'
   glossary: >
     xxx
 
 exprPush:
-  info: '[exprPush] calculate then hold the result on the stack'
+  info: '[exprPush] calculate then put this on the list (a stack).'
   glossary: >
     xxx
 
 ifExpr:
-  info: '[ifExpr] calculates a formula then run block if it is true'
+  info: '[ifExpr] calculates a formula then run the block of script below this if it is true.'
+  glossary: >
+    xxx
+
+ifProp:
+  info: '[ifProp] checks whether a property of this character has a certain value, and if it does, runs the script below this.'
+  glossary: >
+    xxx
+
+ifFeatProp:
+  info: '[ifFeatProp] checks whether a property of this character has a certain value, and if it does, runs the script below this.'
   glossary: >
     xxx
 
 dbgOut:
-  info: '[dbgOut] prints to the javascript console'
+  info: '[dbgOut] prints information (text, or a formula) to the javascript console to help debug.'
   glossary: >
     xxx
 
 dbgStack:
-  info: '[dbgStack] prints the current stack to the javascript console'
+  info: '[dbgStack] prints the current stack to the javascript console.'
 
 dbgContext:
-  info: '[dbgContext] prints the current agent/state context to the javascript console'
+  info: '[dbgContext] prints the current character/state context to the javascript console.'
 
 dbgError:
-  info: '[dbgError] prints the error message to the javascript console'
+  info: '[dbgError] prints the error message to the javascript console.'
 
 when:
-  info: '[when] tests two sets of character types and runs code on the results'
+  info: '[when] tests whether two character types are touching and then runs the block of codee below this if they are.'
   glossary: >
     xxx
 
 onEvent:
-  info: '[onEvent] runs code when the named event occurs'
+  info: '[onEvent] runs code when the named event occurs. Start is a common event.'
   glossary: >
     xxx
 
 every:
-  info: '[every] runs code after a number of seconds has elapsed'
+  info: '[every] runs code after a number of seconds has elapsed (e.g., every 1 runs every seecond).'
   glossary: >
     xxx
 
 _comment:
-  info: 'debug: comment lines help describe the code. They are not yet editable except in code view'
+  info: 'Comment lines help describe the code. They are not yet editable except in code view.'
   glossary: ''
 
 _directive:
-  info: '[#] directives tell GEMSTEP how to treat your code'
+  info: '[#] scripts are added by GEM-STEP and help define how the model works.'
   glossary: >
     xxx
 
 _line:
-  info: 'select a keyword'
+  info: 'select a keyword.'
   glossary: >
     xxx
