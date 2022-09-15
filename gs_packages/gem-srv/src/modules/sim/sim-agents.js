@@ -17,9 +17,12 @@ import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler-v2';
+import * as ACBlueprints from 'modules/appcore/ac-blueprints';
+import * as ACInstances from 'modules/appcore/ac-instances';
 import ERROR from 'modules/error-mgr';
 
 import { LOG_DISPLAY_OBJECTS } from 'config/gem-settings';
+import { createImportSpecifier } from 'typescript';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -106,6 +109,7 @@ function MakeAgent(def) {
   let agent = DCAGENTS.GetAgentById(def.id);
   if (!agent) agent = TRANSPILER.MakeAgent(def);
   agent.exec(initScript, { agent });
+  return agent;
   // } catch (caught) {
   //   ERROR(`MakeAgent failed`, {
   //     source: 'simulator',
@@ -240,7 +244,19 @@ export function AllAgentsProgram(data) {
   if (!blueprintNames) return console.warn(...PR('no blueprint'));
 
   // 1. Reset Global Agent First
-  SM_Agent.ClearGlobalAgent();
+  //    `instancesSpec` does not include the global agent
+  //    so SCRIPT_TO_INSTANCE (below) will not create it.
+  //    Instead, we have to manually create it.
+  const globalBpDef = ACBlueprints.GetBlueprint(ACBlueprints.GLOBAL_AGENT_NAME);
+  const id = ACInstances.GetInstanceUID();
+  const globalInstanceDef = {
+    id,
+    bpid: ACBlueprints.GLOBAL_AGENT_NAME,
+    label: globalBpDef.name,
+    initScript: globalBpDef.initScript
+  };
+  const globalAgent = MakeAgent(globalInstanceDef);
+  SM_Agent.GLOBAL_AGENT = globalAgent;
 
   // 2. Remove Unused Blueprints and Agents
   FilterBlueprints(blueprintNames);

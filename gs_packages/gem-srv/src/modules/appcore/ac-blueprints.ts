@@ -76,6 +76,8 @@ import ERROR from 'modules/error-mgr';
 const PR = UR.PrefixUtil('AC-BPRNT', 'TagCyan');
 const DBG = false;
 
+const GLOBAL_AGENT_NAME = 'global';
+
 /// The module name will be used as args for UR.ReadStateGroups
 const STATE = new UR.class.StateGroupMgr('blueprints');
 /// StateGroup keys must be unique across the entire app
@@ -453,6 +455,8 @@ function ResetAndCompileBlueprints(
  */
 function SetBlueprints(projId: string, blueprints: TBlueprint[]) {
   // DON'T COMPILE BLUEPRINTS ON LOAD!!!
+  // (If there are compile errors Main will stop running
+  // and ScriptEditor will no longer be able to edit scripts)
   //
   // 1. Compile the blueprints
   //    Converts old gemproj data format -- 'id' => 'name'
@@ -467,7 +471,20 @@ function SetBlueprints(projId: string, blueprints: TBlueprint[]) {
     TRANSPILER.SymbolizeBlueprint(script);
   });
 
-  // 2. Update datacore
+  // 2. Inject Special Blueprints
+  //    GlobalAgent -- agent is created in aim-agents.AllAgentsProgram()
+  if (!bpDefs.find(d => d.name === GLOBAL_AGENT_NAME)) {
+    const globalScript = `# BLUEPRINT ${GLOBAL_AGENT_NAME}
+# PROGRAM INIT
+addFeature Population
+prop ${GLOBAL_AGENT_NAME}.visible setTo false`;
+    const scriptBdl = TRANSPILER.TextToScript(globalScript);
+    TRANSPILER.SymbolizeBlueprint(scriptBdl);
+    bpDefs.push({ name: GLOBAL_AGENT_NAME, scriptText: globalScript });
+  }
+  // End Symbolize Global
+
+  // 3. Update datacore
   DCPROJECT.UpdateProjectData({ blueprints }); // note blueprints:blueprints object
 
   // 3. Update state
@@ -536,6 +553,8 @@ function DeleteBlueprint(bpName: string) {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
+  GLOBAL_AGENT_NAME,
+  //
   ResetAndCompileBlueprints,
   GetBpDefs,
   GetBlueprint,
