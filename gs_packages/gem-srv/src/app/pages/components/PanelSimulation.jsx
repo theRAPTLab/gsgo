@@ -111,8 +111,6 @@ class PanelSimulation extends React.Component {
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
         <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
             height: '100%'
           }}
         >
@@ -122,7 +120,8 @@ class PanelSimulation extends React.Component {
               height: '100%',
               width: '100%',
               zIndex: 2, // video is at 0
-              backgroundColor: 'transparent'
+              backgroundColor: 'transparent',
+              position: 'absolute'
             }}
           >
             Waiting for start...
