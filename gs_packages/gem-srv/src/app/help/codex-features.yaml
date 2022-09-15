@@ -49,23 +49,23 @@ Costume:
   info: 'Adds ability to change the art for the character, and change color, glow, and other aspects of how it looks.'
   # Costume props
   costumeName:
-    info: 'sets the filename for the costume image (.json or .png)'
+    info: 'Sets the filename for the costume image (.json or .png).'
   size:
-    info: 'size (in pixels/world units) to set the costume to.  Sets width or height, whichever is the largest dimension.'
+    info: 'Size (in pixels/world units) to set the costume to.  Sets width or height, whichever is the largest dimension.'
   width:
-    info: 'width (in pixels/world units) to set the costume to'
+    info: 'Width (in pixels/world units) to set the costume to.'
   height:
-    info: 'width (in pixels/world units) to set the costume to'
+    info: 'Width (in pixels/world units) to set the costume to.'
   scale:
-    info: 'increase or decrease the size of the costume as a proportional value. 1 = default size, 2 = twice as large, 0.5 = half size'
+    info: 'Increase or decrease the size of the costume as a proportional value. For example: 1 = default size, 2 = twice as large, 0.5 = half size.'
   flipX:
-    info: 'flip the costume on the x axis'
+    info: 'Flip the costume on the x axis (horizontally).'
   flipY:
-    info: 'flip the costume on the y axis'
+    info: 'flip the costume on the y axis (vertically).'
   glow:
-    info: 'set costume to glow for n number of seconds'
+    info: 'Set costume to glow for n number of seconds. If you set this to 0 it will stop glowing immediately.'
   currentFrame:
-    info: 'tbd'
+    info: 'If you are using a character with multiple frames (e.g., a .json file), this sets it to a new one.'
   colorHue:
     info: 'tbd'
   colorSaturation:
