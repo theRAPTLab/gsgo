@@ -47,6 +47,9 @@
   This is necessary so that the agent instances remain
   selectable by the mouse.
 
+  z-index:
+  2: root-renderer (simulaiton)
+  1: WebCam canvas
 
   Project Design Considerations
   -----------------------------
