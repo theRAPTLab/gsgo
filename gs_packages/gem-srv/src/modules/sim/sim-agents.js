@@ -258,10 +258,10 @@ export function AllAgentsProgram(data) {
   //    Create Global Agent AFTER instances have been created
   //    b/c instances on older projects might have existing ids (e.g. 1)
   //    that will conflict with global being "1" if we initialize it BEFORE instances
+  const existingGlobal = SM_Agent.GLOBAL_AGENT;
   const globalBpDef = ACBlueprints.GetBlueprint(ACBlueprints.GLOBAL_AGENT_NAME);
-  const id = ACInstances.GetInstanceUID();
   const globalInstanceDef = {
-    id,
+    id: existingGlobal.id,
     bpid: ACBlueprints.GLOBAL_AGENT_NAME,
     label: globalBpDef.name,
     initScript: globalBpDef.initScript
