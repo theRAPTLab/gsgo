@@ -243,27 +243,31 @@ export function AllAgentsProgram(data) {
   const { blueprintNames, instancesSpec } = data;
   if (!blueprintNames) return console.warn(...PR('no blueprint'));
 
-  // 1. Reset Global Agent First
+  // 1. Remove Unused Blueprints and Agents
+  FilterBlueprints(blueprintNames);
+
+  // 2. Create Instances from Script
+  SCRIPT_TO_INSTANCE.syncFromArray(instancesSpec);
+  SCRIPT_TO_INSTANCE.mapObjects();
+
+  // 3. Reset Global Agent
   //    `instancesSpec` does not include the global agent
-  //    so SCRIPT_TO_INSTANCE (below) will not create it.
+  //    so SCRIPT_TO_INSTANCE (#2 above) will not create it.
   //    Instead, we have to manually create it.
+  //
+  //    Create Global Agent AFTER instances have been created
+  //    b/c instances on older projects might have existing ids (e.g. 1)
+  //    that will conflict with global being "1" if we initialize it BEFORE instances
+  const existingGlobal = SM_Agent.GLOBAL_AGENT;
   const globalBpDef = ACBlueprints.GetBlueprint(ACBlueprints.GLOBAL_AGENT_NAME);
-  const id = ACInstances.GetInstanceUID();
   const globalInstanceDef = {
-    id,
+    id: existingGlobal.id,
     bpid: ACBlueprints.GLOBAL_AGENT_NAME,
     label: globalBpDef.name,
     initScript: globalBpDef.initScript
   };
   const globalAgent = MakeAgent(globalInstanceDef);
   SM_Agent.GLOBAL_AGENT = globalAgent;
-
-  // 2. Remove Unused Blueprints and Agents
-  FilterBlueprints(blueprintNames);
-
-  // 3. Create Instances from Script
-  SCRIPT_TO_INSTANCE.syncFromArray(instancesSpec);
-  SCRIPT_TO_INSTANCE.mapObjects();
 
   // 4. Broadcast update to network devices
   UR.RaiseMessage('NET:INSTANCES_UPDATE', {

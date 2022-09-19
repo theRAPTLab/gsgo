@@ -305,7 +305,7 @@ export function EditSymbol_Block(props) {
           const symbolIsLocked =
             locked || LOCKED_SYMBOLS.includes(choice.toLowerCase());
           let help;
-          if (stype === 'methods') {
+          if (stype === 'methods' && featName === undefined) {
             // Special handling for methods
             // method help is defined in the Symbols declaration for GVars and Features
             // so just look that up directly from the validation token rather than relying on the codex
