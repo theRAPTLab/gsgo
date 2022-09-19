@@ -351,9 +351,16 @@ class MissionControl extends React.Component {
     // cause the instances to be recompiled.
     // Always reset!  Otherwise, scale commands get re-applied?
     UR.RaiseMessage('NET:HACK_SIM_RESET');
-    this.setState(state => ({
-      panelConfiguration: state.panelConfiguration === 'edit' ? 'run' : 'edit'
-    }));
+    this.setState(state => {
+      if (state.panelConfiguration === 'edit') {
+        UR.LogEvent('ProjSetup', ['Project Save']);
+      } else {
+        UR.LogEvent('ProjSetup', ['Project Setup']);
+      }
+      return {
+        panelConfiguration: state.panelConfiguration === 'edit' ? 'run' : 'edit'
+      };
+    });
     // Trigger Window Resize so that PanelSimulation will resize
     window.dispatchEvent(new Event('resize'));
   }

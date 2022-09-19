@@ -100,10 +100,12 @@ class ProjectEditor extends React.Component {
   }
 
   EditProject() {
+    UR.LogEvent('ProjSetup', ['Project Settings Edit']);
     this.setState({ isBeingEdited: true });
   }
 
   EndEditProject() {
+    UR.LogEvent('ProjSetup', ['Project Settings Save']);
     this.setState({ isBeingEdited: false });
   }
 
