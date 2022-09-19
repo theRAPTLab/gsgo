@@ -4,70 +4,68 @@
 # NOTES
 # --  As of 9/2022 `.hint` and `.syntax` are not being used
 
-# STYLE NOTES
-# --  No '.' after `info`!!! Periods are added in code.
-
 AgentWidgets:
-  info: 'Adds text labels, meters, and graph labels'
+  info: 'Adds text labels, meters or graphs to a character and sets how they look.'
   # AgentWidgets props
   text:
-    info: 'tbd'
+    info: 'Set the text that appears below the character.'
   textProp:
-    info: 'tbd'
+    info: 'Set the text that appears below the character to be the value of a property, and update when the property does.'
   meter:
-    info: 'tbd'
+    input: 'Meter input'
+    info: 'Set the height of a meter to the side of the character.'
   meterProp:
-    info: 'tbd'
+    info: 'Set the height of a meter to the side of the character to be the value of a property, and update when the property does.'
   meterColor:
-    info: 'tbd'
+    info: 'Set the color of the meter.'
   isLargeGraphic:
-    info: 'tbd'
+    info: 'Make the meter or graph large instead of putting it to the side of the Character.'
   graphValue:
-    info: 'tbd'
+    info: 'Set the next value for the graph.'
   graphProp:
-    info: 'tbd'
+    info: 'Set the graph to the value of a property, and update as the property updates.'
   graphGlobalProp:
-    info: 'tbd'
+    info: 'Help for graphGlobalProp coming soon.'
   graphFrequency:
-    info: 'tbd'
+    info: 'This is how often the graph should update.'
   barGraphProp:
-    info: 'tbd'
+    info: 'Set a bar graph to the value of this property and update the graph when the property does.'
   barGraphPropFeature:
-    info: 'tbd'
+    info: 'Help for barGraphPropFeature coming soon.'
   # AgentWidgets methods
   showMessage:
-    info: 'tbd'
+    info: 'This creates a popup message for the users to read.'
   setMeterPosition:
-    info: 'tbd'
+    info: 'This sets the meter position to be inside or outsidee the character, and left or right.'
   bindLineGraphHistogramToFeatProp:
-    info: 'tbd'
+    info: 'Help for bindLineGraphHistogramToFeatProp coming soon.'
   # AgentWidgets method args
   labelString:
     name: 'labelString'
     input: '"labelString" is text that will be displayed below the character'
-    info: '"labelString" is text that will be displayed below the character'
+    info: '"labelString" is text that will be displayed below the character.'
 
 Costume:
-  info: 'Adds ability to change appearance using art assets'
+  info: 'Adds ability to change the art for the character, and change color, glow, and other aspects of how it looks.'
   # Costume props
   costumeName:
-    info: 'sets the filename for the costume image (.json or .png)'
+    info: 'Sets the filename for the costume image (.json or .png).'
   size:
-    info: 'size (in pixels/world units) to set the costume to.  Sets width or height, whichever is the largest dimension.'
+    info: 'Size (in pixels/world units) to set the costume to.  Sets width or height, whichever is the largest dimension.'
   width:
-    info: 'width (in pixels/world units) to set the costume to'
+    info: 'Width (in pixels/world units) to set the costume to.'
   height:
-    info: 'width (in pixels/world units) to set the costume to'
+    info: 'Width (in pixels/world units) to set the costume to.'
   scale:
-    info: 'increase or decrease the size of the costume as a proportional value. 1 = default size, 2 = twice as large, 0.5 = half size'
+    info: 'Increase or decrease the size of the costume as a proportional value. For example: 1 = default size, 2 = twice as large, 0.5 = half size.'
   flipX:
-    info: 'flip the costume on the x axis'
+    info: 'Flip the costume on the x axis (horizontally).'
   flipY:
-    info: 'flip the costume on the y axis'
+    info: 'Flip the costume on the y axis (vertically).'
   glow:
-    info: 'set costume to glow for n number of seconds'
+    info: 'Set costume to glow for n number of seconds. If you set this to 0 it will stop glowing immediately.'
   currentFrame:
-    info: 'tbd'
+    info: 'If you are using a character with multiple frames (e.g., a .json file), this sets it to a new one.'
   colorHue:
     info: 'tbd'
   colorSaturation:
@@ -200,9 +198,9 @@ Physics:
   info: 'Adds character measurements for collision checking'
   # Physics props
   bodyRadius:
-    hint: 'change dimensions in pixels'
+    hint: 'bodyRadius hint'
     info: 'change dimensions in pixels'
-    syntax: 'integer width, integer height'
+    syntax: 'body radius integer width, integer height'
   bodyWidth:
     info: 'xxx'
   bodyHeight:
