@@ -145,6 +145,7 @@ class InstanceInspector extends React.Component {
     const { size, alreadyRegistered } = this.state;
     const { instance, disallowDeRegister } = this.props;
     const id = instance.id;
+    const agentName = this.GetInstanceName();
     let registrationStatus = alreadyRegistered;
     let newsize;
     switch (size) {
@@ -154,6 +155,7 @@ class InstanceInspector extends React.Component {
           UR.RaiseMessage('NET:INSPECTOR_REGISTER', { id });
           // Inspectors will be automatically updated during SIM/UI_UPDATE phase
           registrationStatus = true;
+          UR.LogEvent('Inspect', ['Show Inspector', agentName]);
         }
         break;
       default:
@@ -163,6 +165,7 @@ class InstanceInspector extends React.Component {
           UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { id });
           registrationStatus = false;
         }
+        UR.LogEvent('Inspect', ['Hide Inspector', agentName]);
         break;
     }
     this.setState({ size: newsize, alreadyRegistered: registrationStatus });
