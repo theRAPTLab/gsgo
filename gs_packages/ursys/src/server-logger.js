@@ -94,12 +94,10 @@ LOG.PKT_LogJSON = pkt => {
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Write to log as delimited arguments
- */
+/** API: Write to log as delimited arguments */
 LOG.Write = LogLine;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Initialize Logger
- */
+/** API: Initialize Logger  */
 LOG.StartLogging = StartLogging;
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
