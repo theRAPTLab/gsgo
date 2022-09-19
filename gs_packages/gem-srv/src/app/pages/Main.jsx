@@ -98,6 +98,7 @@ class MissionControl extends React.Component {
     this.DoShowMessage = this.DoShowMessage.bind(this);
     this.UpdateWebCamSetting = this.UpdateWebCamSetting.bind(this);
     this.SaveWebCamSetting = this.SaveWebCamSetting.bind(this);
+    this.UpdateLogSetting = this.UpdateLogSetting.bind(this);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
     UR.HandleMessage('NET:SIM_WAS_RESET', this.OnSimWasReset);
@@ -284,6 +285,11 @@ class MissionControl extends React.Component {
     UR.CallMessage('WEBCAM_UPDATE');
   }
 
+  UpdateLogSetting(e) {
+    const logState = e.target.checked;
+    UR.LogEnabled(logState);
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// INSTANCE INTERACTION HANDLERS
   ///
@@ -448,6 +454,10 @@ class MissionControl extends React.Component {
             checked={showWebCam}
             onChange={this.SaveWebCamSetting}
           />
+        </label>
+        <label>
+          Log:
+          <input type="checkbox" onChange={this.UpdateLogSetting} />
         </label>
         &emsp;
       </div>

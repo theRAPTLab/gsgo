@@ -21,9 +21,6 @@ import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import * as ACInstances from 'modules/appcore/ac-instances';
 import ERROR from 'modules/error-mgr';
 
-import { LOG_DISPLAY_OBJECTS } from 'config/gem-settings';
-import { createImportSpecifier } from 'typescript';
-
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM_AGENTS');
@@ -367,7 +364,7 @@ function VisUpdate(frameTime) {
   AGENT_TO_DOBJ.mapObjects();
   const dobjs = AGENT_TO_DOBJ.getMappedObjects();
   RENDERER.UpdateDisplayList(dobjs);
-  if (LOG_DISPLAY_OBJECTS) UR.LogJSON('DISPLAYLIST', dobjs);
+  UR.LogJSON('DISPLAYLIST', dobjs);
   UR.SendMessage('NET:DISPLAY_LIST', dobjs);
 }
 
