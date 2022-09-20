@@ -205,6 +205,9 @@ async function m_RouteMessage(socket, pkt) {
     pkt.transactionComplete();
     return;
   }
+  // RealTime Log
+  LOGGER.PacketInspector(pkt);
+
   // (2) If we got this far, it's a new message.
   // Does the server implement any of the messages? Let's add that to our
   // list of promises. It will return empty array if there are none.

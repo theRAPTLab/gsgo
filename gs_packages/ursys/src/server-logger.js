@@ -28,6 +28,7 @@ const FNAME = require('./util/files-naming');
 let LOG_DIR;
 const LOG_DELIMITER = '\t';
 let fs_log = null;
+let rt_log = null;
 
 function StartLogging(options = {}) {
   if (!options.runtimePath) throw Error('runtime path is required');
@@ -45,6 +46,16 @@ function StartLogging(options = {}) {
       `${
         options.serverName
       } APPSERVER SESSION LOG for ${FNAME.DateStamp()} ${FNAME.TimeStamp()}`
+    );
+    LogLine('---');
+
+    let rtlogname = `${FNAME.DatedFilename('rtlog')}.txt`;
+    let rtpathname = `${dir}/${rtlogname}`;
+    rt_log = FSE.createWriteStream(rtpathname);
+    LogLine(
+      `${
+        options.serverName
+      } APPSERVER SESSION REAL-TIME LOG for ${FNAME.DateStamp()} ${FNAME.TimeStamp()}`
     );
     LogLine('---');
   } catch (err) {
@@ -70,6 +81,24 @@ function LogLine(...args) {
   }
   out += '\n';
   fs_log.write(out);
+}
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/	Log a standard system log message
+/*/
+function RTLogLine(...args) {
+  if (!rt_log) throw Error('must call StartLogging with runtimePath first');
+
+  let out = `${FNAME.TimeStampMS()} `;
+  let c = args.length;
+  // arguments are delimited
+  if (c) {
+    for (let i = 0; i < c; i++) {
+      if (i > 0) out += LOG_DELIMITER;
+      out += args[i];
+    }
+  }
+  out += '\n';
+  rt_log.write(out);
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
@@ -99,6 +128,12 @@ LOG.Write = LogLine;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Initialize Logger  */
 LOG.StartLogging = StartLogging;
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+LOG.PacketInspector = pkt => {
+  // log to separate real-time file
+  RTLogLine(pkt.s_uaddr, pkt.msg, JSON.stringify(pkt.data));
+};
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
