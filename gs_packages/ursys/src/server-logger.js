@@ -132,7 +132,9 @@ LOG.StartLogging = StartLogging;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 LOG.PacketInspector = pkt => {
   // log to separate real-time file
-  RTLogLine(pkt.s_uaddr, pkt.msg, JSON.stringify(pkt.data));
+  // ONLY log NET:DISPLAY_LIST updates
+  if (pkt.msg === 'NET:DISPLAY_LIST')
+    RTLogLine(pkt.s_uaddr, pkt.msg, JSON.stringify(pkt.data));
 };
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
