@@ -253,13 +253,19 @@ function HandleStateChange(name, value) {
           m_container = m_SetupContainer('container');
           // 2. update entities
           m_entities = m_CreateEntities(m_container);
+          UR.LogEvent('Session', [
+            'CharController Set Number of Entities',
+            value
+          ]);
           break;
         case 'data_object_name':
           m_data_object_name_changed = true;
+          UR.LogEvent('Session', ['CharController Change Name', value]);
           break;
         case 'tag':
           m_data_object_name_changed = true;
           m_MakeDevice(); // Only make a new device for blueprint, don't re-initialize UI
+          UR.LogEvent('Session', ['CharController Select Character', value]);
           break;
       }
     }

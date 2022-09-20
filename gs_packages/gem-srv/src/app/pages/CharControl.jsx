@@ -121,6 +121,7 @@ class CharController extends React.Component {
     this.requestBPNames();
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
+    UR.LogEvent('Session', ['CharController Connect']);
   }
 
   updateCharControlBpidList(bpnames) {
