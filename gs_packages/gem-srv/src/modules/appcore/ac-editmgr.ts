@@ -83,6 +83,7 @@ import ERROR from 'modules/error-mgr';
 
 import { TStateObject } from '@gemstep/ursys/types';
 import * as TRANSPILER from 'script/transpiler-v2';
+import * as TOKENIZER from 'script/tools/script-tokenizer';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import { Tokenize as TokenizeString } from 'script/tools/class-gscript-tokenizer-v2';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
@@ -455,6 +456,10 @@ function SaveSlotLineScript(event) {
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
   WIZCORE.SendState({ script_tokens: nscript });
   SLOTCORE.SendState({ slots_need_saving: false });
+  UR.LogEvent('ScriptEdit', [
+    'Save Slot',
+    TOKENIZER.StatementToText(slots_linescript)
+  ]);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API */
@@ -466,6 +471,7 @@ function CancelSlotEdit() {
     slots_validation: null,
     slots_need_saving: false
   });
+  UR.LogEvent('ScriptEdit', ['Cancel Save Slot']);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API Slot editor remove extraneous slot, e.g. if gemscript has too many parameters */
@@ -475,6 +481,10 @@ function DeleteSlot(event) {
   const slotIdx = CHECK.OffsetLineNum(sel_slotpos, 'sub'); // 1-based
   slots_linescript.splice(slotIdx, 1);
   SLOTCORE.SendState({ slots_linescript, slots_need_saving: true });
+  UR.LogEvent('ScriptEdit', [
+    'Delete Slot',
+    TOKENIZER.StatementToText(slots_linescript)
+  ]);
 }
 /// UI SCREEN HELPERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
