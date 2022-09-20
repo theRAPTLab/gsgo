@@ -9,6 +9,7 @@
 const PROMPTS = require('./util/prompts');
 const PhaseMachine = require('./class-phase-machine');
 const { addConsoleTool } = require('./util/client-debug');
+const MSGR = require('./client-messager');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -52,7 +53,7 @@ if (DBG)
 function LogEvent(event, itemsArray) {
   if (!LOGGING_ENABLED) return;
   if (!Array.isArray(itemsArray)) itemsArray = [itemsArray];
-  SendMessage('NET:SRV_LOG_EVENT', { event, items: itemsArray });
+  MSGR.SendMessage('NET:SRV_LOG_EVENT', { event, items: itemsArray });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: log a packet to the server. The payload 'json' is a string
@@ -62,7 +63,7 @@ function LogEvent(event, itemsArray) {
  */
 function LogJSON(event, json) {
   if (!LOGGING_ENABLED) return;
-  SendMessage('NET:SRV_LOG_JSON', { event, json: JSON.stringify(json) });
+  MSGR.SendMessage('NET:SRV_LOG_JSON', { event, json: JSON.stringify(json) });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Set or Unset LogEnabled flag. Call without argument to just
