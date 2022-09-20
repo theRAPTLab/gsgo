@@ -54,6 +54,12 @@ export function MakeDraggable(vobj: Visual) {
         // Consider it a drag if the mouse was down for > 150 ms
         // the originating object is sprite
         UR.RaiseMessage('DRAG_END', { agent });
+        UR.LogEvent('ProjSetup', [
+          'Drag',
+          agent.name,
+          agent.prop.x.value,
+          agent.prop.y.value
+        ]);
       } else {
         // otherwise it's a click, so restore the original position
         agent.prop.x.value = origX;
@@ -69,6 +75,12 @@ export function MakeDraggable(vobj: Visual) {
           agentId: agent.id,
           source: 'stage'
         });
+        UR.LogEvent('ProjSetup', [
+          'Click Character',
+          agent.name,
+          agent.prop.x.value,
+          agent.prop.y.value
+        ]);
       }
     }
     // set the interaction data to null
