@@ -60,6 +60,9 @@ let m_burst_end = 0;
 // flags
 let m_data_object_name_changed = false;
 
+// logging
+let m_last_selected_bpname = '';
+
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_SetupContainer(id = 'container') {
@@ -195,6 +198,8 @@ function m_AddMouseEvents(container) {
         }
       }
     }
+
+    UR.LogEvent('Session', ['CharController Drag', m_last_selected_bpname, x, y]);
   };
 
   const o_dragend = () => {
@@ -266,6 +271,7 @@ function HandleStateChange(name, value) {
           m_data_object_name_changed = true;
           m_MakeDevice(); // Only make a new device for blueprint, don't re-initialize UI
           UR.LogEvent('Session', ['CharController Select Character', value]);
+          m_last_selected_bpname = value;
           break;
       }
     }
@@ -312,9 +318,10 @@ async function Initialize(componentInstance, opt = {}) {
   m_CHARVIEW = componentInstance;
 
   // options
-  const { sampleRate } = opt;
+  const { sampleRate, defaultBPName } = opt;
   if (sampleRate) SENDING_FPS = sampleRate;
   INTERVAL = (1 / SENDING_FPS) * 1000;
+  m_last_selected_bpname = defaultBPName;
 
   // prototype device registration
   // a device declares what kind of device it is
