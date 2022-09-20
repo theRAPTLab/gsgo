@@ -17,6 +17,7 @@ const DATACORE = require('./client-datacore');
 const DTECT = require('./common/ur-detect');
 const CONST = require('./common/ur-constants');
 const LOG = require('./client-logger');
+const MSGR = require('./client-messager');
 
 // classes
 const PhaseMachine = require('./class-phase-machine');
@@ -31,50 +32,13 @@ const { IsBrowser, IsNode, IsElectron, IsElectronMain, IsElectronRenderer } =
 const PR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR');
 const DBG = false;
 
-/// META DATA /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** these properties are exported from the library so you can tell if the
- *  ur instance you're using is serverside or clientside, if that needs
- *  to be checked
- */
-const META = {
-  _CLIENT: true,
-  _SCRIPT: __filename,
-  _VERSION: '0.0.1'
-};
-
-/// DECLARATIONS //////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let URSYS_RUNNING = false;
-let URSYS_ROUTE = '';
-let LocalNode;
-let NetNode;
-
-/// HELPERS ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_EndpointInitialized() {
-  if (LocalNode === undefined || !URSYS_RUNNING) {
-    console.warn('URSYS was used before it was initialized, aborting');
-    return false;
-  }
-  return true;
-}
-
-/// SUPPORT API PART 1 ////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** register messages */
-async function RegisterMessages() {
-  if (DBG) console.log(...PR('registering messages'));
-  return LocalNode.ursysRegisterMessages();
-}
-
 /// MAIN LIFECYCLE API ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initialize modules that participate in UR EXEC PhaseMachine before running
  *  SystemNetBoot, which starts the URSYS lifecycle.
  */
 async function SystemStart(route) {
-  if (URSYS_RUNNING) {
+  if (DATACORE.URSYS_RUNNING) {
     const out = 'SystemStart: URSYS already running!!!';
     console.log(...PR(out));
     return Promise.reject(out);
@@ -91,83 +55,53 @@ async function SystemStart(route) {
     }).then(data => {
       console.log(...PR('URNET established. UADDR is stable.'));
       const eps = DATACORE.GetSharedEndPoints();
-      LocalNode = eps.LocalNode; // used only for local handle, send, call
-      NetNode = eps.NetNode; // used only for forwarding remote messages
+      MSGR.SaveEndpoints({
+        LocalNode: eps.LocalNode,
+        NetNode: eps.NetNode
+      });
       return data;
     })
   );
   // autoregister messages
   PhaseMachine.Hook('UR/APP_CONFIGURE', async () => {
-    let result = await RegisterMessages();
+    let result = await MSGR.RegisterMessages();
     if (DBG)
       console.log(...PR('message handlers registered with NETWORK:', result));
   });
   // complete startup
-  URSYS_RUNNING = true;
-  URSYS_ROUTE = route;
-  DATACORE.SaveClientInfo({ uapp: URSYS_ROUTE });
+  DATACORE.URSYS_RUNNING = true;
+  DATACORE.URSYS_ROUTE = route;
+  DATACORE.SaveClientInfo({ uapp: route });
 
   return Promise.resolve();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** deallocate any system resources assigned during Initialize */
 async function SystemStop() {
-  if (!URSYS_RUNNING) {
+  if (!DATACORE.URSYS_RUNNING) {
     console.log(...PR('SystemModulesStop: URSYS is not running!!!'));
     return Promise.resolve();
   }
   // close the network
   NETWORK.URNET_Close();
-  URSYS_RUNNING = false;
+  DATACORE.URSYS_RUNNING = false;
   return Promise.resolve();
-}
-
-/// MESSAGE SENDING API ///////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** wrap LocalNode functions so we can export them before LocalNode is valid */
-function DeclareMessage(mesgName, dataProps) {
-  if (m_EndpointInitialized())
-    return LocalNode.declareMessage(mesgName, dataProps);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function HasMessage(mesgName) {
-  if (m_EndpointInitialized()) return LocalNode.hasMessage(mesgName);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function HandleMessage(mesgName, listener) {
-  if (m_EndpointInitialized()) LocalNode.handleMessage(mesgName, listener);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function UnhandleMessage(mesgName, listener) {
-  if (m_EndpointInitialized()) LocalNode.unhandleMessage(mesgName, listener);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function CallMessage(mesgName, inData, options) {
-  if (m_EndpointInitialized())
-    return LocalNode.callMessage(mesgName, inData, options);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RaiseMessage(mesgName, inData, options) {
-  if (m_EndpointInitialized()) LocalNode.raiseMessage(mesgName, inData, options);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SendMessage(mesgName, inData, options) {
-  if (m_EndpointInitialized()) LocalNode.sendMessage(mesgName, inData, options);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UR = {
-  ...META,
+  ...DATACORE.META,
   ...CONST,
-  // NETWORK MESSAGES
-  DeclareMessage,
-  HasMessage,
-  HandleMessage,
-  UnhandleMessage,
-  SendMessage,
-  RaiseMessage,
-  CallMessage,
+  // NETWORK MESSAGES (forwarded from MSGR)
+  RegisterMessages: MSGR.RegisterMessages,
+  DeclareMessage: MSGR.DeclareMessage,
+  HasMessage: MSGR.HasMessage,
+  HandleMessage: MSGR.HandleMessage,
+  UnhandleMessage: MSGR.UnhandleMessage,
+  SendMessage: MSGR.SendMessage,
+  RaiseMessage: MSGR.RaiseMessage,
+  CallMessage: MSGR.CallMessage,
   // FORWARDED GENERIC PHASE MACHINEc
   HookPhase: PhaseMachine.Hook,
   // SYSTEM ENVIRONMENT
@@ -188,8 +122,8 @@ const UR = {
   LogJSON: LOG.LogJSON,
   LogEnabled: LOG.LogEnabled,
   // ROUTE INFO
-  IsAppRoute: route => URSYS_ROUTE === route,
-  AppRoute: () => URSYS_ROUTE,
+  IsAppRoute: route => DATACORE.URSYS_ROUTE === route,
+  AppRoute: () => DATACORE.URSYS_ROUTE,
   BrokerIP: NETWORK.ServerIP,
   ServerPort: NETWORK.ServerPort,
   WebServerPort: NETWORK.WebServerPort,

@@ -9,6 +9,23 @@ const DifferenceCache = require('./class-diff-cache');
 const PathedHasher = require('./class-pathed-hasher');
 const DBG = require('./common/debug-props');
 
+/// META DATA /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** these properties are exported from the library so you can tell if the
+ *  ur instance you're using is serverside or clientside, if that needs
+ *  to be checked
+ */
+const META = {
+  _CLIENT: true,
+  _SCRIPT: __filename,
+  _VERSION: '0.0.1'
+};
+
+/// DECLARATIONS //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let URSYS_RUNNING = false;
+let URSYS_ROUTE = '';
+
 /// URNET MESSAGING SYSTEM ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let BROKER_UINFO = {};
@@ -231,6 +248,10 @@ function GetDeviceDirectory() {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
+  // CONSTANT
+  URSYS_RUNNING,
+  URSYS_ROUTE,
+  META,
   // NETWORK PARAMETERS
   SaveBrokerInfo,
   SaveClientInfo,
