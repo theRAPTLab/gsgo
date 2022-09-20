@@ -59,7 +59,7 @@ function StartLogging(options = {}) {
 function LogLine(...args) {
   if (!fs_log) throw Error('must call StartLogging with runtimePath first');
 
-  let out = `${FNAME.TimeStamp()} `;
+  let out = `${FNAME.TimeStampMS()} `;
   let c = args.length;
   // arguments are delimited
   if (c) {

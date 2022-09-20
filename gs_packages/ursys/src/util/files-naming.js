@@ -41,6 +41,16 @@ function strTimeStamp() {
   return `${hh}:${mm}:${ss}`;
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return date string 'HH:MM:SS:MS' for */
+function strTimeStampMS() {
+  let date = new Date();
+  let hh = `0${date.getHours()}`.slice(-2);
+  let mm = `0${date.getMinutes()}`.slice(-2);
+  let ss = `0${date.getSeconds()}`.slice(-2);
+  let ms = `0${date.getMilliseconds()}`;
+  return `${hh}:${mm}:${ss}:${ms}`;
+}
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return date string YYYY/MM/DD WEEKDAY for use as a prefix in log file
  *  content
  */
@@ -88,11 +98,13 @@ function strNanoTimeStamp() {
 module.exports = {
   // string time/date stamps
   strTimeStamp,
+  strTimeStampMS,
   strDateStamp,
   strNanoTimeStamp,
   strTimeDatedFilename,
   // compatibility
   TimeStamp: strTimeStamp,
+  TimeStampMS: strTimeStampMS,
   DateStamp: strDateStamp,
   DatedFilename: strTimeDatedFilename
 };
