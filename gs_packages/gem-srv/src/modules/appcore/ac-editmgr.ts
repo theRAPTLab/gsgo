@@ -337,6 +337,8 @@ function DispatchClick(event) {
     m_AddSlotsValidation(newSlotState);
 
     SLOTCORE.SendState(newSlotState);
+
+    UR.LogEvent('ScriptEdit', ['Select Choice', symbolValue]);
     return;
   }
 
