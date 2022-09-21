@@ -33,10 +33,6 @@ const RUNTIME_PATH = Path.join(__dirname, `../${RUNTIME_DIRNAME}`);
 
 const MQTT_URL = 'localhost'; // override in local-settings.json
 
-const LOG_DISPLAY_OBJECTS = false; // logs all display objects to disk
-// WARNING This can affect performance and eat up a LOT of disk space
-// override in local-settings.json
-
 /// DEVELOPER QOL /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SKIP_RELOAD_WARNING = false; // allow skip of 'are you sure' reload
