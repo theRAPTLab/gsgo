@@ -52,12 +52,12 @@ function StartLogging(options = {}) {
     let rtlogname = `${FNAME.DatedFilename('rtlog')}.txt`;
     let rtpathname = `${dir}/${rtlogname}`;
     rt_log = FSE.createWriteStream(rtpathname);
-    LogLine(
+    RTLogLine(
       `${
         options.serverName
       } APPSERVER SESSION REAL-TIME LOG for ${FNAME.DateStamp()} ${FNAME.TimeStamp()}`
     );
-    LogLine('---');
+    RTLogLine('---');
   } catch (err) {
     if (err) throw new Error(`could not make ${dir} directory`);
   }
