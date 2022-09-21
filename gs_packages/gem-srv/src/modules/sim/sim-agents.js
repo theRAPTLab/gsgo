@@ -364,7 +364,7 @@ function VisUpdate(frameTime) {
   AGENT_TO_DOBJ.mapObjects();
   const dobjs = AGENT_TO_DOBJ.getMappedObjects();
   RENDERER.UpdateDisplayList(dobjs);
-  UR.LogJSON('DISPLAYLIST', dobjs);
+  if (UR.LogEnabled()) UR.LogJSON('DISPLAYLIST', dobjs);
   UR.SendMessage('NET:DISPLAY_LIST', dobjs);
 }
 
