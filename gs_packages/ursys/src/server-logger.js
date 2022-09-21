@@ -87,7 +87,6 @@ function LogLine(...args) {
 /*/
 function RTLogLine(...args) {
   if (!rt_log) throw Error('must call StartLogging with runtimePath first');
-
   let out = `${FNAME.TimeStampMS()} `;
   let c = args.length;
   // arguments are delimited
@@ -120,6 +119,17 @@ LOG.PKT_LogJSON = pkt => {
   let { event, json } = pkt.getData();
   if (DBG) console.log(TOUT, pkt.getInfo(), event, json);
   LogLine(pkt.getInfo(), event || '-', json);
+  return { OK: true };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Handle incoming real-time stream, output them as individual lines
+ *       Used for POZYX and PTRACK logging
+ */
+LOG.PKT_RTLog = pkt => {
+  let { event, items } = pkt.getData();
+  const kv = items.map(i => Object.entries(i).flat());
+  const data = [event || '-', ...kv].flat();
+  RTLogLine(...data);
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

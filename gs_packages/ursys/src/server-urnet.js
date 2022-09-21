@@ -77,6 +77,7 @@ function StartNetwork(options = {}) {
   LOGGER.Write('registering network services');
   UR_HandleMessage('NET:SRV_LOG_EVENT', LOGGER.PKT_LogEvent);
   UR_HandleMessage('NET:SRV_LOG_JSON', LOGGER.PKT_LogJSON);
+  UR_HandleMessage('NET:SRV_RTLOG', LOGGER.PKT_RTLog);
   UR_HandleMessage('NET:SRV_REG_HANDLERS', PKT_RegisterHandler);
   UR_HandleMessage('NET:SRV_SESSION_LOGIN', PKT_SessionLogin);
   UR_HandleMessage('NET:SRV_SESSION_LOGOUT', PKT_SessionLogout);
