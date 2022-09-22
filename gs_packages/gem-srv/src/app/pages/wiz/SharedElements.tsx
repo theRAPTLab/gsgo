@@ -328,6 +328,8 @@ export function GToken(props) {
     if (label.includes('**')) classes += ' specialComment';
     if (label.includes('EXPLANATION')) classes += ' explanationComment';
     if (label.includes('STUDENTS_MAY_CHANGE')) classes += ' changeComment';
+    if (label.includes('QUESTION')) classes += ' questionComment';
+    if (label.includes('HYPOTHESIS')) classes += ' hypothesisComment';
   }
   if (type === 'directive') classes += ' stylePragma';
   if (SPECIAL_IDENTS.includes(label)) classes += ' stylePragma';
@@ -371,6 +373,8 @@ export function GValidationToken(props) {
     if (label.includes('**')) classes += ' specialComment';
     if (label.includes('EXPLANATION')) classes += ' explanationComment';
     if (label.includes('STUDENTS_MAY_CHANGE')) classes += ' changeComment';
+    if (label.includes('QUESTION')) classes += ' questionComment';
+    if (label.includes('HYPOTHESIS')) classes += ' hypothesisComment';
   }
   if (type === 'directive') classes += ' stylePragma';
   if (SPECIAL_IDENTS.includes(label)) classes += ' stylePragma';
