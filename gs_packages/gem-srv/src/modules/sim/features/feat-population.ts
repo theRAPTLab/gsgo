@@ -138,11 +138,11 @@ class PopulationPack extends SM_Feature {
     super.decorate(agent);
 
     // statistics
-    this.featAddProp(agent, 'count', new SM_String());
-    this.featAddProp(agent, 'sum', new SM_String());
-    this.featAddProp(agent, 'avg', new SM_String());
-    this.featAddProp(agent, 'min', new SM_String());
-    this.featAddProp(agent, 'max', new SM_String());
+    this.featAddProp(agent, 'count', new SM_Number());
+    this.featAddProp(agent, 'sum', new SM_Number());
+    this.featAddProp(agent, 'avg', new SM_Number());
+    this.featAddProp(agent, 'min', new SM_Number());
+    this.featAddProp(agent, 'max', new SM_Number());
 
     // used by countAgentProp without parameters
     this.featAddProp(agent, 'monitoredAgent', new SM_String());
@@ -449,7 +449,10 @@ class PopulationPack extends SM_Feature {
     if (blueprintName === undefined)
       blueprintName = agent.prop.Population.monitoredAgent.value;
     const agents = SIMAGENTS.GetAgentsByType(blueprintName);
-    if (agents.length < 1) return;
+    if (agents.length < 1) {
+      this.clearCounts(agent);
+      return;
+    }
     if (prop === undefined) prop = agent.prop.Population.monitoredAgentProp.value;
     const sum = agents
       .map(a => a.getProp(prop).value)
@@ -482,6 +485,26 @@ class PopulationPack extends SM_Feature {
       .reduce(maximizer, -Infinity);
     let p = agent.getFeatProp(this.name, 'max');
     (p as SM_Number).setTo(max);
+  }
+
+  // clear out the values in cases where we are asked to produce them
+  // but cannot, such as if there are no characters in the population
+  // otherwise we have old data
+  clearCounts(agent: IAgent) {
+    let p = agent.getFeatProp(this.name, 'avg');
+    (p as SM_String).setTo(Number(0));
+
+    p = agent.getFeatProp(this.name, 'sum');
+    (p as SM_String).setTo(Number(0));
+
+    p = agent.getFeatProp(this.name, 'count');
+    (p as SM_String).setTo(Number(0));
+
+    p = agent.getFeatProp(this.name, 'max');
+    (p as SM_String).setTo(Number(0));
+
+    p = agent.getFeatProp(this.name, 'min');
+    (p as SM_String).setTo(Number(0));
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
