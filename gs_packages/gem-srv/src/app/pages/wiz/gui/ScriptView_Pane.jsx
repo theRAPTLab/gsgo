@@ -372,6 +372,7 @@ class ScriptView_Pane extends React.Component {
       WIZCORE.SendState({ script_text: text });
     }
     WIZCORE.SaveToServer(projId, bpName);
+    UR.LogEvent('ScriptEdit', ['Save to Server', bpName]);
   }
 
   OnSelectScriptClick(action) {

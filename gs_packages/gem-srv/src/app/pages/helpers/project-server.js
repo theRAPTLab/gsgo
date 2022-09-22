@@ -132,10 +132,8 @@ function SendInspectorUpdate(frametime) {
   // walk down agents and broadcast results for monitored agents
   const agents = DCAGENTS.GetAllAgents();
   // Send all instances, but minmize non-monitored
-  const inspectorAgents = agents.map(a =>
-    MONITORED_INSTANCES.includes(a.id)
-      ? a
-      : { id: a.id, label: a.name, blueprint: a.blueprint }
+  const inspectorAgents = agents.map(
+    a => (MONITORED_INSTANCES.includes(a.id) ? a : { id: a.id, label: a.name })
   );
 
   // Debug PIXI Output

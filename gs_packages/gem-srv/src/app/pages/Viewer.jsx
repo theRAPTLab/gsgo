@@ -105,6 +105,7 @@ class Viewer extends React.Component {
     this.RequestProjectData();
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
+    UR.LogEvent('Session', ['Viewer Connect']);
   }
 
   RequestProjectData() {

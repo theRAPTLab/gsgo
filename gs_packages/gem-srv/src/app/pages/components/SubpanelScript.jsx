@@ -91,6 +91,7 @@ class SubpanelScript extends React.Component {
       type: 'hack-not-checkbox', // so PathRoundEditor.onFormInputUpdate will use e.target.value rahter than e.target.checked
       value: script
     };
+    UR.LogEvent('ProjSetup', ['Save Round Script']);
     onChange(event);
   }
 
@@ -105,6 +106,7 @@ class SubpanelScript extends React.Component {
     this.setState(state => {
       return { isEditable: !state.isEditable };
     });
+    UR.LogEvent('ProjSetup', ['Edit Round Script']);
   }
 
   StopEvent(e) {
