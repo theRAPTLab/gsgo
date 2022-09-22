@@ -90,11 +90,15 @@ class SM_Bundle implements ISMCBundle {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setTag(tagName: string, value: any) {
-    this.tags.set(tagName, value);
+    // make tags case insensitive
+    const lcTagName = String(tagName).toLocaleLowerCase();
+    this.tags.set(lcTagName, value);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   getTag(tagName: string): any {
-    return this.tags.get(tagName);
+    // make tags case insensitive
+    const lcTagName = String(tagName).toLocaleLowerCase();
+    return this.tags.get(lcTagName);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   getSymbolData(type?: keyof TSymbolData): TSymbolData {

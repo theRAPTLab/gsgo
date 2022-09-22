@@ -296,7 +296,7 @@ export function EditSymbol_Block(props) {
         // prepare to sort through
         const choices = []; // this is the list of choices
         const expertChoices = []; // hack to show expert keywords in a different area
-        const items = vdata.items;
+        const items = vdata.items.sort();
 
         // get all the choices for this symbol type
         items.forEach(choice => {
