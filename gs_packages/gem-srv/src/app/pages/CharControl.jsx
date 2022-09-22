@@ -70,6 +70,7 @@ class CharController extends React.Component {
       rate: 0
     };
     this.init = this.init.bind(this);
+    this.updateLogSettings = this.updateLogSettings.bind(this);
     this.updateCharControlBpidList = this.updateCharControlBpidList.bind(this);
     this.handleSetCharControlBpidList =
       this.handleSetCharControlBpidList.bind(this);
@@ -79,6 +80,7 @@ class CharController extends React.Component {
       'NET:SET_CHARCONTROL_BPIDLIST',
       this.handleSetCharControlBpidList
     );
+    UR.HandleMessage('NET:LOG_ENABLE', this.updateLogSettings);
   }
 
   componentDidMount() {
@@ -114,6 +116,7 @@ class CharController extends React.Component {
       'NET:SET_CHARCONTROL_BPIDLIST',
       this.handleSetCharControlBpidList
     );
+    UR.UnhandleMessage('NET:LOG_ENABLE', this.updateLogSettings);
   }
 
   init() {
@@ -121,19 +124,26 @@ class CharController extends React.Component {
     this.requestBPNames();
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
+    UR.LogEvent('Session', ['CharController Connect']);
+  }
+
+  updateLogSettings(data) {
+    UR.LogEnabled(data.enabled);
   }
 
   updateCharControlBpidList(bpnames) {
     if (DBG) console.log(...PR('setInputBPNames', bpnames));
     // TAGS is in mod-charcontrol-ui.js
     const tags = bpnames.map(b => ({ 'id': `bp_${b}`, 'label': b }));
+    const defaultBPName =
+      Array.isArray(bpnames) && bpnames.length > 0 ? `bp_${bpnames[0]}` : '';
     this.setState(
       state => ({
         tags,
         tag: state.tag || (tags.length > 0 ? tags[0].id : '')
         // keep currently selected tag, or default to first tag
       }),
-      () => Initialize(this, { sampleRate: SENDING_FPS })
+      () => Initialize(this, { sampleRate: SENDING_FPS, defaultBPName })
     );
   }
 

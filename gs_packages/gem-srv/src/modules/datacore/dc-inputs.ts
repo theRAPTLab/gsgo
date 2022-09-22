@@ -238,6 +238,17 @@ ENTITY_TO_COBJ.setMapFunctions({
         : GetDefaultPTrackBpName();
     cobj.label = entity.type === TYPES.Pozyx ? entity.id.substring(2) : entity.id;
     cobj.framesSinceLastUpdate = 0;
+    UR.SendMessage('NET:SRV_RTLOG', {
+      event: entity.type,
+      items: [
+        {
+          id: cobj.id,
+          bpid: cobj.bpid,
+          x,
+          y
+        }
+      ]
+    });
   },
   onUpdate: (entity: any, cobj: InputDef) => {
     const TRANSFORM =
@@ -258,6 +269,17 @@ ENTITY_TO_COBJ.setMapFunctions({
         : GetDefaultPTrackBpName();
     cobj.label = entity.type === TYPES.Pozyx ? entity.id.substring(2) : entity.id;
     cobj.framesSinceLastUpdate = 0;
+    UR.SendMessage('NET:SRV_RTLOG', {
+      event: entity.type,
+      items: [
+        {
+          id: cobj.id,
+          bpid: cobj.bpid,
+          x: pos.x,
+          y: pos.y
+        }
+      ]
+    });
   },
   shouldRemove: cobj => {
     // entities do not necessarily come in with every INPUTS phase fire

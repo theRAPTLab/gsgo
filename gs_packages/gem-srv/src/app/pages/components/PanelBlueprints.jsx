@@ -49,11 +49,13 @@ class PanelBlueprints extends React.Component {
     const { projId, enableAdd } = this.props;
     if (enableAdd) {
       // Panel is in SETUP mode: Add Instance
+      UR.LogEvent('ProjSetup', ['Add Character', bpName]);
       UR.RaiseMessage('LOCAL:INSTANCE_ADD', { projId, blueprintName: bpName });
     } else {
       // Panel is in RUN mode: Open script in a new window
       const w = window.innerWidth * 0.9;
       const h = window.innerHeight * 0.9;
+      UR.LogEvent('ProjSetup', ['Edit Blueprint', bpName]);
       window.open(
         `/app/scripteditor?project=${projId}&script=${bpName}`,
         bpName,
@@ -64,6 +66,7 @@ class PanelBlueprints extends React.Component {
 
   OnNewBlueprint() {
     const { projId } = this.props;
+    UR.LogEvent('ProjSetup', ['New Blueprint']);
     window.open(`/app/scripteditor?project=${projId}&script=${''}`, '_blank');
   }
 

@@ -18,16 +18,19 @@ const FSE = require('fs-extra');
 /// for server-side modules,
 const TOUT = require('./util/prompts').makeTerminalOut(' URLOG');
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const FILES = require('./util/files');
 const FNAME = require('./util/files-naming');
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let LOGGING_ENABLED = false; // default
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 let LOG_DIR;
 const LOG_DELIMITER = '\t';
 let fs_log = null;
+let rt_log = null;
 
 function StartLogging(options = {}) {
   if (!options.runtimePath) throw Error('runtime path is required');
@@ -47,6 +50,16 @@ function StartLogging(options = {}) {
       } APPSERVER SESSION LOG for ${FNAME.DateStamp()} ${FNAME.TimeStamp()}`
     );
     LogLine('---');
+
+    let rtlogname = `${FNAME.DatedFilename('rtlog')}.txt`;
+    let rtpathname = `${dir}/${rtlogname}`;
+    rt_log = FSE.createWriteStream(rtpathname);
+    RTLogLine(
+      `${
+        options.serverName
+      } APPSERVER SESSION REAL-TIME LOG for ${FNAME.DateStamp()} ${FNAME.TimeStamp()}`
+    );
+    RTLogLine('---');
   } catch (err) {
     if (err) throw new Error(`could not make ${dir} directory`);
   }
@@ -59,7 +72,7 @@ function StartLogging(options = {}) {
 function LogLine(...args) {
   if (!fs_log) throw Error('must call StartLogging with runtimePath first');
 
-  let out = `${FNAME.TimeStamp()} `;
+  let out = `${FNAME.TimeStampMS()} `;
   let c = args.length;
   // arguments are delimited
   if (c) {
@@ -71,10 +84,38 @@ function LogLine(...args) {
   out += '\n';
   fs_log.write(out);
 }
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/	Log a standard system log message
+/*/
+function RTLogLine(...args) {
+  if (!rt_log) throw Error('must call StartLogging with runtimePath first');
+  let out = `${FNAME.TimeStampMS()} `;
+  let c = args.length;
+  // arguments are delimited
+  if (c) {
+    for (let i = 0; i < c; i++) {
+      if (i > 0) out += LOG_DELIMITER;
+      out += args[i];
+    }
+  }
+  out += '\n';
+  rt_log.write(out);
+}
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 let LOG = {};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * API: Toggle displaylist logging on and off
+ *      NOTE does not affect basic logging
+ * @param {object} pkt
+ * @param {object} pkt.data { enabled: boolean }
+ */
+LOG.PKT_LogEnable = pkt => {
+  LOGGING_ENABLED = pkt.data.enabled;
+  return { OK: true };
+};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Handle incoming log events, output them as delimited fields
  *  as defined in server-logger (current it is set to tabs so it copy/pastes
@@ -94,11 +135,30 @@ LOG.PKT_LogJSON = pkt => {
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Handle incoming real-time stream, output them as individual lines
+ *       Used for POZYX and PTRACK logging
+ */
+LOG.PKT_RTLog = pkt => {
+  let { event, items } = pkt.getData();
+  const kv = items.map(i => Object.entries(i).flat());
+  const data = [event || '-', ...kv].flat();
+  RTLogLine(...data);
+  return { OK: true };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Write to log as delimited arguments */
 LOG.Write = LogLine;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Initialize Logger  */
 LOG.StartLogging = StartLogging;
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+LOG.PacketInspector = pkt => {
+  // log to separate real-time file
+  // ONLY log NET:DISPLAY_LIST updates
+  if (LOGGING_ENABLED && pkt.msg === 'NET:DISPLAY_LIST')
+    RTLogLine(pkt.s_uaddr, pkt.msg, JSON.stringify(pkt.data));
+};
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
