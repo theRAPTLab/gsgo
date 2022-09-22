@@ -23,7 +23,7 @@ export class stackSub extends Keyword {
 
     progout.push((agent, state) => {
       const [a, b] = state.pop(2);
-      state.push((b as number) - (a as number));
+      state.push(Number(b) - Number(a));
     });
     return progout;
   }

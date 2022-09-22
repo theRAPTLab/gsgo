@@ -103,6 +103,18 @@
   font-family: monospace;
   font-style: italic;
 }
+.gwiz.specialComment {
+  color: purple;
+}
+.gwiz.explanationComment {
+  color: red;
+  background-color: rgba(0, 0, 0, 0.35);
+  font-style: normal;
+}
+.gwiz.changeComment {
+  color: green;
+  background-color: lightgreen;
+}
 .gwiz.stylePragma {
   color: white;
   background-color: teal;

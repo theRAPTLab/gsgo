@@ -17,3 +17,4 @@ import './features/feat-population';
 import './features/feat-timer';
 import './features/feat-touches';
 import './features/feat-vision';
+import './features/feat-IU';
