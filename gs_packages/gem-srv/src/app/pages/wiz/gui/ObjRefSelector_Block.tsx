@@ -176,8 +176,9 @@ function ObjRefSelector_Block(props) {
     // 2. Choices for ObjRef Slot (e.g. bpnames, features )
     const options = [];
     const advanced = [];
-    if (tok.options)
-      Object.keys(tok.options).forEach(key => {
+    const alphabetizedKeys = Object.keys(tok.options).sort();
+    if (alphabetizedKeys)
+      alphabetizedKeys.forEach(key => {
         const optionLabel = tok.parentLabel
           ? `${tok.parentLabel}.${key}`
           : key || '';
