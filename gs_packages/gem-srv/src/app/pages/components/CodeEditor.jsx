@@ -156,6 +156,7 @@ class CodeEditor extends React.Component {
       },
       () => this.enableEditing()
     );
+    UR.LogEvent('ProjSetup', ['Edit Instance InitScript']);
   }
   stopEdit() {
     this.setDirty(false);
@@ -176,6 +177,7 @@ class CodeEditor extends React.Component {
     const code = this.jar.toString();
     const { onSave } = this.props;
     onSave({ code });
+    UR.LogEvent('ProjSetup', ['Save Instance InitScript']);
     const isDirty = false;
     this.setDirty(isDirty, () => this.stopEdit());
   }

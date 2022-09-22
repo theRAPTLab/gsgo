@@ -60,6 +60,9 @@ let m_burst_end = 0;
 // flags
 let m_data_object_name_changed = false;
 
+// logging
+let m_last_selected_bpname = '';
+
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_SetupContainer(id = 'container') {
@@ -195,6 +198,13 @@ function m_AddMouseEvents(container) {
         }
       }
     }
+    UR.LogEvent('CharCtrl', [
+      'Drag',
+      m_last_selected_bpname,
+      e.target.attributes['entity-id'].value,
+      x,
+      y
+    ]);
   };
 
   const o_dragend = () => {
@@ -253,13 +263,20 @@ function HandleStateChange(name, value) {
           m_container = m_SetupContainer('container');
           // 2. update entities
           m_entities = m_CreateEntities(m_container);
+          UR.LogEvent('CharCtrl', [
+            'CharController Set Number of Entities',
+            value
+          ]);
           break;
         case 'data_object_name':
           m_data_object_name_changed = true;
+          UR.LogEvent('CharCtrl', ['CharController Change Name', value]);
           break;
         case 'tag':
           m_data_object_name_changed = true;
           m_MakeDevice(); // Only make a new device for blueprint, don't re-initialize UI
+          UR.LogEvent('CharCtrl', ['CharController Select Character', value]);
+          m_last_selected_bpname = value;
           break;
       }
     }
@@ -306,9 +323,10 @@ async function Initialize(componentInstance, opt = {}) {
   m_CHARVIEW = componentInstance;
 
   // options
-  const { sampleRate } = opt;
+  const { sampleRate, defaultBPName } = opt;
   if (sampleRate) SENDING_FPS = sampleRate;
   INTERVAL = (1 / SENDING_FPS) * 1000;
+  m_last_selected_bpname = defaultBPName;
 
   // prototype device registration
   // a device declares what kind of device it is

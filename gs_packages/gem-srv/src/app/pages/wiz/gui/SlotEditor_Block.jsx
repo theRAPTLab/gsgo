@@ -328,16 +328,13 @@ class SlotEditor_Block extends React.Component {
       }
       // -- 2. Map results to help types
       if (i === 0) keywordHelpTxt = gsTypeHelp.info; // establish keywordHelp if this is the keyword
-      syntaxHelpTxt =
-        'GSNAME.info: ' + gsNameHelp.info ||
-        'GSNAME NOT FOUND, FALLING BACK TO TYPE.INFO: ' + gsTypeHelp.info; // fall back to gsTypeHellp if there's no gsName help
+      syntaxHelpTxt = gsNameHelp.info || gsTypeHelp.info; // fall back to gsTypeHellp if there's no gsName help
       tokenHelpTxt =
         selectedValue === undefined
           ? gsTypeHelp.input
-            ? 'GSTYPE.input (no selectedValue): ' + gsTypeHelp.input
-            : 'fallbackGSNAME.input: ' + gsNameHelp.input // if slot is empty, show input instructions
-          : `GSTYPE.info (${selectedValue}): ` + gsTypeHelp.info ||
-            'fallbackGSTYPE.input: ' + gsTypeHelp.input; // fall back to 'input' if no 'info' (keywords only have input defined)
+            ? gsTypeHelp.input
+            : gsNameHelp.input // if slot is empty, show input instructions
+          : gsTypeHelp.info || gsTypeHelp.input; // fall back to 'input' if no 'info' (keywords only have input defined)
       if (isSelected) {
         // establish the instructions and selected choice help IF this curr
         instructionsHelpTxt = (

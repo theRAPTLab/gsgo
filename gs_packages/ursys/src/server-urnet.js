@@ -77,6 +77,7 @@ function StartNetwork(options = {}) {
   LOGGER.Write('registering network services');
   UR_HandleMessage('NET:SRV_LOG_EVENT', LOGGER.PKT_LogEvent);
   UR_HandleMessage('NET:SRV_LOG_JSON', LOGGER.PKT_LogJSON);
+  UR_HandleMessage('NET:SRV_RTLOG', LOGGER.PKT_RTLog);
   UR_HandleMessage('NET:SRV_REG_HANDLERS', PKT_RegisterHandler);
   UR_HandleMessage('NET:SRV_SESSION_LOGIN', PKT_SessionLogin);
   UR_HandleMessage('NET:SRV_SESSION_LOGOUT', PKT_SessionLogout);
@@ -205,6 +206,9 @@ async function m_RouteMessage(socket, pkt) {
     pkt.transactionComplete();
     return;
   }
+  // RealTime Log
+  LOGGER.PacketInspector(pkt);
+
   // (2) If we got this far, it's a new message.
   // Does the server implement any of the messages? Let's add that to our
   // list of promises. It will return empty array if there are none.

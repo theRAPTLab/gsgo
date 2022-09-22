@@ -24,24 +24,29 @@ class PanelPlayback extends React.Component {
 
   OnResetClick() {
     this.setState({ isRunning: false });
+    UR.LogEvent('SimEvent', ['Reset Stage']);
     UR.RaiseMessage('NET:SIM_RESET');
   }
 
   OnCostumesClick() {
     this.setState({ isRunning: false });
+    UR.LogEvent('SimEvent', ['Pick Characters']);
     UR.RaiseMessage('NET:HACK_SIM_COSTUMES');
   }
 
   OnNextRoundClick() {
     this.setState({ isRunning: false });
+    UR.LogEvent('SimEvent', ['Next Round']);
     UR.RaiseMessage('NET:HACK_SIM_NEXTROUND');
   }
 
   OnStartClick() {
     const { isRunning } = this.state;
     if (isRunning) {
+      UR.LogEvent('SimEvent', ['Stop Round']);
       UR.RaiseMessage('NET:HACK_SIM_STOP');
     } else {
+      UR.LogEvent('SimEvent', ['Start Round']);
       UR.RaiseMessage('NET:HACK_SIM_START');
     }
     this.setState({ isRunning: !isRunning });

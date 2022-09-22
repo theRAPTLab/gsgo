@@ -121,19 +121,22 @@ class CharController extends React.Component {
     this.requestBPNames();
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
+    UR.LogEvent('Session', ['CharController Connect']);
   }
 
   updateCharControlBpidList(bpnames) {
     if (DBG) console.log(...PR('setInputBPNames', bpnames));
     // TAGS is in mod-charcontrol-ui.js
     const tags = bpnames.map(b => ({ 'id': `bp_${b}`, 'label': b }));
+    const defaultBPName =
+      Array.isArray(bpnames) && bpnames.length > 0 ? `bp_${bpnames[0]}` : '';
     this.setState(
       state => ({
         tags,
         tag: state.tag || (tags.length > 0 ? tags[0].id : '')
         // keep currently selected tag, or default to first tag
       }),
-      () => Initialize(this, { sampleRate: SENDING_FPS })
+      () => Initialize(this, { sampleRate: SENDING_FPS, defaultBPName })
     );
   }
 
