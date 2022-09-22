@@ -198,13 +198,16 @@ function m_AddMouseEvents(container) {
         }
       }
     }
-    UR.LogEvent('CharCtrl', [
-      'Drag',
-      m_last_selected_bpname,
-      e.target.attributes['entity-id'].value,
-      x,
-      y
-    ]);
+    // only log drags on entities (not CharController-main)
+    if (e.target.attributes['entity-id'] !== undefined) {
+      UR.LogEvent('CharCtrl', [
+        'Drag',
+        m_last_selected_bpname,
+        e.target.attributes['entity-id'].value,
+        x,
+        y
+      ]);
+    }
   };
 
   const o_dragend = () => {
