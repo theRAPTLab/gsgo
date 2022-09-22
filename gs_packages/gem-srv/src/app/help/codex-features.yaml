@@ -210,6 +210,9 @@ Physics:
   # Physics methods
   # (none)
 
+IU:
+  info: 'Adds new features we are testing at IU'
+
 Population:
   info: 'Adds ways to generate and manage spawned characters and statistical information'
   # Population props
