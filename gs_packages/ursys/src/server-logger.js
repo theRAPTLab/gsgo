@@ -18,10 +18,12 @@ const FSE = require('fs-extra');
 /// for server-side modules,
 const TOUT = require('./util/prompts').makeTerminalOut(' URLOG');
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const FILES = require('./util/files');
 const FNAME = require('./util/files-naming');
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let LOGGING_ENABLED = false; // default
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -104,6 +106,17 @@ function RTLogLine(...args) {
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 let LOG = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * API: Toggle displaylist logging on and off
+ *      NOTE does not affect basic logging
+ * @param {object} pkt
+ * @param {object} pkt.data { enabled: boolean }
+ */
+LOG.PKT_LogEnable = pkt => {
+  LOGGING_ENABLED = pkt.data.enabled;
+  return { OK: true };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Handle incoming log events, output them as delimited fields
  *  as defined in server-logger (current it is set to tabs so it copy/pastes
  *  easily into Excel */
@@ -143,7 +156,7 @@ LOG.StartLogging = StartLogging;
 LOG.PacketInspector = pkt => {
   // log to separate real-time file
   // ONLY log NET:DISPLAY_LIST updates
-  if (pkt.msg === 'NET:DISPLAY_LIST')
+  if (LOGGING_ENABLED && pkt.msg === 'NET:DISPLAY_LIST')
     RTLogLine(pkt.s_uaddr, pkt.msg, JSON.stringify(pkt.data));
 };
 

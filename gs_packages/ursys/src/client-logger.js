@@ -16,7 +16,7 @@ const MSGR = require('./client-messager');
 const DBG = false;
 const PR = PROMPTS.makeStyleFormatter('LOGGER');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let LOGGING_ENABLED = false; // defuault
+let LOGGING_ENABLED = false; // default
 
 /// LOG ASSET ERRORS //////////////////////////////////////////////////////////
 /** API: used by asset manager if it's unable to load an asset */
@@ -79,10 +79,11 @@ function LogEnabled(boolLog) {
   if (typeof boolLog !== 'boolean') {
     throw Error(`${fn} arg must be boolean (true means enabled)`);
   }
-  // report logging changes
-  if (!LOGGING_ENABLED && boolLog) LogEvent('CLIENT_LOG', ['ENABLED']);
-  if (LOGGING_ENABLED && !boolLog) LogEvent('CLIENT_LOG', ['DISABLED']);
-  LOGGING_ENABLED = boolLog;
+  // report logging changes -- ALWAYS log them in spite of LOGGING_ENABLED STATUS!
+  LOGGING_ENABLED = true; // force true otherwise the LogEvent will not register!
+  if (boolLog) LogEvent('CLIENT_LOG', ['ENABLED']); // Always log ENABLED, even if logging is off, since this is the first log event
+  if (!boolLog) LogEvent('CLIENT_LOG', ['DISABLED']);
+  LOGGING_ENABLED = boolLog; // Now set intended value
   // always return the state
   return LOGGING_ENABLED;
 }
