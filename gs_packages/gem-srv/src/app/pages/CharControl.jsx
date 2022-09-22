@@ -70,6 +70,7 @@ class CharController extends React.Component {
       rate: 0
     };
     this.init = this.init.bind(this);
+    this.updateLogSettings = this.updateLogSettings.bind(this);
     this.updateCharControlBpidList = this.updateCharControlBpidList.bind(this);
     this.handleSetCharControlBpidList =
       this.handleSetCharControlBpidList.bind(this);
@@ -79,6 +80,7 @@ class CharController extends React.Component {
       'NET:SET_CHARCONTROL_BPIDLIST',
       this.handleSetCharControlBpidList
     );
+    UR.HandleMessage('NET:LOG_ENABLE', this.updateLogSettings);
   }
 
   componentDidMount() {
@@ -114,6 +116,7 @@ class CharController extends React.Component {
       'NET:SET_CHARCONTROL_BPIDLIST',
       this.handleSetCharControlBpidList
     );
+    UR.UnhandleMessage('NET:LOG_ENABLE', this.updateLogSettings);
   }
 
   init() {
@@ -122,6 +125,10 @@ class CharController extends React.Component {
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
     UR.LogEvent('Session', ['CharController Connect']);
+  }
+
+  updateLogSettings(data) {
+    UR.LogEnabled(data.enabled);
   }
 
   updateCharControlBpidList(bpnames) {

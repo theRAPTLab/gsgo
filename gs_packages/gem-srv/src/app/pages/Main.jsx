@@ -287,7 +287,8 @@ class MissionControl extends React.Component {
 
   UpdateLogSetting(e) {
     const logState = e.target.checked;
-    UR.LogEnabled(logState); // client-side
+    UR.LogEnabled(logState); // client-side: local
+    UR.SendMessage('NET:LOG_ENABLE', { enabled: logState }); // viewers and controllers
     UR.SendMessage('NET:SRV_LOG_ENABLE', { enabled: logState }); // server-side
   }
 
