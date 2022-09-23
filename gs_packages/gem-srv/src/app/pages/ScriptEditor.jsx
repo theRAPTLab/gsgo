@@ -101,8 +101,7 @@ const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
 
 # PROGRAM INIT
 addFeature Costume
-featCall agent.Costume setCostume 'circle.json' 0
-featCall agent.Costume setScale 1
+featProp agent.Costume.costumeName setTo 'circle.json'
 
 # PROGRAM UPDATE
 // code to run every frame
