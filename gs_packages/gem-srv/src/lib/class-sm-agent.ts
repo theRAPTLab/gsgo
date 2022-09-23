@@ -26,6 +26,7 @@ import { GLOBAL_AGENT_NAME } from 'modules/appcore/ac-blueprints';
 let REF_ID_COUNT = 0;
 type TPropRecord = { name: string; type: TGSType };
 const INTERNAL_PROPS: TPropRecord[] = [
+  { name: 'name', type: 'string' },
   { name: 'zIndex', type: 'number' },
   { name: 'color', type: 'number' },
   { name: 'scale', type: 'number' },
@@ -77,7 +78,6 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
 
     // override default SM_Object id with instance id
     this.id = id || this.id;
-
     this.refId = REF_ID_COUNT++;
     this.meta.type = Symbol.for('Agent');
     this.blueprint = undefined;
@@ -91,6 +91,7 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
     this.controlMode = EControlMode.auto;
     this.controlModeHistory = [];
     // shared basic props in props for conceptual symmetry
+    this.prop.name = new SM_String(this.meta.name); // copies agent.name by default, which should be the pozyx id
     this.prop.x = new SM_Number(0); // default to 0, otherwise it'll start out undefined
     this.prop.y = new SM_Number(0); // default to 0, otherwise it'll start out undefined
     this.prop.zIndex = new SM_Number();
