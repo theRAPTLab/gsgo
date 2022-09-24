@@ -53,8 +53,8 @@ let DEVICE_UDID;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
-PANEL_CONFIG.set('run', '15% auto 150px'); // columns
-PANEL_CONFIG.set('run-map', '50% auto 150px'); // columns
+PANEL_CONFIG.set('run', '15% auto 250px'); // columns
+PANEL_CONFIG.set('run-map', '50% auto 250px'); // columns
 PANEL_CONFIG.set('edit', '40% auto 0px'); // columns
 PANEL_CONFIG.set('tracker', '0px auto 400px'); // columns
 
@@ -582,7 +582,7 @@ class MissionControl extends React.Component {
           <div
             style={{
               display: 'grid',
-              gridTemplateRows: 'auto auto',
+              gridTemplateRows: '290px auto',
               overflow: 'hidden'
             }}
           >

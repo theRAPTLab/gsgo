@@ -30,7 +30,7 @@ class InstanceInspector extends React.Component {
       colorActive: '#33FF33',
       bgcolor: 'rgba(0,256,0,0.05)',
       isHovered: false,
-      isExpanded: false,
+      isExpanded: true, // disclosure triangle
       propsToHide: [
         'zIndex',
         'skin',
@@ -249,71 +249,41 @@ class InstanceInspector extends React.Component {
         </div>
         <div
           style={{
-            fontFamily: 'Andale Mono, monospace',
+            // fontFamily: 'Andale Mono, monospace',
+            display: 'grid',
+            gridTemplateColumns: 'auto auto',
+            gridTemplateRows: '1fr',
             fontSize: '14px',
             paddingLeft: '0.5em'
           }}
         >
           {visibleProps.map(property => (
-            <div
-              style={{
-                display: 'inline-block',
-                paddingRight: '1em'
-              }}
-              key={property.label}
-            >
+            <>
               <div className={classes.inspectorLabel}>{property.label}:</div>
               <div className={classes.inspectorData}>{property.value}</div>
-            </div>
+            </>
           ))}
-          <div>
-            {isExpanded && (
+          {isExpanded && (
+            <>
+              {hiddenProps.map(property => (
+                <>
+                  <div className={classes.inspectorLabel}>{property.label}:</div>
+                  <div className={classes.inspectorData}>{property.value}</div>
+                </>
+              ))}
+            </>
+          )}
+          {isExpanded && data.length > 0 && (
+            <>
               <div
-                style={
-                  isExpanded
-                    ? {
-                        maxHeight: '100%',
-                        transition: 'max-height 0.5s ease-in-out'
-                      }
-                    : {
-                        maxHeight: '0',
-                        transition: 'max-height 0.5s ease-in-out'
-                      }
-                }
+                className={classes.inspectorLabel}
+                style={{ fontsize: '10px' }}
               >
-                {hiddenProps.map(property => (
-                  <div
-                    style={{
-                      display: 'inline-block',
-                      paddingRight: '1em'
-                    }}
-                    key={property.label}
-                  >
-                    <div className={classes.inspectorLabel}>
-                      {property.label}:
-                    </div>
-                    <div className={classes.inspectorData}>{property.value}</div>
-                  </div>
-                ))}
+                Character Type:
               </div>
-            )}
-            {isExpanded && data.length > 0 && (
-              <div
-                style={{
-                  display: 'inline-block',
-                  paddingRight: '1em'
-                }}
-              >
-                <div
-                  className={classes.inspectorLabel}
-                  style={{ fontsize: '10px' }}
-                >
-                  Character Type:
-                </div>
-                <div className={classes.inspectorData}>{blueprintName}</div>
-              </div>
-            )}
-          </div>
+              <div className={classes.inspectorData}>{blueprintName}</div>
+            </>
+          )}
         </div>
         {size === SIZE_MAX && (
           <button
