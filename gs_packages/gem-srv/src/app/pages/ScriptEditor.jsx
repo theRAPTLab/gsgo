@@ -42,14 +42,14 @@
 
 
   NEW BLUEPRINTS
-      New blueprints can be created one of two ways:
-      1. User clicks on "New Character Type" from Main
-      2. User clicks on "ADD CHARACTER TYPE" from ScriptEditor's selection screen.
+      New blueprints can be created one of three ways:
+      1. User clicks on "NEW CHARACTER TYPE" from Main
+      2. User clicks on "NEW CHARACTER TYPE" from ScriptEditor's selection screen.
 
       Main: New Character Type
-      This opens up a new ScriptEditor app tab with a blank script.
+      This opens up a new ScriptEditor app tab with a blank script url.
 
-      Script Editor: ADD CHARACTER TYPE
+      Script Editor: NEW CHARACTER TYPE
       PanelSelectBlueprint raises SELECT_SCRIPT, and ScriptEditor's
       OnSelectScript handler loads a new script on an already
       open window.
@@ -101,8 +101,7 @@ const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
 
 # PROGRAM INIT
 addFeature Costume
-featCall agent.Costume setCostume 'circle.json' 0
-featCall agent.Costume setScale 1
+featProp agent.Costume.costumeName setTo 'circle.json'
 
 # PROGRAM UPDATE
 // code to run every frame
@@ -221,6 +220,11 @@ class ScriptEditor extends React.Component {
       // New Script
       panelConfiguration = 'script';
       script = SCRIPT_TEMPLATE;
+      this.setState(
+        { panelConfiguration, projId, bpName, script },
+        () => this.SelectScript({ bpName: '' }) // Call SelectScript immediately to pre-populate the script template
+      );
+      return;
     }
     this.setState({ panelConfiguration, projId, bpName, script });
 
