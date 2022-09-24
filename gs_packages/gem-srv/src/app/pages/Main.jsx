@@ -445,14 +445,21 @@ class MissionControl extends React.Component {
           display: 'flex',
           flexGrow: '1',
           justifyContent: 'space-between',
-          alignItems: 'baseline'
+          alignItems: 'center'
         }}
       >
-        <span style={{ fontSize: '32px' }}>
-          {projId} <span style={{ fontSize: '14px' }}>⇆</span> {UR.HostString()}
-        </span>
+        <div style={{ display: 'inline-block', padding: '3px' }}>
+          <img
+            src="/static/logo_GEMSTEP_vector.svg"
+            width="40px"
+            style={{ paddingTop: '5px', verticalAlign: 'top' }}
+          />
+          <span style={{ paddingLeft: '10px', fontSize: '32px' }}>
+            {projId} <span style={{ fontSize: '14px' }}>⇆</span> {UR.HostString()}
+          </span>
+        </div>
         <span style={{ opacity: 0.5 }}>
-          MAIN <span style={{ fontStyle: 'italic' }}>{UR.BranchString()}</span>
+          MAIN -- <span style={{ fontStyle: 'italic' }}>{UR.BranchString()}</span>
         </span>
         <button
           role="button"
@@ -557,7 +564,7 @@ class MissionControl extends React.Component {
             to={{ pathname: `/app/project?project=${projId}` }}
             className={classes.navButton}
           >
-            Back to PROJECT
+            Back to Project
           </Link>
         </div>
         <div

@@ -16,7 +16,6 @@
 /// COLORS ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BG_COLOR = 'transparent';
-const BG_TITLE = 'transparent'; // '#404040';
 
 const CLR_R = 60;
 const CLR_G = 256;
@@ -42,6 +41,8 @@ function RGBAShift(r, g, b, a, shift) {
 function BaseColorShift(shift, alpha) {
   return RGBAShift(CLR_R, CLR_G, CLR_B, alpha, shift);
 }
+
+const BG_TITLE = BaseColorShift(0, 0.1); // '#404040';
 
 const CLR_LABEL = BaseColorShift(-150, 1); // '#006600';
 const CLR_DATA = BaseColorShift(-100, 1); // '#009900';
@@ -128,7 +129,7 @@ const useStylesHOC = theme => ({
   },
   top: {
     gridColumnEnd: 'span 3',
-    color: 'white',
+    color: BaseColorShift(0, 0.8), // 'white',
     backgroundColor: BG_TITLE,
     overflow: 'hidden'
   },
