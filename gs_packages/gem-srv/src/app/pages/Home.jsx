@@ -66,22 +66,28 @@ class Home extends React.Component {
     return (
       <div className={classes.root}>
         <div id="console-top" className={clsx(classes.cell, classes.top)}>
+          <img
+            src="/static/logo_GEMSTEP_vector.svg"
+            width="40px"
+            style={{
+              paddingTop: '5px',
+              paddingRight: '5px',
+              paddingLeft: '5px',
+              verticalAlign: 'top'
+            }}
+          />
           <span style={{ fontSize: '32px' }}>INDEX</span> {UR.ConnectionString()}
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
-          <b className={classes.title}>Demo Routes</b>
+          <b className={classes.title}>Quick Links</b>
           <ul className={classes.list}>
-            <NavItem route="login?project=aquatic">login</NavItem>
-            <NavItem route="model?project=aquatic">model</NavItem>
-            <NavItem route="main?project=aquatic">main</NavItem>
-            <NavItem route="scripteditor?project=aquatic">script editor</NavItem>
-            <NavItem route="viewer?project=aquatic">viewer</NavItem>
-            <NavItem route="charcontrol">WIP character controller</NavItem>
-            {/* <NavItem route="tracker">tracker setup</NavItem> */}
+            <NavItem route="login">login</NavItem>
+            <NavItem route="main?project=aquatic">aquatic</NavItem>
+            <NavItem route="charcontrol">character controller</NavItem>
           </ul>
         </div>
         <div id="instructions" className={classes.main}>
-          <h2>April Demo WIP</h2>
+          <h2>GEM-STEP Version 1.0, September 2022</h2>
           <p>
             {' '}
             <b>
@@ -90,61 +96,24 @@ class Home extends React.Component {
           </p>
           <ol>
             <li>
-              <a href="/app/main">MAIN</a> - Prototype of the presentation laptop
-              app. It runs the simulator module and receives scripts from other
-              devices. <b>Run this first</b> and click <b>START</b> button on
-              right after some scripts have been sent to it. The title shows the
-              address of the server that everyone else should connect to.
+              <a href="/app/login">LOGIN</a> - List of current projects. You can
+              also create new projects from this screen.
             </li>
             <li>
-              <a href="/app/scripteditor">SCRIPT EDITOR</a> - Prototype providing
-              a pre-defined selection of agents that can have their scripts
-              edited. This can be on different machines. Use <b>SAVE TO SERVER</b>{' '}
-              to send to MISSION CONTROL.
+              <a href="/app/main?project=aquatic">AQUATIC</a> - This goes directly
+              to the Aquatic model.
             </li>
             <li>
-              <a href="/app/viewer">VIEWER</a> - Prototype app showing the
-              simulation view from MISSION CONTROL, which would be the basis of an
-              annotation app.
+              <a href="/app/viewer">VIEWER</a> - This let's you view a model that
+              is already running on another machine, but you cannot interact with
+              it.
             </li>
             <li>
-              <a href="/app/charcontrol">CHARACTER CONTROLLER</a> - Ported from
-              earlier versions FAKETRACK with the new device interface WIP.
+              <a href="/app/charcontrol">CHARACTER CONTROLLER</a> - This lets you
+              control one or more characters in the currently running maain
+              window.
             </li>
           </ol>
-          <h4>DevTools</h4>
-          <ol>
-            <li>
-              <a href="/app/dev-wizard">GUI WIZARD</a> - Test renderer for GUI
-              shapes
-            </li>
-            <li>
-              <a href="/app/dev-tracker">TRACKER</a> - For testing CharControl,
-              PTrack, and Renderer Module entities.
-            </li>
-            <li>
-              <a href="/app/dev-controller">CONTROLLER</a> - For device and
-              control systems testing.
-            </li>
-            <li>
-              <a href="/app/dev-faketrack">FAKETRACK</a> - For PTrack protocol
-              testing. Non-devs should use Character Controller instead.
-            </li>
-            <li>
-              <a href="/app/dev-compiler">COMPILER V2</a> - ScriptText Compiler /
-              Simulator / Renderer Source (version 2 full tokenization)
-            </li>
-            <li>
-              <a href="/app/dev-codetester">CODE TESTER</a> - Sri&#39;s Janky Unit
-              Tester Framework (non-functional)
-            </li>
-          </ol>
-        </div>
-        <div id="console-right" className={clsx(classes.cell, classes.right)}>
-          console-right
-        </div>
-        <div id="console-bottom" className={clsx(classes.cell, classes.bottom)}>
-          console-bottom
         </div>
       </div>
     );

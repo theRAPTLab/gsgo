@@ -92,7 +92,17 @@ class Login extends React.Component {
           className={clsx(classes.cell, classes.top)}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          <span style={{ fontSize: '32px' }}>GEM-STEP PROJECTS</span>
+          <img
+            src="/static/logo_GEMSTEP_vector.svg"
+            width="40px"
+            style={{
+              paddingTop: '5px',
+              paddingRight: '5px',
+              paddingLeft: '5px',
+              verticalAlign: 'top'
+            }}
+          />
+          <span style={{ fontSize: '32px' }}> GEM-STEP PROJECTS</span>
         </div>
         <div
           id="console-left"
