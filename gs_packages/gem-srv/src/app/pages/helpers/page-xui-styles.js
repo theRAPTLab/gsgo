@@ -16,7 +16,6 @@
 /// COLORS ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BG_COLOR = 'transparent';
-const BG_TITLE = '#404040';
 
 const CLR_R = 60;
 const CLR_G = 256;
@@ -43,6 +42,8 @@ function BaseColorShift(shift, alpha) {
   return RGBAShift(CLR_R, CLR_G, CLR_B, alpha, shift);
 }
 
+const BG_TITLE = BaseColorShift(0, 0.1); // '#404040';
+
 const CLR_LABEL = BaseColorShift(-150, 1); // '#006600';
 const CLR_DATA = BaseColorShift(-100, 1); // '#009900';
 const CLR_DATA_INACTIVE = BaseColorShift(-200, 1); // '#003300';
@@ -59,7 +60,7 @@ const CLR_BORDER_ACTIVE = BaseColorShift(0, 0.6); // 'rgba(0,256,0,0.6)';
 const CLR_HI = RGBA(CLR_HI_R, CLR_HI_G, CLR_HI_B, 1); // red
 const CLR_HI2 = RGBA(CLR_HI_R, CLR_HI_R, CLR_HI_B, 0.8); // yellow
 
-const FONT_FAMILY = 'Andale Mono, monospace';
+const FONT_FAMILY = 'sans-serif'; // Andale Mono, monospace';
 
 /// BASE STYLES ///////////////////////////////////////////////////////////////
 const BUTTON = {
@@ -128,7 +129,7 @@ const useStylesHOC = theme => ({
   },
   top: {
     gridColumnEnd: 'span 3',
-    color: 'white',
+    color: BaseColorShift(0, 0.8), // 'white',
     backgroundColor: BG_TITLE,
     overflow: 'hidden'
   },

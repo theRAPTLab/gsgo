@@ -112,11 +112,23 @@ function MyBuildBranch() {
 function ConnectionString() {
   const { host } = BROKER_UINFO;
   const port = window.location.port;
-  const branch = MyBuildBranch();
   let str = `${MyUADDR()} ⇆ ${host}`;
   if (port) str += `:${port}`;
-  if (branch) str += ` (branch:${branch})`;
   return str;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function HostString() {
+  const { host } = BROKER_UINFO;
+  const port = window.location.port;
+  let str = `${host}`;
+  if (port) str += `:${port}`;
+  return str;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function BranchString() {
+  const branch = MyBuildBranch();
+  if (branch) return `${branch}`;
+  return '';
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function URDB_GraphQL() {
@@ -266,6 +278,8 @@ module.exports = {
   MyBuildBranch,
   URDB_GraphQL,
   ConnectionString,
+  HostString,
+  BranchString,
   // URNET
   SetSharedEndPoints,
   GetSharedEndPoints,
