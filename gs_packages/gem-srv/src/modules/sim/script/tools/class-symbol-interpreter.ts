@@ -1178,13 +1178,6 @@ class SymbolInterpreter {
       propRef = [propRef];
     }
     let [bpName, featureName, propName] = propRef;
-    console.log(
-      '################### featObjRef',
-      token,
-      bpName,
-      'PROPREF',
-      propRef
-    );
     let blueprints = SIMDATA.GetBlueprintSymbols();
     // inject 'agent' matching the current bundle
     let agentName = this.getBundleName(); // fallback to bundle
