@@ -66,6 +66,16 @@ class Home extends React.Component {
     return (
       <div className={classes.root}>
         <div id="console-top" className={clsx(classes.cell, classes.top)}>
+          <img
+            src="/static/logo_GEMSTEP_vector.svg"
+            width="40px"
+            style={{
+              paddingTop: '5px',
+              paddingRight: '5px',
+              paddingLeft: '5px',
+              verticalAlign: 'top'
+            }}
+          />
           <span style={{ fontSize: '32px' }}>INDEX</span> {UR.ConnectionString()}
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
