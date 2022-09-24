@@ -454,10 +454,18 @@ class MissionControl extends React.Component {
         <span style={{ opacity: 0.5 }}>
           MAIN <span style={{ fontStyle: 'italic' }}>{UR.BranchString()}</span>
         </span>
-        <button role="button" onClick={this.OnToggleTracker}>
+        <button
+          role="button"
+          className={classes.buttonSmall}
+          onClick={this.OnToggleTracker}
+        >
           tracker
         </button>
-        <button role="button" onClick={this.OnExport}>
+        <button
+          role="button"
+          className={classes.buttonSmall}
+          onClick={this.OnExport}
+        >
           export
         </button>
         <label>
