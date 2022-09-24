@@ -449,11 +449,13 @@ class MissionControl extends React.Component {
         }}
       >
         <div style={{ display: 'inline-block', padding: '3px' }}>
-          <img
-            src="/static/logo_GEMSTEP_vector.svg"
-            width="40px"
-            style={{ paddingTop: '5px', verticalAlign: 'top' }}
-          />
+          <Link to={{ pathname: `/app/login` }}>
+            <img
+              src="/static/logo_GEMSTEP_vector.svg"
+              width="40px"
+              style={{ paddingTop: '5px', verticalAlign: 'top' }}
+            />
+          </Link>
           <span style={{ paddingLeft: '10px', fontSize: '32px' }}>
             {projId} <span style={{ fontSize: '14px' }}>⇆</span> {UR.HostString()}
           </span>

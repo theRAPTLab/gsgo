@@ -120,6 +120,16 @@ class Project extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
+            <img
+              src="/static/logo_GEMSTEP_vector.svg"
+              width="40px"
+              style={{
+                paddingTop: '5px',
+                paddingRight: '5px',
+                paddingLeft: '5px',
+                verticalAlign: 'top'
+              }}
+            />
             <span style={{ fontSize: '32px' }}>GEMSTEP PROJECT {projId}</span>{' '}
           </div>
           <Link to={{ pathname: '/app/login' }} className={classes.navButton}>
