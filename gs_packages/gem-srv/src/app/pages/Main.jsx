@@ -445,15 +445,34 @@ class MissionControl extends React.Component {
           display: 'flex',
           flexGrow: '1',
           justifyContent: 'space-between',
-          alignItems: 'baseline'
+          alignItems: 'center'
         }}
       >
-        <span style={{ fontSize: '32px' }}>MAIN {projId}</span>{' '}
-        {UR.ConnectionString()}
-        <button role="button" onClick={this.OnToggleTracker}>
+        <div style={{ display: 'inline-block', padding: '3px' }}>
+          <img
+            src="/static/logo_GEMSTEP_vector.svg"
+            width="40px"
+            style={{ paddingTop: '5px', verticalAlign: 'top' }}
+          />
+          <span style={{ paddingLeft: '10px', fontSize: '32px' }}>
+            {projId} <span style={{ fontSize: '14px' }}>⇆</span> {UR.HostString()}
+          </span>
+        </div>
+        <span style={{ opacity: 0.5 }}>
+          MAIN -- <span style={{ fontStyle: 'italic' }}>{UR.BranchString()}</span>
+        </span>
+        <button
+          role="button"
+          className={classes.buttonSmall}
+          onClick={this.OnToggleTracker}
+        >
           tracker
         </button>
-        <button role="button" onClick={this.OnExport}>
+        <button
+          role="button"
+          className={classes.buttonSmall}
+          onClick={this.OnExport}
+        >
           export
         </button>
         <label>
@@ -532,7 +551,7 @@ class MissionControl extends React.Component {
         className={classes.root}
         style={{
           gridTemplateColumns: PANEL_CONFIG.get(panelConfiguration),
-          gridTemplateRows: '50px auto 100px'
+          gridTemplateRows: '50px auto' // use '50px auto 100px' to show MESSAGES
         }}
       >
         <div
@@ -545,7 +564,7 @@ class MissionControl extends React.Component {
             to={{ pathname: `/app/project?project=${projId}` }}
             className={classes.navButton}
           >
-            Back to PROJECT
+            Back to Project
           </Link>
         </div>
         <div
@@ -610,7 +629,7 @@ class MissionControl extends React.Component {
             )}
           </div>
         </div>
-        <div
+        {/* <div
           id="console-bottom"
           className={classes.bottom}
           style={{ gridColumnEnd: 'span 3' }}
@@ -618,7 +637,7 @@ class MissionControl extends React.Component {
           <PanelMessage message={message} />
           {DialogMainRedirect}
           {DialogMessage}
-        </div>
+        </div> */}
       </div>
     );
   }

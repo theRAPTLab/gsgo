@@ -128,6 +128,8 @@ const UR = {
   ServerPort: NETWORK.ServerPort,
   WebServerPort: NETWORK.WebServerPort,
   ConnectionString: DATACORE.ConnectionString,
+  HostString: DATACORE.HostString,
+  BranchString: DATACORE.BranchString,
   NetInfoRoute: NETWORK.NetInfoRoute,
   GetUAddressNumber: DATACORE.GetUAddressNumber,
   GetDatabaseEndpoint: DATACORE.URDB_GraphQL,
