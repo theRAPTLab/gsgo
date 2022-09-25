@@ -424,7 +424,7 @@ class Visual implements IVisual, IPoolable, IActable {
       // position text bottom centered
       const textBounds = this.text.getBounds();
       const spacer = 5;
-      const x = -textBounds.width / 1.5; // for some reason text is offset?
+      const x = -textBounds.width / 1.7; // for some reason text is offset?
       const y = this.sprite.height / 2 + spacer;
       this.text.position.set(x, y);
     }
