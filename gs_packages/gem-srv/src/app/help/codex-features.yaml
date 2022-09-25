@@ -49,6 +49,10 @@ AgentWidgets:
     name: 'propertyName'
     input: '"propertyName" is the name of a property on this Character. Once set, if the value of that property changes, the meter will change its value as well.'
     info: '"propertyName"  is the name of a property on this Character. Once set, if the value of that property changes, the meter will change its value as well.'
+  colorNumber:
+    name: 'colorNumber'
+    input: '"colorNumber" is the code number for the color, using decimal colors. Examples include red: 16711680, orange: 16737792, green: 65280, blue: 255, and purple: 6950317.'
+    info: '"colorNumber" is the code number for the color, using decimal colors. Examples include red: 16711680, orange: 16737792, green: 65280, blue: 255, and purple: 6950317.'
 
 Costume:
   info: 'Adds ability to change the art for the character, and change color, glow, and other aspects of how it looks.'

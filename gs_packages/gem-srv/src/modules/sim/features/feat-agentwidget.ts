@@ -321,7 +321,9 @@ class WidgetPack extends SM_Feature {
       meterProp: SM_String.SymbolizeCustom({
         setTo: ['propertyName:string']
       }),
-      meterColor: SM_Number.Symbols,
+      meterColor: SM_Number.SymbolizeCustom({
+        setTo: ['colorNumber:number']
+      }),
       isLargeGraphic: SM_Boolean.Symbols,
       graphValue: SM_Number.Symbols,
       graphProp: SM_String.Symbols,
