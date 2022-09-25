@@ -106,6 +106,9 @@
 .gwiz.specialComment {
   color: purple;
 }
+.gwiz.noteComment {
+  color: purple;
+}
 .gwiz.explanationComment {
   color: white;
   background-color: rgba(33, 10, 180, 0.867);
