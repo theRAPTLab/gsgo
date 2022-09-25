@@ -318,7 +318,9 @@ class WidgetPack extends SM_Feature {
       }),
       textProp: SM_String.Symbols,
       meter: SM_Number.Symbols,
-      meterProp: SM_String.Symbols,
+      meterProp: SM_String.SymbolizeCustom({
+        setTo: ['propertyName:string']
+      }),
       meterColor: SM_Number.Symbols,
       isLargeGraphic: SM_Boolean.Symbols,
       graphValue: SM_Number.Symbols,

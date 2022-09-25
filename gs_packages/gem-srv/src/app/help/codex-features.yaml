@@ -12,10 +12,11 @@ AgentWidgets:
   textProp:
     info: 'Set the text that appears below the character to be the value of a property, and update when the property does.'
   meter:
-    input: 'Meter input'
+    input: 'Set the current meter value.'
     info: 'Set the height of a meter to the side of the character.'
   meterProp:
-    info: 'Set the height of a meter to the side of the character to be the value of a property, and update when the property does.'
+    input: 'Identify a property of this Character. The value of that property will be updated to the value of the meter and stay that way.'
+    info: 'Set the height of the meter on this character to be the value of a property, and update when the property does.'
   meterColor:
     info: 'Set the color of the meter.'
   isLargeGraphic:
@@ -44,6 +45,10 @@ AgentWidgets:
     name: 'labelString'
     input: '"labelString" is text that will be displayed below the character'
     info: '"labelString" is text that will be displayed below the character.'
+  propertyName:
+    name: 'propertyName'
+    input: '"propertyName" is the name of a property on this Character. Once set, if the value of that property changes, the meter will change its value as well.'
+    info: '"propertyName"  is the name of a property on this Character. Once set, if the value of that property changes, the meter will change its value as well.'
 
 Costume:
   info: 'Adds ability to change the art for the character, and change color, glow, and other aspects of how it looks.'
@@ -130,13 +135,13 @@ Movement:
   info: 'Add different ways to move or be controlled'
   # Movement props
   movementType:
-    info: 'movementType help'
+    info: 'Determines the way the character will move and includes "stop", "wander", "edgeToEdge", "setLocation", "goLocation", "jitter"'
   direction:
-    info: 'direction help'
+    info: 'The direction the character is pointning, ranging from 0 to 360. 0 is to the right'
   compassDirection:
-    info: 'compassDirection help'
+    info: 'The direction the character is pointing, divided into the 4 compas direcitons (N,S,E,W for North, South, East, or West)'
   distance:
-    info: 'distance help'
+    info: 'How far the character should move each tick. Higher numbers mean moving faster.'
   jitterDistance:
     info: 'jitterDistance help'
   bounceAngle:
@@ -148,9 +153,9 @@ Movement:
   useAutoOrientation:
     info: 'useAutoOrientation help'
   targetX:
-    info: 'targetX help'
+    info: 'The x property of an x,y location to move towards. Speed is set by the "distance" property.'
   targetY:
-    info: 'targetY help'
+    info: 'The y property of an x,y location to move towards. Speed is set by the "distance" property.'
   targetCharacterType:
     info: 'targetCharacterType help'
   # Movement prop args
@@ -167,27 +172,27 @@ Movement:
     info: 'set character at a x,y position'
     syntax: 'variable (see wiki)'
   setRandomDirection:
-    info: 'xxx'
+    info: 'Pick a random direction to point in, and move toward.'
   setRandomPosition:
-    info: 'xxx'
+    info: 'Pick a random position.'
   setRandomPositionX:
-    info: 'xxx'
+    info: 'Pick a random x position, but keep the current y.'
   setRandomPositionY:
-    info: 'xxx'
+    info: 'Pick a random y position, but keep the current x.'
   setRandomStart:
-    info: 'xxx'
+    info: 'setRandomStart'
   setRandomStartPosition:
-    info: 'xxx'
+    info: 'setRandomStartPosition'
   jitterPos:
-    info: 'xxx'
+    info: 'jitterPos'
   jitterRotate:
-    info: 'xxx'
+    info: 'jitterRotate'
   seekNearest:
-    info: 'xxx'
+    info: 'seekNearest'
   seekNearestVisibleCone:
-    info: 'xxx'
+    info: 'seekNearestVisibleCone'
   seekNearestVisibleColor:
-    info: 'xxx'
+    info: 'seekNearestVisibleColor'
   # Movement method args
   x:
     info: 'x (horizontal) position in pixels/world units'
@@ -217,15 +222,15 @@ Population:
   info: 'Adds ways to generate and manage spawned characters and statistical information'
   # Population props
   count:
-    info: 'xxx'
+    info: 'How many characters of the specific type there are.'
   sum:
-    info: 'xxx'
+    info: 'A sum of the specific property added up for all of the characters of this type.'
   avg:
-    info: 'xxx'
+    info: 'An average of the specific property added up for all of the characters of this type.'
   min:
-    info: 'xxx'
+    info: 'The smallest value of the property across this character type.'
   max:
-    info: 'xxx'
+    info: 'The highest value of the property across this character type.'
   monitoredAgent:
     info: 'xxx'
   monitoredAgentProp:
@@ -294,6 +299,7 @@ Touches:
   # methods
   monitor:
     info: 'Detect touches with another character (b2b = bounds to bounds, c2b = center to bounds, c2c = center to center, binb = bounds inside bounds)'
+    input: 'Detect touches with another character (b2b = bounds to bounds, c2b = center to bounds, c2c = center to center, binb = bounds inside bounds)'
   # method args
   targetBlueprintName:
     name: 'target blueprint name'
@@ -321,8 +327,8 @@ Vision:
     info: 'colorValueDetectionThreshold'
   # methods
   monitor:
-    info: 'xx'
+    info: 'monitor'
   isCamouflaged:
-    info: 'xx'
+    info: 'isCamouflaged'
   canSeeColorOfAgent:
-    info: 'xx'
+    info: 'canSeeColorOfAgent'
