@@ -327,6 +327,7 @@ export function GToken(props) {
     // sort of like headers
     if (label.includes('**')) classes += ' specialComment';
     if (label.includes('EXPLANATION')) classes += ' explanationComment';
+    if (label.includes('NOTE')) classes += ' noteComment';
     if (label.includes('STUDENTS_MAY_CHANGE')) classes += ' changeComment';
     if (label.includes('QUESTION')) classes += ' questionComment';
     if (label.includes('HYPOTHESIS')) classes += ' hypothesisComment';
@@ -371,6 +372,7 @@ export function GValidationToken(props) {
     // based on their content, so that we can draw attention to certain kinds of ideas
     // sort of like headers
     if (label.includes('**')) classes += ' specialComment';
+    if (label.includes('NOTE')) classes += ' noteComment';
     if (label.includes('EXPLANATION')) classes += ' explanationComment';
     if (label.includes('STUDENTS_MAY_CHANGE')) classes += ' changeComment';
     if (label.includes('QUESTION')) classes += ' questionComment';

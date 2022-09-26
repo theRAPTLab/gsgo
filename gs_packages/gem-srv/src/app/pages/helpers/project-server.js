@@ -533,8 +533,13 @@ function InstanceRequestEdit(data) {
   const agent = DCAGENTS.GetAgentById(data.agentId);
   if (!agent) {
     console.warn(
-      ...PR('InstanceRequestEdit on undefined agent agentId', data.agentId)
+      ...PR(
+        'InstanceRequestEdit on undefined agent agentId',
+        data.agentId,
+        '.  This usually happens when selecting a newly created instance mid-round, before the sim has been reset.'
+      )
     );
+    return;
   }
   // 2. If already selected, deselect it.
   if (agent.isSelected) {

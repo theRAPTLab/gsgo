@@ -58,7 +58,10 @@ const style = new PIXI.TextStyle({
   fontWeight: 'bold',
   fill: ['#ffffffcc'],
   stroke: '#333333cc',
-  strokeThickness: 3
+  strokeThickness: 3,
+  wordWrapWidth: 150,
+  wordWrap: true,
+  align: 'center'
 });
 // replacement for GLOBAL sprite
 const SPRITES = ASSETS.GetLoader('sprites');
@@ -421,7 +424,7 @@ class Visual implements IVisual, IPoolable, IActable {
       // position text bottom centered
       const textBounds = this.text.getBounds();
       const spacer = 5;
-      const x = -textBounds.width / 2 + spacer * 1.5; // for some reason text is offset?
+      const x = -48; //this.sprite.width; // for some reason text is offset?
       const y = this.sprite.height / 2 + spacer;
       this.text.position.set(x, y);
     }

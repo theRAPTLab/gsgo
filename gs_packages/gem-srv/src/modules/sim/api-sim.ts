@@ -208,7 +208,7 @@ function Reset() {
     ROUNDMGR.RoundsReset();
     SIMSTATUS.completed = false;
     // Re-Stage
-    Stage(); // results in agentWidgets already in blueprint
+    Stage(); // results in Graphing already in blueprint
   })();
 }
 

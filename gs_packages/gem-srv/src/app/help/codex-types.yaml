@@ -25,12 +25,12 @@ number:
 identifier:
   name: 'identifier'
   input: 'Enter alphanumeric characters with no spaces or leading numbers'
-  info: 'An identifier is a name that has (or will have) a special meaning to GEMSCRIPT'
+  info: 'An identifier is a special name that GEMSCRIPT will recognize. See the instructions above for your options.'
 
 prop:
   name: 'property name'
   input: 'Choose a property to use'
-  info: 'Properties can be boolean, string, or number. Every character has its own copy of the property.'
+  info: 'Properties can be a numberr, string (words and letters) or boolean (true or false). Every character has its own copy of the property.'
 
 method:
   name: 'method name'
