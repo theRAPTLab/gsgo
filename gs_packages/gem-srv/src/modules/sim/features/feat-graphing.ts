@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The Agent Widget Class
+  The Grapahing Class (Formerly Agent Widgets)
 
   Widgets update during the SIM/UI_UPDATE phase.
 
