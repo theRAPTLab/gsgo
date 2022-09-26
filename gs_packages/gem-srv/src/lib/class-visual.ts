@@ -59,7 +59,7 @@ const style = new PIXI.TextStyle({
   fill: ['#ffffffcc'],
   stroke: '#333333cc',
   strokeThickness: 3,
-  wordWrapWidth: 150,
+  wordWrapWidth: 125,
   wordWrap: true,
   align: 'center'
 });
