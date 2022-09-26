@@ -4,9 +4,9 @@
 # NOTES
 # --  As of 9/2022 `.hint` and `.syntax` are not being used
 
-AgentWidgets:
+Graphing:
   info: 'Adds text labels, meters or graphs to a character and sets how they look.'
-  # AgentWidgets props
+  # Graphing props
   text:
     info: 'Set the text that appears below the character.'
   textProp:
@@ -33,14 +33,14 @@ AgentWidgets:
     info: 'Set a bar graph to the value of this property and update the graph when the property does.'
   barGraphPropFeature:
     info: 'Help for barGraphPropFeature coming soon.'
-  # AgentWidgets methods
+  # Graphing methods
   showMessage:
     info: 'This creates a popup message for the users to read.'
   setMeterPosition:
     info: 'This sets the meter position to be inside or outsidee the character, and left or right.'
   bindLineGraphHistogramToFeatProp:
     info: 'Help for bindLineGraphHistogramToFeatProp coming soon.'
-  # AgentWidgets method args
+  # Graphing method args
   labelString:
     name: 'labelString'
     input: '"labelString" is text that will be displayed below the character'

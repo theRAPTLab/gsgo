@@ -30,7 +30,7 @@ import FLAGS from 'modules/flags';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const FEATID = 'AgentWidgets';
+const FEATID = 'Graphing';
 const WIDGET_AGENTS = new Map();
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ function m_FeaturesUpdate(frame) {
   agentIds.forEach(agentId => {
     const agent = m_getAgent(agentId);
     if (!agent) return;
-    const agentWgt = agent.prop.AgentWidgets;
+    const agentWgt = agent.prop.Graphing;
 
     const graphPropValue = agentWgt.graphProp && agentWgt.graphProp.value;
     const graphGlobalPropValue =
@@ -80,19 +80,19 @@ function m_FeaturesUpdate(frame) {
         value = global.prop[graphProp].value;
       }
       value = value || 0; // default to 0 (value can be undefined on first frame)
-      const counter = agent.prop.AgentWidgets._graphCounter++;
+      const counter = agent.prop.Graphing._graphCounter++;
       if (Number.isNaN(value))
         throw new Error(`${agent.name} tried to graph a NaN value.`);
-      agent.prop.AgentWidgets._graph.push(counter, value);
+      agent.prop.Graphing._graph.push(counter, value);
     } else {
       // Trigger-based Graph
       // New plot point on change in _graphValue
-      const value = agent.prop.AgentWidgets.graphValue.value;
-      if (value !== agent.prop.AgentWidgets._graphValueOld) {
+      const value = agent.prop.Graphing.graphValue.value;
+      if (value !== agent.prop.Graphing._graphValueOld) {
         // graphValue changed!
-        const counter = agent.prop.AgentWidgets._graphCounter++;
-        agent.prop.AgentWidgets._graph.push(counter, value);
-        agent.prop.AgentWidgets._graphValueOld = value;
+        const counter = agent.prop.Graphing._graphCounter++;
+        agent.prop.Graphing._graph.push(counter, value);
+        agent.prop.Graphing._graphValueOld = value;
       }
     }
   });
@@ -111,27 +111,27 @@ function m_GraphsUpdate(frame) {
     // If Histogram has been defined, this will override any line graphs
     // Just hacking this in for Moths for now.  Implementation is really
     // problematic
-    if (agent.prop.AgentWidgets._histogramFeature) {
+    if (agent.prop.Graphing._histogramFeature) {
       // SUPER HACK
       // values are stored in the GLobal Agent because they're
       // calculated during Round INit
       // const values =
-      //   agent.prop[agent.prop.AgentWidgets._histogramFeature][
-      //     agent.prop.AgentWidgets._histogramProp
+      //   agent.prop[agent.prop.Graphing._histogramFeature][
+      //     agent.prop.Graphing._histogramProp
       //   ];
       const GLOBAL_AGENT = SM_Agent.GetGlobalAgent();
       const values =
-        GLOBAL_AGENT.prop[agent.prop.AgentWidgets._histogramFeature][
-          agent.prop.AgentWidgets._histogramProp
+        GLOBAL_AGENT.prop[agent.prop.Graphing._histogramFeature][
+          agent.prop.Graphing._histogramProp
         ];
       // console.error('values', values);
       const keys = [...values.keys()]; // don't sort because numbers are strings .sort();
       // clear
-      agent.prop.AgentWidgets._graph.splice(0);
+      agent.prop.Graphing._graph.splice(0);
       keys.forEach((k, index) => {
-        agent.prop.AgentWidgets._graph.push(index, values.get(k));
+        agent.prop.Graphing._graph.push(index, values.get(k));
       });
-      // console.error('graph', agent.prop.AgentWidgets._graph);
+      // console.error('graph', agent.prop.Graphing._graph);
     }
   });
 }
@@ -143,7 +143,7 @@ function m_UIUpdate(frame) {
   agentIds.forEach(agentId => {
     const agent = m_getAgent(agentId);
     if (!agent) return;
-    const agentWgt = agent.prop.AgentWidgets;
+    const agentWgt = agent.prop.Graphing;
 
     // 1. Update Text
     //    Text can either be set directly via the `text` featProp,
@@ -179,7 +179,7 @@ function m_UIUpdate(frame) {
     // Only pass up to 50 points
     // The graph is 100 px wide, so this gives you at least a gap
     const max = 100 * 2;
-    const l = agent.prop.AgentWidgets._graph.length;
+    const l = agent.prop.Graphing._graph.length;
     if (l > 2) {
       // l > 2 to ignore first default value of [0,0]
       // only draw graph if there is data
@@ -187,8 +187,8 @@ function m_UIUpdate(frame) {
     }
 
     // 4. Update Bar Graph
-    const barGraphProp = agent.prop.AgentWidgets.barGraphProp.value;
-    const barGraphPropFeature = agent.prop.AgentWidgets.barGraphPropFeature.value;
+    const barGraphProp = agent.prop.Graphing.barGraphProp.value;
+    const barGraphPropFeature = agent.prop.Graphing.barGraphPropFeature.value;
     let barGraphSource;
     if (barGraphPropFeature) {
       // featProp
@@ -200,7 +200,7 @@ function m_UIUpdate(frame) {
     if (barGraphSource) {
       if (!(barGraphSource instanceof Map))
         throw new Error(
-          `AgentWidgets: barGraphProp (${barGraphProp}) needs to be a Map property!`
+          `Graphing: barGraphProp (${barGraphProp}) needs to be a Map property!`
         );
       agent.statusObject.barGraph = [...barGraphSource.values()];
       agent.statusObject.barGraphLabels = [...barGraphSource.keys()];
@@ -250,9 +250,9 @@ class WidgetPack extends SM_Feature {
     this.featAddProp(agent, 'barGraphPropFeature', new SM_String());
 
     // Private Props
-    agent.prop.AgentWidgets._graph = [0, 0];
-    agent.prop.AgentWidgets._graphCounter = 0;
-    agent.prop.AgentWidgets._graphValueOld = 0;
+    agent.prop.Graphing._graph = [0, 0];
+    agent.prop.Graphing._graphCounter = 0;
+    agent.prop.Graphing._graphValueOld = 0;
     // REGISTER the Agent for updates
     WIDGET_AGENTS.set(agent.id, agent.id);
   }
@@ -291,8 +291,8 @@ class WidgetPack extends SM_Feature {
     feature: string,
     propName: string
   ) {
-    agent.prop.AgentWidgets._histogramFeature = feature;
-    agent.prop.AgentWidgets._histogramProp = propName;
+    agent.prop.Graphing._histogramFeature = feature;
+    agent.prop.Graphing._histogramProp = propName;
   }
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////

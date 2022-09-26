@@ -244,7 +244,7 @@ export function EditSymbol_Block(props) {
       ...symbolDicts
     } = symbolData;
     /* `symbolDicts` looks like this: {
-          features: {Costume: {…}, Physics: {…}, AgentWidgets: {…}}
+          features: {Costume: {…}, Physics: {…}, Graphing: {…}}
           props: {x: {…}, y: {…}, statusText: {…}, eType: {…}, energyLevel: {…}, …}
         }
     */
