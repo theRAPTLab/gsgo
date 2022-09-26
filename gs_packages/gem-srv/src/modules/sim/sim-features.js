@@ -8,7 +8,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 // ACTIVATE FEATURES (SELF-INSTALLING ON IMPORT)
-import './features/feat-agentwidget';
+import './features/feat-graphing';
 import './features/feat-costume';
 import './features/feat-cursor';
 import './features/feat-movement';

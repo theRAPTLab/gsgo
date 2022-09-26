@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 import ArrowIcon from '@material-ui/icons/ArrowDropDown';
@@ -258,18 +258,32 @@ class InstanceInspector extends React.Component {
           }}
         >
           {visibleProps.map(property => (
-            <>
-              <div className={classes.inspectorLabel}>{property.label}:</div>
-              <div className={classes.inspectorData}>{property.value}</div>
-            </>
+            <Fragment key={`wrap${property.label}`}>
+              <div className={classes.inspectorLabel} key={property.label}>
+                {property.label}:
+              </div>
+              <div
+                className={classes.inspectorData}
+                key={`${property.label}-value`}
+              >
+                {property.value}
+              </div>
+            </Fragment>
           ))}
           {isExpanded && (
             <>
               {hiddenProps.map(property => (
-                <>
-                  <div className={classes.inspectorLabel}>{property.label}:</div>
-                  <div className={classes.inspectorData}>{property.value}</div>
-                </>
+                <Fragment key={`wrap${property.label}`}>
+                  <div className={classes.inspectorLabel} key={property.label}>
+                    {property.label}:
+                  </div>
+                  <div
+                    className={classes.inspectorData}
+                    key={`${property.label}-value`}
+                  >
+                    {property.value}
+                  </div>
+                </Fragment>
               ))}
             </>
           )}

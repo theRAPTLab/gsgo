@@ -4,7 +4,7 @@
 
   Used by:
   * SM_Agent
-  * AgentWidgets for barGraph
+  * Graphing for barGraph
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 

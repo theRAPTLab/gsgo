@@ -106,9 +106,12 @@
 .gwiz.specialComment {
   color: purple;
 }
+.gwiz.noteComment {
+  color: purple;
+}
 .gwiz.explanationComment {
-  color: rgb(21, 135, 6);
-  background-color: rgba(0, 0, 0, 0.35);
+  color: white;
+  background-color: rgba(33, 10, 180, 0.867);
   font-style: normal;
 }
 .gwiz.hypothesisComment {
@@ -117,12 +120,12 @@
   font-style: normal;
 }
 .gwiz.questionComment {
-  color: red;
-  background-color: rgba(0, 0, 0, 0.35);
+  color: black;
+  background-color: rgba(45, 197, 248, 0.673);
   font-style: normal;
 }
 .gwiz.changeComment {
-  color: green;
+  color: black;
   background-color: lightgreen;
 }
 .gwiz.stylePragma {
