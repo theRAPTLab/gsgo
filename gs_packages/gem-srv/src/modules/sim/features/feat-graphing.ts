@@ -180,11 +180,9 @@ function m_UIUpdate(frame) {
     // The graph is 100 px wide, so this gives you at least a gap
     const max = 100 * 2;
     const l = agent.prop.Graphing._graph.length;
-    if (l > 2) {
-      // l > 2 to ignore first default value of [0,0]
-      // only draw graph if there is data
+    // If a graph has been spec'd, always draw the graph so the bg draws
+    if (agentWgt.graphProp && agentWgt.graphProp.value)
       agent.prop.statusHistory = agentWgt._graph.slice(Math.max(l - max, 0));
-    }
 
     // 4. Update Bar Graph
     const barGraphProp = agent.prop.Graphing.barGraphProp.value;
