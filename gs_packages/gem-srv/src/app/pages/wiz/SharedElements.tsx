@@ -320,18 +320,27 @@ export function GToken(props) {
     : 'gwiz gtoken styleOpen';
   // special types? use additional classes
   if (type === 'identifier' && position === 0) classes += ' styleKey';
+
   if (type === '{noncode}') {
     classes += ' styleComment';
     // Joshua added this hack to allow us to style different comments in unique ways
     // based on their content, so that we can draw attention to certain kinds of ideas
     // sort of like headers
     if (label.includes('**')) classes += ' specialComment';
-    if (label.includes('EXPLANATION')) classes += ' explanationComment';
-    if (label.includes('NOTE')) classes += ' noteComment';
-    if (label.includes('STUDENTS_MAY_CHANGE')) classes += ' changeComment';
-    if (label.includes('QUESTION')) classes += ' questionComment';
-    if (label.includes('HYPOTHESIS')) classes += ' hypothesisComment';
-    if (label.includes('DEFINITION')) classes += ' definitionComment';
+
+    //JD's ORIGINAL COMMENT STYLING
+    // if (label.includes('EXPLANATION')) classes += ' explanationComment';
+    // if (label.includes('NOTE')) classes += ' noteComment';
+    // if (label.includes('STUDENTS_MAY_CHANGE')) classes += ' changeComment';
+    // if (label.includes('QUESTION')) classes += ' questionComment';
+    // if (label.includes('HYPOTHESIS')) classes += ' hypothesisComment';
+    // if (label.includes('DEFINITION')) classes += ' definitionComment';
+
+    //MV'S STYLING SUGGESTIONS
+    if (label.includes('🔎 WHAT')) classes += ' explanationCommentHeader';
+    if (label.includes('✏️ LETS')) classes += ' changeCommentHeader';
+    if (label.includes('🔎')) classes += ' explanationCommentBody';
+    if (label.includes('✏️')) classes += ' changeCommentBody';
   }
   if (type === 'directive') classes += ' stylePragma';
   if (SPECIAL_IDENTS.includes(label)) classes += ' stylePragma';
@@ -369,16 +378,23 @@ export function GValidationToken(props) {
   if (type === 'identifier' && position === 0) classes += ' styleKey';
   if (type === '{noncode}') {
     classes += ' styleComment';
+
     // Joshua added this hack to allow us to style different comments in unique ways
     // based on their content, so that we can draw attention to certain kinds of ideas
     // sort of like headers
-    if (label.includes('**')) classes += ' specialComment';
-    if (label.includes('NOTE')) classes += ' noteComment';
-    if (label.includes('EXPLANATION')) classes += ' explanationComment';
-    if (label.includes('STUDENTS_MAY_CHANGE')) classes += ' changeComment';
-    if (label.includes('QUESTION')) classes += ' questionComment';
-    if (label.includes('HYPOTHESIS')) classes += ' hypothesisComment';
-    if (label.includes('DEFINITION')) classes += ' definitionComment';
+    //JD's ORIGINAL COMMENT STYLING
+    // if (label.includes('EXPLANATION')) classes += ' explanationComment';
+    // if (label.includes('NOTE')) classes += ' noteComment';
+    // if (label.includes('STUDENTS_MAY_CHANGE')) classes += ' changeComment';
+    // if (label.includes('QUESTION')) classes += ' questionComment';
+    // if (label.includes('HYPOTHESIS')) classes += ' hypothesisComment';
+    // if (label.includes('DEFINITION')) classes += ' definitionComment';
+
+    //MV'S STYLING SUGGESTIONS
+    if (label.includes('🔎 WHAT')) classes += ' explanationCommentHeader';
+    if (label.includes('✏️ LETS')) classes += ' changeCommentHeader';
+    if (label.includes('🔎')) classes += ' explanationCommentBody';
+    if (label.includes('✏️')) classes += ' changeCommentBody';
   }
   if (type === 'directive') classes += ' stylePragma';
   if (SPECIAL_IDENTS.includes(label)) classes += ' stylePragma';
