@@ -165,6 +165,21 @@ function m_Update(frame) {
             binb = m_TouchesBinB(agent, t) ? frame : undefined;
             if (DBG && binb) console.log('touches binb', frame);
           }
+          if (c2c || c2b || b2b || binb)
+            UR.LogEvent('Touched', [
+              'agentId',
+              agentId,
+              'targetId',
+              t.id,
+              'b2b',
+              b2b,
+              'binb',
+              binb,
+              'c2c',
+              c2c,
+              'c2b',
+              c2b
+            ]);
         }
         if (!agent.lastTouched) agent.lastTouched = new Map();
         if (!agent.isTouching) agent.isTouching = new Map();

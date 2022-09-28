@@ -352,7 +352,7 @@ class MissionControl extends React.Component {
     // the old instances do not support.  A reset will
     // cause the instances to be recompiled.
     // Always reset!  Otherwise, scale commands get re-applied?
-    UR.RaiseMessage('NET:HACK_SIM_RESET');
+    UR.RaiseMessage('NET:SIM_RESET');
     this.setState(state => {
       if (state.panelConfiguration === 'edit') {
         UR.LogEvent('ProjSetup', ['Project Save']);
