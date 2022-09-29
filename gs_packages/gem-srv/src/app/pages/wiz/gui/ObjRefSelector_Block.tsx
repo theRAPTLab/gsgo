@@ -137,7 +137,10 @@ function ObjRefSelector_Block(props) {
     const type = tok.type;
     const label = tok.selectedText || GUI_EMPTY_TEXT;
     const selected = tok.selectedText === label; // always selected, so don't show selected
-
+    let viewState = code;
+    if (tok.selectedText === '' || tok.selectedText === undefined) {
+      viewState = 'empty'; // If slot is empty, it's empty, it's not an error
+    }
     // 1. Selected ObjRef Slot (e.g. agent, feature, prop, method)
     // unitText is the parentLabel, e.g. agent.Costume.costumeName
     // need to pass for featProp
@@ -163,7 +166,7 @@ function ObjRefSelector_Block(props) {
           type={type} // left column of table
           name={type} // syntax label
           label={label} // column subtitle (repeated)
-          viewState={code} // error
+          viewState={viewState} // error
           error={info} // error
           syntaxHelp={syntaxHelpTxt}
           help={selectedTokenHelpTxt}
