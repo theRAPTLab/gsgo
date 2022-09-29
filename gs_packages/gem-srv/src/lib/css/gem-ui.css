@@ -342,7 +342,7 @@
   color: darkslategray;
   background: yellow;
   min-width: 300px;
-  bottom: 10px;
+  bottom: 15px;
   padding: 5px;
   font-style: italic;
   font-weight: normal;
@@ -354,7 +354,7 @@
 }
 
 .gtoken:hover .gtokenhelp.gtokenhelpslot {
-  top: 10px;
+  top: 15px;
   bottom: revert;
   /* show popup on bottom if slot */
 }
