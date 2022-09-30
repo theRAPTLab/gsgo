@@ -566,6 +566,8 @@ class ScriptEditor extends React.Component {
             />
           )}
           {panelConfiguration === 'script' && (
+            // REVIEW: Ideally we would skip a ScriptView_Pane update when
+            // bpEditList changes to prevent extra re-rendering
             <ScriptView_Pane
               id="script"
               bpName={bpName}

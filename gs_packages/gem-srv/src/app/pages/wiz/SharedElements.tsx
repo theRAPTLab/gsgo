@@ -393,7 +393,7 @@ export function GValidationToken(props) {
   if (viewState === 'valid') classes += ''; // no style change
   if (viewState === 'invalid') classes += ' styleFlagInvalid';
   if (viewState === 'extra') classes += ' styleFlagInvalid';
-  if (viewState === 'empty') classes += ' styleFlagInvalid styleFlagEmpty';
+  if (viewState === 'empty') classes += ' styleFlagEmpty';
   if (viewState === 'vague') classes += ' styleFlagDisabled';
   if (viewState === 'locked') classes += ' styleFlagLocked';
   if (viewState === 'debug') classes += ' styleFlagInvalid styleFlagDisabled';
