@@ -243,18 +243,10 @@ export function AllAgentsProgram(data) {
   // 1. Remove Unused Blueprints and Agents
   FilterBlueprints(blueprintNames);
 
-  // 2. Create Instances from Script
-  SCRIPT_TO_INSTANCE.syncFromArray(instancesSpec);
-  SCRIPT_TO_INSTANCE.mapObjects();
-
-  // 3. Reset Global Agent
+  // 2. Reset Global Agent
   //    `instancesSpec` does not include the global agent
-  //    so SCRIPT_TO_INSTANCE (#2 above) will not create it.
+  //    so SCRIPT_TO_INSTANCE (#3 below) will not create it.
   //    Instead, we have to manually create it.
-  //
-  //    Create Global Agent AFTER instances have been created
-  //    b/c instances on older projects might have existing ids (e.g. 1)
-  //    that will conflict with global being "1" if we initialize it BEFORE instances
   const existingGlobal = SM_Agent.GLOBAL_AGENT;
   const globalBpDef = ACBlueprints.GetBlueprint(ACBlueprints.GLOBAL_AGENT_NAME);
   const globalInstanceDef = {
@@ -265,6 +257,19 @@ export function AllAgentsProgram(data) {
   };
   const globalAgent = MakeAgent(globalInstanceDef);
   SM_Agent.GLOBAL_AGENT = globalAgent;
+  // Migration Check -- Make sure there aren't any old project instances trying to use
+  // id 154, which will conflict with Global and cause odd errors.
+  instancesSpec.forEach(s => {
+    if (s.id === existingGlobal.id)
+      console.error(
+        `Instance id already in use by Global!  Please review your instance ids!!! ${s}`
+      );
+  });
+
+  // 3. Create Instances from Script
+  SCRIPT_TO_INSTANCE.syncFromArray(instancesSpec);
+  SCRIPT_TO_INSTANCE.mapObjects();
+
 
   // 4. Broadcast update to network devices
   UR.RaiseMessage('NET:INSTANCES_UPDATE', {
