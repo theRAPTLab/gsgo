@@ -157,7 +157,10 @@ export function ScriptViewWiz_Block(props) {
         let label;
         let selected;
         let viewState;
-        if (scriptToken) {
+        if (gsType === 'block') {
+          // Don't show special featCall method blocks (e.g. createAgent)!
+          return;
+        } else if (scriptToken) {
           label = TRANSPILER.TokenToString(scriptToken);
           viewState = validationToken.error ? validationToken.error.code : '';
         } else {
