@@ -14,7 +14,13 @@
       });
       container.addChild(graph);
 
-  data is a flat array of x, y values, e.g. [0,0, 1,2, 3,4]
+  data is a flat array of x, y values, with the first
+  four values setting the minX, maxX, minY, and maxY of the graph.
+  If the minX and maxX values match, then we assume the graph
+  should auto-set the bounds (same is true for minY and maxY):
+
+  e.g. [0,0, 0,0,   1,2, 3,4] will result in auto bounds of Y = 1 to 4
+  e.g. [0,0, 0,10,  1,2, 3,4] will result in bounds of Y = 0 to 10
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -89,7 +95,19 @@ export function DrawLineGraph(
   // const path = [0, 0, 2, 10, 3, 12, 5, 9, 5, 5, 6, 0];
 
   const path = data;
-  const bounds = m_GetBounds(path);
+  const minX = path.shift();
+  const maxX = path.shift();
+  const minY = path.shift();
+  const maxY = path.shift();
+  let bounds = m_GetBounds(path); // auto bounds
+  if (minX !== maxX) {
+    bounds.x = minX; // override bounds if minX and maxX are set differently
+    bounds.width = maxX - minX;
+  }
+  if (minY !== maxY) {
+    bounds.y = minY; // override bounds if minY and maxY are set differently
+    bounds.height = maxY - minY;
+  }
   const HAS_NEGATIVE_Y = bounds.y < 0;
 
   const color = options.color || COLOR;

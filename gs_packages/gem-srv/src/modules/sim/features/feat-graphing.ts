@@ -180,8 +180,17 @@ function m_UIUpdate(frame) {
     const max = 100 * 2;
     const l = agent.prop.Graphing._graph.length;
     // If a graph has been spec'd, always draw the graph so the bg draws
-    if (agentWgt.graphProp && agentWgt.graphProp.value)
-      agent.prop.statusHistory = agentWgt._graph.slice(Math.max(l - max, 0));
+    if (agentWgt.graphProp && agentWgt.graphProp.value) {
+      agent.prop.statusHistory = [
+        // inject bounds
+        agentWgt.graphMinX.value || 0, // Min X
+        agentWgt.graphMaxX.value || 0, // Max X -- set to match minX to trigger auto-bounds-setting
+        agentWgt.graphMinY.value || 0, // Min Y
+        agentWgt.graphMaxY.value || 0, // Max Y -- set to match minY to trigger auto-bounds-setting
+        // add graph data
+        ...agentWgt._graph.slice(Math.max(l - max, 0))
+      ];
+    }
 
     // 4. Update Bar Graph
     const barGraphProp = agent.prop.Graphing.barGraphProp.value;
@@ -237,6 +246,10 @@ class WidgetPack extends SM_Feature {
     this.featAddProp(agent, 'isLargeGraphic', new SM_Boolean(false));
     prop = new SM_Number(0);
     this.featAddProp(agent, 'graphValue', prop);
+    this.featAddProp(agent, 'graphMinX', new SM_Number()); // fix graph x scale mininum value
+    this.featAddProp(agent, 'graphMaxX', new SM_Number()); // fix graph x scale maximum value
+    this.featAddProp(agent, 'graphMinY', new SM_Number()); // fix graph y scale mininum value
+    this.featAddProp(agent, 'graphMaxY', new SM_Number()); // fix graph y scale maximum value
     this.featAddProp(agent, 'graphProp', new SM_String()); // agent prop name that text is bound to
     this.featAddProp(agent, 'graphGlobalProp', new SM_String()); // agent prop name that text is bound to
     prop = new SM_Number(30);
