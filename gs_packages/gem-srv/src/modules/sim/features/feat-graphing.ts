@@ -260,7 +260,7 @@ class WidgetPack extends SM_Feature {
     this.featAddProp(agent, 'barGraphPropFeature', new SM_String());
 
     // Private Props
-    agent.prop.Graphing._graph = [0, 0];
+    agent.prop.Graphing._graph = [];
     agent.prop.Graphing._graphCounter = 0;
     agent.prop.Graphing._graphValueOld = 0;
     // REGISTER the Agent for updates

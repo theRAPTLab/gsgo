@@ -189,7 +189,7 @@ export function DrawLineGraph(
     miterLimit: 10
   };
   graph.lineStyle(parms);
-  graph.moveTo(0, bounds.y < 0 ? 50 : 0);
+  // graph.moveTo(0, bounds.y < 0 ? 50 : 0); // we don't necessarily want to start at 0,0
   const l = normalized.length;
   graph.moveTo(normalized[0], normalized[1]);
   for (let i = 2; i < l; i += 2) {
