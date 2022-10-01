@@ -31,6 +31,17 @@ const PAD = 10;
 const BGCOLOR = 0xffffff;
 const COLOR = 0xffffff;
 
+const style = new PIXI.TextStyle({
+  // Axis label style
+  fontFamily: 'Arial',
+  fontSize: 18,
+  fill: ['#ffffff99'],
+  // stroke: '#333333cc', // stroke actually makes it harder to read
+  // strokeThickness: 3,
+  wordWrapWidth: 125,
+  wordWrap: true
+});
+
 // not necessary, just use position
 function m_Offset(path: number[], x: number, y: number) {
   return path.map((val, index) => (index % 2 ? val + x : val + y));
@@ -138,6 +149,33 @@ export function DrawLineGraph(
       graph.moveTo(0, 0);
       graph.lineTo(100, 0);
     }
+  }
+
+  // draw axis labels
+  const gap = 3;
+  let minYLabel = graph.getChildByName('minY') as PIXI.Text;
+  if (
+    minYLabel === undefined ||
+    String(bounds.y) !== (minYLabel && minYLabel.text)
+  ) {
+    if (minYLabel) graph.removeChild(minYLabel);
+    minYLabel = new PIXI.Text(String(bounds.y), style);
+    minYLabel.name = 'minY';
+    minYLabel.position.set(-minYLabel.width - gap, minYLabel.height);
+    minYLabel.scale.set(1, -1); // flip b/c graph is flipped
+    graph.addChild(minYLabel);
+  }
+  let maxYLabel = graph.getChildByName('maxY') as PIXI.Text;
+  if (
+    maxYLabel === undefined ||
+    String(bounds.height) !== (maxYLabel && maxYLabel.text)
+  ) {
+    if (maxYLabel) graph.removeChild(maxYLabel);
+    maxYLabel = new PIXI.Text(String(bounds.height), style);
+    maxYLabel.name = 'maxY';
+    maxYLabel.position.set(-maxYLabel.width - gap, 100);
+    maxYLabel.scale.set(1, -1); // flip b/c graph is flipped
+    graph.addChild(maxYLabel);
   }
 
   // draw graph
