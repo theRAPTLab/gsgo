@@ -102,7 +102,6 @@ function m_FeaturesUpdate(frame) {
 ///                      Runs after FEATURES_UPDATE so histograms can override graphs
 function m_GraphsUpdate(frame) {
   const agentIds = Array.from(WIDGET_AGENTS.keys());
-  // console.log('graphs update');
   agentIds.forEach(agentId => {
     const agent = m_getAgent(agentId);
     if (!agent) return;
@@ -113,8 +112,8 @@ function m_GraphsUpdate(frame) {
     // problematic
     if (agent.prop.Graphing._histogramFeature) {
       // SUPER HACK
-      // values are stored in the GLobal Agent because they're
-      // calculated during Round INit
+      // values are stored in the Global Agent because they're
+      // calculated during Round Init
       // const values =
       //   agent.prop[agent.prop.Graphing._histogramFeature][
       //     agent.prop.Graphing._histogramProp
@@ -176,8 +175,8 @@ function m_UIUpdate(frame) {
     if (isLargeGraphic) agent.prop.statusValueIsLarge.setTo(isLargeGraphic);
 
     // 3. Update Graph
-    // Only pass up to 50 points
-    // The graph is 100 px wide, so this gives you at least a gap
+    //    Only pass up to 50 points
+    //    The graph is 100 px wide, so this gives you at least a gap
     const max = 100 * 2;
     const l = agent.prop.Graphing._graph.length;
     // If a graph has been spec'd, always draw the graph so the bg draws
