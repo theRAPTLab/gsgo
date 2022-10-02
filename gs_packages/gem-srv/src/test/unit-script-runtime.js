@@ -13,8 +13,8 @@ import * as TRANSPILER from 'script/transpiler-v2';
 import {
   DefineInstance,
   GetAllInstances,
-  GetAllAgents,
-  GetAgentsByType
+  GetAllCharacters,
+  GetCharactersByType
 } from 'modules/datacore/dc-sim-agents';
 import SyncMap from 'lib/class-syncmap';
 import DisplayObject from 'lib/class-display-object';
@@ -46,9 +46,9 @@ function TestKeywords() {
     init: []
   });
   // get arrays of all the pre-defined agents
-  const fishes = GetAgentsByType('Fish');
-  const pads = GetAgentsByType('Pad');
-  const bees = GetAgentsByType('Bee');
+  const fishes = GetCharactersByType('Fish');
+  const pads = GetCharactersByType('Pad');
+  const bees = GetCharactersByType('Bee');
 
   // test keywords
   text = `

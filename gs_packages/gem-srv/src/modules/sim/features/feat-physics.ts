@@ -51,7 +51,7 @@ const PHYSICS_AGENTS = new Map();
  * @param agentId
  */
 function m_getAgent(agentId): IAgent {
-  const a = SIMAGENTS.GetAgentById(agentId);
+  const a = SIMAGENTS.GetCharacterById(agentId);
   if (!a) PHYSICS_AGENTS.delete(agentId);
   return a;
 }

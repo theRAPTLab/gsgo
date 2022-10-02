@@ -5,7 +5,7 @@ import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 
 export function MakeHoverable(vobj: Visual) {
   function onPointerOver(event) {
-    const agent = DCAGENTS.GetAgentById(vobj.id);
+    const agent = DCAGENTS.GetCharacterById(vobj.id);
     if (!agent) {
       console.error(
         'hoverable: Hovered agent not found!!! This should not happen!'
@@ -16,7 +16,7 @@ export function MakeHoverable(vobj: Visual) {
   }
 
   function onPointerOut(event) {
-    const agent = DCAGENTS.GetAgentById(vobj.id);
+    const agent = DCAGENTS.GetCharacterById(vobj.id);
     if (!agent) {
       console.error(
         'hoverable: Hovered agent not found!!! This should not happen!'

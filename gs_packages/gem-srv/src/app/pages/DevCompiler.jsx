@@ -178,7 +178,7 @@ class Compiler extends React.Component {
     DATACORE.DeleteAllTests();
     // DATACORE.DeleteAllGlobalConditions(); // deprecated in script-xp
     DATACORE.DeleteAllScriptEvents();
-    DATACORE.DeleteAllAgents();
+    DATACORE.DeleteAllCharacters();
     DATACORE.DeleteAllInstances();
     const bdl = TRANSPILER.CompileBlueprint(this.source);
     const bp = TRANSPILER.RegisterBlueprint(bdl);

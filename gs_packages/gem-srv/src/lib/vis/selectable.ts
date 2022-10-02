@@ -39,7 +39,7 @@ const DBG = false;
 
 export function MakeSelectable(vobj: Visual) {
   function onTap(event) {
-    const agent = DCAGENTS.GetAgentById(vobj.id);
+    const agent = DCAGENTS.GetCharacterById(vobj.id);
     if (DBG) console.log(`selectable.ts: Tapped on vobj.id ${agent.id}`);
     if (!agent) {
       console.error(

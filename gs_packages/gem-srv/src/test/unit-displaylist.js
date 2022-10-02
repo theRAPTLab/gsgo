@@ -12,7 +12,7 @@ import Pool from 'lib/class-pool';
 import MappedPool, { TestArrayEntities } from 'lib/class-mapped-pool';
 import DisplayObject, { TestValidDOBJs } from 'lib/class-display-object';
 import Sprite from 'lib/class-visual';
-import { GetAllAgents } from 'modules/datacore';
+import { GetAllCharacters } from 'modules/datacore';
 import { UpdateDisplayList } from 'modules/render/api-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -81,15 +81,17 @@ function TestSyncAgents() {
     onRemove: u_NullRemove
   });
   // the AGENTS map is keyed by type, containing Sets of agent instances
-  const agents = GetAllAgents();
+  const agents = GetAllCharacters();
   const startCount = agents.length;
   console.assert(TestArrayEntities(agents), 'agents do not pass test');
 
   /* TEST 1 */
   console.group('initial sync');
-  let { added: a1, removed: r1, updated: u1 } = AGENT_TO_DOBJ.syncFromArray(
-    agents
-  );
+  let {
+    added: a1,
+    removed: r1,
+    updated: u1
+  } = AGENT_TO_DOBJ.syncFromArray(agents);
   console.assert(
     a1.length === startCount,
     `added count should be ${startCount}, not ${a1.length}`
@@ -100,9 +102,11 @@ function TestSyncAgents() {
 
   /* TEST 2 */
   console.group('followup sync - no change');
-  let { added: a2, removed: r2, updated: u2 } = AGENT_TO_DOBJ.syncFromArray(
-    agents
-  );
+  let {
+    added: a2,
+    removed: r2,
+    updated: u2
+  } = AGENT_TO_DOBJ.syncFromArray(agents);
   console.assert(a2.length === 0, `added should be 0, not ${a2.length}`);
   console.assert(r2.length === 0, `removed should be 0, not ${r2.length}`);
   console.assert(
@@ -114,9 +118,11 @@ function TestSyncAgents() {
   /* TEST 3 */
   console.group('followup sync - lost objects');
   let halfArray = agents.slice(0, Math.floor(startCount / 2));
-  let { added: a3, removed: r3, updated: u3 } = AGENT_TO_DOBJ.syncFromArray(
-    halfArray
-  );
+  let {
+    added: a3,
+    removed: r3,
+    updated: u3
+  } = AGENT_TO_DOBJ.syncFromArray(halfArray);
   console.assert(a3.length === 0, `added should be 0, not ${a3.length}`);
   const rem = startCount - halfArray.length;
   console.assert(r3.length === rem, `removed should be ${rem}, not ${r3.length}`);
@@ -151,7 +157,7 @@ function TestDisplayList() {
   });
   /* TEST 4 - Inspect Display List */
   // the AGENTS map is keyed by type, containing Sets of agent instances
-  const agents = GetAllAgents();
+  const agents = GetAllCharacters();
   const startCount = agents.length;
   console.assert(TestArrayEntities(agents), 'entities do not pass test');
 
@@ -190,7 +196,7 @@ const AGENT_TO_DOBJ_UPDATE = new MappedPool(DOBJ_POOL, {
 });
 
 function TestUpdateDisplayList(frameTime) {
-  const agents = GetAllAgents();
+  const agents = GetAllCharacters();
   // move the agents around manually by random jiggle
   agents.forEach(agent => {
     const rx = Math.round(5 - Math.random() * 10);

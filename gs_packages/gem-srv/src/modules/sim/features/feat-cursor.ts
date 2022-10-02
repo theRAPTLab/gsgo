@@ -87,12 +87,12 @@ prop zIndex setTo 1000
  *  target already, and it's touching an agent, then pick it up. */
 function m_UpdateInhabitAgent(frametime) {
   // Handle the inhabiting programmatically
-  const cursors = DCAGENTS.GetAgentsByType('Cursor');
+  const cursors = DCAGENTS.GetCharactersByType('Cursor');
   cursors.find(c => {
     // Make sure the target still exists, if it doesn't allow pickup
     if (
       c.prop.isInhabitingTarget.value &&
-      DCAGENTS.GetAgentById(c.prop.Cursor.cursorTargetId.value)
+      DCAGENTS.GetCharacterById(c.prop.Cursor.cursorTargetId.value)
     )
       return false; // cursor already mapped
 
@@ -108,7 +108,7 @@ function m_UpdateInhabitAgent(frametime) {
       if (isTouching && !isTouching.c2c) return false; // not touching this target
 
       // is touching target
-      const target = DCAGENTS.GetAgentById(id);
+      const target = DCAGENTS.GetCharacterById(id);
 
       // if target is missing then it was probably removed even though it's still touching
       if (!target) return false;
@@ -126,7 +126,7 @@ function m_UpdateInhabitAgent(frametime) {
     // not touching anything
     if (!targetId) return false;
     // found target, set target as inhabitingTarget
-    const target = DCAGENTS.GetAgentById(targetId);
+    const target = DCAGENTS.GetCharacterById(targetId);
 
     if (!target) {
       console.error(
@@ -185,7 +185,7 @@ class CursorPack extends SM_Feature {
   // `agent` in this case is the character being bound to, rather than
   // the Cursor agent. e.g. to release a Moth, you would call
   //   `featCall Moth.Cursor releaseCursor`
-  // NOTE: dc-sim-agents.DeleteAgent will explicitly release the cursor when
+  // NOTE: dc-sim-agents.DeleteCharacter will explicitly release the cursor when
   // an agent is deleted.
   releaseCursor(agent: IAgent) {
     // clear the cursor state

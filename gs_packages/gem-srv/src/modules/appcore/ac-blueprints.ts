@@ -440,7 +440,7 @@ function ResetAndCompileBlueprints(
   SIMDATA.ResetAllFeatures();
   SIMDATA.DeleteAllScriptEvents();
   SIMDATA.DeleteAllBlueprintBundles();
-  DCAGENTS.DeleteAllAgents();
+  DCAGENTS.DeleteAllCharacters();
   DCAGENTS.DeleteAllInstances();
   const bpDefs = m_CompileBlueprints(blueprints);
   // Update state

@@ -101,7 +101,7 @@ function ShuffleArray(array) {
  *  FUTURE OPTIMIZATION will cache the results based on key
  */
 function SingleAgentFilter(type: string, testA: string, ...args: any) {
-  const agents = DCAGENTS.GetAgentsByType(type);
+  const agents = DCAGENTS.GetCharactersByType(type);
   const testFunc = SIMDATA.GetWhenTest(testA);
   ShuffleArray(agents);
   const pass = [];
@@ -117,8 +117,8 @@ function SingleAgentFilter(type: string, testA: string, ...args: any) {
  *  test looks like (agentA, agentB)=>boolean
  */
 function PairAgentFilter(A: string, testAB: string, B: string, ...args: any) {
-  const setA = DCAGENTS.GetAgentsByType(A);
-  const setB = DCAGENTS.GetAgentsByType(B);
+  const setA = DCAGENTS.GetCharactersByType(A);
+  const setB = DCAGENTS.GetCharactersByType(B);
   const testFunc = SIMDATA.GetWhenTest(testAB);
   ShuffleArray(setA);
   ShuffleArray(setB);

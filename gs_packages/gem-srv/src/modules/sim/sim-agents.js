@@ -103,7 +103,7 @@ function MakeAgent(def) {
   const refs = { bundle, globals: {} };
   const initScript = TRANSPILER.CompileText(def.initScript, refs);
   BUNDLER.CloseBundle();
-  let agent = DCAGENTS.GetAgentById(def.id);
+  let agent = DCAGENTS.GetCharacterById(def.id);
   if (!agent) agent = TRANSPILER.MakeAgent(def);
   agent.exec(initScript, { agent });
   return agent;
@@ -212,7 +212,7 @@ function FilterBlueprints(namesToKeep) {
       // [We can't rely on SyncMap to remove because it doesn't
       //  sync to blueprints, just to instanceDefs]
       // remove any agents using the blueprint
-      DCAGENTS.DeleteAgentByBlueprint(b.name);
+      DCAGENTS.DeleteCharacterByBlueprint(b.name);
       // remove instances using the blueprint
       DCAGENTS.DeleteInstancesByBlueprint(b.name);
     }
@@ -269,7 +269,6 @@ export function AllAgentsProgram(data) {
   // 3. Create Instances from Script
   SCRIPT_TO_INSTANCE.syncFromArray(instancesSpec);
   SCRIPT_TO_INSTANCE.mapObjects();
-
 
   // 4. Broadcast update to network devices
   UR.RaiseMessage('NET:INSTANCES_UPDATE', {
@@ -332,29 +331,29 @@ export function ClearDOBJ() {
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentsUpdate(frameTime) {
-  const allAgents = DCAGENTS.GetAllAgents();
-  allAgents.forEach(agent => {
+  const AllCharacters = DCAGENTS.GetAllCharacters();
+  AllCharacters.forEach(agent => {
     agent.agentUPDATE(frameTime);
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentsEvent(frameTime) {
-  const allAgents = DCAGENTS.GetAllAgents();
-  allAgents.forEach(agent => {
+  const AllCharacters = DCAGENTS.GetAllCharacters();
+  AllCharacters.forEach(agent => {
     agent.agentEVENT(frameTime);
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentThink(frameTime) {
-  const allAgents = DCAGENTS.GetAllAgents();
-  allAgents.forEach(agent => {
+  const AllCharacters = DCAGENTS.GetAllCharacters();
+  AllCharacters.forEach(agent => {
     agent.agentTHINK(frameTime);
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentExec(frameTime) {
-  const allAgents = DCAGENTS.GetAllAgents();
-  allAgents.forEach(agent => {
+  const AllCharacters = DCAGENTS.GetAllCharacters();
+  AllCharacters.forEach(agent => {
     agent.agentEXEC(frameTime);
   });
 }
@@ -364,8 +363,8 @@ function AgentReset(frameTime) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function VisUpdate(frameTime) {
-  const allAgents = DCAGENTS.GetAllAgents();
-  AGENT_TO_DOBJ.syncFromArray(allAgents);
+  const AllCharacters = DCAGENTS.GetAllCharacters();
+  AGENT_TO_DOBJ.syncFromArray(AllCharacters);
   AGENT_TO_DOBJ.mapObjects();
   const dobjs = AGENT_TO_DOBJ.getMappedObjects();
   RENDERER.UpdateDisplayList(dobjs);

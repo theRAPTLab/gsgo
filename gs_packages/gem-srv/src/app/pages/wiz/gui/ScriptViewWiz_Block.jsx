@@ -158,7 +158,7 @@ export function ScriptViewWiz_Block(props) {
         let selected;
         let viewState;
         if (gsType === 'block') {
-          // Don't show special featCall method blocks (e.g. createAgent)!
+          // Don't show special featCall method blocks (e.g. createCharacter)!
           return;
         } else if (scriptToken) {
           label = TRANSPILER.TokenToString(scriptToken);

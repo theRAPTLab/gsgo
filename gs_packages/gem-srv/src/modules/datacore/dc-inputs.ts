@@ -446,5 +446,5 @@ export function GetInputDefs(): object[] {
  */
 export function InputsReset() {
   const defs = GetInputDefs();
-  defs.forEach(d => DCAGENTS.DeleteAgent(d));
+  defs.forEach(d => DCAGENTS.DeleteCharacter(d));
 }

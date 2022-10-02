@@ -205,7 +205,7 @@ function MakeAgent(instanceDef: TInstanceDef) {
     if (!bdl) throw Error(`agent blueprint for '${bpid}' not defined`);
     // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
     agent.setBlueprint(bdl);
-    return SIMAGENTS.SaveAgent(agent);
+    return SIMAGENTS.SaveCharacter(agent);
   }
   throw Error(
     `${fn} bad blueprint name ${JSON.stringify(
@@ -215,7 +215,7 @@ function MakeAgent(instanceDef: TInstanceDef) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RemoveAgent(instanceDef: TInstanceDef) {
-  SIMAGENTS.DeleteAgent(instanceDef);
+  SIMAGENTS.DeleteCharacter(instanceDef);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

@@ -1,6 +1,6 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import { GetAgentByName } from 'modules/datacore';
+import { GetCharacterByName } from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../helpers/page-xui-styles';
 
@@ -27,7 +27,7 @@ class InstanceSpecInspector extends React.Component {
 
   componentDidMount() {
     const { agentName } = this.props;
-    const agent = GetAgentByName(agentName);
+    const agent = GetCharacterByName(agentName);
     this.setState({ agent });
     // UR.HandleMessage('NET:HACK_INSPECTOR_UPDATE', this.OnDataUpdate);
   }
