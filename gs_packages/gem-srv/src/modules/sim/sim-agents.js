@@ -103,7 +103,7 @@ function MakeAgent(def) {
   const refs = { bundle, globals: {} };
   const initScript = TRANSPILER.CompileText(def.initScript, refs);
   BUNDLER.CloseBundle();
-  let agent = DCAGENTS.GetAgentById(def.id);
+  let agent = DCAGENTS.GetCharacterById(def.id);
   if (!agent) agent = TRANSPILER.MakeAgent(def);
   agent.exec(initScript, { agent });
   return agent;
@@ -212,7 +212,7 @@ function FilterBlueprints(namesToKeep) {
       // [We can't rely on SyncMap to remove because it doesn't
       //  sync to blueprints, just to instanceDefs]
       // remove any agents using the blueprint
-      DCAGENTS.DeleteAgentByBlueprint(b.name);
+      DCAGENTS.DeleteCharacterByBlueprint(b.name);
       // remove instances using the blueprint
       DCAGENTS.DeleteInstancesByBlueprint(b.name);
     }

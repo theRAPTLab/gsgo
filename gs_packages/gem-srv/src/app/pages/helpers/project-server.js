@@ -415,7 +415,7 @@ function BlueprintDelete(bpName) {
   ACBlueprints.DeleteBlueprint(bpName);
   // 2. Remove from sim
   DCAGENTS.DeleteInstancesByBlueprint(bpName);
-  DCAGENTS.DeleteAgentByBlueprint(bpName);
+  DCAGENTS.DeleteCharacterByBlueprint(bpName);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** PanelScript is the only one who calls this to delete a blueprint
@@ -495,7 +495,7 @@ function InstanceDelete(data) {
   ACInstances.DeleteInstance(data.id);
   // Remove from Sim
   DCAGENTS.DeleteInstance(data);
-  DCAGENTS.DeleteAgent(data);
+  DCAGENTS.DeleteCharacter(data);
   RaiseModelUpdate(data.modelId); // not needed?  shouldn't state cause this?
   RaiseInstancesListUpdate();
 }
@@ -530,7 +530,7 @@ function InstanceRequestEdit(data) {
   //    TODO: Prevent others from editing?
   //          May not be necessary if we only allow one map editor
   // 1. Set Agent Data
-  const agent = DCAGENTS.GetAgentById(data.agentId);
+  const agent = DCAGENTS.GetCharacterById(data.agentId);
   if (!agent) {
     console.warn(
       ...PR(
@@ -566,7 +566,7 @@ function InstanceDefUpdate(data) {
   // 1. Delete the old instance
   //    Delete the old instance so AllCharactersPropgramUpdate will recreate
   //    it with the new script.
-  DCAGENTS.DeleteAgent({ bpid: data.bpName, id: data.agentId });
+  DCAGENTS.DeleteCharacter({ bpid: data.bpName, id: data.agentId });
   //    Also delete input agents
   DCINPUTS.InputsReset();
 
@@ -667,7 +667,7 @@ function ScriptUpdate(data) {
   //    Also skip reset if we're in the middle of multiple rounds of
   //    running.  (RoundHasBeenStarted)
   if (!IsRunning() && !RoundHasBeenStarted()) {
-    DCAGENTS.GetInstancesType(bpName).forEach(a => DCAGENTS.DeleteAgent(a));
+    DCAGENTS.GetInstancesType(bpName).forEach(a => DCAGENTS.DeleteCharacter(a));
     // Also delete input agents
     DCINPUTS.InputsReset();
     ACBlueprints.ResetAndCompileBlueprints();
@@ -687,7 +687,7 @@ function ScriptUpdate(data) {
  *  @param {object} data -- {projId, agentId}
  */
 function InstanceSelect(data) {
-  const agent = DCAGENTS.GetAgentById(data.agentId);
+  const agent = DCAGENTS.GetCharacterById(data.agentId);
   agent.setSelected(true);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -695,7 +695,7 @@ function InstanceSelect(data) {
  *  @param {object} data -- {projId, agentId}
  */
 function InstanceDeselect(data) {
-  const agent = DCAGENTS.GetAgentById(data.agentId);
+  const agent = DCAGENTS.GetCharacterById(data.agentId);
   if (agent) {
     // agent may have been deleted, so make sure it still exists
     agent.setSelected(false);
@@ -706,7 +706,7 @@ function InstanceDeselect(data) {
  *  @param {object} data -- {projId, agentId}
  */
 function InstanceHoverOver(data) {
-  const agent = DCAGENTS.GetAgentById(data.agentId);
+  const agent = DCAGENTS.GetCharacterById(data.agentId);
   if (agent) {
     // agent may have been deleted, so make sure it still exists
     agent.setHovered(true);
@@ -717,7 +717,7 @@ function InstanceHoverOver(data) {
  *  @param {object} data -- {projId, agentId}
  */
 function InstanceHoverOut(data) {
-  const agent = DCAGENTS.GetAgentById(data.agentId);
+  const agent = DCAGENTS.GetCharacterById(data.agentId);
   if (agent) {
     // agent may have been deleted, so make sure it still exists
     agent.setHovered(false);

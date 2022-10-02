@@ -347,10 +347,10 @@ class ScriptView_Pane extends React.Component {
    * 5. Transpiler.MakeAgent
    *    a. MakeAgent creates a new agent out of the instancedef
    *       retrieving the existing blueprint from datacore.
-   *    b. MakeAgent saves the agent via dc-sim-agents.SaveAgent
-   * 6. dc-sim-agents.SaveAgent
-   *    a. SaveAgent saves it to the AGENTS map.
-   *    b. SaveAgent saves agents by id, which comes from a counter
+   *    b. MakeAgent saves the agent via dc-sim-agents.SaveCharacter
+   * 6. dc-sim-agents.SaveCharacter
+   *    a. SaveCharacter saves it to the AGENTS map.
+   *    b. SaveCharacter saves agents by id, which comes from a counter
    */
   OnSaveToServer() {
     // abort if slots need saving

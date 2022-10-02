@@ -11,7 +11,7 @@ import * as PIXI from 'pixi.js';
 import UR from '@gemstep/ursys/client';
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import SM_Feature from 'lib/class-sm-feature';
-import { GetAgentById } from 'modules/datacore/dc-sim-agents';
+import { GetCharacterById } from 'modules/datacore/dc-sim-agents';
 import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 import { GetLoader } from 'modules/asset_core/asset-mgr';
 import { Clamp } from 'lib/util-vector';
@@ -97,7 +97,7 @@ function m_CalculateScale(agent: IAgent): { scale: number; scaleY: number } {
  * @param agentId
  */
 function m_getAgent(agentId): IAgent {
-  const a = GetAgentById(agentId);
+  const a = GetCharacterById(agentId);
   if (!a) COSTUME_AGENTS.delete(agentId);
   return a;
 }

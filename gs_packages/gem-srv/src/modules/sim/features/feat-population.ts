@@ -31,7 +31,7 @@ const AGENTS_TO_CREATE = []; // InstanceDef[]
 function m_Delete(frame) {
   while (AGENTS_TO_REMOVE.length > 0) {
     const id = AGENTS_TO_REMOVE.pop();
-    const agent = SIMAGENTS.GetAgentById(id);
+    const agent = SIMAGENTS.GetCharacterById(id);
     if (agent) {
       // Clear isTouching and lastTouched values here
       // because agent will be removed and touch update
@@ -39,7 +39,7 @@ function m_Delete(frame) {
       if (agent.hasFeature('Touches')) {
         agent.callFeatMethod('Touches', 'clearTouches', agent.id);
       }
-      SIMAGENTS.DeleteAgent({
+      SIMAGENTS.DeleteCharacter({
         id: agent.id,
         bpid: agent.blueprint.name
       });
@@ -52,9 +52,9 @@ function m_Create(frame) {
 
     SIMAGENTS.DefineInstance(def);
     let agent = TRANSPILER.MakeAgent(def);
-    const parent = SIMAGENTS.GetAgentById(def.parentId);
+    const parent = SIMAGENTS.GetCharacterById(def.parentId);
     if (parent) {
-      if (def.doClone) SIMAGENTS.CopyAgentProps(parent, agent);
+      if (def.doClone) SIMAGENTS.CopyCharacterProps(parent, agent);
       else {
         // just copy x/y
         agent.x = parent.x + RNG() * 8 - 4;

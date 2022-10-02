@@ -8,7 +8,10 @@ import {
   InputsUpdate,
   GetInputDefs
 } from 'modules/datacore/dc-inputs';
-import { GetAgentById, DeleteAgent } from 'modules/datacore/dc-sim-agents';
+import {
+  GetCharacterById,
+  DeleteCharacter
+} from 'modules/datacore/dc-sim-agents';
 import SyncMap from '../../lib/class-syncmap';
 import InputDef from '../../lib/class-input-def';
 import * as TRANSPILER from './script/transpiler-v2';
@@ -38,7 +41,7 @@ const INPUTDEF_TO_AGENT = new SyncMap({
  * @param {InputDef} oldInputDef
  */
 function UpdateAgent(newInputDef, oldInputDef) {
-  let agent = GetAgentById(newInputDef.id);
+  let agent = GetCharacterById(newInputDef.id);
   if (!agent) {
     agent = TRANSPILER.MakeAgent(newInputDef);
   } else if (agent.blueprint.name !== newInputDef.bpid) {
@@ -46,7 +49,7 @@ function UpdateAgent(newInputDef, oldInputDef) {
     // ISSUE: Since we re-use the agentID, certain parameters set by the
     //        old agent might not be reset with the new agent.
     //        We have to clear these manually.
-    DeleteAgent(oldInputDef);
+    DeleteCharacter(oldInputDef);
     agent = TRANSPILER.MakeAgent(newInputDef);
   }
   // Only update oldInputDef AFTER possible deletion or bpname will not match
@@ -80,7 +83,7 @@ INPUTDEF_TO_AGENT.setMapFunctions({
     UpdateAgent(newInputDef, oldInputDef);
   },
   onRemove: inputDef => {
-    DeleteAgent(inputDef);
+    DeleteCharacter(inputDef);
   }
 });
 

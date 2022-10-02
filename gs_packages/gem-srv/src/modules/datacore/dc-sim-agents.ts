@@ -5,6 +5,11 @@
   Maintains list of agent instances, and also provides a reverse lookup from the
   agent id to instance.
 
+  NOTE: Joshua was mucking around renaming methods inside of the feaures to refer
+  to chraacters rather than agents and caught some of these methods. He went ahead
+  and renamed the rest, but the side effect is we now have character methods but agent
+  properties until we have time for a more thorough overhall
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
@@ -24,7 +29,7 @@ let INSTANCEDEF_ID_COUNTER = INSTANCEDEF_ID_START;
 /// AGENT SUPPORT UTILITIES ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: Copies all `agent.prop` GVars.  Does not copy SM_Feature props.
- *  Used by CopyAgentProps. */
+ *  Used by CopyCharacterProps. */
 function m_CopyProps(props: object, targetProps: object) {
   for (const [key, value] of Object.entries(props)) {
     // Test for targetProps[key] b/c non-GVar properties (like `statusHistory`) do not have a setTo
@@ -34,7 +39,7 @@ function m_CopyProps(props: object, targetProps: object) {
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** UTILITY: Blindly copy all featProps.  Used by CopyAgentProps.
+/** UTILITY: Blindly copy all featProps.  Used by CopyCharacterProps.
  *  NOTE: Ignores Dicts!!!! */
 function m_CopyFeatProps(origFeatProps: any[], targetAgentFeatProps: any) {
   const featProps = [...Object.keys(origFeatProps)];
@@ -137,7 +142,7 @@ function DeleteInstancesByBlueprint(bpName) {
  *  @param origAgent
  *  @param targetAgent a freshly minted agent with no settings
  */
-function CopyAgentProps(origAgent: IAgent, targetAgent: IAgent) {
+function CopyCharacterProps(origAgent: IAgent, targetAgent: IAgent) {
   // blueprint is already copied by MakeAgent
   // flags are temporary states that should not be copied?
 
@@ -159,7 +164,7 @@ function CopyAgentProps(origAgent: IAgent, targetAgent: IAgent) {
  *  AGENTS has instances by blueprint name, which is a Map of agents
  *  AGENT_DICT has instances by id
  */
-function SaveAgent(agent) {
+function SaveCharacter(agent) {
   const { id, blueprint } = agent;
   const blueprintName = blueprint.name;
   //
@@ -182,7 +187,7 @@ function SaveAgent(agent) {
  *  2. AGENT_DICT values are also a map of `agents`
  *     with the same SM_Agent.id as the key.
  */
-function DeleteAgent(instancedef) {
+function DeleteCharacter(instancedef) {
   const { bpid, id } = instancedef;
   if (!AGENTS.has(bpid)) {
     console.error(...PR(`blueprint ${instancedef} not found`));
@@ -201,7 +206,7 @@ function DeleteAgent(instancedef) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-function DeleteAgentByBlueprint(bpName) {
+function DeleteCharacterByBlueprint(bpName) {
   const agents = AGENTS.get(bpName);
   AGENTS.delete(bpName);
   if (agents) agents.forEach(a => AGENT_DICT.delete(a.id));
@@ -217,7 +222,7 @@ function GetCharactersByType(bpName) {
   return [...agentSet.values()];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetAgentById(id): IAgent {
+function GetCharacterById(id): IAgent {
   const agent = AGENT_DICT.get(id);
   if (agent) return agent;
   return undefined;
@@ -232,7 +237,7 @@ function GetAllCharacters() {
   return arr;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetAgentByName(name): IAgent {
+function GetCharacterByName(name): IAgent {
   const agents = GetAllCharacters();
   const agent = agents.find(a => a.meta.name === name);
   if (agent) return agent;
@@ -255,15 +260,15 @@ export {
   GetInstancesType,
   DeleteAllInstances,
   DeleteInstancesByBlueprint,
-  CopyAgentProps,
+  CopyCharacterProps,
   //
-  SaveAgent,
-  DeleteAgent,
-  DeleteAgentByBlueprint,
+  SaveCharacter,
+  DeleteCharacter,
+  DeleteCharacterByBlueprint,
   //
   GetCharactersByType,
-  GetAgentById,
+  GetCharacterById,
   GetAllCharacters,
-  GetAgentByName,
+  GetCharacterByName,
   DeleteAllCharacters
 };

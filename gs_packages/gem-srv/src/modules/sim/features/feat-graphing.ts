@@ -23,7 +23,7 @@ import {
   SM_Boolean
 } from 'modules/sim/script/vars/_all_vars';
 import SM_Feature from 'lib/class-sm-feature';
-import { GetAgentById } from 'modules/datacore/dc-sim-agents';
+import { GetCharacterById } from 'modules/datacore/dc-sim-agents';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
 import SM_Agent from 'lib/class-sm-agent';
 import FLAGS from 'modules/flags';
@@ -42,7 +42,7 @@ const WIDGET_AGENTS = new Map();
  * @param agentId
  */
 function m_getAgent(agentId): IAgent {
-  const a = GetAgentById(agentId);
+  const a = GetCharacterById(agentId);
   if (!a) WIDGET_AGENTS.delete(agentId);
   return a;
 }

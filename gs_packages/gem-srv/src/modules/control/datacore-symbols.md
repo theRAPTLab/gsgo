@@ -107,18 +107,18 @@ function DeleteAllInstances
 function DeleteInstancesByBlueprint
 
 // agent cloning utility?
-function CopyAgentProps
+function CopyCharacterProps
 
 // manage blueprint instances
 
 // instances of class Agent
-function SaveAgent
-function DeleteAgent
-function DeleteAgentByBlueprint
+function SaveCharacter
+function DeleteCharacter
+function DeleteCharacterByBlueprint
 function GetCharactersByType
-function GetAgentById
+function GetCharacterById
 function GetAllCharacters
-function GetAgentByName
+function GetCharacterByName
 function DeleteAllCharacters
 ```
 

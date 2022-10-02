@@ -26,7 +26,7 @@ export function MakeDraggable(vobj: Visual) {
     this.alpha = 0.5;
     this.tint = 0xff8080;
     //
-    const agent = DCAGENTS.GetAgentById(vobj.id);
+    const agent = DCAGENTS.GetCharacterById(vobj.id);
     if (agent) {
       agent.setModeDrag();
       agent.setCaptive(true);
@@ -44,7 +44,7 @@ export function MakeDraggable(vobj: Visual) {
     this.alpha = 1;
     this.tint = 0xffffff;
     //
-    const agent = DCAGENTS.GetAgentById(vobj.id);
+    const agent = DCAGENTS.GetCharacterById(vobj.id);
     if (agent) {
       agent.setPreviousMode();
       agent.setCaptive(false);
@@ -94,7 +94,7 @@ export function MakeDraggable(vobj: Visual) {
       // Don't set x/y here or input agent will get dragged
       // this.x = newx;
       // this.y = newy;
-      const agent = DCAGENTS.GetAgentById(vobj.id);
+      const agent = DCAGENTS.GetCharacterById(vobj.id);
       if (agent && !agent.isModePuppet()) {
         // don't move if agent is user input
         this.x = newx;

@@ -92,7 +92,7 @@ const AGENT_TOUCHTYPES = new Map(); // Touch-enabled Agents
  * @param agentId
  */
 function m_GetAgent(agentId): IAgent {
-  const a = SIMAGENTS.GetAgentById(agentId);
+  const a = SIMAGENTS.GetCharacterById(agentId);
   if (!a) AGENT_TOUCHTYPES.delete(agentId);
   return a;
 }
@@ -230,7 +230,7 @@ class TouchPack extends SM_Feature {
     const touchingId = targetIds.find(id => agent.isTouching.get(id)[touchType]);
     if (touchingId) {
       // console.log(agent.id, 'isTouching', touchingId);
-      return SIMAGENTS.GetAgentById(touchingId);
+      return SIMAGENTS.GetCharacterById(touchingId);
     }
     return undefined;
   }

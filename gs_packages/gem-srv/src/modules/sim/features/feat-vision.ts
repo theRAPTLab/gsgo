@@ -37,7 +37,7 @@ const VISION_AGENTS = new Map();
  *  If it doesn't exist anymore (e.g. CharControl has dropped), remove it from
  *  WIDGET_AGENTS */
 function m_getAgent(agentId): IAgent {
-  const a = SIMAGENTS.GetAgentById(agentId);
+  const a = SIMAGENTS.GetCharacterById(agentId);
   if (!a) VISION_AGENTS.delete(agentId);
   return a;
 }

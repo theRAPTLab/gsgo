@@ -19,11 +19,11 @@ import UR from '@gemstep/ursys/client';
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import SM_Feature from 'lib/class-sm-feature';
 import {
-  DeleteAgent,
+  DeleteCharacter,
   GetCharactersByType,
   GetAllCharacters,
   DefineInstance,
-  GetAgentById
+  GetCharacterById
 } from 'modules/datacore/dc-sim-agents';
 import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
@@ -394,7 +394,7 @@ function seek(agent: IAgent, target: { x; y }) {
 function _seekAgent(agent: IAgent) {
   const targetId = agent.prop.Movement._targetId;
   if (!targetId) return; // no target, just idle
-  const target = GetAgentById(targetId);
+  const target = GetCharacterById(targetId);
   seek(agent, target);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -407,7 +407,7 @@ function _seekAgentOrWander(agent: IAgent, frame: number) {
     moveWander(agent); // no target, wander instead
     return;
   }
-  const target = GetAgentById(targetId);
+  const target = GetCharacterById(targetId);
   seek(agent, target);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -507,7 +507,7 @@ function m_FindNearbyAgents(agent, targetType) {
 function m_PhysicsUpdate(frame) {
   // 1. Cache Distances
   SEEKING_AGENTS.forEach((options, id) => {
-    const agent = GetAgentById(id);
+    const agent = GetCharacterById(id);
     if (!agent) return;
     const targets = GetCharactersByType(options.targetType);
     if (!agent.distanceTo) agent.distanceTo = new Map();
@@ -522,7 +522,7 @@ function m_FeaturesThinkSeek(frame) {
   SEEKING_AGENTS.forEach((options, id) => {
     // REVIEW: Distance calculation should ideally only happen once and be cached
 
-    const agent = GetAgentById(id);
+    const agent = GetCharacterById(id);
     if (!agent) return;
 
     // REVIEW: We should be finding all agents within the visibility distance
