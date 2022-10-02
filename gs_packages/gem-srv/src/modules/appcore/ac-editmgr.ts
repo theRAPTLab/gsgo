@@ -428,10 +428,10 @@ function SaveSlotLineScript(event) {
     )
   )
     isBlockCommand = true;
-  // 2. Is block command? e.g. 'createAgent' or 'spawnChild' featCall
+  // 2. Is block command? e.g. 'createCharacter' or 'spawnChild' featCall
   if (String(new_kw).toLowerCase() === 'featcall') {
     slots_linescript.forEach(tok => {
-      if (['createAgent', 'spawnChild'].includes(tok.identifier))
+      if (['createCharacter', 'spawnChild'].includes(tok.identifier))
         isBlockCommand = true;
     });
   }

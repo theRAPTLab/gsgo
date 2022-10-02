@@ -216,14 +216,14 @@ Physics:
   # Physics props
   bodyRadius:
     hint: 'bodyRadius hint'
-    info: 'change dimensions in pixels'
+    info: 'Set the radius in pixels.'
     syntax: 'body radius integer width, integer height'
   bodyWidth:
-    info: 'xxx'
+    info: 'Set the width in pixels.'
   bodyHeight:
-    info: 'xxx'
+    info: 'Set the height in pixels.'
   bodyShape:
-    info: 'circle or rectangle'
+    info: 'Set the shape as circle or rectangle.'
   # Physics methods
   # (none)
 
@@ -243,11 +243,11 @@ Population:
     info: 'The smallest value of the property across this character type.'
   max:
     info: 'The highest value of the property across this character type.'
-  monitoredAgent:
-    info: 'xxx'
-  monitoredAgentProp:
-    info: 'xxx'
-  monitoredAgentPropFeature:
+  monitoredCharacter:
+    info: 'Name of character to be examined.'
+  monitoredCharacterProp:
+    info: 'Name of pproperty to be examined on the monitored character.'
+  monitoredCharacterPropFeature:
     info: 'xxx'
   spawnMutationProp:
     info: 'xxx'
@@ -258,52 +258,52 @@ Population:
   spawnMutationMaxSubtract:
     info: 'xxx'
   targetPopulationSize:
-    info: 'xxx'
+    info: 'Create characters until this many has been created.'
   deleteAfterSpawning:
-    info: 'xxx'
+    info: 'Delete this character after creating a new one (true or false).'
   # Population methods
-  createAgent:
-    info: 'createAgent'
+  createCharacter:
+    info: 'createCharacter'
   spawnChild:
     info: 'spawnChild'
-  removeAgent:
-    info: 'removeAgent'
-  getRandomActiveAgent:
-    info: 'getRandomActiveAgent'
-  releaseAllAgents:
-    info: 'releaseAllAgents'
-  releaseInertAgents:
-    info: 'releaseInertAgents'
-  hideInertAgents:
-    info: 'hideInertAgents'
-  removeInertAgents:
-    info: 'removeInertAgents'
-  agentsReproduce:
-    info: 'agentsReproduce'
-  oneAgentReproduce:
-    info: 'oneAgentReproduce'
+  removeCharacter:
+    info: 'removeCharacter'
+  getRandomactiveCharacter:
+    info: 'getRandomactiveCharacter'
+  releaseAllCharacters:
+    info: 'releaseAllCharacters'
+  releaseInertCharacters:
+    info: 'releaseInertCharacters'
+  hideInertCharacters:
+    info: 'hideInertCharacters'
+  removeInertCharacters:
+    info: 'removeInertCharacters'
+  charactersReproduce:
+    info: 'charactersReproduce'
+  oneCharacterReproduce:
+    info: 'oneCharacterReproduce'
   populateBySpawning:
     info: 'populateBySpawning'
-  agentsForEachActive:
-    info: 'agentsForEachActive'
-  agentsForEach:
-    info: 'agentsForEach'
-  getActiveAgentsCount:
-    info: 'getActiveAgentsCount'
-  countAgents:
-    info: 'countAgents'
-  countAgentProp:
-    info: 'countAgentProp'
-  minAgentProp:
-    info: 'minAgentProp'
-  maxAgentProp:
-    info: 'maxAgentProp'
-  countAgentsByPropType:
-    info: 'countAgentsByPropType'
-  setAgentsByFeatPropTypeKeys:
-    info: 'setAgentsByFeatPropTypeKeys'
-  countExistingAgentsByFeatPropType:
-    info: 'countExistingAgentsByFeatPropType'
+  charactersForEachActive:
+    info: 'charactersForEachActive'
+  charactersForEach:
+    info: 'charactersForEach'
+  getActiveCharactersCount:
+    info: 'getActiveCharactersCount'
+  countCharacters:
+    info: 'countCharacters'
+  countCharacterProp:
+    info: 'countCharacterProp'
+  minCharacterProp:
+    info: 'minCharacterProp'
+  maxCharacterProp:
+    info: 'maxCharacterProp'
+  countCharactersByPropType:
+    info: 'countCharactersByPropType'
+  setCharactersByFeatPropTypeKeys:
+    info: 'setCharactersByFeatPropTypeKeys'
+  countExistingCharactersByFeatPropType:
+    info: 'countExistingCharactersByFeatPropType'
 
 Touches:
   info: 'Adds tests to detect when characters touch each other'
@@ -342,5 +342,5 @@ Vision:
     info: 'monitor'
   isCamouflaged:
     info: 'isCamouflaged'
-  canSeeColorOfAgent:
-    info: 'canSeeColorOfAgent'
+  canSeeColorOfCharacter:
+    info: 'canSeeColorOfCharacter'

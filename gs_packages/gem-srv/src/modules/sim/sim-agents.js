@@ -236,7 +236,7 @@ function AgentSelect() {}
  * @param {TInstanceDef[]} instanceDefs Array of existing instanceDef (TInstanceDef) objects {id, name, blueprint, init, ...args }
  *                             from dc-sim-agents
  */
-export function AllAgentsProgram(data) {
+export function AllCharactersProgram(data) {
   const { blueprintNames, instancesSpec } = data;
   if (!blueprintNames) return console.warn(...PR('no blueprint'));
 
@@ -270,7 +270,6 @@ export function AllAgentsProgram(data) {
   SCRIPT_TO_INSTANCE.syncFromArray(instancesSpec);
   SCRIPT_TO_INSTANCE.mapObjects();
 
-
   // 4. Broadcast update to network devices
   UR.RaiseMessage('NET:INSTANCES_UPDATE', {
     instances: SCRIPT_TO_INSTANCE.getMappedObjects()
@@ -296,7 +295,7 @@ export function AgentProgram(blueprint) {
   let instances = DCAGENTS.GetAllInstances();
   instances.forEach(instance => {
     if (instance.bpid === blueprint) {
-      TRANSPILER.RemoveAgent(instance);
+      TRANSPILER.removeCharacter(instance);
     }
   });
   // And clear the INSTANCE_DEFS map for the blueprint
@@ -332,29 +331,29 @@ export function ClearDOBJ() {
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentsUpdate(frameTime) {
-  const allAgents = DCAGENTS.GetAllAgents();
-  allAgents.forEach(agent => {
+  const AllCharacters = DCAGENTS.GetAllCharacters();
+  AllCharacters.forEach(agent => {
     agent.agentUPDATE(frameTime);
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentsEvent(frameTime) {
-  const allAgents = DCAGENTS.GetAllAgents();
-  allAgents.forEach(agent => {
+  const AllCharacters = DCAGENTS.GetAllCharacters();
+  AllCharacters.forEach(agent => {
     agent.agentEVENT(frameTime);
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentThink(frameTime) {
-  const allAgents = DCAGENTS.GetAllAgents();
-  allAgents.forEach(agent => {
+  const AllCharacters = DCAGENTS.GetAllCharacters();
+  AllCharacters.forEach(agent => {
     agent.agentTHINK(frameTime);
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentExec(frameTime) {
-  const allAgents = DCAGENTS.GetAllAgents();
-  allAgents.forEach(agent => {
+  const AllCharacters = DCAGENTS.GetAllCharacters();
+  AllCharacters.forEach(agent => {
     agent.agentEXEC(frameTime);
   });
 }
@@ -364,8 +363,8 @@ function AgentReset(frameTime) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function VisUpdate(frameTime) {
-  const allAgents = DCAGENTS.GetAllAgents();
-  AGENT_TO_DOBJ.syncFromArray(allAgents);
+  const AllCharacters = DCAGENTS.GetAllCharacters();
+  AGENT_TO_DOBJ.syncFromArray(AllCharacters);
   AGENT_TO_DOBJ.mapObjects();
   const dobjs = AGENT_TO_DOBJ.getMappedObjects();
   RENDERER.UpdateDisplayList(dobjs);
@@ -377,7 +376,7 @@ function VisUpdate(frameTime) {
 UR.HandleMessage('SIM_RESET', AgentReset);
 UR.HandleMessage('SIM_MODE', AgentSelect);
 UR.HandleMessage('AGENT_PROGRAM', AgentProgram);
-UR.HandleMessage('ALL_AGENTS_PROGRAM', data => AllAgentsProgram(data)); // whole model update
+UR.HandleMessage('ALL_AGENTS_PROGRAM', data => AllCharactersProgram(data)); // whole model update
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

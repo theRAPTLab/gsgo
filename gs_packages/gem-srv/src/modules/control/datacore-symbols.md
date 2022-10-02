@@ -115,11 +115,11 @@ function CopyAgentProps
 function SaveAgent
 function DeleteAgent
 function DeleteAgentByBlueprint
-function GetAgentsByType
+function GetCharactersByType
 function GetAgentById
-function GetAllAgents
+function GetAllCharacters
 function GetAgentByName
-function DeleteAllAgents
+function DeleteAllCharacters
 ```
 
 ### dc-script-engine.ts

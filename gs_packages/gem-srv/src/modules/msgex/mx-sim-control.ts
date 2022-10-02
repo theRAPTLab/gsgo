@@ -58,7 +58,7 @@ function SimPlaces() {
   UR.RaiseMessage('NET:SET_CHARCONTROL_BPIDLIST', {
     bpnames: charcontrolBpidList
   });
-  // 4. Get current list of blueprint names so AllAgentsProgram knows which
+  // 4. Get current list of blueprint names so AllCharactersProgram knows which
   //    blueprints to update and remove
   const blueprintNames = ACBlueprints.GetBpNamesList();
   // 5. Create/Update All Instances

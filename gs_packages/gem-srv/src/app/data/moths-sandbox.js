@@ -668,9 +668,9 @@ onEvent RoundStop [[
       initScript: `prop x setTo -290
 prop y setTo 370
 featCall Population setAgentsByFeatPropTypeKeys 0 1 2 3 4 5 6 7 8 9 10 11
-featProp Population monitoredAgent setTo 'Moth'
-featProp Population monitoredAgentPropFeature setTo 'Costume'
-featProp Population monitoredAgentProp setTo 'colorScaleIndex'
+featProp Population monitoredCharacter setTo 'Moth'
+featProp Population monitoredCharacterPropFeature setTo 'Costume'
+featProp Population monitoredCharacterProp setTo 'colorScaleIndex'
 featProp AgentWidgets barGraphProp setTo '_countsByProp'
 featProp AgentWidgets barGraphPropFeature setTo 'Population'
 featProp AgentWidgets text setTo 'colorScaleIndex'`

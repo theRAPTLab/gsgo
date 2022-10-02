@@ -208,7 +208,7 @@ function DeleteAgentByBlueprint(bpName) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return SM_Agent array by type */
-function GetAgentsByType(bpName) {
+function GetCharactersByType(bpName) {
   const agentSet = AGENTS.get(bpName);
   if (!agentSet) {
     // console.warn(...PR(`agents of '${bpName}' don't exist...yet?`));
@@ -223,7 +223,7 @@ function GetAgentById(id): IAgent {
   return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetAllAgents() {
+function GetAllCharacters() {
   const arr = [];
   const maps = [...AGENTS.values()];
   maps.forEach(map => {
@@ -233,13 +233,13 @@ function GetAllAgents() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetAgentByName(name): IAgent {
-  const agents = GetAllAgents();
+  const agents = GetAllCharacters();
   const agent = agents.find(a => a.meta.name === name);
   if (agent) return agent;
   return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function DeleteAllAgents() {
+function DeleteAllCharacters() {
   AGENTS.clear();
   AGENT_DICT.clear();
 }
@@ -261,9 +261,9 @@ export {
   DeleteAgent,
   DeleteAgentByBlueprint,
   //
-  GetAgentsByType,
+  GetCharactersByType,
   GetAgentById,
-  GetAllAgents,
+  GetAllCharacters,
   GetAgentByName,
-  DeleteAllAgents
+  DeleteAllCharacters
 };

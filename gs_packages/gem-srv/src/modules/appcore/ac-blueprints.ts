@@ -233,7 +233,7 @@ function GetBpEditList(projId: string): TBlueprint[] {
 function m_ExtractBlueprintNamesList(bundles: ISMCBundle[]): string[] {
   return bundles.map(b => b.name);
 }
-/** API: Used by mx-sim-control to get array of bpNames for AllAgentsProgram
+/** API: Used by mx-sim-control to get array of bpNames for AllCharactersProgram
  *  to know which blueprints to create agents for.
  *  @returns {string[]} - [ bpName ]
  */
@@ -440,7 +440,7 @@ function ResetAndCompileBlueprints(
   SIMDATA.ResetAllFeatures();
   SIMDATA.DeleteAllScriptEvents();
   SIMDATA.DeleteAllBlueprintBundles();
-  DCAGENTS.DeleteAllAgents();
+  DCAGENTS.DeleteAllCharacters();
   DCAGENTS.DeleteAllInstances();
   const bpDefs = m_CompileBlueprints(blueprints);
   // Update state
@@ -472,7 +472,7 @@ function SetBlueprints(projId: string, blueprints: TBlueprint[]) {
   });
 
   // 2. Inject Special Blueprints
-  //    GlobalAgent -- agent is created in aim-agents.AllAgentsProgram()
+  //    GlobalAgent -- agent is created in aim-agents.AllCharactersProgram()
   if (!bpDefs.find(d => d.name === GLOBAL_AGENT_NAME)) {
     const globalScript = `# BLUEPRINT ${GLOBAL_AGENT_NAME}
 # PROGRAM INIT

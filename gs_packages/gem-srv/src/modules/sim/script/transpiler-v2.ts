@@ -214,7 +214,7 @@ function MakeAgent(instanceDef: TInstanceDef) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RemoveAgent(instanceDef: TInstanceDef) {
+function removeCharacter(instanceDef: TInstanceDef) {
   SIMAGENTS.DeleteAgent(instanceDef);
 }
 
@@ -224,7 +224,7 @@ function RemoveAgent(instanceDef: TInstanceDef) {
 /// created by CompileBlueprint()
 export {
   MakeAgent, // BlueprintName => Agent
-  RemoveAgent,
+  removeCharacter,
   RegisterBlueprint
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

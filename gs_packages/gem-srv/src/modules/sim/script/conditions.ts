@@ -11,7 +11,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import RNG from 'modules/sim/sequencer';
-import { GetAgentsByType } from 'modules/datacore';
+import { GetCharactersByType } from 'modules/datacore';
 import { ParseExpression } from 'script/tools/class-expr-parser-v2';
 // uses types defined in t-script.d
 import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
@@ -38,7 +38,7 @@ function ShuffleArray(array) {
  *  test looks like (agent)=>boolean
  */
 function SingleAgentFilter(type, testA) {
-  const agents = GetAgentsByType(type);
+  const agents = GetCharactersByType(type);
   ShuffleArray(agents);
   const pass = [];
   const fail = [];
@@ -53,8 +53,8 @@ function SingleAgentFilter(type, testA) {
  *  test looks like (agentA, agentB)=>boolean
  */
 function PairAgentFilter(typeA, typeB, testAB) {
-  const setA = GetAgentsByType(typeA);
-  const setB = GetAgentsByType(typeB);
+  const setA = GetCharactersByType(typeA);
+  const setB = GetCharactersByType(typeB);
   ShuffleArray(setA);
   ShuffleArray(setB);
   const pass = [];

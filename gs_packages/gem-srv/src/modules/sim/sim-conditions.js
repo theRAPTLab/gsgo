@@ -254,7 +254,7 @@ function m_ProcessEventQueue() {
     const handlers = SIMDATA.GetHandlersForScriptEvent(event.type);
     handlers.forEach(h => {
       const { agentType, handler } = h;
-      const agents = SIMAGENTS.GetAgentsByType(agentType);
+      const agents = SIMAGENTS.GetCharactersByType(agentType);
       agents.forEach(agent => {
         const ctx = { agent, [agentType]: agent };
         agent.exec(handler, ctx);

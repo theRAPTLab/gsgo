@@ -214,7 +214,7 @@ class SlotEditor_Block extends React.Component {
 
       const vtok = validationTokens[i];
       if (vtok.gsType === 'block') {
-        // 0. Don't show special featCall method blocks (e.g. createAgent)!
+        // 0. Don't show special featCall method blocks (e.g. createCharacter)!
         continue;
       } else if (vtok.error && scriptToken) {
         // 1. Error with an entered value

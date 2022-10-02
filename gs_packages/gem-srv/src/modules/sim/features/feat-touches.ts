@@ -134,7 +134,7 @@ function m_Update(frame) {
     if (!agent) return;
 
     d_TouchTypes.forEach((touchTypes, bpname) => {
-      const targets = SIMAGENTS.GetAgentsByType(bpname);
+      const targets = SIMAGENTS.GetCharactersByType(bpname);
       targets.forEach(t => {
         // skip self
         if (agentId === t.id) return;
@@ -239,7 +239,7 @@ class TouchPack extends SM_Feature {
   /// Use when deleting an agent otherwise isTouching and lastTouched
   /// are never reset.  See feat-population.m_Delete
   clearTouches(agent: IAgent, targetId: string) {
-    const agents = SIMAGENTS.GetAllAgents();
+    const agents = SIMAGENTS.GetAllCharacters();
     agents.forEach(a => {
       // use `delete` not clear to prevent memory leak
       if (a.lastTouched) a.lastTouched.delete(targetId);

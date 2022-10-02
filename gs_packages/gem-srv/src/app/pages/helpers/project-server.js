@@ -130,10 +130,10 @@ function urBlueprintStateUpdated(stateObj, cb) {
 function SendInspectorUpdate(frametime) {
   if (frametime % SIM_TICKS_PER_SEC !== 0) return;
   // walk down agents and broadcast results for monitored agents
-  const agents = DCAGENTS.GetAllAgents();
+  const agents = DCAGENTS.GetAllCharacters();
   // Send all instances, but minmize non-monitored
-  const inspectorAgents = agents.map(
-    a => (MONITORED_INSTANCES.includes(a.id) ? a : { id: a.id, label: a.name })
+  const inspectorAgents = agents.map(a =>
+    MONITORED_INSTANCES.includes(a.id) ? a : { id: a.id, label: a.name }
   );
 
   // Debug PIXI Output
@@ -564,7 +564,7 @@ function InstanceRequestEdit(data) {
  */
 function InstanceDefUpdate(data) {
   // 1. Delete the old instance
-  //    Delete the old instance so AllAgentsPropgramUpdate will recreate
+  //    Delete the old instance so AllCharactersPropgramUpdate will recreate
   //    it with the new script.
   DCAGENTS.DeleteAgent({ bpid: data.bpName, id: data.agentId });
   //    Also delete input agents
@@ -632,7 +632,7 @@ function ScriptUpdate(data) {
     BlueprintDelete(data.origBlueprintName);
     // NOTE We have to delete before adding the new blueprint otherwise
     //      the default pozyx might be set to a non-existent blueprint
-    // NOTE sim agents and instances are added/removed in sim-agents.AllAgentsProgramUpdate
+    // NOTE sim agents and instances are added/removed in sim-agents.AllCharactersProgramUpdate
   }
 
   // 2. Add or update the blueprint
@@ -659,7 +659,7 @@ function ScriptUpdate(data) {
 
   // 4. Delete the old instance
   //    If the sim is not running, delete the old instance
-  //    so AllAgentsPropgramUpdate will recreate it with
+  //    so AllCharactersPropgramUpdate will recreate it with
   //    the new script.
   //    If the sim IS running, we want to leave the instance
   //    running with the old blueprint code.

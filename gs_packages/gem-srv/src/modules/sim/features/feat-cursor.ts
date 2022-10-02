@@ -87,7 +87,7 @@ prop zIndex setTo 1000
  *  target already, and it's touching an agent, then pick it up. */
 function m_UpdateInhabitAgent(frametime) {
   // Handle the inhabiting programmatically
-  const cursors = DCAGENTS.GetAgentsByType('Cursor');
+  const cursors = DCAGENTS.GetCharactersByType('Cursor');
   cursors.find(c => {
     // Make sure the target still exists, if it doesn't allow pickup
     if (

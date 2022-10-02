@@ -20,8 +20,8 @@ import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import SM_Feature from 'lib/class-sm-feature';
 import {
   DeleteAgent,
-  GetAgentsByType,
-  GetAllAgents,
+  GetCharactersByType,
+  GetAllCharacters,
   DefineInstance,
   GetAgentById
 } from 'modules/datacore/dc-sim-agents';
@@ -431,7 +431,7 @@ function wanderUntilAgent(agent: IAgent, frame: number) {
     return;
   }
   const targetType = agent.prop.Movement.targetCharacterType.value;
-  const targets = GetAgentsByType(targetType);
+  const targets = GetCharactersByType(targetType);
   let isInside = false;
   targets.forEach(target => {
     // for some reason `target.id` is a number not a string?
@@ -467,7 +467,7 @@ const MOVEMENT_FUNCTIONS: Map<string, Function> = new Map([
 function m_FindNearestAgent(agent, targetType) {
   let shortestDistance: number = Infinity;
   let nearestAgent;
-  const targetAgents = GetAllAgents();
+  const targetAgents = GetAllCharacters();
   targetAgents.forEach(t => {
     if (t.blueprint.name !== targetType) return; // skip if wrong blueprint type
     if (t.id === agent.id) return; // skip self
@@ -491,7 +491,7 @@ function m_FindNearbyAgents(agent, targetType) {
     return [];
   }
   const nearby = [];
-  const targets = GetAgentsByType(targetType);
+  const targets = GetCharactersByType(targetType);
   targets.forEach(t => {
     const distance = agent.distanceTo.get(t.id);
     if (distance < agent.prop.Vision.viewDistance.value)
@@ -509,7 +509,7 @@ function m_PhysicsUpdate(frame) {
   SEEKING_AGENTS.forEach((options, id) => {
     const agent = GetAgentById(id);
     if (!agent) return;
-    const targets = GetAgentsByType(options.targetType);
+    const targets = GetCharactersByType(options.targetType);
     if (!agent.distanceTo) agent.distanceTo = new Map();
     targets.forEach(t => {
       agent.distanceTo.set(t.id, DistanceTo(agent, t));
