@@ -99,7 +99,7 @@ class MissionControl extends React.Component {
     this.UpdateWebCamSetting = this.UpdateWebCamSetting.bind(this);
     this.SaveWebCamSetting = this.SaveWebCamSetting.bind(this);
     this.UpdateLogSetting = this.UpdateLogSetting.bind(this);
-    UR.HandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.HandleMessage('NET:SCRIPT_UPDATED', this.DoScriptUpdate);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
     UR.HandleMessage('NET:SIM_WAS_RESET', this.OnSimWasReset);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
@@ -166,7 +166,7 @@ class MissionControl extends React.Component {
   componentWillUnmount() {
     UR.UnsubscribeState('project', this.urStateUpdated);
     UR.UnhandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);
-    UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.UnhandleMessage('NET:SCRIPT_UPDATED', this.DoScriptUpdate);
     UR.UnhandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
     UR.UnhandleMessage('NET:SIM_WAS_RESET', this.OnSimWasReset);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
