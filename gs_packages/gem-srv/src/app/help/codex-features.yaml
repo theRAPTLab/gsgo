@@ -26,7 +26,15 @@ Graphing:
   graphProp:
     info: 'Set the graph to the value of a property, and update as the property updates.'
   graphGlobalProp:
-    info: 'Help for graphGlobalProp coming soon.'
+    info: 'Set the graph to update its value to the value of a global property. Change the graph when the global property changes.'
+  graphMaxX:
+    info: 'Set the highest value that can be displayed on the x-axis of the graph.'
+  graphMaxY:
+    info: 'Set the highest value that can be displayed on the y-axis of the graph. This will appear as a label next to the y-axis.'
+  graphMinX:
+    info: 'Set the lowest value that can be displayed on the x-axis of the graph.'
+  graphMinY:
+    info: 'Set the lowest value that can be displayed on the y-axis of the graph. This will appear as a label next to the y-axis.'
   graphFrequency:
     info: 'This is how often the graph should update.'
   barGraphProp:
