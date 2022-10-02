@@ -154,24 +154,27 @@ export function DrawLineGraph(
   // draw axis labels
   const gap = 3;
   let minYLabel = graph.getChildByName('minY') as PIXI.Text;
+  const minYLabelText = Math.abs(bounds.y) === Infinity ? '0' : String(bounds.y); // default to 0
   if (
     minYLabel === undefined ||
-    String(bounds.y) !== (minYLabel && minYLabel.text)
+    minYLabelText !== (minYLabel && minYLabel.text)
   ) {
     if (minYLabel) graph.removeChild(minYLabel);
-    minYLabel = new PIXI.Text(String(bounds.y), style);
+    minYLabel = new PIXI.Text(minYLabelText, style);
     minYLabel.name = 'minY';
     minYLabel.position.set(-minYLabel.width - gap, minYLabel.height);
     minYLabel.scale.set(1, -1); // flip b/c graph is flipped
     graph.addChild(minYLabel);
   }
   let maxYLabel = graph.getChildByName('maxY') as PIXI.Text;
+  const maxYLabelText =
+    Math.abs(bounds.height) === Infinity ? '100' : String(bounds.height); // default to 100
   if (
     maxYLabel === undefined ||
-    String(bounds.height) !== (maxYLabel && maxYLabel.text)
+    maxYLabelText !== (maxYLabel && maxYLabel.text)
   ) {
     if (maxYLabel) graph.removeChild(maxYLabel);
-    maxYLabel = new PIXI.Text(String(bounds.height), style);
+    maxYLabel = new PIXI.Text(maxYLabelText, style);
     maxYLabel.name = 'maxY';
     maxYLabel.position.set(-maxYLabel.width - gap, 100);
     maxYLabel.scale.set(1, -1); // flip b/c graph is flipped
