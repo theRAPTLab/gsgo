@@ -54,7 +54,7 @@ function m_Create(frame) {
     let agent = TRANSPILER.MakeAgent(def);
     const parent = SIMAGENTS.GetAgentById(def.parentId);
     if (parent) {
-      if (def.doClone) SIMAGENTS.CopyCharacterProps(parent, agent);
+      if (def.doClone) SIMAGENTS.CopyAgentProps(parent, agent);
       else {
         // just copy x/y
         agent.x = parent.x + RNG() * 8 - 4;
