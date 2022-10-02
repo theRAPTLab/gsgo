@@ -632,7 +632,7 @@ function ScriptUpdate(data) {
     BlueprintDelete(data.origBlueprintName);
     // NOTE We have to delete before adding the new blueprint otherwise
     //      the default pozyx might be set to a non-existent blueprint
-    // NOTE sim agents and instances are added/removed in sim-agents.AllCharactersProgramUpdate
+    // NOTE sim agents and instances are added/removed in sim-agents.AllAgentsProgramUpdate
   }
 
   // 2. Add or update the blueprint

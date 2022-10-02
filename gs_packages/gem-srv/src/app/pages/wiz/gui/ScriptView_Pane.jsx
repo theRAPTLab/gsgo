@@ -340,7 +340,7 @@ class ScriptView_Pane extends React.Component {
    *       replacing any existing blueprint
    *    a. DoSimPlaces raises ALL_AGENTS_PROGRAM
    * 4. sim-agents handles ALL_AGENTS_PROGRAM
-   *    a. AllCharactersProgramUpdate either
+   *    a. AllAgentsProgramUpdate either
    *       -- updates any existing instances
    *       -- or creates a new instance if it doesn't exist by calling
    *          Transpiler.MakeAgent

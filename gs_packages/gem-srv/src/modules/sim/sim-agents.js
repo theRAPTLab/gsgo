@@ -236,7 +236,7 @@ function AgentSelect() {}
  * @param {TInstanceDef[]} instanceDefs Array of existing instanceDef (TInstanceDef) objects {id, name, blueprint, init, ...args }
  *                             from dc-sim-agents
  */
-export function AllCharactersProgram(data) {
+export function AllAgentsProgram(data) {
   const { blueprintNames, instancesSpec } = data;
   if (!blueprintNames) return console.warn(...PR('no blueprint'));
 
@@ -295,7 +295,7 @@ export function AgentProgram(blueprint) {
   let instances = DCAGENTS.GetAllInstances();
   instances.forEach(instance => {
     if (instance.bpid === blueprint) {
-      TRANSPILER.removeCharacter(instance);
+      TRANSPILER.RemoveAgent(instance);
     }
   });
   // And clear the INSTANCE_DEFS map for the blueprint
@@ -376,7 +376,7 @@ function VisUpdate(frameTime) {
 UR.HandleMessage('SIM_RESET', AgentReset);
 UR.HandleMessage('SIM_MODE', AgentSelect);
 UR.HandleMessage('AGENT_PROGRAM', AgentProgram);
-UR.HandleMessage('ALL_AGENTS_PROGRAM', data => AllCharactersProgram(data)); // whole model update
+UR.HandleMessage('ALL_AGENTS_PROGRAM', data => AllAgentsProgram(data)); // whole model update
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
