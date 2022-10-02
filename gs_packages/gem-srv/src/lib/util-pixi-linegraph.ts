@@ -14,7 +14,13 @@
       });
       container.addChild(graph);
 
-  data is a flat array of x, y values, e.g. [0,0, 1,2, 3,4]
+  data is a flat array of x, y values, with the first
+  four values setting the minX, maxX, minY, and maxY of the graph.
+  If the minX and maxX values match, then we assume the graph
+  should auto-set the bounds (same is true for minY and maxY):
+
+  e.g. [0,0, 0,0,   1,2, 3,4] will result in auto bounds of Y = 1 to 4
+  e.g. [0,0, 0,10,  1,2, 3,4] will result in bounds of Y = 0 to 10
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -24,6 +30,17 @@ const SIZE = 100;
 const PAD = 10;
 const BGCOLOR = 0xffffff;
 const COLOR = 0xffffff;
+
+const style = new PIXI.TextStyle({
+  // Axis label style
+  fontFamily: 'Arial',
+  fontSize: 18,
+  fill: ['#ffffff99'],
+  // stroke: '#333333cc', // stroke actually makes it harder to read
+  // strokeThickness: 3,
+  wordWrapWidth: 125,
+  wordWrap: true
+});
 
 // not necessary, just use position
 function m_Offset(path: number[], x: number, y: number) {
@@ -89,7 +106,19 @@ export function DrawLineGraph(
   // const path = [0, 0, 2, 10, 3, 12, 5, 9, 5, 5, 6, 0];
 
   const path = data;
-  const bounds = m_GetBounds(path);
+  const minX = path.shift();
+  const maxX = path.shift();
+  const minY = path.shift();
+  const maxY = path.shift();
+  let bounds = m_GetBounds(path); // auto bounds
+  if (minX !== maxX) {
+    bounds.x = minX; // override bounds if minX and maxX are set differently
+    bounds.width = maxX - minX;
+  }
+  if (minY !== maxY) {
+    bounds.y = minY; // override bounds if minY and maxY are set differently
+    bounds.height = maxY - minY;
+  }
   const HAS_NEGATIVE_Y = bounds.y < 0;
 
   const color = options.color || COLOR;
@@ -122,6 +151,36 @@ export function DrawLineGraph(
     }
   }
 
+  // draw axis labels
+  const gap = 3;
+  let minYLabel = graph.getChildByName('minY') as PIXI.Text;
+  const minYLabelText = Math.abs(bounds.y) === Infinity ? '0' : String(bounds.y); // default to 0
+  if (
+    minYLabel === undefined ||
+    minYLabelText !== (minYLabel && minYLabel.text)
+  ) {
+    if (minYLabel) graph.removeChild(minYLabel);
+    minYLabel = new PIXI.Text(minYLabelText, style);
+    minYLabel.name = 'minY';
+    minYLabel.position.set(-minYLabel.width - gap, minYLabel.height);
+    minYLabel.scale.set(1, -1); // flip b/c graph is flipped
+    graph.addChild(minYLabel);
+  }
+  let maxYLabel = graph.getChildByName('maxY') as PIXI.Text;
+  const maxYLabelText =
+    Math.abs(bounds.height) === Infinity ? '100' : String(bounds.height); // default to 100
+  if (
+    maxYLabel === undefined ||
+    maxYLabelText !== (maxYLabel && maxYLabel.text)
+  ) {
+    if (maxYLabel) graph.removeChild(maxYLabel);
+    maxYLabel = new PIXI.Text(maxYLabelText, style);
+    maxYLabel.name = 'maxY';
+    maxYLabel.position.set(-maxYLabel.width - gap, 100);
+    maxYLabel.scale.set(1, -1); // flip b/c graph is flipped
+    graph.addChild(maxYLabel);
+  }
+
   // draw graph
   const parms = {
     width: 1,
@@ -133,7 +192,7 @@ export function DrawLineGraph(
     miterLimit: 10
   };
   graph.lineStyle(parms);
-  graph.moveTo(0, bounds.y < 0 ? 50 : 0);
+  // graph.moveTo(0, bounds.y < 0 ? 50 : 0); // we don't necessarily want to start at 0,0
   const l = normalized.length;
   graph.moveTo(normalized[0], normalized[1]);
   for (let i = 2; i < l; i += 2) {

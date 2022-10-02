@@ -102,7 +102,6 @@ function m_FeaturesUpdate(frame) {
 ///                      Runs after FEATURES_UPDATE so histograms can override graphs
 function m_GraphsUpdate(frame) {
   const agentIds = Array.from(WIDGET_AGENTS.keys());
-  // console.log('graphs update');
   agentIds.forEach(agentId => {
     const agent = m_getAgent(agentId);
     if (!agent) return;
@@ -113,8 +112,8 @@ function m_GraphsUpdate(frame) {
     // problematic
     if (agent.prop.Graphing._histogramFeature) {
       // SUPER HACK
-      // values are stored in the GLobal Agent because they're
-      // calculated during Round INit
+      // values are stored in the Global Agent because they're
+      // calculated during Round Init
       // const values =
       //   agent.prop[agent.prop.Graphing._histogramFeature][
       //     agent.prop.Graphing._histogramProp
@@ -176,13 +175,22 @@ function m_UIUpdate(frame) {
     if (isLargeGraphic) agent.prop.statusValueIsLarge.setTo(isLargeGraphic);
 
     // 3. Update Graph
-    // Only pass up to 50 points
-    // The graph is 100 px wide, so this gives you at least a gap
+    //    Only pass up to 50 points
+    //    The graph is 100 px wide, so this gives you at least a gap
     const max = 100 * 2;
     const l = agent.prop.Graphing._graph.length;
     // If a graph has been spec'd, always draw the graph so the bg draws
-    if (agentWgt.graphProp && agentWgt.graphProp.value)
-      agent.prop.statusHistory = agentWgt._graph.slice(Math.max(l - max, 0));
+    if (agentWgt.graphProp && agentWgt.graphProp.value) {
+      agent.prop.statusHistory = [
+        // inject bounds
+        agentWgt.graphMinX.value || 0, // Min X
+        agentWgt.graphMaxX.value || 0, // Max X -- set to match minX to trigger auto-bounds-setting
+        agentWgt.graphMinY.value || 0, // Min Y
+        agentWgt.graphMaxY.value || 0, // Max Y -- set to match minY to trigger auto-bounds-setting
+        // add graph data
+        ...agentWgt._graph.slice(Math.max(l - max, 0))
+      ];
+    }
 
     // 4. Update Bar Graph
     const barGraphProp = agent.prop.Graphing.barGraphProp.value;
@@ -238,6 +246,10 @@ class WidgetPack extends SM_Feature {
     this.featAddProp(agent, 'isLargeGraphic', new SM_Boolean(false));
     prop = new SM_Number(0);
     this.featAddProp(agent, 'graphValue', prop);
+    this.featAddProp(agent, 'graphMinX', new SM_Number()); // fix graph x scale mininum value
+    this.featAddProp(agent, 'graphMaxX', new SM_Number()); // fix graph x scale maximum value
+    this.featAddProp(agent, 'graphMinY', new SM_Number()); // fix graph y scale mininum value
+    this.featAddProp(agent, 'graphMaxY', new SM_Number()); // fix graph y scale maximum value
     this.featAddProp(agent, 'graphProp', new SM_String()); // agent prop name that text is bound to
     this.featAddProp(agent, 'graphGlobalProp', new SM_String()); // agent prop name that text is bound to
     prop = new SM_Number(30);
@@ -248,7 +260,7 @@ class WidgetPack extends SM_Feature {
     this.featAddProp(agent, 'barGraphPropFeature', new SM_String());
 
     // Private Props
-    agent.prop.Graphing._graph = [0, 0];
+    agent.prop.Graphing._graph = [];
     agent.prop.Graphing._graphCounter = 0;
     agent.prop.Graphing._graphValueOld = 0;
     // REGISTER the Agent for updates
@@ -325,6 +337,10 @@ class WidgetPack extends SM_Feature {
       isLargeGraphic: SM_Boolean.Symbols,
       graphValue: SM_Number.Symbols,
       graphProp: SM_String.Symbols,
+      graphMinX: SM_Number.Symbols,
+      graphMaxX: SM_Number.Symbols,
+      graphMinY: SM_Number.Symbols,
+      graphMaxY: SM_Number.Symbols,
       graphGlobalProp: SM_String.Symbols,
       graphFrequency: SM_Number.Symbols,
       barGraphProp: SM_String.Symbols,
