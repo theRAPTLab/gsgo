@@ -155,7 +155,7 @@ class ScriptEditor extends React.Component {
     this.HandleConfirmReload = this.HandleConfirmReload.bind(this);
     // Sent by PanelSelectAgent
     UR.HandleMessage('SELECT_SCRIPT', this.SelectScript);
-    UR.HandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
+    UR.HandleMessage('NET:SCRIPT_UPDATED', this.HandleScriptUpdate);
     UR.HandleMessage('NET:BLUEPRINTS_UPDATE', this.HandleBlueprintsUpdate);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleProjectUpdate);
@@ -246,7 +246,7 @@ class ScriptEditor extends React.Component {
   CleanupComponents() {
     this.UnRegisterInstances();
     UR.UnhandleMessage('SELECT_SCRIPT', this.SelectScript);
-    UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
+    UR.UnhandleMessage('NET:SCRIPT_UPDATED', this.HandleScriptUpdate);
     UR.UnhandleMessage('NET:BLUEPRINTS_UPDATE', this.HandleBlueprintsUpdate);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleProjectUpdate);

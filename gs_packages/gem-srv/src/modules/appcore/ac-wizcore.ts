@@ -584,6 +584,9 @@ function SaveToServer(projId, bpName) {
 
     // select the new script otherwise wizard retains the old script
     UR.RaiseMessage('SELECT_SCRIPT', { bpName: newBpName });
+
+    // Post Script Updated message on Main and ScriptEditor
+    UR.RaiseMessage('NET:SCRIPT_UPDATED', { script: script_text });
   });
 }
 
