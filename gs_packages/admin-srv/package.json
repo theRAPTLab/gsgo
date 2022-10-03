@@ -1,6 +1,6 @@
 {
   "name": "@gemstep/admin-srv",
-  "version": "0.1.0-alpha.0",
+  "version": "1.0.0",
   "description": "Admin Server Prototype",
   "author": "Dave 'Sri' Seah <david@davidseah.com>",
   "homepage": "",
@@ -36,7 +36,7 @@
     "ext": "js json"
   },
   "dependencies": {
-    "@gemstep/ursys": "^0.1.0-alpha.0",
+    "@gemstep/ursys": "^1.0.0",
     "@material-ui/core": "^4.9.6",
     "@material-ui/icons": "^4.11.2",
     "clsx": "^1.1.0",
