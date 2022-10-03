@@ -73,7 +73,7 @@ addFeature Physics
 addFeature Touches
 ${touchscripts}
 
-addFeature AgentWidgets
+addFeature Graphing
 
 // always on top
 prop zIndex setTo 1000
@@ -137,10 +137,10 @@ function m_UpdateInhabitAgent(frametime) {
 
     target.cursor = c;
     c.prop.isInhabitingTarget.setTo(true);
-    c.prop.AgentWidgets.text.setTo(''); // clear label
+    c.prop.Graphing.text.setTo(''); // clear label
     c.prop.statusValue.setTo(undefined); // clear meter
-    c.prop.AgentWidgets.meter.setTo(undefined);
-    c.prop.AgentWidgets.meterProp.setTo(undefined);
+    c.prop.Graphing.meter.setTo(undefined);
+    c.prop.Graphing.meterProp.setTo(undefined);
     c.prop.Cursor.cursorTargetId.setTo(targetId);
     return true;
   });
