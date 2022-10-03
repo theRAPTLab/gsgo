@@ -326,6 +326,7 @@ export function GToken(props) {
     // Joshua and Morgan added this hack to allow us to style different comments in unique ways
     // based on their content, so that we can draw attention to certain kinds of ideas
     // sort of like headers
+    if (label.includes('COMMENT KEY')) classes += ' commentKeyHeader';
     if (label.includes('🔎 WHAT')) classes += ' explanationCommentHeader';
     if (label.includes('🔎 DEFINITION')) classes += ' explanationCommentHeader';
     if (label.includes('🔎 QUESTION')) classes += ' explanationCommentHeader';
@@ -374,6 +375,7 @@ export function GValidationToken(props) {
     // Joshua and Morgan added this hack to allow us to style different comments in unique ways
     // based on their content, so that we can draw attention to certain kinds of ideas
     // sort of like headers
+    if (label.includes('COMMENT KEY')) classes += ' commentKeyHeader';
     if (label.includes('🔎 WHAT')) classes += ' explanationCommentHeader';
     if (label.includes('🔎 DEFINITION')) classes += ' explanationCommentHeader';
     if (label.includes('🔎 QUESTION')) classes += ' explanationCommentHeader';
