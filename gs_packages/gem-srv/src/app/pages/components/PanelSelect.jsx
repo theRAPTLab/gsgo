@@ -1,7 +1,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
 
@@ -12,9 +12,9 @@ class PanelSelect extends React.Component {
       title: 'Select',
       options: [
         // Dummy Data
-        { id: 'main', label: 'Main' },
-        { id: 'viewer', label: 'Viewer' },
-        { id: 'charcontrol', label: 'Character Controller' }
+        { route: 'main', label: 'Main' },
+        { route: 'viewer', label: 'Viewer' },
+        { route: 'charcontrol', label: 'Character Controller' }
       ]
     };
     this.Initialize = this.Initialize.bind(this);
@@ -28,7 +28,6 @@ class PanelSelect extends React.Component {
     // 1. Check for other 'Sim' devices.
     const devices = UR.GetDeviceDirectory();
     const sim = devices.filter(d => d.meta.uclass === 'Sim');
-    console.error('Init devices', devices, sim);
     if (sim.length > 0) {
       // HACKY
       this.setState(state => ({
@@ -43,13 +42,13 @@ class PanelSelect extends React.Component {
   OnClick(url) {
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
-    let { modelId } = this.props;
-    window.location = `/app/${url}?model=${modelId}`;
+    let { parms } = this.props;
+    window.location = `/app/${url}?${parms}`;
   }
 
   render() {
     const { title, options } = this.state;
-    const { id, modelId, isActive, onClick, classes } = this.props;
+    const { id, parms, projId, isActive, onClick, classes } = this.props;
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
@@ -67,9 +66,9 @@ class PanelSelect extends React.Component {
               <button
                 type="button"
                 className={classes.button}
-                key={m.id}
+                key={m.route}
                 disabled={m.disabled}
-                onClick={() => this.OnClick(m.id)}
+                onClick={() => this.OnClick(m.route)}
               >
                 {m.label}
               </button>

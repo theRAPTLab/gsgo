@@ -1,5 +1,15 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+
+  DEPRECATED
+  The global agent is now accessible directly via script, via the
+  GlobalAgent agent that is injected during project load.  So the Global
+  SM_Feature is really no longer necessary.
+  * Add global props by editing the GlobalAgent
+  * Reference global props anywhere: `prop global.sparkCounter add 1`
+  See: https://gitlab.com/stepsys/gem-step/gsgo/-/wikis/Scripting/Global
+
+
   Global is a special-case feature that is accessible to ALL agents in
   the simulation
 
@@ -7,18 +17,21 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import GFeature from 'lib/class-gfeature';
-import { Register } from 'modules/datacore/dc-features';
-import { IAgent } from 'lib/t-script';
-import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
-import { GetGlobalAgent } from 'lib/class-gagent';
+import UR from '@gemstep/ursys/client';
+import SM_Feature from 'lib/class-sm-feature';
+import { RegisterFeature } from 'modules/datacore/dc-sim-data';
+import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
+import SM_Agent from 'lib/class-sm-agent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+const PR = UR.PrefixUtil('GLOBALPROP');
+const DBG = true;
+
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class GlobalPack extends GFeature {
+class GlobalPack extends SM_Feature {
   constructor(name) {
     super(name);
     this.featAddMethod('addGlobalProp', this.addGlobalProp);
@@ -35,35 +48,60 @@ class GlobalPack extends GFeature {
   decorate(agent) {
     super.decorate(agent);
   }
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// GLOBAL AGENT
-
   addGlobalProp(agent: IAgent, pName: string, type: string, value: any) {
-    const global = GetGlobalAgent();
-    console.log('global', global);
+    const global = SM_Agent.GetGlobalAgent();
     let gvar;
-    if (type === 'String') gvar = new GVarString();
-    if (type === 'Number') gvar = new GVarNumber();
-    if (type === 'Boolean') gvar = new GVarBoolean();
-    global.addProp(pName, gvar);
+    const type_lcase = type ? type.toLowerCase() : '';
+    if (type_lcase === 'string') gvar = new SM_String();
+    if (type_lcase === 'number') gvar = new SM_Number();
+    if (type_lcase === 'boolean') gvar = new SM_Boolean();
+    if (global.getProp(pName) === undefined) global.addProp(pName, gvar);
     global.prop[pName].setTo(value);
-    // console.error('global', global.prop[pName].value);
   }
 
   globalProp(agent: IAgent, pName: string, method: string, value: any) {
-    const global = GetGlobalAgent();
+    const global = SM_Agent.GetGlobalAgent();
     global.prop[pName][method](value);
-    // console.error('global', pName, method, global.prop[pName].value);
+    if (DBG)
+      console.log(...PR('globalProp', pName, method, global.prop[pName].value));
   }
 
   getGlobalProp(agent: IAgent, pName: string) {
-    const global = GetGlobalAgent();
+    const global = SM_Agent.GetGlobalAgent();
     return global.prop[pName];
   }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** static method to return symbol data */
+  static Symbolize(): TSymbolData {
+    return SM_Feature._SymbolizeNames(GlobalPack.Symbols);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** instance method to return symbol data */
+  symbolize(): TSymbolData {
+    return GlobalPack.Symbolize();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static _CachedSymbols: TSymbolData;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** declaration of base symbol data; methods will be modified to include
+   *  the name parameter in each methodSignature */
+  static Symbols: TSymbolData = {
+    props: {},
+    methods: {
+      // REVIEW TODO: 'value' is :any...is it a GVAR?
+      'addGlobalProp': { args: ['pName:string', 'type:string', 'value:gvar'] },
+      // REVIEW TODO: 'value' is :any...is it a GVAR?
+      'globalProp': { args: ['pName:string', 'method:string', 'value:gvar'] },
+      'getGlobalProp': { args: ['pName:string'] }
+    }
+  };
 }
 
 /// REGISTER FEATURE SINGLETON ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new GlobalPack('Global');
-Register(INSTANCE);
+RegisterFeature(INSTANCE);

@@ -14,6 +14,7 @@ import Visual, {
 import SyncMap from 'lib/class-syncmap';
 import { SetModelRP, SetTrackerRP, SetAnnotRP } from 'modules/datacore/dc-render';
 import FLAGS from 'modules/flags';
+import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,7 +54,11 @@ function Init(element) {
   PIXI_APP = new PIXI.Application({
     width: size,
     height: size,
-    backgroundColor: 0x222222
+    transparent: true,
+    useContextAlpha: true // needed to make background color transparent
+    // backgroundAlpha: 0.1, // doesn't seem to do anything
+    // clearBeforeRender: true, // doesn't seem to do anything
+    // backgroundColor: 0xff0000,
   });
   // CSS styling
   document.body.style.margin = '0px';
@@ -93,7 +98,7 @@ function Init(element) {
       // zIndex needs to be set before updateTransform is called
       vobj.setZIndex(dobj.zIndex);
       vobj.setPosition(dobj.x, dobj.y);
-      if (!dobj.skin) throw Error('missing skin property');
+      // if (!dobj.skin) throw Error('missing skin property');
       vobj.setVisible(dobj.visible);
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
@@ -244,7 +249,7 @@ function Init(element) {
   SetAnnotRP(RP_PTRAK_TO_VOBJ);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function HookResize(element) {
+function HookResize(element, cb) {
   // element is usually window
   element.addEventListener(
     'resize',
@@ -260,6 +265,8 @@ function HookResize(element) {
         Root.y = PIXI_APP.screen.height / 2;
         Root.pivot.x = 0; //root.width / 2;
         Root.pivot.y = 0; // root.height / 2;
+        if (cb && typeof cb === 'function')
+          return cb(renderRoot.offsetWidth, renderRoot.offsetHeight);
       } else {
         console.log('note: no #root-renderer to resize');
       }
@@ -269,10 +276,9 @@ function HookResize(element) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Rescales Root to fit in PIXI_DIV
 function RescaleToFit(width, height = width) {
-  const pad = 20; // add padding so you can see the edges
   const scaleFactor = Math.min(
-    PIXI_DIV.offsetWidth / (width + pad),
-    PIXI_DIV.offsetHeight / (height + pad)
+    PIXI_DIV.offsetWidth / width,
+    PIXI_DIV.offsetHeight / height
   );
   CONTAINERS.Root.scale.set(scaleFactor);
 }
@@ -286,16 +292,29 @@ function SetBoundary(width, height, bgcolor = 0x000000) {
     CONTAINERS.Boundary = boundaryRect;
     CONTAINERS.Root.addChild(boundaryRect);
   }
-  boundaryRect.beginFill(bgcolor);
+  const alpha = SETTINGS.showWebCam ? 0.5 : 1;
+  boundaryRect.clear();
+  boundaryRect.beginFill(bgcolor, alpha);
   boundaryRect.drawRect(-width / 2, -height / 2, width, height);
   boundaryRect.endFill();
-
   RescaleToFit(width, height);
+  UR.CallMessage('BOUNDARY_UPDATE'); // tell PanelSimulation to recalculate size
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetPixiAppScreenSize() {
+  const renderRoot = document.getElementById('root-renderer');
+  return { width: renderRoot.offsetWidth, height: renderRoot.offsetHeight };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetPixiRootScale() {
+  return { x: CONTAINERS.Root.scale.x, y: CONTAINERS.Root.scale.y };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SetGlobalConfig(opt) {
-  const { actable } = opt;
-  SETTINGS.actable = actable || false; // default non-interative
+  const { actable, showWebCam } = opt;
+  SETTINGS.actable = actable !== undefined ? actable : SETTINGS.actable || false; // default non-interative
+  SETTINGS.showWebCam =
+    showWebCam !== undefined ? showWebCam : SETTINGS.showWebCam || false;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let updateFrames = 0;
@@ -332,13 +351,24 @@ function ReportMemory(frametime) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let renderFrames = 0;
+let ABORT_RENDER = false;
 function Render() {
-  if (!RP_DOBJ_TO_VOBJ) return;
-  RP_DOBJ_TO_VOBJ.mapObjects();
-  // RP_PTRAK_TO_VOBJ.mapObjects(); // in api-input right now
-  // RP_PTRAK_TO_VOBJ.mapObjects();
-  const synced = RP_DOBJ_TO_VOBJ.getMappedObjects();
-  // HCON.plot(`renderer synced ${synced.length} DOBJS to Sprites`, 2);
+  if (ABORT_RENDER) return;
+  try {
+    if (!RP_DOBJ_TO_VOBJ) return;
+    RP_DOBJ_TO_VOBJ.mapObjects();
+    // RP_PTRAK_TO_VOBJ.mapObjects(); // in api-input right now
+    // RP_PTRAK_TO_VOBJ.mapObjects();
+    const synced = RP_DOBJ_TO_VOBJ.getMappedObjects();
+    // HCON.plot(`renderer synced ${synced.length} DOBJS to Sprites`, 2);
+  } catch (caught) {
+    ABORT_RENDER = true;
+    ERROR(`render system error...aborting frame updates`, {
+      source: 'renderer',
+      where: 'api-render.Render',
+      caught
+    });
+  }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -348,6 +378,8 @@ export {
   Init,
   HookResize,
   SetBoundary,
+  GetPixiAppScreenSize,
+  GetPixiRootScale,
   UpdateDisplayList,
   UpdatePTrackList,
   UpdateAnnotationList,

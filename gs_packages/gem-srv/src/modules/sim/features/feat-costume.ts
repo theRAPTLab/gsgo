@@ -2,27 +2,33 @@
 
   The Costume Class!
 
+  Setting the costume size will also set the default physics body dimensions.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import RNG from 'modules/sim/sequencer';
 import * as PIXI from 'pixi.js';
 import UR from '@gemstep/ursys/client';
-import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
-import GFeature from 'lib/class-gfeature';
-import { IAgent } from 'lib/t-script';
-import { GetAgentById } from 'modules/datacore/dc-agents';
-import { Register } from 'modules/datacore/dc-features';
-import { GetSpriteDimensions, GetTextureInfo } from 'modules/datacore/dc-globals';
+import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
+import SM_Feature from 'lib/class-sm-feature';
+import { GetAgentById } from 'modules/datacore/dc-sim-agents';
+import { RegisterFeature } from 'modules/datacore/dc-sim-data';
+import { GetLoader } from 'modules/asset_core/asset-mgr';
 import { Clamp } from 'lib/util-vector';
 import { HSVfromRGB, RGBfromHSV, HSVfromHEX, HEXfromHSV } from 'lib/util-color';
+import * as ASSETS from 'modules/asset_core';
+import { SIM_TICKS_PER_SEC } from 'modules/sim/api-sim';
+import { DEFAULT_SPRITE } from 'modules/flags';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('FeatCostume');
 const DBG = false;
-let COUNTER = 0;
+
+const THISFEAT = 'Costume';
 
 const COSTUME_AGENTS = new Map();
+const SPRITE = GetLoader('sprites');
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
 
@@ -37,6 +43,53 @@ function m_Clamp255(val) {
   return Clamp(val, 0, 255);
 }
 
+/// Calculates the scale to set the agent visual to based on:
+/// 1. the current sprite size
+/// 2. any `size` the user has defined (in pixels)
+/// 2. any `width/height` the user has defined
+/// 3. any `scale/scaleY` the user has defined
+function m_CalculateScale(agent: IAgent): { scale: number; scaleY: number } {
+  //   if sprite size hasn't been set, set it
+  if (!agent.prop.Costume._spriteWidth)
+    agent.callFeatMethod(THISFEAT, '_getBounds');
+  const sw = agent.prop.Costume._spriteWidth;
+  const sh = agent.prop.Costume._spriteHeight;
+  //   user defined `size` sets both width and height
+  const size = agent.prop.Costume.size.value;
+  let sizew; // retain aspect ratio when sizing
+  let sizeh; // retain aspect ratio when sizing
+  if (sw > sh) {
+    sizew = size;
+    sizeh = (sh / sw) * size;
+  } else {
+    sizew = (sw / sh) * size;
+    sizeh = size;
+  }
+  //   user defined w/h is used to scale the original sprite
+  //   and overrides size
+  const uw = agent.prop.Costume.width.value;
+  const uh = agent.prop.Costume.height.value;
+  const spriteScale = uw ? uw / sw : size ? sizew / sw : 1;
+  const spriteScaleY = uh ? uh / sh : size ? sizeh / sh : 1;
+  //   user defined scale is applied on to of current scale
+  const us = agent.prop.Costume.scale.value; // "u"ser
+  const usY = agent.prop.Costume.scaleY.value;
+  let newScale = us ? us * spriteScale : spriteScale;
+  let newScaleY = usY ? usY * spriteScaleY : us ? us * spriteScaleY : spriteScale;
+  //   flip
+  newScale = agent.prop.Costume.flipX.value ? -newScale : newScale;
+  newScaleY = agent.prop.Costume.flipY.value ? -newScaleY : newScaleY;
+
+  //   if Physics is present, set physics private body values
+  if (agent.prop.Physics) {
+    const bw = sw * Math.abs(newScale); // "b"ody
+    const bh = sh * Math.abs(newScaleY);
+    agent.prop.Physics._bodyWidth = bw;
+    agent.prop.Physics._bodyHeight = bh;
+    agent.prop.Physics._bodyRadius = bw / 2;
+  }
+  return { scale: newScale, scaleY: newScaleY };
+}
 /**
  * Returns agent if it exists.
  * If it doesn't exist anymore (e.g. CharControl has dropped), remove it from
@@ -51,7 +104,7 @@ function m_getAgent(agentId): IAgent {
 
 /// UPDATES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_Update() {
+function m_Update(frame) {
   const agentIds = Array.from(COSTUME_AGENTS.keys());
   agentIds.forEach(id => {
     const agent = m_getAgent(id);
@@ -61,9 +114,31 @@ function m_Update() {
     let v;
     let color;
 
-    // COLOR can be set two different ways: colorScale or HSV
-    // NOTE: color scale will override any hsv settings
+    // Set COSTUME (skin + size)
+    const costumeName =
+      agent.prop.Costume.costumeName && agent.prop.Costume.costumeName.value;
+    if (costumeName !== undefined) {
+      // Clear animated costume if previously set so animated costume will not
+      // replace the `setCostume` with the next animation update.
+      agent.prop.Costume._animationBaseSkin = undefined;
+
+      // Set agent skin
+      // new costume?
+      if (agent.prop.skin.value !== costumeName) {
+        agent.prop.skin.setTo(costumeName);
+        agent.prop.Costume._spriteWidth = undefined; // force bounds recalculation
+      }
+
+      // Set agent scale (size)
+      const { scale, scaleY } = m_CalculateScale(agent);
+      agent.scale = scale;
+      agent.scaleY = scaleY;
+    }
+
+    // Set COLOR
     if (agent.prop.Costume.colorScaleIndex.value !== undefined) {
+      // COLOR can be set two different ways: colorScale or HSV
+      // NOTE: color scale will override any hsv settings
       // retrieve color from color scale
       color = agent.prop.Costume._colorScale.get(
         agent.prop.Costume.colorScaleIndex.value
@@ -74,17 +149,52 @@ function m_Update() {
       agent.prop.Costume.colorSaturation.setTo(s);
       agent.prop.Costume.colorValue.setTo(v);
     }
-
-    // convert feature color data to hex for agent
+    //   convert feature color data to hex for agent
     h = agent.prop.Costume.colorHue.value;
     s = agent.prop.Costume.colorSaturation.value;
     v = agent.prop.Costume.colorValue.value;
     if (h !== undefined && s !== undefined && v !== undefined) {
       color = HEXfromHSV(h, s, v);
     }
-
-    // always set color, esp if it's undefined (to clear filters)
+    //   always set color, esp if it's undefined (to clear filters)
     agent.prop.color.setTo(color);
+
+    // Set GLOW
+    if (agent.prop.Costume.glow.value > 0) {
+      agent.prop.Costume.glow.sub(1 / SIM_TICKS_PER_SEC); // frame rate
+      agent.isGlowing = true;
+    } else {
+      agent.isGlowing = false;
+    }
+  });
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Runs only when sim is running (GLOOP)
+function m_Animate(frame) {
+  const SPRITES = ASSETS.GetLoader('sprites');
+  const agentIds = Array.from(COSTUME_AGENTS.keys());
+  agentIds.forEach(id => {
+    const agent = m_getAgent(id);
+    if (!agent) return;
+
+    // Animation?
+    if (agent.prop.Costume._animationBaseSkin) {
+      // check framerate
+      if (frame % agent.prop.Costume._animationFrameRate === 0) {
+        agent.prop.Costume._animationFrame++;
+        let skin = `${agent.prop.Costume._animationBaseSkin}${agent.prop.Costume._animationFrame}.${agent.prop.Costume._animationBaseSkinExt}`;
+        if (DBG) console.log(...PR('looking up skin', skin));
+        if (!SPRITES.hasAsset(skin)) {
+          // Ran out of frame, reset to start
+          agent.prop.Costume._animationFrame =
+            agent.prop.Costume._animationStartFrame;
+          skin = `${agent.prop.Costume._animationBaseSkin}${agent.prop.Costume._animationFrame}.${agent.prop.Costume._animationBaseSkinExt}`;
+          if (DBG) console.log(...PR('....failed, reset to', skin));
+        }
+        agent.prop.skin.setTo(skin);
+      }
+    }
   });
 }
 
@@ -93,36 +203,32 @@ function m_Update() {
 
 // REVIEW: Use PHYSIC for now to set agent before VIS_UPDATE
 UR.HookPhase('SIM/VIS_UPDATE', m_Update);
+UR.HookPhase('SIM/FEATURES_EXEC', m_Animate);
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class CostumePack extends GFeature {
+class CostumePack extends SM_Feature {
   //
   constructor(name) {
     super(name);
     // add feature methods here
-    this.featAddMethod('setCostume', this.setCostume);
-    this.featAddMethod('setPose', this.setPose);
-    this.featAddMethod('setScale', this.setScale);
-    this.featAddMethod('setGlow', this.setGlow);
+    this.featAddMethod('setAnimatedCostume', this.setAnimatedCostume);
     this.featAddMethod('setColorize', this.setColorize);
     this.featAddMethod('setColorizeHSV', this.setColorizeHSV);
     this.featAddMethod('randomizeColor', this.randomizeColor);
     this.featAddMethod('randomizeColorHSV', this.randomizeColorHSV);
     this.featAddMethod('colorHSVWithinRange', this.colorHSVWithinRange);
     this.featAddMethod('resetColorize', this.resetColorize);
-    this.featAddMethod('test', this.test);
-    this.featAddMethod('thinkHook', agent => {
-      const prop = agent.prop.Costume.counter;
-      prop.add(1);
-      if (prop.value === 0) console.log(`${agent.name} is CostumeThinking`);
-    });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** This runs once to initialize the feature for all agents */
   initialize(simloop) {
     super.initialize(simloop);
     simloop.hook('INPUT', frame => console.log(frame));
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    COSTUME_AGENTS.clear();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Add costume-specific properties to the agent. The feature methods
@@ -132,20 +238,26 @@ class CostumePack extends GFeature {
   decorate(agent) {
     super.decorate(agent);
     // add feature props here
-    let prop = new GVarNumber(0);
-    // initialize a counter in the agent
-    // it will be checked during 'thinkHook' when it's invoked via a
-    // featureHook keyword
-    prop.setMax(120);
-    prop.setMin(0);
-    prop.setWrap();
-    this.featAddProp(agent, 'counter', prop); // used by thinkhook example above
-    this.featAddProp(agent, 'costumeName', new GVarString('default'));
-    prop = new GVarNumber(0);
+    let prop = new SM_Number(0);
+    this.featAddProp(agent, 'costumeName', new SM_String(DEFAULT_SPRITE));
+    prop = new SM_Number(0);
     prop.setWrap();
     prop.setMin(0);
     prop.setMax(0);
     this.featAddProp(agent, 'currentFrame', prop);
+    // User-defined size -- single dimension shortcut for width/height
+    prop = new SM_Number();
+    this.featAddProp(agent, 'size', prop);
+    // User-defined width/height -- will be applied to agent.scale on update
+    prop = new SM_Number();
+    this.featAddProp(agent, 'width', prop);
+    prop = new SM_Number();
+    this.featAddProp(agent, 'height', prop);
+    // User-defined Scale -- will be applied to agent.scale on update
+    prop = new SM_Number(1);
+    this.featAddProp(agent, 'scale', prop);
+    prop = new SM_Number();
+    this.featAddProp(agent, 'scaleY', prop);
     // NOTE setting `flip` will not change the costume if Physics
     // is not being used.  This merely sets a flag.
     // If only Costume is being used, you need do a direct Costume.setScale
@@ -153,37 +265,39 @@ class CostumePack extends GFeature {
     // that could be easily set rather than a method.
     // REVIEW: Implement FEATURES_UPDATE phase processing for Costume
     //         to enable applicaiton of flip?
-    this.featAddProp(agent, 'flipX', new GVarBoolean(false));
-    this.featAddProp(agent, 'flipY', new GVarBoolean(false));
+    this.featAddProp(agent, 'flipX', new SM_Boolean(false));
+    this.featAddProp(agent, 'flipY', new SM_Boolean(false));
     // Costume color will override agent color during m_Update
-    prop = new GVarNumber();
+    prop = new SM_Number();
+    this.featAddProp(agent, 'glow', prop); // in seconds
+    prop = new SM_Number();
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorHue', prop);
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorSaturation', prop);
-    prop = new GVarNumber();
+    prop = new SM_Number();
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorValue', prop);
-    prop = new GVarNumber();
+    prop = new SM_Number();
     this.featAddProp(agent, 'colorScaleIndex', prop);
-    prop = new GVarNumber(0);
+    prop = new SM_Number(0);
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorScaleHue', prop);
-    prop = new GVarNumber(0);
+    prop = new SM_Number(0);
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorScaleSaturation', prop);
-    prop = new GVarNumber(1);
+    prop = new SM_Number(1);
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorScaleValue', prop);
-    this.featAddProp(agent, 'colorScaleType', new GVarString('value'));
-    prop = new GVarNumber(5);
+    this.featAddProp(agent, 'colorScaleType', new SM_String('value'));
+    prop = new SM_Number(5);
     this.featAddProp(agent, 'colorScaleSteps', prop);
 
     COSTUME_AGENTS.set(agent.id, agent.id);
@@ -192,6 +306,15 @@ class CostumePack extends GFeature {
     agent.prop.Costume.colorHue.value = undefined;
     agent.prop.Costume.colorSaturation.value = undefined;
     agent.prop.Costume.colorValue.value = undefined;
+
+    agent.prop.Costume._spriteWidth = undefined;
+    agent.prop.Costume._spriteHeight = undefined;
+
+    agent.prop.Costume._animationBaseSkin = undefined;
+    agent.prop.Costume._animationBaseSkinExt = undefined;
+    agent.prop.Costume._animationFrame = undefined;
+    agent.prop.Costume._animationStartFrame = undefined;
+    agent.prop.Costume._animationFrameRate = undefined;
   }
 
   /// COSTUME METHODS /////////////////////////////////////////////////////////
@@ -199,35 +322,52 @@ class CostumePack extends GFeature {
   /** Invoked through featureCall script command. To invoke via script:
    *  featureCall Costume setCostume value
    */
-  setCostume(agent: IAgent, costumeName: string, poseName: string | Number) {
-    agent.getFeatProp(this.name, 'costumeName').value = costumeName;
-    const { frameCount } = GetTextureInfo(costumeName);
-    if (poseName !== undefined) {
-      const cf = agent.getFeatProp(this.name, 'currentFrame') as GVarNumber;
-      cf.value = poseName;
-      cf.setMax(frameCount - 1);
-    }
-    agent.getProp('skin').value = costumeName;
-  }
-  setPose(agent: IAgent, poseName: string | number) {
-    agent.getFeatProp(this.name, 'currentFrame').value = poseName;
-  }
+
   /**
-   * If Physics are being used, it's better to use Physics' setSize()
-   * This sets the agent scale property directly, but costume does
-   * not otherwise process scale.
+   * Animate by stepping through costume name, not spritesheet
+   * e.g. fly1.png, fly2.png, fly3.png
+   * This is intended to make it easy for non-technical users to create animations
+   * This supports an arbitrary number of frames.
+   * Turn off animation by setting the framerate to 0.
+   * The animation will cycle back to to the first frame specified in the costumeName,
+   * e.g. if you call it with `fly2.png` then fly2 will be the first frame.
    */
-  // REVIEW: Is this method necessary?
-  setScale(agent: IAgent, scale: number) {
-    // Use `setTo` so that min an max are checked
-    const newScale = agent.prop.Costume.flipX.value ? -scale : scale;
-    agent.prop.scale.setTo(newScale); // use the minmaxed number
-  }
-  setGlow(agent: IAgent, seconds: number) {
-    agent.isGlowing = true;
-    setTimeout(() => {
-      agent.isGlowing = false;
-    }, seconds * 1000);
+  setAnimatedCostume(
+    agent: IAgent,
+    costumeName: string,
+    frameRate: number = 0.3
+  ) {
+    // clear costumeName so it does  not override animatedCostume
+    agent.prop.Costume.costumeName.value = undefined;
+
+    const findEndNumbers = /(\w+?)([0-9]+)\.([A-z]+)$/;
+    const result = findEndNumbers.exec(costumeName);
+    if (!result || result.length < 3) {
+      // eslint-disable-next-line no-alert
+      alert(
+        `AnimatedCostume should be an image file that ends with a number, e.g. 'bunny1.jpg'.  You entered '${costumeName}'`
+      );
+      return;
+    }
+    const baseSkin = result[1];
+    const frame = result[2]; // numbers
+    const ext = result[3];
+
+    agent.prop.Costume._animationBaseSkin = baseSkin;
+    agent.prop.Costume._animationBaseSkinExt = ext;
+    agent.prop.Costume._animationFrame = frame;
+    agent.prop.Costume._animationStartFrame = frame;
+    agent.prop.Costume._animationFrameRate = 30 * frameRate; // frames per second
+    const skin = `${baseSkin}${frame}.${ext}`;
+
+    const SPRITES = ASSETS.GetLoader('sprites');
+    if (!SPRITES.hasAsset(skin)) {
+      // eslint-disable-next-line no-alert
+      alert(`Costume ${skin} not found!`);
+      return;
+    }
+
+    agent.prop.skin.setTo(skin);
   }
   getColorHSV(agent: IAgent) {
     return [
@@ -266,8 +406,11 @@ class CostumePack extends GFeature {
   // `dHue`, `dSat`, and `dVal` are the max change values
   // They are essentially +/-, e.g. if dHue is 0.2, then the random value
   // will change the existing value by +/- 0.2.
+  // If the current HSV of the agent has not been defined, we default
+  // to randomize everything.  (Otherwise, we end up with black if the
+  // color had been previously reset.)
   randomizeColorHSV(agent: IAgent, dHue: number, dSat: number, dVal: number) {
-    const [h, s, v] = this.getColorHSV(agent);
+    const [h = 0.5, s = 0.5, v = 0.5] = this.getColorHSV(agent);
     const newH = m_Clamp1(h + RNG() * 2 * dHue - dHue);
     const newS = m_Clamp1(s + RNG() * 2 * dSat - dSat);
     const newV = m_Clamp1(v + RNG() * 2 * dVal - dVal);
@@ -305,6 +448,11 @@ class CostumePack extends GFeature {
   // Removes the color overlay, reverting the sprite back to it's original colors
   resetColorize(agent: IAgent) {
     agent.prop.color.clear();
+    // clear other color settings
+    agent.prop.Costume.colorScaleIndex.setTo(undefined);
+    agent.prop.Costume.colorHue.setTo(undefined);
+    agent.prop.Costume.colorSaturation.setTo(undefined);
+    agent.prop.Costume.colorValue.setTo(undefined);
   }
   initHSVColorScale(
     agent: IAgent,
@@ -342,24 +490,101 @@ class CostumePack extends GFeature {
     return 0; // black by default?
   }
   // Dimensions of currently selected sprite frame's texture
-  getBounds(agent: IAgent): { w: number; h: number } {
-    const costumeName = agent.getProp('skin').value;
-    const frame = agent.getFeatProp('Costume', 'currentFrame').value || 0;
-    const { w, h } = GetSpriteDimensions(costumeName, frame);
+  // NOTE: This involves an expensive call to get sprite dimensions
+  _getBounds(agent: IAgent): { w: number; h: number } {
+    const costumeName = agent.prop.Costume.costumeName.value;
+    const frame = agent.prop.Costume.currentFrame.value;
+    const { w, h } = SPRITE.getSpriteDimensions(costumeName, frame);
+    agent.prop.Costume._spriteWidth = w;
+    agent.prop.Costume._spriteHeight = h;
     return { w, h };
   }
-  getScaledBounds(agent: IAgent): { w: number; h: number } {
-    const { w, h } = this.getBounds(agent);
-    const scale = agent.scale;
-    const scaleY = agent.scaleY || scale;
+  _getScaledBounds(agent: IAgent): { w: number; h: number } {
+    const { w, h } = this._getBounds(agent);
+    const scale = agent.prop.Costume.scale.value;
+    const scaleY = agent.prop.Costume.scaleY.value || scale;
     return { w: scale * w, h: scaleY * h };
   }
-  test(agent: IAgent) {
-    console.log('GOT AGENT', agent.name, 'from FEATURE', this.name);
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** static method to return symbol data */
+  static Symbolize(): TSymbolData {
+    return SM_Feature._SymbolizeNames(CostumePack.Symbols);
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** instance method to return symbol data */
+  symbolize(): TSymbolData {
+    return CostumePack.Symbolize();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static _CachedSymbols: TSymbolData;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** declaration of base symbol data; methods will be modified to include
+   *  the name parameter in each methodSignature */
+  static Symbols: TSymbolData = {
+    props: {
+      costumeName: SM_String.Symbols,
+      currentFrame: SM_Number.Symbols,
+      size: SM_Number.Symbols,
+      width: SM_Number.Symbols,
+      height: SM_Number.Symbols,
+      scale: SM_Number.Symbols,
+      scaleY: SM_Number.Symbols,
+      flipX: SM_Boolean.Symbols,
+      flipY: SM_Boolean.Symbols,
+      glow: SM_Number.Symbols,
+      colorHue: SM_Number.Symbols,
+      colorSaturation: SM_Number.Symbols,
+      colorValue: SM_Number.Symbols,
+      colorScaleIndex: SM_Number.Symbols,
+      colorScaleHue: SM_Number.Symbols,
+      colorScaleSaturation: SM_Number.Symbols,
+      colorScaleValue: SM_Number.Symbols,
+      colorScaleType: SM_String.Symbols,
+      colorScaleSteps: SM_Number.Symbols
+    },
+    methods: {
+      setAnimatedCostume: { args: ['costumeName:string', 'frameRate:number'] },
+      getColorHSV: {
+        returns: ['hue:number', 'saturation:number', 'value:number']
+      },
+      setColorize: { args: ['red:number', 'green:number', 'blue:number'] },
+      setColorizeHSV: { args: ['hue:number', 'sat:number', 'val:number'] },
+      randomizeColor: {
+        args: ['dRed:number', 'dGreen:number', 'dBlue:number']
+      },
+      randomizeColorHSV: {
+        args: ['dHue:number', 'dSat:number', 'dVal:number']
+      },
+      colorHSVWithinRange: {
+        args: [
+          'col1:number',
+          'col2:number',
+          'dHue:number',
+          'dSat:number',
+          'dVal:number'
+        ]
+      },
+      resetColorize: {},
+      initHSVColorScale: {
+        args: [
+          'hue:number',
+          'saturation:number',
+          'value:number',
+          'type:string',
+          'steps:number'
+        ]
+      },
+      getHSVColorScaleColor: {
+        args: ['index:number'],
+        returns: 'color:number'
+      }
+    }
+  };
 }
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new CostumePack('Costume');
-Register(INSTANCE);
+RegisterFeature(INSTANCE);

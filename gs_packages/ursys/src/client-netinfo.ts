@@ -9,14 +9,15 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const PR = require('./util/prompts').makeStyleFormatter('UR.SES');
-const { CFG_URNET_SERVICE } = require('./ur-common');
+const { CFG_URNET_SERVICE } = require('./common/ur-constants');
 const DATACORE = require('./client-datacore');
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 interface NetProps {
   broker: MessageBroker;
-  client?: { ip: string };
+  client?: ConnectionInfo;
+  build?: BuildInfo;
   urdb?: NetDB;
 }
 interface MessageBroker {
@@ -28,7 +29,9 @@ interface MessageBroker {
 interface ConnectionInfo {
   ip: string;
 }
-
+interface BuildInfo {
+  branch: string;
+}
 interface NetDB {
   protocol: string; // http or https
   host: string;
@@ -40,11 +43,12 @@ interface NetDB {
 let NET_BROKER: MessageBroker;
 let CLIENT_INFO: ConnectionInfo;
 let URDB_ENDPOINT: NetDB;
+let BUILD_INFO: BuildInfo;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: check options passed to SystemNetBoot */
 function m_CheckNetOptions(netOpt) {
-  const { broker, client, urdb, ...other } = netOpt;
+  const { broker, client, urdb, build, ...other } = netOpt;
   const unknown = Object.keys(other);
   if (unknown.length) {
     console.log(...PR(`warn - L1_OPTION unknown param: ${unknown.join(', ')}`));
@@ -59,12 +63,22 @@ function m_CheckNetOptions(netOpt) {
 /** props is coming from */
 function SaveNetInfo(netInfo: NetProps) {
   if (DBG) console.log(...PR('saving netInfo for broker'), netInfo);
-  const { broker, client, urdb } = netInfo;
+  const { broker, client, urdb, build } = netInfo;
   NET_BROKER = DATACORE.SaveBrokerInfo(broker); // make accessible
   CLIENT_INFO = DATACORE.SaveClientInfo(client);
   URDB_ENDPOINT = DATACORE.SaveDBInfo(urdb);
+  BUILD_INFO = DATACORE.SaveBuildInfo(build);
   if (DBG)
-    console.log(...PR('session broker', NET_BROKER, 'client info', CLIENT_INFO));
+    console.log(
+      ...PR(
+        'session broker',
+        NET_BROKER,
+        'client info',
+        CLIENT_INFO,
+        'build info',
+        BUILD_INFO
+      )
+    );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** connect to the appserver's netinfo webservice */
@@ -77,6 +91,10 @@ async function FetchNetInfo() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetNetInfo() {
   return NET_BROKER;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetBuildInfo() {
+  return BUILD_INFO;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetClientInfo() {
@@ -93,4 +111,11 @@ function GetDBEndpoint() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { FetchNetInfo, SaveNetInfo, GetNetInfo, GetClientInfo, GetDBInfo };
+export {
+  FetchNetInfo,
+  SaveNetInfo,
+  GetNetInfo,
+  GetClientInfo,
+  GetDBInfo,
+  GetBuildInfo
+};

@@ -6,7 +6,7 @@
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const { CFG_SVR_UADDR } = require('./ur-common');
+const { CFG_SVR_UADDR } = require('./common/ur-constants');
 const { SVR_HANDLERS, NET_HANDLERS } = require('./server-datacore');
 const TERM = require('./util/prompts').makeTerminalOut(' URNET');
 

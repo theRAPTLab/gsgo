@@ -22,7 +22,8 @@ STATE.initializeState({
   locales: [],
   localeNames: [],
   localeId: 0,
-  transform: {
+  selectedTrack: 'pozyx',
+  ptrack: {
     xRange: -99,
     yRange: -99,
     xOff: -99,
@@ -30,6 +31,16 @@ STATE.initializeState({
     xScale: -99,
     yScale: -99,
     zRot: -99
+  },
+  pozyx: {
+    xRange: -99,
+    yRange: -99,
+    xOff: -99,
+    yOff: -99,
+    xScale: -99,
+    yScale: -99,
+    zRot: -99,
+    useAccelerometer: true
   }
 });
 
@@ -63,10 +74,20 @@ export const Locales = () => stateObj('locales');
 export const CurrentLocaleId = () => flatStateValue('localeId');
 export const GetLocale = id => {
   // stateobj always returns entities as { [group]:{[ keys]:value } }
+  // locales are defined in dbinit-loki.json
   const locales = _getKey('locales'); // group:locales, key:locales
-  const locale = locales.find(l => l.id === id);
+  let locale = locales.find(l => l.id === id);
   if (locale) return locale;
-  return { error: `localeId ${id} not found` };
+  // else fall back to default id=0 as defined in dbinit-loki.json
+  locale = locales.find(l => l.id === 0);
+  if (locale) return locale;
+  // else fall back to init defaults
+  return {
+    id: 0,
+    name: 'Unknown Locale',
+    pozyx: _getKey('pozyx'), // use STATE defaults so at least pozyx is not undefined
+    ptrack: _getKey('ptrack') // use STATE defaults so at least ptrack is not undefined
+  };
 };
 /// update
 export const SetLocaleID = id => {
@@ -85,18 +106,22 @@ let AUTOTIMER;
  *  values, if any, for subsequent update to GSTATE and publishState
  */
 function hook_Filter(key, propOrValue, propValue) {
-  if (key === 'transform') return [key, propOrValue, Number(propValue)];
+  if (key === 'ptrack') return [key, propOrValue, Number(propValue)];
+  if (key === 'pozyx') return [key, propOrValue, Number(propValue)];
   if (key === 'localeId') return [key, Number(propOrValue)];
+  if (key === 'selectedTrack') return [key, propOrValue];
   return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return Promise to write input (ptrack) to database */
-function promise_WriteTransform() {
+function promise_WriteTransform(track) {
   const id = _getKey('localeId');
-  const input = _getKey('transform');
-  return UR.Mutate(
-    `
-    fragment TransformParts on PTrackProps {
+  let input;
+  if (track === 'ptrack') {
+    input = _getKey('ptrack');
+    return UR.Mutate(
+      `
+    fragment PTrackTransformParts on PTrackProps {
       xRange
       yRange
       xOff
@@ -107,7 +132,32 @@ function promise_WriteTransform() {
     }
     mutation LocalePTrack($id:Int $input:PTrackInput) {
       updatePTrack(localeId:$id,input:$input) {
-        ...TransformParts
+        ...PTrackTransformParts
+      }
+    }`,
+      {
+        input,
+        id
+      }
+    );
+  }
+  // else 'pozyx'
+  input = _getKey('pozyx');
+  return UR.Mutate(
+    `
+    fragment PozyxTransformParts on PozyxProps {
+      xRange
+      yRange
+      xOff
+      yOff
+      xScale
+      yScale
+      zRot
+      useAccelerometer
+    }
+    mutation LocalePTrack($id:Int $input:PozyxInput) {
+      updatePozyx(localeId:$id,input:$input) {
+        ...PozyxTransformParts
       }
     }`,
     {
@@ -122,19 +172,22 @@ function promise_WriteTransform() {
  */
 function hook_Effect(effectKey, propOrValue, propValue) {
   // (1) transform effect
-  if (effectKey === 'transform') {
+  if (effectKey === 'ptrack' || effectKey === 'pozyx') {
     if (DBG) console.log(...PR(`effect ${effectKey} = ${propOrValue}`));
     // (a) start async autosave
     if (AUTOTIMER) clearInterval(AUTOTIMER);
     const thisLocaleId = CurrentLocaleId();
     AUTOTIMER = setInterval(() => {
-      promise_WriteTransform().then(response => {
-        const ptrack = response.data.updatePTrack;
+      promise_WriteTransform(effectKey).then(response => {
+        const track =
+          effectKey === 'ptrack'
+            ? response.data.updatePTrack
+            : response.data.updatePozyx;
         if (DBG) {
           console.log(
             ...PR(
               'autosave DB returned [',
-              ...Object.entries(ptrack).map(([k, v]) => `${k}:${v} `),
+              ...Object.entries(track).map(([k, v]) => `${k}:${v} `),
               ']'
             )
           );
@@ -148,7 +201,7 @@ function hook_Effect(effectKey, propOrValue, propValue) {
           console.log(...PR('locales', locales, 'old localeId', thisLocaleId));
         const locale = locales.find(l => l.id === thisLocaleId);
         // Mutate actual state directly
-        locale.ptrack = ptrack;
+        locale[effectKey] = track;
         _publishState({ locales });
       });
       clearInterval(AUTOTIMER);
@@ -169,9 +222,10 @@ function hook_Effect(effectKey, propOrValue, propValue) {
       AUTOTIMER = 0;
     }
     const localeId = Number(propOrValue);
-    const { ptrack } = GetLocale(localeId);
-    updateKey('transform', ptrack);
-    _publishState({ transform: ptrack });
+    const { ptrack, pozyx } = GetLocale(localeId);
+    updateKey('ptrack', ptrack);
+    updateKey('pozyx', pozyx);
+    _publishState({ ptrack, pozyx });
   }
   // otherwise return nothing to handle procesing normally
 }
@@ -196,6 +250,17 @@ async function m_LoadLocaleInfo() {
           yScale
           zRot
         }
+        pozyx {
+          memo
+          xRange
+          yRange
+          xOff
+          yOff
+          xScale
+          yScale
+          zRot
+          useAccelerometer
+        }
       }
     }
   `);
@@ -206,12 +271,13 @@ async function m_LoadLocaleInfo() {
     updateKey({ locales, localeNames, localeId });
     // set default transform
     const locale = GetLocale(localeId);
-    const { ptrack } = locale;
-    _publishState({ transform: ptrack });
+    const { ptrack, pozyx } = locale;
+    _publishState({ ptrack, pozyx });
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** this needs to be made dynamic */
+/// NOT USED???
 export async function LoadCurrentPTrack() {
   const localeId = stateObj('localeId');
   if (DBG) console.log(...PR('(2) GET LOCALE DATA FOR DEFAULT ID', localeId));
@@ -249,7 +315,7 @@ UR.HookPhase(
   () =>
     new Promise((resolve, reject) => {
       m_LoadLocaleInfo();
-      console.log(...PR('resolved LOAD_DB'));
+      if (DBG) console.log(...PR('resolved LOAD_DB'));
       resolve();
     })
 );

@@ -10,19 +10,17 @@
 const NETWORK = require('./server-urnet');
 const PROMPTS = require('./util/prompts');
 const NETINFO = require('./server-netinfo');
-const DB = require('./server-urdb');
-const FILES = require('./server-urfiles');
-const DBG = require('./ur-dbg-settings');
-const COMMON = require('./ur-common');
-
-//
+const DB = require('./server-db');
+const ASSETS = require('./express-assets');
+const DBG = require('./common/debug-props');
 const {
   IsBrowser,
   IsNode,
   IsElectron,
   IsElectronMain,
   IsElectronRenderer
-} = COMMON;
+} = require('./common/ur-detect');
+const FILE = require('./util/files');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,14 +37,6 @@ const META = {
   _SCRIPT: __filename,
   _VERSION: '0.0.1'
 };
-
-/// SERVER-SIDE ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const STORE = {};
-const EXPRESS = {};
-const LOGGER = {};
-// const NETWORK = {};
-const MEDIA = {};
 
 /// LIBRARY INITIALIZATION ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,12 +60,16 @@ function Shutdown(closers) {
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Start the URNET socket server
- */
+/** Start the URNET socket server */
 function URNET_Start(options) {
   m_netinfo = NETWORK.StartNetwork(options);
   NETINFO.SaveNetInfo(m_netinfo);
   return m_netinfo;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** close the URNET socket server */
+function URNET_Stop() {
+  if (m_netinfo) NETWORK.StopNetwork();
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -85,8 +79,11 @@ module.exports = {
   DBG,
   // META
   ...META,
+  // UTILITIES API
+  FILE,
+  // INFORMATION
   NetInfoRoute: NETINFO.NetInfoRoute,
-  // SYSTEM ENVIRONMENT
+  URNET_NetInfo: NETINFO.GetNetInfo,
   IsNode,
   IsBrowser,
   IsElectron,
@@ -96,17 +93,15 @@ module.exports = {
   Initialize,
   Shutdown,
   URNET_Start,
-  URNET_NetInfo: NETINFO.GetNetInfo,
+  URNET_Stop,
+  // MIDDLEWARE
   UseLokiGQL_Middleware: DB.UseLokiGQL_Middleware,
   NetInfo_Middleware: NETINFO.Express_Middleware,
   URNET_Use: NETINFO.UseURNET,
   NextJS_NetinfoHook: NETINFO.NextJS_Middleware,
-  // SERVICES API
-  STORE,
-  EXPRESS,
-  LOGGER,
-  NETWORK,
-  MEDIA,
+  AssetManifest_Middleware: ASSETS.AssetManifest_Middleware,
+  AssetUpdate_Middleware: ASSETS.AssetUpdate_Middleware,
+  MediaProxy_Middleware: ASSETS.MediaProxy_Middleware,
   // PROMPT UTILITIES
   PrefixUtil: PROMPTS.makeStyleFormatter,
   TermOut: PROMPTS.makeTerminalOut,

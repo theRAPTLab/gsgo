@@ -13,13 +13,12 @@ import UR from '@gemstep/ursys/client';
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelLogin from './components/PanelLogin';
 import PanelSelectSimulation from './components/PanelSelectSimulation';
-import PanelSimViewer from './components/PanelSimViewer';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
-// import 'modules/tests/test-parser'; // test parser evaluation
+// import 'test/unit-parser'; // test parser evaluation
 
 // this is where classes.* for css are defined
-import { useStylesHOC } from './elements/page-xui-styles';
+import { useStylesHOC } from './helpers/page-xui-styles';
 import './scrollbar.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -68,10 +67,10 @@ class Login extends React.Component {
     });
   }
 
-  OnModelSelectClick(id) {
+  OnModelSelectClick(parms) {
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
-    window.location = `/app/model?model=${id}`;
+    window.location = `/app/project?${parms}`;
   }
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
@@ -93,8 +92,17 @@ class Login extends React.Component {
           className={clsx(classes.cell, classes.top)}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          <span style={{ fontSize: '32px' }}>GEMSTEP LOGIN</span> UGLY DEVELOPER
-          MODE
+          <img
+            src="/static/logo_GEMSTEP_vector.svg"
+            width="40px"
+            style={{
+              paddingTop: '5px',
+              paddingRight: '5px',
+              paddingLeft: '5px',
+              verticalAlign: 'top'
+            }}
+          />
+          <span style={{ fontSize: '32px' }}> GEM-STEP PROJECTS</span>
         </div>
         <div
           id="console-left"
@@ -110,9 +118,6 @@ class Login extends React.Component {
               onClick={this.OnModelSelectClick}
             />
           )}
-        </div>
-        <div id="root-renderer" className={classes.main}>
-          <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
         </div>
         <div
           id="console-bottom"

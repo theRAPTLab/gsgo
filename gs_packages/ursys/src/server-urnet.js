@@ -13,7 +13,8 @@ const WSS = require('ws').Server;
 const NetPacket = require('./class-netpacket');
 const LOGGER = require('./server-logger');
 const TERM = require('./util/prompts').makeTerminalOut(' URNET');
-const { CFG_SVR_UADDR, PacketHash } = require('./ur-common');
+const { PacketHash } = require('./common/ur-detect');
+const { CFG_SVR_UADDR } = require('./common/ur-constants');
 const {
   InitializeNetInfo,
   SocketAdd,
@@ -36,18 +37,24 @@ const {
 } = require('./svc-netdevices');
 const { PKT_ProtocolDirectory } = require('./svc-netprotocols');
 const { PKT_ServiceList, PKT_Reflect } = require('./svc-debug');
-const DBG = require('./ur-dbg-settings');
+const DBG = require('./common/debug-props');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ERR_SS_EXISTS = 'socket server already created';
+let m_options;
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// sockets
 let mu_wss; // websocket server
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// MESSAGE BROKER STARTUP API ////////////////////////////////////////////////
+/** stop network */
+async function StopNetwork() {
+  void m_StopSocketServer();
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Initializes the web socket server using the options passed-in
  *  @param {Object} [options] - configuration settings
@@ -68,7 +75,10 @@ function StartNetwork(options = {}) {
 
   // REGISTER SERVER-BASED MESSAGE HANDLERS
   LOGGER.Write('registering network services');
+  UR_HandleMessage('NET:SRV_LOG_ENABLE', LOGGER.PKT_LogEnable);
   UR_HandleMessage('NET:SRV_LOG_EVENT', LOGGER.PKT_LogEvent);
+  UR_HandleMessage('NET:SRV_LOG_JSON', LOGGER.PKT_LogJSON);
+  UR_HandleMessage('NET:SRV_RTLOG', LOGGER.PKT_RTLog);
   UR_HandleMessage('NET:SRV_REG_HANDLERS', PKT_RegisterHandler);
   UR_HandleMessage('NET:SRV_SESSION_LOGIN', PKT_SessionLogin);
   UR_HandleMessage('NET:SRV_SESSION_LOGOUT', PKT_SessionLogout);
@@ -92,6 +102,7 @@ function StartNetwork(options = {}) {
 function m_StartSocketServer(options) {
   // create listener.
   try {
+    m_options = options;
     mu_wss = new WSS(options);
     mu_wss.on('listening', () => {
       if (DBG.init) TERM(`socket server listening on port ${options.port}`);
@@ -114,6 +125,16 @@ function m_StartSocketServer(options) {
     TERM('Another URSYS server already running on this machine, so exiting');
     process.exit(1);
   }
+}
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+async function m_StopSocketServer() {
+  if (!mu_wss) {
+    TERM(`... socket server ${m_options.port} already closed`);
+    return;
+  }
+  TERM('... close socket server...');
+  await mu_wss.close();
+  TERM(`... closed socket server ${m_options.port}`);
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Returns a JSON packet to the just-connected client with its assigned URSYS
@@ -139,14 +160,14 @@ function ConnectAck(socket) {
  * @param {Object} socket messaging socket
  * @param {string} json text-encoded NetPacket
  */
-function ProcessMessage(socket, json) {
+async function ProcessMessage(socket, json) {
   let pkt = new NetPacket(json);
   // figure out what to do
   switch (pkt.getType()) {
     case 'msig':
     case 'msend':
     case 'mcall':
-      m_RouteMessage(socket, pkt);
+      await m_RouteMessage(socket, pkt);
       break;
     case 'state':
       // m_HandleState(socket, pkt);
@@ -186,6 +207,9 @@ async function m_RouteMessage(socket, pkt) {
     pkt.transactionComplete();
     return;
   }
+  // RealTime Log
+  LOGGER.PacketInspector(pkt);
+
   // (2) If we got this far, it's a new message.
   // Does the server implement any of the messages? Let's add that to our
   // list of promises. It will return empty array if there are none.
@@ -305,4 +329,4 @@ function log_PktTransaction(pkt, status, promises) {
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { StartNetwork };
+module.exports = { StartNetwork, StopNetwork };

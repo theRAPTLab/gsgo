@@ -8,7 +8,7 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPTS = require('./util/prompts');
 const DATACORE = require('./client-datacore');
-const DBG = require('./ur-dbg-settings');
+const DBG = require('./common/debug-props');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

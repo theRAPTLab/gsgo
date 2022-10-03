@@ -14,50 +14,67 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  TOpcode,
-  TRegcode,
-  ISMCBundle,
-  ISMCPrograms,
-  EBundleType
-} from './t-script.d';
+// uses types from t-script
+import { EBundleType } from 'modules/../types/t-script.d'; // workaround to import as obj
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** representation of a SMCBundle
- */
-export default class SM_Bundle implements ISMCBundle {
+/** representation of a SMCBundle */
+class SM_Bundle implements ISMCBundle {
   name: string; // the name of the bundle, if any
   parent: string; // the name of parent bundle, if any
   type: EBundleType; // enum type (see t-script.d)
+  script: TScriptUnit[]; // saved script
+  text: string; // save script text
   // lifecycle programs (can be in multiple types)
-  define: TOpcode[]; // allocation phase
-  init: TOpcode[]; // initialize phase
-  update: TOpcode[]; // update phase
-  think: TOpcode[]; // think phase
-  exec: TOpcode[]; // execution phase
+  DEFINE: TOpcode[]; // allocation phase
+  INIT: TOpcode[]; // initialize phase
+  UPDATE: TOpcode[]; // UPDATE phase
+  THINK: TOpcode[]; // THINK phase
+  EXEC: TOpcode[]; // execution phase
   // global programs
-  condition: TRegcode[]; // conditionals
+  CONDITION: TRegcode[]; // conditionals
   // local conditions (one per bundle)
-  test: TOpcode[]; // returns true or false
-  conseq: TOpcode[]; // run if true
-  alter: TOpcode[]; // run if false
+  TEST: TOpcode[]; // returns true or false
+  CONSEQ: TOpcode[]; // run if true
+  ALTER: TOpcode[]; // run if false
+  // metadata
+  tags: TBundleTags;
+  symbols: TSymbolData;
+  directives: TBundleDirectives;
+  //
+  _clone: number; // secret clone generation information
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   constructor(name?: string, type?: EBundleType) {
     if (typeof name === 'string') this.setName(name);
     if (type !== undefined) this.setType(type);
     else this.setType(EBundleType.INIT);
     //
-    this.define = []; // allocate data structures (agents, features, modules)
-    this.init = []; // initialize data structures (a,f,m)
-    this.update = []; // update lifecycle (a,f,m)
-    this.think = []; // think lifecycle (a,f,m)
-    this.exec = []; // exec lifecycle (a,f,m)
-    this.condition = []; // global program
-    this.test = []; // test function
-    this.conseq = []; // program
-    this.alter = []; // program
+    this.DEFINE = []; // allocate data structures (agents, features, modules)
+    this.INIT = []; // initialize data structures (a,f,m)
+    this.UPDATE = []; // UPDATE lifecycle (a,f,m)
+    this.THINK = []; // THINK lifecycle (a,f,m)
+    this.EXEC = []; // EXEC lifecycle (a,f,m)
+    this.CONDITION = []; // global program
+    this.TEST = []; // test function
+    this.CONSEQ = []; // program
+    this.ALTER = []; // program
+    //
+    this.tags = new Map();
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** makes a bad copy of a bundle, ensuring only certain objects are recreated
+   *  instead of referenced. This should only be used in very special technical
+   *  cases */
+  carelessClone(): SM_Bundle {
+    const nbdl = new SM_Bundle();
+    Object.assign(nbdl, this);
+    nbdl.symbols = { ...nbdl.symbols }; // new wrapper
+    const gen = this._clone || 0;
+    nbdl._clone = gen + 1; // clone generation
+    return nbdl;
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setName(name: string, parent?: string) {
     if (!name) throw Error('a name is required');
@@ -72,57 +89,105 @@ export default class SM_Bundle implements ISMCBundle {
     this.type = type;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** return an object with non-empty program arrays
-   *  note this is returning the actual program arrays, not a copy
-   */
-  getPrograms(): ISMCPrograms {
-    let progs: ISMCPrograms = {};
-    if (this.define.length) progs.define = this.define;
-    if (this.init.length) progs.init = this.init;
-    if (this.update.length) progs.update = this.update;
-    if (this.think.length) progs.think = this.think;
-    if (this.exec.length) progs.exec = this.exec;
-    if (this.condition.length) progs.condition = this.condition;
-    if (this.test.length) progs.test = this.test;
-    if (this.conseq.length) progs.conseq = this.conseq;
-    if (this.alter.length) progs.alter = this.alter;
-    return progs;
+  setTag(tagName: string, value: any) {
+    // make tags case insensitive
+    const lcTagName = String(tagName).toLocaleLowerCase();
+    this.tags.set(lcTagName, value);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  getTag(tagName: string): any {
+    // make tags case insensitive
+    const lcTagName = String(tagName).toLocaleLowerCase();
+    return this.tags.get(lcTagName);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  getSymbolData(type?: keyof TSymbolData): TSymbolData {
+    if (type === 'keywords')
+      return {
+        error: {
+          code: 'invalid',
+          info: 'bundles do not contain keyword symbols'
+        }
+      };
+    if (!this.symbols)
+      return {
+        error: {
+          code: 'invalid',
+          info: 'symbols are not defined in this bundle'
+        }
+      };
+    if (type === undefined) return this.symbols;
+    const sdata = this.symbols[type] as TSymbolData;
+    if (!sdata)
+      return {
+        error: {
+          code: 'invalid',
+          info: `symbols.${type} does not exist in this bundle`
+        }
+      };
+    return sdata;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  getSymbolDataNames(type?: keyof TSymbolData): string[] {
+    const symbols = this.getSymbolData(type);
+    if (symbols.error) return undefined;
+    return [...Object.keys(symbols)];
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  saveScript(script: TScriptUnit[]) {
+    const fn = 'saveScript:';
+    if (!Array.isArray(script)) throw Error(`${fn} not a script`);
+    if (script.length > 0 && !Array.isArray(script[0]))
+      throw Error(`${fn} not a script`);
+    this.script = script;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  saveText(text: string) {
+    const fn = 'saveText:';
+    if (typeof text !== 'string') throw Error(`not a scriptText?`);
+    if (!text.trim()) console.warn(`${fn} empty text saved`);
+    this.text = text;
   }
 
   /// BUNDLE INITIALIZERS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   initProgram() {
-    this.define = [];
+    this.DEFINE = [];
     return this;
   }
   initCondition() {
-    this.test = [];
-    this.conseq = [];
-    this.alter = [];
+    this.TEST = [];
+    this.CONSEQ = [];
+    this.ALTER = [];
     return this;
   }
   initBlueprint(name: string) {
     if (name !== undefined) this.name = name;
-    this.define = [];
-    this.init = [];
-    this.update = [];
-    this.think = [];
-    this.exec = [];
+    this.DEFINE = [];
+    this.INIT = [];
+    this.UPDATE = [];
+    this.THINK = [];
+    this.EXEC = [];
     return this;
   }
   initGlobalProgram(name: string) {
     if (name !== undefined) this.name = name;
-    this.define = [];
+    this.DEFINE = [];
     return this;
   }
   initGlobalCondition(key: string) {
     if (key !== undefined) this.name = key;
-    this.condition = [];
+    this.CONDITION = [];
     return this;
   }
   initGlobalTest(name: string) {
     if (name !== undefined) this.name = name;
-    this.test = [];
+    this.TEST = [];
     return this;
   }
 }
+
+/// EXPORT ////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export default SM_Bundle;

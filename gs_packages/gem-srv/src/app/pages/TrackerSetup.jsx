@@ -2,7 +2,49 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
 
+
+
+
+
+
+
+
+
+
+
+
   DEPRECATED -- Setting up tracker is now done directly on Main.
+                This was the old method where trackign was set up
+                on its own page.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -24,10 +66,10 @@ import FormTransform from './components/FormTransform';
 import '../../lib/css/tracker.css';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
-// import 'modules/tests/test-parser'; // test parser evaluation
+// import 'test/unit-parser'; // test parser evaluation
 
 // this is where classes.* for css are defined
-import { useStylesHOC } from './elements/page-xui-styles';
+import { useStylesHOC } from './helpers/page-xui-styles';
 import './scrollbar.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -134,7 +176,9 @@ class TrackerSetup extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>TRACKER SETUP</span>
+            <span style={{ fontSize: '32px' }}>
+              TRACKER SETUP (Deprecated -- use Main and click &apos;tracker&apos;
+            </span>
           </div>
         </div>
         <div

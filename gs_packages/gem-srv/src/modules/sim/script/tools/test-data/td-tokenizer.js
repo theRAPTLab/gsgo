@@ -17,7 +17,7 @@ when A touches A [[
 ]]
 `,
   expect:
-    '[[{"token":"when"},{"token":"A"},{"token":"touches"},{"token":"A"},{"block":[[{"token":"prop"},{"token":"A"},{"token":"set"},{"value":10}],[{"token":"prop"},{"token":"B"},{"token":"set"},{"value":20}]]}]]'
+    '[[{"identifier":"when"},{"identifier":"A"},{"identifier":"touches"},{"identifier":"A"},{"block":[[{"identifier":"prop"},{"identifier":"A"},{"identifier":"set"},{"value":10}],[{"identifier":"prop"},{"identifier":"B"},{"identifier":"set"},{"value":20}]]}]]'
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// test block chaining
@@ -32,7 +32,7 @@ when A touches B [[
 ]]
 `,
   expect:
-    '[[{"token":"when"},{"token":"A"},{"token":"touches"},{"token":"B"},{"block":[[{"token":"prop"},{"token":"A"},{"token":"set"},{"value":30}],[{"token":"prop"},{"token":"B"},{"token":"set"},{"value":40}]]},{"block":[[{"token":"prop"},{"token":"A"},{"token":"sub"},{"value":10}],[{"token":"prop"},{"token":"B"},{"token":"sub"},{"value":20}]]}]]'
+    '[[{"identifier":"when"},{"identifier":"A"},{"identifier":"touches"},{"identifier":"B"},{"block":[[{"identifier":"prop"},{"identifier":"A"},{"identifier":"set"},{"value":30}],[{"identifier":"prop"},{"identifier":"B"},{"identifier":"set"},{"value":40}]]},{"block":[[{"identifier":"prop"},{"identifier":"A"},{"identifier":"sub"},{"value":10}],[{"identifier":"prop"},{"identifier":"B"},{"identifier":"sub"},{"value":20}]]}]]'
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// test nested block
@@ -46,7 +46,7 @@ when [[
 ]]
 `,
   expect:
-    '[[{"token":"when"},{"block":[[{"token":"prop"},{"token":"A"}],[{"token":"ifExpr"},{"block":[[{"token":"prop"},{"token":"D"}]]}]]}]]'
+    '[[{"identifier":"when"},{"block":[[{"identifier":"prop"},{"identifier":"A"}],[{"identifier":"ifExpr"},{"block":[[{"identifier":"prop"},{"identifier":"D"}]]}]]}]]'
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// test tripple nesting
@@ -62,7 +62,7 @@ ifExpr {{ A }} [[
 ]]
 `,
   expect:
-    '[[{"token":"ifExpr"},{"expr":"A"},{"block":[[{"token":"ifExpr"},{"expr":"BB"},{"block":[[{"token":"ifExpr"},{"expr":"CCC"},{"block":[[{"token":"prop"},{"token":"DDD"},{"token":"add"},{"value":1}]]}]]}],[{"token":"prop"},{"token":"EEE"},{"token":"set"},{"value":0}]]}]]'
+    '[[{"identifier":"ifExpr"},{"expr":"A"},{"block":[[{"identifier":"ifExpr"},{"expr":"BB"},{"block":[[{"identifier":"ifExpr"},{"expr":"CCC"},{"block":[[{"identifier":"prop"},{"identifier":"DDD"},{"identifier":"add"},{"value":1}]]}]]}],[{"identifier":"prop"},{"identifier":"EEE"},{"identifier":"set"},{"value":0}]]}]]'
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// test nested block chaining
@@ -78,7 +78,7 @@ when A touches B [[
 ]]
 `,
   expect:
-    '[[{"token":"when"},{"token":"A"},{"token":"touches"},{"token":"B"},{"block":[[{"token":"prop"},{"token":"X"},{"token":"set"},{"value":10}],[{"token":"ifExpr"},{"expr":"X"},{"block":[[{"token":"prop"},{"token":"D"},{"token":"add"},{"value":1}]]},{"block":[[{"token":"prop"},{"token":"D"},{"token":"delete"}]]}]]}]]'
+    '[[{"identifier":"when"},{"identifier":"A"},{"identifier":"touches"},{"identifier":"B"},{"block":[[{"identifier":"prop"},{"identifier":"X"},{"identifier":"set"},{"value":10}],[{"identifier":"ifExpr"},{"expr":"X"},{"block":[[{"identifier":"prop"},{"identifier":"D"},{"identifier":"add"},{"value":1}]]},{"block":[[{"identifier":"prop"},{"identifier":"D"},{"identifier":"delete"}]]}]]}]]'
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ifExpr = {
@@ -88,7 +88,7 @@ ifExpr {{ A }} [[
 ]]
   `,
   expect:
-    '[[{"token":"ifExpr"},{"expr":"A"},{"block":[[{"token":"dbgOut"},{"string":"true that"}]]}]]'
+    '[[{"identifier":"ifExpr"},{"expr":"A"},{"block":[[{"identifier":"dbgOut"},{"string":"true that"}]]}]]'
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const comment = {
@@ -103,7 +103,7 @@ ifExpr {{ A }} [[
 ]]
 `,
   expect:
-    '[[{"token":"ifExpr"},{"expr":"A"},{"block":[[{"comment":"comment A"}],[{"token":"prop"},{"token":"A"},{"token":"setTo"},{"value":1}],[{"token":"ifExpr"},{"expr":"B"},{"block":[[{"comment":"comment B"}],[{"token":"prop"},{"token":"B"},{"token":"setTo"},{"value":2}]]}]]}]]'
+    '[[{"identifier":"ifExpr"},{"expr":"A"},{"block":[[{"comment":"comment A"}],[{"identifier":"prop"},{"identifier":"A"},{"identifier":"setTo"},{"value":1}],[{"identifier":"ifExpr"},{"expr":"B"},{"block":[[{"comment":"comment B"}],[{"identifier":"prop"},{"identifier":"B"},{"identifier":"setTo"},{"value":2}]]}]]}]]'
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const bee = {

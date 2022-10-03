@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Script UI for GVars
@@ -9,7 +10,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from 'app/pages/elements/page-xui-styles';
+import { useStylesHOC } from 'app/pages/helpers/page-xui-styles';
 import InputElement from './InputElement';
 import SelectElement from './SelectElement';
 
@@ -127,7 +128,7 @@ class GVarElement extends React.Component<MyProps, MyState> {
             onSave={onSaveData}
             index={index}
             argindex={i}
-            key={i}
+            key={arg}
           />
         ))}
       </div>

@@ -1,10 +1,13 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as INPUT from 'modules/input/api-input';
+import { TYPES } from 'modules/step/lib/class-ptrack-endpoint';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
+import { ACLocales } from '../../../modules/appcore';
 
 import PanelChrome from './PanelChrome';
+import EntityObject from '../../../modules/step/lib/class-entity-object';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -16,6 +19,7 @@ const DBG = true;
 class PanelTracker extends React.Component {
   constructor() {
     super();
+    const { selectedTrack } = UR.ReadFlatStateGroups('locales');
     this.state = {
       isInitialized: false,
       title: 'Tracker Data',
@@ -23,91 +27,76 @@ class PanelTracker extends React.Component {
       xmax: -Infinity,
       ymin: Infinity,
       ymax: -Infinity,
+      selectedTrack,
       entities: [],
-      tentities: [],
-      transform: {
-        scaleX: 1,
-        scaleY: 1,
-        translateX: 0,
-        translateY: 0,
-        rotate: 0,
-        useAccelerometer: true
-      }
+      tentities: []
     };
 
-    this.onFormInputUpdate = this.onFormInputUpdate.bind(this);
     this.init = this.init.bind(this);
-    this.updateTransform = this.updateTransform.bind(this);
     this.update = this.update.bind(this);
+    this.urStateUpdated = this.urStateUpdated.bind(this);
 
-    UR.HandleMessage('NET:POZYX_TRANSFORM_UPDATE', this.updateTransform);
     UR.HandleMessage('TRACKER_SETUP_UPDATE', this.update);
   }
 
   componentDidMount() {
+    UR.SubscribeState('locales', this.urStateUpdated);
     this.init();
   }
 
   componentWillUnmount() {
     INPUT.StopTrackerEmitter();
-    UR.UnhandleMessage('NET:POZYX_TRANSFORM_UPDATE', this.updateTransform);
     UR.UnhandleMessage('TRACKER_SETUP_UPDATE', this.update);
-  }
-
-  onFormInputUpdate(e) {
-    console.log('typed', e.target.value, e.target.id);
-    const data = {};
-    if (e.target.type === 'checkbox') {
-      data[e.target.id] = e.target.checked;
-    } else {
-      data[e.target.id] = e.target.value;
-    }
-    UR.RaiseMessage('NET:POZYX_TRANSFORM_SET', data);
+    UR.UnsubscribeState('locales', this.urStateUpdated);
   }
 
   async init() {
     // eslint-disable-next-line react/destructuring-assignment
     if (this.state.isInitialized) return;
     this.setState({ isInitialized: true });
-    UR.CallMessage('NET:POZYX_TRANSFORM_REQ').then(rdata =>
-      this.updateTransform(rdata)
-    );
+    UR.CallMessage('NET:TRANSFORM_REQ');
     INPUT.StartTrackerEmitter();
   }
 
-  updateTransform(data) {
-    this.setState({ transform: data.transform });
-  }
-
   update(data) {
+    const { selectedTrack } = this.state;
     const { entities, tentities } = data;
-    // console.log(entities);
+
+    // Filter by Ptrack only
+    const filteredEntities = entities.filter(e => {
+      if (selectedTrack === 'ptrack') return ['ob', 'pp', 'po'].includes(e.type);
+      if (selectedTrack === 'pozyx') return ['pz'].includes(e.type);
+      return false;
+    });
+
     // Calculate Limits
-    const x = entities.map(e => e.x);
-    const y = entities.map(e => e.y);
+    const x = filteredEntities.map(e => e.x);
+    const y = filteredEntities.map(e => e.y);
     this.setState(state => {
       return {
         xmin: Math.min(state.xmin, ...x),
         xmax: Math.max(state.xmax, ...x),
         ymin: Math.min(state.ymin, ...y),
         ymax: Math.max(state.ymax, ...y),
-        entities,
+        entities: filteredEntities,
         tentities
       };
     });
   }
 
+  urStateUpdated(stateObj, cb) {
+    const { selectedTrack } = stateObj;
+    this.setState({
+      selectedTrack,
+      xmin: Infinity,
+      xmax: -Infinity,
+      ymin: Infinity,
+      ymax: -Infinity
+    });
+  }
+
   render() {
-    const {
-      title,
-      xmin,
-      xmax,
-      ymin,
-      ymax,
-      entities,
-      tentities,
-      transform
-    } = this.state;
+    const { title, xmin, xmax, ymin, ymax, entities, tentities } = this.state;
     const { id, classes } = this.props;
 
     const onClick = () => {
@@ -163,13 +152,13 @@ class PanelTracker extends React.Component {
               gridTemplateColumns: '100px 1fr 100px 1fr'
             }}
           >
-            <div className={classes.inspectorLabel}>ScaleX:&nbsp;</div>
+            <div className={classes.inspectorLabel}>X-SCALE:&nbsp;</div>
             <div className={classes.inspectorData}>{suggestedScaleX}</div>
-            <div className={classes.inspectorLabel}>TranslateX:&nbsp;</div>
+            <div className={classes.inspectorLabel}>X-OFFSET:&nbsp;</div>
             <div className={classes.inspectorData}>{suggestedTranslateX}</div>
-            <div className={classes.inspectorLabel}>ScaleY:&nbsp;</div>
+            <div className={classes.inspectorLabel}>Y-SCALE:&nbsp;</div>
             <div className={classes.inspectorData}>{suggestedScaleY}</div>
-            <div className={classes.inspectorLabel}>TranslateY:&nbsp;</div>
+            <div className={classes.inspectorLabel}>Y-OFFSET:&nbsp;</div>
             <div className={classes.inspectorData}>{suggestedTranslateY}</div>
           </div>
           <br />
@@ -198,64 +187,8 @@ class PanelTracker extends React.Component {
         <p>
           <li>Scale: Use a negative scale to flip</li>
           <li>Rotation: measured in degrees counterclockwise</li>
-          <li>Translate/Offset: Relative to rotated pozyx units</li>
+          <li>Translate/Offset: Relative to rotated pozyx raw units</li>
         </p>
-        {/* <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '100px 100px auto',
-            columnGap: '5px'
-          }}
-        >
-          <div className={classes.inspectorLabel}>ScaleX: </div>
-          <input
-            id="scaleX"
-            value={transform.scaleX}
-            type="number"
-            onChange={this.onFormInputUpdate}
-          />
-          <i>Use a negative scale to flip</i>
-          <div className={classes.inspectorLabel}>ScaleY: </div>
-          <input
-            id="scaleY"
-            value={transform.scaleY}
-            type="number"
-            onChange={this.onFormInputUpdate}
-          />
-          <i />
-          <div className={classes.inspectorLabel}>Rotate (deg): </div>
-          <input
-            id="rotate"
-            value={transform.rotate}
-            type="number"
-            onChange={this.onFormInputUpdate}
-          />
-          <i>Counterclockwise</i>
-          <div className={classes.inspectorLabel}>TranslateX (mm): </div>
-          <input
-            id="translateX"
-            value={transform.translateX}
-            type="number"
-            onChange={this.onFormInputUpdate}
-          />
-          <i>Relative to rotated pozyx units</i>
-          <div className={classes.inspectorLabel}>TranslateY (mm): </div>
-          <input
-            id="translateY"
-            value={transform.translateY}
-            type="number"
-            onChange={this.onFormInputUpdate}
-          />
-          <i />
-          <div className={classes.inspectorLabel}>Accelerometer: </div>
-          <input
-            id="useAccelerometer"
-            checked={transform.useAccelerometer}
-            type="checkbox"
-            onChange={this.onFormInputUpdate}
-          />
-          <i>Only for wearable tags</i>
-        </div> */}
         <br />
       </div>
     );
@@ -270,40 +203,44 @@ class PanelTracker extends React.Component {
         </p>
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)'
+            display: 'grid'
           }}
         >
           <div>
-            {entities.map(e => (
-              <div
-                key={e.id}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '100px 1fr 1fr',
-                  gridTemplateRows: '1fr'
-                }}
-              >
-                <div className={classes.inspectorData}>{e.id}</div>
-                <div className={classes.inspectorData}>{trunc(e.x)}</div>
-                <div className={classes.inspectorData}>{trunc(e.y)}</div>
-              </div>
-            ))}
-          </div>
-          <div>
-            {tentities.map(e => (
-              <div
-                key={e.id}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(3, 1fr)'
-                }}
-              >
-                <div />
-                <div className={classes.inspectorData}>{trunc(e.x)}</div>
-                <div className={classes.inspectorData}>{trunc(e.y)}</div>
-              </div>
-            ))}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '100px 1fr 1fr 1fr 1fr 1fr',
+                gridTemplateRows: '1fr'
+              }}
+            >
+              <div className={classes.inspectorData}>ID</div>
+              <div className={classes.inspectorData}>RawX</div>
+              <div className={classes.inspectorData}>XformX</div>
+              <div className={classes.inspectorData}>&nbsp;</div>
+              <div className={classes.inspectorData}>RawY</div>
+              <div className={classes.inspectorData}>XformY</div>
+            </div>
+            {entities.map(e => {
+              const t = tentities.find(t => t.id === e.id);
+              return (
+                <div
+                  key={e.id}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '100px 1fr 1fr 1fr 1fr 1fr',
+                    gridTemplateRows: '1fr'
+                  }}
+                >
+                  <div className={classes.inspectorData}>{e.id}</div>
+                  <div className={classes.inspectorData}>{trunc(e.x)}</div>
+                  <div className={classes.inspectorData}>{trunc(t.x)}</div>
+                  <div className={classes.inspectorData}>&nbsp;</div>
+                  <div className={classes.inspectorData}>{trunc(e.y)}</div>
+                  <div className={classes.inspectorData}>{trunc(t.y)}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

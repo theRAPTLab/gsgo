@@ -11,6 +11,7 @@ node_modules/
 # Ignore all logfiles and tempfiles.
 *.log*
 tmp*
+.VSCodeCounter
 
 # Ignore all generated files
 npm-debug.log
@@ -20,6 +21,10 @@ npm-debug.log
 runtime/
 dist/
 built/
+gs_assets*/
+
+# Ignore local settings overrides
+local-settings.json
 
 # Numerous always-ignore extensions
 *~
@@ -42,9 +47,9 @@ built/
 .settings
 .tmproj
 nbproject
-Thumbs.db 
+Thumbs.db
 
-# Ignore Sublime Text saved projects/workspaces 
+# Ignore Sublime Text saved projects/workspaces
 *.sublime-workspace
 *.sublime-project
 

@@ -17,15 +17,12 @@ import {
   Initialize,
   HandleStateChange,
   UpdateDimensions
-} from './elements/mod-charcontrol-ui';
-import { useStylesHOC } from './elements/page-xui-styles';
+} from './helpers/mod-charcontrol-ui';
+import { useStylesHOC } from './helpers/page-xui-styles';
 import './scrollbar.css';
 import '../../lib/css/charcontrol.css';
 import PanelSimViewer from './components/PanelSimViewer';
 import DialogConfirm from './components/DialogConfirm';
-
-/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-/// import '../modules/sim/runtime';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -73,11 +70,17 @@ class CharController extends React.Component {
       rate: 0
     };
     this.init = this.init.bind(this);
-    this.updateInputBPNames = this.updateInputBPNames.bind(this);
-    this.handleSetInputBPNames = this.handleSetInputBPNames.bind(this);
+    this.updateLogSettings = this.updateLogSettings.bind(this);
+    this.updateCharControlBpidList = this.updateCharControlBpidList.bind(this);
+    this.handleSetCharControlBpidList =
+      this.handleSetCharControlBpidList.bind(this);
     this.requestBPNames = this.requestBPNames.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
-    UR.HandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPNames);
+    UR.HandleMessage(
+      'NET:SET_CHARCONTROL_BPIDLIST',
+      this.handleSetCharControlBpidList
+    );
+    UR.HandleMessage('NET:LOG_ENABLE', this.updateLogSettings);
   }
 
   componentDidMount() {
@@ -109,7 +112,11 @@ class CharController extends React.Component {
 
   componentWillUnmount() {
     if (DBG) console.log(...PR('componentWillUnmount'));
-    UR.UnhandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPNames);
+    UR.UnhandleMessage(
+      'NET:SET_CHARCONTROL_BPIDLIST',
+      this.handleSetCharControlBpidList
+    );
+    UR.UnhandleMessage('NET:LOG_ENABLE', this.updateLogSettings);
   }
 
   init() {
@@ -117,26 +124,33 @@ class CharController extends React.Component {
     this.requestBPNames();
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
+    UR.LogEvent('Session', ['CharController Connect']);
   }
 
-  updateInputBPNames(bpnames) {
+  updateLogSettings(data) {
+    UR.LogEnabled(data.enabled);
+  }
+
+  updateCharControlBpidList(bpnames) {
     if (DBG) console.log(...PR('setInputBPNames', bpnames));
     // TAGS is in mod-charcontrol-ui.js
     const tags = bpnames.map(b => ({ 'id': `bp_${b}`, 'label': b }));
+    const defaultBPName =
+      Array.isArray(bpnames) && bpnames.length > 0 ? `bp_${bpnames[0]}` : '';
     this.setState(
       state => ({
         tags,
         tag: state.tag || (tags.length > 0 ? tags[0].id : '')
         // keep currently selected tag, or default to first tag
       }),
-      () => Initialize(this, { sampleRate: SENDING_FPS })
+      () => Initialize(this, { sampleRate: SENDING_FPS, defaultBPName })
     );
   }
 
   // URSYS Handler
-  handleSetInputBPNames(data) {
+  handleSetCharControlBpidList(data) {
     if (DBG) console.log(...PR('handleSetInputBPNames', data));
-    this.updateInputBPNames(data.bpnames);
+    this.updateCharControlBpidList(data.bpnames);
   }
 
   // Direct Call
@@ -146,8 +160,8 @@ class CharController extends React.Component {
     // will come back before we're ready
     if (DBG) console.log(...PR('requestBPNames'));
     UR.CallMessage('NET:REQ_PROJDATA', {
-      fnName: 'GetInputBPNames'
-    }).then(rdata => this.updateInputBPNames(rdata.result));
+      fnName: 'GetCharControlBpNames'
+    }).then(rdata => this.updateCharControlBpidList(rdata.result));
   }
 
   // FORM CHANGE METHOD

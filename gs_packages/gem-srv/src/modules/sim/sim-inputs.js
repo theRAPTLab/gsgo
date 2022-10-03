@@ -1,20 +1,17 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-// import * as INPUT from 'modules/input/api-input';
-// instead of this, the entities should be in DATACORE
-
 import UR from '@gemstep/ursys/client';
+import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import {
-  GetInputBPnames,
   InputInit,
   InputsUpdate,
   GetInputDefs
 } from 'modules/datacore/dc-inputs';
-import { GetAgentById, DeleteAgent } from 'modules/datacore/dc-agents';
+import { GetAgentById, DeleteAgent } from 'modules/datacore/dc-sim-agents';
 import SyncMap from '../../lib/class-syncmap';
 import InputDef from '../../lib/class-input-def';
-import * as TRANSPILER from './script/transpiler';
+import * as TRANSPILER from './script/transpiler-v2';
 
 /// DEBUG /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -41,16 +38,10 @@ const INPUTDEF_TO_AGENT = new SyncMap({
  * @param {InputDef} oldInputDef
  */
 function UpdateAgent(newInputDef, oldInputDef) {
-  // HACK WORKAROUND
-  // REVIEW: instanceDef should refer to 'bpname' not 'blueprint'
-  //         because GAGent 'blueprint' is an object not string
-  oldInputDef.blueprint = oldInputDef.bpname;
-  newInputDef.blueprint = newInputDef.bpname;
-
   let agent = GetAgentById(newInputDef.id);
   if (!agent) {
     agent = TRANSPILER.MakeAgent(newInputDef);
-  } else if (agent.blueprint.name !== newInputDef.bpname) {
+  } else if (agent.blueprint.name !== newInputDef.bpid) {
     // char control changed blueprints
     // ISSUE: Since we re-use the agentID, certain parameters set by the
     //        old agent might not be reset with the new agent.
@@ -59,7 +50,7 @@ function UpdateAgent(newInputDef, oldInputDef) {
     agent = TRANSPILER.MakeAgent(newInputDef);
   }
   // Only update oldInputDef AFTER possible deletion or bpname will not match
-  oldInputDef.bpname = newInputDef.bpname;
+  oldInputDef.bpid = newInputDef.bpid;
   oldInputDef.x = newInputDef.x;
   oldInputDef.y = newInputDef.y;
   if (agent.hasFeature('Movement')) {
@@ -106,7 +97,8 @@ UR.HookPhase('SIM/INPUTS_READ', ProcessInputs);
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function InputsInit(frameTime) {
-  const BPNAMES = GetInputBPnames();
+  const BPNAMES = ACBlueprints.GetCharControlBpNames();
+  // GetInputBPnames();
   BPNAMES.forEach(b => InputInit(b));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -114,7 +106,7 @@ function InputsInit(frameTime) {
 // We can't init input until we get the blueprint names after loading the model
 // Should this really be triggered by a UR message?
 // Or should it be a phase?
-UR.HandleMessage('NET:SET_INPUT_BPNAMES', InputsInit);
+UR.HandleMessage('NET:SET_CHARCONTROL_BPIDLIST', InputsInit);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

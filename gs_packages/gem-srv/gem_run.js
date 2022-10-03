@@ -11,20 +11,38 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+/// LOAD MINIMAL DEPENDENCIES /////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const FS = require('fs');
-const PROCESS = require('process');
-const PATH = require('path');
-const shell = require('shelljs');
-const minimist = require('minimist');
+const Path = require('path');
+const Process = require('process');
+const Shell = require('shelljs');
+const Minimist = require('minimist');
 const UR = require('@gemstep/ursys/server');
-const TRACKER = require('./server/step-tracker');
-const GEMAPP = require('./server/gem-app-srv');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = 'GEMRUN';
 const TOUT = UR.TermOut(PR);
-const RUNTIME_PATH = PATH.join(__dirname, '/runtime');
+
+// ensure that local settings file exists
+const localSettingsPath = Path.join(__dirname, 'config/local-settings.json');
+if (!UR.FILE.FileExists(localSettingsPath)) {
+  TOUT('creating empty config/local-settings.json file');
+  UR.FILE.SyncWriteJSON(localSettingsPath, {
+    _INFO: [
+      'Override constants defined gsgo-settings.js and gem-settings.js in this file',
+      'Settings added here can be set for your gsgo installation, and will not be',
+      'committed to the gsgo repo'
+    ]
+  });
+}
+
+/// LOAD GEMSTEP DEPENDENCIES /////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const TRACKER = require('./server/step-tracker');
+const GEMAPP = require('./server/gem-app-srv');
+const { RUNTIME_PATH } = require('./config/gem-settings');
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,12 +54,14 @@ function m_WrapErrorText(str) {
 /** Start up GEMSTEP SERVER (at end of this file) */
 function GEMSRV_Start(opt) {
   // git branch information
-  const { error, stdout } = shell.exec('git symbolic-ref --short -q HEAD', {
+  const { error, stdout } = Shell.exec('git symbolic-ref --short -q HEAD', {
     silent: true
   });
   TOUT('Starting Development Server...');
-  if (error) TOUT('using repo <detached head>\n');
-  if (stdout) TOUT(`using repo '${stdout.trim()}' branch\n`);
+  let branch;
+  if (error) branch = '<detached head>';
+  if (stdout) branch = `${stdout.trim()}`;
+  TOUT(`using repo branch: ${branch}`);
 
   const URNET_PORT = 2930; // hack to avoid confict with 2929 for admsrv fornow
 
@@ -52,19 +72,53 @@ function GEMSRV_Start(opt) {
     else {
       TOUT(m_WrapErrorText('UNCAUGHT EXCEPTION'), err);
     }
-    PROCESS.exit(0);
+    Process.exit(0);
+  });
+  process.once('SIGINT', () => {
+    TOUT('***SIGINT***');
+    TOUT('Stopping URNET...');
+    void (async () => {
+      await UR.URNET_Stop();
+      TOUT('Stopping Development Server...');
+      await GEMAPP.CloseAppServer();
+      TOUT('');
+    })();
   });
 
   // run ursys
-  (async () => {
+  void (async () => {
     await GEMAPP.StartAppServer(opt);
     await UR.Initialize([TRACKER.StartTrackerSystem]);
     await UR.URNET_Start({
       port: URNET_PORT,
       serverName: 'GEM_SRV',
-      runtimePath: RUNTIME_PATH
+      runtimePath: RUNTIME_PATH,
+      branch
     });
   })();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GEMSRV_Kill() {
+  let pskill = `ps ax | grep "[n]ode --trace-warnings gem_run.js" | awk '{ print $1 }'`;
+  TOUT(pskill);
+  let result;
+  result = Shell.exec(pskill, {
+    silent: true
+  });
+  if (result.error) TOUT('...ERR:', result.error);
+  const job = result.stdout.trim();
+  if (job) {
+    TOUT(`PID '${job}' appears to be a GEMSRV instance...killing PID!`);
+    pskill = `kill -9 ${job}`;
+    TOUT(pskill);
+    Shell.exec(pskill);
+    TOUT('Hopefully that worked');
+  } else {
+    TOUT('---');
+    TOUT("Couldn't find process matching 'node gem_run.js' to kill");
+    TOUT("If you are still having problems, try using 'ps' to find ");
+    TOUT('processes that might be in conflict with GEMSTEP or ask the devs"\n');
+  }
 }
 
 /// RUNTIME INITIALIZE ////////////////////////////////////////////////////////
@@ -80,17 +134,18 @@ if (!FS.existsSync('./node_modules')) {
   out += 'or did you just run \x1b[33mnpm clean:all\x1b[0m?\n';
   out += 'run \x1b[33mnpm ci\x1b[0m to install all node_modules\n';
   console.log(out);
-  PROCESS.exit(0);
+  Process.exit(0);
 }
 /// CHECK GIT DEPENDENCY //////////////////////////////////////////////////////
-if (!shell.which('git')) {
-  shell.echo(
+if (!Shell.which('git')) {
+  Shell.echo(
     `\x1b[30;41m You must have git installed to run the ${PR} devtool \x1b[0m`
   );
-  shell.exit(0);
+  Shell.exit(0);
 }
-/// PROCESS COMMAND LINE //////////////////////////////////////////////////////
-const argv = minimist(process.argv.slice(1));
+
+/// Process COMMAND LINE //////////////////////////////////////////////////////
+const argv = Minimist(process.argv.slice(1));
 const cmd = argv._[1];
 
 switch (cmd) {
@@ -101,6 +156,9 @@ switch (cmd) {
   case 'dev-skip':
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     GEMSRV_Start({ skipWebCompile: true });
+    break;
+  case 'kill':
+    GEMSRV_Kill();
     break;
   default:
     console.log('unknown command', cmd);

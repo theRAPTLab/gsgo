@@ -1,10 +1,8 @@
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { GetAgentByName } from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 
 const SIZE_MIN = 'min'; // name only
 const SIZE_MED = 'med'; // x and y (first line)

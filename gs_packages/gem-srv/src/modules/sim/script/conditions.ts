@@ -12,9 +12,10 @@
 
 import RNG from 'modules/sim/sequencer';
 import { GetAgentsByType } from 'modules/datacore';
-import { ParseExpression } from 'lib/expr-parser';
-import { ISMCBundle } from 'lib/t-script';
-import { Evaluate } from 'lib/expr-evaluator';
+import { ParseExpression } from 'script/tools/class-expr-parser-v2';
+// uses types defined in t-script.d
+import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
+import ERROR from 'modules/error-mgr';
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,15 +71,37 @@ function PairAgentFilter(typeA, typeB, testAB) {
 /** return a testA function for the passed expression */
 function MakeAgentExprTest(exprA) {
   const isAST = typeof exprA === 'object' && exprA.type;
+  // try {
   const ast = isAST ? exprA : ParseExpression(exprA);
   return agent => Evaluate(ast, { A: agent });
+  // } catch (caught) {
+  //   ERROR(`failed to make agent expression ${exprA}`, {
+  //     source: 'expression',
+  //     data: {
+  //       expr: exprA
+  //     },
+  //     where: 'conditions.MakeAgentExprTest',
+  //     caught
+  //   });
+  // }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return a testAB function for the passed expression */
 function MakePairAgentExprTest(exprAB) {
+  // try {
   const isAST = typeof exprAB === 'object' && exprAB.type;
   const ast = isAST ? exprAB : ParseExpression(exprAB);
   return (a, b) => Evaluate(ast, { A: a, B: b });
+  // } catch (caught) {
+  //   ERROR(`failed to make pair agent expression test ${exprAB}`, {
+  //     source: 'expression',
+  //     data: {
+  //       expr: exprAB
+  //     },
+  //     where: 'conditions.MakePairAgentExprTest',
+  //     caught
+  //   });
+  // }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a type, a conditional expression, and tmethods to run after
@@ -87,17 +110,17 @@ function MakePairAgentExprTest(exprAB) {
 function SingleAgentConditional(typeA, exprA, bundle: ISMCBundle) {
   const test = MakeAgentExprTest(exprA);
   const [passed, failed] = SingleAgentFilter(typeA, test);
-  const { conseq, alter } = bundle;
-  if (conseq) passed.forEach(agent => agent.queueUpdate(conseq));
-  if (alter) failed.forEach(agent => agent.queueUpdate(alter));
+  const { CONSEQ, ALTER } = bundle;
+  if (CONSEQ) passed.forEach(agent => agent.queueUpdate(CONSEQ));
+  if (ALTER) failed.forEach(agent => agent.queueUpdate(ALTER));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function PairAgentConditional(typeA, typeB, exprAB, bundle: ISMCBundle) {
   const test = MakePairAgentExprTest(exprAB);
   const [passed, failed] = PairAgentFilter(typeA, typeB, test);
-  const { conseq, alter } = bundle;
-  if (conseq) passed.forEach(agent => agent.queueUpdate(conseq));
-  if (alter) failed.forEach(agent => agent.queueUpdate(alter));
+  const { CONSEQ, ALTER } = bundle;
+  if (CONSEQ) passed.forEach(agent => agent.queueUpdate(CONSEQ));
+  if (ALTER) failed.forEach(agent => agent.queueUpdate(ALTER));
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

@@ -1,18 +1,16 @@
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-import React from 'react';
+import React, { Fragment } from 'react';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 import ArrowIcon from '@material-ui/icons/ArrowDropDown';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 
 const SIZE_MIN = 'min'; // name only
 const SIZE_MAX = 'max'; // all
 
 /**
  * InstanceInspector can display two types of data.
- *  * GAgent -- e.g. instance name is instance.meta.name
+ *  * SM_Agent -- e.g. instance name is instance.meta.name
  *  * Instance Spec -- e.g. instance name is instance.name
  *
  * We support both because
@@ -32,7 +30,7 @@ class InstanceInspector extends React.Component {
       colorActive: '#33FF33',
       bgcolor: 'rgba(0,256,0,0.05)',
       isHovered: false,
-      isExpanded: false,
+      isExpanded: true, // disclosure triangle
       propsToHide: [
         'zIndex',
         'skin',
@@ -85,12 +83,12 @@ class InstanceInspector extends React.Component {
   }
 
   GetInstanceName() {
-    // Is `instance` a `GAgent` or an `instanceSpec`
-    // -- if instance.meta then instance is a GAgent, so get name via instance.meta.name
+    // Is `instance` a `SM_Agent` or an `instanceSpec`
+    // -- if instance.meta then instance is a SM_Agent, so get name via instance.meta.name
     // -- else instance is an instanceDef so get name via instance.name
     const { instance } = this.props;
     if (!instance) return '';
-    return instance.meta ? instance.meta.name : instance.name;
+    return instance.meta ? instance.meta.name : instance.label;
   }
 
   GetInstanceId() {
@@ -147,6 +145,7 @@ class InstanceInspector extends React.Component {
     const { size, alreadyRegistered } = this.state;
     const { instance, disallowDeRegister } = this.props;
     const id = instance.id;
+    const agentName = this.GetInstanceName();
     let registrationStatus = alreadyRegistered;
     let newsize;
     switch (size) {
@@ -156,6 +155,7 @@ class InstanceInspector extends React.Component {
           UR.RaiseMessage('NET:INSPECTOR_REGISTER', { id });
           // Inspectors will be automatically updated during SIM/UI_UPDATE phase
           registrationStatus = true;
+          UR.LogEvent('Inspect', ['Show Inspector', agentName]);
         }
         break;
       default:
@@ -165,6 +165,7 @@ class InstanceInspector extends React.Component {
           UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { id });
           registrationStatus = false;
         }
+        UR.LogEvent('Inspect', ['Hide Inspector', agentName]);
         break;
     }
     this.setState({ size: newsize, alreadyRegistered: registrationStatus });
@@ -221,7 +222,7 @@ class InstanceInspector extends React.Component {
     } = this.state;
     const { id, instance, isActive, disallowDeRegister, classes } = this.props;
     const agentName = this.GetInstanceName();
-    const blueprintName = instance.blueprint.name;
+    const blueprintName = instance.blueprint ? instance.blueprint.name : '';
     const data = this.GetInstanceProperties();
     const visibleProps = data.filter(p => !propsToHide.includes(p.label));
     const hiddenProps = data.filter(p => propsToHide.includes(p.label));
@@ -248,71 +249,55 @@ class InstanceInspector extends React.Component {
         </div>
         <div
           style={{
-            fontFamily: 'Andale Mono, monospace',
+            // fontFamily: 'Andale Mono, monospace',
+            display: 'grid',
+            gridTemplateColumns: 'auto auto',
+            gridTemplateRows: '1fr',
             fontSize: '14px',
             paddingLeft: '0.5em'
           }}
         >
           {visibleProps.map(property => (
-            <div
-              style={{
-                display: 'inline-block',
-                paddingRight: '1em'
-              }}
-              key={property.label}
-            >
-              <div className={classes.inspectorLabel}>{property.label}:</div>
-              <div className={classes.inspectorData}>{property.value}</div>
-            </div>
+            <Fragment key={`wrap${property.label}`}>
+              <div className={classes.inspectorLabel} key={property.label}>
+                {property.label}:
+              </div>
+              <div
+                className={classes.inspectorData}
+                key={`${property.label}-value`}
+              >
+                {property.value}
+              </div>
+            </Fragment>
           ))}
-          <div>
-            {isExpanded && (
-              <div
-                style={
-                  isExpanded
-                    ? {
-                        maxHeight: '100%',
-                        transition: 'max-height 0.5s ease-in-out'
-                      }
-                    : {
-                        maxHeight: '0',
-                        transition: 'max-height 0.5s ease-in-out'
-                      }
-                }
-              >
-                {hiddenProps.map(property => (
-                  <div
-                    style={{
-                      display: 'inline-block',
-                      paddingRight: '1em'
-                    }}
-                    key={property.label}
-                  >
-                    <div className={classes.inspectorLabel}>
-                      {property.label}:
-                    </div>
-                    <div className={classes.inspectorData}>{property.value}</div>
+          {isExpanded && (
+            <>
+              {hiddenProps.map(property => (
+                <Fragment key={`wrap${property.label}`}>
+                  <div className={classes.inspectorLabel} key={property.label}>
+                    {property.label}:
                   </div>
-                ))}
-              </div>
-            )}
-            {isExpanded && data.length > 0 && (
+                  <div
+                    className={classes.inspectorData}
+                    key={`${property.label}-value`}
+                  >
+                    {property.value}
+                  </div>
+                </Fragment>
+              ))}
+            </>
+          )}
+          {isExpanded && data.length > 0 && (
+            <>
               <div
-                style={{
-                  display: 'inline-block',
-                  paddingRight: '1em'
-                }}
+                className={classes.inspectorLabel}
+                style={{ fontsize: '10px' }}
               >
-                <div
-                  className={classes.inspectorLabel}
-                  style={{ fontsize: '10px' }}
-                >
-                  Character Type:
-                </div>
-                <div className={classes.inspectorData}>{blueprintName}</div>
+                Character Type:
               </div>
-            )}
-          </div>
+              <div className={classes.inspectorData}>{blueprintName}</div>
+            </>
+          )}
         </div>
         {size === SIZE_MAX && (
           <button

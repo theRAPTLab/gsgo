@@ -6,16 +6,12 @@
 
 import { interval } from 'rxjs';
 import UR from '@gemstep/ursys/client';
-import { GetAgentsByType } from 'modules/datacore/dc-agents';
-import {
-  GetRoundCount,
-  GetRoundDef,
-  RoundsShouldLoop
-} from 'modules/datacore/dc-project';
-import { GVarNumber } from 'modules/sim/vars/_all_vars';
-import { GetGlobalAgent } from 'lib/class-gagent';
-import SM_State from 'lib/class-sm-state';
-import * as TRANSPILER from './script/transpiler';
+import * as ACRounds from 'modules/appcore/ac-rounds';
+import { SM_Number } from 'modules/sim/script/vars/_all_vars';
+import SM_Agent from 'lib/class-sm-agent';
+import * as TRANSPILER from './script/transpiler-v2';
+import { REFEREE } from 'modules/sim/agents/global';
+import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,144 +28,149 @@ let ROUND_TIMER_START_VALUE = 0;
 
 let RSIMSTATUS; // mapped to api-sim's SIMSTATUS
 
-/// HELPER METHODS /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// CURRENTLY NOT USED: Using GlobalAgent exec instead.
-/** Copied from class-gagent.ts.
- *  Execute agent stack machine program. Note that commander also
- *  implements ExecSMC to run arbitrary programs as well when
- *  processing AgentSets. Optionally pass a stack to reuse.
- *  @param {TSMCProgram} program
- */
-function exec_smc(program, ctx, ...args) {
-  const state = new SM_State([...args], ctx);
-  program.forEach((op, index) => {
-    if (typeof op !== 'function')
-      console.warn(`op is not a function, got ${typeof op}`, op);
-    op(this, state);
-  });
-  // return the stack as a result, though
-  return state.stack;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function StartRoundTimer(stopfn) {
+/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_StartRoundTimer(stopfn) {
   if (DBG) console.log(...PR('Start Timer'));
   if (!ROUND_TIMER_START_VALUE) return;
 
-  const GLOBAL_AGENT = GetGlobalAgent();
-
   TIMER_COUNTER = 0;
-  GLOBAL_AGENT.prop.roundTime.setTo(0); // reset between rounds
+  REFEREE.prop.roundTime.setTo(0); // reset between rounds
 
   const size = 1000; // every second -- Interval size matches sim rate
   TIMER = interval(size).subscribe(count => {
     TIMER_COUNTER++;
-    GLOBAL_AGENT.prop.roundTime.setTo(TIMER_COUNTER);
+    REFEREE.prop.roundTime.setTo(TIMER_COUNTER);
     RSIMSTATUS.timer = ROUND_TIMER_START_VALUE - TIMER_COUNTER;
     if (TIMER_COUNTER >= ROUND_TIMER_START_VALUE) stopfn();
   });
 }
-function StopRoundTimer() {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_StopRoundTimer() {
   if (DBG) console.log(...PR('Stop Timer'));
   if (TIMER) TIMER.unsubscribe();
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** method to run an arbitrary script within this module, in this case they
+ *  are the "round initialization, stop" scripts */
+function m_RunScript(scriptText) {
+  if (scriptText) {
+    const refs = { bundle: {}, globals: {} };
+    const script = TRANSPILER.TextToScript(scriptText);
+    const program = TRANSPILER.CompileText(scriptText, refs);
+    REFEREE.exec(program, { agent: REFEREE });
+  }
+}
+
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function StageInit() {
-  const GLOBAL_AGENT = GetGlobalAgent();
-  if (!GLOBAL_AGENT.hasFeature('Population'))
-    GLOBAL_AGENT.addFeature('Population');
-  if (!GLOBAL_AGENT.getProp('roundTime')) {
-    const prop = new GVarNumber();
-    GLOBAL_AGENT.addProp('roundTime', prop);
+/** Called api-sim during Stage() to hack-in stuff to the global agent if it
+ *  doesn't exist */
+function StageInit() {
+  if (!REFEREE.hasFeature('Population')) REFEREE.addFeature('Population');
+  if (!REFEREE.getProp('roundTime')) {
+    const prop = new SM_Number();
+    REFEREE.addProp('roundTime', prop);
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RunScript(scriptUnits) {
-  if (scriptUnits) {
-    const program = TRANSPILER.CompileText(scriptUnits);
-    const GLOBAL_AGENT = GetGlobalAgent();
-    GLOBAL_AGENT.exec(program, { agent: GLOBAL_AGENT });
-
-    // ALTERNATIVE METHOD using exec_smc, but this has context problems.
-    // const ctx = { agent: GLOBAL_AGENT, global: GLOBAL_AGENT };
-    // if (program) exec_smc(program, ctx);
-  }
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function RoundsReset() {
+/** When starting a simulation run from the very beginning */
+function RoundsReset() {
   ROUNDS_INDEX = -1;
   ROUNDS_COUNTER = -1;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function RoundInit(SIMSTATUS) {
+/** at api-sim NextRound(), update timers accordingly and load the next
+ *  round's set of data and scripts */
+function RoundInit(SIMSTATUS) {
+  // 2022-0905 DISABLE `try` so errors will be reported for debugging
+  // try {
   RSIMSTATUS = SIMSTATUS;
   console.log(...PR('RoundInit!'));
   ROUNDS_INDEX++;
   ROUNDS_COUNTER++;
-  const round = GetRoundDef(ROUNDS_INDEX);
+  const round = ACRounds.GetRoundDef(ROUNDS_INDEX);
   if (round) {
     if (round.time !== undefined) {
       ROUND_TIMER_START_VALUE = round.time;
       RSIMSTATUS.timer = ROUND_TIMER_START_VALUE;
-      const intro = round.intro || '';
-      const message = `Round ${ROUNDS_COUNTER + 1}: ${intro}`;
+    }
+    if (round.intro) {
+      const message = `Round ${ROUNDS_COUNTER + 1}: ${round.intro}`;
       UR.RaiseMessage('SHOW_MESSAGE', { message });
     }
-    RunScript(round.initScript);
+    m_RunScript(round.initScript);
   }
+  // } catch (caught) {
+  //   ERROR(`could not run round init script`, {
+  //     source: 'runtime',
+  //     data: {
+  //       round,
+  //       RSIMSTATUS,
+  //       ROUNDS_INDEX,
+  //       ROUNDS_COUNTER
+  //     },
+  //     where: 'sim-rounds.RoundInit',
+  //     caught
+  //   });
+  // }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// 'stopfn' will be called when the timer runs out
-export function RoundStart(stopfn) {
-  StartRoundTimer(stopfn);
+/** at api-sim start, start timing */
+function RoundStart(stopfn) {
+  m_StartRoundTimer(stopfn);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// @return true when all rounds are completed
-export function RoundStop() {
+/** at api-sim stop, stop counting and do some stuff */
+function RoundStop() {
+  // 2022-0905 DISABLE `try` so errors will be reported for debugging
+  // try {
   console.log(...PR('RoundStop!'));
-  StopRoundTimer();
-  const round = GetRoundDef(ROUNDS_INDEX);
+  m_StopRoundTimer();
+  const round = ACRounds.GetRoundDef(ROUNDS_INDEX);
   if (round) {
-    const outtro = round.outtro || '';
-    const message = `End Round ${ROUNDS_COUNTER + 1}: ${outtro}`;
-    UR.RaiseMessage('SHOW_MESSAGE', { message });
-    RunScript(round.endScript);
+    if (round.outtro) {
+      const message = `End Round ${ROUNDS_COUNTER + 1}: ${round.outtro}`;
+      UR.RaiseMessage('SHOW_MESSAGE', { message });
+    }
+    m_RunScript(round.endScript);
   }
 
   // Prep for Next Round
 
   // If there are more rounds, not complete
-  if (ROUNDS_INDEX + 1 < GetRoundCount()) return false;
+  if (ROUNDS_INDEX + 1 < ACRounds.GetRoundCount()) return false;
 
   // If rounds loop, not complete
   // (Rounds loop by default if 'noloop' is not defined or set to true)
-  if (RoundsShouldLoop()) {
+  if (ACRounds.RoundsShouldLoop()) {
     ROUNDS_INDEX = -1;
     return false;
   }
 
   // No more rounds
   return true;
+  // } catch (caught) {
+  //   ERROR(`could not run round stop script`, {
+  //     source: 'runtime',
+  //     data: {
+  //       round,
+  //       RSIMSTATUS,
+  //       ROUNDS_INDEX,
+  //       ROUNDS_COUNTER
+  //     },
+  //     where: 'sim-rounds.Roundstop',
+  //     caught
+  //   });
+  // }
 }
-
-/// SYNCHRONOUS LIFECYCLE /////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// UR.HookPhase('UR/APP_CONFIGURE', ModuleInit);
-
-/// ASYNCH MESSAGE ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** This is the API for firing a system event that the onEvent keyword can
- *  listen to
- */
-// This is now handled via direct calls from api-sim
-// UR.HandleMessage('SCRIPT_EVENT', event => {
-//   if (event.type === 'RoundInit') RoundInit();
-//   // if (event.type === 'Costumes') Costumes(); // future costume script?
-//   if (event.type === 'RoundStop') RoundStop();
-// });
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default {};
+export {
+  StageInit, // called during api-sim Stage()
+  RoundsReset, // called during api-sim Reset()
+  RoundInit, // called during api-sim NextRound()
+  RoundStart, // called during api-sim Start()
+  RoundStop // called during api-sim Stop()
+};

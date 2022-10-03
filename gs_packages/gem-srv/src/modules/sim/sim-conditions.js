@@ -5,35 +5,22 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { RegisterFunction, GetFunction } from 'modules/datacore/dc-named-methods';
-import {
-  GetAllInteractions,
-  SingleAgentFilter,
-  PairAgentFilter
-} from 'modules/datacore/dc-interactions';
-import { GetScriptEventHandlers } from 'modules/datacore/dc-script-engine';
-import { GetAgentsByType } from 'modules/datacore/dc-agents';
-import { GetGlobalAgent } from 'lib/class-gagent';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
+import * as SIMCOND from 'modules/datacore/dc-sim-conditions';
+import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
+
+import SM_Agent from 'lib/class-sm-agent';
 import { DistanceTo } from 'lib/util-vector';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM_CONDITIONS');
 const DBG = false;
-const GLOBAL_AGENT = GetGlobalAgent();
+const GLOBAL_AGENT = SM_Agent.GetGlobalAgent();
 let EVENT_QUEUE = [];
 let GLOBAL_INTERACTIONS = [];
 
 /// REGISTER NAMED METHODS ////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// the old test program style (deprecated) is in tests/test-conditions.ts
-RegisterFunction('dies', a => {
-  if (a.prop.foodLevel.value < 1) {
-    console.log('dead!');
-    return true;
-  }
-  return false;
-});
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  *  DEPRECATED -- This needs to be rewritten
@@ -51,7 +38,7 @@ RegisterFunction('dies', a => {
  *       ]]
  *     ]]
  */
-// RegisterFunction('wasTouchedWithin', (a, b) => {
+// RegisterWhenTest('wasTouchedWithin', (a, b) => {
 //   // make sure both objects have the Physics feature
 //   if (!a.hasFeature('Physics') || !b.hasFeature('Physics'))
 //     console.error('wasTouchedWithin requires Physics');
@@ -108,20 +95,24 @@ RegisterFunction('dies', a => {
 // ];
 // b.debug = bpath;
 
+/// PROXIMITY TESTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Two centers are within `distance` of each other
-/// NOTE: This can be used without Physics or Touches
-///       This is functionally equivalent to 'centerTouchesCenter'
-RegisterFunction('isCenteredOn', (a, b, distance = 5) => {
+/** Two centers are within `distance` of each other
+ * NOTE: This can be used without Physics or Touches
+ * This is functionally equivalent to 'centerTouchesCenter'
+ */
+SIMDATA.RegisterWhenTest('isCenteredOn', (a, b, distance = 5) => {
   // checks if distance between agents is less than distance
   return DistanceTo(a, b) <= distance;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-RegisterFunction('isCloseTo', (a, b, distance = 30) => {
+SIMDATA.RegisterWhenTest('isCloseTo', (a, b, distance = 30) => {
   // checks if distance between agents is less than distance
   // Doesn't need Physics or Touch
   return DistanceTo(a, b) <= distance;
 });
+
+/// TOUCH TESTS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_TouchTest(a, b, touchType) {
   // make sure both objects have the Physics feature
@@ -132,19 +123,19 @@ function m_TouchTest(a, b, touchType) {
 }
 /// a center touches b center
 /// This is the Physics equivalent of `isCenteredOn`
-RegisterFunction('centerTouchesCenter', (a, b) => {
+SIMDATA.RegisterWhenTest('centerTouchesCenter', (a, b) => {
   return m_TouchTest(a, b, 'c2c');
 });
 /// a center touches b bounds
-RegisterFunction('centerTouches', (a, b) => {
+SIMDATA.RegisterWhenTest('centerTouches', (a, b) => {
   return m_TouchTest(a, b, 'c2b');
 });
 /// a bounds touches b bounds
-RegisterFunction('touches', (a, b) => {
+SIMDATA.RegisterWhenTest('touches', (a, b) => {
   return m_TouchTest(a, b, 'b2b');
 });
 /// a bounds touches b bounds
-RegisterFunction('isInside', (a, b) => {
+SIMDATA.RegisterWhenTest('isInside', (a, b) => {
   return m_TouchTest(a, b, 'binb');
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -160,15 +151,15 @@ function m_FirstTouchTest(a, b, touchType) {
   );
 }
 /// a center first touches b center
-RegisterFunction('centerFirstTouchesCenter', (a, b) => {
+SIMDATA.RegisterWhenTest('centerFirstTouchesCenter', (a, b) => {
   return m_FirstTouchTest(a, b, 'c2c');
 });
 /// a center first touches b bounds
-RegisterFunction('centerFirstTouches', (a, b) => {
+SIMDATA.RegisterWhenTest('centerFirstTouches', (a, b) => {
   return m_FirstTouchTest(a, b, 'c2b');
 });
 /// a bounds first touches b bounds
-RegisterFunction('firstTouches', (a, b) => {
+SIMDATA.RegisterWhenTest('firstTouches', (a, b) => {
   return m_FirstTouchTest(a, b, 'b2b');
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -183,31 +174,33 @@ function m_LastTouchTest(a, b, touchType) {
   );
 }
 /// a center last touches b center
-RegisterFunction('centerLastTouchesCenter', (a, b) => {
+SIMDATA.RegisterWhenTest('centerLastTouchesCenter', (a, b) => {
   return m_LastTouchTest(a, b, 'c2c');
 });
 /// a center last touches b bounds
-RegisterFunction('centerLastTouches', (a, b) => {
+SIMDATA.RegisterWhenTest('centerLastTouches', (a, b) => {
   return m_LastTouchTest(a, b, 'c2b');
 });
 /// a bounds last touches b bounds
-RegisterFunction('lastTouches', (a, b) => {
+SIMDATA.RegisterWhenTest('lastTouches', (a, b) => {
   return m_LastTouchTest(a, b, 'b2b');
 });
+
+/// VISION TESTS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-RegisterFunction('sees', (a, b) => {
+SIMDATA.RegisterWhenTest('sees', (a, b) => {
   // checks if b is within vision cone of a
   if (!a.hasFeature('Vision') || !b.hasFeature('Costume')) return false;
   return a.canSeeCone ? a.canSeeCone.get(b.id) : false;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-RegisterFunction('doesNotSee', (a, b) => {
+SIMDATA.RegisterWhenTest('doesNotSee', (a, b) => {
   // checks if b is NOT within vision cone of a
   if (!a.hasFeature('Vision') || !b.hasFeature('Costume')) return false;
   return a.canSeeCone ? !a.canSeeCone.get(b.id) : true;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-RegisterFunction('seesCamouflaged', (a, b) => {
+SIMDATA.RegisterWhenTest('seesCamouflaged', (a, b) => {
   // checks if b's color relative to its background is visible to a
   // AND the color range is outside of the detectableRange
   const canSeeCone = a.canSeeCone ? !a.canSeeCone.get(b.id) : true;
@@ -215,72 +208,104 @@ RegisterFunction('seesCamouflaged', (a, b) => {
   return canSeeCone && canSeeColor;
 });
 
-/// LIFECYCLE METHODS /////////////////////////////////////////////////////////
+/// UPDATE METHOD HELPERS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** invoked via UR/APP_CONFIGURE */
-function ModuleInit(/* gloop */) {}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Update(frame) {
-  /** HANDLE GLOBAL FILTER TESTS ***************************************************/
-  /// run all the filtering tests and store results for use by Agents during
-  /// their subsequent SIM/AGENTS_UPDATE phase
-  GLOBAL_INTERACTIONS = [...GetAllInteractions()]; // [ [k,v], [k,v] ]
+/** cycle through the interaction cache and run tests, saving the results */
+function m_ProcessInteractions() {
+  GLOBAL_INTERACTIONS = [...SIMCOND.GetAllInteractions()]; // [ [k,v], [k,v] ]
   GLOBAL_INTERACTIONS.forEach(entry => {
+    // try {
     const { singleTestArgs, pairTestArgs } = entry;
     if (singleTestArgs !== undefined) {
       // SINGLE AGENT TEST FILTER
       const [A, testName, ...args] = singleTestArgs;
-      const [passed] = SingleAgentFilter(A, testName, ...args);
+      const [passed] = SIMCOND.SingleAgentFilter(A, testName, ...args);
       entry.passed = passed;
     } else if (pairTestArgs !== undefined) {
       // PAIR AGENT TEST FILTER
       const [A, testName, B, ...args] = pairTestArgs;
-      const [passed] = PairAgentFilter(A, testName, B, ...args);
+      const [passed] = SIMCOND.PairAgentFilter(A, testName, B, ...args);
       entry.passed = passed;
     } else {
       throw Error('malformed global_interaction entry');
     }
+    // } catch (caught) {
+    //   ERROR(`could not dispatch global interaction`, {
+    //     source: 'runtime',
+    //     data: {
+    //       pairTestArgs
+    //     },
+    //     where: 'sim-conditions.Update GLOBAL_INTERACTIONS',
+    //     caught
+    //   });
+    // }
   });
-  /** HANDLE SUBSCRIPTION EVENTS ***************************************************/
-  /// handle the registered events for 'onEvent' keywords that have registered a
-  /// consequent for an Agent Blueprint (the set of all Agents based on that
-  /// blueprint)
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** process the events in the event queue, looking up which blueprints have
+ *  defined handlers for the event and sending them the consequent to
+ *  execute */
+function m_ProcessEventQueue() {
   EVENT_QUEUE.forEach((event, idx) => {
-    /*/
-    these are all the handlers for all the registered blueprint types
-    that are TOPcode[]. However, we need to get the context of each
-    blueprint and run them per-agent
-    /*/
-    const handlers = GetScriptEventHandlers(event.type);
+    /// these are all the handlers for all the registered blueprint types
+    /// that are TOPcode[]. However, we need to get the context of each
+    /// blueprint and run them per-agent
+    // try {
+    const handlers = SIMDATA.GetHandlersForScriptEvent(event.type);
     handlers.forEach(h => {
       const { agentType, handler } = h;
-      const agents = GetAgentsByType(agentType);
+      const agents = SIMAGENTS.GetAgentsByType(agentType);
       agents.forEach(agent => {
         const ctx = { agent, [agentType]: agent };
         agent.exec(handler, ctx);
       });
     });
+    // } catch (caught) {
+    //   ERROR(`could not dispatch agent event`, {
+    //     source: 'runtime',
+    //     data: {
+    //       event,
+    //       idx
+    //     },
+    //     where: 'sim-conditions.Update EVENT_QUEUE',
+    //     caught
+    //   });
+    // }
   });
   EVENT_QUEUE = [];
 }
 
-/// SYNCHRONOUS LIFECYCLE /////////////////////////////////////////////////////
+/// LIFECYCLE GAMELOOP METHODS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HookPhase('SIM/CONDITIONS_UPDATE', Update);
-UR.HookPhase('UR/APP_CONFIGURE', ModuleInit);
+/**PHASE MACHINE: SIM/CONDITIONS_UPDATE */
+UR.HookPhase('SIM/CONDITIONS_UPDATE', function Update(frame) {
+  // run all the filtering tests and cache the results
+  m_ProcessInteractions();
+  // if there any events queued, then invoke the event handler on all
+  // agents that registered for this event.
+  m_ProcessEventQueue();
+});
 
-/// ASYNCH MESSAGE ////////////////////////////////////////////////////////////
+/// SCRIPT EVENT HANDLER //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** This is the API for firing a system event that the onEvent keyword can
- *  listen to
- */
+/** This is the API for publishing a system event that can be received by
+ *  blueprint instance. Blueprints register the code to run in the onEvent
+ *  keyword, which makes use of the data structures in SIMDATA (yeah, that
+ *  is a little weird) */
 UR.HandleMessage('SCRIPT_EVENT', event => {
   EVENT_QUEUE.push(event);
 });
 
+/// DUMMY REGISTRATION ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** call this from the importing module to ensure that it is not tree-shaken
+ *  out by webpack and never initializes */
+function Register(parent) {
+  if (DBG) console.log(...PR('MESSAGE EXCHANGE API LOADED'), parent);
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default {
-  ModuleInit,
-  Update
+  Register
 };

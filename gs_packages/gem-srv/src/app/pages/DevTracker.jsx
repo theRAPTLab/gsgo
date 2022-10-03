@@ -13,11 +13,10 @@ import clsx from 'clsx';
 // SELECT RUNTIME MODULES FOR APP
 import * as INPUT from '../../modules/input/api-input';
 import * as RENDERER from '../../modules/render/api-render';
-import * as GLOBAL from '../../modules/datacore/dc-globals';
-import * as APPCORE from '../../modules/appcore';
+import * as ASSETS from '../../modules/asset_core';
 //
 import FormTransform from './components/FormTransform';
-import { useStylesHOC } from './elements/page-styles';
+import { useStylesHOC } from './helpers/page-styles';
 //
 import '../../lib/css/tracker.css';
 
@@ -240,7 +239,7 @@ UR.HookPhase(
     new Promise((resolve, reject) => {
       // console.log(...PR('LOADING ASSET MANIFEST...'));
       (async () => {
-        await GLOBAL.LoadAssetsSync('static/assets.json');
+        await ASSETS.PromiseLoadAssets('dev');
         // console.log(...PR('ASSETS LOADED'));
         ASSETS_LOADED = true;
         resolve();

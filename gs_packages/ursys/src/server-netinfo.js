@@ -8,7 +8,7 @@
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { URL } = require('url');
 const requestIp = require('request-ip');
-const { CFG_URNET_SERVICE, CFG_URDB_GQL } = require('./ur-common');
+const { CFG_URNET_SERVICE, CFG_URDB_GQL } = require('./common/ur-constants');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -31,7 +31,7 @@ function NetInfoRoute() {
 function m_NetInfoRespond(req, res) {
   res.setHeader('Content-Type', 'application/json');
   res.writeHead(200);
-  let { host, port, urnet_version, uaddr } = m_network_options;
+  let { host, port, urnet_version, uaddr, branch } = m_network_options;
   let client_ip = requestIp.getClientIp(req);
   // prevent socket connection refusal due to mismatch of localhost
   // with use of numeric IP when connecting to server
@@ -46,6 +46,9 @@ function m_NetInfoRespond(req, res) {
       port,
       urnet_version,
       uaddr
+    },
+    build: {
+      branch
     },
     client: {
       ip: client_ip
@@ -94,8 +97,8 @@ function Express_Middleware(req, res, next) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetNetInfo() {
-  let { host, port, urnet_version, uaddr } = m_network_options;
-  return { host, port, urnet_version, uaddr };
+  let { host, port, urnet_version, uaddr, branch } = m_network_options;
+  return { host, port, urnet_version, uaddr, branch };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** called from index-server during URNET_Start to save network options */

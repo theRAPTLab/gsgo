@@ -31,12 +31,9 @@ import { AdjustmentFilter } from '@pixi/filter-adjustment';
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
 import { OutlineFilter } from '@pixi/filter-outline';
 import { GlowFilter } from '@pixi/filter-glow';
-import * as DATACORE from 'modules/datacore';
-import * as GLOBAL from 'modules/datacore/dc-globals';
-import FLAGS from 'modules/flags';
-import { IVisual } from './t-visual';
-import { IPoolable } from './t-pool.d';
-import { IActable } from './t-script';
+import * as ASSETS from 'modules/asset_core';
+import FLAGS, { DEFAULT_SPRITE } from 'modules/flags';
+// uses types from t-visual, t-pool, t-script
 import { MakeDraggable } from './vis/draggable';
 import { MakeHoverable } from './vis/hoverable';
 import { MakeSelectable } from './vis/selectable';
@@ -61,8 +58,13 @@ const style = new PIXI.TextStyle({
   fontWeight: 'bold',
   fill: ['#ffffffcc'],
   stroke: '#333333cc',
-  strokeThickness: 3
+  strokeThickness: 3,
+  wordWrapWidth: 125,
+  wordWrap: true,
+  align: 'center'
 });
+// replacement for GLOBAL sprite
+const SPRITES = ASSETS.GetLoader('sprites');
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -98,6 +100,11 @@ function m_ExtractTexture(rsrc: any, frameKey: number | string): PIXI.Texture {
   }
   // otherwise, is this a regular texture?
   if (rsrc.texture) return rsrc.texture;
+
+  // or maybe it's a straight-up texture already
+  if (rsrc instanceof PIXI.Texture) {
+    throw Error('resource is a PIXI.Texture, not PIXI.LoaderResource');
+  }
 
   // if we got here, the passed rsrc  might not be one
   throw Error('could not find texture in resource');
@@ -165,28 +172,31 @@ class Visual implements IVisual, IPoolable, IActable {
   setTextureById(assetId: number, frameKey: string | number) {
     if (!Number.isInteger(assetId))
       throw Error('numeric frameKey must be integer');
-    const rsrc = GLOBAL.GetAssetById(assetId);
+    const { rsrc } = SPRITES.getAssetById(assetId);
     const tex = m_ExtractTexture(rsrc, frameKey);
     this.sprite.texture = tex;
     this.assetId = assetId;
   }
 
   setTexture(name: string, frameKey: string | number) {
-    if (typeof name !== 'string') throw Error('arg1 must be texture asset name');
-    const rsrc: PIXI.LoaderResource = GLOBAL.GetAsset(name);
-    if (rsrc === undefined) {
-      console.log(`ERR: couldn't find resource '${name}'`);
-      (window as any).DC = DATACORE;
-      (window as any).GLOB = GLOBAL;
-      return;
+    if (name === undefined) name = DEFAULT_SPRITE;
+    if (!name) return; // DEFAULT_SPRITE is '' then don't draw
+    try {
+      const { rsrc } = SPRITES.getAsset(name);
+      // is this a spritesheet?
+      const tex = m_ExtractTexture(rsrc, frameKey);
+      this.sprite.texture = tex;
+      this.assetId = SPRITES.lookupAssetId(name);
+      const px = this.sprite.texture.width / 2;
+      const py = this.sprite.texture.height / 2;
+      this.sprite.pivot.set(px, py);
+    } catch (err) {
+      console.error(
+        `class-visual failed setting texture name ${name} for agent ${
+          this.id
+        } rsrc ${SPRITES.getAsset(name)}`
+      );
     }
-    // is this a spritesheet?
-    const tex = m_ExtractTexture(rsrc, frameKey);
-    this.sprite.texture = tex;
-    this.assetId = GLOBAL.LookupAssetId(name);
-    const px = this.sprite.texture.width / 2;
-    const py = this.sprite.texture.height / 2;
-    this.sprite.pivot.set(px, py);
   }
 
   /**
@@ -398,24 +408,27 @@ class Visual implements IVisual, IPoolable, IActable {
    * the bounds of the sprite for placing the text
    */
   setText(str: string) {
-    if (this.text && this.textContent === str) return; // no update necessary
-
-    // Remove any old text
-    // We have to remove the child and reset it to update the text?
-    this.container.removeChild(this.text);
-    if (this.text) this.text.destroy();
-
-    this.text = new PIXI.Text(str, style);
-    this.textContent = str; // cache
-
-    // position text bottom centered
-    const textBounds = this.text.getBounds();
-    const spacer = 5;
-    const x = -textBounds.width / 2;
-    const y = this.sprite.height / 2 + spacer;
-    this.text.position.set(x, y);
-
-    this.container.addChild(this.text);
+    if (!str) return;
+    if (this.textContent !== str) {
+      // Create/recreate the text if it changed
+      // -- Remove any old text
+      //    We have to remove the child and reset it to update the text?
+      this.container.removeChild(this.text);
+      if (this.text) this.text.destroy();
+      // -- Create new text
+      this.text = new PIXI.Text(str, style);
+      this.textContent = str; // cache
+      this.container.addChild(this.text);
+    }
+    if (this.text) {
+      // position text bottom centered
+      const width = this.text.width;
+      style.wordWrapWidth = width > 125 ? width : 125; // This sets aa minimum for text only casses
+      const spacer = 5;
+      const x = -width / 2; //this.sprite.width; // for some reason text is offset?
+      const y = this.sprite.height / 2 + spacer;
+      this.text.position.set(x, y);
+    }
   }
 
   removeText() {

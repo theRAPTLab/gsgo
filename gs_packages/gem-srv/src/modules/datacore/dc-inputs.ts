@@ -2,16 +2,25 @@
 
   Inputs Phase Machine Interface
 
+  This maps inputs to INPUTDEFs:
+
+  entities => Control Objects => Input Definitions
+
+  pozyx/ptrack/faketrack    => ENTITY_TO_COBJ   => COBJ_TO_INPUTDEF
+  charControl               => devAPI           => COBJ_TO_INPUTDEF
+
   This should be a pure data class that maintains a list of input objects
   and the agents it updates.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import InputDef from '../../lib/class-input-def';
-import SyncMap from '../../lib/class-syncmap';
-import { DeleteAgent } from './dc-agents';
-import { DistanceTo, Lerp, Rotate } from '../../lib/util-vector';
+import * as ACBlueprints from 'modules/appcore/ac-blueprints';
+import InputDef from 'lib/class-input-def';
+import SyncMap from 'lib/class-syncmap';
+import * as DCAGENTS from './dc-sim-agents';
+import { TYPES } from '../step/lib/class-ptrack-endpoint';
+import { DistanceTo, Lerp, Rotate } from 'lib/util-vector';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -21,9 +30,6 @@ let FRAME_TIMER;
 
 let STAGE_WIDTH = 100; // default
 let STAGE_HEIGHT = 100; // default
-
-let BPNAMES = []; // names of user-controllable blueprints
-let POZYX_BPNAMES = [];
 
 export const INPUT_GROUPS = new Map(); // Each device can belong to a specific group
 export const INPUTDEFS = []; //
@@ -55,7 +61,7 @@ function UADDRtoID(uaddr) {
 // "CC340_0" to "340"
 function COBJIDtoID(cobjid) {
   // pozyx
-  if (cobjid.startsWith('ft-pozyx')) return String(cobjid).substring(8);
+  if (cobjid.startsWith(TYPES.Pozyx)) return String(cobjid).substring(8);
   // CharControl
   const re = /([0-9])+/;
   const result = re.exec(cobjid);
@@ -73,62 +79,6 @@ function UDIDtoID(udid) {
   return re.exec(udid)[0];
 }
 
-/// DATA UPDATE ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Control Object Sync to InputDef
-const COBJ_TO_INPUTDEF = new SyncMap({
-  Constructor: InputDef,
-  autoGrow: true,
-  name: 'CObjToAgent'
-});
-COBJ_TO_INPUTDEF.setMapFunctions({
-  onAdd: (cobj: any, inputDef: InputDef) => {
-    inputDef.x = transformX(cobj.x);
-    inputDef.y = transformY(cobj.y);
-    // HACK Blueprints into cobj
-    inputDef.bpname = cobj.bpname;
-    inputDef.name = cobj.name;
-    inputDef.framesSinceLastUpdate = 0;
-  },
-  onUpdate: (cobj: any, inputDef: InputDef) => {
-    inputDef.x = transformX(cobj.x);
-    inputDef.y = transformY(cobj.y);
-    inputDef.bpname = cobj.bpname;
-    inputDef.name = cobj.name;
-    inputDef.framesSinceLastUpdate = 0;
-  },
-  shouldRemove: (inputDef, map) => {
-    // Inputs do not necessarily come in with every INPUTS phase fire
-    // so we should NOT be removing them on every update.
-
-    // HACK: Remove agent if no update for 4 seconds
-    inputDef.framesSinceLastUpdate++;
-    if (inputDef.framesSinceLastUpdate > 120) {
-      return true;
-    }
-
-    // HACK
-    // Remove agents that no longer have active devices
-    // cobj = {id, name, blueprint, bpname, valid, x, y}
-    //         id = "CC340_0"
-    return !ACTIVE_DEVICES.has(COBJIDtoID(inputDef.id));
-
-    // HACK Never Remove for now.
-    // return false;
-
-    // REVIEW: At some point, we'll want remove when CharControllers
-    //         drop out.  This is hack where we insert a frameCount
-    //         into the def to keep track
-    //
-    // const REMOVAL_THRESHOLD = -1;
-    // const instance = map.get(cobj.id);
-    // console.error('shouldRemove', cobj, map, instance);
-    // if (instance) {
-    //   instance.frameCount = instance.frameCount++ || 0;
-    //   if (instance.frameCount > REMOVAL_THRESHOLD) return true;
-    // }
-  }
-});
 /**
  *
  * @param changes {valid: boolean, selected: object[], quantified: object[] }
@@ -146,64 +96,54 @@ function UpdateActiveDevices(changes) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+///////////////////////////////////////////////////////////////////////////////
 /// POZYX DATA UPDATE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // Default
+export const PTRACK_TRANSFORM = {
+  scaleX: 0,
+  scaleY: 0,
+  translateX: 0,
+  translateY: 0,
+  rotation: 0,
+  useAccelerometer: undefined // Not applicable to PTRACK, but defined here for tscript validation
+};
+
 export const POZYX_TRANSFORM = {
   scaleX: 0,
   scaleY: 0,
   translateX: 0,
   translateY: 0,
-  rotate: 0,
+  rotation: 0,
   useAccelerometer: true
 };
 
-// VU
-// export const POZYX_TRANSFORM = {
-//   scaleX: -0.0002, // -0.0002
-//   scaleY: 0.00016, // 0.0003
-//   translateX: -4200, //0
-//   translateY: -6000, //0
-//   rotate: 0, // -160
-//   useAccelerometer: true
-// };
-
-// IU
-// add when finished
-
-// BEN
-/* export const POZYX_TRANSFORM = {
-  scaleX: -0.0002, // -0.0002
-  scaleY: 0.0003, // 0.0003
-  translateX: 0,
-  translateY: 0,
-  rotate: -160, // -160
-  useAccelerometer: true
-}; */
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_PozyxTransform(position: {
-  x: number;
-  y: number;
-}): { x: number; y: number } {
+function m_Transform(
+  position: {
+    x: number;
+    y: number;
+  },
+  TRANSFORM
+): { x: number; y: number } {
   let tx = Number(position.x);
   let ty = Number(position.y);
 
   // 1. Rotate
-  const rad = (POZYX_TRANSFORM.rotate * Math.PI) / 180;
+  const rad = (TRANSFORM.rotation * Math.PI) / 180;
   const c = Math.cos(rad);
   const s = Math.sin(rad);
   tx = tx * c - ty * s;
   ty = tx * s + ty * c;
 
   // 2. Translate
-  tx += POZYX_TRANSFORM.translateX;
-  ty += POZYX_TRANSFORM.translateY;
+  tx += TRANSFORM.translateX;
+  ty += TRANSFORM.translateY;
 
   // 3. Scale
-  tx *= POZYX_TRANSFORM.scaleX;
-  ty *= POZYX_TRANSFORM.scaleY;
+  tx *= TRANSFORM.scaleX;
+  ty *= TRANSFORM.scaleY;
 
   return { x: tx, y: ty };
 }
@@ -230,11 +170,11 @@ function m_PozyxDampen(
   //  rather than jumping straight to the entity position.
 
   // lastPosition is already transformed
-  const newPosition = m_PozyxTransform(rawEntityPosition);
+  const newPosition = m_Transform(rawEntityPosition, POZYX_TRANSFORM);
 
   // If accelerometer movement is high, allow large movement
   // If acceleromoter movement is low, allow only small movmeent
-  const gforce = Rotate(acc, POZYX_TRANSFORM.rotate); // rotate accelerometer readings to match stage
+  const gforce = Rotate(acc, POZYX_TRANSFORM.rotation); // rotate accelerometer readings to match stage
   gforce.x = Math.abs(gforce.x); // we just want magnitude
   gforce.y = Math.abs(gforce.y);
   let xm = m_GetAccelerationMultiplier(gforce.x); // x multiplier
@@ -269,88 +209,159 @@ function m_PozyxDampen(
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Return the first pozyx controllable blueprint for now
- * Eventually we'll add a more sophisticated map
- * SRI: this borks up every non-pozyx system and makes INPUT dependent
- * on SIM. INPUT, SIM, and RENDER are supposed to be completely independent.
- */
-export function GetDefaultPozyxBPName() {
-  if (POZYX_BPNAMES.length < 1) {
-    // console.warn('No pozyx controllable blueprints defined!');
-    // SRI: disable this because it isn't necessarily pozyx
-    // console.warn('No pozyx controllable blueprints defined!');
-    return undefined;
-  }
-  return POZYX_BPNAMES[0];
+
+function GetDefaultPozyxBpName() {
+  return ACBlueprints.GetPozyxControlDefaultBpName();
 }
-export function SetPozyxBPNames(bpnames: string[]) {
-  POZYX_BPNAMES = [...bpnames];
+function GetDefaultPTrackBpName() {
+  return ACBlueprints.GetPTrackControlDefaultBpName();
 }
+///////////////////////////////////////////////////////////////////////////////
+/// ENTITY_TO_COBJ (was POZYX_TO_COBJ) /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const POZYX_TO_COBJ = new SyncMap({
+const ENTITY_TO_COBJ = new SyncMap({
   Constructor: InputDef,
   autoGrow: true,
   name: 'TrackedEntityToCObj'
 });
-POZYX_TO_COBJ.setMapFunctions({
+ENTITY_TO_COBJ.setMapFunctions({
   onAdd: (entity: any, cobj: InputDef) => {
-    const { x, y } = m_PozyxTransform({ x: entity.x, y: entity.y });
+    const TRANSFORM =
+      entity.type === TYPES.Pozyx ? POZYX_TRANSFORM : PTRACK_TRANSFORM;
+    const { x, y } = m_Transform({ x: entity.x, y: entity.y }, TRANSFORM);
     cobj.x = x;
     cobj.y = y;
     // HACK Blueprints into cobj
-    cobj.bpname = GetDefaultPozyxBPName();
-    cobj.name = String(entity.id).startsWith('ft-pozyx')
-      ? entity.id.substring(8)
-      : entity.id;
+    cobj.bpid =
+      entity.type === TYPES.Pozyx
+        ? GetDefaultPozyxBpName()
+        : GetDefaultPTrackBpName();
+    cobj.label = entity.type === TYPES.Pozyx ? entity.id.substring(2) : entity.id;
+    cobj.framesSinceLastUpdate = 0;
+    UR.SendMessage('NET:SRV_RTLOG', {
+      event: entity.type,
+      items: [
+        {
+          id: cobj.id,
+          bpid: cobj.bpid,
+          x,
+          y
+        }
+      ]
+    });
   },
   onUpdate: (entity: any, cobj: InputDef) => {
+    const TRANSFORM =
+      entity.type === TYPES.Pozyx ? POZYX_TRANSFORM : PTRACK_TRANSFORM;
     let pos = { x: entity.x, y: entity.y };
-    if (entity.acc && POZYX_TRANSFORM.useAccelerometer) {
+    if (entity.acc && TRANSFORM.useAccelerometer) {
       // has accelerometer data
       pos = m_PozyxDampen(cobj, pos, entity.acc); // dampen + transform
     } else {
-      pos = m_PozyxTransform(pos);
+      pos = m_Transform(pos, TRANSFORM);
     }
 
     cobj.x = pos.x;
     cobj.y = pos.y;
-    cobj.bpname = GetDefaultPozyxBPName();
-    cobj.name = String(entity.id).startsWith('ft-pozyx')
-      ? entity.id.substring(8)
-      : entity.id;
+    cobj.bpid =
+      entity.type === TYPES.Pozyx
+        ? GetDefaultPozyxBpName()
+        : GetDefaultPTrackBpName();
+    cobj.label = entity.type === TYPES.Pozyx ? entity.id.substring(2) : entity.id;
+    cobj.framesSinceLastUpdate = 0;
+    UR.SendMessage('NET:SRV_RTLOG', {
+      event: entity.type,
+      items: [
+        {
+          id: cobj.id,
+          bpid: cobj.bpid,
+          x: pos.x,
+          y: pos.y
+        }
+      ]
+    });
   },
-  shouldRemove: cobj => false
-  // Inputs do not necessarily come in with every INPUTS phase fire
-  // so we should NOT be removing them on every update.
-  // HACK: Remove agent if no update for 4 seconds
-  // inputDef.framesSinceLastUpdate++;
-  // if (inputDef.framesSinceLastUpdate > 120) {
-  //   return true;
-  // }
+  shouldRemove: cobj => {
+    // entities do not necessarily come in with every INPUTS phase fire
+    // so we should NOT be removing them on every update.
+    // However, entities might be removed by class-ptrack-endpoints
+    // (after they exceed MAX_AGE of 100)
+    // so we also need to remove them here if there has been
+    // no update for 4 seconds
+    cobj.framesSinceLastUpdate++;
+    if (cobj.framesSinceLastUpdate > 120) return true;
+    return false;
+  }
 });
 export function GetTrackerMap() {
-  return POZYX_TO_COBJ;
+  return ENTITY_TO_COBJ;
 }
 
-/// API METHODS ///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+/// COBJ_TO_INPUTDEF //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Control Object (from CharControl) Sync to InputDef
+const COBJ_TO_INPUTDEF = new SyncMap({
+  Constructor: InputDef,
+  autoGrow: true,
+  name: 'CObjToAgent'
+});
+COBJ_TO_INPUTDEF.setMapFunctions({
+  onAdd: (cobj: any, inputDef: InputDef) => {
+    inputDef.x = transformX(cobj.x);
+    inputDef.y = transformY(cobj.y);
+    // HACK Blueprints into cobj
+    inputDef.bpid = cobj.bpid;
+    inputDef.label = cobj.label;
+    inputDef.framesSinceLastUpdate = 0;
+  },
+  onUpdate: (cobj: any, inputDef: InputDef) => {
+    inputDef.x = transformX(cobj.x);
+    inputDef.y = transformY(cobj.y);
+    inputDef.bpid = cobj.bpid;
+    inputDef.label = cobj.label;
+    inputDef.framesSinceLastUpdate = 0;
+  },
+  shouldRemove: (inputDef, map) => {
+    // Inputs do not necessarily come in with every INPUTS phase fire
+    // so we should NOT be removing them on every update.
+
+    // HACK: Remove agent if no update for 4 seconds
+    inputDef.framesSinceLastUpdate++;
+    if (inputDef.framesSinceLastUpdate > 120) {
+      return true;
+    }
+
+    // HACK
+    // Remove agents that no longer have active devices
+    // cobj = {id, name, blueprint, bpname, valid, x, y}
+    //         id = "CC340_0"
+    return !ACTIVE_DEVICES.has(COBJIDtoID(inputDef.id));
+
+    // HACK Never Remove for now.
+    // return false;
+
+    // REVIEW: At some point, we'll want remove when CharControllers
+    //         drop out.  This is hack where we insert a frameCount
+    //         into the def to keep track
+    //
+    // const REMOVAL_THRESHOLD = -1;
+    // const instance = map.get(cobj.id);
+    // console.error('shouldRemove', cobj, map, instance);
+    // if (instance) {
+    //   instance.frameCount = instance.frameCount++ || 0;
+    //   if (instance.frameCount > REMOVAL_THRESHOLD) return true;
+    // }
+  }
+});
+
+///////////////////////////////////////////////////////////////////////////////
+/// dc-input General API //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function SetInputStageBounds(width, height) {
   STAGE_WIDTH = width;
   STAGE_HEIGHT = height;
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Determines which blueprint types can be controlled by user inputs
- * @param bpnames
- */
-export function SetInputBPnames(bpnames: string[]) {
-  BPNAMES = [...bpnames];
-}
-export function GetInputBPnames() {
-  return BPNAMES;
-}
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export async function InputInit(bpname: string) {
   // STEP 1 is to get a "deviceAPI" from a Device Subscription
@@ -373,7 +384,7 @@ export async function InputInit(bpname: string) {
   // console.error('input_groups', INPUT_GROUPS);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function InputUpdate(devAPI, bpname) {
+function InputUpdateCharControl(devAPI, bpname) {
   // STEP 2 is to grab the getController('name') method which we
   // can call any time we want without mucking about with device
   // interfaces
@@ -386,12 +397,16 @@ function InputUpdate(devAPI, bpname) {
   // Technically cobjs should not have a blueprint parameter
   // but InputDefs need it to be able to generate an agent.
   const overriden_cobjs = raw_cobjs.map(o => {
-    o.bpname = bpname;
-    o.name = o.id;
+    o.bpid = bpname;
+    o.label = o.id;
     return o;
   });
   if (DBG) console.log('cobs', overriden_cobjs);
   COBJ_TO_INPUTDEF.syncFromArray(overriden_cobjs);
+  COBJ_TO_INPUTDEF.mapObjects();
+}
+function InputUpdateEntityTracks() {
+  COBJ_TO_INPUTDEF.syncFromArray(ENTITY_TO_COBJ.getMappedObjects());
   COBJ_TO_INPUTDEF.mapObjects();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -406,14 +421,13 @@ export function InputsUpdate() {
   const blueprintNames = Array.from(INPUT_GROUPS.keys());
   INPUTDEFS.length = 0; // Clear INPUTDEFS with each update
   blueprintNames.forEach(bpname => {
-    InputUpdate(INPUT_GROUPS.get(bpname), bpname);
+    InputUpdateCharControl(INPUT_GROUPS.get(bpname), bpname);
   });
   // 2. Process PTrack, Pozyx, FakeTrack Inputs
-  //    PTRACK_TO_COBJ is regularly updated by api-input.StartTrackerVisuals
-  // SRI: it would have been much clearer if you coded a parallel structure
-  // for the above to show COBJ_TO_INPUTDEF was used by both methods
-  COBJ_TO_INPUTDEF.syncFromArray(POZYX_TO_COBJ.getMappedObjects());
-  COBJ_TO_INPUTDEF.mapObjects();
+  //    ENTITY_TO_COBJ is regularly updated by api-input.StartTrackerVisuals
+  if (GetDefaultPozyxBpName() !== undefined) {
+    InputUpdateEntityTracks();
+  }
   // 3. Combine them all
   INPUTDEFS.push(...COBJ_TO_INPUTDEF.getMappedObjects());
 }
@@ -432,6 +446,5 @@ export function GetInputDefs(): object[] {
  */
 export function InputsReset() {
   const defs = GetInputDefs();
-  console.error('delete input agents');
-  defs.forEach(d => DeleteAgent(d));
+  defs.forEach(d => DCAGENTS.DeleteAgent(d));
 }

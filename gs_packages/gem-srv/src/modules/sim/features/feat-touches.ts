@@ -68,15 +68,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { GVarNumber, GVarString, GVarBoolean } from 'modules/sim/vars/_all_vars';
-import GFeature from 'lib/class-gfeature';
-import { IAgent } from 'lib/t-script';
-import {
-  GetAgentById,
-  GetAgentsByType,
-  GetAllAgents
-} from 'modules/datacore/dc-agents';
-import { Register, GetAgentBoundingRect } from 'modules/datacore/dc-features';
+import SM_Feature from 'lib/class-sm-feature';
+import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
+
 import { DistanceTo } from 'lib/util-vector';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -97,7 +92,7 @@ const AGENT_TOUCHTYPES = new Map(); // Touch-enabled Agents
  * @param agentId
  */
 function m_GetAgent(agentId): IAgent {
-  const a = GetAgentById(agentId);
+  const a = SIMAGENTS.GetAgentById(agentId);
   if (!a) AGENT_TOUCHTYPES.delete(agentId);
   return a;
 }
@@ -137,21 +132,26 @@ function m_Update(frame) {
   AGENT_TOUCHTYPES.forEach((d_TouchTypes, agentId) => {
     const agent = m_GetAgent(agentId);
     if (!agent) return;
-    if (agent.isInert) return;
 
     d_TouchTypes.forEach((touchTypes, bpname) => {
-      const targets = GetAgentsByType(bpname);
+      const targets = SIMAGENTS.GetAgentsByType(bpname);
       targets.forEach(t => {
+        // skip self
+        if (agentId === t.id) return;
+
+        // make sure target agent also has Physics feature
+        if (!t.hasFeature('Physics'))
+          throw new Error(`Touches requires Physics for ${t.name}!`);
+
         let c2c;
         let c2b;
         let b2b;
         let binb;
-        // if target is inert, we still need to clear c2c/c2b/b2b
-        if (!t.isInert) {
+        // if agent or target is inert, we still need to clear c2c/c2b/b2b
+        if (!agent.isInert && !t.isInert) {
           if (touchTypes.includes('c2c')) {
             c2c = m_TouchesC2C(agent, t) ? frame : undefined;
             if (DBG && c2c) console.log('touches c2c', frame);
-            // if (c2c) console.log('touch c2c', agent.id, t.id, c2c);
           }
           if (touchTypes.includes('c2b')) {
             c2b = m_TouchesC2B(agent, t) ? frame : undefined;
@@ -165,6 +165,21 @@ function m_Update(frame) {
             binb = m_TouchesBinB(agent, t) ? frame : undefined;
             if (DBG && binb) console.log('touches binb', frame);
           }
+          if (c2c || c2b || b2b || binb)
+            UR.LogEvent('Touched', [
+              'agentId',
+              agentId,
+              'targetId',
+              t.id,
+              'b2b',
+              b2b,
+              'binb',
+              binb,
+              'c2c',
+              c2c,
+              'c2b',
+              c2b
+            ]);
         }
         if (!agent.lastTouched) agent.lastTouched = new Map();
         if (!agent.isTouching) agent.isTouching = new Map();
@@ -177,26 +192,30 @@ function m_Update(frame) {
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class TouchPack extends GFeature {
+class TouchPack extends SM_Feature {
   //
   constructor(name) {
     super(name);
     this.featAddMethod('monitor', this.monitor);
-    this.featAddMethod('getTouchingAgent', this.getTouchingAgent);
+    this.featAddMethod('_getTouchingAgent', this._getTouchingAgent);
+    this.featAddMethod('clearTouches', this.clearTouches);
     UR.HookPhase('SIM/PHYSICS_THINK', m_Update);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
     super.decorate(agent);
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    AGENT_TOUCHTYPES.clear();
+  }
 
   /// VISION METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ///
   monitor(agent: IAgent, targetBlueprintName: string, ...touchTypes: string[]) {
     // make sure agent has the Physics feature
     if (!agent.hasFeature('Physics'))
-      throw new Error('Touches requires Physics!');
+      throw new Error(`Touches requires Physics for ${agent.name}!`);
     if (touchTypes.length < 1)
       throw new Error('Touches monitor requires a touchType!');
     const d_TouchTypes = AGENT_TOUCHTYPES.get(agent.id) || new Map();
@@ -205,13 +224,13 @@ class TouchPack extends GFeature {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// Returns the first agent that matches the touchtype
-  getTouchingAgent(agent: IAgent, touchType: string) {
+  _getTouchingAgent(agent: IAgent, touchType: string) {
     if (!agent.isTouching) return undefined;
     const targetIds = [...agent.isTouching.keys()];
     const touchingId = targetIds.find(id => agent.isTouching.get(id)[touchType]);
     if (touchingId) {
       // console.log(agent.id, 'isTouching', touchingId);
-      return GetAgentById(touchingId);
+      return SIMAGENTS.GetAgentById(touchingId);
     }
     return undefined;
   }
@@ -220,16 +239,42 @@ class TouchPack extends GFeature {
   /// Use when deleting an agent otherwise isTouching and lastTouched
   /// are never reset.  See feat-population.m_Delete
   clearTouches(agent: IAgent, targetId: string) {
-    const agents = GetAllAgents();
+    const agents = SIMAGENTS.GetAllAgents();
     agents.forEach(a => {
       // use `delete` not clear to prevent memory leak
       if (a.lastTouched) a.lastTouched.delete(targetId);
       if (a.isTouching) a.isTouching.delete(targetId);
     });
   }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** static method to return symbol data */
+  static Symbolize(): TSymbolData {
+    return SM_Feature._SymbolizeNames(TouchPack.Symbols);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** instance method to return symbol data */
+  symbolize(): TSymbolData {
+    return TouchPack.Symbolize();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static _CachedSymbols: TSymbolData;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** declaration of base symbol data; methods will be modified to include
+   *  the name parameter in each methodSignature */
+  static Symbols: TSymbolData = {
+    props: {},
+    methods: {
+      monitor: { args: ['targetBlueprintName:string', 'touchType:identifier'] }
+      // INTERNAL USE ONLY
+      // _getTouchingAgent: { args: ['touchType:identifier'] },
+      // clearTouches: { args: ['targetId:string'] }
+    }
+  };
 }
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new TouchPack(FEATID);
-Register(INSTANCE);
+SIMDATA.RegisterFeature(INSTANCE);

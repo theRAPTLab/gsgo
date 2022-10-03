@@ -22,7 +22,8 @@ const TYPES = {
   Object: 'ob',
   People: 'pp',
   Pose: 'po',
-  Faketrack: 'ft'
+  Faketrack: 'ft',
+  Pozyx: 'pz'
 };
 const PRECISION = 4;
 const DBG = false;
@@ -34,9 +35,51 @@ let MIN_AGE = 30; // set high so effect is visible. 30 frames before 'alive'
 let SRADIUS = 0.1;
 let CULL_YOUNGLINGS = true;
 
+/// HELPER FUNCTIONS ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** entity is checked against other entities in idsActive
+ *  it's assumed that idsActive does NOT contain entity
+ */
+function m_IsOldestInRadius(entity, seenMap) {
+  let rad2 = SRADIUS * SRADIUS;
+  let result = true;
+  let x2;
+  let y2;
+  seenMap.forEach((k, c) => {
+    if (c === entity) return;
+    x2 = (c.x - entity.x) ** 2;
+    y2 = (c.y - entity.y) ** 2;
+    // is point outside of circle? continue
+    const out = x2 + y2 >= rad2;
+    if (out) return;
+    // otherwise we're inside, so check if older
+    if (entity.age < c.age) {
+      result = false;
+      // merge position with baddies
+      c.x = (c.x + entity.x) / 2;
+      c.y = (c.y + entity.y) / 2;
+    }
+  });
+  return result;
+}
+
+/// ENTITY HELPERS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Convert entity coordinates to gameworld gameworld coordinates.
+ *  entity: { id, x, y, h, nop } - tracker coords
+ *  trackerObject: { id, pos, valid } - game coords
+ */
+function m_TransformAndUpdate(entity) {
+  // tracker space position
+  let x = entity.x;
+  let y = entity.y;
+  let z = entity.h;
+  console.log('entity', ...entity);
+}
+
 /// CLASS DEFINITIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default class PTrackEndpoint {
+class PTrackEndpoint {
   pt_sock: { onmessage?: Function };
   pt_url: string;
   entityDict: Map<string, EntityObject>;
@@ -174,6 +217,13 @@ export default class PTrackEndpoint {
         pf_entity_count = frame.pose_tracks.length;
         ok = true;
       }
+      // detected pozyx data //
+      if (frame.pozyx_tracks) {
+        tracks = frame.pozyx_tracks;
+        pf_type += TYPES.Pozyx;
+        pf_entity_count = frame.pozyx_tracks.length;
+        ok = true;
+      }
       // detected ptrack simulated data //
       if (frame.fake_tracks) {
         if (pf_type)
@@ -245,6 +295,10 @@ export default class PTrackEndpoint {
         tracks = parseTracks();
         pf_short_id = 'PTrak';
         break;
+      case 'pozyx':
+        tracks = parseTracks();
+        pf_short_id = 'PZTrak';
+        break;
       case 'faketrack':
         tracks = parseTracks();
         pf_short_id = 'FTrak';
@@ -287,6 +341,10 @@ export default class PTrackEndpoint {
     // .. if not, create new object with nop 0
     // .. if exist, update object
     const entities = [];
+
+    // heartbeats don't have tracks
+    if (!tracks) return;
+
     tracks.forEach(raw => {
       // ABORT ON BAD DATA (but don't crash)
       if (hasBadData(raw)) return;
@@ -314,16 +372,19 @@ export default class PTrackEndpoint {
 
       // MUTATE x to fixed precision
       // MUTATE is OK because the raw track is thrown away every frame
-      raw.x = raw.x.toFixed(PRECISION);
-      raw.y = raw.y.toFixed(PRECISION);
+      if (raw.x !== undefined && raw.y !== undefined) {
+        // 2021-10 Workaround to avoid error
+        // pose tracks do not have raw.x or raw.y
+        // x and y are set below in SPECIAL POSE HANDLING
+        raw.x = raw.x.toFixed(PRECISION);
+        raw.y = raw.y.toFixed(PRECISION);
+      }
       // raw.isFaketrack = raw.isFaketrack;`
       // add additional properties that are in an EntityObject
       // based on other parameters
       raw.type = pf_type;
       raw.name = raw.object_name;
       raw.pose = raw.predicted_pose_name;
-      // SAVE RAW ENTITY TO LIST
-      entities.push(raw);
 
       // SPECIAL OBJECT HANDLING
       if (pf_type === TYPES.Object) {
@@ -337,11 +398,15 @@ export default class PTrackEndpoint {
         // x,y from poses is set from the CHEST joint
         // .. make sure the joints exist
         // raw.joints = raw.joints;
-        raw.x = raw.joints.CHEST.x;
-        raw.y = raw.joints.CHEST.y;
+        raw.x = raw.joints.CHEST.x.toFixed(PRECISION);
+        raw.y = raw.joints.CHEST.y.toFixed(PRECISION);
         // orientation
         // raw.orientation = raw.orientation; // in radians
       }
+
+      // SAVE RAW ENTITY TO LIST
+      entities.push(raw);
+
       /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
         According to Marco, any data that has a NaN CHEST coordinate should be
         rejected. but sometimes PTrack does include it.
@@ -398,49 +463,7 @@ export default class PTrackEndpoint {
   }
 } // end class
 
-/// HELPER FUNCTIONS ////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** entity is checked against other entities in idsActive
- *  it's assumed that idsActive does NOT contain entity
- */
-function m_IsOldestInRadius(entity, seenMap) {
-  let rad2 = SRADIUS * SRADIUS;
-  let result = true;
-  let x2;
-  let y2;
-  seenMap.forEach((k, c) => {
-    if (c === entity) return;
-    x2 = (c.x - entity.x) ** 2;
-    y2 = (c.y - entity.y) ** 2;
-    // is point outside of circle? continue
-    const out = x2 + y2 >= rad2;
-    if (out) return;
-    // otherwise we're inside, so check if older
-    if (entity.age < c.age) {
-      result = false;
-      // merge position with baddies
-      c.x = (c.x + entity.x) / 2;
-      c.y = (c.y + entity.y) / 2;
-    }
-  });
-  return result;
-}
-
-/// ENTITY HELPERS //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Convert entity coordinates to gameworld gameworld coordinates.
- *  entity: { id, x, y, h, nop } - tracker coords
- *  trackerObject: { id, pos, valid } - game coords
- */
-function m_TransformAndUpdate(entity) {
-  // tracker space position
-  let x = entity.x;
-  let y = entity.y;
-  let z = entity.h;
-
-  console.log('entity', ...entity);
-}
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// see export of default class above
+export default PTrackEndpoint;
+export { TYPES };

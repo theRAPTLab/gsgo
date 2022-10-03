@@ -15,12 +15,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import UR from '@gemstep/ursys/client';
 import Keyword from 'lib/class-keyword';
-import { TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from 'modules/datacore/dc-script-engine';
-import { ScriptToJSX } from 'modules/sim/script/tools/script-to-jsx';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,14 +34,14 @@ export class every extends Keyword {
 
   constructor() {
     super('every');
-    this.args = ['period:number', ',,,args'];
+    this.args = ['period:number', '*:{...}'];
 
     this.EVERY_STATEMENT_ID = 0;
     this.COUNTERS = new Map();
     this.LAST_FIRED = new Map();
   }
 
-  compile(unit: TScriptUnit, idx?: number): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     let [kw, period, ...args] = unit;
     let runAtStart = '';
     let consq;
@@ -106,81 +103,23 @@ export class every extends Keyword {
     return prog;
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { event, period, ...args } = state;
-    let runAtStart = '';
-    let consq;
-    if (args.length > 1) {
-      runAtStart = String(args[0]);
-      consq = args[1];
-    } else {
-      consq = args[0];
-    }
-    return [this.keyword, period, runAtStart, consq];
+  /** custom validation, overriding the generic validation() method of the
+   *  base Keyword class  */
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    const vtoks = []; // validation token array
+    const [kwTok, periodTok, optTestTok, ...argToks] = unit;
+    // every
+
+    vtoks.push(this.shelper.anyKeyword(kwTok));
+    vtoks.push(this.shelper.anyNumber(periodTok, 'seconds'));
+    vtoks.push(this.shelper.everyOption(optTestTok));
+    vtoks.push(...this.shelper.extraArgsList(argToks)); // handle extra args in line
+    const log = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: log };
   }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, options: any, children?: any[]): any {
-    const [kw, period, ...args] = unit;
-    let runAtStart = '';
-    let consq;
-    let blockIndex;
-    if (args.length > 1) {
-      runAtStart = String(args[0]);
-      consq = args[1];
-      blockIndex = 3; // the position in the unit array to replace <ifExpr> <expr> <conseq>
-    } else {
-      consq = args[0];
-      blockIndex = 2;
-    }
-    if (options.parentLineIndices !== undefined) {
-      // nested parentIndices!
-      options.parentLineIndices = [
-        ...options.parentLineIndices,
-        {
-          index,
-          blockIndex
-        }
-      ];
-    } else {
-      options.parentLineIndices = [
-        {
-          index,
-          blockIndex
-        }
-      ]; // for nested lines
-    }
-    const cc = ScriptToJSX(consq, options);
-    const isEditable = options ? options.isEditable : false;
-    const isInstanceEditor = options ? options.isInstanceEditor : false;
-
-    const jsx = (
-      <>
-        every {`'${period}'`} {runAtStart} {cc}
-      </>
-    );
-
-    if (!isInstanceEditor || isEditable) {
-      return super.jsx(
-        index,
-        unit,
-        <>
-          every {`'${period}'`} {runAtStart} {cc}
-        </>
-      );
-    }
-    return super.jsxMin(
-      index,
-      unit,
-      <>
-        every {`'${period}'`} {runAtStart} (+{consq.length} lines)
-      </>
-    );
-  }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(every);
+SIMDATA.RegisterKeyword(every);

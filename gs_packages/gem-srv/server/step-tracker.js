@@ -14,6 +14,7 @@ const dgram = require('dgram');
 const WebSocketServer = require('ws').Server;
 const mqtt = require('mqtt');
 const { PrefixUtil, DBG } = require('@gemstep/ursys/server');
+const { MQTT_URL } = require('../config/gem-settings');
 //
 const PR = PrefixUtil('PTRACK');
 const PT_GROUP = '224.0.0.1'; // ptrack UDP multicast address
@@ -162,8 +163,10 @@ function m_BindPTrackListener() {
 
     m_ForwardTrackerData(s);
 
-    let d = new Date();
-    console.log(d.toLocaleTimeString(), s);
+    // UNCOMMENT THIS TO DEBUG PTRACK JSON DATA
+    // This will dump PTrack JSON data to the terminal
+    // let d = new Date();
+    // console.log(d.toLocaleTimeString(), s);
   });
 
   // we're not expecting errors, but we should
@@ -309,18 +312,23 @@ function ConvertMQTTtoTrackerData(message) {
   // frame
   let m_frame = {
     header: {},
-    fake_tracks: [framedata]
+    pozyx_tracks: [framedata]
   };
   m_frame.header.stamp = { sec, nsec };
-  // FIXME: Masquerading as faketrack data for now.
-  m_frame.header.frame_id = 'faketrack';
-  m_frame.fake_id = 'pozyx'; // FIXME
+  m_frame.header.frame_id = 'pozyx';
+  // m_frame.fake_id = 'pozyx'; // fake_id is only used for ptrack data
   m_frame.header.seq = m_seq++;
 
   return JSON.stringify(m_frame);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * Pass `mqtturl` to use a specific server.
+ * Otherwise, the system will fall back to MQTT_URL defined in local-settings.json
+ * or gem-settings.js.
+ * @param {string} mqtturl
+ */
 function m_BindPozyxListener(mqtturl) {
   // Use this to test basic connection to mqtt test server
   // port 1883 is tcp (not udp)
@@ -328,25 +336,26 @@ function m_BindPozyxListener(mqtturl) {
   // 	port: 1883,
   // });
 
-  if (mqtturl) {
-    // DON'T COMMENT THIS OUT!
-    // This will connect to `mqtturl` if `mqtturl` is passed.
-    // Currently not called by anyone.
-    mtrack_ss = mqtt.connect(`mqtt://${mqtturl}`, { port: 1883 }); // Enterprise server "via uplink network" works
-  } else {
-    // UNCOMMENT THIS TO ALLOW LOCALHOST for the mqtt broker to run locallly (replay of pozyx streams)
-    mtrack_ss = mqtt.connect('mqtt://localhost', { port: 1883 });
+  const url = mqtturl || MQTT_URL;
+  mtrack_ss = mqtt.connect(`mqtt://${url}`, { port: 1883 });
+  /*
+      MQTT url settings have been moved to gs_packages/gem-srv/config/local-settings.json.
 
-    // UNCOMMENT THIS FOR VU LAB
-    // mtrack_ss = mqtt.connect('mqtt://10.2.191.28', { port: 1883 }); // Enterprise server "via uplink network" works
+      DO NOT COMMENT/UNCOMMENT settings here.
+      Add "MQTT_URL" to local-settings.json.
 
-    // UNCOMMENT THIS FOR IU
-    // mtrack_ss = mqtt.connect('mqtt://10.0.0.254', { port: 1883 }); // Enterprise server "via uplink network" works
+      For reference, these were the old settings:
 
-    // UNCOMMENT THIS FOR BEN's CAMPBELL ENTERPRISE SERVER
-    // Ben's Campbell Enterprise server's "uplink network" IP
-    // mtrack_ss = mqtt.connect('mqtt://10.1.10.185', { port: 1883 }); // Enterprise server "via uplink network" works
-  }
+      * To run a local mqtt server and replay streams use
+          "MQTT_URL": "localhost"
+
+      * In the VU lab use
+          "MQTT_URL": "10.2.191.28"
+
+      * In the IU lab use
+          "MQTT_URL": "10.0.0.254"
+
+  */
 
   mtrack_ss.on('connect', () => {
     console.log(...PR('1883 MQTT Connect'));
@@ -363,7 +372,7 @@ function m_BindPozyxListener(mqtturl) {
     if (jsonstr) m_ForwardTrackerData(jsonstr);
   });
   mtrack_ss.on('error', err => {
-    console.log(...PR("Can't connect", err));
+    console.log(...PR("MQTT Can't connect", err));
     mtrack_ss.end();
   });
   mtrack_ss.on('close', () => {

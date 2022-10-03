@@ -10,6 +10,9 @@ type Query {
   locale(id: Int!): Locale
   localeNames: [LocalesType]!
   locales: [Locale]!
+  project(id: String!): Project
+  projectNames: [Project]!
+  projects: [Project]!
 }
 """
 Additional type declarations describe the shape of object fields
@@ -63,7 +66,7 @@ type PTrackProps {
   zRot: Float
 }
 
-fragment TransformParts on PTrackProps {
+fragment PTrackTransformParts on PTrackProps {
   xRange
   yRange
   xOff
@@ -87,6 +90,17 @@ type PozyxProps {
   useAccelerometer: Boolean
 }
 
+fragment PozyxTransformParts on PTrackProps {
+  xRange
+  yRange
+  xOff
+  yOff
+  xScale
+  yScale
+  zRot
+  useAccelerometer
+}
+
 type StepProps {
   memo: String
 }
@@ -101,6 +115,18 @@ The code that handles the update is in resolvers.js
 """
 type Mutation {
   updatePTrack(localeId: Int, input: PTrackInput): PTrackProps
+  updatePozyx(localeId: Int, input: PozyxInput): PozyxProps
+  updateProject(projectId: String, input: ProjectInput): Project
+  updateMetadata(projectId: String, input: ProjectMetaInput): ProjectMeta
+  updateRounds(projectId: String, input: [ProjectRoundInput]): [ProjectRound]
+  updateBlueprints(
+    projectId: String
+    input: [ProjectBlueprintInput]
+  ): [ProjectBlueprint]
+  updateInstances(
+    projectId: String
+    input: [ProjectInstanceInput]
+  ): [ProjectInstance]
 }
 
 """
@@ -126,4 +152,102 @@ input PTrackInput {
   xRot: Float
   yRot: Float
   zRot: Float
+}
+
+input PozyxInput {
+  memo: String
+  xRange: Float
+  yRange: Float
+  xOff: Float
+  yOff: Float
+  xScale: Float
+  yScale: Float
+  xRot: Float
+  yRot: Float
+  zRot: Float
+  useAccelerometer: Boolean
+}
+
+"""
+PROJECT Data
+"""
+type Project {
+  id: String!
+  label: String
+  metadata: ProjectMeta
+  rounds: [ProjectRound]
+  blueprints: [ProjectBlueprint]
+  instances: [ProjectInstance]
+}
+type ProjectMeta {
+  top: Float
+  right: Float
+  bottom: Float
+  left: Float
+  wrap: [Boolean]
+  bounce: Boolean
+  bgcolor: Float
+  roundsCanLoop: Boolean
+}
+type ProjectRound {
+  id: String!
+  label: String
+  time: Float
+  intro: String
+  outtro: String
+  initScript: String
+  endScript: String
+}
+type ProjectBlueprint {
+  id: String!
+  label: String
+  scriptText: String
+}
+type ProjectInstance {
+  id: String!
+  label: String
+  bpid: String
+  initScript: String
+}
+
+"""
+PROJECT Input
+"""
+input ProjectInput {
+  id: String!
+  label: String
+  metadata: ProjectMetaInput
+  rounds: [ProjectRoundInput]
+  blueprints: [ProjectBlueprintInput]
+  instances: [ProjectInstanceInput]
+}
+input ProjectMetaInput {
+  top: Float
+  right: Float
+  bottom: Float
+  left: Float
+  wrap: [Boolean]
+  bounce: Boolean
+  bgcolor: Float
+  roundsCanLoop: Boolean
+}
+input ProjectRoundInput {
+  id: String!
+  label: String
+  time: Float
+  intro: String
+  outtro: String
+  initScript: String
+  endScript: String
+}
+input ProjectBlueprintInput {
+  id: String!
+  label: String
+  scriptText: String
+}
+input ProjectInstanceInput {
+  id: String!
+  label: String
+  bpid: String
+  initScript: String
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { SIMSTATUS } from 'modules/sim/api-sim';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
 import PlayButton from './PlayButton';
@@ -24,24 +24,29 @@ class PanelPlayback extends React.Component {
 
   OnResetClick() {
     this.setState({ isRunning: false });
-    UR.RaiseMessage('NET:HACK_SIM_RESET');
+    UR.LogEvent('SimEvent', ['Reset Stage']);
+    UR.RaiseMessage('NET:SIM_RESET');
   }
 
   OnCostumesClick() {
     this.setState({ isRunning: false });
+    UR.LogEvent('SimEvent', ['Pick Characters']);
     UR.RaiseMessage('NET:HACK_SIM_COSTUMES');
   }
 
   OnNextRoundClick() {
     this.setState({ isRunning: false });
+    UR.LogEvent('SimEvent', ['Next Round']);
     UR.RaiseMessage('NET:HACK_SIM_NEXTROUND');
   }
 
   OnStartClick() {
     const { isRunning } = this.state;
     if (isRunning) {
+      UR.LogEvent('SimEvent', ['Stop Round']);
       UR.RaiseMessage('NET:HACK_SIM_STOP');
     } else {
+      UR.LogEvent('SimEvent', ['Start Round']);
       UR.RaiseMessage('NET:HACK_SIM_START');
     }
     this.setState({ isRunning: !isRunning });
@@ -49,14 +54,12 @@ class PanelPlayback extends React.Component {
 
   render() {
     const { title, isRunning } = this.state;
-    const { id, model, needsUpdate, isActive, classes } = this.props;
+    const { id, isDisabled, needsUpdate, isActive, classes } = this.props;
 
     const onClick = () => {
       // To be implemented
       console.log('Show instance');
     };
-
-    const isDisabled = model === undefined;
 
     const showCostumes =
       SIMSTATUS.currentLoop === 'prerun' && !SIMSTATUS.completed;

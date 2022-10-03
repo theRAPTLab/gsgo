@@ -2,12 +2,13 @@ import React from 'react';
 
 // SELECT RUNTIME MODULES FOR APP
 import * as RENDERER from 'modules/render/api-render';
-import * as GLOBAL from 'modules/datacore/dc-globals';
+import * as ASSETS from 'modules/asset_core';
 //
 import UR from '@gemstep/ursys/client';
 
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
+import { GS_ASSETS_PROJECT_ROOT } from '../../../../config/gem-settings';
 
 import PanelChrome from './PanelChrome';
 
@@ -18,13 +19,14 @@ const FCON = UR.HTMLConsoleUtil('console-bottom');
 const DBG = true;
 let ASSETS_LOADED = false;
 
+/// SYSTEM EVENT HOOKS ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.HookPhase('UR/LOAD_ASSETS', () => {
   return new Promise((resolve, reject) => {
     if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
-    (async () => {
-      let map = await GLOBAL.LoadAssetsSync('static/assets.json');
+    void (async () => {
+      await ASSETS.PromiseLoadAssets(GS_ASSETS_PROJECT_ROOT);
       if (DBG) console.log(...PR('ASSETS LOADED'));
-      console.log(...PR('Waiting for user input'));
       ASSETS_LOADED = true;
       resolve();
     })();

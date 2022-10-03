@@ -3,35 +3,90 @@
 
   ScriptEditor - Edit Script Blueprints
 
-  state.script is loaded
-  1. UR/APP_START waits for Main to come online
-  2. Initialize() calls RequestModel
-  3. RequestModel requests model data via URSYS
-  4. URSYS callback calls UpdateModelData
-  5. UpdateModelData sets OnSelectScript
-  6. OnSelectScript loads the actual script
+  state.script is loaded when
+      1. UR/APP_START waits for Main to come online
+      2. Initialize() calls RequestBpEditList
+      3. RequestBpEditList requests model data via URSYS
+      4. URSYS callback calls UpdateBpEditList
+      5. UpdateBpEditList sets OnSelectScript
+      6. OnSelectScript loads the actual script
+
+
+      RATIONALE
+
+    We want Main to be the traffic cop, so it can keep track of edit state
+    and read/write permissions.  This method of loading also allows for
+    temporary non-saved versions of project files/blueprint scripts.
+
+
+  COMPONENT HIERARCHY
+
+      The components are (oldname):
+
+      Script Edit View
+
+        ScriptEditor:root
+          ScriptView_Pane:panel       (PanelScript)
+            <codejar>                 aka ScriptViewCode_Block
+            ScriptViewWiz_Block       (ScriptViewPane)
+          ScriptLine_Pane:panel       (ScriptEditPane)
+            SlotEditor_Block          (SelectEditorSlots)
+              SlotEditorSelect_Block  (SelectEditor)
+                EditSymbol_Block
+                or
+                ObjRefSelector_Block
+
+      Script Selector View
+
+        PanelSelectBlueprint
+
+
+  NEW BLUEPRINTS
+      New blueprints can be created one of three ways:
+      1. User clicks on "NEW CHARACTER TYPE" from Main
+      2. User clicks on "NEW CHARACTER TYPE" from ScriptEditor's selection screen.
+
+      Main: New Character Type
+      This opens up a new ScriptEditor app tab with a blank script url.
+
+      Script Editor: NEW CHARACTER TYPE
+      PanelSelectBlueprint raises SELECT_SCRIPT, and ScriptEditor's
+      OnSelectScript handler loads a new script on an already
+      open window.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
+import * as EDITMGR from 'modules/appcore/ac-editmgr';
+import * as WIZCORE from 'modules/appcore/ac-wizcore';
+import * as SLOTCORE from 'modules/appcore/ac-slotcore';
+import * as TRANSPILER from 'script/transpiler-v2';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
-import PanelSimViewer from './components/PanelSimViewer';
-import PanelSelectAgent from './components/PanelSelectAgent';
-import PanelScript from './components/PanelScript';
+// import PanelSimViewer from './components/PanelSimViewer';
+import PanelSelectBlueprint from './components/PanelSelectBlueprint';
 import PanelInstances from './components/PanelInstances';
 import PanelMessage from './components/PanelMessage';
 import DialogConfirm from './components/DialogConfirm';
+import { SKIP_RELOAD_WARNING } from 'config/gem-settings';
+
+/// WIZ GUI PANELS ////////////////////////////////////////////////////////////
+import ScriptView_Pane from './wiz/gui/ScriptView_Pane';
+import { ScriptLine_Pane } from './wiz/gui/ScriptLine_Pane';
+
+/// DATA /////////////////////////////////////////////////////////////////////
+/// Load RegisterWhenTests
+import * as SIMCOND from 'modules/sim/sim-conditions'; // DO NOT REMOVE
 
 /// TESTS /////////////////////////////////////////////////////////////////////
-// import 'modules/tests/test-parser'; // test parser evaluation
+// import 'test/unit-parser'; // test parser evaluation
 
 // this is where classes.* for css are defined
-import { useStylesHOC } from './elements/page-xui-styles';
+import { useStylesHOC } from './helpers/page-xui-styles';
 import './scrollbar.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -40,13 +95,20 @@ const PR = UR.PrefixUtil('SCRIPTEDITOR');
 const DBG = false;
 
 const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
-# PROGRAM DEFINE
-// useFeature Costume
-// useFeature Movement
-# PROGRAM EVENT
-// onEvent Tick [[ ]]
+# TAG isCharControllable true
+# TAG isPozyxControllable true
+# TAG isPTrackControllable false
+
+# PROGRAM INIT
+addFeature Costume
+featProp agent.Costume.costumeName setTo 'circle.json'
+
 # PROGRAM UPDATE
-// when xxx touches yyy [[ ]]`;
+// code to run every frame
+// when xxx touches yyy [[ ]]
+// every 5 runAfter [[ ]]
+// onEvent Tick [[ ]]
+`;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
@@ -63,53 +125,51 @@ class ScriptEditor extends React.Component {
     this.state = {
       isReady: false,
       noMain: true,
+      projectWasSwitched: false,
       panelConfiguration: 'select',
-      modelId: '',
-      model: {},
-      scriptId: '',
+      projId: '',
+      bpEditList: [],
+      bpName: '',
       script: '',
       instances: [],
       monitoredInstances: [],
       message: '',
-      messageIsError: false
+      messageIsError: false,
+      selection: ''
     };
-    this.Initialize = this.Initialize.bind(this);
     this.CleanupComponents = this.CleanupComponents.bind(this);
-    this.RequestModel = this.RequestModel.bind(this);
-    this.HandleModelUpdate = this.HandleModelUpdate.bind(this);
-    this.UpdateModelData = this.UpdateModelData.bind(this);
+    this.Initialize = this.Initialize.bind(this);
+    this.HandleEditMgrUpdate = this.HandleEditMgrUpdate.bind(this);
+    this.RequestBpEditList = this.RequestBpEditList.bind(this);
+    this.HandleProjectUpdate = this.HandleProjectUpdate.bind(this);
+    this.HandleBlueprintsUpdate = this.HandleBlueprintsUpdate.bind(this);
+    this.UpdateBpEditList = this.UpdateBpEditList.bind(this);
     this.UnRegisterInstances = this.UnRegisterInstances.bind(this);
     this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
-    this.OnSelectScript = this.OnSelectScript.bind(this);
+    this.SelectScript = this.SelectScript.bind(this);
     this.HandleScriptUpdate = this.HandleScriptUpdate.bind(this);
     this.PostSendMessage = this.PostSendMessage.bind(this);
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
+    this.HandleConfirmReload = this.HandleConfirmReload.bind(this);
     // Sent by PanelSelectAgent
-    UR.HandleMessage('SELECT_SCRIPT', this.OnSelectScript);
-    UR.HandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
+    UR.HandleMessage('SELECT_SCRIPT', this.SelectScript);
+    UR.HandleMessage('NET:SCRIPT_UPDATED', this.HandleScriptUpdate);
+    UR.HandleMessage('NET:BLUEPRINTS_UPDATE', this.HandleBlueprintsUpdate);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
-    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
+    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleProjectUpdate);
     UR.HandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
   componentDidMount() {
     if (DBG) console.log(...PR('componentDidMount'));
-    const params = new URLSearchParams(window.location.search.substring(1));
-    const modelId = params.get('model');
-    const scriptId = params.get('script');
-    document.title = `GEMSTEP SCRIPT EDITOR: ${modelId}`;
 
-    // start URSYS
+    // 1. INITIALIZE LISTENERS
+    //    a. start URSYS
     UR.SystemAppConfig({ autoRun: true });
-
-    window.addEventListener('beforeunload', this.CleanupComponents);
-
-    // Set model section
-    this.setState({ modelId, scriptId });
-
+    //    b. APP HOOKS
     UR.HookPhase('UR/APP_START', async () => {
       const devAPI = UR.SubscribeDeviceSpec({
         selectify: device => device.meta.uclass === 'Sim',
@@ -125,6 +185,52 @@ class ScriptEditor extends React.Component {
         }
       });
     });
+    //    c. beforeunload
+    window.addEventListener('beforeunload', e => {
+      this.CleanupComponents();
+      if (SKIP_RELOAD_WARNING) return;
+      // Show "Leave site?" dialog
+      const { script_page_needs_saving } = WIZCORE.State();
+      const { slots_need_saving } = SLOTCORE.State();
+      if (script_page_needs_saving || slots_need_saving) {
+        e.preventDefault();
+        e.returnValue = ''; // required by Chrome
+        return e;
+      }
+      return;
+    });
+    //    d. add top-level click handler
+    document.addEventListener('click', EDITMGR.DispatchClick);
+    //    e. state listeners
+    EDITMGR.SubscribeState(this.HandleEditMgrUpdate);
+    // don't bother subscribing to 'blueprints' changes
+    // ac-blueprints is running on MAIN, not ScriptEditor so our
+    // instance won't register change events
+    // UR.SubscribeState('blueprints', this.UrBlueprintStateUpdated);
+
+    // 2. PROCESS URL
+    const params = new URLSearchParams(window.location.search.substring(1));
+    const projId = params.get('project');
+    const bpName = params.get('script');
+    document.title = bpName
+      ? `"${bpName}" Editor`
+      : `GEMSTEP SCRIPT EDITOR: ${projId}`;
+    let { panelConfiguration, script } = this.state;
+    if (bpName === '') {
+      // New Script
+      panelConfiguration = 'script';
+      script = SCRIPT_TEMPLATE;
+      this.setState(
+        { panelConfiguration, projId, bpName, script },
+        () => this.SelectScript({ bpName: '' }) // Call SelectScript immediately to pre-populate the script template
+      );
+      return;
+    }
+    this.setState({ panelConfiguration, projId, bpName, script });
+
+    // NOTE: The script is selected with the UpdateBpEditList callback
+    //       e.g. we select the script only after we receive the list of
+    //       available scripts
   }
 
   componentDidCatch(e) {
@@ -134,65 +240,115 @@ class ScriptEditor extends React.Component {
   componentWillUnmount() {
     this.CleanupComponents();
     window.removeEventListener('beforeunload', this.CleanupComponents);
+    EDITMGR.UnsubscribeState(handleEditMgrUpdate);
   }
 
   CleanupComponents() {
     this.UnRegisterInstances();
-    UR.UnhandleMessage('SELECT_SCRIPT', this.OnSelectScript);
-    UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
+    UR.UnhandleMessage('SELECT_SCRIPT', this.SelectScript);
+    UR.UnhandleMessage('NET:SCRIPT_UPDATED', this.HandleScriptUpdate);
+    UR.UnhandleMessage('NET:BLUEPRINTS_UPDATE', this.HandleBlueprintsUpdate);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
-    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
+    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleProjectUpdate);
     UR.UnhandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
   Initialize() {
     if (this.state.isReady) return; // already initialized
-    const { modelId } = this.state;
-    this.RequestModel(modelId);
+    const { projId } = this.state;
+    this.RequestBpEditList(projId);
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
   }
 
+  HandleEditMgrUpdate(vmStateEvent) {
+    const { selection, bpname } = vmStateEvent;
+    if (selection) this.setState({ selection });
+    if (bpname) {
+      const { projId } = this.state;
+      // add script to URL
+      window.history.pushState(
+        {},
+        '',
+        `/app/scripteditor?project=${projId}&script=${bpname}`
+      );
+      this.setState({ bpName: bpname });
+    }
+  }
+
   /**
-   * This requests model data from Mission Control's
-   * ProjectData module.
-   * project-data will respond with model data { result: model }
-   * which is handled by UpdateModelData, below.
+   * This requests blueprint data from project-server used to populate
+   * the list of editable blueprints.
    */
-  RequestModel(modelId) {
-    if (DBG) console.log(...PR('RequestModel...', modelId));
-    const fnName = 'GetProject';
+  RequestBpEditList(projId) {
+    if (DBG) console.log(...PR('RequestBpEditList...', projId));
+    const fnName = 'RequestBpEditList';
     UR.CallMessage('NET:REQ_PROJDATA', {
       fnName,
-      parms: [modelId]
-    }).then(rdata => this.UpdateModelData(rdata.result));
+      parms: [projId]
+    }).then(rdata => {
+      return this.UpdateBpEditList(rdata.result);
+    });
   }
-  HandleModelUpdate(data) {
-    this.UpdateModelData(data.model);
+
+  /** needed to respond to blueprint deletion */
+  HandleBlueprintsUpdate(data) {
+    const { bpDefs } = data;
+    if (Array.isArray(bpDefs) && bpDefs.length > 0)
+      this.UpdateBpEditList(data.bpDefs);
   }
+
   /**
-   * This saves the model data to the local state
-   * and loads the current script if it's been specified
-   * @param {Object} model
+   * Locally store list of editable blueprints
+   * and load the current script if it's been specified
+   * @param {[{name, scriptText}]} bpEditList
    */
-  UpdateModelData(model) {
-    if (DBG) console.log(...PR('UpdateModelData', model));
-    const { scriptId } = this.state;
-    this.setState({ model }, () => {
-      if (scriptId) {
-        this.OnSelectScript({ scriptId });
+  UpdateBpEditList(bpEditList) {
+    if (DBG) console.log(...PR('UpdateBpEditList', bpEditList));
+    const { bpName } = this.state;
+    // clear all bundles to remove deleted bundles
+    SIMDATA.DeleteAllBlueprintBundles();
+    // symbolize all blueprints!
+    bpEditList.forEach(thing => {
+      const { name, scriptText } = thing;
+      const script = TRANSPILER.TextToScript(scriptText);
+      TRANSPILER.SymbolizeBlueprint(script);
+    });
+    this.setState({ bpEditList }, () => {
+      // make sure the script exists
+      const bpExists = bpEditList.find(thing => thing.name === bpName);
+      if (bpExists) {
+        this.SelectScript({ bpName });
+      } else {
+        // script does not exist!  force selector
+        this.setState({ bpName: null });
       }
     });
+  }
+
+  HandleProjectUpdate(data) {
+    // Project data has been updated externally, re-request bp data if the
+    // the updated project was what we have open
+    const newProjId = (data && data.project && data.project.id) || '';
+    const { projId } = this.state;
+    // Main selected a new project?
+    const projectWasSwitched = newProjId !== projId;
+    if (projectWasSwitched) {
+      // show project was switched dialog to inform reload
+      this.setState({ projectWasSwitched, projId: newProjId });
+    } else {
+      // just update the list of bpNames
+      this.RequestBpEditList(projId);
+    }
   }
 
   UnRegisterInstances() {
     const { instances, monitoredInstances } = this.state;
     if (!instances) return;
     instances.forEach(i => {
-      const name = i.name || i.meta.name; // instance spec || GAgent
-      UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { name });
-      monitoredInstances.splice(monitoredInstances.indexOf(name), 1);
+      UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { id: i.id });
+      monitoredInstances.splice(monitoredInstances.indexOf(i.id), 1);
     });
     this.setState({ monitoredInstances });
   }
@@ -210,10 +366,10 @@ class ScriptEditor extends React.Component {
    */
   OnInstanceUpdate(data) {
     if (DBG) console.log(...PR('OnInstanceUpdate'));
-    const { scriptId, monitoredInstances } = this.state;
+    const { bpName, monitoredInstances } = this.state;
     // Only show instances for the current blueprint
     const instances = data.instances.filter(i => {
-      return i.blueprint === scriptId;
+      return i.blueprint === bpName;
     });
     // Register the instances for monitoring
     instances.forEach(i => {
@@ -223,7 +379,10 @@ class ScriptEditor extends React.Component {
       });
       monitoredInstances.push(i.id);
     });
-    this.setState({ instances, monitoredInstances });
+    // REVIEW: Instances are currently not displayed in
+    // the ScriptEditor, so skip the setState
+    // so that PanelScript does not re-render.
+    // this.setState({ instances, monitoredInstances });
   }
 
   /**
@@ -234,62 +393,78 @@ class ScriptEditor extends React.Component {
    *                 wHere `agents` are gagents
    */
   OnInspectorUpdate(data) {
+    // HACK Skip inspector updates to skip extra scriptEditor render
+    // while testing ScriptViewPane integration
+    return;
+
     if (DBG) console.log(...PR('OnInspectorUpdate'));
     // Only show instances for the current blueprint
-    const { scriptId } = this.state;
+    const { bpName } = this.state;
     if (!data || data.agents === undefined) {
       console.error('OnInspectorUpdate got bad data', data);
       return;
     }
     const instances = data.agents.filter(i => {
-      return i.blueprint.name === scriptId;
+      return i.blueprint.name === bpName;
     });
     this.setState({ instances });
   }
 
   OnPanelClick(id) {
     if (id === 'sim') return; // don't do anything if user clicks on sim panel
-    this.setState({
-      panelConfiguration: id
-    });
+    this.setState(
+      {
+        panelConfiguration: id
+      },
+      () => EDITMGR.CancelSlotEdit()
+    );
   }
 
   /**
-   * Call with stringId=undefined to go to selection screen
-   * @param {string} data { scriptId }
+   * Call with `data` undefined to go to selection screen
+   * Call with bpName = '' to create a new script
+   * Called by:
+   *  - SELECT_SCRIPT via PanelSelectBlueprint
+   *  - SELECT_SCRIPT after script deletion by ScriptView_Pane
+   *  - SELECT_SCRIPT after wizcore save to server
+   *  - HandleConfirmReload after project is switched by Main
+   * @param {string} data { bpName }
    */
-  OnSelectScript(data) {
-    const { scriptId } = data;
-    if (DBG) console.warn(...PR('OnSelectScript', data));
+  SelectScript(data = {}) {
+    const { bpName } = data;
+    if (DBG) console.warn(...PR('SelectScript', data));
     this.UnRegisterInstances();
-    const { model, modelId } = this.state;
-    if (model === undefined || model.scripts === undefined) {
+    const { bpEditList = [], projId } = this.state;
+    if (bpEditList === undefined || bpEditList.length < 1) {
       console.warn(
-        'ScriptEditor.OnSelectAgent: model or model.scripts is not defined',
-        model
+        'ScriptEditor.OnSelectAgent: No bpEditList to load',
+        bpEditList
       );
-      return; // no scripts defined
     }
-    const agent = model.scripts.find(s => s.id === scriptId);
-    const script = agent && agent.script ? agent.script : SCRIPT_TEMPLATE;
+    const bpDef = bpEditList.find(b => b.name === bpName);
+    const script = bpDef ? bpDef.scriptText : SCRIPT_TEMPLATE;
 
     // add script to URL
-    history.pushState(
+    window.history.pushState(
       {},
       '',
-      `/app/scripteditor?model=${modelId}&script=${scriptId}`
+      `/app/scripteditor?project=${projId}&script=${bpName}`
     );
 
-    // Show script selector if scriptId was not passed
+    // Show script selector if bpName was not passed
     let panelConfiguration = 'script';
-    if (scriptId === undefined) {
+    if (bpName === undefined) {
       panelConfiguration = 'select';
     }
+
+    // Special WIZCORE handler to init state without triggering interceptState
+    WIZCORE.SendState({ script_text: script, script_page_needs_saving: false });
+    SLOTCORE.SendState({ slots_need_saving: false });
 
     this.setState({
       panelConfiguration,
       script,
-      scriptId
+      bpName
     });
   }
 
@@ -313,6 +488,14 @@ class ScriptEditor extends React.Component {
     });
   }
 
+  // DialogaProjectSwitch User confirms reload
+  HandleConfirmReload() {
+    const { projId } = this.state;
+    // add script to URL
+    this.setState({ projectWasSwitched: false });
+    this.SelectScript(); // force selector
+  }
+
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
    *  The base styles from page-styles are overidden with inline styles to
    *  make this happen.
@@ -321,14 +504,12 @@ class ScriptEditor extends React.Component {
     if (DBG) console.log(...PR('render'));
     const {
       noMain,
+      projectWasSwitched,
       panelConfiguration,
-      modelId,
-      model,
-      scriptId,
-      script,
-      instances,
-      message,
-      messageIsError
+      projId,
+      bpEditList,
+      bpName,
+      selection
     } = this.state;
     const { classes } = this.props;
 
@@ -341,15 +522,22 @@ class ScriptEditor extends React.Component {
       />
     );
 
-    const agents =
-      model && model.scripts
-        ? model.scripts.map(s => ({ id: s.id, label: s.label }))
-        : [];
+    const DialogProjectSwitch = (
+      <DialogConfirm
+        open={projectWasSwitched}
+        message={`Main has switched to a new project "${projId}".  Please select a new Character to edit.`}
+        yesMessage="OK"
+        noMessage=""
+        onClose={this.HandleConfirmReload}
+      />
+    );
+
     return (
       <div
         className={classes.root}
         style={{
-          gridTemplateColumns: PANEL_CONFIG.get(panelConfiguration)
+          gridTemplateColumns: PANEL_CONFIG.get(panelConfiguration),
+          gridTemplateRows: '40px auto' // force hide bottom bar
         }}
       >
         <div
@@ -358,8 +546,7 @@ class ScriptEditor extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>SCRIPT EDITOR {modelId}</span> UGLY
-            DEVELOPER MODE
+            <span style={{ fontSize: '32px' }}>SCRIPT EDITOR {projId}</span>
           </div>
           <button
             type="button"
@@ -371,25 +558,29 @@ class ScriptEditor extends React.Component {
         </div>
         <div id="console-left" className={classes.left}>
           {panelConfiguration === 'select' && (
-            <PanelSelectAgent
+            <PanelSelectBlueprint
               id="select"
-              agents={agents}
-              modelId={modelId}
+              bpEditList={bpEditList}
+              projId={projId}
               onClick={this.OnPanelClick}
             />
           )}
           {panelConfiguration === 'script' && (
-            <PanelScript
+            // REVIEW: Ideally we would skip a ScriptView_Pane update when
+            // bpEditList changes to prevent extra re-rendering
+            <ScriptView_Pane
               id="script"
-              script={script}
-              modelId={modelId}
+              bpName={bpName}
+              projId={projId}
               onClick={this.OnPanelClick}
             />
           )}
         </div>
         <div id="console-main" className={classes.main}>
-          <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
+          <ScriptLine_Pane selection={selection} />
+          {/* <PanelSimViewer id="sim" onClick={this.OnPanelClick} /> */}
         </div>
+        {/* Hidden by gridTemplateRows at root div
         <div
           id="console-bottom"
           className={classes.bottom}
@@ -414,9 +605,10 @@ class ScriptEditor extends React.Component {
               instances={instances}
               disallowDeRegister
             />
-            {DialogNoMain}
           </div>
-        </div>
+        </div> */}
+        {DialogNoMain}
+        {DialogProjectSwitch}
       </div>
     );
   }

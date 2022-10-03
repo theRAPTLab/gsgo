@@ -13,7 +13,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from 'app/pages/elements/page-xui-styles';
+import { useStylesHOC } from 'app/pages/helpers/page-xui-styles';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,17 +33,19 @@ class InputElement extends React.Component<any, any> {
     const { index, state } = props;
     this.index = index;
     this.state = { ...state }; // copy state prop
-    this.onChange = this.onChange.bind(this);
+    this.onInputChange = this.onInputChange.bind(this);
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onBlur = this.onBlur.bind(this);
     this.saveData = this.saveData.bind(this);
     this.onClick = this.onClick.bind(this);
   }
   componentWillUnmount() {
-    const { isEditable } = this.props;
-    if (isEditable) this.saveData();
+    const { isDirty } = this.state;
+    if (isDirty) {
+      this.saveData();
+    }
   }
-  onChange(e) {
+  onInputChange(e) {
     const { args } = this.state;
     const { argindex, onChange } = this.props;
     args[argindex] = e.currentTarget.value;
@@ -68,18 +70,29 @@ class InputElement extends React.Component<any, any> {
     // Stop click here when user clicks inside form to edit.
     // Otherwise clicks will propagage to InstanceEditor where it will exit edit mode
   }
-  saveData() {
+  stopPropagation(e) {
+    // Special handling to prevent a mouseUp on InstanceEditor
+    // from canceling edit.
+    // This happens when the user clicks down on the InputElement
+    // then drags, releasing the mouse outside of this field.
+    e.stopPropagation();
+  }
+  saveData(forceSave = false) {
     const { args, isDirty } = this.state;
     const { argindex, onSave, type } = this.props;
-    if (isDirty) {
+    if (isDirty || forceSave) {
       if (type === 'string') {
-        // wrap strings in quotes or the parameter will be treated as a token
+        // wrap strings in quotes or the parameter will be treated as an identifier
         args[argindex] = `"${args[argindex]}"`;
       }
       if (type === 'number' && String(args[argindex]).startsWith('.')) {
+        // add leading 0 if user entered ".n"
         args[argindex] = `0${args[argindex]}`;
       }
-      onSave(); // don't setState({args}) or the quotes will be added to the input element
+      this.setState(
+        { isDirty: false },
+        () => onSave() // don't setState({args}) or the quotes will be added to the input element
+      );
     }
   }
   render() {
@@ -87,10 +100,11 @@ class InputElement extends React.Component<any, any> {
     const { args } = this.state;
     return (
       <input
-        onChange={this.onChange}
+        onChange={this.onInputChange}
         onKeyDown={this.onKeyDown}
         onBlur={this.onBlur}
         onClick={this.onClick}
+        onPointerDown={this.stopPropagation}
         type={type}
         value={args[argindex]}
         className={classes.instanceEditorField}
