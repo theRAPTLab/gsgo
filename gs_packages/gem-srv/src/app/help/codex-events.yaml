@@ -1,0 +1,14 @@
+# help for onEvent events
+
+# REVIEW: Should these be case insenstivie?
+
+tick:
+  info: 'tick help'
+roundinit:
+  info: 'roundinit help'
+costumes:
+  info: 'costumes help'
+start:
+  info: 'start help'
+roundstop:
+  info: 'roundstop help'

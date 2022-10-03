@@ -4,35 +4,22 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import InstanceDef from 'lib/class-instance-def';
-import {
-  GetBlueprint,
-  GetAllBlueprints,
-  DeleteBlueprint
-} from 'modules/datacore/dc-script-engine';
-import {
-  GetAllAgents,
-  DeleteAgent,
-  DeleteAgentByBlueprint,
-  GetAgentsByType,
-  GetAgentById,
-  GetAgentByName,
-  DeleteAllAgents,
-  DefineInstance,
-  UpdateInstance,
-  DeleteInstance,
-  DeleteAllInstances,
-  DeleteInstancesByBlueprint,
-  GetAllInstances,
-  GetInstance,
-  GetInstancesType
-} from '../datacore/dc-agents';
-import DisplayObject from '../../lib/class-display-object';
-import * as RENDERER from '../render/api-render';
-import { MakeDraggable } from '../../lib/vis/draggable';
-import * as TRANSPILER from './script/transpiler';
-import SyncMap from '../../lib/class-syncmap';
+
+import SyncMap from 'lib/class-syncmap';
+import SM_Agent from 'lib/class-sm-agent';
+import DisplayObject from 'lib/class-display-object';
+
+import * as BUNDLER from 'script/tools/script-bundler';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
+import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
+import * as RENDERER from 'modules/render/api-render';
+import * as TRANSPILER from 'script/transpiler-v2';
+import * as ACBlueprints from 'modules/appcore/ac-blueprints';
+import * as ACInstances from 'modules/appcore/ac-instances';
+import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -50,43 +37,89 @@ AGENT_TO_DOBJ.setMapFunctions({
   onAdd: (agent, dobj) => {
     dobj.x = agent.x;
     dobj.y = agent.y;
-    // NPC always default to 200 if not set explicitly?
-    // so NPC agents (200) always appera on top of input agents (-100)
-    dobj.zIndex = agent.zIndex || 200;
+    dobj.zIndex = agent.zIndex !== undefined ? agent.zIndex : 0;
     if (agent.skin) dobj.skin = agent.skin;
+    dobj.color = agent.color; // always copy color, set color = undefined to clear filters
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
-    if (agent.scale) dobj.scale = agent.scale;
-    if (agent.scaleY) dobj.scaleY = agent.scaleY || agent.scale;
-    if (agent.alpha) dobj.alpha = agent.alpha;
-    if (agent.text) dobj.text = agent.text;
-    if (agent.meter) dobj.meter = agent.meter;
-    if (agent.meterClr) dobj.meterClr = agent.meterClr;
+    if (agent.scale !== undefined) dobj.scale = agent.scale;
+    if (agent.scaleY !== undefined) dobj.scaleY = agent.scaleY;
+    if (agent.orientation !== undefined) dobj.rotation = agent.orientation;
+    dobj.visible = agent.visible;
+    if (agent.alpha !== undefined) dobj.alpha = agent.alpha;
+    dobj.text = agent.statusText; // always set statusText in case it's cleared
+    dobj.meter = agent.statusValue; // always set statusValue in case it's cleared
+    if (agent.statusValueColor !== undefined)
+      dobj.meterClr = agent.statusValueColor;
+    dobj.meterPosition = agent.getMeterFlags();
+    if (agent.prop.statusHistory) dobj.graph = agent.prop.statusHistory;
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;
-    dobj.flags = agent.getFlags();
+    dobj.flags = agent.getFlags(); // always set flags b/c they might be cleared
+    dobj.debug = agent.debug; // always set debug b/c vision cone might be removed
+    if (agent.statusObject !== undefined) {
+      dobj.barGraph = agent.statusObject.barGraph;
+      dobj.barGraphLabels = agent.statusObject.barGraphLabels;
+    }
   },
   onUpdate: (agent, dobj) => {
     dobj.x = agent.x;
     dobj.y = agent.y;
-    // NPC always default to 200 if not set explicitly?
-    // so NPC agents (200) always appera on top of input agents (-100)
-    dobj.zIndex = agent.zIndex || 200;
+    dobj.zIndex = agent.zIndex !== undefined ? agent.zIndex : 0;
     if (agent.skin) dobj.skin = agent.skin;
+    dobj.color = agent.color; // always copy color, set color = undefined to clear filters
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
-    if (agent.scale) dobj.scale = agent.scale;
-    if (agent.scaleY) dobj.scaleY = agent.scaleY || agent.scale;
-    if (agent.alpha) dobj.alpha = agent.alpha;
-    if (agent.text || dobj.text) dobj.text = agent.text; // clear old text if previously set
-    if (agent.meter || dobj.meter) dobj.meter = agent.meter; // clear old meter if previously set
-    if (agent.meterClr) dobj.meterClr = agent.meterClr;
+    if (agent.scale !== undefined) dobj.scale = agent.scale;
+    if (agent.scaleY !== undefined) dobj.scaleY = agent.scaleY;
+    if (agent.orientation !== undefined) dobj.rotation = agent.orientation;
+    dobj.visible = agent.visible;
+    if (agent.alpha !== undefined) dobj.alpha = agent.alpha;
+    dobj.text = agent.statusText; // always set statusText in case it's cleared
+    dobj.meter = agent.statusValue; // always set statusValue in case it's cleared
+    if (agent.statusValueColor !== undefined)
+      dobj.meterClr = agent.statusValueColor;
+    dobj.meterPosition = agent.getMeterFlags();
+    if (agent.prop.statusHistory) dobj.graph = agent.prop.statusHistory;
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;
-    dobj.flags = agent.getFlags();
+    dobj.flags = agent.getFlags(); // always set flags b/c they might be cleared
+    dobj.debug = agent.debug; // always set debug b/c vision cone might be removed
+    if (agent.statusObject !== undefined) {
+      dobj.barGraph = agent.statusObject.barGraph;
+      dobj.barGraphLabels = agent.statusObject.barGraphLabels;
+    }
   }
 });
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// INSTANCE DEF
+/**
+ * Make or update agent and run its init script.
+ * @param {InstanceDef} def
+ */
+function MakeAgent(def) {
+  // TODO: instances are not using the 'name' convention established in merge #208
+  // try {
+  const bundle = BUNDLER.OpenBundle(def.bpid);
+  const refs = { bundle, globals: {} };
+  const initScript = TRANSPILER.CompileText(def.initScript, refs);
+  BUNDLER.CloseBundle();
+  let agent = DCAGENTS.GetAgentById(def.id);
+  if (!agent) agent = TRANSPILER.MakeAgent(def);
+  agent.exec(initScript, { agent });
+  return agent;
+  // } catch (caught) {
+  //   ERROR(`MakeAgent failed`, {
+  //     source: 'simulator',
+  //     data: {
+  //       def,
+  //       refs,
+  //       initScript
+  //     },
+  //     where: 'sim-agents.MakeAgent',
+  //     caught
+  //   });
+  // }
+}
 
 /**
  * From `model.instances` script spec to an instance definition
@@ -97,50 +130,39 @@ const SCRIPT_TO_INSTANCE = new SyncMap({
   name: 'ScriptToInstance'
 });
 
-/**
- * Make or update agent and run its init script.
- * @param {InstanceDef} def
- */
-function MakeAgent(def) {
-  const initScript = TRANSPILER.CompileText(def.initScript);
-  let agent = GetAgentById(def.id);
-  if (!agent) agent = TRANSPILER.MakeAgent(def);
-  agent.exec(initScript, { agent });
-}
-
 SCRIPT_TO_INSTANCE.setMapFunctions({
   onAdd: (newDef, def) => {
-    def.name = newDef.name;
-    def.blueprint = newDef.blueprint;
+    def.label = newDef.label;
+    def.bpid = newDef.bpid;
     def.initScript = newDef.initScript;
-    DefineInstance({
+    DCAGENTS.DefineInstance({
       id: newDef.id,
-      name: newDef.name,
-      blueprint: newDef.blueprint,
+      label: newDef.label,
+      bpid: newDef.bpid,
       initScript: newDef.initScript
     });
     MakeAgent(newDef);
   },
   onUpdate: (newDef, def) => {
-    def.name = newDef.name;
+    def.label = newDef.label;
     def.initScript = newDef.initScript;
     // If blueprint is updated and recompiled
     // the old instance has been removed
     // so we have to check here if it's still there
-    if (GetInstance(newDef)) {
-      UpdateInstance(newDef);
+    if (DCAGENTS.GetInstance(newDef)) {
+      DCAGENTS.UpdateInstance(newDef);
     } else {
-      DefineInstance({
+      DCAGENTS.DefineInstance({
         id: newDef.id,
-        name: newDef.name,
-        blueprint: newDef.blueprint,
+        label: newDef.label,
+        bpid: newDef.bpid,
         initScript: newDef.initScript
       });
     }
     MakeAgent(newDef);
   },
   onRemove: (newDef, def) => {
-    DeleteInstance(newDef);
+    DCAGENTS.DeleteInstance(newDef);
   }
 });
 
@@ -175,24 +197,24 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 
 /**
  * Removes any blueprints that do not match `namesToKeep`:
- *   1. blueprints defined in dc-script-engine
- *   2. agents in dc-agents
- *   3. instances in dc-agents
+ *   1. blueprints defined in dc-sim-resources
+ *   2. agents in dc-sim-agents
+ *   3. instances in dc-sim-agents
  * @param {string[]} namesToKeep array of blueprint names
  */
 function FilterBlueprints(namesToKeep) {
-  const blueprints = GetAllBlueprints(); // Array of SM_Bundle
+  const blueprints = SIMDATA.GetAllBlueprintBundles(); // Array of SM_Bundle
   blueprints.forEach(b => {
     if (!namesToKeep.includes(b.name)) {
       // remove the blueprint
-      DeleteBlueprint(b.name);
+      SIMDATA.DeleteBlueprintBundle(b.name);
 
       // [We can't rely on SyncMap to remove because it doesn't
       //  sync to blueprints, just to instanceDefs]
       // remove any agents using the blueprint
-      DeleteAgentByBlueprint(b.name);
+      DCAGENTS.DeleteAgentByBlueprint(b.name);
       // remove instances using the blueprint
-      DeleteInstancesByBlueprint(b.name);
+      DCAGENTS.DeleteInstancesByBlueprint(b.name);
     }
   });
 }
@@ -211,18 +233,45 @@ function AgentSelect() {}
  * @param {string[]} blueprintNames Array of blueprint names
  * @param {Object[]} instancesSpec Array of to-be-defined spec objects {id, name, blueprint, init, ...args}
  *                              from model.instances
- * @param {TInstance[]} instanceDefs Array of existing instanceDef (TInstance) objects {id, name, blueprint, init, ...args }
- *                             from dc-agents
+ * @param {TInstanceDef[]} instanceDefs Array of existing instanceDef (TInstanceDef) objects {id, name, blueprint, init, ...args }
+ *                             from dc-sim-agents
  */
 export function AllAgentsProgram(data) {
   const { blueprintNames, instancesSpec } = data;
   if (!blueprintNames) return console.warn(...PR('no blueprint'));
 
-  // I. Remove Unused Blueprints and Agents
+  // 1. Remove Unused Blueprints and Agents
   FilterBlueprints(blueprintNames);
 
+  // 2. Reset Global Agent
+  //    `instancesSpec` does not include the global agent
+  //    so SCRIPT_TO_INSTANCE (#3 below) will not create it.
+  //    Instead, we have to manually create it.
+  const existingGlobal = SM_Agent.GLOBAL_AGENT;
+  const globalBpDef = ACBlueprints.GetBlueprint(ACBlueprints.GLOBAL_AGENT_NAME);
+  const globalInstanceDef = {
+    id: existingGlobal.id,
+    bpid: ACBlueprints.GLOBAL_AGENT_NAME,
+    label: globalBpDef.name,
+    initScript: globalBpDef.initScript
+  };
+  const globalAgent = MakeAgent(globalInstanceDef);
+  SM_Agent.GLOBAL_AGENT = globalAgent;
+  // Migration Check -- Make sure there aren't any old project instances trying to use
+  // id 154, which will conflict with Global and cause odd errors.
+  instancesSpec.forEach(s => {
+    if (s.id === existingGlobal.id)
+      console.error(
+        `Instance id already in use by Global!  Please review your instance ids!!! ${s}`
+      );
+  });
+
+  // 3. Create Instances from Script
   SCRIPT_TO_INSTANCE.syncFromArray(instancesSpec);
   SCRIPT_TO_INSTANCE.mapObjects();
+
+
+  // 4. Broadcast update to network devices
   UR.RaiseMessage('NET:INSTANCES_UPDATE', {
     instances: SCRIPT_TO_INSTANCE.getMappedObjects()
   });
@@ -244,29 +293,29 @@ export function AgentProgram(blueprint) {
   // for (let i = 0; i < 20; i++) TRANSPILER.MakeAgent(`bun${i}`, { blueprint });
 
   // Remove any existing agent instances
-  let instances = GetAllInstances();
+  let instances = DCAGENTS.GetAllInstances();
   instances.forEach(instance => {
-    if (instance.blueprint === blueprint) {
+    if (instance.bpid === blueprint) {
       TRANSPILER.RemoveAgent(instance);
     }
   });
-  // And clear the INSTANCES map for the blueprint
-  DeleteInstancesByBlueprint(blueprint);
+  // And clear the INSTANCE_DEFS map for the blueprint
+  DCAGENTS.DeleteInstancesByBlueprint(blueprint);
 
   // Initiate a new instance for the submitted blueprint
   // using a unique name.
-  DefineInstance({
+  DCAGENTS.DefineInstance({
     blueprint,
-    name: `${blueprint}${Math.trunc(Math.random() * 1000)}`,
+    name: `${blueprint}${Math.trunc(RNG() * 1000)}`,
     init: []
   });
 
   // Make an agent for each instance
-  instances = GetAllInstances();
+  instances = DCAGENTS.GetAllInstances();
   instances.forEach(instance => {
     // Make an instance only for this blueprint, ignore others
     // otherwise other blueprints will get duplicate instances
-    if (instance.blueprint === blueprint) {
+    if (instance.bpid === blueprint) {
       TRANSPILER.MakeAgent(instance);
     }
   });
@@ -275,25 +324,36 @@ export function AgentProgram(blueprint) {
   // Mostly used by PanelInstances and Inspectors
   UR.RaiseMessage('NET:INSTANCES_UPDATE', { instances });
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function ClearDOBJ() {
+  AGENT_TO_DOBJ.clearMappedObjects();
+}
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentsUpdate(frameTime) {
-  const allAgents = GetAllAgents();
+  const allAgents = DCAGENTS.GetAllAgents();
   allAgents.forEach(agent => {
     agent.agentUPDATE(frameTime);
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function AgentsEvent(frameTime) {
+  const allAgents = DCAGENTS.GetAllAgents();
+  allAgents.forEach(agent => {
+    agent.agentEVENT(frameTime);
+  });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentThink(frameTime) {
-  const allAgents = GetAllAgents();
+  const allAgents = DCAGENTS.GetAllAgents();
   allAgents.forEach(agent => {
     agent.agentTHINK(frameTime);
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentExec(frameTime) {
-  const allAgents = GetAllAgents();
+  const allAgents = DCAGENTS.GetAllAgents();
   allAgents.forEach(agent => {
     agent.agentEXEC(frameTime);
   });
@@ -302,9 +362,9 @@ function AgentExec(frameTime) {
 function AgentReset(frameTime) {
   /* reset agent */
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function VisUpdate(frameTime) {
-  const allAgents = GetAllAgents();
+  const allAgents = DCAGENTS.GetAllAgents();
   AGENT_TO_DOBJ.syncFromArray(allAgents);
   AGENT_TO_DOBJ.mapObjects();
   const dobjs = AGENT_TO_DOBJ.getMappedObjects();
@@ -317,11 +377,12 @@ function VisUpdate(frameTime) {
 UR.HandleMessage('SIM_RESET', AgentReset);
 UR.HandleMessage('SIM_MODE', AgentSelect);
 UR.HandleMessage('AGENT_PROGRAM', AgentProgram);
-UR.HandleMessage('ALL_AGENTS_PROGRAM', AllAgentsProgram); // whole model update
+UR.HandleMessage('ALL_AGENTS_PROGRAM', data => AllAgentsProgram(data)); // whole model update
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.HookPhase('SIM/AGENTS_UPDATE', AgentsUpdate);
+UR.HookPhase('SIM/AGENTS_EVENT', AgentsEvent);
 UR.HookPhase('SIM/AGENTS_THINK', AgentThink);
 UR.HookPhase('SIM/AGENTS_EXEC', AgentExec);
 UR.HookPhase('SIM/VIS_UPDATE', VisUpdate);

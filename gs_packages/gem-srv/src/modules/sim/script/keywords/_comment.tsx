@@ -9,9 +9,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword from 'lib/class-keyword';
-import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
@@ -20,24 +18,12 @@ export class _comment extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('_comment');
-    this.args = ['...args:any'];
+    this.args = ['?:{...}'];
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     return [];
-  }
-
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { _comment } = state;
-    return ['//', _comment];
-  }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw, cmt] = unit;
-    return super.jsx(index, unit, <i style={{ color: 'gray' }}>{`${cmt}`}</i>);
   }
 } // end of UseFeature
 

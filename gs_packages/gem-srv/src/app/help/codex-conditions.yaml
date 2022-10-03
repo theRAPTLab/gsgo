@@ -1,0 +1,34 @@
+# help for when conditions tests
+
+# REVIEW: should these be all lower case?
+
+iscenteredon:
+  info: 'iscenteredon help'
+iscloseto:
+  info: 'iscloseto help'
+centertouchescenter:
+  info: 'centertouchescenter help'
+centertouches:
+  info: 'centertouches help'
+touches:
+  info: 'touches help'
+isinside:
+  info: 'isinside help'
+centerfirsttouchescenter:
+  info: 'centerfirsttouchescenter help'
+centerfirsttouches:
+  info: 'centerfirsttouches help'
+firsttouches:
+  info: 'firsttouches help'
+centerlasttouchescenter:
+  info: 'centerlasttouchescenter help'
+centerlasttouches:
+  info: 'centerlasttouches help'
+lasttouches:
+  info: lasttouches help'
+sees:
+  info: 'sees help'
+doesnotsee:
+  info: 'doesnotsee help'
+seescamouflaged:
+  info: 'seescamouflaged help'

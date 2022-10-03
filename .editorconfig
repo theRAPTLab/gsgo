@@ -9,7 +9,7 @@
 root = true
 
 # settings for our default files
-[*.{js,jsx,ts,tsx,json,md,html,txt}]
+[*.{js,jsx,ts,tsx,json,md,html,txt,css}]
 indent_style = space
 indent_size = 2
 end_of_line = lf
@@ -20,3 +20,13 @@ insert_final_newline = true
 # trailing whitespace means something in markdown
 [*.md]
 trim_trailing_whitespace = false
+
+# gemscript files
+[*.gemscript]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+trim_trailing_whitespace = true
+insert_final_newline = true

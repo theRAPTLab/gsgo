@@ -16,11 +16,11 @@ const StickyCache = require('./class-sticky-cache');
 const PROMPTS = require('./util/prompts');
 const DATACORE = require('./client-datacore');
 const UDevice = require('./class-udevice');
-const DBG = require('./ur-dbg-settings');
+const DBG = require('./common/debug-props');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = PROMPTS.makeStyleFormatter('DEVICE', 'TagDkRed');
+const PR = PROMPTS.makeStyleFormatter('DEVICE');
 let LocalNode;
 let NetNode;
 
@@ -110,7 +110,7 @@ export function SubscribeDeviceSpec(deviceSpec) {
   // deviceAPI has { unsub, getInputs, getChanges, putOutput } functions
   const props = Object.keys(sub).join(', ');
   const api = Object.keys(deviceAPI).join(', ');
-  console.log(...PR(`SubscribeDeviceSpec\nsub:[${props}]\napi:[${api}]`));
+  // console.log(...PR(`SubscribeDeviceSpec\nsub:[${props}]\napi:[${api}]`));
   return deviceAPI;
 }
 /** a device subscription saves a "device controller" when it's received from the

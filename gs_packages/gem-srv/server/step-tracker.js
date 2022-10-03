@@ -10,10 +10,11 @@
   PORTED FROM ISTEP/PLAE
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
-
 const dgram = require('dgram');
 const WebSocketServer = require('ws').Server;
+const mqtt = require('mqtt');
 const { PrefixUtil, DBG } = require('@gemstep/ursys/server');
+const { MQTT_URL } = require('../config/gem-settings');
 //
 const PR = PrefixUtil('PTRACK');
 const PT_GROUP = '224.0.0.1'; // ptrack UDP multicast address
@@ -35,9 +36,15 @@ let ptrack_id_counter = 1; // used to count connections to ptrack
 let ftrack_ss = null; // faketrack web socket server
 let ftrack_socket = null; // web socket for receiving faketrack data
 
+/// mqtt injection socket (listen)
+let mtrack_ss = null;
+
 /// playback/record ptrack data support
 let reader; // disabled
 let writer; // disabled
+
+// constants for packet update rate
+let m_current_time = 0;
 
 /// SUPPORT FUNCTIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -111,11 +118,11 @@ function m_ForwardTrackerData(json) {
  */
 function m_BindPTrackListener() {
   /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
-    host  - tracker computer, originating host of group traffic (optional?)
-            BL: leave host commented-out so node will listen to all addresses
-    group - special ip address for LAN multicast for all multicasters
-            (may not need to join it explicitly)
-  :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+            host  - tracker computer, originating host of group traffic (optional?)
+                    BL: leave host commented-out so node will listen to all addresses
+            group - special ip address for LAN multicast for all multicasters
+                    (may not need to join it explicitly)
+          :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   let mc = {
     // host: '127.0.0.1',
     port: PT_UPORT,
@@ -156,8 +163,10 @@ function m_BindPTrackListener() {
 
     m_ForwardTrackerData(s);
 
-    let d = new Date();
-    console.log(d.toLocaleTimeString(), s);
+    // UNCOMMENT THIS TO DEBUG PTRACK JSON DATA
+    // This will dump PTrack JSON data to the terminal
+    // let d = new Date();
+    // console.log(d.toLocaleTimeString(), s);
   });
 
   // we're not expecting errors, but we should
@@ -215,6 +224,176 @@ function m_BindFakeTrackListener() {
   });
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+let m_seq = 0;
+
+function ConvertMQTTtoTrackerData(message) {
+  // pozyx seems to send only one tag per message, hence the [0]
+  // message is a node Buffer object -- https://nodejs.org/api/buffer.html
+  let json = JSON.parse(message.toString())[0];
+
+  // console.log(json);
+
+  // Wearable Tag Accelerometer Data
+  // console.log(json.data.tagData.accelerometer);
+
+  // Developer Tag data
+  // const customSensors = json.data.tagData.customSensors;
+  // if (customSensors) console.log(customSensors);
+
+  // `alive` is no longer in message as of 2021-05-26 (new Enterprise system)
+  // if (!json.alive) return;
+  if (!json.success) {
+    // Pozyx seems to send this when it can't detect the tag.
+    // We might want to use this to remove tags?
+    // It is a fairly common event though, so we'd have to detect
+    // multiple events before clearing.
+    // console.log("MQTT#### success:false!", json);
+    return '';
+  }
+  if (!json.data) {
+    // This shouldn't happen.  Should be caught by alive/success.
+    console.log('MQTT#### json.data missing!', json);
+    return '';
+  }
+  if (!json.data.coordinates) {
+    // This shouldn't hapen.  Should be caught by alive/success.
+    console.log('MQTT#### json.data.coordinates missing!', json);
+    return '';
+  }
+
+  // get pozyx positions
+  const id = json.tagId;
+  const px = json.data.coordinates.x;
+  const py = json.data.coordinates.y;
+  let framedata = {
+    id,
+    x: px,
+    y: py,
+    z: 0,
+    height: 1.4,
+    isPozyx: true // mark the entity as Pozyx in case we need it later
+  };
+
+  // get accelerometer data if present
+  // currently only available for wearable tags
+  // might be possible for developer tag with custom payload
+  if (
+    json.data.tagData.accelerometer &&
+    json.data.tagData.accelerometer.length > 0
+  ) {
+    // only grab the first acceleration frame -- we don't need more
+    const aframe = json.data.tagData.accelerometer[0];
+    if (aframe && aframe.length > 0) {
+      const ax = aframe[0];
+      const ay = aframe[1];
+      const az = aframe[2];
+      framedata.acc = {
+        x: ax,
+        y: ay,
+        z: az
+      };
+      // console.log(id, framedata.acc);
+    }
+  }
+
+  // update current time
+  // FIXME: Should we use tag time?  Or should we inject current time here?
+  m_current_time = new Date(); // json.timestamp;
+  // calculate compatible timer format
+  const sec = Math.floor(m_current_time / 1000);
+  const nsec = (m_current_time - sec * 1000) * 1e6;
+  //
+  // pozyx-tagged time
+  // This is the timestamp data in the mqtt message
+  // m_current_time = json.timestamp; // e.g. 1622064766.2123475
+
+  // frame
+  let m_frame = {
+    header: {},
+    pozyx_tracks: [framedata]
+  };
+  m_frame.header.stamp = { sec, nsec };
+  m_frame.header.frame_id = 'pozyx';
+  // m_frame.fake_id = 'pozyx'; // fake_id is only used for ptrack data
+  m_frame.header.seq = m_seq++;
+
+  return JSON.stringify(m_frame);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * Pass `mqtturl` to use a specific server.
+ * Otherwise, the system will fall back to MQTT_URL defined in local-settings.json
+ * or gem-settings.js.
+ * @param {string} mqtturl
+ */
+function m_BindPozyxListener(mqtturl) {
+  // Use this to test basic connection to mqtt test server
+  // port 1883 is tcp (not udp)
+  // mtrack_ss = mqtt.connect("mqtt://test.mosquitto.org", {
+  // 	port: 1883,
+  // });
+
+  const url = mqtturl || MQTT_URL;
+  mtrack_ss = mqtt.connect(`mqtt://${url}`, { port: 1883 });
+  /*
+      MQTT url settings have been moved to gs_packages/gem-srv/config/local-settings.json.
+
+      DO NOT COMMENT/UNCOMMENT settings here.
+      Add "MQTT_URL" to local-settings.json.
+
+      For reference, these were the old settings:
+
+      * To run a local mqtt server and replay streams use
+          "MQTT_URL": "localhost"
+
+      * In the VU lab use
+          "MQTT_URL": "10.2.191.28"
+
+      * In the IU lab use
+          "MQTT_URL": "10.0.0.254"
+
+  */
+
+  mtrack_ss.on('connect', () => {
+    console.log(...PR('1883 MQTT Connect'));
+    mtrack_ss.subscribe('presence', err => {
+      if (!err) {
+        console.log(...PR('MQTT present'));
+      } else {
+        console.log(...PR('MQTT Not Present!', err));
+      }
+    });
+  });
+  mtrack_ss.on('message', (topic, message) => {
+    let jsonstr = ConvertMQTTtoTrackerData(message);
+    if (jsonstr) m_ForwardTrackerData(jsonstr);
+  });
+  mtrack_ss.on('error', err => {
+    console.log(...PR("MQTT Can't connect", err));
+    mtrack_ss.end();
+  });
+  mtrack_ss.on('close', () => {
+    console.log(...PR('MQTT Connection Closed'));
+    mtrack_ss.end();
+  });
+  mtrack_ss.on('disconnect', () => {
+    console.log(...PR('MQTT Disconnected'));
+    mtrack_ss.end();
+  });
+  mtrack_ss.on('offline', () => {
+    console.log(...PR('MQTT Offline'));
+    mtrack_ss.end();
+  });
+  mtrack_ss.on('reconnect', () => {
+    console.log(...PR('MQTT reconnect'));
+  });
+
+  mtrack_ss.subscribe('tags');
+}
+
 /// API CONNECT TRACKER ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** create the UDP listener on 224.0.0.1:21234 and TCP forwarding socket
@@ -245,6 +424,14 @@ function StartTrackerSystem() {
     if (DBG.track) console.log(...PR('FakeTrackListener TCP bound'));
   } else if (DBG.track)
     console.log(...PR('FakeTrackListener TCP already established'));
+
+  /** 4. CREATE POZYX TCP SOCKET SERVER ****************************/
+
+  if (!mtrack_ss) {
+    m_BindPozyxListener();
+    if (DBG.track) console.log(...PR('PozyxListener TCP bound'));
+  } else if (DBG.track)
+    console.log(...PR('PozyxListener TCP already established'));
 } // StartTrackerSystem
 
 /// API CLOSE TRACKER /////////////////////////////////////////////////////////
@@ -264,6 +451,7 @@ function StopTrackerSystem() {
   if (ptrack_ss) ptrack_ss.close();
   if (ftrack_socket) ftrack_socket.close();
   if (ftrack_ss) ftrack_ss.close();
+  if (mtrack_ss) mtrack_ss.end();
 }
 /// API REMOVE BROWER CONNECTION //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -273,11 +461,15 @@ function StopTrackerSystem() {
 function BrowserDisconnected(wsocket) {
   m_RemoveBrowserConnection(wsocket);
 }
+function BindPozyxListener(mqtturl) {
+  m_BindPozyxListener(mqtturl);
+}
 
 /// EXPORT MODULE API//////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
   StartTrackerSystem,
   StopTrackerSystem,
-  BrowserDisconnected
+  BrowserDisconnected,
+  BindPozyxListener
 };

@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   implementation of keyword "featProp" keyword object
@@ -9,39 +10,64 @@
   FORM 2: featProp agent.Costume.pose methodName args
           featProp Bee.Costume.pose methodName args
 
+  In addition, it renders three views:
+
+  1. Static Minimized View -- Just text.
+
+        energyLevel: 5
+
+  2. Instance Editor View -- A simplified view that only allows setting a
+     parameter value via an input field.
+
+        energyLevel [ 5 ] [ delete ]
+
+  3. Script Wizard View -- A full edit view that allows different property
+     selection as well as different method and value selection.
+
+        featProp AgentWidget [ energyLevel ] [ setTo ] [ 5 ]
+
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
-import Keyword, { DerefFeatureProp } from 'lib/class-keyword';
-import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
+import Keyword from 'lib/class-keyword';
 import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = true;
 
-/// CLASS DEFINITION //////////////////////////////////////////////////////////
+/// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export class featProp extends Keyword {
   // base featProperties defined in KeywordDef
 
   constructor() {
     super('featProp');
-    this.args = ['refArg:object', 'methodName:string', '...args'];
+    this.args = ['featPropName:objref', 'methodName:method', 'methodArgs:{...}'];
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, refArg, featPropName, methodName, ...args] = unit;
+  compile(dtoks: TKWArguments): TOpcode[] {
+    const [kw, refArg, featPropName, methodName, ...args] = dtoks;
     // ref is an array of strings that are fields in dot addressing
     // like agent.x
-    const ref = refArg.objref || [refArg];
+    const ref = (refArg as IToken).objref || [refArg];
     const len = ref.length;
 
     // create a function that will be used to callReferences the objref
     // into an actual call
     let callRef;
 
+    // Show useful debug output if GetFeatProp fails
+    function GetFeatPropWithDebug(agent, featName, pName, mName, prms) {
+      try {
+        return agent.getFeatProp(featName as string, pName)[mName](...prms);
+      } catch (err) {
+        console.error(
+          `featProp Error in line: "${kw} ${featName} ${pName} ${mName} ${prms}"`
+        );
+      }
+    }
     if (len === 1) {
       /** IMPLICIT REF *******************************************************/
       /// e.g. 'Costume' is interpreted as 'agent.Costume'
@@ -52,7 +78,8 @@ export class featProp extends Keyword {
         mName: string,
         ...prms
       ) => {
-        return agent.getFeatProp(ref[0], pName)[mName](...prms);
+        const featName = ref[0];
+        return GetFeatPropWithDebug(agent, featName, pName, mName, prms);
       };
     } else if (len === 2) {
       /** EXPLICIT REF *******************************************************/
@@ -64,52 +91,60 @@ export class featProp extends Keyword {
         mName: string,
         ...prms
       ) => {
-        const c = context[ref[0]]; // GAgent context
+        const featName = ref[1];
+        const bpName = ref[0];
+        const c = context[bpName as string]; // SM_Agent context
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
-        return c.getFeatProp(ref[1], pName)[mName](...prms);
+        return GetFeatPropWithDebug(c, featName, pName, mName, prms);
+      };
+    } else if (len === 3) {
+      /** NEW EXTENDED REF REQUIRED ******************************************/
+      /// e.g. blueprint.feature.prop
+      callRef = (agent: IAgent, context: any, mName: string, ...prms) => {
+        const bpName = ref[0];
+        const featName = ref[1];
+        const pName = ref[2];
+        const c = context[bpName as string]; // SM_Agent context
+        if (c === undefined) throw Error(`context missing '${ref[0]}'`);
+        // ref[0] = blueprint, ref[1] = feature, ref[2] = prop
+        // we use our own decoded propname rather than looking for the passed version
+        return GetFeatPropWithDebug(c, featName, pName, mName, prms);
       };
     } else {
       console.warn('error parse ref', ref);
       callRef = () => {};
     }
+    if (len === 3) {
+      // Different call parameters if len===3
+      const [, objRef, mName, ...mArgs] = dtoks;
+      return [
+        (agent: IAgent, state: IState) => {
+          return callRef(agent, state.ctx, mName, ...mArgs);
+        }
+      ];
+    }
     return [
       (agent: IAgent, state: IState) => {
-        // console.log('callRef', callRef);
         return callRef(agent, state.ctx, featPropName, methodName, ...args);
       }
     ];
-
-    // OLD broken method
-    // const [kw, refArg, methodName, ...args] = unit;
-    // const deref = DerefFeatureProp(refArg);
-    // return [
-    //   (agent: IAgent, state: IState) => {
-    //     const p = deref(agent, state.ctx);
-    //     console.error('p', p);
-    //     p[methodName](...args);
-    //   }
-    // ];
   }
 
-  /** return a state object that turn react state back into source */
-  // REVIEW: probalby ned to pull out featPropName separately
-  serialize(state: any): TScriptUnit {
-    const { featPropName, methodName, ...args } = state;
-    return [this.keyword, featPropName, ...args];
+  /** custom validation, overriding the generic validation() method of the
+   *  base Keyword class  */
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    const vtoks = []; // validation token array
+    const [kwTok, featObjRefTok, methodTok, ...argToks] = unit; // get arg pattern
+    // returns symbols for each dtok position excepting the keyword
+    vtoks.push(this.shelper.anyKeyword(kwTok));
+    // debugging: Also check ObjRefSelector's insertion of validation tokens
+    vtoks.push(this.shelper.featObjRef(featObjRefTok)); // featName.propName, agent.featName.propName, Blueprint.featName.propName
+    vtoks.push(this.shelper.methodName(methodTok));
+    vtoks.push(...this.shelper.argsList(argToks));
+    const log = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: log };
   }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw, ref, methodName, ...arg] = unit;
-    return super.jsx(
-      index,
-      unit,
-      <>
-        featProp {ref}.{methodName}({arg.join(' ')})
-      </>
-    );
-  }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

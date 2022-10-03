@@ -8,16 +8,147 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let TOOLS;
 const HFUNCS = []; // stack of hfuncs in ur_handle, which
+const PR = s => [
+  `%cUR.AddConsoleTool():%c ${s}`,
+  'color:#000;background-color:yellow;padding:3px 5px;border-radius:2px;',
+  'color:auto;background-color:auto;',
+  'font-weight:bold;color:green;background-color:yellow;padding:3px 5px;border-radius:2px;'
+];
+const DBG = false;
 
 /// UTILITY METHODS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function addConsoleTools(UR) {
-  const PR = UR.PrefixUtil('DEBUG', 'TagSystem');
-  const { CallMessage, RaiseMessage, SendMessage } = UR;
+/** add obj keys to window object, testing to make sure that it doesn't already
+ *  exist in the window.UR object
+ */
+function addConsoleTool(arg1, arg2) {
+  if (typeof arg2 === 'function' && typeof arg1 === 'string') {
+    arg1 = { [arg1]: arg2 };
+  }
+  if (typeof arg1 !== 'object')
+    console.warn(...PR('addConsoleTool: invalid argument', arg1));
+  if (typeof window === 'undefined') {
+    console.warn(
+      ...PR('addConsoleTool: non-browser environment detected...aborted.')
+    );
+    return;
+  }
+  //---
+  Object.entries(arg1).forEach(kv => {
+    let args;
+    const [key, f] = kv;
+    if (typeof f !== 'function')
+      console.warn(...PR('addConsoleTool: key value must be function'));
+    try {
+      let parts = key.split('.');
+      let prop = window;
+      let info = '';
+      parts.forEach((p, ii) => {
+        // feedback
+        const isLast = ii === parts.length - 1;
+        info += `${p}`;
+        // assignment to next
+        if (DBG) console.log(p, prop[p]);
+        if (prop[p] === undefined) {
+          if (!isLast) {
+            prop[p] = {};
+            if (DBG) console.log('adding', info);
+          }
+        } else if (isLast) throw Error(`window.${info} not empty.`);
 
+        if (isLast) prop[p] = f;
+        prop = prop[p];
+      });
+      console.log(...PR(`added %c${info}()`));
+    } catch (e) {
+      console.warn(...PR(`error ${e}`));
+    }
+  });
+}
+
+/// TEXT COMPARATOR ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** if fail, return a function to call to print results. if success,
+ *  return value is undefined
+ */
+function consoleCompareTexts(text, ref) {
+  let index = 0;
+  let length = Math.max(text.length, ref.length);
+  let comparison = '';
+  // scan letter by letter
+  while (index < length) {
+    if (text.charAt(index) !== ref.charAt(index)) break;
+    comparison += text.charAt(index++);
+  }
+  const endG = text.substring(comparison.length);
+  const endE = ref.substring(comparison.length);
+  const pass = comparison.length === text.length;
+  if (pass) {
+    return [
+      pass,
+      (testName = '') => {
+        console.groupCollapsed(
+          `%c${testName} passed`,
+          'color:green;font-weight:100;background-color:HoneyDew;padding:4px;'
+        );
+        console.log(
+          `OUTPUT\n%c${comparison}%c${endG}`,
+          'background-color:LightYellow',
+          'background-color:Yellow'
+        );
+        console.groupEnd();
+      }
+    ];
+  }
+  // didn't pass!
+  return [
+    pass,
+    (testName = '') => {
+      console.log(
+        `%c${testName} match FAILED at index ${index}`,
+        'color:red;padding:4px;background-color:MistyRose;font-weight:bold'
+      );
+      console.log(
+        `%cOUTPUT: %c${text.charAt(index)}`,
+        'color:red;padding:4px;',
+        'padding:4px;background-color:Yellow'
+      );
+      console.log(
+        `%cEXPECT: %c${ref.charAt(index)}`,
+        'color:red;padding:4px;',
+        'padding:4px;background-color:Cyan'
+      );
+      console.groupCollapsed(
+        '%c[click to view]',
+        'color:red;padding:4px;background-color:MistyRose;font-weight:100'
+      );
+      console.log(
+        `OUTPUT\n%c${comparison}%c${endG}`,
+        'background-color:LightYellow',
+        'background-color:Yellow'
+      );
+      console.log(
+        `REFERENCE\n%c${comparison}%c${endE}`,
+        'background-color:LightCyan',
+        'background-color:Cyan'
+      );
+      console.groupEnd();
+    }
+  ];
+}
+
+/// MESSAGE TESTS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// legacy messager tests accessible from console...should move to own test
+/// module
+function addMessageHandlerTests(UR) {
+  if (!UR.HandleMessage) {
+    console.error(...PR('addConsoleToolHandlers: bad UR reference'));
+    return;
+  }
+  const { CallMessage, RaiseMessage, SendMessage } = UR;
   TOOLS = {
     // subscribe
-
     ur_handle: (mesg, hfunc) => {
       if (mesg === undefined) return 'arg1 must be a message string';
       if (typeof hfunc !== 'function') return 'arg2 must be a function';
@@ -96,32 +227,9 @@ function addConsoleTools(UR) {
       });
       return 'services() is calling NET:SRV_SERVICE_LIST...';
     },
-
     // client device directory (should be up-to-date automatically)
     ur_devicedir: () => UR.GetDeviceDirectory()
   };
-
-  // add ur_* utilities to console
-  console.groupCollapsed(...PR('adding UR console debug functions'));
-  Object.entries(TOOLS).forEach(kv => {
-    const [key, f] = kv;
-    if (typeof window[key] !== 'undefined') return;
-    console.log(`• ${key}()`);
-    window[key] = f;
-  });
-  console.groupEnd();
-}
-
-/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// invoked from SystemInit
-function addConsoleToolHandlers(UR) {
-  const PR = UR.PrefixUtil('UR_DBG', 'TagRed');
-  if (!UR.HandleMessage) {
-    console.error(...PR('addConsoleToolHandlers: bad UR reference'));
-    return;
-  }
-
   function f_process_message(data) {
     const { testData } = data;
     if (testData === undefined) {
@@ -160,4 +268,4 @@ function addConsoleToolHandlers(UR) {
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { addConsoleTools, addConsoleToolHandlers };
+module.exports = { addConsoleTool, consoleCompareTexts };

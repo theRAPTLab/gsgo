@@ -1,0 +1,346 @@
+# help for feature properties and methods
+# these can be used override the defaults define in the feature modules
+
+# NOTES
+# --  As of 9/2022 `.hint` and `.syntax` are not being used
+
+Graphing:
+  info: 'Adds text labels, meters or graphs to a character and sets how they look.'
+  # Graphing props
+  text:
+    info: 'Set the text that appears below the character.'
+  textProp:
+    info: 'Set the text that appears below the character to be the value of a property, and update when the property does.'
+  meter:
+    input: 'Set the current meter value.'
+    info: 'Set the height of a meter to the side of the character.'
+  meterProp:
+    input: 'Identify a property of this Character. The value of that property will be updated to the value of the meter and stay that way.'
+    info: 'Set the height of the meter on this character to be the value of a property, and update when the property does.'
+  meterColor:
+    info: 'Set the color of the meter.'
+  isLargeGraphic:
+    info: 'Make the meter or graph large instead of putting it to the side of the Character.'
+  graphValue:
+    info: 'Set the next value for the graph.'
+  graphProp:
+    info: 'Set the graph to the value of a property, and update as the property updates.'
+  graphGlobalProp:
+    info: 'Set the graph to update its value to the value of a global property. Change the graph when the global property changes.'
+  graphMaxX:
+    info: 'Set the highest value that can be displayed on the x-axis of the graph.'
+  graphMaxY:
+    info: 'Set the highest value that can be displayed on the y-axis of the graph. This will appear as a label next to the y-axis.'
+  graphMinX:
+    info: 'Set the lowest value that can be displayed on the x-axis of the graph.'
+  graphMinY:
+    info: 'Set the lowest value that can be displayed on the y-axis of the graph. This will appear as a label next to the y-axis.'
+  graphFrequency:
+    info: 'This is how often the graph should update.'
+  barGraphProp:
+    info: 'Set a bar graph to the value of this property and update the graph when the property does.'
+  barGraphPropFeature:
+    info: 'Help for barGraphPropFeature coming soon.'
+  # Graphing methods
+  showMessage:
+    info: 'This creates a popup message for the users to read.'
+  setMeterPosition:
+    info: 'This sets the meter position to be inside or outsidee the character, and left or right.'
+  bindLineGraphHistogramToFeatProp:
+    info: 'Help for bindLineGraphHistogramToFeatProp coming soon.'
+  # Graphing method args
+  labelString:
+    name: 'labelString'
+    input: '"labelString" is text that will be displayed below the character'
+    info: '"labelString" is text that will be displayed below the character.'
+  propertyName:
+    name: 'propertyName'
+    input: '"propertyName" is the name of a property on this Character. Once set, if the value of that property changes, the meter will change its value as well.'
+    info: '"propertyName"  is the name of a property on this Character. Once set, if the value of that property changes, the meter will change its value as well.'
+  colorNumber:
+    name: 'colorNumber'
+    input: '"colorNumber" is the code number for the color, using decimal colors. Examples include red: 16711680, orange: 16737792, green: 65280, blue: 255, and purple: 6950317.'
+    info: '"colorNumber" is the code number for the color, using decimal colors. Examples include red: 16711680, orange: 16737792, green: 65280, blue: 255, and purple: 6950317.'
+
+Costume:
+  info: 'Adds ability to change the art for the character, and change color, glow, and other aspects of how it looks.'
+  # Costume props
+  costumeName:
+    info: 'Sets the filename for the costume image (.json or .png).'
+  size:
+    info: 'Size (in pixels/world units) to set the costume to.  Sets width or height, whichever is the largest dimension.'
+  width:
+    info: 'Width (in pixels/world units) to set the costume to.'
+  height:
+    info: 'Width (in pixels/world units) to set the costume to.'
+  scale:
+    info: 'Increase or decrease the size of the costume as a proportional value. For example: 1 = default size, 2 = twice as large, 0.5 = half size.'
+  flipX:
+    info: 'Flip the costume on the x axis (horizontally).'
+  flipY:
+    info: 'Flip the costume on the y axis (vertically).'
+  glow:
+    info: 'Set costume to glow for n number of seconds. If you set this to 0 it will stop glowing immediately.'
+  currentFrame:
+    info: 'If you are using a character with multiple frames (e.g., a .json file), this sets it to a new one.'
+  colorHue:
+    info: 'tbd'
+  colorSaturation:
+    info: 'tbd'
+  colorValue:
+    info: 'tbd'
+  colorScaleIndex:
+    info: 'tbd'
+  colorScaleHue:
+    info: 'tbd'
+  colorScaleSaturation:
+    info: 'tbd'
+  colorScaleValue:
+    info: 'tbd'
+  colorScaleType:
+    info: 'tbd'
+  colorScaleSteps:
+    info: 'tbd'
+  # Costume methods
+  setAnimatedCostume:
+    # REVIEW: Get rid of `hint`???
+    hint: 'Change appearance by setting image'
+    info: 'Animate character using a series of images.'
+    syntax: 'sprite file name (flower.json), starting frame number like 0'
+  setColorize:
+    hint: 'Apply a color filter to the character'
+    info: 'Apply a color filter to the character'
+    syntax: 'frame number like 0'
+  setColorizeHSV:
+    hint: 'Apply a color filter to the character'
+    info: 'Apply a color filter to the character'
+    syntax: 'frame number like 0'
+  randomizeColor:
+    hint: 'Apply a color filter to the character'
+    info: 'Apply a color filter to the character'
+    syntax: 'frame number like 0'
+  randomizeColorHSV:
+    hint: 'Apply a color filter to the character'
+    info: 'Apply a color filter to the character'
+    syntax: 'frame number like 0'
+  colorHSVWithinRange:
+    hint: 'Apply a color filter to the character'
+    info: 'Apply a color filter to the character'
+    syntax: 'frame number like 0'
+  resetColorize:
+    hint: 'Apply a color filter to the character'
+    info: 'Apply a color filter to the character'
+    syntax: 'frame number like 0'
+  initHSVColorScale:
+    hint: 'Apply a color filter to the character'
+    info: 'Apply a color filter to the character'
+    syntax: 'frame number like 0'
+  getHSVColorScaleColor:
+    hint: 'Apply a color filter to the character'
+    info: 'Apply a color filter to the character'
+    syntax: 'frame number like 0'
+
+Cursor:
+  info: 'Adds ability for the character to be controlled by a generic "cursor" via Pozyx or PTrack.  Used to allow Pozyx/PTrack to pick up and drop characters during a simulation run.'
+
+Movement:
+  info: 'Add different ways to move or be controlled'
+  # Movement props
+  movementType:
+    info: 'Determines the way the character will move and includes "stop", "wander", "edgeToEdge", "setLocation", "goLocation", "jitter"'
+  direction:
+    info: 'The direction the character is pointning, ranging from 0 to 360. 0 is to the right'
+  compassDirection:
+    info: 'The direction the character is pointing, divided into the 4 compas direcitons (N,S,E,W for North, South, East, or West)'
+  distance:
+    info: 'How far the character should move each tick. Higher numbers mean moving faster.'
+  jitterDistance:
+    info: 'jitterDistance help'
+  bounceAngle:
+    info: 'bounceAngle help'
+  doRandomOnWander:
+    info: 'doRandomOnWander help'
+  isMoving:
+    info: 'isMoving help'
+  useAutoOrientation:
+    info: 'useAutoOrientation help'
+  targetX:
+    info: 'The x property of an x,y location to move towards. Speed is set by the "distance" property.'
+  targetY:
+    info: 'The y property of an x,y location to move towards. Speed is set by the "distance" property.'
+  targetCharacterType:
+    info: 'targetCharacterType help'
+  # Movement prop args
+  movementTypeString:
+    info: '"movementTypeString" value determines how a character will move'
+    input: 'Valid movementTypes are: "stop", "wander", "edgeToEdge", "setLocation", "goLocation", "jitter"'
+  degreesNumber:
+    name: 'degreesNumber'
+    input: '"degreesNumber" ranges from 0 to 360'
+    info: '"degreesNumber" value determines the direction a character faces'
+  # Movement methods
+  queuePosition:
+    hint: 'change how a character moves'
+    info: 'set character at a x,y position'
+    syntax: 'variable (see wiki)'
+  setRandomDirection:
+    info: 'Pick a random direction to point in, and move toward.'
+  setRandomPosition:
+    info: 'Pick a random position.'
+  setRandomPositionX:
+    info: 'Pick a random x position, but keep the current y.'
+  setRandomPositionY:
+    info: 'Pick a random y position, but keep the current x.'
+  setRandomStart:
+    info: 'setRandomStart'
+  setRandomStartPosition:
+    info: 'setRandomStartPosition'
+  jitterPos:
+    info: 'jitterPos'
+  jitterRotate:
+    info: 'jitterRotate'
+  seekNearest:
+    info: 'seekNearest'
+  seekNearestVisibleCone:
+    info: 'seekNearestVisibleCone'
+  seekNearestVisibleColor:
+    info: 'seekNearestVisibleColor'
+  # Movement method args
+  x:
+    info: 'x (horizontal) position in pixels/world units'
+  y:
+    info: 'y (vertical) position in pixels/world units'
+
+Physics:
+  info: 'Adds character measurements for collision checking'
+  # Physics props
+  bodyRadius:
+    hint: 'bodyRadius hint'
+    info: 'change dimensions in pixels'
+    syntax: 'body radius integer width, integer height'
+  bodyWidth:
+    info: 'xxx'
+  bodyHeight:
+    info: 'xxx'
+  bodyShape:
+    info: 'circle or rectangle'
+  # Physics methods
+  # (none)
+
+IU:
+  info: 'Adds new features we are testing at IU'
+
+Population:
+  info: 'Adds ways to generate and manage spawned characters and statistical information'
+  # Population props
+  count:
+    info: 'How many characters of the specific type there are.'
+  sum:
+    info: 'A sum of the specific property added up for all of the characters of this type.'
+  avg:
+    info: 'An average of the specific property added up for all of the characters of this type.'
+  min:
+    info: 'The smallest value of the property across this character type.'
+  max:
+    info: 'The highest value of the property across this character type.'
+  monitoredAgent:
+    info: 'xxx'
+  monitoredAgentProp:
+    info: 'xxx'
+  monitoredAgentPropFeature:
+    info: 'xxx'
+  spawnMutationProp:
+    info: 'xxx'
+  spawnMutationPropFeature:
+    info: 'xxx'
+  spawnMutationMaxAdd:
+    info: 'xxx'
+  spawnMutationMaxSubtract:
+    info: 'xxx'
+  targetPopulationSize:
+    info: 'xxx'
+  deleteAfterSpawning:
+    info: 'xxx'
+  # Population methods
+  createAgent:
+    info: 'createAgent'
+  spawnChild:
+    info: 'spawnChild'
+  removeAgent:
+    info: 'removeAgent'
+  getRandomActiveAgent:
+    info: 'getRandomActiveAgent'
+  releaseAllAgents:
+    info: 'releaseAllAgents'
+  releaseInertAgents:
+    info: 'releaseInertAgents'
+  hideInertAgents:
+    info: 'hideInertAgents'
+  removeInertAgents:
+    info: 'removeInertAgents'
+  agentsReproduce:
+    info: 'agentsReproduce'
+  oneAgentReproduce:
+    info: 'oneAgentReproduce'
+  populateBySpawning:
+    info: 'populateBySpawning'
+  agentsForEachActive:
+    info: 'agentsForEachActive'
+  agentsForEach:
+    info: 'agentsForEach'
+  getActiveAgentsCount:
+    info: 'getActiveAgentsCount'
+  countAgents:
+    info: 'countAgents'
+  countAgentProp:
+    info: 'countAgentProp'
+  minAgentProp:
+    info: 'minAgentProp'
+  maxAgentProp:
+    info: 'maxAgentProp'
+  countAgentsByPropType:
+    info: 'countAgentsByPropType'
+  setAgentsByFeatPropTypeKeys:
+    info: 'setAgentsByFeatPropTypeKeys'
+  countExistingAgentsByFeatPropType:
+    info: 'countExistingAgentsByFeatPropType'
+
+Touches:
+  info: 'Adds tests to detect when characters touch each other'
+  # props (none)
+  # methods
+  monitor:
+    info: 'Detect touches with another character (b2b = bounds to bounds, c2b = center to bounds, c2c = center to center, binb = bounds inside bounds)'
+    input: 'Detect touches with another character (b2b = bounds to bounds, c2b = center to bounds, c2c = center to center, binb = bounds inside bounds)'
+  # method args
+  targetBlueprintName:
+    name: 'target blueprint name'
+    info: 'Sets the character for this method to act upon'
+    input: 'Use an existing character name'
+  touchType:
+    name: 'touch type'
+    info: 'Sets the type of touches to monitor:  "b2b" is bounds to bounds, "binb" is bounds in bounds, "c2c" is center to center, "c2b" is center to bounds'
+    input: 'Valid touch types: "b2b" is bounds to bounds, "binb" is bounds in bounds, "c2c" is center to center, "c2b" is center to bounds'
+
+Vision:
+  info: 'Adds ability for characters to detect what is front of them'
+  # props
+  visionable:
+    info: 'visionable'
+  viewDistance:
+    info: 'viewDistance'
+  viewAngle:
+    info: 'viewAngle'
+  colorHueDetectionThreshold:
+    info: 'colorHueDetectionThreshold'
+  colorSaturationDetectionThreshold:
+    info: 'colorSaturationDetectionThreshold'
+  colorValueDetectionThreshold:
+    info: 'colorValueDetectionThreshold'
+  # methods
+  monitor:
+    info: 'monitor'
+  isCamouflaged:
+    info: 'isCamouflaged'
+  canSeeColorOfAgent:
+    info: 'canSeeColorOfAgent'

@@ -11,7 +11,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from 'app/pages/elements/page-xui-styles';
+import { useStylesHOC } from 'app/pages/helpers/page-xui-styles';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -31,12 +31,26 @@ class SelectElement extends React.Component<any, any> {
     const { index, state } = props;
     this.index = index;
     this.state = { ...state }; // copy state prop
+    this.stopEvent = this.stopEvent.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.saveData = this.saveData.bind(this);
   }
   componentWillUnmount() {
     const { isEditable } = this.props;
     if (isEditable) this.saveData();
+  }
+  stopEvent(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    // Stop click here when user clicks inside form to edit.
+    // Otherwise clicks will propagage to InstanceEditor where it will exit edit mode
+  }
+  stopPropagation(e) {
+    // Stop click here when user clicks inside form to edit.
+    // Otherwise clicks will propagage to InstanceEditor where it will exit edit mode
+    // Special handling for pointerDown since the select needs
+    // pointerDown to open the menu
+    e.stopPropagation();
   }
   handleChange(e) {
     const { onChange } = this.props;
@@ -49,13 +63,21 @@ class SelectElement extends React.Component<any, any> {
   render() {
     const { index, value, options, selectMessage, type, classes } = this.props;
     return (
-      <select value={value} onChange={this.handleChange} onClick={this.stopEvent}>
-        <option value="">{selectMessage}</option>
-        {options.map(p => (
-          <option value={p} key={p}>
-            {p}
-          </option>
-        ))}
+      <select
+        value={value}
+        onChange={this.handleChange}
+        onClick={this.stopEvent}
+        onPointerDown={this.stopPropagation}
+      >
+        <option value="" disabled>
+          {selectMessage}
+        </option>
+        {options &&
+          options.map(p => (
+            <option value={p} key={p}>
+              {p}
+            </option>
+          ))}
       </select>
     );
   }

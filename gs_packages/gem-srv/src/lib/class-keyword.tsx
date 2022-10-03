@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 /*///////////////////////////////// CLASS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   The Keyword class is the base class for all GEMscript keywords.
@@ -17,82 +18,53 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
-import { IKeyword, TOpcode, TScriptUnit, IAgent } from 'lib/t-script';
-import GScriptTokenizer from 'lib/class-gscript-tokenizer';
-import { Evaluate } from 'lib/expr-evaluator';
+import { Evaluate } from 'script/tools/class-expr-evaluator-v2';
+import SymbolInterpreter from 'script/tools/class-symbol-interpreter';
+import * as BUNDLER from 'script/tools/script-bundler';
+import VSDToken from 'script/tools/class-validation-token';
+import {
+  UnpackToken,
+  UnpackArg,
+  TokenToUnitText
+} from 'modules/datacore/dc-sim-data-utils';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const scriptifier = new GScriptTokenizer();
-const styleIndex = {
-  fontWeight: 'bold' as 'bold', // this dumb typescriptery css workaround
-  backgroundColor: 'black',
-  color: 'white',
-  padding: '2px 4px',
-  marginTop: '-1px',
-  minWidth: '1.25em',
-  float: 'left' as 'left',
-  textAlign: 'right' as 'right' // this dumb typescriptery css workaround
-};
-const styleLine = { borderTop: '1px dotted gray' };
-const styleContent = { padding: '0.5em', overflow: 'hidden' };
 const DBG = false;
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** HACK: used to generate ever-increasing ID for rendering. They are all unique
- *  because our rendering loop just rerenders the entire list into a GUI every
- *  time. This is probably not the way to do it efficiently in React.
- */
-let ID_GENERATOR = 0;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Key id generator used by the base jsx() wrapper to create unique
- *  keys so React doesn't complain. This is probably bad and inefficient
- *  but it works for now.
- */
-function m_GenerateKey() {
-  return ID_GENERATOR++;
-}
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Keyword implements IKeyword {
   keyword: string;
-  args: any[]; // document only. can have array[][] for alt signatures
+  args: TGSArg[] | TGSArg[][]; // for symbol validation
+  shelper: SymbolInterpreter; // helper for extracting line data
   //
   constructor(keyword: string) {
     if (typeof keyword !== 'string')
       throw Error('Keyword requires string, not undefined');
-    else if (DBG) console.log('Keyword constructing:', keyword);
     this.keyword = keyword;
     this.args = [];
+    this.shelper = new SymbolInterpreter(keyword);
   }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** override in subclass */
-  compile(unit: TScriptUnit, idx?: number): TOpcode[] {
+  compile(kwArgs: TKWArguments, refs?: TSymbolRefs): TSMCProgram {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
-  /** override to output a serialized array representation for eventual reserialization */
-  serialize(state: object): TScriptUnit {
-    throw Error(`${this.keyword}.serialize() must be overridden by subclassers`);
-  }
-  /** override in subclass */
-  jsx(index: number, srcLine: TScriptUnit, children?: any): any {
-    // note that styleIndex below has to have weird typescript
-    // stuff for originally hyphenated CSS properties so it doesn't
-    // get marked by the linter as invalid CSS
-    return (
-      // old method generated a key instead of using index
-      // but this disconnects the instance from the script
-      // <div key={m_GenerateKey()} style={styleLine}>
-      <div key={index} style={styleLine}>
-        <div style={styleIndex}>{index}</div>
-        <div style={styleContent}>{children}</div>
-      </div>
-    );
-  }
-  /// UTILITY METHODS /////////////////////////////////////////////////////////
-  /** return the name of this keyword */
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** override in subclass to provide actual symbol data. Note that not every
+   *  keyword contributes symbols. addProp and addFeature may be the only
+   *  ones because they name properties and features that are used to lookup
+   *  the available props and methods on them.
+   */
+  symbolize(unit: TScriptUnit, line?: number): TSymbolData {
+    return {}; // change to throw Error when ready to update all keywords
+  }
+
+  /// UTILITY METHODS /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** return the name of this keyword */
   getName() {
     return this.keyword;
   }
@@ -106,54 +78,293 @@ class Keyword implements IKeyword {
     return [err];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  getMethodsMap() {
-    const map = new Map();
-    map.set('boolean', [
-      'setTo',
-      'true',
-      'false',
-      'invert',
-      'and',
-      'or',
-      'eq',
-      'slightlyTrue',
-      'mostlyTrue',
-      'slightlyFalse',
-      'mostlyFalse'
-    ]);
-    map.set('number', [
-      'setWrap',
-      'setMin',
-      'setMax',
-      'setTo',
-      'add',
-      'sub',
-      'div',
-      'mul',
-      'eq',
-      'gt',
-      'lt',
-      'gte',
-      'lte'
-    ]);
-    map.set('string', ['setTo', 'eq']);
-    return map;
+  /** utility to check if an tokIndex into a script unit is within bounds
+   */
+  indexInRange(unit: TScriptUnit, tokIndex): boolean {
+    const check = tokIndex === 0 || tokIndex > unit.length - 1;
+    if (!check) console.warn(`${unit[0]} tokIndex ${tokIndex} out of range`);
+    return check;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** utility to unpack the script unit tokens into a more inspectable form */
+  getUnpackedToken(token: IToken): [string, any] {
+    return UnpackToken(token);
+  }
+
+  /// SYMBOL OPERATIONS ///////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API utility to initialize parameters for SymbolInterpreter instance, which
+   *  must be done each time before validate() is called to ensure correct refs
+   *  symbol data and global objects are set */
+  setRefs(refs: TSymbolRefs) {
+    this.shelper.setSymbolTables(refs);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API default method for validating scriptUnits against scriptData.
+   *  Many keywords can use this as-is, but you may want to override
+   *  this for peculiar token orderings.
+   */
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    //
+    let tok: IToken; // hold reference to current dtoken for each pass through arglist
+    let vtok: TSymbolData; // hold vtok reference for each pass through arglist
+    let arg: TGSArg; // hold current argument
+
+    /* new */
+    // let argCount = this.shelper.countArgs(unit);
+
+    const vtoks: TSymbolData[] = [];
+
+    // (1) first token is keyword
+    tok = unit[0];
+    vtoks.push(this.shelper.anyKeyword(tok));
+
+    // (2) loop through keyword argument signature in this.args
+    let tokIndex = 1; // start dtok[1] after keyword
+    while (tokIndex < unit.length) {
+      // (2A) is this arg a special {args} marker?
+      tok = unit[tokIndex];
+      arg = this.args[tokIndex - 1] as TGSArg; // this.args also be TGSArg[]
+      const [, argType] = UnpackArg(arg);
+      // (2B) NOT an arglist? (a regular argument)?
+      if (argType !== '{...}') {
+        vtok = this.validateToken(arg, tok);
+        vtoks.push(vtok); // save the vtok and do the next token
+        tokIndex++;
+        continue;
+      }
+      // (2C) otherwise, it's an argument LIST of all remaining tokens
+      // now WE ARE HANDLING multiple tokens, so validate
+      const toks = unit.slice(tokIndex);
+      vtoks.push(...this.shelper.argsList(toks));
+      tokIndex += toks.length; // this ends the while loop
+    }
+    // (3) error if there are more tokens than keyword args
+    if (unit.length > tokIndex) {
+      for (tokIndex; tokIndex < unit.length; tokIndex++) {
+        tok = unit[tokIndex];
+        const tokInfo = UnpackToken(tok).join(':');
+        vtoks.push(this.invalidToken('extra', `unexpected token {${tokInfo}}`));
+      }
+    }
+
+    // return the validation data array
+    const log = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: log };
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Helper for automatic validation using inferred keyword token order
+   *  rules, which are:
+   *  .. objref reset scope to bundle
+   *  .. objref always followed by method arg
+   *  .. method use scope set by objref, followed by args
+   *  .. method sets scope to methodSig
+   *  You can also write your own costume validation() for clarity;
+   *  see props.tsx for an example
+   */
+  validateToken(arg: TGSArg, token?: IToken): TSymbolData {
+    let vtok;
+    const [argName, argType] = UnpackArg(arg);
+    const [tokType, value] = UnpackToken(token);
+
+    // error checking
+    if (argType === undefined)
+      vtok = this.invalidToken('invalid', `bad arg def ${arg}`);
+    // handle argType conversion
+    switch (argType) {
+      case 'objref': // value is string[] of parts
+        vtok = this.shelper.objRef(token);
+        // PROTOTYPE: add gsType to the token
+        vtok.gsType = argType;
+        break;
+      case 'method': // value is an identifier string
+        vtok = this.shelper.methodName(token);
+        // PROTOTYPE: add gsType to the token
+        vtok.gsType = argType;
+        break;
+      // TODO: handle other argTypes
+      case 'prop': // a prop reference
+        vtok = this.invalidToken('debug', "'prop' typehandler should be objref?");
+        break;
+      case 'expr':
+        vtok = this.shelper.anyExpr(token);
+        break;
+      case 'blueprint': // a blueprint name
+      case 'number': // value is
+      case 'string': // value is
+      case 'boolean': // value is
+      case 'pragma': // a directive
+      default:
+        vtok = this.invalidToken(
+          'debug',
+          `'${argType}' typehandler not implemented`
+        );
+    }
+    // validation token symbols
+    return vtok;
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** provide annotated log of validationTokens
+   *  the log tries to produce well-formatted output
+   */
+  makeValidationLog(vtoks: TSymbolData[]): string[] {
+    let max = 0;
+    const BAD_UNIT = 'NO_TOK';
+    const log = [];
+    // find max unitTextLength
+    vtoks.forEach(vtok => {
+      const { unitText = BAD_UNIT } = vtok;
+      if (unitText.length > max) max = unitText.length;
+    });
+    // create log
+    vtoks.forEach((vtok, ii) => {
+      const {
+        error,
+        unitText = BAD_UNIT,
+        gsType,
+        gsName,
+        symbolScope,
+        ...symbols
+      } = vtok;
+      let err = error ? error.info : '';
+      let dicts = [...Object.keys(symbols)];
+      let dictList = dicts.length ? dicts.join(', ') : '';
+      const spc = ' '.padStart(ii.toString().length);
+      let out = '';
+
+      if (gsType) out += `gsType:${gsType.padEnd(9, ' ')} `;
+      if (dictList) out += `SDICT ${dictList} `;
+      if (symbolScope) out += `symScope:${symbolScope} `;
+
+      if (err) {
+        out += `\n${spc} ${' '.padStart(max)} ! `; // indent below valid dictList
+        out += `ERROR ${err}`;
+      }
+      log.push(`${ii} ${unitText.padEnd(max)} - ${out}`);
+    });
+    return log; // for use by console
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** helper to return the current symbolData for underflow error reporting */
+  currentScope() {
+    return this.shelper.cur_scope || {};
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** utility to create a TSymbolData object with errors, with option to
+   *  add valid symbols */
+  invalidToken(code: TValidationErrorCodes, info: string, symbols?: TSymbolData) {
+    return new VSDToken(symbols, {
+      gsArg: ':{?}',
+      err_code: code,
+      err_info: info
+    });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** utility to create a TSymbolData object for valid tokens */
+  validToken(symbols: TSymbolData, gsArg: TGSArg, unitText: string) {
+    return new VSDToken(symbols, { gsArg, unitText });
+  }
+
+  /// JSX UTILITIES ///////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** DEPRECATED. The jsx() call was used for the old prototype gui wizard */
+  jsx() {
+    console.groupCollapsed('%ckeyword.jsx() is deprecated', 'color:red');
+    console.error('trace');
+    console.groupEnd();
+    return [];
+  }
+
+  /// UTILITIES ///////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** general utility to return first value in an array, or the value of the
+   *  passed object */
+  utilFirstValue(thing: any) {
+    if (Array.isArray(thing)) return thing.shift();
+    return thing;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** given an objref, figure out what kind of reference it is by looking
+   *  up symbol information. returns symbols if they exist */
+  derefProp(objRef: IToken): Function {
+    const fn = 'runtimeDeref:';
+    const unitText = TokenToUnitText;
+    const [category, ref] = BUNDLER.GetSymbolsForObjref(objRef);
+    const { bpName } = BUNDLER.BundlerState();
+    if (ref === undefined) throw Error(`${fn} ${category}`);
+    let deref: Function;
+    if (DBG) console.log(`${fn} decoding '${category}' with ${ref.join('.')}`);
+    switch (category) {
+      case 'feature':
+        deref = (agent: IAgent, context?: any) => {
+          const f = agent.getFeature(ref[0]);
+          if (f === undefined)
+            throw Error(`${fn} agent missing feature '${ref[0]}`);
+          return f;
+        };
+        break;
+      case 'featureProp':
+        deref = (agent: IAgent, context?: any) => {
+          const fp = agent.getFeatProp(ref[0], ref[1]);
+          if (fp === undefined)
+            throw Error(`${fn} agent missing featProp '${ref[0]}.${ref[1]}`);
+          return fp;
+        };
+        break;
+      case 'prop':
+        deref = (agent: IAgent, context?: any) => {
+          const p: ISM_Object = agent.getProp(ref[0]);
+          if (p === undefined) {
+            throw Error(`${fn} agent missing prop '${ref[0]}'`);
+          }
+          return p;
+        };
+        break;
+      case 'blueprintFeature':
+        deref = (agent: IAgent, context?: any) => {
+          const bpAgent: IAgent = context[ref[0]];
+          if (bpAgent === undefined) {
+            throw Error(`${fn} agent missing blueprint ref '${ref[0]}'`);
+          }
+          const f = bpAgent.getFeature(ref[1]);
+          if (f === undefined) {
+            throw Error(
+              `${fn} bpAgent '${ref[0]}' does not have feature '${ref[1]}'`
+            );
+          }
+          return f;
+        };
+        break;
+      case 'blueprintFeatureProp':
+        deref = (agent: IAgent, context?: any) => {
+          const bpAgent: IAgent = context[ref[0]];
+          if (bpAgent === undefined) {
+            throw Error(`${fn} agent missing blueprint ref '${ref[0]}'`);
+          }
+          const fp = bpAgent.getFeatProp(ref[1], ref[2]);
+          if (fp === undefined) {
+            throw Error(
+              `${fn} bpAgent '${ref[0]}.${ref[1]}' does not have prop '${ref[2]}'`
+            );
+          }
+        };
+        break;
+      default:
+        throw Error(`error: ${unitText} is not a valid objref for ${bpName}`);
+    }
+    return deref;
   }
 } // end of Keyword Class
 
-/*/////////////////////////////////// * \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
-
-  STATIC UTILITY METHODS - for handling runtime arguments that need to be
-  evaluated in the context of the runtime agent, which can't be determined
-  at compile time.
-
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-
+/// STATIC UTILITY METHODS ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// for handling runtime arguments that need to be evaluated in the context of
+/// the runtime agent, which can't be determined at compile time.
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** checks a given argument, and if it's an object we'll assume it's an
- *  UnitToken and evaluate it. Otherwise, just return the value as-is
- */
-function EvalRuntimeArg(arg: any, context): any {
+ *  UnitToken and evaluate it. Otherwise, just return the value as-is */
+function _evalRuntimeArg(arg: any, context): any {
   // return literals and arrays without changing
   // this is most objects
   if (typeof arg !== 'object') return arg;
@@ -188,35 +399,24 @@ function EvalRuntimeArg(arg: any, context): any {
     }
     return result;
   }
-  console.error('EvalRuntimeArg: unknown arg type', arg);
+  console.error('_evaluateArg: unknown arg type', arg);
   return undefined;
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** checks a given argument, and if it's an object we'll assume it's an
- *  UnitToken return a JSX element to stuff into the GUI
- */
-function JSXifyArg(arg: any) {
-  // Return JSX GUI element for specific types
-  if (typeof arg !== 'object') return arg; // placeholder
-  // if Array.isArray(arg)
-  // if typeof arg==='number'
-  // if typeof arg==='string'
-  // if typeof arg==='boolean'
-  // handle special object cases
-  if (arg.program) return ['program block'];
-  if (arg.objref) return arg.objref.join('.');
-  if (arg.expr) return `{{ ${arg.expr} }}`;
-  console.error('JSXifyArg: unknown arg type', arg);
-  return undefined;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** used by keyword compile-time to retreve a prop object dereferencing function
  *  that will be executed at runtime */
-function DerefProp(refArg) {
+function K_DerefProp(refArg): DerefMethod {
+  const fn = 'K_DerefProp:';
   // ref is an array of strings that are fields in dot addressing
   // like agent.x
-  const ref = refArg.objref || [refArg];
+  if (refArg === undefined)
+    // HACK
+    // TEMPORARY DEV Testing OVERRIDE -- don't throw error, just console log it
+    // throw Error(`${fn} objref arg is undefined (bad scriptText?)`);
+    // FIXME: We meed to properly deref this.
+    console.error(`${fn} objref arg is undefined (bad scriptText?)`);
+  const ref = refArg ? refArg.objref || [refArg] : 'badref';
   const len = ref.length;
   // create a function that will be used to dereferences the objref
   // into an actual call
@@ -225,7 +425,7 @@ function DerefProp(refArg) {
     /** IMPLICIT REF *******************************************************/
     /// e.g. 'x' is assumed to be 'agent.x'
     deref = (agent: IAgent, context: any) => {
-      const p = agent.getProp(ref[0]);
+      const p: ISM_Object = agent.getProp(ref[0]);
       if (p === undefined) {
         console.log('agent', agent);
         throw Error(`agent missing prop '${ref[0]}'`);
@@ -234,12 +434,18 @@ function DerefProp(refArg) {
     };
   } else if (len === 2) {
     /** EXPLICIT REF *******************************************************/
-    /// e.g. 'agent.x' or 'Bee.x'
+    /// e.g. 'agent.x' or 'Bee.x' or 'global.x'
     deref = (agent: IAgent, context: any) => {
       const c = ref[0] === 'agent' ? agent : context[ref[0]];
-      if (c === undefined) throw Error(`context missing '${ref[0]}' key`);
-      const p = c.getProp(ref[1]);
-      if (p === undefined) throw Error(`missing prop '${ref[1]}'`);
+      if (c === undefined)
+        throw Error(
+          `context missing '${ref[0]}' key. Agent is ${JSON.stringify(
+            agent
+          )} Context is ${JSON.stringify(context)}`
+        );
+      const p: ISM_Object = c.getProp(ref[1]);
+      if (p === undefined)
+        throw Error(`missing prop '${ref[1]}' from agent '${c}'`);
       return p;
     };
   } else {
@@ -250,7 +456,7 @@ function DerefProp(refArg) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** this doesn't work with expressions */
-function DerefFeatureProp(refArg) {
+function K_DerefFeatureProp(refArg) {
   // ref is an array of strings that are fields in dot addressing
   // like agent.x
   const ref = refArg.objref || [refArg];
@@ -290,60 +496,18 @@ function DerefFeatureProp(refArg) {
 /** called by keywords that need to do runtime evaluation of an expression from
  *  within the returned program
  */
-function EvalRuntimeUnitArgs(unit: TScriptUnit, context: {}): any {
+function K_EvalRuntimeUnitArgs(unit: TKWArguments, context: {}): any {
   if (!Array.isArray(unit)) throw Error('arg must be TScriptUnit, an array');
   // note that unit is passed at creation time, so it's immutable within
   // the TOpcode. We need to return a copy through map()
-  return unit.map(arg => EvalRuntimeArg(arg, context));
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** called by keyword jsx generator to return data that can be used by JSX
- *
- */
-function JSXFieldsFromUnit(unit: TScriptUnit): any {
-  const jsxArray = unit.map(arg => JSXifyArg(arg));
-  return jsxArray;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Given an array of untokenized script unit strings, produce a source text
- *  This is used by keyword serializers to convert their data into a line
- *  of script text.
- *    e.g. ['prop', 'x', 'setTo', '5'] => 'prop x setTo 5'
- *  The challenge is dealing with empty args,  So we can't simply use joins.
- *    e.g. with a join, ['prop', 'x', 'setTo', ''] => 'prop x setTo '
- *    but instead we want ['prop', 'x', 'setTo', ''] => 'prop x setTo ""'
- */
-function TextifyScriptUnitValues(unit: string[]): string {
-  const scriptText: string = unit.reduce((acc: string, curr: string) => {
-    if (curr === '') return `${acc} ""`;
-    return `${acc} ${curr}`;
-  });
-  return scriptText.trim();
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Given a text with multiline blocks, emit an array of strings corresponding
- *  to regular strings and [[ ]] demarked lines. The output nodes are processed
- *  back into a single line with m_StitchifyBlocks(). Returns an array of
- *  string arrays.
- */
-// REVIEW: This is duplicated in transpiler.
-//         It's here so that keywords (like props) can ScriptifyText directly
-//         avoiding a dependency cycle with transpiloer.
-function ScriptifyText(text: string): TScriptUnit[] {
-  if (text === undefined) return [];
-  const sourceStrings = text.split('\n');
-  const script = scriptifier.tokenize(sourceStrings);
-  return script;
+  return unit.map(arg => _evalRuntimeArg(arg, context));
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default Keyword; // default export: import Keyword
 export {
-  EvalRuntimeUnitArgs, // convert all args in unit to runtime values
-  JSXFieldsFromUnit, // convert arg to JSX-renderable item
-  DerefProp, // return function to access agent prop at runtime
-  DerefFeatureProp, // return function to access agent prop at runtime
-  TextifyScriptUnitValues,
-  ScriptifyText
+  K_EvalRuntimeUnitArgs, // convert all args in unit to runtime values
+  K_DerefProp, // return function to access agent prop at runtime
+  K_DerefFeatureProp // return function to access agent prop at runtime
 };

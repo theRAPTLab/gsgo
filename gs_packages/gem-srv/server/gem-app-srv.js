@@ -2,6 +2,7 @@
 /*/////////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   UR Web Application Server
+
   Creates a "hot compiling/reloading" application servers that uses webpack
   as middleware. This is advantageous when debugging a webapp that's served
   from inside an Electron host.
@@ -12,25 +13,38 @@
 const Express = require('express'); //your original BE server
 const Compression = require('compression');
 const Path = require('path');
+const FSE = require('fs-extra');
 const IP = require('ip');
 const CookieP = require('cookie-parser');
+const ServeIndex = require('serve-index');
 const Webpack = require('webpack');
 const WebpackDev = require('webpack-dev-middleware');
 const WebpackHot = require('webpack-hot-middleware');
-const { Express_NetInfoResponder, PrefixUtil } = require('@gemstep/ursys/server');
+const UR = require('@gemstep/ursys/server');
+
+const {
+  GS_ASSETS_PATH,
+  GS_ASSETS_PROJECT_ROOT,
+  GS_ASSET_HOST_URL,
+  PACKAGE_NAME,
+  GS_APP_PORT
+} = require('../config/gem-settings');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const wpconf_packager = require('../config/wp.pack.webapp');
+const resolvers = require('../config/graphql/resolvers');
 
 /// DEBUG INFO ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = PrefixUtil('APPSRV');
+const TERM = UR.TermOut(PACKAGE_NAME);
+const DBG = false;
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
-const PORT = 80;
+const PORT = GS_APP_PORT;
 const DIR_ROOT = Path.resolve(__dirname, '../');
 const DIR_OUT = Path.join(DIR_ROOT, 'built/web');
+const TIMESTAMP = Date.now();
 
 /// SERVER DECLARATIONS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,22 +57,31 @@ function m_AppListen(opt = {}) {
     const ip = `\x1b[33m${IP.address()}\x1b[0m`;
     const port = `\x1b[33m${PORT}\x1b[0m`;
     m_server = app.listen(PORT, () => {
-      console.log(...PR(`webapp bundle: '${DIR_OUT}'`));
-      console.log(...PR(`webapp server listening ${ip} on port ${port}`));
-      if (!opt.skipWebCompile) console.log(...PR('LIVE RELOAD ENABLED'));
+      TERM(`webapp bundle: '${DIR_OUT}'`);
+      TERM(`webapp server listening ${ip} on port ${port}`);
+      if (!opt.skipWebCompile) TERM('LIVE RELOAD ENABLED');
     });
   }
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Close the expres webserver. Called from gem_run.js on SIGINT */
+async function CloseAppServer() {
+  TERM('SIGINT signal received: closing HTTP server', TIMESTAMP);
+  if (m_server)
+    await m_server.close(() => {
+      TERM('HTTP server closed');
+      process.exit();
+    });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Start the express webserver on designated PORT
  */
 function StartAppServer(opt = {}) {
+  TERM('START HTTP server (Express)', TIMESTAMP);
   const { skipWebCompile = false } = opt;
-  console.log(
-    ...PR('COMPILING WEBSERVER w/ WEBPACK - THIS MAY TAKE SEVERAL SECONDS...')
-  );
+  const assetsPath = opt.assetsPath || GS_ASSETS_PATH;
   let promiseStart;
 
   if (!skipWebCompile) {
@@ -73,7 +96,7 @@ function StartAppServer(opt = {}) {
       publicPath: wp_config.output.publicPath,
       stats: 'errors-only' // see https://webpack.js.org/configuration/stats/
     });
-    console.log(...PR('... starting hot devserver (this may take a while)'));
+    TERM('... starting hot devserver (this may take a while)');
 
     app.use(Compression());
     app.use(wp_devserver);
@@ -96,7 +119,7 @@ function StartAppServer(opt = {}) {
       // start compile status update timer
       let INTERVAL = setInterval(() => {
         if (++INTERVAL_COUNT < INTERVAL_MAX) {
-          console.log(...PR('... transpiling bundle'));
+          TERM('... transpiling bundle');
         } else {
           clearInterval(INTERVAL);
           const emsg = `webpack compile time > INTERVAL_MAX (${COMPILE_TIME} seconds)`;
@@ -108,25 +131,31 @@ function StartAppServer(opt = {}) {
       // set resolver
       wp_compiler.hooks.afterCompile.tap('ResolvePromise', () => {
         if (!COMPILE_RESOLVED) {
-          console.log(...PR('... transpiling complete!'));
+          TERM('... transpiling complete!');
           clearInterval(INTERVAL);
           resolve();
           COMPILE_RESOLVED = true;
         } else {
-          console.log(...PR('RECOMPILED SOURCE CODE and RELOADING'));
+          TERM('RECOMPILED SOURCE CODE and RELOADING');
         }
       });
     });
   } else {
     const TS = '\x1b[33m';
     const TE = '\x1b[0m';
-    console.log(...PR(`*** ${TS}SKIPPING APP BUILD${TE} for fast server launch`));
-    console.log(...PR(`*** ${TS}ONLY SERVER CODE CHANGES${TE} WILL LIVE RELOAD`));
+    TERM(`*** ${TS}SKIPPING APP BUILD${TE} for fast server launch`);
+    TERM(`*** ${TS}ONLY SERVER CODE CHANGES${TE} WILL LIVE RELOAD`);
     m_AppListen(opt);
   }
+
+  FSE.ensureDirSync(Path.join(assetsPath));
+  const INDEX_TEXT = 'GEMSRV ASSET SERVER (PROXY)';
+  const INDEX_SEND = Path.join(assetsPath, '_serverId.txt');
+  FSE.writeFileSync(INDEX_SEND, INDEX_TEXT);
+
   // configure cookies middleware (appears in req.cookies)
   app.use(CookieP());
-  // configure headers to allow cross-domain requests of media elements
+  // configure headers to allow CORS cross-domain requests of media elements
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header(
@@ -154,7 +183,40 @@ function StartAppServer(opt = {}) {
   });
 
   // handle urnet
-  app.use(Express_NetInfoResponder);
+  app.use(UR.NetInfo_Middleware);
+
+  // GraphQL interface
+  UR.UseLokiGQL_Middleware(app, {
+    dbFile: 'runtime/db.loki',
+    dbImportFile: 'config/graphql/dbinit-loki.json',
+    doReset: false,
+    schemaFile: 'config/graphql/schema.graphql',
+    root: resolvers
+  });
+
+  // Asset Media Directory
+  app.use(
+    '/assets',
+    UR.AssetManifest_Middleware({
+      assetPath: GS_ASSETS_PATH,
+      remoteAssetUrl: GS_ASSET_HOST_URL
+    }),
+    Express.static(GS_ASSETS_PATH),
+    UR.MediaProxy_Middleware({ remoteAssetUrl: GS_ASSET_HOST_URL }),
+    ServeIndex(GS_ASSETS_PATH, { 'icons': true })
+  );
+
+  // Project Updates
+  // -- Add express middleware for parsing req.body
+  app.use(Express.json());
+  app.put(
+    '/assets-update/:projId',
+    UR.AssetUpdate_Middleware({
+      assetPath: GS_ASSETS_PATH,
+      projectRoot: GS_ASSETS_PROJECT_ROOT,
+      remoteAssetUrl: GS_ASSET_HOST_URL
+    })
+  );
 
   // for everything else...
   app.use('/', Express.static(DIR_OUT));
@@ -165,4 +227,4 @@ function StartAppServer(opt = {}) {
 
 /// MODULE EXPORT /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { StartAppServer, PORT };
+module.exports = { StartAppServer, CloseAppServer, PORT };

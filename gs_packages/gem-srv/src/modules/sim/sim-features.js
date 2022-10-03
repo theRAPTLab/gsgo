@@ -7,11 +7,14 @@
   Features are instantiated once.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-
 // ACTIVATE FEATURES (SELF-INSTALLING ON IMPORT)
-import './features/feat-movement';
-import './features/feat-timer';
+import './features/feat-graphing';
 import './features/feat-costume';
+import './features/feat-cursor';
+import './features/feat-movement';
 import './features/feat-physics';
 import './features/feat-population';
+import './features/feat-timer';
 import './features/feat-touches';
+import './features/feat-vision';
+import './features/feat-IU';

@@ -1,17 +1,16 @@
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-import React from 'react';
+import React, { Fragment } from 'react';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
+import ArrowIcon from '@material-ui/icons/ArrowDropDown';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 
 const SIZE_MIN = 'min'; // name only
 const SIZE_MAX = 'max'; // all
 
 /**
  * InstanceInspector can display two types of data.
- *  * GAgent -- e.g. instance name is instance.meta.name
+ *  * SM_Agent -- e.g. instance name is instance.meta.name
  *  * Instance Spec -- e.g. instance name is instance.name
  *
  * We support both because
@@ -30,13 +29,27 @@ class InstanceInspector extends React.Component {
       color: '#009900',
       colorActive: '#33FF33',
       bgcolor: 'rgba(0,256,0,0.05)',
-      isHovered: false
+      isHovered: false,
+      isExpanded: true, // disclosure triangle
+      propsToHide: [
+        'zIndex',
+        'skin',
+        'scale',
+        'scaleY',
+        'alpha',
+        'isInert',
+        'statusText',
+        'statusValue',
+        'statusValueColor',
+        'statusValueIsLarge'
+      ]
     };
     this.GetInstanceName = this.GetInstanceName.bind(this);
     this.GetInstanceId = this.GetInstanceId.bind(this);
     this.GetInstanceProperties = this.GetInstanceProperties.bind(this);
     this.HandleInspectorClick = this.HandleInspectorClick.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
+    this.OnDisclosureClick = this.OnDisclosureClick.bind(this);
     // Sim Hover
     this.HandleHoverOver = this.HandleHoverOver.bind(this);
     this.HandleHoverOut = this.HandleHoverOut.bind(this);
@@ -70,12 +83,12 @@ class InstanceInspector extends React.Component {
   }
 
   GetInstanceName() {
-    // Is `instance` a `GAgent` or an `instanceSpec`
-    // -- if instance.meta then instance is a GAgent, so get name via instance.meta.name
+    // Is `instance` a `SM_Agent` or an `instanceSpec`
+    // -- if instance.meta then instance is a SM_Agent, so get name via instance.meta.name
     // -- else instance is an instanceDef so get name via instance.name
     const { instance } = this.props;
     if (!instance) return '';
-    return instance.meta ? instance.meta.name : instance.name;
+    return instance.meta ? instance.meta.name : instance.label;
   }
 
   GetInstanceId() {
@@ -132,6 +145,7 @@ class InstanceInspector extends React.Component {
     const { size, alreadyRegistered } = this.state;
     const { instance, disallowDeRegister } = this.props;
     const id = instance.id;
+    const agentName = this.GetInstanceName();
     let registrationStatus = alreadyRegistered;
     let newsize;
     switch (size) {
@@ -141,6 +155,7 @@ class InstanceInspector extends React.Component {
           UR.RaiseMessage('NET:INSPECTOR_REGISTER', { id });
           // Inspectors will be automatically updated during SIM/UI_UPDATE phase
           registrationStatus = true;
+          UR.LogEvent('Inspect', ['Show Inspector', agentName]);
         }
         break;
       default:
@@ -150,9 +165,16 @@ class InstanceInspector extends React.Component {
           UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { id });
           registrationStatus = false;
         }
+        UR.LogEvent('Inspect', ['Hide Inspector', agentName]);
         break;
     }
     this.setState({ size: newsize, alreadyRegistered: registrationStatus });
+    this.inspector.scrollIntoView();
+  }
+  OnDisclosureClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.setState(state => ({ isExpanded: !state.isExpanded }));
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -188,13 +210,27 @@ class InstanceInspector extends React.Component {
     UR.RaiseMessage('SIM_INSTANCE_HOVEROUT', { agentId });
   }
   render() {
-    const { title, size, color, colorActive, bgcolor, isHovered } = this.state;
+    const {
+      title,
+      size,
+      color,
+      colorActive,
+      bgcolor,
+      isHovered,
+      isExpanded,
+      propsToHide
+    } = this.state;
     const { id, instance, isActive, disallowDeRegister, classes } = this.props;
     const agentName = this.GetInstanceName();
-    const blueprintName = instance.blueprint.name;
+    const blueprintName = instance.blueprint ? instance.blueprint.name : '';
     const data = this.GetInstanceProperties();
+    const visibleProps = data.filter(p => !propsToHide.includes(p.label));
+    const hiddenProps = data.filter(p => propsToHide.includes(p.label));
     return (
       <div
+        ref={c => {
+          this.inspector = c;
+        }}
         style={{
           backgroundColor: '#000',
           margin: '0.5em 0 0.5em 0.5em',
@@ -213,18 +249,46 @@ class InstanceInspector extends React.Component {
         </div>
         <div
           style={{
-            fontFamily: 'Andale Mono, monospace',
-            fontSize: '10px',
+            // fontFamily: 'Andale Mono, monospace',
+            display: 'grid',
+            gridTemplateColumns: 'auto auto',
+            gridTemplateRows: '1fr',
+            fontSize: '14px',
             paddingLeft: '0.5em'
           }}
         >
-          {data.length > 0 && (
-            <div
-              style={{
-                display: 'inline-block',
-                paddingRight: '1em'
-              }}
-            >
+          {visibleProps.map(property => (
+            <Fragment key={`wrap${property.label}`}>
+              <div className={classes.inspectorLabel} key={property.label}>
+                {property.label}:
+              </div>
+              <div
+                className={classes.inspectorData}
+                key={`${property.label}-value`}
+              >
+                {property.value}
+              </div>
+            </Fragment>
+          ))}
+          {isExpanded && (
+            <>
+              {hiddenProps.map(property => (
+                <Fragment key={`wrap${property.label}`}>
+                  <div className={classes.inspectorLabel} key={property.label}>
+                    {property.label}:
+                  </div>
+                  <div
+                    className={classes.inspectorData}
+                    key={`${property.label}-value`}
+                  >
+                    {property.value}
+                  </div>
+                </Fragment>
+              ))}
+            </>
+          )}
+          {isExpanded && data.length > 0 && (
+            <>
               <div
                 className={classes.inspectorLabel}
                 style={{ fontsize: '10px' }}
@@ -232,22 +296,31 @@ class InstanceInspector extends React.Component {
                 Character Type:
               </div>
               <div className={classes.inspectorData}>{blueprintName}</div>
-            </div>
+            </>
           )}
-          {data &&
-            data.map(property => (
-              <div
-                style={{
-                  display: 'inline-block',
-                  paddingRight: '1em'
-                }}
-                key={property.label}
-              >
-                <div className={classes.inspectorLabel}>{property.label}:</div>
-                <div className={classes.inspectorData}>{property.value}</div>
-              </div>
-            ))}
         </div>
+        {size === SIZE_MAX && (
+          <button
+            type="button"
+            onClick={this.OnDisclosureClick}
+            className={classes.buttonLink}
+            style={{
+              minHeight: '20px',
+              height: '20px',
+              width: '100%',
+              margin: '5px 0 0 0'
+            }}
+          >
+            <ArrowIcon
+              size="small"
+              className={
+                isExpanded
+                  ? classes.disclosureExpanded
+                  : classes.disclosureCollapsed
+              }
+            />
+          </button>
+        )}
       </div>
     );
   }

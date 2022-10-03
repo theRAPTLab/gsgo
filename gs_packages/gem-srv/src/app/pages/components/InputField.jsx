@@ -6,78 +6,75 @@
 
   type = 'string' || 'number'
 
+  Input `value` is set via parent prop.value
+  All changes are sent immediately with prop.onChange
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../elements/page-xui-styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
+const DBG = false;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class InputField extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      currentValue: ''
-    };
-    this.onChange = this.onChange.bind(this);
+    this.onInputChange = this.onInputChange.bind(this);
     this.onKeyDown = this.onKeyDown.bind(this);
-    this.onBlur = this.onBlur.bind(this);
-    this.saveData = this.saveData.bind(this);
+    this.sendExitSignal = this.sendExitSignal.bind(this);
     this.onClick = this.onClick.bind(this);
   }
-  componentDidMount() {
-    const { value } = this.props;
-    this.setState({
-      currentValue: value
-    });
+
+  onInputChange(e) {
+    const { onChange } = this.props;
+    onChange({ value: e.currentTarget.value });
   }
-  componentWillUnmount() {
-    const { isEditable } = this.props;
-    if (isEditable) this.saveData();
-  }
-  onChange(e) {
-    this.setState({
-      currentValue: e.currentTarget.value,
-      isDirty: true
-    });
-  }
+
   onKeyDown(e) {
-    if (e.key === 'Enter') this.saveData(true);
+    if (e.key === 'Enter') this.sendExitSignal();
   }
-  onBlur() {
-    this.saveData();
-  }
+
   onClick(e) {
+    // Stop click here when user clicks inside form to edit.
+    // Otherwose clicks will propagage to InstanceEditor where it will exit edit mode
     e.preventDefault();
     e.stopPropagation();
-    // Stop click here when user clicks inside form to edit.
-    // Other clicks will propagage to InstanceEditor where it will exit edit mode
   }
-  /**
-   *
-   * @param {boolean} exitEdit Tell InstanceEditor to exit edit mode.
-   *                           Used to handle exiting edit on "Enter"
+
+  /** Tell InstanceEditor to exit edit mode.
+   *  Used to handle exiting edit on "Enter"
    */
-  saveData(exitEdit = false) {
-    const { isDirty, currentValue } = this.state;
-    const { onSave } = this.props;
-    if (!isDirty) return;
-    const updata = {
-      instanceName: currentValue,
-      exitEdit
-    };
-    onSave(updata);
+  sendExitSignal() {
+    const { onChange } = this.props;
+    onChange({ exitEdit: true });
   }
+
+  stopPropagation(e) {
+    // Special handling to prevent a mouseUp on InstanceEditor
+    // from canceling edit.
+    // This happens when the user clicks down on the InputFIeld
+    // then drags, releasing the mouse outside of this field.
+    e.stopPropagation();
+  }
+
   render() {
-    const { index, propName, value, type, isEditable, classes } = this.props;
-    const { currentValue } = this.state;
+    const {
+      index,
+      propName,
+      value,
+      type,
+      isEditable,
+      onChange,
+      classes
+    } = this.props;
+
+    if (DBG) console.log('DUMMY log to clear eslint', index, onChange);
+
     let jsx;
     if (isEditable) {
       // Show Form
@@ -85,12 +82,13 @@ class InputField extends React.Component {
         <div style={{ display: 'grid', gridTemplateColumns: '80px auto 15px' }}>
           <div className={classes.instanceEditorLabel}>{propName} </div>
           <input
-            onChange={this.onChange}
+            onChange={this.onInputChange}
             onKeyDown={this.onKeyDown}
             onBlur={this.onBlur}
             onClick={this.onClick}
+            onPointerDown={this.stopPropagation}
             type={type}
-            value={currentValue}
+            value={value}
             className={classes.instanceEditorField}
           />
         </div>
@@ -99,7 +97,7 @@ class InputField extends React.Component {
       // Show Static Value
       jsx = (
         <>
-          <div className={classes.inspectorLabel}>{propName}:&nbsp;</div>
+          {/* <div className={classes.inspectorLabel}>{propName}:&nbsp;</div> */}
           <div className={classes.inspectorData}>{value}&nbsp; </div>
         </>
       );

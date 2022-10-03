@@ -4,15 +4,34 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-const $$ = require('./ur-common');
+const $$ = require('./common/ur-constants');
 const DifferenceCache = require('./class-diff-cache');
 const PathedHasher = require('./class-pathed-hasher');
-const DBG = require('./ur-dbg-settings');
+const DBG = require('./common/debug-props');
+
+/// META DATA /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** these properties are exported from the library so you can tell if the
+ *  ur instance you're using is serverside or clientside, if that needs
+ *  to be checked
+ */
+const META = {
+  _CLIENT: true,
+  _SCRIPT: __filename,
+  _VERSION: '0.0.1'
+};
+
+/// DECLARATIONS //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let URSYS_RUNNING = false;
+let URSYS_ROUTE = '';
 
 /// URNET MESSAGING SYSTEM ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let BROKER_UINFO = {};
 let CLIENT_UINFO = {};
+let URDB_UINFO = {};
+let BUILD_UINFO = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** saved from client-netinfo { host, port, uaddr, urnet_version } */
 function SaveBrokerInfo(info) {
@@ -22,6 +41,27 @@ function SaveBrokerInfo(info) {
     BROKER_UINFO[prop] = info[prop];
   });
   return BROKER_UINFO;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** saved from client-netinfo { urdb }
+ */
+function SaveDBInfo(urdb) {
+  if (urdb === undefined) throw Error('SaveDBInfo got undefined parameter');
+  Object.keys(urdb).forEach(prop => {
+    if (URDB_UINFO[prop]) console.log('overwriting urdb info', prop);
+    URDB_UINFO[prop] = urdb[prop];
+  });
+  // console.log('saving urdb', URDB_UINFO);
+  return URDB_UINFO;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** build info is information about the current build (e.g. git branch) */
+function SaveBuildInfo(build) {
+  if (build === undefined) throw Error('SaveBuildInfo got undefined parameter');
+  Object.keys(build).forEach(prop => {
+    BUILD_UINFO[prop] = build[prop];
+  });
+  return BUILD_UINFO;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** saved from client-netinfo { ip }
@@ -65,12 +105,35 @@ function MyNetBroker() {
   return BROKER_UINFO.host;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function MyBuildBranch() {
+  return BUILD_UINFO.branch || 'unknown';
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ConnectionString() {
   const { host } = BROKER_UINFO;
   const port = window.location.port;
   let str = `${MyUADDR()} ⇆ ${host}`;
   if (port) str += `:${port}`;
   return str;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function HostString() {
+  const { host } = BROKER_UINFO;
+  const port = window.location.port;
+  let str = `${host}`;
+  if (port) str += `:${port}`;
+  return str;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function BranchString() {
+  const branch = MyBuildBranch();
+  if (branch) return `${branch}`;
+  return '';
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function URDB_GraphQL() {
+  const { protocol, host, endpoint } = URDB_UINFO;
+  return `${protocol}://${host}${endpoint}`;
 }
 
 /// ENDPOINT DATA STRUCTURES //////////////////////////////////////////////////
@@ -197,16 +260,26 @@ function GetDeviceDirectory() {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
+  // CONSTANT
+  URSYS_RUNNING,
+  URSYS_ROUTE,
+  META,
   // NETWORK PARAMETERS
   SaveBrokerInfo,
   SaveClientInfo,
+  SaveDBInfo,
+  SaveBuildInfo,
   MyUADDR,
   MyAppPath,
   MyAppServerHostname,
   MyAppServerPort,
   MyNetBrokerInfo,
   MyNetBroker,
+  MyBuildBranch,
+  URDB_GraphQL,
   ConnectionString,
+  HostString,
+  BranchString,
   // URNET
   SetSharedEndPoints,
   GetSharedEndPoints,

@@ -5,8 +5,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import * as PIXI from 'pixi.js';
-import { Visual } from 'lib/t-visual';
-import { ISyncMap, ISyncResults } from 'lib/t-pool';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,16 +37,6 @@ export function SetAnnotRP(map: ISyncMap) {
 }
 export function GetAnnotRP() {
   return RP_ANNOT_TO_VOBJ;
-}
-/// DEBUG /////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function OutSyncResults(res: ISyncResults): string[] {
-  const { added, updated, removed } = res;
-  let out = [];
-  if (added && added.length > 0) out.push(`added(${added.length})`);
-  if (updated && updated.length > 0) out.push(`updated(${updated.length})`);
-  if (removed && removed.length > 0) out.push(`removed(${removed.length})`);
-  return out;
 }
 
 /// ADD VISUALS ///////////////////////////////////////////////////////////////

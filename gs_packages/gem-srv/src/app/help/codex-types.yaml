@@ -1,0 +1,151 @@
+# help for argument types as defined in TSymbolData for argument types used in GEMSCRIPT
+# note: the TGSArg declaration is two parts: 'argName:argType', but argName is not always
+# passed back to the GUI
+
+pragma:
+  name: 'pragma'
+  input: 'This command is required by the system and cannot be changed.'
+  info: 'This command is required by the system and cannot be changed.'
+
+boolean:
+  name: 'boolean value'
+  input: 'Choose true or false'
+  info: 'Booleans can store true or false values'
+
+string:
+  name: 'string value'
+  input: 'Enter text (do not use quotes)'
+  info: 'Strings are used to store letters and numbers'
+
+number:
+  name: 'numeric value'
+  input: 'Enter digits. You may use a decimal point'
+  info: 'Number properties can store numbers, including decimal points'
+
+identifier:
+  name: 'identifier'
+  input: 'Enter alphanumeric characters with no spaces or leading numbers'
+  info: 'An identifier is a special name that GEMSCRIPT will recognize. See the instructions above for your options.'
+
+prop:
+  name: 'property name'
+  input: 'Choose a property to use'
+  info: 'Properties can be a numberr, string (words and letters) or boolean (true or false). Every character has its own copy of the property.'
+
+method:
+  name: 'method name'
+  input: 'Select a method (action).  Available methods are determined by the property type or feature selected.'
+  info: 'A method is an action that can be performed by a property or features'
+
+propType:
+  name: 'property type'
+  input: 'Pick the kind of value this prop should hold (string, number, or boolean)'
+  info: 'A property type declares the kind of values a named property can use. This can be a string, number, or boolean.'
+
+objref:
+  name: 'object reference'
+  input: 'Select an item from each column to specify the property you want to use'
+  info: 'Object references refer to properties and methods that are INSIDE something else. This provides a way of organizing related properties and methods.'
+
+expr: &exprstr
+  name: 'expression string'
+  input: 'Enter an arithmetic or logical expression'
+  info: 'Expressions perform arithmetic and comparisons with properties and other values'
+
+keyword:
+  name: 'command "keyword"'
+  input: 'Select a keyword. Warning: if you change this keyword, the rest of the line will have to be updated!'
+  info: 'A "keyword" is the basic GEMSCRIPT command. There is one keyword per line, and a collection of lines is called a script.'
+
+test:
+  name: 'test name'
+  input: 'Select one of the following tests'
+  info: 'Tests are pre-defined operations that are given some inputs and return either true or false'
+
+program:
+  name: 'stored program name'
+  input: 'This is unused...if you see this oops'
+  info: 'Stored programs are pre-defined code and you should not be seeing this info at all because they are not implemented!'
+
+event:
+  name: 'system event name'
+  input: 'Pick a system event name'
+  info: 'System events are pre-defined actions that your code can respond to, such as Tick'
+
+option:
+  name: 'option'
+  input: 'Select from one of the following options'
+  info: 'Options are pre-defined lists of choices that must be exactly specified'
+
+blueprint:
+  name: 'character type'
+  input: 'Select one of the available characters types'
+  info: 'This refers to ALL of the characters in the system that have been created by the named blueprint.'
+
+bdlOut:
+  name: 'program type'
+  input: 'Select the program type to INIT or UPDATE'
+  info: 'The program type tells GEMSTEP to run your code just once (INIT) or in a loop (UPDATE)'
+
+tag:
+  name: 'movement control'
+  input: 'Select a movement control setting'
+  info: 'Your script can be controlled by your body movement or an iPad by setting a tag!'
+
+feature:
+  name: 'feature power pack'
+  input: 'Choose a feature from the list'
+  info: 'GEMSTEP organizes advanced abilities for your scripting in Features. Examples of features are Physics, Animation, graphics, and others.'
+
+'{noncode}':
+  name: ''
+  input: ''
+  info: ''
+
+# HANDLE GVAR arg types
+min value:
+  name: 'min value'
+  input: 'Enter the minimum value allowed for this property'
+  info: 'Sets the lowest value allowed for the property'
+max value:
+  name: 'max value'
+  input: 'Enter the maximum value allowed for this property'
+  info: 'Sets the highest value allowed for the property'
+asInteger:
+  name: 'asInteger'
+  input: 'Select true to generate a random integer, false to generate a random decimal number'
+  info: 'Determines the type of random number to generate: an integer or a decimal'
+
+# HANDLE code-gsargs arg/gsName types
+# REVIEW
+# Placeholder -- this might not be the right place?
+prop name: # setting a new prop name, in contraast to `prop` which selects an existing name
+  name: 'prop name'
+  input: 'Enter a new custom property name'
+  info: 'A "prop name" creates a new custom property name. Every character has its own copy of the property.'
+select blueprint: # `prop` objref
+  name: 'select blueprint'
+  input: 'Select a blueprint'
+  info: 'A character blueprint defined for this project'
+select prop: # `prop` objref
+  name: 'select prop'
+  input: 'Select a prop'
+  info: 'A custom prop that has been defined for the selected character'
+select feature: # `featProp` objref
+  name: 'select feature'
+  input: 'Select a feature'
+  info: 'Use features to add advanced abilities'
+select feature prop: # not the keyword `featProp`
+  name: 'feature prop'
+  input: 'Choose a feature prop from the list'
+  info: 'Use feature props to make use of features'
+expression string: # `ifExpr`
+  *exprstr
+seconds:
+  name: 'seconds'
+  input: 'Enter number of seconds'
+  info: 'Sets number of seconds. Can be decimal, e.g. "0.5"'
+timer option:
+  name: 'timer option'
+  input: 'Enter "runAtStart" to have the "every" code run immediately.  Leave blank to run after the specified seconds have elapsed.'
+  info: 'Determines whether the "every" code runs immediately at the start of the simulation, or after the specified seconds have passed'

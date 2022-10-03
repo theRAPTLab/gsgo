@@ -4,7 +4,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IPoolable, IPoolableConstructor, IPoolOptions } from './t-pool.d';
+// import { IPoolable, IPoolableConstructor, IPoolOptions } from './t-pool.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -187,5 +187,3 @@ class Pool {
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default Pool;
-/// forward types as needed
-export { IPoolable, IPoolOptions };

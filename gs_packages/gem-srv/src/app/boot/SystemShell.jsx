@@ -17,14 +17,18 @@ import {
   LazyCompiler,
   LazyDevice,
   LazyCharacterController,
+  LazyWizard,
   LazyLogin,
-  LazyModel,
-  LazyMissionControl,
+  LazyProject,
+  LazyMain,
   LazyScriptEditor,
   LazyViewer,
+  LazyTrackerSetup,
   LazyHome,
-  LazyXGUI
+  LazyCodeTester
 } from './SystemRoutes';
+
+import CSS from './SystemShell.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,6 +42,12 @@ class SystemShell extends React.Component {
     this.state = { hasError: false };
   }
 
+  // https://reactjs.org/docs/error-boundaries.html
+  static getDerivedStateFromError(error) {
+    // Update state so the next render will show the fallback UI.
+    return { hasError: true };
+  }
+
   render() {
     const { hasError, error } = this.state;
     // omg an error???
@@ -48,26 +58,26 @@ class SystemShell extends React.Component {
         <Route exact path="/">
           <LazyHome />
         </Route>
-        <Route path="/app/xgui">
-          <LazyXGUI />
-        </Route>
         <Route path="/app/charcontrol">
           <LazyCharacterController />
         </Route>
         <Route path="/app/login">
           <LazyLogin />
         </Route>
-        <Route path="/app/model">
-          <LazyModel />
+        <Route path="/app/project">
+          <LazyProject />
         </Route>
-        <Route path="/app/missioncontrol">
-          <LazyMissionControl />
+        <Route path="/app/main">
+          <LazyMain />
         </Route>
         <Route path="/app/scripteditor">
           <LazyScriptEditor />
         </Route>
         <Route path="/app/viewer">
           <LazyViewer />
+        </Route>
+        <Route path="/app/tracker">
+          <LazyTrackerSetup />
         </Route>
         {/* Developer Routes */}
         <Route path="/app/dev-tracker">
@@ -82,6 +92,13 @@ class SystemShell extends React.Component {
         <Route path="/app/dev-controller">
           <LazyDevice />
         </Route>
+        <Route path="/app/dev-wizard">
+          <LazyWizard />
+        </Route>
+        <Route path="/app/dev-codetester">
+          <LazyCodeTester />
+        </Route>
+
         {/* catchall routes */}
         <Route exact path="/app">
           <LazyHome />
