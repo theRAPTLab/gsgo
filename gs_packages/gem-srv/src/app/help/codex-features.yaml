@@ -84,23 +84,23 @@ Costume:
   currentFrame:
     info: 'If you are using a character with multiple frames (e.g., a .json file), this sets it to a new one.'
   colorHue:
-    info: 'tbd'
+    info: '[help details coming soon]'
   colorSaturation:
-    info: 'tbd'
+    info: '[help details coming soon]'
   colorValue:
-    info: 'tbd'
+    info: '[help details coming soon]'
   colorScaleIndex:
-    info: 'tbd'
+    info: '[help details coming soon]'
   colorScaleHue:
-    info: 'tbd'
+    info: '[help details coming soon]'
   colorScaleSaturation:
-    info: 'tbd'
+    info: '[help details coming soon]'
   colorScaleValue:
-    info: 'tbd'
+    info: '[help details coming soon]'
   colorScaleType:
-    info: 'tbd'
+    info: '[help details coming soon]'
   colorScaleSteps:
-    info: 'tbd'
+    info: '[help details coming soon]'
   # Costume methods
   setAnimatedCostume:
     # REVIEW: Get rid of `hint`???
@@ -219,9 +219,9 @@ Physics:
     info: 'change dimensions in pixels'
     syntax: 'body radius integer width, integer height'
   bodyWidth:
-    info: 'xxx'
+    info: 'Width of character in pixels.'
   bodyHeight:
-    info: 'xxx'
+    info: 'Height of the character in pixels.'
   bodyShape:
     info: 'circle or rectangle'
   # Physics methods
@@ -243,67 +243,67 @@ Population:
     info: 'The smallest value of the property across this character type.'
   max:
     info: 'The highest value of the property across this character type.'
-  monitoredAgent:
-    info: 'xxx'
-  monitoredAgentProp:
-    info: 'xxx'
-  monitoredAgentPropFeature:
-    info: 'xxx'
+  monitoredCharacter:
+    info: 'The name of the character to look at when calculating the population values such as sum or average.'
+  monitoredCharacterProp:
+    info: 'The name of the property to look at when caclulating the population values such as sum or average.'
+  monitoredCharacterPropFeature:
+    info: '[help details coming soon]'
   spawnMutationProp:
-    info: 'xxx'
+    info: '[help details coming soon]'
   spawnMutationPropFeature:
-    info: 'xxx'
+    info: '[help details coming soon]'
   spawnMutationMaxAdd:
-    info: 'xxx'
+    info: '[help details coming soon]'
   spawnMutationMaxSubtract:
-    info: 'xxx'
+    info: '[help details coming soon]'
   targetPopulationSize:
-    info: 'xxx'
+    info: '[help details coming soon]'
   deleteAfterSpawning:
-    info: 'xxx'
+    info: '[help details coming soon]'
   # Population methods
-  createAgent:
-    info: 'createAgent'
+  createCharacter:
+    info: 'createCharacter'
   spawnChild:
     info: 'spawnChild'
-  removeAgent:
-    info: 'removeAgent'
-  getRandomActiveAgent:
-    info: 'getRandomActiveAgent'
-  releaseAllAgents:
-    info: 'releaseAllAgents'
-  releaseInertAgents:
-    info: 'releaseInertAgents'
-  hideInertAgents:
-    info: 'hideInertAgents'
-  removeInertAgents:
-    info: 'removeInertAgents'
+  removeCharacter:
+    info: 'removeCharacter'
+  getRandomActiveCharacter:
+    info: 'getRandomActiveCharacter'
+  releaseAllCharacters:
+    info: 'releaseAllCharacters'
+  releaseInertCharacters:
+    info: 'releaseInertCharacters'
+  hideInertCharacters:
+    info: 'hideInertCharacters'
+  removeInertCharacters:
+    info: 'removeInertCharacters'
   agentsReproduce:
     info: 'agentsReproduce'
-  oneAgentReproduce:
-    info: 'oneAgentReproduce'
+  oneCharacterReproduce:
+    info: 'oneCharacterReproduce'
   populateBySpawning:
     info: 'populateBySpawning'
   agentsForEachActive:
     info: 'agentsForEachActive'
   agentsForEach:
     info: 'agentsForEach'
-  getActiveAgentsCount:
-    info: 'getActiveAgentsCount'
-  countAgents:
-    info: 'countAgents'
-  countAgentProp:
-    info: 'countAgentProp'
-  minAgentProp:
-    info: 'minAgentProp'
-  maxAgentProp:
-    info: 'maxAgentProp'
-  countAgentsByPropType:
-    info: 'countAgentsByPropType'
-  setAgentsByFeatPropTypeKeys:
-    info: 'setAgentsByFeatPropTypeKeys'
-  countExistingAgentsByFeatPropType:
-    info: 'countExistingAgentsByFeatPropType'
+  getActiveCharactersCount:
+    info: 'getActiveCharactersCount'
+  countCharacters:
+    info: 'countCharacters'
+  countCharacterProp:
+    info: 'countCharacterProp'
+  minCharacterProp:
+    info: 'minCharacterProp'
+  maxCharacterProp:
+    info: 'maxCharacterProp'
+  countCharactersByPropType:
+    info: 'countCharactersByPropType'
+  setCharactersByFeatPropTypeKeys:
+    info: 'setCharactersByFeatPropTypeKeys'
+  countExistingCharactersByFeatPropType:
+    info: 'countExistingCharactersByFeatPropType'
 
 Touches:
   info: 'Adds tests to detect when characters touch each other'
@@ -342,5 +342,5 @@ Vision:
     info: 'monitor'
   isCamouflaged:
     info: 'isCamouflaged'
-  canSeeColorOfAgent:
-    info: 'canSeeColorOfAgent'
+  canSeeColorOfCharacter:
+    info: 'canSeeColorOfCharacter'
