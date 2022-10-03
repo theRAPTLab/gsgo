@@ -4,16 +4,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword from 'lib/class-keyword';
-import SM_Message from 'lib/class-sm-message';
-import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
-import { CompilerState } from 'modules/datacore/dc-script-bundle';
-import {
-  RegisterKeyword,
-  UtilDerefArg,
-  SubscribeToScriptEvent
-} from 'modules/datacore/dc-script-engine';
+import * as BUNDLER from 'script/tools/script-bundler';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,38 +15,47 @@ export class onEvent extends Keyword {
 
   constructor() {
     super('onEvent');
-    this.args = ['eventName:string', 'consq:smcprogram'];
+    this.args = ['eventName:string', 'consq:block'];
   }
 
-  compile(unit: TScriptUnit, idx?: number): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     let [kw, eventName, consq] = unit;
-    consq = UtilDerefArg(consq); // a program name possibly?
-    const { bundleName } = CompilerState();
-    SubscribeToScriptEvent(eventName, bundleName, consq);
-    // this runs in global context inside sim-conditions
-    return []; // subscriptions don't need to return any compiled code
+    if (consq === undefined) consq = [];
+    if (eventName === undefined) eventName = '<undefined>';
+    if (!Array.isArray(consq)) {
+      console.warn(`onEvent: bad consequent ${eventName}; returning []`, unit);
+      consq = [];
+    }
+    const { bpName } = BUNDLER.BundlerState();
+    const init = [
+      (agent, state) => {
+        SIMDATA.SubscribeToScriptEvent(
+          String(eventName),
+          bpName,
+          consq as TSMCProgram
+        );
+      }
+    ];
+    BUNDLER.AddToProgramOut(init, 'init');
+    return []; // no runtime code emitted
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { event, consq } = state;
-    return [this.keyword, event, consq];
-  }
+  /** custom validation, overriding the generic validation() method of the
+   *  base Keyword class  */
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    const vtoks = []; // validation token array
+    const [kwTok, evtTok, execTok] = unit; // get arg pattern
 
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw, event, consq] = unit;
-    return super.jsx(
-      index,
-      unit,
-      <>
-        onEvent {`'${event}'`} run {consq.length} ops
-      </>
-    );
+    vtoks.push(this.shelper.anyKeyword(kwTok));
+    vtoks.push(this.shelper.anySystemEvent(evtTok));
+    // vtoks.push(this.shelper.systemPlaceholder(kwTok));
+
+    const log = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: log };
   }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(onEvent);
+SIMDATA.RegisterKeyword(onEvent);

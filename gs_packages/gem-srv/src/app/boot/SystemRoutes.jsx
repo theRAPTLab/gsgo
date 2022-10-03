@@ -4,16 +4,18 @@ import React, { Suspense } from 'react';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const Home = React.lazy(() => import('../pages/Home'));
 const CharControl = React.lazy(() => import('../pages/CharControl'));
-const XGUI = React.lazy(() => import('../src-xgui/App'));
 const Login = React.lazy(() => import('../pages/Login'));
-const Model = React.lazy(() => import('../pages/Model'));
-const MissionControl = React.lazy(() => import('../pages/MissionControl'));
+const Project = React.lazy(() => import('../pages/Project'));
+const Main = React.lazy(() => import('../pages/Main'));
 const ScriptEditor = React.lazy(() => import('../pages/ScriptEditor'));
 const Viewer = React.lazy(() => import('../pages/Viewer'));
+const TrackerSetup = React.lazy(() => import('../pages/TrackerSetup'));
 const DevCompiler = React.lazy(() => import('../pages/DevCompiler'));
 const DevTracker = React.lazy(() => import('../pages/DevTracker'));
 const DevFakeTrack = React.lazy(() => import('../pages/DevFakeTrack'));
 const DevController = React.lazy(() => import('../pages/DevController'));
+const DevWizard = React.lazy(() => import('../pages/DevWizard'));
+const DevCodeTester = React.lazy(() => import('../pages/DevCodeTester'));
 
 /// LAZY COMPONENTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,24 +29,19 @@ export const LazyCharacterController = () => (
     <CharControl />
   </Suspense>
 );
-export const LazyXGUI = () => (
-  <Suspense fallback={<div>loading</div>}>
-    <XGUI />
-  </Suspense>
-);
 export const LazyLogin = () => (
   <Suspense fallback={<div>loading</div>}>
     <Login />
   </Suspense>
 );
-export const LazyModel = () => (
+export const LazyProject = () => (
   <Suspense fallback={<div>loading</div>}>
-    <Model />
+    <Project />
   </Suspense>
 );
-export const LazyMissionControl = () => (
+export const LazyMain = () => (
   <Suspense fallback={<div>loading</div>}>
-    <MissionControl />
+    <Main />
   </Suspense>
 );
 export const LazyScriptEditor = () => (
@@ -55,6 +52,11 @@ export const LazyScriptEditor = () => (
 export const LazyViewer = () => (
   <Suspense fallback={<div>loading</div>}>
     <Viewer />
+  </Suspense>
+);
+export const LazyTrackerSetup = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <TrackerSetup />
   </Suspense>
 );
 
@@ -77,6 +79,16 @@ export const LazyTracker = () => (
 export const LazyFakeTrack = () => (
   <Suspense fallback={<div>loading</div>}>
     <DevFakeTrack />
+  </Suspense>
+);
+export const LazyWizard = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <DevWizard />
+  </Suspense>
+);
+export const LazyCodeTester = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <DevCodeTester />
   </Suspense>
 );
 

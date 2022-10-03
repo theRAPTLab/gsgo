@@ -5,11 +5,24 @@
     }
   ],
   "settings": {
+    "search.exclude": {
+      "gs_assets": true,
+      "gs_assets_hosted": true,
+      "gs_packages/admin-srv": true,
+      "gs_packages/gem-srv/.vscode": true,
+      "gs_packages/gem-srv/assets-src": true,
+      "gs_packages/gem-srv/built": true,
+      "gs_packages/gem-srv/runtime": true
+    },
     "files.exclude": {
-      "**/admin-srv": true,
-      "**/globals": true,
-      "**/test-data": true,
-      "**/x-playground": true
+      ".gitlab": true,
+      "docs": true,
+      "gs_packages/gem-srv/assets-src": true,
+      "gs_packages/gem-srv/gem_srv.code-workspace": true,
+      "gs_packages/gem-srv/node_modules": true,
+      "gs_packages/gem-srv/package-lock.json": true,
+      "node_modules": true,
+      "package-lock.json": true,
     }
   }
 }

@@ -14,7 +14,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const NetPacket = require('./class-netpacket');
-const DBG = require('./ur-dbg-settings');
+const DBG = require('./common/debug-props');
 
 /// MODULE VARS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -236,11 +236,12 @@ class Messager {
     let promises = [];
     /// handle a call from the network
     if (toLocal || fromNet) {
-      console.log(
-        ...PR(
-          `incoming CallMessage: toLocal:${toLocal} fromNet:${fromNet} isNet:${isNet}`
-        )
-      );
+      if (DBG.handle)
+        console.log(
+          ...PR(
+            `incoming CallMessage: toLocal:${toLocal} fromNet:${fromNet} isNet:${isNet}`
+          )
+        );
       // initiated from app
       // NOTE: THIS SEEMS SUSPICIOUS AND UNNECESSARY
       // if (!channel.LOCAL && !fromNet)
@@ -248,7 +249,7 @@ class Messager {
       if (handlers) {
         let count = 1;
         handlers.forEach(handlerFunc => {
-          console.log(...PR(count++, 'calling func'));
+          if (DBG.call) console.log(...PR(count++, 'calling func'));
           /*/
           handlerFunc signature: (data,dataReturn) => {}
           handlerFunc has ulink_id property to note originating URCHAN object
@@ -256,8 +257,13 @@ class Messager {
           /*/
           // skip calls that don't have their fromNet stat set if it's a net call
           if (fromNet && !handlerFunc.isNetFunc) return;
+
+          /*/
+          Now that we have channel names, we no longer need to skip "same origin" calls
           // skip "same origin" calls
-          if (srcUID && handlerFunc.ulink_id === srcUID) return;
+          // if (srcUID && handlerFunc.ulink_id === srcUID) return;
+          /*/
+
           // Create a promise. if handlerFunc returns a promise, it follows
           let p = m_MakeResolverFunction(handlerFunc, inData);
           promises.push(p);
@@ -292,7 +298,7 @@ class Messager {
     let handlers = [];
     this.handlerMap.forEach((set, key) => {
       handlers.push(key);
-      if (DBG) console.log(`handler: ${key}`);
+      if (DBG.reg) console.log(`handler: ${key}`);
     });
     return handlers;
   }

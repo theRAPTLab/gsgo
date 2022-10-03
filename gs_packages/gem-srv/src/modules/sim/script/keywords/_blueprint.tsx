@@ -11,10 +11,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import UR from '@gemstep/ursys/client';
-import React from 'react';
 import Keyword from 'lib/class-keyword';
-import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
 /// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
@@ -24,17 +21,15 @@ export class _blueprint extends Keyword {
   constructor() {
     super('_blueprint');
     // _blueprint 'HoneyBee' 'Bee'
-    this.args = ['blueprintName string', 'baseBlueprint string'];
-    this.serialize = this.serialize.bind(this);
+    this.args = ['blueprintName:string', 'baseBlueprint:string'];
     this.compile = this.compile.bind(this);
-    this.jsx = this.jsx.bind(this);
   }
 
   /** create smc blueprint code objects for this unit
    *  derived from ScriptUnit, everything after the keyword
    *  e.g. 'HoneyBee', 'Bee'
    */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     const [kw, blueprintName, baseBlueprint] = unit;
     const progout = [];
     // the compiler format is just an array of functions
@@ -47,79 +42,7 @@ export class _blueprint extends Keyword {
     // into the master blueprint
     return progout;
   }
-
-  /** return a TScriptUnit made from current state */
-  serialize(state: any): TScriptUnit {
-    const { blueprintName, baseBlueprint } = state;
-    return [this.keyword, blueprintName, baseBlueprint];
-  }
-
-  /** return rendered component representation */
-  // TScriptUnit is [ 'keyword', parm1, parm2, ... ]
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const state = {
-      blueprintName: unit[1],
-      baseBlueprint: unit[2]
-    };
-    console.log(state);
-    return super.jsx(
-      index,
-      unit,
-      <ScriptElement index={index} state={state} serialize={this.serialize} />
-    );
-  }
 } // end of _blueprint
-
-/// REACT COMPONENT ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** implement interactive react component for this keyword, saving information
- *  in the local state
- */
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-type MyState = { blueprintName: string; baseBlueprint: string };
-type MyProps = {
-  index: number;
-  state: MyState;
-  serialize: (state: MyState) => TScriptUnit;
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** define a React component */
-class ScriptElement extends React.Component<MyProps, MyState> {
-  index: number; // ui index
-  keyword: string; // keyword
-  serialize: (state: MyState) => TScriptUnit;
-  //
-  constructor(props: MyProps) {
-    super(props);
-    const { index, state, serialize } = props;
-    this.index = index;
-    this.state = { ...state }; // copy state prop
-    this.serialize = serialize;
-    this.onChange = this.onChange.bind(this);
-  }
-
-  // this (1) updates the local ui (2) sends the change to the app
-  // renderer, so it can update the source array
-  onChange(e) {
-    this.setState({ blueprintName: e.currentTarget.value }, () => {
-      const updata: IScriptUpdate = {
-        index: this.index,
-        scriptUnit: this.serialize(this.state)
-      };
-      UR.RaiseMessage('SCRIPT_SRC_CHANGED', updata);
-    });
-  }
-
-  render() {
-    const { blueprintName, baseBlueprint } = this.state;
-    return (
-      <>
-        <span>blueprintName</span>{' '}
-        <input onChange={this.onChange} type="text" value={blueprintName} />
-      </>
-    );
-  }
-} // end script element
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

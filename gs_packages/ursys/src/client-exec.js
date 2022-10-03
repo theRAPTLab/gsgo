@@ -18,8 +18,7 @@ const PhaseMachine = require('./class-phase-machine');
 const PROMPTS = require('./util/prompts');
 
 const PR = PROMPTS.makeStyleFormatter('SYSTEM', 'TagSystem');
-const NPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR');
-const RPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR3');
+const NPR = PROMPTS.makeStyleFormatter('URSYS');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,6 +44,7 @@ const PHASES = {
     'TEST_NET' // run tests that require network readiness
   ],
   PHASE_LOAD: [
+    'LOAD_DB', // load database stuff from wherever
     'LOAD_CONFIG', // app modules can request asynchronous loads
     'LOAD_ASSETS' // can use loaded configs to load assets
   ],
@@ -107,8 +107,10 @@ async function SystemNetBoot() {
   await executePhase('PHASE_INIT');
   // CONNECT TO URNET
   const netInfo = await NETINFO.FetchNetInfo();
-  console.info(...NPR('URNET got connect info:', netInfo));
+  if (DBG)
+    console.info(...NPR('URNET got connect info:', JSON.stringify(netInfo)));
   await executePhase('PHASE_CONNECT'); // NET_CONNECT, NET_REGISTER, NET_READY
+  await executePhase('PHASE_LOAD'); // LOAD_DB, LOAD_CONFIG, LOAD_ASSETS
   //
   if (DBG) console.groupEnd();
 }
@@ -120,17 +122,17 @@ async function SystemAppConfig(options = {}) {
   if (DBG) console.groupCollapsed('EXEC: LOAD CONFIG READY');
   m_CheckConfigOptions(options);
   //
-  console.log(...NPR('APP: EXECUTING [LOAD, CONFIG] PHASES'));
+  if (DBG) console.log(...NPR('APP: EXECUTING [LOAD, CONFIG] PHASES'));
   await executePhase('PHASE_LOAD');
   await executePhase('PHASE_CONFIG');
   //
-  console.log(...NPR('APP: EXECUTING [READY] PHASE'));
+  if (DBG) console.log(...NPR('APP: EXECUTING [READY] PHASE'));
   await executePhase('PHASE_READY');
 
   //
   if (options.autoRun) {
     if (DBG) console.log(...PR('info - autoRun to next phase'));
-    SystemAppRun(options);
+    void SystemAppRun(options);
   }
   if (DBG) console.groupEnd();
 }
@@ -145,11 +147,11 @@ async function SystemAppRun(options = {}) {
   m_CheckConfigOptions(options);
   //
   if (DBG) console.groupCollapsed(...PR('EXEC: STAGE START RUN'));
-  console.log(...NPR('APP: EXECUTING [STAGE, START, RUN] PHASES'));
+  if (DBG) console.log(...NPR('APP: EXECUTING [STAGE, START, RUN] PHASES'));
   await execute('APP_STAGE');
   await execute('APP_START');
   await execute('APP_RUN');
-  console.log(...RPR('APP STARTED [RUN] PHASE'));
+  if (DBG) console.log(...NPR('APP STARTED [RUN] PHASE'));
   // PART 2 - after the run has started, there are no periodic updates
   //          unless you add them yourself
   if (DBG) console.groupEnd();
@@ -163,7 +165,7 @@ async function SystemAppUpdate() {
   await execute('APP_RESTAGE');
   //
   if (DBG) console.groupEnd();
-  SystemAppRun();
+  void SystemAppRun();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: force loop back to run
@@ -174,7 +176,7 @@ async function SystemAppRestage() {
   await execute('APP_RESET');
   //
   if (DBG) console.groupEnd();
-  SystemAppRun();
+  void SystemAppRun();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: end the lifecycle state engine

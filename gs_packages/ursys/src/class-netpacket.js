@@ -27,8 +27,8 @@ const {
   TRANSACTION_MODE,
   VALID_CHANNELS,
   CFG_SVR_UADDR
-} = require('./ur-common');
-const { GetNetworkOptions } = require('./ur-common');
+} = require('./common/ur-constants');
+const { GetNetworkOptions } = require('./common/ur-detect');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -8,10 +8,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword from 'lib/class-keyword';
-import { TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword, RegisterTest } from 'modules/datacore';
+import { RegisterKeyword, RegisterTest } from 'modules/datacore/dc-sim-data';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -19,45 +17,23 @@ export class addTest extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('addTest');
-    this.args = ['testName:string', 'test:TMethod'];
+    this.args = ['testName:string', 'test:method'];
   }
 
   /** create smc blueprint code objects
    *  NOTE: when compile is called, all arguments have already been expanded
    *  from {{ }} to a ParseTree
    */
-  compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, testName, test] = unit;
+  compile(dtoks: TKWArguments): TOpcode[] {
+    const [kw, testName, block] = dtoks;
     const conds = [
-      agent => {
-        if (RegisterTest(testName, test))
-          console.log(`registering test '${testName}' ${test.type ? 'AST' : ''}`);
-        else console.log(`overwriting test '${testName}'`);
-        RegisterTest(testName, test);
-        return testName;
+      (agent: IAgent) => {
+        RegisterTest(testName as string, block as TSMCProgram);
       }
     ];
     return conds;
   }
-
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { testName, expr } = state;
-    return [this.keyword, testName, expr];
-  }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any): any {
-    const [kw, testName, expr] = unit;
-    return super.jsx(
-      index,
-      unit,
-      <>
-        addTest {testName} = {expr}
-      </>
-    );
-  }
-} // end of DefProp
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

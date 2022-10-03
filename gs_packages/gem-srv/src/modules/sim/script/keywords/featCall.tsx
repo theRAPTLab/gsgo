@@ -11,9 +11,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
 import Keyword from 'lib/class-keyword';
-import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -27,15 +25,15 @@ export class featCall extends Keyword {
 
   constructor() {
     super('featCall');
-    this.args = ['refArg:object', 'methodName:string', '...args'];
+    this.args = ['featName:feature', 'methodName:method', 'methodArgs:{...}'];
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TKWArguments): TOpcode[] {
     const [kw, refArg, methodName, ...args] = unit;
     // ref is an array of strings that are fields in dot addressing
     // like agent.x
-    const ref = refArg.objref || [refArg];
+    const ref = (refArg as IToken).objref || [refArg];
     const len = ref.length;
 
     // create a function that will be used to callReferences the objref
@@ -46,13 +44,13 @@ export class featCall extends Keyword {
       /** IMPLICIT REF *******************************************************/
       /// e.g. 'Costume' is interpreted as 'agent.Costume'
       callRef = (agent: IAgent, context: any, mName: string, ...prms) => {
-        return agent.callFeatMethod(ref[0], mName, ...prms);
+        return agent.callFeatMethod(ref[0] as string, mName, ...prms);
       };
     } else if (len === 2) {
       /** EXPLICIT REF *******************************************************/
       /// e.g. 'agent.Costume' or 'Bee.Costume'
       callRef = (agent: IAgent, context: any, mName: string, ...prms) => {
-        const c = context[ref[0]]; // GAgent context
+        const c = context[ref[0] as string]; // SM_Agent context
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         return c.callFeatMethod(ref[1], mName, ...prms);
       };
@@ -67,24 +65,21 @@ export class featCall extends Keyword {
     ];
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): TScriptUnit {
-    const { featCallName, methodName, ...args } = state;
-    return [this.keyword, featCallName, ...args];
+  /** custom validation, overriding the generic validation() method of the
+   *  base Keyword class  */
+  validate(unit: TScriptUnit): TValidatedScriptUnit {
+    const vtoks = []; // validation token array
+    const [kwTok, featRefTok, methodTok, ...argToks] = unit; // get arg pattern
+    // returns symbols for each dtok position excepting the keyword
+    vtoks.push(this.shelper.anyKeyword(kwTok));
+    // debugging: Also check ObjRefSelector's insertion of validation tokens
+    vtoks.push(this.shelper.featRef(featRefTok));
+    vtoks.push(this.shelper.methodName(methodTok));
+    vtoks.push(...this.shelper.argsList(argToks));
+    const log = this.makeValidationLog(vtoks);
+    return { validationTokens: vtoks, validationLog: log };
   }
-
-  /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw, ref, methodName, ...arg] = unit;
-    return super.jsx(
-      index,
-      unit,
-      <>
-        featCall {ref}.{methodName}({arg.join(' ')})
-      </>
-    );
-  }
-} // end of UseFeature
+} // end of keyword definition
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

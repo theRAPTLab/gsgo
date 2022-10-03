@@ -92,6 +92,8 @@ class PhaseMachine {
     this.NAME = shortName;
     this.OP_HOOKS = new Map();
     this.PHASES = phases;
+    this.currentOp = ''; // current operation
+    this.opTimer = 0; // for catching lingering execution
     Object.keys(phases).forEach(phaseKey => {
       this.OP_HOOKS.set(phaseKey, []); // add the phase name to ophooks map as special case
       this.PHASES[phaseKey].forEach(opKey => {
@@ -170,27 +172,51 @@ class PhaseMachine {
       let retval = m_InvokeHook(op, hook, ...args);
       if (retval instanceof Promise) {
         icount++;
+        retval.catch(error => {
+          console.log(...PR(`intercept error in o:${op}`));
+          console.log(...PR('attempting to reroute error'), error);
+        });
         promises.push(retval);
       }
     });
-    if (DBG.ops && hooks.length)
-      console.log(...PR(`[${op}] HANDLERS PROCESSED : ${hooks.length}`));
-    if (DBG.ops && icount)
-      console.log(...PR(`[${op}] AWAITING ${icount} PROMISES TO COMPLETE...`));
 
-    // wait for all promises to execute
-    return Promise.all(promises)
+    const promiseAll = Promise.all(promises)
       .then(values => {
         if (DBG.ops && values.length)
           console.log(
             ...PR(`[${op}] PROMISES RETVALS  : ${values.length}`, values)
           );
+        if (this.opTimer) clearTimeout(this.opTimer);
         return values;
       })
-      .catch(err => {
-        console.log(...PR(`[${op}]: ${err}`));
-        throw Error(`[${op}]: ${err}`);
+      .catch(error => {
+        console.log(...PR(`intercept Promise.all`), error);
       });
+
+    if (DBG.ops && hooks.length)
+      console.log(`[${op}] HANDLERS PROCESSED : ${hooks.length}`);
+    if (DBG.ops && icount)
+      console.log(`[${op}] AWAITING ${icount} PROMISES TO COMPLETE...`);
+
+    // timeout timer for phase
+    if (this.opTimer) clearTimeout(this.opTimer);
+    this.opTimer = setTimeout(() => {
+      const phaseInfo = this.consolePhaseInfo(
+        'PHASEMACHINE ERROR: Promises taking > 7 sec to resolve',
+        'red'
+      );
+      console.log('[1] check unresolved promises', promises);
+      console.log(`[2] check '${phaseInfo}' handlers`);
+      const err = `
+ERROR: PhaseMachine '${this.currentPhase}/${this.currentOp}' failed to complete\n
+This is an irrecoverable runtime error.
+1. Check console for error information.
+2. Use your phone to send SCREENSHOT of the error to the devteam for troubleshooting.
+      `;
+      // alert(err.trim());
+      console.error(err);
+    }, 7000);
+    return promiseAll;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -255,12 +281,14 @@ class PhaseMachine {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** UTILITY: print current phase information to console
    */
-  consolePhaseInfo(pr = 'PhaseInfo') {
+  consolePhaseInfo(pr = 'PhaseInfo', bg = 'MediumVioletRed') {
+    const phaseInfo = `${this.NAME}/${this.currentPhase}:${this.currentOp}`;
     console.log(
-      `%c${pr}%c ${this.NAME}/${this.currentPhase}:${this.currentOp}`,
-      'color:#fff;background-color:MediumVioletRed;padding:3px 10px;border-radius:10px;',
+      `%c${pr}%c`,
+      `color:#fff;background-color:${bg};padding:3px 10px;border-radius:10px;`,
       'color:auto;background-color:auto'
     );
+    return phaseInfo;
   }
 }
 
@@ -286,6 +314,17 @@ PhaseMachine.Hook = (phaseSel, f) => {
   if (!m_queue.has(machine)) m_queue.set(machine, []);
   const q = m_queue.get(machine);
   q.push([phase, f]); // array of 2-element arrays
+};
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Return object of all current machines and phases */
+PhaseMachine.GetMachineStates = () => {
+  let out = '';
+  for (const [name, m] of m_machines) {
+    if (out.length !== 0) out += ', ';
+    out += `${name}[${m.currentPhase}.${m.currentOp}]`;
+  }
+  return out;
 };
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////

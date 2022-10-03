@@ -1,21 +1,25 @@
 {
-  "extends": "../../tsconfig.build.json",
+  "include": ["src/**/*.ts", "src/**/*.tsx", "gem_run.js"],
+  "exclude": ["node_modules", "assets-src", "built", "runtime"],
   "compilerOptions": {
+    "module": "commonjs",
     "moduleResolution": "node",
+    "target": "es2019",
+    "typeRoots": ["./node_modules/@types", "./src/types"],
     "baseUrl": "src",
     "paths": {
       "config/*": ["../config/*"],
-      "script/*": ["./modules/sim/script/*"],
+      "static/*": ["./app/static/*"],
       "app/*": ["./app/*"],
-      "lib/*": ["./lib/*"],
+      "datacore/*": ["./modules/datacore/*"],
+      "script/*": ["./modules/sim/script/*"],
       "modules/*": ["./modules/*"],
-      "static/*": ["./app/static/*"]
+      "lib/*": ["./lib/*"],
+      "test/*": ["./test/*"]
     },
     "jsx": "preserve",
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "sourceMap": true
-  },
-  "include": ["src/**/*.ts", "gem_run.js", "../ursys/src/**/*"],
-  "exclude": ["node_modules"]
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": true
+  }
 }

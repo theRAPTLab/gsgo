@@ -1,0 +1,47 @@
+# blueprint GuiWizardSlots
+# TAG isCharControllable false
+# PROGRAM DEFINE
+useFeature Costume
+addProp energyType String 'producer'
+addProp energyLevel number 50
+addProp isAlive Boolean true
+
+# program init
+prop isAlive setTo true
+prop isAlive setTo false
+prop unknownPropName setTo
+prop energyLevel setTo 0
+prop Costume.costumeName setTo 'banana'
+prop energyLevel setTo 0
+prop agent.energyLevel setTo 0
+prop energyLevel setTo 'foo'
+prop energyLevel
+prop
+prop x
+prop x setTo
+prop x setTo 400
+prop x setTo 400 'too' 'many' 'parms'
+prop energyType setMin
+prop energyType setTo
+prop energyType setTo 'help'
+prop unknownPropName setTo 400
+prop x badMethod 400
+prop x setTo 'wrongType'
+prop agent.x setTo
+prop Costume.costumeName
+prop x setToRnd -400 400 true
+prop y setTo -400
+
+# ProgRam ConDition
+when Boo centerFirstTouches Boo [[
+  prop Boo.energyType add 1
+]]
+
+# PROGRAM Update
+every 1 runAtStart [[
+  if {{ energyLevel > 1 }} [[
+    prop energyLevel sub 1
+  ]] [[
+    prop energyLevel setTo 50
+  ]]
+]]

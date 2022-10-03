@@ -1,7 +1,7 @@
 /** given a VOBJ, decorate it to add new features */
 import UR from '@gemstep/ursys/client';
 import { Visual } from 'lib/t-visual';
-import { GetAgentById } from 'modules/datacore/dc-agents';
+import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 
 export function MakeDraggable(vobj: Visual) {
   let dragStartTime; // Used to differentiate between a click and a drag
@@ -26,7 +26,7 @@ export function MakeDraggable(vobj: Visual) {
     this.alpha = 0.5;
     this.tint = 0xff8080;
     //
-    const agent = GetAgentById(vobj.id);
+    const agent = DCAGENTS.GetAgentById(vobj.id);
     if (agent) {
       agent.setModeDrag();
       agent.setCaptive(true);
@@ -44,16 +44,22 @@ export function MakeDraggable(vobj: Visual) {
     this.alpha = 1;
     this.tint = 0xffffff;
     //
-    const agent = GetAgentById(vobj.id);
+    const agent = DCAGENTS.GetAgentById(vobj.id);
     if (agent) {
       agent.setPreviousMode();
       agent.setCaptive(false);
-      console.log(`agent id ${agent.id} '${agent.name}' dropped`, agent);
+      // console.log(`agent id ${agent.id} '${agent.name}' dropped`, agent);
       //
       if (this.data && dragStopTime - dragStartTime > 150) {
         // Consider it a drag if the mouse was down for > 150 ms
         // the originating object is sprite
         UR.RaiseMessage('DRAG_END', { agent });
+        UR.LogEvent('ProjSetup', [
+          'Drag',
+          agent.name,
+          agent.prop.x.value,
+          agent.prop.y.value
+        ]);
       } else {
         // otherwise it's a click, so restore the original position
         agent.prop.x.value = origX;
@@ -62,7 +68,19 @@ export function MakeDraggable(vobj: Visual) {
         // used in place of selectable.ts
         // need to handle this here in draggable to differentiate
         // the mouseup from dragging
-        UR.RaiseMessage('SIM_INSTANCE_CLICK', { agentId: agent.id });
+        //
+        // We specify 'source' so that InstanceEditor knows to ignore the
+        // next ClickAwayListener click.
+        UR.RaiseMessage('SIM_INSTANCE_CLICK', {
+          agentId: agent.id,
+          source: 'stage'
+        });
+        UR.LogEvent('ProjSetup', [
+          'Click Character',
+          agent.name,
+          agent.prop.x.value,
+          agent.prop.y.value
+        ]);
       }
     }
     // set the interaction data to null
@@ -76,13 +94,21 @@ export function MakeDraggable(vobj: Visual) {
       // Don't set x/y here or input agent will get dragged
       // this.x = newx;
       // this.y = newy;
-      const agent = GetAgentById(vobj.id);
+      const agent = DCAGENTS.GetAgentById(vobj.id);
       if (agent && !agent.isModePuppet()) {
         // don't move if agent is user input
         this.x = newx;
         this.y = newy;
-        agent.prop.x.value = newx;
-        agent.prop.y.setTo(newy); // alt way of setting
+
+        // NEW METHOD with Movement
+        if (agent.hasFeature('Movement')) {
+          // If Movement, use queuePosition so that `isMoving` is calcuated
+          agent.callFeatMethod('Movement', 'queuePosition', newx, newy);
+        } else {
+          // If no movement, then set directly
+          agent.x = newx;
+          agent.y = newy;
+        }
       }
     }
   }

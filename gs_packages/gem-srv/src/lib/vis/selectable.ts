@@ -19,7 +19,7 @@
         => sends SIM_INSTANCE_CLICK
     2.  InstanceEditor handles SIM_INSTANCE_CLICK
         => sends NET:INSTANCE_REQUEST_EDIT
-    3.  project-data handles NET:INSTANCE_REQUEST_EDIT
+    3.  project-server handles NET:INSTANCE_REQUEST_EDIT
         => Sets agent.isSelected
         => raises INSTANCE_EDIT_ENABLE
            InstanceEditor handles INSTANCE_EDIT_ENABLE
@@ -33,13 +33,13 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 import UR from '@gemstep/ursys/client';
 import { Visual } from 'lib/t-visual';
-import { GetAgentById } from 'modules/datacore/dc-agents';
+import * as DCAGENTS from 'modules/datacore/dc-sim-agents';
 
 const DBG = false;
 
 export function MakeSelectable(vobj: Visual) {
   function onTap(event) {
-    const agent = GetAgentById(vobj.id);
+    const agent = DCAGENTS.GetAgentById(vobj.id);
     if (DBG) console.log(`selectable.ts: Tapped on vobj.id ${agent.id}`);
     if (!agent) {
       console.error(

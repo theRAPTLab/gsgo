@@ -5,11 +5,11 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React, { useState } from 'react';
+import React from 'react';
+import UR from '@gemstep/ursys/client';
 import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
-import UR from '@gemstep/ursys/client';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelSimViewer from './components/PanelSimViewer';
@@ -18,10 +18,10 @@ import PanelInstances from './components/PanelInstances';
 import DialogConfirm from './components/DialogConfirm';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
-// import 'modules/tests/test-parser'; // test parser evaluation
+// import 'test/unit-parser'; // test parser evaluation
 
 // this is where classes.* for css are defined
-import { useStylesHOC } from './elements/page-xui-styles';
+import { useStylesHOC } from './helpers/page-xui-styles';
 import './scrollbar.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -44,20 +44,21 @@ class Viewer extends React.Component {
       isReady: false,
       noMain: true,
       panelConfiguration: 'sim',
-      modelId: '',
-      model: {},
+      projId: '',
+      bpNamesList: [],
       instances: []
     };
     this.Initialize = this.Initialize.bind(this);
-    this.RequestModel = this.RequestModel.bind(this);
-    this.HandleModelUpdate = this.HandleModelUpdate.bind(this);
-    this.UpdateModelData = this.UpdateModelData.bind(this);
+    this.RequestProjectData = this.RequestProjectData.bind(this);
+    this.HandleBpNamesListUpdate = this.HandleBpNamesListUpdate.bind(this);
+    this.HandleInstancesList = this.HandleInstancesList.bind(this);
     this.HandleInspectorUpdate = this.HandleInspectorUpdate.bind(this);
     this.OnModelClick = this.OnModelClick.bind(this);
     this.OnHomeClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
-    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
+    UR.HandleMessage('NET:BPNAMESLIST_UPDATE', this.HandleBpNamesListUpdate);
+    UR.HandleMessage('NET:INSTANCESLIST_UPDATE', this.HandleInstancesList);
 
     // Instance Interaction Handlers
     UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
@@ -70,9 +71,11 @@ class Viewer extends React.Component {
     UR.SystemAppConfig({ autoRun: true });
 
     UR.HookPhase('UR/APP_START', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const devAPI = UR.SubscribeDeviceSpec({
         selectify: device => device.meta.uclass === 'Sim',
         notify: deviceLists => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { selected, quantified, valid } = deviceLists;
           if (valid) {
             if (DBG) console.log(...PR('Main Sim Online!'));
@@ -91,42 +94,43 @@ class Viewer extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
+    UR.UnhandleMessage('NET:BPNAMESLIST_UPDATE', this.HandleBpNamesListUpdate);
+    UR.UnhandleMessage('NET:INSTANCESLIST_UPDATE', this.HandleInstancesList);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
   }
 
   Initialize() {
     if (this.state.isReady) return; // already initialized
-    this.RequestModel();
+    this.RequestProjectData();
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
+    UR.LogEvent('Session', ['Viewer Connect']);
   }
 
-  RequestModel() {
-    if (DBG) console.log(...PR('RequestModel...'));
+  RequestProjectData() {
+    if (DBG) console.log(...PR('RequestProjectData...'));
     UR.CallMessage('NET:REQ_PROJDATA', {
-      fnName: 'GetCurrentModelData'
-    }).then(rdata => {
-      this.UpdateModelData(rdata.result.modelId, rdata.result.model);
-    });
+      fnName: 'GetBpDefs'
+    }).then(rdata => this.HandleBpNamesListUpdate(rdata));
+    UR.CallMessage('NET:REQ_PROJDATA', {
+      fnName: 'GetInstanceidList'
+    }).then(rdata => this.HandleInstancesList(rdata));
   }
 
-  HandleModelUpdate(data) {
-    if (DBG) console.log('HandleModelUpdate', data);
-    this.UpdateModelData(data.model, data.modelId);
-  }
-
-  UpdateModelData(modelId, model) {
-    if (DBG) console.log('UpdateModelData', modelId, model);
+  HandleBpNamesListUpdate(rdata) {
     this.setState({
-      modelId,
-      model,
-      instances: model.instances
+      projId: rdata.result.projId,
+      bpNamesList: rdata.result.bpNamesList
     });
-    document.title = `VIEWER ${modelId}`;
+  }
+  HandleInstancesList(rdata) {
+    this.setState({
+      instances: rdata.instancesList
+    });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   HandleSimInstanceHoverOver(data) {
     if (DBG) console.log('hover!');
   }
@@ -140,8 +144,8 @@ class Viewer extends React.Component {
   }
 
   OnModelClick() {
-    const { modelId } = this.state;
-    window.location = `/app/model?${modelId}`;
+    const { projId } = this.state;
+    window.location = `/app/project?project=${projId}`;
   }
 
   OnPanelClick(id) {
@@ -156,22 +160,20 @@ class Viewer extends React.Component {
    *  make this happen.
    */
   render() {
-    const { noMain, panelConfiguration, modelId, model, instances } = this.state;
+    const { noMain, panelConfiguration, projId, bpNamesList, instances } =
+      this.state;
     const { classes } = this.props;
+
+    document.title = `VIEWER ${projId}`;
 
     const DialogNoMain = (
       <DialogConfirm
         open={noMain}
-        message={`Waiting for a "Main" project to load...`}
+        message={'Waiting for a "Main" project to load...'}
         yesMessage=""
         noMessage=""
       />
     );
-
-    const agents =
-      model && model.scripts
-        ? model.scripts.map(s => ({ id: s.id, label: s.label }))
-        : [];
 
     return (
       <div
@@ -186,11 +188,10 @@ class Viewer extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>VIEWER {modelId}</span> UGLY
-            DEVELOPER MODE
+            <span style={{ fontSize: '32px' }}>VIEWER {projId}</span>
           </div>
           <Link
-            to={{ pathname: `/app/model?model=${modelId}` }}
+            to={{ pathname: `/app/project?project=${projId}` }}
             className={classes.navButton}
           >
             Back to PROJECT
@@ -201,8 +202,11 @@ class Viewer extends React.Component {
           className={classes.left} // commented out b/c adding a padding
           style={{ backgroundColor: 'transparent' }}
         >
-          <PanelBlueprints id="blueprints" modelId={modelId} agents={agents} />
-          <PanelInstances id="instances" />
+          <PanelBlueprints
+            id="blueprints"
+            projId={projId}
+            bpNamesList={bpNamesList}
+          />
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimViewer id="sim" onClick={this.OnPanelClick} />

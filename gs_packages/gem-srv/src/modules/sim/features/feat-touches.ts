@@ -1,131 +1,86 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The Touches Class!
+  The Touches Class
 
-  This creates a lookup table for the last touch between agents.
-  The indexes are nested.
+  2021-06-04
+
+  A complete rewrite of Touches.
+
+  Dependencies:
+  * feat-physics
+  * feat-movement -- to set distanceTo before we do our touch tests during m_Update
+
+  This is a simpler and more efficient version of Touches that adds support
+  for different types of touches.
+
+  * There are four types of touches:
+    1. c2c -- Center to Center
+    2. c2b -- Center to Bounds -- center touches edges of bouds
+    3. b2b -- Bounds to Bounds -- edges of bounds touch
+    4. binb -- Bounds1 inside Bound2
+
+  * These correspond to new conditions tests:
+    1. c2c --> centerTouchesCenter
+    2. c2b --> centerTouches
+    3. b2b --> touches
+    4. binb --> isInside
+
+  * Each condition test also has a 'firstTouches' and 'lastTouches' variant.
+
+  * It hooks into SIM/AGENTS_UPDATE phase instead of using a rxjs interval timer
+    REVIEW: We're using AGENTS_UPDATE so it doesn't run during PRERUN
+            We might need a new phase or something that only runs when
+            the simulation is running and NOT during PRERUN.
+            It also needs to run BEFORE CONDITIONS_UPDATE, since the
+            conditions tests rely on the calculations.
+  * Most calculations are done during the update loop.
+  * The touch information is saved into agent.
+    --  agent.lastTouch -- touch info from the previous frame
+    --  agent.isTouching -- touch info from the current frame
+  * lastTouch/isTouching are dictionaries, keyed to the target id whose
+    values are the frame number of the detected touch types. e.g.:
+
+        agent.lastTouched[501] = {
+          c2c: 1534920,
+          c2b: undefined,
+          b2b: undefined,
+          binb: undefined
+        }
+
+  * There no feature properties.  The data is stored in agent.
+  * There are essentially no methods other than 'monitor'.  Use
+    conditions tests.
 
 
-  Data Structures
+  To Use
 
-  AGENTS_TBL.get(agentId).get(blueprintName).get(targetId)
+  The key steps:
+  1. You have to register the type of touch you want to monitor.
+  2. Use the corresponding condition test
 
-      AGENTS_TBL = [
-        [ agentId, [
-          [ blueprintId, [
-              [ agentId, lastTouchTime ],
-              [ agentId, lastTouchTime ],
-          ]],
-          [ blueprintId, [
-              [ agentId, lastTouchTime ],
-              [ agentId, lastTouchTime ],
-          ]],
-        ]
-        ...
-      ]
+  Example:
+        useFeature Physics
+        useFeature Touches
+        featCall Touch monitor Algae b2b
 
-  The lookup table simply returns true if the agent last touched any agent of the
-  target blueprint type.
-
-      didTouchDict = [
-        [ bluePrintId, didTouch: GVarBoolean ],
-        [ bluePrintId, didTouch: GVarBoolean ],
-        ...
-      ]
-
-
-  To Use:
-  1. Use the Feature: `useFeat Touches`
-  2. Log the blueprint to be monitored: `featCall Touches monitorTouchesWith 'Lightbeam'`
-  3. When the sim starts, the Touches Feature will update AGENTS_TBL with the
-     last time the two agents touched each other during each SIM/PHYSICS loop.
-  4. When you want to see if there was a touch, you first have to call the `touchedWithin`
-     method to define a period.  e.g. to look for all touches with any Lightbeam
-     within the last second, use:
-        `featCall Touches touchedWithin 'Lightbeam' 1`
-     This will look for touches within the last second in AGENTS_TBL and
-     update `didTouchDict` with touches for ALL Lightbeam agents.
-  5. You can then check the value of `didTouchDict` for `LightBeam` to see if
-     there was a touch:
-        `ifExpr {{ agent.getFeatProp('Touches', 'didTouchDict').getItem('Lightbeam').value }} [[`
-  6.  Or more conveniently, you can check the results of the featCall directly:
-        ifExpr {{ agent.callFeatMethod('Touches', 'touchedWithin', 'Lightbeam', 1) }} [[
-          // do something
-        ]]
-      With this method you do not need to make a second call to didTouchDict.
-
-  Full Example:
-      # PROGRAM DEFINE
-      useFeat Touches
-      featCall Touches monitorTouchesWith 'Lightbeam'
-
-      # PROGRAM UPDATE
-      featCall Touches touchedWithin 'Lightbeam' 1
-      ifExpr {{ agent.getFeatProp('Touches', 'didTouchDict').getItem('Lightbeam').value }} [[
-        // do something
-      ]]
-
-  Simple Example (with convenient return):
-      # PROGRAM UPDATE
-      ifExpr {{ agent.callFeatMethod('Touches', 'touchedWithin', 'Lightbeam', 1) }} [[
-        // do something
-      ]]
-
-  Rationale
-  * We're storing the lookup table with the Feature itself so that
-    agents aren't cluttered up with lookup tables.
-  * We're not using featProps to store the lookup tables because
-    featProps are cumbersome to use and really only necessary if the
-    tables themselves are meant to be read by agents directly via scripting.
-    Since we have featMethods to handle the requests, it is not necessary
-    to use featProps.
-  * The `touchedWithin` call gives you a lot of flexibility with how you
-    want to test the data once you've turned on monitoring.  Rather than
-    specifying the period window when setting up the monitoring, you can
-    request a different period with each call.
-  * Even though `touchedWithin` will return the result, didTouchDict can
-    still be used to test for touches with other blueprints previously
-    tracked.  e.g. you call `touchedWithin` on 'Lightbeam', then call
-    it again with 'Fish'.  The 'Lightbeam' status is still available
-    in didTouchDict even after you call `touchedWithin` with fish.
+        when Fish touches Algae [[ ... ]]
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { interval } from 'rxjs';
 import UR from '@gemstep/ursys/client';
-import {
-  GVarNumber,
-  GVarString,
-  GVarDictionary,
-  GVarBoolean
-} from 'modules/sim/vars/_all_vars';
-import GFeature from 'lib/class-gfeature';
-import { IAgent } from 'lib/t-script';
-import {
-  GetAgentsByType,
-  GetAgentById,
-  GetAgentByName
-} from 'modules/datacore/dc-agents';
-import { Register } from 'modules/datacore/dc-features';
-import { GetSpriteDimensions } from 'modules/datacore/dc-globals';
+import SM_Feature from 'lib/class-sm-feature';
+import * as SIMAGENTS from 'modules/datacore/dc-sim-agents';
+import * as SIMDATA from 'modules/datacore/dc-sim-data';
+
+import { DistanceTo } from 'lib/util-vector';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('TouchesPack');
-const DBG = true;
+const FEATID = 'Touches';
+const PR = UR.PrefixUtil(FEATID);
+const DBG = false;
 
-// const AGENTS_TBL = new Map(); // [ ...[ agentId, BTYPE_TBL: map ]]
-// Blueprint Type: BTYPE_TBL  = [ ...[ blueprintName, TAGENT_TBL: map ]]
-// Target Agent:   TAGENT_TBL = [ ...[ targetAgentId, lastTouched: number ]]
-
-// Stuff in agents instead
-const MONITORED_AGENTS = new Map();
-
-const FPS = 30;
-let TIMER: any;
-let COUNTER: number;
-
-UR.HookPhase('SIM/PHYSICS', m_update);
+const AGENT_TOUCHTYPES = new Map(); // Touch-enabled Agents
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -133,218 +88,193 @@ UR.HookPhase('SIM/PHYSICS', m_update);
 /**
  * Returns agent if it exists.
  * If it doesn't exist anymore (e.g. CharControl has dropped), remove it from
- * MONITORED AGENTS
+ * WIDGET_AGENTS
  * @param agentId
  */
-function m_getAgent(agentId): IAgent {
-  const a = GetAgentById(agentId);
-  if (!a) MONITORED_AGENTS.delete(agentId);
+function m_GetAgent(agentId): IAgent {
+  const a = SIMAGENTS.GetAgentById(agentId);
+  if (!a) AGENT_TOUCHTYPES.delete(agentId);
   return a;
 }
 
-/// FEATURE CLASS /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class TouchesPack extends GFeature {
-  //
-  constructor(name) {
-    super(name);
-    this.featAddMethod('monitorTouchesWith', this.monitorTouchesWith);
-    this.featAddMethod('touchedWithin', this.touchedWithin);
-
-    this.startTimer = this.startTimer.bind(this);
-
-    UR.HandleMessage('NET:HACK_SIM_START', this.startTimer);
-    UR.HandleMessage('NET:HACK_SIM_STOP', this.stopTimer);
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** This runs once to initialize the feature for all agents */
-  /// REVIEW: initialize is not called at the moment!
-  initialize(simloop) {
-    super.initialize(simloop);
-    simloop.hook('INPUT', frame => console.log(frame));
-  }
-  clear() {
-    // Stuff in agents instead
-    // const agents = Array.from(AGENTS_TBL.keys());
-    const agentIds = Array.from(MONITORED_AGENTS.keys());
-    agentIds.forEach(id => {
-      // Stuff in agents instead
-      // const BTYPE_TBL = AGENTS_TBL.get(a);
-      const agent = m_getAgent(id);
-      if (!agent) return; // usu charControl dropped
-      const BTYPE_TBL = agent.touchTable || new Map();
-      const blueprints = Array.from(BTYPE_TBL.keys());
-      blueprints.forEach(b => {
-        const TAGENT_TBL = BTYPE_TBL.get(b) || new Map();
-        // shouldn't we just clear them instead?
-        TAGENT_TBL.clear();
-
-        // Orig method
-        // const targets = Array.from(TAGENT_TBL.keys());
-        // targets.forEach(t => {
-        //   TAGENT_TBL.set(t, 0);
-        // });
-      });
-      // clear blueprint type too
-      BTYPE_TBL.clear();
-      agent.touchTable = BTYPE_TBL;
-    });
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  startTimer() {
-    if (DBG) console.log(...PR('Start Timer'));
-    COUNTER = 0;
-    this.clear();
-    const size = 1000 / FPS; // Interval size matches sim rate
-    TIMER = interval(size).subscribe(count => {
-      COUNTER = count;
-    });
-  }
-  stopTimer() {
-    if (DBG) console.log(...PR('Stop Timer'));
-    if (TIMER) TIMER.unsubscribe();
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Add physics-specific properties to the agent. The feature methods
-   *  are defined inside the featurepack instance, not the agent instance
-   *  as props are.
-   */
-  decorate(agent) {
-    super.decorate(agent);
-    // add feature props here
-    this.featAddProp(agent, 'didTouchDict', new GVarDictionary(''));
-  }
-
-  /// TOUCHES METHODS /////////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Invoked through featureCall script command. To invoke via script:
-   *  featCall Touchs setRadius value
-   */
-
-  /**
-   * This sets up monitoring between the agent and the target blueprint
-   * Do this for any blueprint you plan on touching
-   * @param agent
-   * @param targetBlueprintName -- blueprint name
-   */
-  monitorTouchesWith(agent: IAgent, targetBlueprintName: string) {
-    // Stuff in agents instead
-    // const BTYPE_TBL = AGENTS_TBL.get(agent.id) || new Map();
-    const BTYPE_TBL = agent.touchTable || new Map();
-    const TAGENT_TBL = BTYPE_TBL.get(targetBlueprintName) || new Map();
-    BTYPE_TBL.set(targetBlueprintName, TAGENT_TBL);
-    // Stuff in agents instead
-    // AGENTS_TBL.set(agent.id, BTYPE_TBL);
-    agent.touchTable = BTYPE_TBL;
-    MONITORED_AGENTS.set(agent.id, agent.id);
-  }
-  /**
-   * Returns true if agent touched ANY agent of targetBlueprintName type
-   * Also updates didTouchDict with the result.
-   *
-   * Using this requires two calls:
-   * 1. Request the test:
-   *      featCall Touches touchedWithin 'Lightbeam' 1
-   * 2. Retreive the result:
-   *      agent.getFeatProp('Touches', 'touched').getItem('Lightbeam').value
-   *
-   * For convenience, touchedWithin also returns true if one of the
-   * target type agents did touch the agent, so you can use it in an ifExpr.
-   *        ifExpr {{ agent.callFeatMethod('Touches', 'touchedWithin', 'Lightbeam', 1) }} [[
-   *          // do something
-   *        ]]
-   *
-   * @param agent
-   * @param targetBlueprintName
-   * @param period
-   */
-  touchedWithin(
-    agent: IAgent,
-    targetBlueprintName: string,
-    period: number
-  ): boolean {
-    // Stuff in agents instead
-    // const BTYPE_TBL = AGENTS_TBL.get(agent.id);
-    const BTYPE_TBL = agent.touchTable;
-    // Users might call `touchedWithin` without first registering for monitoring
-    if (!BTYPE_TBL)
-      console.error(
-        ...PR(`touchedWithin: ${targetBlueprintName} not intialized`)
-      );
-    const TAGENT_TBL = BTYPE_TBL.get(targetBlueprintName);
-    if (!TAGENT_TBL)
-      console.error(
-        ...PR(`touchedWithin: ${targetBlueprintName} missing TAGENT_TBL`)
-      );
-
-    let didTouchAny = false;
-    const targetAgents = GetAgentsByType(targetBlueprintName);
-    targetAgents.forEach(targetAgent => {
-      const lastTouch = TAGENT_TBL.get(targetAgent.id);
-      const timeElapsed = COUNTER - lastTouch;
-
-      // period is time period since last touch in seconds
-      // e.g. period = 1 is last touch was within 1 second
-      // e.g. period = 5 is rlast touch was within 5 seconds
-
-      // COUNTER goes up by 1 every 33 ms.
-      // e.g. COUNTER at 1 sec = 30
-      // e.g. COUNTER at 5 sec = 150
-
-      const isTouching = timeElapsed < period * FPS;
-      didTouchAny = didTouchAny || isTouching;
-    });
-    const didTouchDict = agent.getFeatProp(this.name, 'didTouchDict');
-    didTouchDict.updateItem(targetBlueprintName, new GVarBoolean(didTouchAny));
-    return didTouchAny;
-  }
+function m_Clear(agent: IAgent) {
+  agent.lastTouched = undefined;
+  agent.isTouching = undefined;
 }
 
-/// CLASS HELPERS /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-function m_isTouching(a: IAgent, b: IAgent) {
-  // make sure both objects have the Physics feature
-  if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
-  // if either is inert, no touches are possible
-  // REVIEW use Physics shape for bounds comparison?
-  // This assumes rectangular!
-  if (a.isInert || b.isInert) return false;
-  const boundsA = a.callFeatMethod('Physics', 'getBounds');
-  const boundsB = b.callFeatMethod('Physics', 'getBounds');
-  const res =
-    boundsA.x < boundsB.x + boundsB.width &&
-    boundsA.x + boundsA.width > boundsB.x &&
-    boundsA.y < boundsB.y + boundsB.height &&
-    boundsA.y + boundsA.height > boundsB.y;
-  return res;
+/// Center to Center
+function m_TouchesC2C(a: IAgent, b: IAgent) {
+  return DistanceTo(a, b) < 10;
+}
+/// Center to Bounds
+function m_TouchesC2B(a: IAgent, b: IAgent) {
+  return a.callFeatMethod('Physics', 'intersectsCenterWithAgentBounds', b);
+}
+/// Bounds to Bounds
+function m_TouchesB2B(a: IAgent, b: IAgent) {
+  return a.callFeatMethod('Physics', 'intersectsWith', b);
+}
+/// Bounds a inside Bounds b
+function m_TouchesBinB(a: IAgent, b: IAgent) {
+  return a.callFeatMethod('Physics', 'isBoundedBy', b);
 }
 
-function m_update() {
-  // Stuff it in agents instead
-  // const agents = Array.from(AGENTS_TBL.keys());
-  const agentIds = Array.from(MONITORED_AGENTS.keys());
-  agentIds.forEach(agentId => {
-    const agent = m_getAgent(agentId);
-    if (!agent) return; // usu charControl dropped
+/// TOUCH LOOP ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    // Stuff it in agents instead
-    // const BTYPE_TBL = AGENTS_TBL.get(agentId);
-    const BTYPE_TBL = agent.touchTable;
-    const blueprintNames = Array.from(BTYPE_TBL.keys());
-    blueprintNames.forEach(blueprintName => {
-      const targets = GetAgentsByType(blueprintName);
-      const TAGENT_TBL = BTYPE_TBL.get(blueprintName);
-      targets.forEach(b => {
-        if (m_isTouching(agent, b)) {
-          TAGENT_TBL.set(b.id, COUNTER);
+/**
+ * TOUCH Update Loop -- Runs once per gameloop
+ * Depends on feat-movmeent first setting distances during PHYSICS_UPDATE
+ */
+/// Stores the frametime of the last touch of each type
+/// agent.lastTouched[501] = { c2c: 1534920, c2b: undefined, b2b: undefined }
+function m_Update(frame) {
+  AGENT_TOUCHTYPES.forEach((d_TouchTypes, agentId) => {
+    const agent = m_GetAgent(agentId);
+    if (!agent) return;
+
+    d_TouchTypes.forEach((touchTypes, bpname) => {
+      const targets = SIMAGENTS.GetAgentsByType(bpname);
+      targets.forEach(t => {
+        // skip self
+        if (agentId === t.id) return;
+
+        // make sure target agent also has Physics feature
+        if (!t.hasFeature('Physics'))
+          throw new Error(`Touches requires Physics for ${t.name}!`);
+
+        let c2c;
+        let c2b;
+        let b2b;
+        let binb;
+        // if agent or target is inert, we still need to clear c2c/c2b/b2b
+        if (!agent.isInert && !t.isInert) {
+          if (touchTypes.includes('c2c')) {
+            c2c = m_TouchesC2C(agent, t) ? frame : undefined;
+            if (DBG && c2c) console.log('touches c2c', frame);
+          }
+          if (touchTypes.includes('c2b')) {
+            c2b = m_TouchesC2B(agent, t) ? frame : undefined;
+            if (DBG && c2b) console.log('touches c2b', frame);
+          }
+          if (touchTypes.includes('b2b')) {
+            b2b = m_TouchesB2B(agent, t) ? frame : undefined;
+            if (DBG && b2b) console.log('touches b2b', frame);
+          }
+          if (touchTypes.includes('binb')) {
+            binb = m_TouchesBinB(agent, t) ? frame : undefined;
+            if (DBG && binb) console.log('touches binb', frame);
+          }
+          if (c2c || c2b || b2b || binb)
+            UR.LogEvent('Touched', [
+              'agentId',
+              agentId,
+              'targetId',
+              t.id,
+              'b2b',
+              b2b,
+              'binb',
+              binb,
+              'c2c',
+              c2c,
+              'c2b',
+              c2b
+            ]);
         }
+        if (!agent.lastTouched) agent.lastTouched = new Map();
+        if (!agent.isTouching) agent.isTouching = new Map();
+        agent.lastTouched.set(t.id, agent.isTouching.get(t.id));
+        agent.isTouching.set(t.id, { c2c, c2b, b2b, binb });
       });
     });
   });
 }
 
+/// FEATURE CLASS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+class TouchPack extends SM_Feature {
+  //
+  constructor(name) {
+    super(name);
+    this.featAddMethod('monitor', this.monitor);
+    this.featAddMethod('_getTouchingAgent', this._getTouchingAgent);
+    this.featAddMethod('clearTouches', this.clearTouches);
+    UR.HookPhase('SIM/PHYSICS_THINK', m_Update);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  decorate(agent) {
+    super.decorate(agent);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    AGENT_TOUCHTYPES.clear();
+  }
+
+  /// VISION METHODS /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  monitor(agent: IAgent, targetBlueprintName: string, ...touchTypes: string[]) {
+    // make sure agent has the Physics feature
+    if (!agent.hasFeature('Physics'))
+      throw new Error(`Touches requires Physics for ${agent.name}!`);
+    if (touchTypes.length < 1)
+      throw new Error('Touches monitor requires a touchType!');
+    const d_TouchTypes = AGENT_TOUCHTYPES.get(agent.id) || new Map();
+    d_TouchTypes.set(targetBlueprintName, touchTypes);
+    AGENT_TOUCHTYPES.set(agent.id, d_TouchTypes);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Returns the first agent that matches the touchtype
+  _getTouchingAgent(agent: IAgent, touchType: string) {
+    if (!agent.isTouching) return undefined;
+    const targetIds = [...agent.isTouching.keys()];
+    const touchingId = targetIds.find(id => agent.isTouching.get(id)[touchType]);
+    if (touchingId) {
+      // console.log(agent.id, 'isTouching', touchingId);
+      return SIMAGENTS.GetAgentById(touchingId);
+    }
+    return undefined;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Clears saved isTouching and lastTouched relative to targetId for ALL agents
+  /// Use when deleting an agent otherwise isTouching and lastTouched
+  /// are never reset.  See feat-population.m_Delete
+  clearTouches(agent: IAgent, targetId: string) {
+    const agents = SIMAGENTS.GetAllAgents();
+    agents.forEach(a => {
+      // use `delete` not clear to prevent memory leak
+      if (a.lastTouched) a.lastTouched.delete(targetId);
+      if (a.isTouching) a.isTouching.delete(targetId);
+    });
+  }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** static method to return symbol data */
+  static Symbolize(): TSymbolData {
+    return SM_Feature._SymbolizeNames(TouchPack.Symbols);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** instance method to return symbol data */
+  symbolize(): TSymbolData {
+    return TouchPack.Symbolize();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static _CachedSymbols: TSymbolData;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** declaration of base symbol data; methods will be modified to include
+   *  the name parameter in each methodSignature */
+  static Symbols: TSymbolData = {
+    props: {},
+    methods: {
+      monitor: { args: ['targetBlueprintName:string', 'touchType:identifier'] }
+      // INTERNAL USE ONLY
+      // _getTouchingAgent: { args: ['touchType:identifier'] },
+      // clearTouches: { args: ['targetId:string'] }
+    }
+  };
+}
+
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const INSTANCE = new TouchesPack('Touches');
-Register(INSTANCE);
+const INSTANCE = new TouchPack(FEATID);
+SIMDATA.RegisterFeature(INSTANCE);
