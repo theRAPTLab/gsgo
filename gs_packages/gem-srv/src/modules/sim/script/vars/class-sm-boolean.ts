@@ -35,42 +35,37 @@ export class SM_Boolean extends SM_Object {
     this.value = !this.value;
     return this.value;
   }
+  // NOTE this is a logic operation, not an assignment
   and(comparison: any): SM_Boolean {
     if (this.fuzzy) throw Error("'and' incompatible with fuzzy logic");
-    this.value &= comparison;
-    return this;
+    return new SM_Boolean(this.value && comparison);
   }
+  // NOTE this is a logic operation, not an assignment
   or(comparison: any): SM_Boolean {
     if (this.fuzzy) throw Error("'or' incompatible with fuzzy logic");
-    this.value |= comparison;
-    return this;
+    return new SM_Boolean(this.value || comparison);
   }
+  // NOTE this is a logic operation, not an assignment
   equal(comparison: any): SM_Boolean {
     if (this.fuzzy)
       throw Error(`'equal' incompatible with fuzzy logic.  fuzzy=${this.fuzzy}`);
-    this.value = this.value === comparison;
-    return this;
+    return new SM_Boolean(this.value === comparison);
   }
   notEqual(comparison: any): SM_Boolean {
     if (this.fuzzy) throw Error("'equal' incompatible with fuzzy logic");
-    this.value = this.value !== comparison;
-    return this;
+    return new SM_Boolean(this.value !== comparison);
   }
   slightlyTrue(): SM_Boolean {
-    this.value = this.value && this.fuzzy > 0 && this.fuzzy < 0.25;
-    return this;
+    return new SM_Boolean(this.value && this.fuzzy > 0 && this.fuzzy < 0.25);
   }
   mostlyTrue(): SM_Boolean {
-    this.value = this.value && this.fuzzy > 0.75;
-    return this;
+    return new SM_Boolean(this.value && this.fuzzy > 0.75);
   }
   slightlyFalse(): SM_Boolean {
-    this.value = this.value && this.fuzzy < 0 && this.fuzzy > -0.25;
-    return this;
+    return new SM_Boolean(this.value && this.fuzzy < 0 && this.fuzzy > -0.25);
   }
   mostlyFalse(): SM_Boolean {
-    this.value = this.value && this.fuzzy < -0.75;
-    return this;
+    return new SM_Boolean(this.value && this.fuzzy < -0.75);
   }
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
