@@ -1,4 +1,5 @@
 {
+  "note": "To load an updateed version of this file into the database, make sure to set the  the doReset flag in gem-app-srv.js (https://gitlab.com/stepsys/gem-step/gsgo/-/merge_requests/150)",
   "locales": [
     {
       "id": 0,
@@ -32,7 +33,7 @@
     },
     {
       "id": 1,
-      "name": "vanderbilt",
+      "name": "Vanderbilt",
       "ptrack": {
         "memo": "VU ptrack",
         "xRange": 1,
@@ -61,9 +62,38 @@
     },
     {
       "id": 2,
-      "name": "indiana",
+      "name": "Vanderbilt 2",
       "ptrack": {
-        "memo": "VU PTrack",
+        "memo": "VU ptrack 2",
+        "xRange": 1,
+        "yRange": 1,
+        "xOff": -4200,
+        "yOff": -6000,
+        "xScale": -0.0002,
+        "yScale": 0.00106,
+        "zRot": 0
+      },
+      "stage": {
+        "memo": "stage for vanderbilt 2"
+      },
+      "pozyx": {
+        "memo": "VU Pozyx 2",
+        "xRange": 1,
+        "yRange": 1,
+        "xOff": -4200,
+        "yOff": -6000,
+        "xScale": -0.0002,
+        "yScale": 0.00106,
+        "zRot": 0,
+        "useAccelerometer": true
+      },
+      "urnet": {}
+    },
+    {
+      "id": 3,
+      "name": "Indiana",
+      "ptrack": {
+        "memo": "Indiana PTrack",
         "xRange": 1,
         "yRange": 1,
         "xOff": -4200,
@@ -89,7 +119,7 @@
       "urnet": {}
     },
     {
-      "id": 3,
+      "id": 4,
       "name": "Sri's Locale",
       "stage": {
         "memo": "stage for sri"
@@ -106,7 +136,7 @@
       }
     },
     {
-      "id": 4,
+      "id": 5,
       "name": "Ben's Locale",
       "stage": {
         "memo": "stage for ben"
