@@ -263,10 +263,7 @@ ENTITY_TO_COBJ.setMapFunctions({
 
     cobj.x = pos.x;
     cobj.y = pos.y;
-    cobj.bpid =
-      entity.type === TYPES.Pozyx
-        ? GetDefaultPozyxBpName()
-        : GetDefaultPTrackBpName();
+    cobj.bpid = cobj.bpid; // keep the same blueprint
     cobj.label = entity.type === TYPES.Pozyx ? entity.id.substring(2) : entity.id;
     cobj.framesSinceLastUpdate = 0;
     UR.SendMessage('NET:SRV_RTLOG', {
