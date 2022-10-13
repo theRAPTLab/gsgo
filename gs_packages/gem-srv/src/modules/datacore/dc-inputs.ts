@@ -422,9 +422,8 @@ export function InputsUpdate() {
   });
   // 2. Process PTrack, Pozyx, FakeTrack Inputs
   //    ENTITY_TO_COBJ is regularly updated by api-input.StartTrackerVisuals
-  if (GetDefaultPozyxBpName() !== undefined) {
-    InputUpdateEntityTracks();
-  }
+  if (ENTITY_TO_COBJ.getMappedObjects().length > 0) InputUpdateEntityTracks();
+
   // 3. Combine them all
   INPUTDEFS.push(...COBJ_TO_INPUTDEF.getMappedObjects());
 }
