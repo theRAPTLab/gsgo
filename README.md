@@ -20,13 +20,11 @@ Please read the [WIKI](https://gitlab.com/stepsys/gem-step/gsgo/-/wikis/Home) fo
 
 ## First Time Installation
 
-If you have not installed the development tools required to run the project, you'll have to do this once. Follow the guide in [Installing the Development Tools on a New Machine](Deployment/Installation). 
-
-Currently we support MacOS Mojave or later, with plans to test on Linux.
+First, please read [Installation Overview](https://gitlab.com/stepsys/gem-step/gsgo/-/wikis/Installation-Overview) to familiarize yourself with the whole system and installation process.
 
 ## Running the System
 
-After you've installed the development environment, follow the "INSTALLATION" guide on [Developer Manual](@/Developer-Manual-Index) wiki page.
+After you've installed the development environment, tracking systems, and set up the local environment (see Installation Overivew, above), follow the guide on [Daily Operations Guide](https://gitlab.com/stepsys/gem-step/gsgo/-/wikis/Developer/Daily) wiki page.
 
 This guide covers running, updating, and switching different development branches.
 
