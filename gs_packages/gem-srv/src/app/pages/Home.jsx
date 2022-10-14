@@ -82,7 +82,7 @@ class Home extends React.Component {
           <b className={classes.title}>Quick Links</b>
           <ul className={classes.list}>
             <NavItem route="login">login</NavItem>
-            <NavItem route="main?project=aquatic">aquatic</NavItem>
+            <NavItem route="main?project=aquatic_interactions">aquatic</NavItem>
             <NavItem route="charcontrol">character controller</NavItem>
           </ul>
         </div>
@@ -100,8 +100,8 @@ class Home extends React.Component {
               also create new projects from this screen.
             </li>
             <li>
-              <a href="/app/main?project=aquatic">AQUATIC</a> - This goes directly
-              to the Aquatic model.
+              <a href="/app/main?project=aquatic_interactions">AQUATIC</a> - This
+              goes directly to the Aquatic model.
             </li>
             <li>
               <a href="/app/viewer">VIEWER</a> - This let's you view a model that
