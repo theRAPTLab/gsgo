@@ -263,10 +263,7 @@ ENTITY_TO_COBJ.setMapFunctions({
 
     cobj.x = pos.x;
     cobj.y = pos.y;
-    cobj.bpid =
-      entity.type === TYPES.Pozyx
-        ? GetDefaultPozyxBpName()
-        : GetDefaultPTrackBpName();
+    cobj.bpid = cobj.bpid; // keep the same blueprint
     cobj.label = entity.type === TYPES.Pozyx ? entity.id.substring(2) : entity.id;
     cobj.framesSinceLastUpdate = 0;
     UR.SendMessage('NET:SRV_RTLOG', {
@@ -425,9 +422,8 @@ export function InputsUpdate() {
   });
   // 2. Process PTrack, Pozyx, FakeTrack Inputs
   //    ENTITY_TO_COBJ is regularly updated by api-input.StartTrackerVisuals
-  if (GetDefaultPozyxBpName() !== undefined) {
-    InputUpdateEntityTracks();
-  }
+  if (ENTITY_TO_COBJ.getMappedObjects().length > 0) InputUpdateEntityTracks();
+
   // 3. Combine them all
   INPUTDEFS.push(...COBJ_TO_INPUTDEF.getMappedObjects());
 }
