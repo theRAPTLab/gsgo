@@ -31,8 +31,8 @@ const DBG = true;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
-PANEL_CONFIG.set('instances', '15% auto 150px'); // columns
-PANEL_CONFIG.set('sim', '110px auto 150px'); // columns
+PANEL_CONFIG.set('instances', '25% auto 0'); // columns
+PANEL_CONFIG.set('sim', '0px auto 250px'); // columns
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
