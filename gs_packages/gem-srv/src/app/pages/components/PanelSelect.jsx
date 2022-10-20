@@ -15,7 +15,7 @@ class PanelSelect extends React.Component {
         { route: 'main', label: 'Main' },
         { route: 'viewer', label: 'Viewer' },
         { route: 'charcontrol', label: 'Character Controller' },
-        { route: 'scripteditor', label: 'Scripts' }
+        { route: 'scripteditor', label: 'Script Editor' }
       ]
     };
     this.Initialize = this.Initialize.bind(this);
