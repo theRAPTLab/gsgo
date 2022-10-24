@@ -96,7 +96,7 @@ const DBG = false;
 
 const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
 # TAG isCharControllable true
-# TAG isPozyxControllable true
+# TAG isPozyxControllable false
 # TAG isPTrackControllable false
 
 # PROGRAM INIT
@@ -108,6 +108,12 @@ featProp agent.Costume.costumeName setTo 'circle.json'
 // when xxx touches yyy [[ ]]
 // every 5 runAfter [[ ]]
 // onEvent Tick [[ ]]
+
+// COMMENT KEY
+// 🔎 WHAT DOES THIS DO? heading
+// 🔎 body
+// ✏️ LETS CHANGE THIS: heading
+// ✏️ body
 `;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
