@@ -90,6 +90,7 @@ class InputField extends React.Component {
             type={type}
             value={value}
             className={classes.instanceEditorField}
+            placeholder={propName}
           />
         </div>
       );
