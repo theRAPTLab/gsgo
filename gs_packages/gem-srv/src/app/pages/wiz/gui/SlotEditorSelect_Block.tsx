@@ -202,7 +202,6 @@ function SlotEditorSelect_Block(props) {
       );
       break;
     case 'boolean':
-      // NOTE `unitText` is a string
       /* RATIONALE: While a checkbox is the normal UI element for booleans,
          the choice of true or false is somewhat implicit.
          A range slider makes it clearer which selection is true
@@ -210,6 +209,12 @@ function SlotEditorSelect_Block(props) {
          in the token to a range value between 0 and 1.  This conversion
          is all done in SelectEditor.
       */
+      // When first defining a boolean, set it to False by default
+      if (unitText === 'undefined')
+        EDITMGR.UpdateSlot({
+          value: false,
+          type: 'value' // validTokenTypes = value with arg=boolean
+        });
       editor = (
         <div id="SES_bool">
           <HelpLabel prompt={helpPrompt} info={helpInfo} open pad="10px" />
@@ -222,7 +227,7 @@ function SlotEditorSelect_Block(props) {
             </label>
             <input
               key={tkey}
-              checked={unitText === 'true'}
+              checked={unitText === 'true'} // 'unitText' is a string
               type="checkbox"
               role="switch"
               onChange={processBooleanInput}
