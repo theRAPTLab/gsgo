@@ -317,7 +317,9 @@ function GetPozyxControlBpNames(): string[] {
 function GetPozyxControlDefaultBpName(): string {
   const pozyxBpNames = STATE._getKey('pozyxControlBpNames');
   if (pozyxBpNames.length < 1) return undefined;
-  return pozyxBpNames[0];
+  // pick a random blueprint out of all the blueprints that have pozyx enabled
+  const i = Math.round((pozyxBpNames.length - 1) * Math.random());
+  return pozyxBpNames[i];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Returns array of properties {name, type, defaultvalue, isFeatProp}
