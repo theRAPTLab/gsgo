@@ -98,7 +98,9 @@ class InputField extends React.Component {
       jsx = (
         <>
           {/* <div className={classes.inspectorLabel}>{propName}:&nbsp;</div> */}
-          <div className={classes.inspectorData}>{value}&nbsp; </div>
+          <div className={classes.inspectorData}>
+            {value === '' ? '...' : value}
+          </div>
         </>
       );
     }
