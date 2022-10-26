@@ -63,15 +63,8 @@ class InputField extends React.Component {
   }
 
   render() {
-    const {
-      index,
-      propName,
-      value,
-      type,
-      isEditable,
-      onChange,
-      classes
-    } = this.props;
+    const { index, propName, value, type, isEditable, onChange, classes } =
+      this.props;
 
     if (DBG) console.log('DUMMY log to clear eslint', index, onChange);
 
