@@ -39,7 +39,7 @@ import {
 } from 'lib/util-vector';
 
 ANGLES.SCALE = Math.PI * 2; // radians
-ANGLES.DIRECTIONS = ['E', 'W'];
+ANGLES.DIRECTIONS = ['N', 'E', 'S', 'W'];
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -244,7 +244,7 @@ function m_ProcessPosition(agent, frame) {
   agent.prop.Movement.compassDirection.setTo(
     // For N/E/S/W Use `orientation + Math.PI / 2`
     // For E/W Use `orientation + Math.PI / 4`
-    ANGLES.compass(orientation + Math.PI / 4)
+    ANGLES.compass(orientation + Math.PI / 2)
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
