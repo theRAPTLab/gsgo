@@ -340,7 +340,7 @@ class InstanceEditor extends React.Component {
     // if 'instance' data has been loaded (we're editing) then use that
     // otherwise, use the label passed by PanelMapInstances
     const inputLabel = (instance && instance.label) || label;
-    if (!inputLabel) return 'not loaded yet';
+    if (inputLabel === undefined) return 'not loaded yet';
 
     const initScript = instance ? instance.initScript : '';
 
