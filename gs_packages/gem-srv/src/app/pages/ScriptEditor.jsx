@@ -101,7 +101,7 @@ const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
 
 # PROGRAM INIT
 addFeature Costume
-featProp agent.Costume.costumeName setTo 'circle.json'
+featProp agent.Costume.costumeName setTo 'GEN_onexone.json'
 
 # PROGRAM UPDATE
 // code to run every frame
