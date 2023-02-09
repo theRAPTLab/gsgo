@@ -595,7 +595,8 @@ function m_FeaturesThink(frame) {
     const moveType = String(agent.prop.Movement.movementType.value).toLowerCase();
     const moveFn = MOVEMENT_FUNCTIONS.get(moveType);
     // cancel seek?  NOTE: seek stops one frame after
-    if (!['seekAgent', 'seekAgentOrWander'].includes(moveType))
+    // NOTE: This array needs to be lower case!!!! b/c moveType has been lowercased
+    if (!['seekagent', 'seekagentorwander', '_seekcharacter', '_seekcharacterorrwander', '_seekcharacterorwander'].includes(moveType)) {
       SEEKING_AGENTS.delete(agent.id);
     if (moveFn) moveFn(agent, frame);
   });
