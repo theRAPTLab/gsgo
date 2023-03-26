@@ -37,7 +37,6 @@ class IUPack extends SM_Feature {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// IU FEATURE METHODS
   logProperty(agent: IAgent) {
-    if (DBG) console.log('Inside logProperty ');
     this.logString(agent, agent.prop.IU.logStringText.value);
   }
 
@@ -64,7 +63,11 @@ class IUPack extends SM_Feature {
   /** declaration of base symbol data; methods will be modified to include
    *  the name parameter in each methodSignature */
   static Symbols: TSymbolData = {
-    props: {},
+    props: {
+      logStringText: SM_String.SymbolizeCustom({
+        setTo: ['logStringText:string']
+      })
+    },
     methods: {
       'logString': { args: ['text:string'] },
       'logProperty': {}

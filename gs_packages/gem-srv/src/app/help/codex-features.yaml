@@ -216,19 +216,23 @@ Physics:
   # Physics props
   bodyRadius:
     hint: 'bodyRadius hint'
-    info: 'change dimensions in pixels'
+    info: 'Change dimensions in pixels.'
     syntax: 'body radius integer width, integer height'
   bodyWidth:
     info: 'Width of character in pixels.'
   bodyHeight:
     info: 'Height of the character in pixels.'
   bodyShape:
-    info: 'circle or rectangle'
+    info: 'Circle or rectangle.'
   # Physics methods
   # (none)
 
 IU:
   info: 'Adds new features we are testing at IU'
+  logStringText:
+    name: 'logStringText'
+    info: '"logStringText" value determines the text to be logged'
+    input: 'Type the text you want to appear in the log. Use stack commands if you need to assemble it (e.g., push)'
 
 Population:
   info: 'Adds ways to generate and manage spawned characters and statistical information'
