@@ -13,27 +13,38 @@ import SM_Agent from 'lib/class-sm-agent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+const FEATID = 'IU';
 const PR = UR.PrefixUtil('IUFEATURE');
 const DBG = true;
+const LOG_ID = 'SCRIPT_LOG';
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class IUPack extends SM_Feature {
   constructor(name) {
     super(name);
-    this.featAddMethod('logEvent', this.logEvent);
+    this.featAddMethod('logString', this.logString);
+    this.featAddMethod('logProperty', this.logProperty);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
     super.decorate(agent);
+
+    this.featAddProp(agent, 'logStringText', new SM_String('INIT'));
+    agent.prop.IU.logStringText.setTo('INIT');
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// IU FEATURE METHODS
-  logEvent(agent: IAgent, text: string) {
-    console.log('Logging IU IU_SPECIAL_LOG: ' + text);
-    UR.LogEvent('IU_SPECIAL_LOG', [text]);
+  logProperty(agent: IAgent) {
+    if (DBG) console.log('Inside logProperty ');
+    this.logString(agent, agent.prop.IU.logStringText.value);
+  }
+
+  logString(agent: IAgent, text: string) {
+    if (DBG)
+      console.log('Logging ' + LOG_ID + ' agent(' + agent.id + '): ' + text);
+    UR.LogEvent(LOG_ID, [text]);
   }
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
@@ -55,8 +66,8 @@ class IUPack extends SM_Feature {
   static Symbols: TSymbolData = {
     props: {},
     methods: {
-      // REVIEW TODO: 'value' is :any...is it a GVAR?
-      'logEvent': { args: ['text:string'] }
+      'logString': { args: ['text:string'] },
+      'logProperty': {}
     }
   };
 }
