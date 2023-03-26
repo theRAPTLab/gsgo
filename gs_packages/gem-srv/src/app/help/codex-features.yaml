@@ -233,6 +233,11 @@ IU:
     name: 'logStringText'
     info: '"logStringText" value determines the text to be logged'
     input: 'Type the text you want to appear in the log. Use stack commands if you need to assemble it (e.g., push)'
+  # Population methods
+  logString:
+    info: 'log a text string'
+  logProperty:
+    info: 'log the text string that is saved as the logStringText property of this character'
 
 Population:
   info: 'Adds ways to generate and manage spawned characters and statistical information'
