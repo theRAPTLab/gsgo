@@ -23,6 +23,10 @@ export class SM_String extends SM_Object {
     this.value = str;
     return this;
   }
+  add(str: string): SM_String {
+    this.value += str;
+    return this;
+  }
   equal(str: string) {
     return new SM_Boolean(this.value === str);
   }
@@ -66,6 +70,10 @@ export class SM_String extends SM_Object {
   static Symbols: TSymbolData = {
     methods: {
       setTo: { args: [`string:string`], info: 'Sets the property to a value' },
+      add: {
+        args: [`string:string`],
+        info: 'Adds a new string to the current string (concatenates)'
+      },
       equal: {
         args: ['comparison string:string'],
         info: 'Returns whether this property is equal to the passed value',
