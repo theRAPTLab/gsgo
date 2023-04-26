@@ -221,6 +221,7 @@ class WidgetPack extends SM_Feature {
   constructor(name) {
     super(name);
     this.featAddMethod('showMessage', this.showMessage);
+    this.featAddMethod('showMessageProp', this.showMessageProp);
     this.featAddMethod('setMeterPosition', this.setMeterPosition);
     this.featAddMethod(
       'bindLineGraphHistogramToFeatProp',
@@ -254,6 +255,7 @@ class WidgetPack extends SM_Feature {
     this.featAddProp(agent, 'graphGlobalProp', new SM_String()); // agent prop name that text is bound to
     prop = new SM_Number(30);
     this.featAddProp(agent, 'graphFrequency', prop);
+    this.featAddProp(agent, 'messageStringToShow', new SM_String());
 
     // Bar Graph
     this.featAddProp(agent, 'barGraphProp', new SM_String()); // this should be a dict prop
@@ -277,6 +279,11 @@ class WidgetPack extends SM_Feature {
    *  featCall Physics setRadius value
    */
   showMessage(agent: IAgent, message: string) {
+    UR.RaiseMessage('SHOW_MESSAGE', { message });
+  }
+
+  showMessageProp(agent: IAgent) {
+    const message = agent.prop.Graphing.messageStringToShow.value;
     UR.RaiseMessage('SHOW_MESSAGE', { message });
   }
 
@@ -348,6 +355,7 @@ class WidgetPack extends SM_Feature {
     },
     methods: {
       showMessage: { args: ['messageString:string'] },
+      showMessageProp: { args: [] },
       setMeterPosition: { args: ['position:string'] },
       bindLineGraphHistogramToFeatProp: {
         args: ['featureName:feature', 'propName:prop']
