@@ -41,9 +41,8 @@ class IUPack extends SM_Feature {
   }
 
   logString(agent: IAgent, text: string) {
-    if (DBG)
-      console.log('Logging ' + LOG_ID + ' agent(' + agent.id + '): ' + text);
-    UR.LogEvent(LOG_ID, [' agent(' + agent.id + '): ' + text]);
+    if (DBG) console.log('Logging character(' + agent.id + '): ' + text);
+    UR.LogEvent(LOG_ID, [' character ' + agent.id + '\t' + text]);
   }
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
