@@ -7,25 +7,25 @@ iscenteredon:
 iscloseto:
   info: 'iscloseto help'
 centertouchescenter:
-  info: 'centertouchescenter help'
+  info: 'This happens when the center of the  character touches the center of another character it is monitoring.'
 centertouches:
-  info: 'centertouches help'
+  info: 'This happens when the center of the  character touches any part of another character it is monitoring.'
 touches:
-  info: 'touches help'
+  info: 'This happens when the character touches another character that it is monitoring.'
 isinside:
   info: 'isinside help'
 centerfirsttouchescenter:
-  info: 'centerfirsttouchescenter help'
+  info: 'This happens the first time the center of the  character touches the center of another character it is monitoring.'
 centerfirsttouches:
-  info: 'centerfirsttouches help'
+  info: 'This happens the first time the center of the  character touches another character it is monitoring.'
 firsttouches:
-  info: 'firsttouches help'
+  info: 'This happens the first time the character touches another character it is monitoring.'
 centerlasttouchescenter:
-  info: 'centerlasttouchescenter help'
+  info: 'This happens the last time the character touches the center of another character it is monitoring.'
 centerlasttouches:
-  info: 'centerlasttouches help'
+  info: 'This happens the last time the character touches another character it is monitoring.'
 lasttouches:
-  info: lasttouches help'
+  info: 'This happens the last time the character touches another character it is monitoring.'
 sees:
   info: 'sees help'
 doesnotsee:
