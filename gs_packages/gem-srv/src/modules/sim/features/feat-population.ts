@@ -103,6 +103,9 @@ class PopulationPack extends SM_Feature {
     this.featAddMethod('populateBySpawning', this.populateBySpawning);
     this.featAddMethod('charactersForEachActive', this.charactersForEachActive);
     this.featAddMethod('charactersForEach', this.charactersForEach);
+    this.featAddMethod('tellCharacterByName', this.tellCharacterByName);
+    this.featAddMethod('tellAllCharacters', this.tellAllCharacters);
+
     // Statistics
     this.featAddMethod('getActiveCharactersCount', this.getActiveCharactersCount);
     this.featAddMethod('countCharacters', this.countCharacters);
@@ -406,6 +409,23 @@ class PopulationPack extends SM_Feature {
   charactersForEach(agent: IAgent, bpname: string, program: TSMCProgram) {
     const agents = SIMAGENTS.GetAgentsByType(bpname);
     agents.forEach(a => a.exec(program, { agent: a }));
+  }
+
+  /**
+   * Call this program for the characters with the given ID if not inert
+   */
+
+  tellCharacterByName(agent: IAgent, name: string, program: TSMCProgram) {
+    const a = SIMAGENTS.GetAgentByName(name);
+    if (a) {
+      console.log('found one');
+      a.exec(program, { agent: a, character: a });
+    }
+  }
+
+  tellAllCharacters(agent: IAgent, program: TSMCProgram) {
+    const agents = SIMAGENTS.GetAllAgents();
+    agents.forEach(a => a.exec(program, { agent: a, character: a }));
   }
 
   /// STATISTICS METHODS /////////////////////////////////////////////////////////
@@ -719,6 +739,7 @@ class PopulationPack extends SM_Feature {
       'populateBySpawning': { args: ['bpname:string', 'spawnScript:string'] },
       'charactersForEachActive': { args: ['bpname:string', 'program:block'] },
       'charactersForEach': { args: ['bpname:identifier', 'program:block'] },
+      'tellCharacterByName': { args: ['name:string', 'program:block'] },
       'getActiveCharactersCount': { args: ['blueprintName:string'] },
       'countCharacters': { args: ['blueprintName:string'] },
       'countCharacterProp': { args: ['blueprintName:string', 'prop:string'] },
