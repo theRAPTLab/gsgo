@@ -400,7 +400,7 @@ class PopulationPack extends SM_Feature {
   charactersForEachActive(agent: IAgent, bpname: string, program: TSMCProgram) {
     const agents = SIMAGENTS.GetAgentsByType(bpname);
     agents.forEach(a => {
-      if (!a.isInert) a.exec(program, { agent: a, character: a });
+      if (!a.isInert) a.exec(program, { agent: a });
     });
   }
   /**
@@ -408,7 +408,7 @@ class PopulationPack extends SM_Feature {
    */
   charactersForEach(agent: IAgent, bpname: string, program: TSMCProgram) {
     const agents = SIMAGENTS.GetAgentsByType(bpname);
-    agents.forEach(a => a.exec(program, { agent: a, character: a }));
+    agents.forEach(a => a.exec(program, { agent: a }));
   }
 
   /**
@@ -419,13 +419,13 @@ class PopulationPack extends SM_Feature {
     const a = SIMAGENTS.GetAgentByName(name);
     if (a) {
       console.log('found one');
-      a.exec(program, { agent: a, character: a });
+      a.exec(program, { agent: a });
     }
   }
 
   tellAllCharacters(agent: IAgent, program: TSMCProgram) {
     const agents = SIMAGENTS.GetAllAgents();
-    agents.forEach(a => a.exec(program, { agent: a, character: a }));
+    agents.forEach(a => a.exec(program, { agent: a }));
   }
 
   /// STATISTICS METHODS /////////////////////////////////////////////////////////
