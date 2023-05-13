@@ -740,6 +740,7 @@ class PopulationPack extends SM_Feature {
       'charactersForEachActive': { args: ['bpname:string', 'program:block'] },
       'charactersForEach': { args: ['bpname:identifier', 'program:block'] },
       'tellCharacterByName': { args: ['name:string', 'program:block'] },
+      'tellAllCharacters': { args: ['program:block'] },
       'getActiveCharactersCount': { args: ['blueprintName:string'] },
       'countCharacters': { args: ['blueprintName:string'] },
       'countCharacterProp': { args: ['blueprintName:string', 'prop:string'] },

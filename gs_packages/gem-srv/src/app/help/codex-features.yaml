@@ -313,6 +313,10 @@ Population:
     info: 'setCharactersByFeatPropTypeKeys'
   countExistingCharactersByFeatPropType:
     info: 'countExistingCharactersByFeatPropType'
+  tellCharacterByName:
+    info: 'Execute the script block with this specific character'
+  tellAllCharacters:
+    info: 'Execute the script block for all characters currently in the system'
 
 Touches:
   info: 'Adds tests to detect when characters touch each other'
