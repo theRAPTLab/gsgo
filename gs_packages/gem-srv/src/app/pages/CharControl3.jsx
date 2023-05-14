@@ -128,17 +128,23 @@ class CharController extends React.Component {
       const paddingTop = parseInt(
         window.getComputedStyle(panelSimViewer).paddingTop
       );
-      const adjustedTop = top - paddingTop + 45;
+      let adjustedTop = top - paddingTop + 45;
 
       // Adjust the left position for padding
       const paddingLeft = parseInt(
         window.getComputedStyle(panelSimViewer).paddingLeft
       );
-      const adjustedLeft = left - paddingLeft;
+      let adjustedLeft = left - paddingLeft;
+
+      // HACK: we know we want a square, so use the height to build it
+      let oldWidth = width;
+      let adjustedWidth = height;
+
+      adjustedLeft += (oldWidth - adjustedWidth) / 2;
 
       console.log('width: ' + width);
 
-      container.style.width = `${width}px`;
+      container.style.width = `${adjustedWidth}px`;
       container.style.height = `${height}px`;
       container.style.left = `${adjustedLeft - consoleRight.offsetLeft}px`;
       container.style.top = `${adjustedTop - consoleRight.offsetTop}px`;

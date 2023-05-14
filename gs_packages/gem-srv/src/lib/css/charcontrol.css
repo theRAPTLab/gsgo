@@ -10,7 +10,7 @@ html {
 #container.overlap {
   background-color: transparent;
   position: absolute;
-  overflow: scroll;
+  overflow: hidden;
 }
 #data_track_controls {
 }
