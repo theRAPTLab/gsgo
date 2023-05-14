@@ -22,6 +22,9 @@ const LOG_ID = 'SCRIPT_LOG';
 const CLICK_AGENTS = new Map();
 const CLICK_FUNCTIONS = new Map();
 
+// FUNCTIONS
+const FUNCTIONS = new Map();
+
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -37,6 +40,8 @@ class IUPack extends SM_Feature {
     UR.HandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
 
     this.featAddMethod('handleClick', this.handleClick);
+    this.featAddMethod('setupFunction', this.setupFunction);
+    this.featAddMethod('callFunction', this.callFunction);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -67,6 +72,21 @@ class IUPack extends SM_Feature {
   handleClick(agent: IAgent, program: TSMCProgram) {
     CLICK_AGENTS.set(agent.id, agent);
     CLICK_FUNCTIONS.set(agent.id, program);
+  }
+
+  setupFunction(agent: IAgent, functionName: string, program: TSMCProgram) {
+    // combine the id + function name so that we can have similar sounding ones
+    // TODO - make unique to the blueprint?
+    let index = agent.id + functionName;
+    FUNCTIONS.set(index, program);
+  }
+
+  callFunction(agent: IAgent, functionName: string) {
+    let index = agent.id + functionName;
+    let functionToCall = FUNCTIONS.get(index);
+    if (!functionToCall) return;
+
+    agent.exec(functionToCall, { agent: agent });
   }
 
   HandleSimInstanceClick(data) {
@@ -108,7 +128,9 @@ class IUPack extends SM_Feature {
     methods: {
       'logString': { args: ['text:string'] },
       'logProperty': {},
-      'handleClick': { args: ['program:block'] }
+      'handleClick': { args: ['program:block'] },
+      'setupFunction': { args: ['functionName:string', 'program:block'] },
+      'callFunction': { args: ['functionName:string'] }
     }
   };
 }

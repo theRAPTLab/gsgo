@@ -164,7 +164,10 @@ export const ADVANCED_SYMBOLS = [
   'orientation',
   'visible',
   'alpha',
-  'isinert'
+  'isinert',
+  // IU
+  'setupFunction',
+  'callFunction'
 ].map(w => w.toLowerCase());
 export const IGNORED_TYPES = ['{noncode}'].map(w => w.toLowerCase());
 

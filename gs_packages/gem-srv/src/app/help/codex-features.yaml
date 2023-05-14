@@ -235,11 +235,15 @@ IU:
     input: 'Type the text you want to appear in the log. Use stack commands if you need to assemble it (e.g., push)'
   # Population methods
   logString:
-    info: 'log a text string'
+    info: 'Log a text string'
   logProperty:
-    info: 'log the text string that is saved as the logStringText property of this character'
+    info: 'Log the text string that is saved as the logStringText property of this character'
   handleClick:
-    info: 'a script block that will be called if the character is clicked on the main window'
+    info: 'A script block that will be called if the character is clicked on the main window'
+  setupFunction:
+    info: 'A script to define a function that you can call later using callFunction'
+  callFunction:
+    info: 'This triggers a script that is defined by setupFunction previously'
 
 Population:
   info: 'Adds ways to generate and manage spawned characters and statistical information'
