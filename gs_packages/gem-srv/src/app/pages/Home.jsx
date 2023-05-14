@@ -113,6 +113,14 @@ class Home extends React.Component {
               control one or more characters in the currently running maain
               window.
             </li>
+            <li>
+              <a href="/app/charcontrol2">CHARACTER CONTROLLER 2</a> - Just the
+              controller.
+            </li>
+            <li>
+              <a href="/app/charcontrol3">CHARACTER CONTROLLER 3</a> - Overlapping
+              (in progress).
+            </li>
           </ol>
         </div>
       </div>
