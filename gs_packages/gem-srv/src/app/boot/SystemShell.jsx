@@ -18,6 +18,7 @@ import {
   LazyDevice,
   LazyCharacterController,
   LazyCharacterController2,
+  LazyCharacterController3,
   LazyWizard,
   LazyLogin,
   LazyProject,
@@ -64,6 +65,9 @@ class SystemShell extends React.Component {
         </Route>
         <Route path="/app/charcontrol2">
           <LazyCharacterController2 />
+        </Route>
+        <Route path="/app/charcontrol3">
+          <LazyCharacterController3 />
         </Route>
         <Route path="/app/login">
           <LazyLogin />
