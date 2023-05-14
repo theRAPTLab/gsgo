@@ -238,6 +238,8 @@ IU:
     info: 'log a text string'
   logProperty:
     info: 'log the text string that is saved as the logStringText property of this character'
+  handleClick:
+    info: 'a script block that will be called if the character is clicked on the main window'
 
 Population:
   info: 'Adds ways to generate and manage spawned characters and statistical information'
