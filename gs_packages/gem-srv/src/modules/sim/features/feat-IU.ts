@@ -10,6 +10,7 @@ import SM_Feature from 'lib/class-sm-feature';
 import { RegisterFeature } from 'modules/datacore/dc-sim-data';
 import { SM_Boolean, SM_Number, SM_String } from 'script/vars/_all_vars';
 import SM_Agent from 'lib/class-sm-agent';
+import { IsRunning } from 'modules/sim/api-sim';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -18,6 +19,12 @@ const PR = UR.PrefixUtil('IUFEATURE');
 const DBG = true;
 const LOG_ID = 'SCRIPT_LOG';
 
+const CLICK_AGENTS = new Map();
+const CLICK_FUNCTIONS = new Map();
+
+/// CLASS HELPERS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class IUPack extends SM_Feature {
@@ -25,13 +32,25 @@ class IUPack extends SM_Feature {
     super(name);
     this.featAddMethod('logString', this.logString);
     this.featAddMethod('logProperty', this.logProperty);
+
+    this.HandleSimInstanceClick = this.HandleSimInstanceClick.bind(this);
+    UR.HandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
+
+    this.featAddMethod('handleClick', this.handleClick);
   }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
     super.decorate(agent);
 
     this.featAddProp(agent, 'logStringText', new SM_String('INIT'));
     agent.prop.IU.logStringText.setTo('INIT');
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reset() {
+    CLICK_AGENTS.clear();
+    CLICK_FUNCTIONS.clear();
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,6 +62,25 @@ class IUPack extends SM_Feature {
   logString(agent: IAgent, text: string) {
     if (DBG) console.log('Logging character(' + agent.id + '): ' + text);
     UR.LogEvent(LOG_ID, [' character ' + agent.id + '\t' + text]);
+  }
+
+  handleClick(agent: IAgent, program: TSMCProgram) {
+    CLICK_AGENTS.set(agent.id, agent);
+    CLICK_FUNCTIONS.set(agent.id, program);
+  }
+
+  HandleSimInstanceClick(data) {
+    if (IsRunning()) {
+      const agent = CLICK_AGENTS.get(data.agentId);
+      if (!agent) return;
+
+      if (!agent.isInert) {
+        const clickProgram = CLICK_FUNCTIONS.get(agent.id);
+        if (!clickProgram) return;
+
+        agent.exec(clickProgram, { agent: agent });
+      }
+    }
   }
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
@@ -69,7 +107,8 @@ class IUPack extends SM_Feature {
     },
     methods: {
       'logString': { args: ['text:string'] },
-      'logProperty': {}
+      'logProperty': {},
+      'handleClick': { args: ['program:block'] }
     }
   };
 }
