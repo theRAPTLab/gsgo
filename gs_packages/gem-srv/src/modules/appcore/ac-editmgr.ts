@@ -436,7 +436,10 @@ function SaveSlotLineScript(event) {
           'createAgent',
           'spawnChild',
           'charactersForEach',
-          'charactersForEachActive'
+          'charactersForEachActive',
+          'handleClick',
+          'tellCharacterByName',
+          'tellAllCharacters'
         ].includes(tok.identifier)
       )
         isBlockCommand = true;
