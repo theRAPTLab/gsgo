@@ -8,6 +8,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 
@@ -36,6 +37,11 @@ const SENDING_FPS = 25; // Match pozyx rate
 class CharController extends React.Component {
   constructor(props) {
     super(props);
+
+    this.consoleRightRef = React.createRef();
+    this.panelSimViewerRef = React.createRef();
+    this.containerRef = React.createRef();
+
     // save instance of mod_charctrl
     if (typeof props.controller === 'object') {
       this.controller = props.controller;
@@ -108,6 +114,41 @@ class CharController extends React.Component {
         }
       });
     });
+
+    // ADDED via CHATGPT
+
+    const consoleRight = this.consoleRightRef.current;
+    const panelSimViewer = ReactDOM.findDOMNode(this.panelSimViewerRef.current);
+    const container = this.containerRef.current;
+
+    const handleResize = () => {
+      const { width, height, left, top } = panelSimViewer.getBoundingClientRect();
+
+      // Adjust the top position for padding
+      const paddingTop = parseInt(
+        window.getComputedStyle(panelSimViewer).paddingTop
+      );
+      const adjustedTop = top - paddingTop + 45;
+
+      // Adjust the left position for padding
+      const paddingLeft = parseInt(
+        window.getComputedStyle(panelSimViewer).paddingLeft
+      );
+      const adjustedLeft = left - paddingLeft;
+
+      console.log('width: ' + width);
+
+      container.style.width = `${width}px`;
+      container.style.height = `${height}px`;
+      container.style.left = `${adjustedLeft - consoleRight.offsetLeft}px`;
+      container.style.top = `${adjustedTop - consoleRight.offsetTop}px`;
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    this.cleanup = () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }
 
   componentWillUnmount() {
@@ -117,6 +158,8 @@ class CharController extends React.Component {
       this.handleSetCharControlBpidList
     );
     UR.UnhandleMessage('NET:LOG_ENABLE', this.updateLogSettings);
+
+    this.cleanup();
   }
 
   init() {
@@ -188,10 +231,11 @@ class CharController extends React.Component {
         noMessage=""
       />
     );
-    //
+
     return (
       <div
         className={classes.root}
+        id="root"
         style={{
           gridTemplateColumns: '50% 50%', // always fit
           gridTemplateRows: '30px auto 0',
@@ -249,13 +293,11 @@ class CharController extends React.Component {
             {UR.ConnectionString()}
           </div>
         </div>
-        <div
-          className={classes.main + ' overlap'}
-          id="container"
-          style={{ gridColumnEnd: 'span 1' }}
-        />
+        {/* ------------------------------------------------------------------------------ */}
+
         <div
           id="console-right"
+          ref={this.consoleRightRef}
           className={classes.right}
           style={{
             boxSizing: 'border-box',
@@ -263,9 +305,23 @@ class CharController extends React.Component {
             minWidth: '280px'
           }}
         >
-          <PanelSimViewer id="sim" />
+          <PanelSimViewer id="sim" ref={this.panelSimViewerRef} />
           {}
         </div>
+
+        {/* ------------------------------------------------------------------------------ */}
+
+        <div
+          className={classes.main + ' overlap'}
+          id="container"
+          ref={this.containerRef}
+          style={{
+            boxSizing: 'border-box',
+            gridColumnEnd: 'span 2'
+          }}
+        />
+
+        {/* ------------------------------------------------------------------------------ */}
 
         <div
           id="console-bottom"

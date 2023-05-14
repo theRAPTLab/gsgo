@@ -138,7 +138,7 @@ function m_AddMouseEvents(container) {
   // used to calculate deltas to apply to object group
   const o_clickHandler = e => {
     const id = e.target.getAttribute('entity-id');
-    if (id) console.log(`clicked entity-id ${id}`);
+    //  if (id) console.log(`clicked entity-id ${id}`);
   };
 
   let ox1;
@@ -377,6 +377,7 @@ async function Initialize(componentInstance, opt = {}) {
 /// resizes.
 function UpdateDimensions(e) {
   // Update entities
+
   if (!m_entities) return; // when page first loads, no m_entities are defined.
   for (let i = 0; i < m_entities.length; i++) {
     const fdiv = m_entities[i];

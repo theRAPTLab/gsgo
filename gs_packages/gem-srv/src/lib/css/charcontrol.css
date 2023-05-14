@@ -10,6 +10,7 @@ html {
 #container.overlap {
   background-color: transparent;
   position: absolute;
+  overflow: scroll;
 }
 #data_track_controls {
 }
@@ -31,7 +32,6 @@ html {
 }
 .overlap .entity {
   background-color: rgba(255, 255, 255, 0.459);
-  overflow: hidden;
 }
 label {
   display: inline-block;
