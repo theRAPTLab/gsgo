@@ -51,18 +51,7 @@ let REF_ID_COUNTER = 0;
 const outlineHover = new OutlineFilter(3, 0xffff0088);
 const outlineSelected = new OutlineFilter(6, 0xffff00);
 const glow = new GlowFilter({ distance: 50, outerStrength: 3, color: 0xffff00 });
-// text styles
-const style = new PIXI.TextStyle({
-  fontFamily: 'Arial',
-  fontSize: 18,
-  fontWeight: 'bold',
-  fill: ['#ffffffcc'],
-  stroke: '#333333cc',
-  strokeThickness: 3,
-  wordWrapWidth: 125,
-  wordWrap: true,
-  align: 'center'
-});
+
 // replacement for GLOBAL sprite
 const SPRITES = ASSETS.GetLoader('sprites');
 
@@ -139,6 +128,7 @@ class Visual implements IVisual, IPoolable, IActable {
   _pool_id: any;
   // sprite
   root: PIXI.Container; // parent container
+  style: any;
 
   constructor(id: number) {
     this.id = id; // store reference
@@ -161,6 +151,18 @@ class Visual implements IVisual, IPoolable, IActable {
     this.isGlowing = false;
     this.filterColorOverlay = undefined;
     this.filterAdjustment = undefined;
+
+    this.style = new PIXI.TextStyle({
+      fontFamily: 'Arial',
+      fontSize: 18,
+      fontWeight: 'bold',
+      fill: ['#ffffffcc'],
+      stroke: '#333333cc',
+      strokeThickness: 3,
+      wordWrapWidth: 125,
+      wordWrap: true,
+      align: 'center'
+    });
   }
 
   setSelected = (mode = this.isSelected) => (this.isSelected = mode);
@@ -416,18 +418,24 @@ class Visual implements IVisual, IPoolable, IActable {
       this.container.removeChild(this.text);
       if (this.text) this.text.destroy();
       // -- Create new text
-      this.text = new PIXI.Text(str, style);
+      this.text = new PIXI.Text(str, this.style);
+
       this.textContent = str; // cache
       this.container.addChild(this.text);
     }
     if (this.text) {
       // position text bottom centered
       const width = this.text.width;
-      style.wordWrapWidth = width > 125 ? width : 125; // This sets aa minimum for text only casses
       const spacer = 5;
       const x = -width / 2; //this.sprite.width; // for some reason text is offset?
       const y = this.sprite.height / 2 + spacer;
       this.text.position.set(x, y);
+    }
+  }
+
+  setTextStyle(key: string, value: string | number) {
+    if (this.text) {
+      this.style[key] = value;
     }
   }
 

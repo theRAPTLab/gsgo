@@ -33,6 +33,10 @@ Graphing:
     info: 'Set the highest value that can be displayed on the y-axis of the graph. This will appear as a label next to the y-axis.'
   graphMinX:
     info: 'Set the lowest value that can be displayed on the x-axis of the graph.'
+  fontSize:
+    info: 'The size of the text on this character. The default is 18.'
+  wordWrapWidth:
+    info: 'The width of this text character.'
   graphMinY:
     info: 'Set the lowest value that can be displayed on the y-axis of the graph. This will appear as a label next to the y-axis.'
   graphFrequency:

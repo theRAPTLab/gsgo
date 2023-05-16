@@ -113,6 +113,8 @@ export const ADVANCED_SYMBOLS = [
   'colorHSVWithinRange',
   'initHSVColorScale',
   'getHSVColorScaleColor',
+  'wordWrapWidth',
+  'fontSize',
   // movement
   'bounceAngle',
   'setRandomPositionX',

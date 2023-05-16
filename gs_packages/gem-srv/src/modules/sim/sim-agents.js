@@ -60,6 +60,11 @@ AGENT_TO_DOBJ.setMapFunctions({
       dobj.barGraph = agent.statusObject.barGraph;
       dobj.barGraphLabels = agent.statusObject.barGraphLabels;
     }
+
+    if (agent.prop.Graphing !== undefined) {
+      dobj.fontSize = agent.prop.Graphing.fontSize.value;
+      dobj.wordWrapWidth = agent.prop.Graphing.wordWrapWidth.value;
+    }
   },
   onUpdate: (agent, dobj) => {
     dobj.x = agent.x;
@@ -269,7 +274,6 @@ export function AllAgentsProgram(data) {
   // 3. Create Instances from Script
   SCRIPT_TO_INSTANCE.syncFromArray(instancesSpec);
   SCRIPT_TO_INSTANCE.mapObjects();
-
 
   // 4. Broadcast update to network devices
   UR.RaiseMessage('NET:INSTANCES_UPDATE', {

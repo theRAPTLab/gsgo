@@ -227,6 +227,7 @@ class WidgetPack extends SM_Feature {
       'bindLineGraphHistogramToFeatProp',
       this.bindLineGraphHistogramToFeatProp
     );
+
     UR.HookPhase('SIM/GRAPHS_UPDATE', m_GraphsUpdate);
     UR.HookPhase('SIM/FEATURES_UPDATE', m_FeaturesUpdate);
     UR.HookPhase('SIM/UI_UPDATE', m_UIUpdate);
@@ -235,8 +236,13 @@ class WidgetPack extends SM_Feature {
   decorate(agent) {
     super.decorate(agent);
     // Public Props
+    //default text properties
+    this.featAddProp(agent, 'fontSize', new SM_Number(18));
+    this.featAddProp(agent, 'wordWrapWidth', new SM_Number(125));
+
     this.featAddProp(agent, 'text', new SM_String(agent.name)); // default to agent name
     this.featAddProp(agent, 'textProp', new SM_String()); // agent prop name that text is bound to
+
     let prop = new SM_Number();
     prop.setMax(1);
     prop.setMin(0);
@@ -351,7 +357,9 @@ class WidgetPack extends SM_Feature {
       graphGlobalProp: SM_String.Symbols,
       graphFrequency: SM_Number.Symbols,
       barGraphProp: SM_String.Symbols,
-      barGraphPropFeature: SM_String.Symbols
+      barGraphPropFeature: SM_String.Symbols,
+      fontSize: SM_Number.Symbols,
+      wordWrapWidth: SM_Number.Symbols
     },
     methods: {
       showMessage: { args: ['messageString:string'] },

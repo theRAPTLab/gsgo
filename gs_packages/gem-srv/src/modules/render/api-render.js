@@ -204,6 +204,12 @@ function Init(element) {
       // see sim-agents.js for TestJitterAgents
       // TestRenderParameters(dobj, vobj);
 
+      //setup the text properties
+      if (dobj.fontSize != undefined)
+        vobj.setTextStyle('fontSize', dobj.fontSize);
+      if (dobj.wordWrapWidth != undefined)
+        vobj.setTextStyle('wordWrapWidth', dobj.wordWrapWidth);
+
       if (dobj.debug) vobj.setDebug(dobj.debug);
       else vobj.removeDebug();
     },
