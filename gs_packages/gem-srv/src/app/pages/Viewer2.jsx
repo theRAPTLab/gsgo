@@ -14,7 +14,7 @@ import clsx from 'clsx';
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelSimViewer from './components/PanelSimViewer';
 import PanelBlueprints from './components/PanelBlueprints';
-import PanelInstances from './components/PanelInstances';
+import PanelLogs from './components/PanelLogs';
 import DialogConfirm from './components/DialogConfirm';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
@@ -23,6 +23,7 @@ import DialogConfirm from './components/DialogConfirm';
 // this is where classes.* for css are defined
 import { useStylesHOC } from './helpers/page-xui-styles';
 import './scrollbar.css';
+import './logPanel.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -31,40 +32,33 @@ const DBG = false;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
-PANEL_CONFIG.set('instances', '25% auto 0'); // columns
+PANEL_CONFIG.set('logs', '0px auto 50%'); // columns
 PANEL_CONFIG.set('sim', '0px auto 250px'); // columns
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: STYLES ARE IMPORTED FROM COMMON-STYLES.JS
-class Viewer extends React.Component {
+class Viewer2 extends React.Component {
   constructor() {
     super();
     this.state = {
       isReady: false,
       noMain: true,
-      panelConfiguration: 'sim',
+      panelConfiguration: 'logs',
       projId: '',
       bpNamesList: [],
-      instances: []
+      logEntries: []
     };
     this.Initialize = this.Initialize.bind(this);
     this.RequestProjectData = this.RequestProjectData.bind(this);
     this.HandleBpNamesListUpdate = this.HandleBpNamesListUpdate.bind(this);
-    this.HandleInstancesList = this.HandleInstancesList.bind(this);
     this.HandleLogEvent = this.HandleLogEvent.bind(this);
     this.HandleInspectorUpdate = this.HandleInspectorUpdate.bind(this);
     this.OnModelClick = this.OnModelClick.bind(this);
     this.OnHomeClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
-    UR.HandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
-    UR.HandleMessage('NET:BPNAMESLIST_UPDATE', this.HandleBpNamesListUpdate);
-    UR.HandleMessage('NET:INSTANCESLIST_UPDATE', this.HandleInstancesList);
 
     UR.HandleMessage('NET:LOG_EVENT', this.HandleLogEvent);
-
-    // Instance Interaction Handlers
-    UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
   }
 
   componentDidMount() {
@@ -97,12 +91,7 @@ class Viewer extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
-    UR.UnhandleMessage('NET:BPNAMESLIST_UPDATE', this.HandleBpNamesListUpdate);
-    UR.UnhandleMessage('NET:INSTANCESLIST_UPDATE', this.HandleInstancesList);
     UR.UnhandleMessage('NET:LOG_EVENT', this.HandleLogEvent);
-
-    UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
   }
 
   Initialize() {
@@ -120,7 +109,7 @@ class Viewer extends React.Component {
     }).then(rdata => this.HandleBpNamesListUpdate(rdata));
     UR.CallMessage('NET:REQ_PROJDATA', {
       fnName: 'GetInstanceidList'
-    }).then(rdata => this.HandleInstancesList(rdata));
+    });
   }
 
   HandleBpNamesListUpdate(rdata) {
@@ -154,7 +143,12 @@ class Viewer extends React.Component {
   }
 
   HandleLogEvent(data) {
-    console.log(data.logString);
+    let tempLogEntries = this.state.logEntries;
+    tempLogEntries[tempLogEntries.length + 1] = {
+      key: tempLogEntries.length,
+      entry: data.logString
+    };
+    this.setState({ logEntries: tempLogEntries });
   }
 
   OnPanelClick(id) {
@@ -169,7 +163,7 @@ class Viewer extends React.Component {
    *  make this happen.
    */
   render() {
-    const { noMain, panelConfiguration, projId, bpNamesList, instances } =
+    const { noMain, panelConfiguration, projId, bpNamesList, logEntries } =
       this.state;
     const { classes } = this.props;
 
@@ -221,8 +215,14 @@ class Viewer extends React.Component {
           <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
         </div>
         <div id="console-right" className={classes.right}>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <PanelInstances id="instances" instances={instances} />
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'scroll'
+            }}
+          >
+            <PanelLogs id="logs" logEntries={logEntries} />
           </div>
         </div>
         <div
@@ -240,4 +240,4 @@ class Viewer extends React.Component {
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// include MaterialUI styles
-export default withStyles(useStylesHOC)(Viewer);
+export default withStyles(useStylesHOC)(Viewer2);

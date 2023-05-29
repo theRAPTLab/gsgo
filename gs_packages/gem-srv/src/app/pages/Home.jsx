@@ -104,9 +104,12 @@ class Home extends React.Component {
               goes directly to the Aquatic model.
             </li>
             <li>
-              <a href="/app/viewer">VIEWER</a> - This let's you view a model that
+              <a href="/app/viewer">VIEWER</a> - This lets you view a model that
               is already running on another machine, but you cannot interact with
               it.
+            </li>
+            <li>
+              <a href="/app/viewer2">VIEWER 2</a> - Viewer with logs
             </li>
             <li>
               <a href="/app/charcontrol">CHARACTER CONTROLLER</a> - This lets you
@@ -118,8 +121,8 @@ class Home extends React.Component {
               controller.
             </li>
             <li>
-              <a href="/app/charcontrol3">CHARACTER CONTROLLER 3</a> - Overlapping
-              (in progress).
+              <a href="/app/charcontrol3">CHARACTER CONTROLLER 3</a> -
+              Overlapping.
             </li>
           </ol>
         </div>

@@ -66,7 +66,11 @@ class IUPack extends SM_Feature {
 
   logString(agent: IAgent, text: string) {
     if (DBG) console.log('Logging character(' + agent.id + '): ' + text);
-    UR.LogEvent(LOG_ID, [' character ' + agent.id + '\t' + text]);
+    let logString = ' character ' + agent.id + '\t' + text;
+    // put into the server logs
+    UR.LogEvent(LOG_ID, [logString]);
+    // send around so viewers can do something with this
+    UR.RaiseMessage('NET:LOG_EVENT', { logString: logString });
   }
 
   handleClick(agent: IAgent, program: TSMCProgram) {
