@@ -32,7 +32,7 @@ const DBG = false;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
-PANEL_CONFIG.set('logs', '0px auto 50%'); // columns
+PANEL_CONFIG.set('logs', '0px auto 35%'); // columns
 PANEL_CONFIG.set('sim', '0px auto 250px'); // columns
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
