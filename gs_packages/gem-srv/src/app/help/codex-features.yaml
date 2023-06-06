@@ -132,8 +132,8 @@ Costume:
     info: 'Apply a color filter to the character'
     syntax: 'frame number like 0'
   resetColorize:
-    hint: 'Apply a color filter to the character'
-    info: 'Apply a color filter to the character'
+    hint: 'Remove previous color settings'
+    info: 'Remove previous color settings'
     syntax: 'frame number like 0'
   initHSVColorScale:
     hint: 'Apply a color filter to the character'
@@ -142,6 +142,10 @@ Costume:
   getHSVColorScaleColor:
     hint: 'Apply a color filter to the character'
     info: 'Apply a color filter to the character'
+    syntax: 'frame number like 0'
+  getColorHSV:
+    hint: 'Check the HSV colors of a character'
+    info: 'Check the HSV colors of a character'
     syntax: 'frame number like 0'
 
 Cursor:
