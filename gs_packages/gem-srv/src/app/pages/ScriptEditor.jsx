@@ -161,6 +161,7 @@ class ScriptEditor extends React.Component {
     this.PostSendMessage = this.PostSendMessage.bind(this);
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
     this.HandleConfirmReload = this.HandleConfirmReload.bind(this);
+    this.OnProjectMenuSelect = this.OnProjectMenuSelect.bind(this);
     this.OnDraggerUpdate = this.OnDraggerUpdate.bind(this);
 
     // Sent by PanelSelectAgent
@@ -506,6 +507,10 @@ class ScriptEditor extends React.Component {
     this.SelectScript(); // force selector
   }
 
+  OnProjectMenuSelect(event) {
+    this.SelectScript({ bpName: event.target.value });
+  }
+
   OnDraggerUpdate(ratio) {
     this.setState({ scriptWidthPercent: ratio * 100 });
   }
@@ -527,6 +532,28 @@ class ScriptEditor extends React.Component {
       scriptWidthPercent
     } = this.state;
     const { classes } = this.props;
+
+    const sortedBlueprints = bpEditList
+      ? bpEditList.sort((a, b) => {
+          if (a.name < b.name) return -1;
+          if (a.name > b.name) return 1;
+          return 0;
+        })
+      : [];
+    const ProjectSelectMenu = (
+      <select
+        value={bpName}
+        onChange={this.OnProjectMenuSelect}
+        className={classes.select}
+        style={{ margin: '0 20px' }}
+      >
+        {sortedBlueprints.map(bp => (
+          <option key={bp.name} value={bp.name} selected={bp.name === bpName}>
+            {bp.name}
+          </option>
+        ))}
+      </select>
+    );
 
     const DialogNoMain = (
       <DialogConfirm
@@ -567,6 +594,7 @@ class ScriptEditor extends React.Component {
           <div style={{ flexGrow: '1' }}>
             <span style={{ fontSize: '32px' }}>SCRIPT EDITOR {projId}</span>
           </div>
+          {ProjectSelectMenu}
           <button
             type="button"
             onClick={() => window.close()}
