@@ -73,6 +73,7 @@ import PanelInstances from './components/PanelInstances';
 import PanelMessage from './components/PanelMessage';
 import DialogConfirm from './components/DialogConfirm';
 import { SKIP_RELOAD_WARNING } from 'config/gem-settings';
+import Dragger from './components/Dragger';
 
 /// WIZ GUI PANELS ////////////////////////////////////////////////////////////
 import ScriptView_Pane from './wiz/gui/ScriptView_Pane';
@@ -141,7 +142,8 @@ class ScriptEditor extends React.Component {
       monitoredInstances: [],
       message: '',
       messageIsError: false,
-      selection: ''
+      selection: '',
+      scriptWidthPercent: 50
     };
     this.CleanupComponents = this.CleanupComponents.bind(this);
     this.Initialize = this.Initialize.bind(this);
@@ -159,6 +161,8 @@ class ScriptEditor extends React.Component {
     this.PostSendMessage = this.PostSendMessage.bind(this);
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
     this.HandleConfirmReload = this.HandleConfirmReload.bind(this);
+    this.OnDraggerUpdate = this.OnDraggerUpdate.bind(this);
+
     // Sent by PanelSelectAgent
     UR.HandleMessage('SELECT_SCRIPT', this.SelectScript);
     UR.HandleMessage('NET:SCRIPT_UPDATED', this.HandleScriptUpdate);
@@ -502,6 +506,10 @@ class ScriptEditor extends React.Component {
     this.SelectScript(); // force selector
   }
 
+  OnDraggerUpdate(ratio) {
+    this.setState({ scriptWidthPercent: ratio * 100 });
+  }
+
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
    *  The base styles from page-styles are overidden with inline styles to
    *  make this happen.
@@ -515,7 +523,8 @@ class ScriptEditor extends React.Component {
       projId,
       bpEditList,
       bpName,
-      selection
+      selection,
+      scriptWidthPercent
     } = this.state;
     const { classes } = this.props;
 
@@ -538,11 +547,15 @@ class ScriptEditor extends React.Component {
       />
     );
 
+    // Overrides PANEL_CONFIG's previously defined column proportions
+    // PANEL_CONFIG is still being used to keep track of view state
+    const GRID_COLUMNS = `${scriptWidthPercent}% auto 0px`;
+
     return (
       <div
         className={classes.root}
         style={{
-          gridTemplateColumns: PANEL_CONFIG.get(panelConfiguration),
+          gridTemplateColumns: GRID_COLUMNS,
           gridTemplateRows: '40px auto' // force hide bottom bar
         }}
       >
@@ -583,6 +596,7 @@ class ScriptEditor extends React.Component {
           )}
         </div>
         <div id="console-main" className={classes.main}>
+          <Dragger color="#064848" onDragUpdate={this.OnDraggerUpdate} />
           <ScriptLine_Pane selection={selection} />
           {/* <PanelSimViewer id="sim" onClick={this.OnPanelClick} /> */}
         </div>
