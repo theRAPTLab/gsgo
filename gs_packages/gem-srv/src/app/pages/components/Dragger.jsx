@@ -76,13 +76,13 @@ class Dragger extends React.Component {
     const { color = 'green', onDragUpdate, onDragEnd } = this.props;
     return (
       <div
-        id="dragger"
         style={{
           float: 'left',
           height: '100%', // horizontal dragger, so full height
           width: '10px',
           cursor: 'col-resize',
-          backgroundColor: color
+          backgroundColor: color,
+          zIndex: 100
         }}
         onMouseDown={this.onMouseDown}
       >
