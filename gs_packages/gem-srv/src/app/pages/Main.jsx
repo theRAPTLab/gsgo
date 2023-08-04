@@ -553,7 +553,7 @@ class MissionControl extends React.Component {
         className={classes.root}
         style={{
           gridTemplateColumns: PANEL_CONFIG.get(panelConfiguration),
-          gridTemplateRows: '50px auto 100px' // use '50px auto 100px' to show MESSAGES
+          gridTemplateRows: '50px auto' // use '50px auto 100px' to show MESSAGES, to hide use '50px auto'
         }}
       >
         <div
@@ -636,7 +636,7 @@ class MissionControl extends React.Component {
           className={classes.bottom}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          <PanelMessage message={message} />
+          {/* Hide MESSAGES <PanelMessage message={message} /> */}
           {DialogMainRedirect}
           {DialogMessage}
         </div>
