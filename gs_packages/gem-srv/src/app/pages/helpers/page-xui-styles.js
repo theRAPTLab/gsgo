@@ -101,7 +101,7 @@ const useStylesHOC = theme => ({
     height: '100vh',
     gridTemplateColumns: '240px auto 120px',
     gridTemplateRows: '50px auto 100px',
-    gridGap: theme.spacing(1),
+    // gridGap: theme.spacing(1),
     fontFamily: 'sans-serif',
     backgroundColor: '#000',
     scrollbarColor: 'red yellow',
