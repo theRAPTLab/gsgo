@@ -31,6 +31,7 @@ import DialogConfirm from './components/DialogConfirm';
 
 import PanelTracker from './components/PanelTracker';
 import FormTransform from './components/FormTransform';
+import Dragger from './components/Dragger';
 import 'lib/css/tracker.css';
 import 'lib/css/gem-ui.css';
 
@@ -78,7 +79,9 @@ class MissionControl extends React.Component {
       scriptsNeedUpdate: false,
       openRedirectDialog: false,
       dialogMessage: undefined,
-      showWebCam: false
+      showWebCam: false,
+      consoleLeftWidth: 15, // as % of screen
+      consoleRightWidth: 15 // as % of screen
     };
 
     // Initialization
@@ -122,6 +125,8 @@ class MissionControl extends React.Component {
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectView = this.OnSelectView.bind(this);
     this.OnToggleTracker = this.OnToggleTracker.bind(this);
+    this.OnDraggerLeftUpdate = this.OnDraggerLeftUpdate.bind(this);
+    this.OnDraggerRightUpdate = this.OnDraggerRightUpdate.bind(this);
 
     // Project Data
     this.OnExport = this.OnExport.bind(this);
@@ -391,6 +396,19 @@ class MissionControl extends React.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  OnDraggerLeftUpdate(ratio) {
+    this.setState({ consoleLeftWidth: ratio * 100 });
+    // Trigger Window Resize so that PanelSimulation will resize
+    window.dispatchEvent(new Event('resize'));
+  }
+  OnDraggerRightUpdate(ratio) {
+    const { consoleLeftWidth } = this.state; // we have to account for left console too
+    this.setState({ consoleRightWidth: (1 - ratio) * 100 });
+    // Trigger Window Resize so that PanelSimulation will resize
+    window.dispatchEvent(new Event('resize'));
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   OnExport() {
     const { projId } = this.state;
     PROJSERVER.ExportProject(projId);
@@ -416,7 +434,9 @@ class MissionControl extends React.Component {
       scriptsNeedUpdate,
       openRedirectDialog,
       dialogMessage,
-      showWebCam
+      showWebCam,
+      consoleLeftWidth,
+      consoleRightWidth
     } = this.state;
     const { classes } = this.props;
     const { width, height, bgcolor } = PROJSERVER.GetBoundary();
@@ -548,12 +568,21 @@ class MissionControl extends React.Component {
       ''
     );
 
+    // Overrides PANEL_CONFIG's previously defined column proportions via Dragger
+    // PANEL_CONFIG is still being used to keep track of view state
+    let GRID_COLUMNS;
+    if (panelConfiguration === 'run') {
+      GRID_COLUMNS = `${consoleLeftWidth}% auto ${consoleRightWidth}%`;
+    } else {
+      GRID_COLUMNS = PANEL_CONFIG.get(panelConfiguration);
+    }
+
     return (
       <div
         className={classes.root}
         style={{
-          gridTemplateColumns: PANEL_CONFIG.get(panelConfiguration),
-          gridTemplateRows: '50px auto 100px' // use '50px auto 100px' to show MESSAGES
+          gridTemplateColumns: GRID_COLUMNS,
+          gridTemplateRows: '50px auto' // use '50px auto 100px' to show MESSAGES, to hide use '50px auto'
         }}
       >
         <div
@@ -589,8 +618,9 @@ class MissionControl extends React.Component {
         <div
           id="console-main"
           className={classes.main}
-          style={{ overflow: 'hidden' }}
+          style={{ overflow: 'hidden', display: 'flex' }}
         >
+          <Dragger color="#064848" onDragUpdate={this.OnDraggerLeftUpdate} />
           <PanelSimulation
             id="sim"
             width={width}
@@ -598,6 +628,7 @@ class MissionControl extends React.Component {
             bgcolor={bgcolor}
             onClick={this.OnPanelClick}
           />
+          <Dragger color="#064848" onDragUpdate={this.OnDraggerRightUpdate} />
         </div>
         <div id="console-right" className={classes.right}>
           <div
@@ -636,7 +667,7 @@ class MissionControl extends React.Component {
           className={classes.bottom}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          <PanelMessage message={message} />
+          {/* Hide MESSAGES <PanelMessage message={message} /> */}
           {DialogMainRedirect}
           {DialogMessage}
         </div>
