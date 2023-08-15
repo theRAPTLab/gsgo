@@ -80,8 +80,8 @@ class MissionControl extends React.Component {
       openRedirectDialog: false,
       dialogMessage: undefined,
       showWebCam: false,
-      consoleLeftWidth: 15,
-      consoleRightWidth: 15
+      consoleLeftWidth: 15, // as % of screen
+      consoleRightWidth: 15 // as % of screen
     };
 
     // Initialization
@@ -403,7 +403,7 @@ class MissionControl extends React.Component {
   }
   OnDraggerRightUpdate(ratio) {
     const { consoleLeftWidth } = this.state; // we have to account for left console too
-    this.setState({ consoleRightWidth: (1 - ratio) * 100 - consoleLeftWidth });
+    this.setState({ consoleRightWidth: (1 - ratio) * 100 });
     // Trigger Window Resize so that PanelSimulation will resize
     window.dispatchEvent(new Event('resize'));
   }
