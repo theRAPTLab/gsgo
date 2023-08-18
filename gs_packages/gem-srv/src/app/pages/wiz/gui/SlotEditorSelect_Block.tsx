@@ -11,7 +11,7 @@
   note:
   the script being rendered is using RAW scriptTokens that are being
   interpreted very simply. However, validationTokens are intepetreted using
-  the richer GEMSTEP types, so a weakness of thecurrent system is having to
+  the richer GEMSTEP types, so a weakness of the current system is having to
   constantly reconcile scriptTokens to validationTokens to figure out
   what to draw and what is the "context" of a current token in GEMSTEP terms;
   the scriptToken by itself is not sufficient. This is what the validation
