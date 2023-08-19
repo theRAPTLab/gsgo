@@ -12,6 +12,7 @@
 import React from 'react';
 import { UnpackToken, TokenValue } from 'script/tools/script-tokenizer';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
+import * as CHelper from 'script/tools/comment-utilities';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -322,19 +323,20 @@ export function GToken(props) {
   if (type === 'identifier' && position === 0) classes += ' styleKey';
 
   if (type === '{noncode}') {
-    classes += ' styleComment';
-    // Joshua and Morgan added this hack to allow us to style different comments in unique ways
-    // based on their content, so that we can draw attention to certain kinds of ideas
-    // sort of like headers
-    if (label.includes('COMMENT KEY')) classes += ' commentKeyHeader';
-    if (label.includes('🔎 WHAT')) classes += ' explanationCommentHeader';
-    if (label.includes('🔎 DEFINITION')) classes += ' explanationCommentHeader';
-    if (label.includes('🔎 QUESTION')) classes += ' explanationCommentHeader';
-    if (label.includes('✏️ LETS')) classes += ' changeCommentHeader';
-    if (label.includes('✏️ CHANGE')) classes += ' changeCommentHeader';
-    if (label.includes('✏️ HYPOTHESIS')) classes += ' changeCommentHeader';
-    if (label.includes('🔎')) classes += ' explanationCommentBody';
-    if (label.includes('✏️')) classes += ' changeCommentBody';
+    // classes += ' styleComment';
+    // // Joshua and Morgan added this hack to allow us to style different comments in unique ways
+    // // based on their content, so that we can draw attention to certain kinds of ideas
+    // // sort of like headers
+    // if (label.includes('COMMENT KEY')) classes += ' commentKeyHeader';
+    // if (label.includes('🔎 WHAT')) classes += ' explanationCommentHeader';
+    // if (label.includes('🔎 DEFINITION')) classes += ' explanationCommentHeader';
+    // if (label.includes('🔎 QUESTION')) classes += ' explanationCommentHeader';
+    // if (label.includes('✏️ LETS')) classes += ' changeCommentHeader';
+    // if (label.includes('✏️ CHANGE')) classes += ' changeCommentHeader';
+    // if (label.includes('✏️ HYPOTHESIS')) classes += ' changeCommentHeader';
+    // if (label.includes('🔎')) classes += ' explanationCommentBody';
+    // if (label.includes('✏️')) classes += ' changeCommentBody';
+    classes += CHelper.GetClasses(type, label);
   }
   if (type === 'directive') classes += ' stylePragma';
   if (SPECIAL_IDENTS.includes(label)) classes += ' stylePragma';
