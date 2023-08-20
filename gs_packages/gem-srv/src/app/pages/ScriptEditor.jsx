@@ -548,7 +548,7 @@ class ScriptEditor extends React.Component {
         style={{ margin: '0 20px' }}
       >
         {sortedBlueprints.map(bp => (
-          <option key={bp.name} value={bp.name} selected={bp.name === bpName}>
+          <option key={bp.name} value={bp.name}>
             {bp.name}
           </option>
         ))}
