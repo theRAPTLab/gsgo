@@ -1107,6 +1107,8 @@ class SymbolInterpreter {
     }
     bpName = bpName === 'character' ? agentName : bpName; // map 'character' to the current bundle's bpName (was `agent`)
     // inject `character` matching the current agent name
+    // Originally `agent` was used to refer the current agent but the team
+    // wanted to replace `agent` with `character`.
     const agent = { character: SIMDATA.GetBlueprintBundle(agentName).symbols };
     blueprints = { ...blueprints, ...agent };
     const bp = blueprints[bpName] || {};
