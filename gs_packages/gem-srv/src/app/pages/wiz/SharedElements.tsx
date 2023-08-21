@@ -12,7 +12,7 @@
 import React from 'react';
 import { UnpackToken, TokenValue } from 'script/tools/script-tokenizer';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
-import * as CHelper from 'script/tools/comment-utilities';
+import * as CHELPER from 'script/tools/comment-utilities';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -336,7 +336,7 @@ export function GToken(props) {
     // if (label.includes('✏️ HYPOTHESIS')) classes += ' changeCommentHeader';
     // if (label.includes('🔎')) classes += ' explanationCommentBody';
     // if (label.includes('✏️')) classes += ' changeCommentBody';
-    classes += CHelper.GetClasses(type, label);
+    classes += CHELPER.GetClasses(type, label);
   }
   if (type === 'directive') classes += ' stylePragma';
   if (SPECIAL_IDENTS.includes(label)) classes += ' stylePragma';

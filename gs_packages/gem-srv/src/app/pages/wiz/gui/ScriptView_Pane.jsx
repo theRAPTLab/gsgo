@@ -33,6 +33,7 @@ import React from 'react';
 import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
+import * as CHELPER from 'script/tools/comment-utilities';
 
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
@@ -208,7 +209,9 @@ class ScriptView_Pane extends React.Component {
       // post wizcore integration
       script_page,
       script_text,
-      sel_linenum
+      sel_linenum,
+      bookmarks: [],
+      sel_bookmarklinenum: 0
     };
     // codejar
     this.jarRef = React.createRef();
@@ -233,6 +236,7 @@ class ScriptView_Pane extends React.Component {
     this.OnDeleteConfirm = this.OnDeleteConfirm.bind(this);
     this.OnUnloadConfirm = this.OnUnloadConfirm.bind(this);
     this.OnToggleWizard = this.OnToggleWizard.bind(this);
+    this.OnBookmarkSelect = this.OnBookmarkSelect.bind(this);
 
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     // DEPRECATED?  No one is Raising SCRIPT_UI_CHANGED at the moment?
@@ -296,6 +300,11 @@ class ScriptView_Pane extends React.Component {
     // ScriptViewPane redraw for now
     if (sel_linenum !== undefined) {
       newState.sel_linenum = sel_linenum;
+    }
+    // Update Bookmarks
+    if (script_page) {
+      CHELPER.MakeBookmarkViewData(script_page);
+      this.setState({ bookmarks: CHELPER.GetBookmarkViewData() });
     }
     // if script_page_needs_saving, the setState will trigger a rerender
     if (Object.keys(newState).length > 0 || script_page_needs_saving)
@@ -451,6 +460,18 @@ class ScriptView_Pane extends React.Component {
     });
   }
 
+  OnBookmarkSelect(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const lineNum = event.target.value;
+    this.setState({ sel_bookmarklinenum: lineNum });
+    if (lineNum !== '') {
+      // Trigger a line selection with the EDITMGR
+      // if the selected lineNum is not "-- select a bookmark --"
+      EDITMGR.DispatchClick(event);
+    }
+  }
+
   render() {
     if (DBG) console.log(...PR('render'));
     const {
@@ -462,7 +483,9 @@ class ScriptView_Pane extends React.Component {
       openConfirmUnload,
       script_page,
       script_text,
-      sel_linenum
+      sel_linenum,
+      bookmarks,
+      sel_bookmarklinenum
     } = this.state;
     const { id, bpName, script, projId, onClick, classes } = this.props;
     const { script_page_needs_saving: needsSaving } = WIZCORE.State();
@@ -501,16 +524,42 @@ class ScriptView_Pane extends React.Component {
 
     const updatedTitle = this.GetTitle(bpName);
 
+    // BOOKMARK ---------------------------------------------------------------
+    const BookmarkList = (
+      <select
+        id="BookmarkSelector"
+        value={sel_bookmarklinenum}
+        onChange={this.OnBookmarkSelect}
+        className={classes.infoDataColor}
+      >
+        <option value={''}>-- select a bookmark --</option>
+        {bookmarks.map(b => (
+          <option key={b.lineNum} value={b.lineNum} dataKey={`${b.lineNum}, 0`}>
+            {b.lineNum}:&nbsp;{b.comment}
+          </option>
+        ))}
+      </select>
+    );
+
     // TOP BAR ----------------------------------------------------------------
     const TopBar = (
-      <ToggleButtonGroup
-        value={viewMode}
-        exclusive
-        onChange={this.OnToggleWizard}
-      >
-        <StyledToggleButton value={VIEWMODE_WIZARD}>Wizard</StyledToggleButton>
-        <StyledToggleButton value={VIEWMODE_CODE}>Code</StyledToggleButton>
-      </ToggleButtonGroup>
+      <>
+        <ToggleButtonGroup
+          value={viewMode}
+          exclusive
+          onChange={this.OnToggleWizard}
+        >
+          <StyledToggleButton value={VIEWMODE_WIZARD}>Wizard</StyledToggleButton>
+          <StyledToggleButton value={VIEWMODE_CODE}>Code</StyledToggleButton>
+        </ToggleButtonGroup>
+        <div
+          className={classes.infoDataColor}
+          style={{ display: 'grid', gridTemplateColumns: '80px auto' }}
+        >
+          <div>Bookmarks:</div>
+          <div>{BookmarkList}</div>
+        </div>
+      </>
     );
 
     // BOTTOM BAR ----------------------------------------------------
@@ -582,6 +631,9 @@ class ScriptView_Pane extends React.Component {
     );
 
     // CODE -------------------------------------------------------------------
+    // codejar is initialized at mount and needs to be persistent, so it's
+    // always defined -- otherwise codejar will generate a 'Cannot read
+    // properties of null' error.
     const Code = (
       <pre
         className="language-gemscript line-numbers match-braces"
@@ -612,7 +664,6 @@ class ScriptView_Pane extends React.Component {
           width: '100%'
         }}
       >
-        {/* {jsx} */}
         <ScriptViewWiz_Block
           script_page={script_page}
           sel_linenum={sel_linenum}
@@ -630,6 +681,7 @@ class ScriptView_Pane extends React.Component {
         bottombar={BottomBar}
       >
         <div
+          id="ScriptViewScroller"
           style={{
             display: 'flex',
             flexDirection: 'column',

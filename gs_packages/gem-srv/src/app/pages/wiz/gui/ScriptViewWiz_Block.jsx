@@ -208,6 +208,7 @@ export function ScriptViewWiz_Block(props) {
         lineJSX = (
           <>
             <button
+              id="LineBtnAddBefore"
               className="outline btnAddBefore"
               onClick={e => EDITMGR.AddLine('before')}
             >
@@ -243,6 +244,22 @@ export function ScriptViewWiz_Block(props) {
   if (DBG) {
     console.groupCollapsed('Wizard DBG');
     console.log(DBGTEXT);
+  }
+
+  // Scroll to the currently selected line if it's not visible
+  // The #LineBtnAddBefore button is a convenient way to find the selected line
+  // it's only present if a line is selected, and it makes use the top "+" line
+  // button is visible as is the line before
+  const LineBtnAddBefore = document.getElementById('LineBtnAddBefore');
+  if (LineBtnAddBefore) {
+    const elTop = LineBtnAddBefore.offsetTop;
+    const elBottom = elTop + LineBtnAddBefore.clientHeight;
+    // the scroll container is actually the PanelChrome, so we grab the parent
+    const container = document.getElementById('ScriptViewScroller').parentElement;
+    const containerTop = container.scrollTop;
+    const containerBottom = containerTop + container.clientHeight;
+    if (containerTop < elTop || containerBottom > elBottom)
+      LineBtnAddBefore.scrollIntoView();
   }
 
   return (

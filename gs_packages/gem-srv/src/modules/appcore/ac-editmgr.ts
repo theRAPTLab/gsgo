@@ -227,36 +227,47 @@ function DispatchClick(event) {
 
   const { slots_need_saving } = SLOTCORE.State();
 
-  /** (1) GToken was clicked? ************************************************
+  /** (1a) "BookmarkSelector" was clicked, or... *****************************/
+  let tokenKey, line, pos;
+  if (event.target.id === 'BookmarkSelector') {
+    line = Number(event.target.value);
+    pos = 0;
+  }
+  /** (1b) ...GToken was clicked? *********************************************
    *      User clicked on script page line or word
    *      a. set `sel_linenum` and `sel_linepos`
    *      b. set the slot as a secondary action
    *         --  set `sel_slotpos`
    *      c. NOTE the state update will result in `slots_linescript` and `slots_validation` updates
    */
-  const tokenKey = event.target.getAttribute('data-key');
+  tokenKey = event.target.getAttribute('data-key');
   if (tokenKey !== null) {
+    [line, pos] = tokenKey.split(',');
+  }
+  /** (1c) Process Click ************************************************======
+   *       Either...
+   *       * BookmarkSelect was selected, or
+   *       * User clicked on a GToken
+   *       ...so process the click and select the line
+   */
+  if (line !== undefined && pos !== undefined) {
     // if slots need saving, don't allow click
     if (slots_need_saving) {
       SLOTCORE.SendState({ slots_save_dialog_is_open: true });
       return;
     }
-
     // WIZCORE: notify subscribers of new current line and token index
-    const [line, pos] = tokenKey.split(',');
     const sel_linenum = Number(line);
     const sel_linepos = Number(pos) || 1; // if click on line number, default to keyword
     newWizState.sel_linenum = sel_linenum; // STATE UPDATE: selected line
     newWizState.sel_linepos = sel_linepos; // STATE UPDATE: selected pos
     WIZCORE.SendState(newWizState);
-
     // SLOTCORE: notify slotcore
     SelectSlot(sel_linenum, sel_linepos);
-
     // EDITMGR
     STORE.SendState({ selection: 'force ScriptEditor props update' });
-
     if (sel_linenum > 0 && sel_linepos >= 0) {
+      // Successful click, stop processing.
       // sel_linepos = 0 if user clicked on line number
       return;
     }
@@ -270,7 +281,8 @@ function DispatchClick(event) {
     // If the slot was disabled, don't let it be clicked
     if (event.target.className.includes('styleFlagDisabled')) return;
     // Else, select the slot
-    const [line, pos] = slotKey.split(',');
+    // const [line, pos] = slotKey.split(',');
+    [line, pos] = slotKey.split(',');
     newSlotState.sel_slotpos = Number(pos); // STATE UPDATE: selected line
     SLOTCORE.SendState(newSlotState);
     const { sel_slotpos } = SLOTCORE.State();
@@ -357,6 +369,7 @@ function DispatchClick(event) {
     CancelSlotEdit();
     return;
   }
+
   /** (N) unhandled click oops **********************************************/
   const err = 'unhandled click in';
   // console.log(err, event.target);
