@@ -534,7 +534,7 @@ class ScriptView_Pane extends React.Component {
       >
         <option value={''}>-- select a bookmark --</option>
         {bookmarks.map(b => (
-          <option key={b.lineNum} value={b.lineNum} dataKey={`${b.lineNum}, 0`}>
+          <option key={b.lineNum} value={b.lineNum}>
             {b.lineNum}:&nbsp;{b.comment}
           </option>
         ))}
