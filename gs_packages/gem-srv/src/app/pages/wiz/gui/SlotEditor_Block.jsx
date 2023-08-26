@@ -239,7 +239,13 @@ class SlotEditor_Block extends React.Component {
     /// a. Check if we're a comment
     if (validationTokenCount > 0) {
       const vtok = validationTokens[0];
-      if (slots_linescript[0] && vtok.gsName === 'comment') {
+      // Inject a comment token (and convert vtok to a comment tok) if
+      // a. User has added a new "_comment" keyword, or
+      // b. User has selected an existing comment line for editing
+      if (
+        slots_linescript[0] &&
+        (vtok.gsName === 'comment' || vtok.unitText === '_comment')
+      ) {
         isComment = true;
         // comment keyword token
         let tokenKey = `${sel_linenum},${0}`;
@@ -269,7 +275,7 @@ class SlotEditor_Block extends React.Component {
         );
         // comment text token
         tokenKey = `${sel_linenum},${1}`;
-        commentText = slots_linescript[0].comment; // use linescript to grab text w/o '//'
+        commentText = slots_linescript[0].comment || ''; // use linescript to grab text w/o '//'
         tokenList.push(
           <GValidationToken
             key={tokenKey}
@@ -307,7 +313,6 @@ class SlotEditor_Block extends React.Component {
         const scriptToken = slots_linescript[i];
 
         const vtok = validationTokens[i];
-        console.log('working on scriptToken', scriptToken, 'vtok', vtok);
         if (vtok.gsType === 'block') {
           // 0. Don't show special featCall method blocks (e.g. createAgent)!
           continue;
