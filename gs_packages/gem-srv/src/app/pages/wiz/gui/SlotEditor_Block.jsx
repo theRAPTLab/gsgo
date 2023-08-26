@@ -253,8 +253,9 @@ class SlotEditor_Block extends React.Component {
         let label = vtok.gsName;
         let error = 'no error';
         instructionsHelpTxt = 'Enter your comment text (do not use quotes)';
-        let syntaxHelpTxt = 'syntaxHelp';
-        let tokenHelpTxt = 'tokenHelp';
+        let syntaxHelpTxt = 'Comments begin with "//".';
+        let tokenHelpTxt =
+          '[_comment] (displayed as "//") is used to add helpful descriptions of what the code should do.';
         let viewState = 'viewState';
         tokenList.push(
           <GValidationToken
@@ -286,8 +287,10 @@ class SlotEditor_Block extends React.Component {
             name={'string'} // added
             label={commentText} // inside the token box
             error={error}
-            syntaxHelp={syntaxHelpTxt}
-            help={tokenHelpTxt}
+            syntaxHelp={'Strings are used to store letters or numbers'} // clone
+            help={
+              'Enter text that explains what the code does. Optionally, select a comment style to format the comments and/or provide bookmarks.'
+            }
             viewState={'valid'}
             isSlot
             isRightSide={true} // force help popup to right align
