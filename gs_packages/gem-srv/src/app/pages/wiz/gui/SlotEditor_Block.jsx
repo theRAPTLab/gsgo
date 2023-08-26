@@ -87,6 +87,9 @@
     for the GVar and feature methods, so these are read directly from
     the validation tokens.
 
+    Comment help is hardcoded because the comment tokens are not real
+    keyword tokens.  See render() around line 233.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
@@ -228,7 +231,7 @@ class SlotEditor_Block extends React.Component {
     const validationTokenCount = validationTokens.length;
     const tokenList = [];
 
-    /// 3.5. Special Comment Handling
+    /// 3.5. Special Comment Handling - - - - - - - - - - - - - - - - - - - - -
     ///      We inject vtokens for rendering and managing comments
     ///      and then rely on the standard GValidationToken rendering to handle
     ///      the rest of the UI.
@@ -236,18 +239,15 @@ class SlotEditor_Block extends React.Component {
     ///      and we are only providing visual overrides.
     let isComment = false;
     let commentText = '';
-    /// a. Check if we're a comment
-    if (validationTokenCount > 0) {
+    /// a. Check the first vtok to see if we're a comment
+    if (slots_linescript[0] && validationTokenCount > 0) {
       const vtok = validationTokens[0];
-      // Inject a comment token (and convert vtok to a comment tok) if
+      // Inject a comment tokens (and convert vtok to a comment tok) if
       // a. User has added a new "_comment" keyword, or
       // b. User has selected an existing comment line for editing
-      if (
-        slots_linescript[0] &&
-        (vtok.gsName === 'comment' || vtok.unitText === '_comment')
-      ) {
+      if (vtok.gsName === 'comment' || vtok.unitText === '_comment') {
         isComment = true;
-        // comment keyword token
+        // Token 1 = comment keyword token
         let tokenKey = `${sel_linenum},${0}`;
         const keywordTok = { gsType: 'keyword', gsName: vtok.gsName };
         let label = vtok.gsName;
@@ -274,7 +274,7 @@ class SlotEditor_Block extends React.Component {
             isRightSide={false} // force help popup to right align
           />
         );
-        // comment text token
+        // Token 2 = comment text token
         tokenKey = `${sel_linenum},${1}`;
         commentText = slots_linescript[0].comment || ''; // use linescript to grab text w/o '//'
         tokenList.push(
@@ -298,11 +298,9 @@ class SlotEditor_Block extends React.Component {
         );
       }
     }
+    /// END 3.5. Comment Handling - - - - - - - - - - - - - - - - - - - - - - -
 
     /// 4. Process each validation token
-    // const { validationTokens } = slots_validation;
-    // const validationTokenCount = validationTokens.length;
-    // const tokenList = [];
     let extraTokenName;
     if (!isComment) {
       for (let i = 0; i < validationTokenCount; i++) {
