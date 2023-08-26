@@ -83,7 +83,9 @@ class SlotEditor_CommentBlock extends React.Component {
 
   /// Concatenate prefx + body - - - - - - - - - - - - - - - - - - - -
   m_ConstructCommentText(commentTextPrefix, commentTextBody) {
-    const commentText = `${commentTextPrefix} ${commentTextBody}`;
+    const commentText = commentTextPrefix
+      ? `${commentTextPrefix} ${commentTextBody}`
+      : commentTextBody;
     return commentText;
   }
 
