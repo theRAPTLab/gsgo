@@ -143,7 +143,7 @@ class SlotEditor_Block extends React.Component {
   HandleSlotUpdate(vmStateEvent) {
     // A. COMMENT HANDLING
     //    Update ONLY slots_linescript SLOTCORE updates if user is updating
-    //    comments.  Skip slots_validation updates so that selecting a different
+    //    comments.  Skips slots_validation updates so that selecting a different
     //    comment line doesn't overwrite the current SlotEditor_CommentBlock state.
     const { slots_linescript, slots_validation, slots_need_saving } =
       vmStateEvent;
@@ -239,7 +239,7 @@ class SlotEditor_Block extends React.Component {
     /// a. Check if we're a comment
     if (validationTokenCount > 0) {
       const vtok = validationTokens[0];
-      if (vtok.gsName === 'comment') {
+      if (slots_linescript[0] && vtok.gsName === 'comment') {
         isComment = true;
         // comment keyword token
         let tokenKey = `${sel_linenum},${0}`;
