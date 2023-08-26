@@ -148,7 +148,7 @@ class SlotEditor_CommentBlock extends React.Component {
         />
         <select value={commentTextPrefix} onChange={this.HandleStyleSelect}>
           <option key={'cstyle'} value={''}>
-            -- Select a Comment Style --
+            -- no style --
           </option>
           {commentStyles.map((style, i) => {
             const key = `cstyle${i}`;
