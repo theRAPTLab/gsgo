@@ -76,6 +76,17 @@ COMMENTTYPEMAP.set('✏️', {
   style: 'changeCommentBody',
   isBookmark: false
 });
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * @return {Array} [ ...{cssClass, label}]
+ */
+function GetCommentStyles() {
+  const styles = [];
+  COMMENTTYPEMAP.forEach((val, key) => {
+    styles.push({ key, cssStyle: val.style });
+  });
+  return styles;
+}
 
 /// STYLE INTERFACE ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -149,7 +160,9 @@ function GetBookmarkViewData(): any {
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
+  COMMENTTYPEMAP,
   // STYLES INTERFACE
+  GetCommentStyles,
   AddStyle,
   DeleteStyle,
   GetClasses,

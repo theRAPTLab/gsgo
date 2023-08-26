@@ -98,8 +98,9 @@ import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as HELP from 'app/help/codex';
 import { SlotEditorSelect_Block } from './SlotEditorSelect_Block';
+import SlotEditor_CommentBlock from './SlotEditor_CommentBlock';
 import Dialog from '../../../pages/components/Dialog';
-import { GValidationToken, StackUnit, HelpLabel } from '../SharedElements';
+import { GValidationToken, StackUnit } from '../SharedElements';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -125,8 +126,7 @@ class SlotEditor_Block extends React.Component {
     this.CancelSlotEdit = this.CancelSlotEdit.bind(this);
     this.DeleteSlot = this.DeleteSlot.bind(this);
     this.HandleSaveDialogClick = this.HandleSaveDialogClick.bind(this);
-    this.ProcessCommentInput = this.ProcessCommentInput.bind(this);
-    this.HandleCommentKeydown = this.HandleCommentKeydown.bind(this);
+    this.HandleCommentUpdate = this.HandleCommentUpdate.bind(this);
   }
 
   componentDidMount() {
@@ -165,22 +165,12 @@ class SlotEditor_Block extends React.Component {
       if (doSave) this.SaveSlot();
     });
   }
-  /// -- Comment Input Handlers
-  ///    Special handling for comments -- handle input updates
-  ///    directly from the comment input component, and stuff
-  ///    the changed text directly into script line.
-  ProcessCommentInput(event) {
-    event.preventDefault();
+  /// -- Comment Update Handlers -- `onChange` handler for SlotEditor_CommentBlock
+  HandleCommentUpdate(commentText) {
     EDITMGR.UpdateSlot({
-      value: String(event.target.value),
+      value: String(commentText),
       type: 'comment' // script token type is 'comment'
     });
-  }
-  HandleCommentKeydown(event) {
-    if (event.key === 'Enter') {
-      this.ProcessCommentInput(event);
-      event.target.select();
-    }
   }
 
   /// RENDERER ////////////////////////////////////////////////////////////////
@@ -272,7 +262,7 @@ class SlotEditor_Block extends React.Component {
           <GValidationToken
             key={tokenKey}
             tokenKey={tokenKey}
-            position={1}
+            position={2}
             selected={true}
             type={'string'} // over the token box
             name={'string'} // added
@@ -536,29 +526,15 @@ class SlotEditor_Block extends React.Component {
 
     /// choices - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const choicesjsx = isComment ? (
-      /// -- comment choices
+      /// -- show comment choices script line is a comment
       <div id="SEB_choices" className="gsled choices">
-        <div id="SES_str" className="gsled input">
-          <HelpLabel
-            prompt={'Type in a comment'}
-            info={'Comments are text strings to describe the intent of the code.'}
-            open
-            pad="5px"
-          />
-          <input
-            key={`${sel_linenum},${1}`}
-            defaultValue={commentText}
-            type="text"
-            onChange={this.ProcessCommentInput}
-            onKeyDown={this.HandleCommentKeydown}
-          />
-        </div>
-        <div className="gsled choicesline choiceshelp">
-          SELECTED: Comment text is used to add comments to scripts.
-        </div>
+        <SlotEditor_CommentBlock
+          defaultText={commentText}
+          onChange={this.HandleCommentUpdate}
+        />
       </div>
     ) : (
-      /// -- keyword choices
+      /// -- else show keyword choices
       <div id="SEB_choices" className="gsled choices">
         {selectedError && (
           <div className="gsled choicesline gwiz styleError">{selectedError}</div>
