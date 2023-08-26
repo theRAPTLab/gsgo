@@ -25,7 +25,9 @@ class SlotEditor_CommentBlock extends React.Component {
 
     const commentStyles = [...CHELPER.COMMENTTYPEMAP.keys()];
     this.state = {
-      commentStyles
+      commentStyles,
+      savedCommentText: '',
+      currentCommentText: ''
     };
 
     this.m_DeconstructCommentText = this.m_DeconstructCommentText.bind(this);
@@ -34,6 +36,25 @@ class SlotEditor_CommentBlock extends React.Component {
     this.ProcessCommentInput = this.ProcessCommentInput.bind(this);
     this.HandleCommentKeydown = this.HandleCommentKeydown.bind(this);
     this.OnChange = this.OnChange.bind(this);
+  }
+
+  componentDidUpdate() {
+    const { defaultText } = this.props;
+    const { savedCommentText } = this.state;
+    if (defaultText !== savedCommentText) {
+      // When the user selects a different comment line, componentDidMount
+      // will not fire because the component is still active, use
+      // componentDidUpdate to catch selecting a different comment line.
+      // But we also don't want componentDidUpdate to fire with text input
+      // or style menu selection change, or we'll inadvertently undo
+      // all the current text changes.
+      // So we use this to only change the current comment if the
+      // selected comment line has changed.
+      this.setState({
+        savedCommentText: defaultText,
+        currentCommentText: defaultText
+      });
+    }
   }
 
   /** Deconstruct stored script comment text into components,
@@ -51,7 +72,7 @@ class SlotEditor_CommentBlock extends React.Component {
     const style = commentStyles.find(s => String(rawcomment).startsWith(s));
     if (style) {
       commentTextPrefix = style;
-      commentTextBody = String(rawcomment).substring(style.length);
+      commentTextBody = String(rawcomment).substring(style.length).trimStart();
     }
     // Return the deconstructed pieces
     return {
@@ -62,29 +83,26 @@ class SlotEditor_CommentBlock extends React.Component {
 
   /// Concatenate prefx + body - - - - - - - - - - - - - - - - - - - -
   m_ConstructCommentText(commentTextPrefix, commentTextBody) {
-    const commentText = `${commentTextPrefix}${commentTextBody}`;
+    const commentText = `${commentTextPrefix} ${commentTextBody}`;
     return commentText;
   }
 
   /// Comment Style Selection Handlers - - - - - - - - - - - - - - - - - - - -
   HandleStyleSelect(event) {
     event.preventDefault();
-    const { defaultText } = this.props;
+    const { currentCommentText } = this.state;
     const { commentTextPrefix, commentTextBody } =
-      this.m_DeconstructCommentText(defaultText);
+      this.m_DeconstructCommentText(currentCommentText);
     const updatedCommentTextPrefix = event.target.value;
     this.OnChange(updatedCommentTextPrefix, commentTextBody);
   }
 
   /// Comment Input Handlers - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// Special handling for comments -- handle input updates
-  /// directly from the comment input component, and stuff
-  /// the changed text directly into script line.
   ProcessCommentInput(event) {
     event.preventDefault();
-    const { defaultText } = this.props;
+    const { currentCommentText } = this.state;
     const { commentTextPrefix, commentTextBody } =
-      this.m_DeconstructCommentText(defaultText);
+      this.m_DeconstructCommentText(currentCommentText);
     const updatedCommentTextBody = event.target.value;
     this.OnChange(commentTextPrefix, updatedCommentTextBody);
   }
@@ -98,16 +116,19 @@ class SlotEditor_CommentBlock extends React.Component {
   /// Trigger parent Comment onChange Handler - - - - - - - - - - - - - - - - - - - -
   OnChange(commentTextPrefix, commentTextBody) {
     const { onChange } = this.props;
-    const commentText = `${commentTextPrefix}${commentTextBody}`;
-    onChange(commentText);
+    const updatedCommentText = this.m_ConstructCommentText(
+      commentTextPrefix,
+      commentTextBody
+    );
+    this.setState({ currentCommentText: updatedCommentText });
+    onChange(updatedCommentText);
   }
 
   /// render - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   render() {
-    const { defaultText } = this.props;
-    const { commentStyles } = this.state;
+    const { commentStyles, currentCommentText } = this.state;
     const { commentTextPrefix, commentTextBody } =
-      this.m_DeconstructCommentText(defaultText);
+      this.m_DeconstructCommentText(currentCommentText);
 
     /// Show comment choices
     /// There are two types of comment choices to inject into the chooser:

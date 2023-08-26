@@ -141,7 +141,18 @@ class SlotEditor_Block extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** INCOMING: handle SLOTCORE event updates */
   HandleSlotUpdate(vmStateEvent) {
-    // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
+    // A. COMMENT HANDLING
+    //    Update ONLY slots_linescript SLOTCORE updates if user is updating
+    //    comments.  Skip slots_validation updates so that selecting a different
+    //    comment line doesn't overwrite the current SlotEditor_CommentBlock state.
+    const { slots_linescript, slots_validation, slots_need_saving } =
+      vmStateEvent;
+    if (slots_linescript && !slots_validation) {
+      this.setState({ slots_linescript, slots_need_saving });
+      return; // skip other updates
+    }
+    // B. UPDATE ALL SLOTCORE UPDATES
+    //    EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
     this.setState(vmStateEvent);
     // CAREFUL VERSION
     // const { script_page } = vmStateEvent;
@@ -166,6 +177,7 @@ class SlotEditor_Block extends React.Component {
     });
   }
   /// -- Comment Update Handlers -- `onChange` handler for SlotEditor_CommentBlock
+  ///    Updates `slots_linescript` whenever comment changes
   HandleCommentUpdate(commentText) {
     EDITMGR.UpdateSlot({
       value: String(commentText),
