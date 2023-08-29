@@ -427,7 +427,7 @@ function SaveSlotLineScript(event) {
   const { slots_linescript } = SLOTCORE.State();
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
   const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
-  const updatedLine = lsos[lineIdx]; // clone existing line to retain block info
+  const lineToUpdate = lsos[lineIdx]; // clone existing line to retain block info
 
   // HACK Block Support -------------------------------------------------------
   // When adding a new line, insert a block if the it's required
@@ -441,7 +441,7 @@ function SaveSlotLineScript(event) {
     )
   )
     isBlockCommand = true;
-  // 2. Is block command? e.g. 'createAgent' or 'spawnChild' featCall
+  // 2. Is featCall block command? e.g. 'createAgent' or 'spawnChild'
   if (String(new_kw).toLowerCase() === 'featcall') {
     slots_linescript.forEach(tok => {
       if (
@@ -460,7 +460,7 @@ function SaveSlotLineScript(event) {
     });
   }
   // 3. Already has a block?
-  const hasBlock = updatedLine.marker === 'start';
+  const hasBlock = lineToUpdate.marker === 'start';
   // 4. Add a block if needed!
   if (isBlockCommand && !hasBlock) {
     slots_linescript.push({
@@ -469,7 +469,7 @@ function SaveSlotLineScript(event) {
   }
   // END HACK Block Support ---------------------------------------------------
 
-  updatedLine.lineScript = slots_linescript.filter(({ identifier }) => {
+  lineToUpdate.lineScript = slots_linescript.filter(({ identifier }) => {
     // SelectEditorLineSlot() treats lineScript tokens as "view data" and
     // stores { identifier:'' } as part of its GUI operation, but this is an
     // illegal script token so we can't just send it as a real token...filtering
@@ -478,7 +478,7 @@ function SaveSlotLineScript(event) {
     if (identifier === '') return false;
     return true;
   }); // just update the lineScript
-  lsos.splice(lineIdx, 1, updatedLine);
+  lsos.splice(lineIdx, 1, lineToUpdate);
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
   WIZCORE.SendState({ script_tokens: nscript });
   SLOTCORE.SendState({ slots_need_saving: false });
