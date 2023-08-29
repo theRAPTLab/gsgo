@@ -46,34 +46,42 @@ COMMENTTYPEMAP.set('COMMENT KEY', {
 });
 COMMENTTYPEMAP.set('🔎 WHAT', {
   style: 'explanationCommentHeader',
+  help: 'Explanation of how this code works',
   isBookmark: false
 });
 COMMENTTYPEMAP.set('🔎 DEFINITION', {
   style: 'explanationCommentHeader',
+  help: 'Explanation of code defintion',
   isBookmark: false
 });
 COMMENTTYPEMAP.set('🔎 QUESTION', {
   style: 'explanationCommentHeader',
+  help: 'Questions to consider',
   isBookmark: false
 });
 COMMENTTYPEMAP.set('✏️ LETS', {
   style: 'changeCommentHeader',
+  help: 'Code that should be changed by a student',
   isBookmark: true
 });
 COMMENTTYPEMAP.set('✏️ CHANGE', {
   style: 'changeCommentHeader',
+  help: 'Code that should be changed by a student',
   isBookmark: true
 });
 COMMENTTYPEMAP.set('✏️ HYPOTHESIS', {
   style: 'changeCommentHeader',
+  help: 'Code that should be changed by a student',
   isBookmark: false
 });
 COMMENTTYPEMAP.set('🔎', {
   style: 'explanationCommentBody',
+  help: '',
   isBookmark: false
 });
 COMMENTTYPEMAP.set('✏️', {
   style: 'changeCommentBody',
+  help: '',
   isBookmark: false
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
