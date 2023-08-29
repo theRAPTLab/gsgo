@@ -150,7 +150,7 @@ class SlotEditor_Block extends React.Component {
     //    comment line doesn't overwrite the current SlotEditor_CommentBlock state.
     const { slots_linescript, slots_validation, slots_need_saving } =
       vmStateEvent;
-    if (slots_linescript && !slots_validation) {
+    if (slots_linescript && !slots_validation && slots_need_saving) {
       this.setState({ slots_linescript, slots_need_saving });
       return; // skip other updates
     }
