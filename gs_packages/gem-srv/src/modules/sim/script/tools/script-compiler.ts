@@ -101,7 +101,9 @@ function DecodeStatement(
   const dUnit: TScriptUnit = statement.map((tok, line) => {
     if (line === 0) {
       const arg = DecodeToken(tok, refs);
-      if (typeof arg === 'object' && arg.comment) return '_comment';
+      // convert '_comment' to '//'
+      // if (typeof arg === 'object' && arg.comment) return '_comment';
+      if (typeof arg === 'object' && arg.comment) return '//';
       return arg;
     }
     return DecodeToken(tok, refs);
