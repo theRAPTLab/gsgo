@@ -267,7 +267,7 @@ class SlotEditor_Block extends React.Component {
             position={0}
             selected={false}
             type={keywordTok.gsType} // over the token box
-            name={'//'} // added
+            name={'keyword'} // added
             label={'//'} // inside the token box -- convert '_comment' to '//'
             error={error}
             syntaxHelp={syntaxHelpTxt}
