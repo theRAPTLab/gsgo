@@ -51,7 +51,12 @@ function updateAndPublish(settings) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetPreferences() {
-  return CHELPER.GetCommentStyles();
+  // Currently this only returns the comment types, but there's room to
+  // add other preferences
+  return CHELPER.GetCommentTypes();
+
+  // REVIEW: Should this use state?
+  // return { ..._getKey('commentTypes') }; // clone
 }
 
 /// UPDATERS //////////////////////////////////////////////////////////////////
@@ -65,6 +70,11 @@ function SetPreferences(preferences) {
   commentTypes.forEach(s => {
     CHELPER.AddStyle(s);
   });
+
+  // REVIEW: Do we want to update state at all here?
+  // or just rely on CHELPER to maintain state?
+  // DCPROJECT.UpdateProjectData({ commentTypes });
+  // updateAndPublish(settings);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

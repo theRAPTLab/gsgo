@@ -39,6 +39,7 @@
 const COMMENTTYPEMAP = new Map<string, any>();
 COMMENTTYPEMAP.set('COMMENT KEY', {
   cssClass: 'commentKeyHeader',
+  help: '',
   isBookmark: false
 });
 COMMENTTYPEMAP.set('🔎 WHAT', {
@@ -82,15 +83,16 @@ COMMENTTYPEMAP.set('✏️', {
   isBookmark: false
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * @return {Array} [ ...{cssClass, label}]
+/** Returns ALL of the values in COMMENTYPEMAP, including the matchstring
+ *  @return {Array} [ ...{ matchString, cssClass, help, isBookmark }]
  */
-function GetCommentStyles() {
-  const styles = [];
-  COMMENTTYPEMAP.forEach((val, key) => {
-    styles.push({ matchString: key, cssClass: val.cssClass });
+function GetCommentTypes() {
+  const keys = [...COMMENTTYPEMAP.keys()];
+  const types = [];
+  keys.forEach(k => {
+    types.push({ matchString: k, ...COMMENTTYPEMAP.get(k) });
   });
-  return styles;
+  return types;
 }
 
 /// STYLE INTERFACE ///////////////////////////////////////////////////////////
@@ -108,10 +110,15 @@ function AddStyle(style: {
   help: string;
   isBookmark: boolean;
 }) {
-  const { matchString, cssClass, help, isBookmark } = style;
+  let { matchString, cssClass, help, isBookmark } = style;
   // Check for existence before styleMap
-  if (COMMENTTYPEMAP.has(matchString))
+  if (COMMENTTYPEMAP.has(matchString)) {
     console.warn(`Style ${matchString} already defined ${cssClass}`);
+    const orig = COMMENTTYPEMAP.get(matchString);
+    cssClass = cssClass || orig.cssClass;
+    help = help || orig.help;
+    isBookmark = isBookmark || orig.isBookmark;
+  }
   COMMENTTYPEMAP.set(matchString, { cssClass, help, isBookmark });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -152,18 +159,21 @@ function m_GetBookmarkFromScriptLine(line: any) {
   const matchStrings = [...COMMENTTYPEMAP.keys()];
   let cssClass = '';
   let isBookmark = false;
+  let help = '';
   const u_scanstyles = text => {
     const match = matchStrings.find(
       matchedString => text !== undefined && text.includes(matchedString)
     );
     if (match) {
       cssClass = COMMENTTYPEMAP.get(match).cssClass;
+      help = COMMENTTYPEMAP.get(match).help;
+      console.log('help', match, COMMENTTYPEMAP.get(match), help);
       isBookmark = COMMENTTYPEMAP.get(match).isBookmark;
     }
   };
   u_scanstyles(comment);
   if (comment && isBookmark) {
-    BOOKMARKS.push({ lineNum, comment, cssClass });
+    BOOKMARKS.push({ lineNum, comment, cssClass, help });
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -180,8 +190,8 @@ function GetBookmarkViewData(): any {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
   COMMENTTYPEMAP,
+  GetCommentTypes,
   // STYLES INTERFACE
-  GetCommentStyles,
   AddStyle,
   DeleteStyle,
   GetClasses,
