@@ -107,19 +107,29 @@ function GetCommentTypes() {
 function AddStyle(style: {
   matchString: string;
   cssClass: string;
+  color: string;
+  backgroundColor: string;
   help: string;
   isBookmark: boolean;
 }) {
-  let { matchString, cssClass, help, isBookmark } = style;
+  let { matchString, cssClass, color, backgroundColor, help, isBookmark } = style;
   // Check for existence before styleMap
   if (COMMENTTYPEMAP.has(matchString)) {
     console.warn(`Style ${matchString} already defined ${cssClass}`);
     const orig = COMMENTTYPEMAP.get(matchString);
     cssClass = cssClass || orig.cssClass;
+    color = color || orig.color;
+    backgroundColor = backgroundColor || orig.backgroundColor;
     help = help || orig.help;
     isBookmark = isBookmark || orig.isBookmark;
   }
-  COMMENTTYPEMAP.set(matchString, { cssClass, help, isBookmark });
+  COMMENTTYPEMAP.set(matchString, {
+    cssClass,
+    color,
+    backgroundColor,
+    help,
+    isBookmark
+  });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** DeleteStyle
@@ -145,7 +155,29 @@ function GetClasses(type: string, label: string): string {
   }
   return classes;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** GetClasses -- Get comment style classes.  Used in SharedElements.GToken()
+ *  to style the comments in the wizard views.
+ *  @param {string} type
+ *  @param {string} label
+ *  @return {string}
+ */
+function GetCSSStyle(type: string, label: string): any {
+  let cssStyle: any = {};
+  if (type === '{noncode}') {
+    COMMENTTYPEMAP.forEach((value, key) => {
+      if (label.includes(key)) {
+        if (value.color) cssStyle = { ...cssStyle, ...{ color: value.color } };
+        if (value.backgroundColor)
+          cssStyle = {
+            ...cssStyle,
+            ...{ backgroundColor: value.backgroundColor }
+          };
+      }
+    });
+  }
+  return cssStyle;
+}
 /// BOOKMARK INTERFACE ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// During compile/render, we'll iterate through the lines and construct the
@@ -195,6 +227,7 @@ export {
   AddStyle,
   DeleteStyle,
   GetClasses,
+  GetCSSStyle,
   // BOOKMARKS INTERFACE
   MakeBookmarkViewData,
   GetBookmarkViewData

@@ -293,6 +293,7 @@ export function GToken(props) {
   const { tokenKey, token, selected, position } = props;
   const [type, value] = UnpackToken(token); // simple values or object
   let label;
+  let cssStyle = {};
   switch (type) {
     case 'identifier':
       label = value;
@@ -324,6 +325,7 @@ export function GToken(props) {
 
   if (type === '{noncode}') {
     classes += CHELPER.GetClasses(type, label);
+    cssStyle = { ...CHELPER.GetCSSStyle(type, label) };
   }
   if (type === 'directive') classes += ' stylePragma';
   if (SPECIAL_IDENTS.includes(label)) classes += ' stylePragma';
@@ -332,7 +334,7 @@ export function GToken(props) {
   if (type) classes += ` ${type}Type`;
   // if not, emit the token element
   return (
-    <div className={classes} data-key={tokenKey}>
+    <div className={classes} data-key={tokenKey} style={cssStyle}>
       {label}
     </div>
   );
@@ -357,10 +359,12 @@ export function GValidationToken(props) {
   let classes = selected
     ? 'gwiz gtoken styleOpen selected'
     : 'gwiz gtoken styleOpen';
+  let cssStyle = {};
   // special types? use additional classes
   if (type === 'identifier' && position === 0) classes += ' styleKey';
   if (type === '{noncode}') {
     classes += CHELPER.GetClasses(type, label);
+    cssStyle = { ...CHELPER.GetCSSStyle(type, label) };
   }
   if (type === 'directive') classes += ' stylePragma';
   if (SPECIAL_IDENTS.includes(label)) classes += ' stylePragma';
@@ -416,7 +420,7 @@ export function GValidationToken(props) {
       <div className="gwiz gslot-ed meta styleHelp">{help}</div> */}
     </>
   ) : (
-    <div className={classes} data-key={tokenKey} title={help}>
+    <div className={classes} data-key={tokenKey} title={help} style={cssStyle}>
       {displayLabel} {help}
     </div>
   );
