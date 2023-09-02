@@ -47,30 +47,11 @@ COMMENTTYPEMAP.set('🔎 WHAT', {
   help: 'Explanation of how this code works',
   isBookmark: false
 });
-COMMENTTYPEMAP.set('🔎 DEFINITION', {
-  cssClass: 'explanationCommentHeader',
-  help: 'Explanation of code defintion',
-  isBookmark: false
-});
-COMMENTTYPEMAP.set('🔎 QUESTION', {
-  cssClass: 'explanationCommentHeader',
-  help: 'Questions to consider',
-  isBookmark: false
-});
-COMMENTTYPEMAP.set('✏️ LETS', {
-  cssClass: 'changeCommentHeader',
-  help: 'Code that should be changed by a student',
-  isBookmark: true
-});
+
 COMMENTTYPEMAP.set('✏️ CHANGE', {
   cssClass: 'changeCommentHeader',
   help: 'Code that should be changed by a student',
   isBookmark: true
-});
-COMMENTTYPEMAP.set('✏️ HYPOTHESIS', {
-  cssClass: 'changeCommentHeader',
-  help: 'Code that should be changed by a student',
-  isBookmark: false
 });
 COMMENTTYPEMAP.set('🔎', {
   cssClass: 'explanationCommentBody',
@@ -115,7 +96,7 @@ function AddStyle(style: {
   let { matchString, cssClass, color, backgroundColor, help, isBookmark } = style;
   // Check for existence before styleMap
   if (COMMENTTYPEMAP.has(matchString)) {
-    console.warn(`Style ${matchString} already defined ${cssClass}`);
+    console.warn(`Style ${matchString} overridden by preferences ${cssClass}`);
     const orig = COMMENTTYPEMAP.get(matchString);
     cssClass = cssClass || orig.cssClass;
     color = color || orig.color;
