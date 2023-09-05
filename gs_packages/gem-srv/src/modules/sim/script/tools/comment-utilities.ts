@@ -37,14 +37,16 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// These are defined in gem-ui.css
 const COMMENTTYPEMAP = new Map<string, any>();
-COMMENTTYPEMAP.set('COMMENT KEY', {
-  cssClass: 'commentKeyHeader',
-  help: '',
-  isBookmark: false
-});
+
 COMMENTTYPEMAP.set('🔎 WHAT', {
   cssClass: 'explanationCommentHeader',
   help: 'Explanation of how this code works',
+  isBookmark: false
+});
+
+COMMENTTYPEMAP.set('🔎', {
+  cssClass: 'explanationCommentBody',
+  help: 'Additional explanations of how something works',
   isBookmark: false
 });
 
@@ -53,14 +55,10 @@ COMMENTTYPEMAP.set('✏️ CHANGE', {
   help: 'Code that should be changed by a student',
   isBookmark: true
 });
-COMMENTTYPEMAP.set('🔎', {
-  cssClass: 'explanationCommentBody',
-  help: '',
-  isBookmark: false
-});
+
 COMMENTTYPEMAP.set('✏️', {
   cssClass: 'changeCommentBody',
-  help: '',
+  help: 'Additional details of what a student might change',
   isBookmark: false
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
