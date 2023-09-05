@@ -69,6 +69,8 @@ const VIEWMODE_CODE = 'code';
 
 let needsSyntaxReHighlight = false;
 
+let m_scrollTop = 0; // scroll position of the PanelChrome scroll container
+
 const StyledToggleButton = withStyles(theme => ({
   root: {
     color: 'rgba(0,156,156,1)',
@@ -211,7 +213,8 @@ class ScriptView_Pane extends React.Component {
       script_text,
       sel_linenum,
       bookmarks: [],
-      sel_bookmarklinenum: 0
+      sel_bookmarklinenum: 0,
+      scrollContainer: {}
     };
     // codejar
     this.jarRef = React.createRef();
@@ -224,7 +227,8 @@ class ScriptView_Pane extends React.Component {
       'inserted': types_regex
     });
 
-    this.handleWizUpdate = this.handleWizUpdate.bind(this);
+    this.HandleWizUpdate = this.HandleWizUpdate.bind(this);
+    this.HandleScrollUpdate = this.HandleScrollUpdate.bind(this);
     this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
     this.GetTitle = this.GetTitle.bind(this);
     // DEPRECATED?  No one is Raising SCRIPT_UI_CHANGED at the moment?
@@ -269,6 +273,15 @@ class ScriptView_Pane extends React.Component {
         return e;
       }
     });
+
+    // scroll listener
+    // the scroll container is actually the PanelChrome, so we grab the parent
+    const scrollContainer =
+      document.getElementById('ScriptViewScroller').parentElement;
+    scrollContainer.addEventListener('scroll', event => {
+      m_scrollTop = scrollContainer.scrollTop;
+    });
+    this.setState({ scrollContainer });
   }
 
   componentWillUnmount() {
@@ -300,17 +313,41 @@ class ScriptView_Pane extends React.Component {
     // ScriptViewPane redraw for now
     if (sel_linenum !== undefined) {
       newState.sel_linenum = sel_linenum;
+      cb = () => this.HandleScrollUpdate();
     }
+
     // Update Bookmarks
     if (script_page) {
       CHELPER.MakeBookmarkViewData(script_page);
-      this.setState({ bookmarks: CHELPER.GetBookmarkViewData() });
+      newState.bookmarks = CHELPER.GetBookmarkViewData();
     }
+
     // if script_page_needs_saving, the setState will trigger a rerender
+    // NOTE the callback method
     if (Object.keys(newState).length > 0 || script_page_needs_saving)
       this.setState(newState, cb);
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Scroll to the currently selected line if it's not visible
+   */
+  HandleScrollUpdate() {
+    const { scrollContainer } = this.state;
+    // The #LineBtnAddBefore button always shows the selected line and ensures
+    // the top "+" button is visible in the scroll (as well as the line before)
+    const LineBtnAddBefore = document.getElementById('LineBtnAddBefore');
+    if (LineBtnAddBefore) {
+      const elTop = LineBtnAddBefore.offsetTop;
+      const elBottom = elTop + LineBtnAddBefore.clientHeight;
+      const containerTop = scrollContainer.offsetTop + m_scrollTop;
+      const containerBottom = containerTop + scrollContainer.clientHeight;
+      if (containerTop > elTop || elBottom > containerBottom) {
+        LineBtnAddBefore.scrollIntoView();
+      }
+    }
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   HandleSimDataUpdate() {
     needsSyntaxReHighlight = true;
   }
@@ -463,8 +500,11 @@ class ScriptView_Pane extends React.Component {
   OnBookmarkSelect(event) {
     event.preventDefault();
     event.stopPropagation();
+    const { sel_bookmarklinenum } = this.state;
     const lineNum = event.target.value;
+    if (sel_bookmarklinenum !== lineNum) {
     this.setState({ sel_bookmarklinenum: lineNum });
+    }
     if (lineNum !== '') {
       // Trigger a line selection with the EDITMGR
       // if the selected lineNum is not "-- select a bookmark --"
