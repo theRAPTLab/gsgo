@@ -180,7 +180,6 @@ function m_GetBookmarkFromScriptLine(line: any) {
     if (match) {
       cssClass = COMMENTTYPEMAP.get(match).cssClass;
       help = COMMENTTYPEMAP.get(match).help;
-      console.log('help', match, COMMENTTYPEMAP.get(match), help);
       isBookmark = COMMENTTYPEMAP.get(match).isBookmark;
     }
   };

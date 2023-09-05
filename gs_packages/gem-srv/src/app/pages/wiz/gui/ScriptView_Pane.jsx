@@ -248,8 +248,10 @@ class ScriptView_Pane extends React.Component {
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   componentDidMount() {
     if (DBG) console.log(...PR('componentDidMount'));
+
     // initialize codejar
     const highlight = editor => {
       Prism.highlightElement(editor);
@@ -262,7 +264,7 @@ class ScriptView_Pane extends React.Component {
     });
 
     // add a subscriber
-    WIZCORE.SubscribeState(this.handleWizUpdate);
+    WIZCORE.SubscribeState(this.HandleWizUpdate);
 
     window.addEventListener('beforeunload', e => {
       if (SKIP_RELOAD_WARNING) return;
@@ -284,15 +286,17 @@ class ScriptView_Pane extends React.Component {
     this.setState({ scrollContainer });
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   componentWillUnmount() {
-    WIZCORE.UnsubscribeState(this.handleWizUpdate);
+    WIZCORE.UnsubscribeState(this.HandleWizUpdate);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUIChanged);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** INCOMING: handle WIZCORE event updates */
-  handleWizUpdate(vmStateEvent) {
+  HandleWizUpdate(vmStateEvent) {
     // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
     const { script_page, script_text, script_page_needs_saving, sel_linenum } =
       vmStateEvent;
@@ -309,8 +313,10 @@ class ScriptView_Pane extends React.Component {
         Prism.highlightElement(this.jarRef.current);
       };
     }
-    // REVIEW: This is not strictly necessary...just using this to trigger
-    // ScriptViewPane redraw for now
+
+    // If WIZCORE update included a line selection, then we need to update
+    // the scroll position to figure out if we need to scroll the selected
+    // line into view after the state update.
     if (sel_linenum !== undefined) {
       newState.sel_linenum = sel_linenum;
       cb = () => this.HandleScrollUpdate();
@@ -352,10 +358,12 @@ class ScriptView_Pane extends React.Component {
     needsSyntaxReHighlight = true;
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   GetTitle(blueprintName) {
     return `Script: ${blueprintName}`;
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**
    * keyword editor has sent updated script line
    * update codejar text
@@ -372,6 +380,7 @@ class ScriptView_Pane extends React.Component {
     WIZCORE.SendState({ script_page_needs_saving: true });
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**
    * 1. PanelScript raises NET:SCRIPT_UPDATE
    * 2. project-server handles NET:SCRIPT_UPDATE
@@ -421,6 +430,7 @@ class ScriptView_Pane extends React.Component {
     UR.LogEvent('ScriptEdit', ['Save to Server', bpName]);
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   OnSelectScriptClick(action) {
     // Go back to select screen
     // This calls the ScriptEditor onClick handler
@@ -436,8 +446,8 @@ class ScriptView_Pane extends React.Component {
     }
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   HighlightDebugLine(data) {
-    console.log('highlighting', data);
     this.setState(
       {
         lineHighlight: data.line
@@ -449,12 +459,14 @@ class ScriptView_Pane extends React.Component {
     );
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   OnDelete() {
     this.setState({
       openConfirmDelete: true
     });
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   OnDeleteConfirm(yesDelete) {
     const { projId, bpName } = this.props;
     this.setState({
@@ -468,19 +480,19 @@ class ScriptView_Pane extends React.Component {
     }
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   OnUnloadConfirm(yesLeave) {
     const { unloadEvent, confirmUnloadCallback } = this.state;
-    console.log('unlaodevent is', unloadEvent);
     this.setState({
       openConfirmUnload: false
     });
     if (yesLeave) {
-      console.log('trying to leave');
       confirmUnloadCallback();
     }
   }
 
-  OnToggleWizard(e, value) {
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  OnToggleWizard(event, value) {
     if (value === null) return; // skip repeated clicks
     if (value === VIEWMODE_CODE) {
       // currently wizard, clicked on code
@@ -497,13 +509,17 @@ class ScriptView_Pane extends React.Component {
     });
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** We use `onInput` because `onChange` will trigger whenever you click to
+   *  open the selection menu.
+   */
   OnBookmarkSelect(event) {
     event.preventDefault();
     event.stopPropagation();
     const { sel_bookmarklinenum } = this.state;
     const lineNum = event.target.value;
     if (sel_bookmarklinenum !== lineNum) {
-    this.setState({ sel_bookmarklinenum: lineNum });
+      this.setState({ sel_bookmarklinenum: lineNum });
     }
     if (lineNum !== '') {
       // Trigger a line selection with the EDITMGR
@@ -512,6 +528,7 @@ class ScriptView_Pane extends React.Component {
     }
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   render() {
     if (DBG) console.log(...PR('render'));
     const {
