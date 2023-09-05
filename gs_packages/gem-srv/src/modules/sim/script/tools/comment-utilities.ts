@@ -31,9 +31,6 @@
     Derived data source from the bundle symbol table.
     We would create a new type of symbol table for supporting comment bookmarks.
 
-    Next Steps:
-    * Figure out how introduce AddStyles to add to project settings
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -41,70 +38,90 @@
 /// These are defined in gem-ui.css
 const COMMENTTYPEMAP = new Map<string, any>();
 COMMENTTYPEMAP.set('COMMENT KEY', {
-  style: 'commentKeyHeader',
+  cssClass: 'commentKeyHeader',
+  help: '',
   isBookmark: false
 });
 COMMENTTYPEMAP.set('🔎 WHAT', {
-  style: 'explanationCommentHeader',
+  cssClass: 'explanationCommentHeader',
+  help: 'Explanation of how this code works',
   isBookmark: false
 });
-COMMENTTYPEMAP.set('🔎 DEFINITION', {
-  style: 'explanationCommentHeader',
-  isBookmark: false
-});
-COMMENTTYPEMAP.set('🔎 QUESTION', {
-  style: 'explanationCommentHeader',
-  isBookmark: false
-});
-COMMENTTYPEMAP.set('✏️ LETS', {
-  style: 'changeCommentHeader',
-  isBookmark: true
-});
+
 COMMENTTYPEMAP.set('✏️ CHANGE', {
-  style: 'changeCommentHeader',
+  cssClass: 'changeCommentHeader',
+  help: 'Code that should be changed by a student',
   isBookmark: true
-});
-COMMENTTYPEMAP.set('✏️ HYPOTHESIS', {
-  style: 'changeCommentHeader',
-  isBookmark: false
 });
 COMMENTTYPEMAP.set('🔎', {
-  style: 'explanationCommentBody',
+  cssClass: 'explanationCommentBody',
+  help: '',
   isBookmark: false
 });
 COMMENTTYPEMAP.set('✏️', {
-  style: 'changeCommentBody',
+  cssClass: 'changeCommentBody',
+  help: '',
   isBookmark: false
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * @return {Array} [ ...{cssClass, label}]
+/** Returns ALL of the values in COMMENTYPEMAP, including the matchstring
+ *  @return {Array} [ ...{ matchString, cssClass, help, isBookmark }]
  */
-function GetCommentStyles() {
-  const styles = [];
-  COMMENTTYPEMAP.forEach((val, key) => {
-    styles.push({ key, cssStyle: val.style });
+function GetCommentTypes() {
+  const keys = [...COMMENTTYPEMAP.keys()];
+  const types = [];
+  keys.forEach(k => {
+    types.push({ matchString: k, ...COMMENTTYPEMAP.get(k) });
   });
-  return styles;
+  return types;
 }
 
 /// STYLE INTERFACE ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** AddStyle
- *  @param {string} matchString
- *  @param {string} cssStyle
- *  @param {boolean} isBookmark
+ *  @param {any} style
+ *  @param {string} style.matchString
+ *  @param {string} style.cssClass
+ *  @param {string} style.help
+ *  @param {boolean} style.isBookmark
  */
-function AddStyle(matchString: string, cssStyle: string, isBookmark: boolean) {
+function AddStyle(style: {
+  matchString: string;
+  cssClass: string;
+  color: string;
+  backgroundColor: string;
+  help: string;
+  isBookmark: boolean;
+}) {
+  let { matchString, cssClass, color, backgroundColor, help, isBookmark } = style;
   // Check for existence before styleMap
-  if (COMMENTTYPEMAP.has(matchString))
-    console.warn(`Style ${matchString} already defined ${cssStyle}`);
-  COMMENTTYPEMAP.set(matchString, { style: cssStyle, isBookmark });
+  if (COMMENTTYPEMAP.has(matchString)) {
+    console.warn(`Style ${matchString} overridden by preferences ${cssClass}`);
+    const orig = COMMENTTYPEMAP.get(matchString);
+    cssClass = cssClass || orig.cssClass;
+    color = color || orig.color;
+    backgroundColor = backgroundColor || orig.backgroundColor;
+    help = help || orig.help;
+    isBookmark = isBookmark || orig.isBookmark;
+  }
+  COMMENTTYPEMAP.set(matchString, {
+    cssClass,
+    color,
+    backgroundColor,
+    help,
+    isBookmark
+  });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function DeleteStyle() {}
+/** DeleteStyle
+ *  @param {string} matchString
+ */
+function DeleteStyle(matchString) {
+  COMMENTTYPEMAP.delete(matchString);
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** GetClasses -- used in SharedElements.GToken()
+/** GetClasses -- Get comment style classes.  Used in SharedElements.GToken()
+ *  to style the comments in the wizard views.
  *  @param {string} type
  *  @param {string} label
  *  @return {string}
@@ -114,12 +131,34 @@ function GetClasses(type: string, label: string): string {
   if (type === '{noncode}') {
     classes = ' styleComment';
     COMMENTTYPEMAP.forEach((value, key) => {
-      if (label.includes(key)) classes += ` ${value.style}`;
+      if (label.includes(key)) classes += ` ${value.cssClass}`;
     });
   }
   return classes;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** GetClasses -- Get comment style classes.  Used in SharedElements.GToken()
+ *  to style the comments in the wizard views.
+ *  @param {string} type
+ *  @param {string} label
+ *  @return {string}
+ */
+function GetCSSStyle(type: string, label: string): any {
+  let cssStyle: any = {};
+  if (type === '{noncode}') {
+    COMMENTTYPEMAP.forEach((value, key) => {
+      if (label.includes(key)) {
+        if (value.color) cssStyle = { ...cssStyle, ...{ color: value.color } };
+        if (value.backgroundColor)
+          cssStyle = {
+            ...cssStyle,
+            ...{ backgroundColor: value.backgroundColor }
+          };
+      }
+    });
+  }
+  return cssStyle;
+}
 /// BOOKMARK INTERFACE ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// During compile/render, we'll iterate through the lines and construct the
@@ -130,21 +169,23 @@ function m_GetBookmarkFromScriptLine(line: any) {
   const { vmTokens, lineNum } = line;
   const { scriptToken } = vmTokens[0] || {};
   const { comment } = scriptToken || {};
-  const matchedStyles = [...COMMENTTYPEMAP.keys()];
-  let styleName = '';
+  const matchStrings = [...COMMENTTYPEMAP.keys()];
+  let cssClass = '';
   let isBookmark = false;
+  let help = '';
   const u_scanstyles = text => {
-    const match = matchedStyles.find(
-      matchedStyle => text !== undefined && text.includes(matchedStyle)
+    const match = matchStrings.find(
+      matchedString => text !== undefined && text.includes(matchedString)
     );
     if (match) {
-      styleName = COMMENTTYPEMAP.get(match).style;
+      cssClass = COMMENTTYPEMAP.get(match).cssClass;
+      help = COMMENTTYPEMAP.get(match).help;
       isBookmark = COMMENTTYPEMAP.get(match).isBookmark;
     }
   };
   u_scanstyles(comment);
   if (comment && isBookmark) {
-    BOOKMARKS.push({ lineNum: lineNum, comment, styleName });
+    BOOKMARKS.push({ lineNum, comment, cssClass, help });
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -161,11 +202,12 @@ function GetBookmarkViewData(): any {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
   COMMENTTYPEMAP,
+  GetCommentTypes,
   // STYLES INTERFACE
-  GetCommentStyles,
   AddStyle,
   DeleteStyle,
   GetClasses,
+  GetCSSStyle,
   // BOOKMARKS INTERFACE
   MakeBookmarkViewData,
   GetBookmarkViewData

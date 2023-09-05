@@ -150,7 +150,7 @@ class SlotEditor_Block extends React.Component {
     //    comment line doesn't overwrite the current SlotEditor_CommentBlock state.
     const { slots_linescript, slots_validation, slots_need_saving } =
       vmStateEvent;
-    if (slots_linescript && !slots_validation) {
+    if (slots_linescript && !slots_validation && slots_need_saving) {
       this.setState({ slots_linescript, slots_need_saving });
       return; // skip other updates
     }
@@ -245,7 +245,10 @@ class SlotEditor_Block extends React.Component {
       // Inject a comment tokens (and convert vtok to a comment tok) if
       // a. User has added a new "_comment" keyword, or
       // b. User has selected an existing comment line for editing
-      if (vtok.gsName === 'comment' || vtok.unitText === '_comment') {
+
+      // convert '_comment' to '//'
+      // if (vtok.gsName === 'comment' || vtok.unitText === '_comment') {
+      if (vtok.gsName === 'comment' || vtok.unitText === '//') {
         isComment = true;
         // Token 1 = comment keyword token
         let tokenKey = `${sel_linenum},${0}`;
@@ -255,7 +258,7 @@ class SlotEditor_Block extends React.Component {
         instructionsHelpTxt = 'Enter your comment text (do not use quotes)';
         let syntaxHelpTxt = 'Comments begin with "//".';
         let tokenHelpTxt =
-          '[_comment] (displayed as "//") is used to add helpful descriptions of what the code should do.';
+          'Comments ("//") are used to add helpful descriptions of what the code should do.';
         let viewState = 'viewState';
         tokenList.push(
           <GValidationToken
@@ -264,8 +267,8 @@ class SlotEditor_Block extends React.Component {
             position={0}
             selected={false}
             type={keywordTok.gsType} // over the token box
-            name={'//'} // added
-            label={'_comment'} // inside the token box -- match _comment keyword
+            name={'keyword'} // added
+            label={'//'} // inside the token box -- convert '_comment' to '//'
             error={error}
             syntaxHelp={syntaxHelpTxt}
             help={tokenHelpTxt}

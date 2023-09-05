@@ -99,7 +99,8 @@ every:
   glossary: >
     xxx
 
-_comment:
+# _comment:
+//:
   info: 'Comment lines help describe the code.'
   glossary: ''
 

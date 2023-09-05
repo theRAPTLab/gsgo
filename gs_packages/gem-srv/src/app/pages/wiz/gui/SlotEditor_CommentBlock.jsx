@@ -23,9 +23,7 @@ class SlotEditor_CommentBlock extends React.Component {
   constructor(props) {
     super(props);
 
-    const commentStyles = [...CHELPER.COMMENTTYPEMAP.keys()];
     this.state = {
-      commentStyles,
       savedCommentText: '',
       currentCommentText: ''
     };
@@ -65,7 +63,8 @@ class SlotEditor_CommentBlock extends React.Component {
    * @returns {Object} { commentTextPrefix:string, commentTextBody:string }
    */
   m_DeconstructCommentText(rawcomment) {
-    const { commentStyles } = this.state;
+    const COMMENTTYPEMAP = CHELPER.COMMENTTYPEMAP;
+    const commentStyles = [...COMMENTTYPEMAP.keys()];
     let commentTextPrefix = '';
     let commentTextBody = rawcomment;
     // Find the defined style
@@ -128,13 +127,24 @@ class SlotEditor_CommentBlock extends React.Component {
 
   /// render - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   render() {
-    const { commentStyles, currentCommentText } = this.state;
+    const { currentCommentText } = this.state;
     const { commentTextPrefix, commentTextBody } =
       this.m_DeconstructCommentText(currentCommentText);
-
+    const COMMENTTYPEMAP = CHELPER.COMMENTTYPEMAP;
+    const commentStyleOptions = [];
+    COMMENTTYPEMAP.forEach((val, key) => {
+      const optionkey = `cstyle${key}`;
+      commentStyleOptions.push(
+        <option key={optionkey} value={key}>
+          {key}: {val.help}
+          {val.isBookmark ? '🔖' : ''}
+        </option>
+      );
+    });
     /// Show comment choices
     /// There are two types of comment choices to inject into the chooser:
     /// A. A menu of comment style choices
+    const commentStyles = [...COMMENTTYPEMAP.keys()];
     const commentStyleChoicesJsx = (
       <div
         style={{
@@ -152,14 +162,7 @@ class SlotEditor_CommentBlock extends React.Component {
           <option key={'cstyle'} value={''}>
             -- no style --
           </option>
-          {commentStyles.map((style, i) => {
-            const key = `cstyle${i}`;
-            return (
-              <option key={key} value={style}>
-                {style}
-              </option>
-            );
-          })}
+          {commentStyleOptions}
         </select>
       </div>
     );
