@@ -1131,8 +1131,8 @@ class SymbolInterpreter {
     const goodBlueprint =
       bpName === 'agent' || SIMDATA.HasBlueprintBundle(bpName);
     // Part 2 should be valid propName
-    const prop = props[propName];
-    const goodProp = props[propName] !== undefined;
+    const prop = props ? props[propName] : undefined;
+    const goodProp = props ? props[propName] !== undefined : undefined;
     if (goodBlueprint && goodProp) {
       // Found a goodProp, so add the prop methods to the cur_scope
       // so that the next slot (methodName) knows which methods are
