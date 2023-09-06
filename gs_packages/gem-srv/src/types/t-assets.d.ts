@@ -19,7 +19,7 @@ declare global {
   type TAssetId = number;
   type TAssetName = string;
   type TAssetURL = string;
-  type TAssetType = 'sprites' | 'sounds' | 'projects';
+  type TAssetType = 'sprites' | 'sounds' | 'projects' | 'preferences';
   type TManifest = { [K in TAssetType]?: TAssetDef[] };
 
   /// PUBLIC API FOR ASSET LOADER SUBCLASSERS ///////////////////////////////////
@@ -82,6 +82,11 @@ declare global {
     label: string;
     bpid: string;
     initScript: string;
+  };
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** project preferences */
+  type TPreferences = {
+    commentTypes: [any];
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** used to map blueprint name to blueprint instance definitions */

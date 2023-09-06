@@ -33,6 +33,7 @@ import React from 'react';
 import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
+import * as CHELPER from 'script/tools/comment-utilities';
 
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
@@ -67,6 +68,8 @@ const VIEWMODE_WIZARD = 'wizard';
 const VIEWMODE_CODE = 'code';
 
 let needsSyntaxReHighlight = false;
+
+let m_scrollTop = 0; // scroll position of the PanelChrome scroll container
 
 const StyledToggleButton = withStyles(theme => ({
   root: {
@@ -208,7 +211,10 @@ class ScriptView_Pane extends React.Component {
       // post wizcore integration
       script_page,
       script_text,
-      sel_linenum
+      sel_linenum,
+      bookmarks: [],
+      sel_bookmarklinenum: 0,
+      scrollContainer: {}
     };
     // codejar
     this.jarRef = React.createRef();
@@ -221,7 +227,8 @@ class ScriptView_Pane extends React.Component {
       'inserted': types_regex
     });
 
-    this.handleWizUpdate = this.handleWizUpdate.bind(this);
+    this.HandleWizUpdate = this.HandleWizUpdate.bind(this);
+    this.HandleScrollUpdate = this.HandleScrollUpdate.bind(this);
     this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
     this.GetTitle = this.GetTitle.bind(this);
     // DEPRECATED?  No one is Raising SCRIPT_UI_CHANGED at the moment?
@@ -233,6 +240,7 @@ class ScriptView_Pane extends React.Component {
     this.OnDeleteConfirm = this.OnDeleteConfirm.bind(this);
     this.OnUnloadConfirm = this.OnUnloadConfirm.bind(this);
     this.OnToggleWizard = this.OnToggleWizard.bind(this);
+    this.OnBookmarkSelect = this.OnBookmarkSelect.bind(this);
 
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     // DEPRECATED?  No one is Raising SCRIPT_UI_CHANGED at the moment?
@@ -240,8 +248,10 @@ class ScriptView_Pane extends React.Component {
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   componentDidMount() {
     if (DBG) console.log(...PR('componentDidMount'));
+
     // initialize codejar
     const highlight = editor => {
       Prism.highlightElement(editor);
@@ -254,7 +264,7 @@ class ScriptView_Pane extends React.Component {
     });
 
     // add a subscriber
-    WIZCORE.SubscribeState(this.handleWizUpdate);
+    WIZCORE.SubscribeState(this.HandleWizUpdate);
 
     window.addEventListener('beforeunload', e => {
       if (SKIP_RELOAD_WARNING) return;
@@ -265,17 +275,28 @@ class ScriptView_Pane extends React.Component {
         return e;
       }
     });
+
+    // scroll listener
+    // the scroll container is actually the PanelChrome, so we grab the parent
+    const scrollContainer =
+      document.getElementById('ScriptViewScroller').parentElement;
+    scrollContainer.addEventListener('scroll', event => {
+      m_scrollTop = scrollContainer.scrollTop;
+    });
+    this.setState({ scrollContainer });
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   componentWillUnmount() {
-    WIZCORE.UnsubscribeState(this.handleWizUpdate);
+    WIZCORE.UnsubscribeState(this.HandleWizUpdate);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUIChanged);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** INCOMING: handle WIZCORE event updates */
-  handleWizUpdate(vmStateEvent) {
+  HandleWizUpdate(vmStateEvent) {
     // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
     const { script_page, script_text, script_page_needs_saving, sel_linenum } =
       vmStateEvent;
@@ -292,24 +313,57 @@ class ScriptView_Pane extends React.Component {
         Prism.highlightElement(this.jarRef.current);
       };
     }
-    // REVIEW: This is not strictly necessary...just using this to trigger
-    // ScriptViewPane redraw for now
+
+    // If WIZCORE update included a line selection, then we need to update
+    // the scroll position to figure out if we need to scroll the selected
+    // line into view after the state update.
     if (sel_linenum !== undefined) {
       newState.sel_linenum = sel_linenum;
+      cb = () => this.HandleScrollUpdate();
     }
+
+    // Update Bookmarks
+    if (script_page) {
+      CHELPER.MakeBookmarkViewData(script_page);
+      newState.bookmarks = CHELPER.GetBookmarkViewData();
+    }
+
     // if script_page_needs_saving, the setState will trigger a rerender
+    // NOTE the callback method
     if (Object.keys(newState).length > 0 || script_page_needs_saving)
       this.setState(newState, cb);
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Scroll to the currently selected line if it's not visible
+   */
+  HandleScrollUpdate() {
+    const { scrollContainer } = this.state;
+    // The #LineBtnAddBefore button always shows the selected line and ensures
+    // the top "+" button is visible in the scroll (as well as the line before)
+    const LineBtnAddBefore = document.getElementById('LineBtnAddBefore');
+    if (LineBtnAddBefore) {
+      const elTop = LineBtnAddBefore.offsetTop;
+      const elBottom = elTop + LineBtnAddBefore.clientHeight;
+      const containerTop = scrollContainer.offsetTop + m_scrollTop;
+      const containerBottom = containerTop + scrollContainer.clientHeight;
+      if (containerTop > elTop || elBottom > containerBottom) {
+        LineBtnAddBefore.scrollIntoView();
+      }
+    }
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   HandleSimDataUpdate() {
     needsSyntaxReHighlight = true;
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   GetTitle(blueprintName) {
     return `Script: ${blueprintName}`;
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**
    * keyword editor has sent updated script line
    * update codejar text
@@ -326,6 +380,7 @@ class ScriptView_Pane extends React.Component {
     WIZCORE.SendState({ script_page_needs_saving: true });
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**
    * 1. PanelScript raises NET:SCRIPT_UPDATE
    * 2. project-server handles NET:SCRIPT_UPDATE
@@ -375,6 +430,7 @@ class ScriptView_Pane extends React.Component {
     UR.LogEvent('ScriptEdit', ['Save to Server', bpName]);
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   OnSelectScriptClick(action) {
     // Go back to select screen
     // This calls the ScriptEditor onClick handler
@@ -390,8 +446,8 @@ class ScriptView_Pane extends React.Component {
     }
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   HighlightDebugLine(data) {
-    console.log('highlighting', data);
     this.setState(
       {
         lineHighlight: data.line
@@ -403,12 +459,14 @@ class ScriptView_Pane extends React.Component {
     );
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   OnDelete() {
     this.setState({
       openConfirmDelete: true
     });
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   OnDeleteConfirm(yesDelete) {
     const { projId, bpName } = this.props;
     this.setState({
@@ -422,19 +480,19 @@ class ScriptView_Pane extends React.Component {
     }
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   OnUnloadConfirm(yesLeave) {
     const { unloadEvent, confirmUnloadCallback } = this.state;
-    console.log('unlaodevent is', unloadEvent);
     this.setState({
       openConfirmUnload: false
     });
     if (yesLeave) {
-      console.log('trying to leave');
       confirmUnloadCallback();
     }
   }
 
-  OnToggleWizard(e, value) {
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  OnToggleWizard(event, value) {
     if (value === null) return; // skip repeated clicks
     if (value === VIEWMODE_CODE) {
       // currently wizard, clicked on code
@@ -451,6 +509,26 @@ class ScriptView_Pane extends React.Component {
     });
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** We use `onInput` because `onChange` will trigger whenever you click to
+   *  open the selection menu.
+   */
+  OnBookmarkSelect(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const { sel_bookmarklinenum } = this.state;
+    const lineNum = event.target.value;
+    if (sel_bookmarklinenum !== lineNum) {
+      this.setState({ sel_bookmarklinenum: lineNum });
+    }
+    if (lineNum !== '') {
+      // Trigger a line selection with the EDITMGR
+      // if the selected lineNum is not "-- select a bookmark --"
+      EDITMGR.DispatchClick(event);
+    }
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   render() {
     if (DBG) console.log(...PR('render'));
     const {
@@ -462,7 +540,9 @@ class ScriptView_Pane extends React.Component {
       openConfirmUnload,
       script_page,
       script_text,
-      sel_linenum
+      sel_linenum,
+      bookmarks,
+      sel_bookmarklinenum
     } = this.state;
     const { id, bpName, script, projId, onClick, classes } = this.props;
     const { script_page_needs_saving: needsSaving } = WIZCORE.State();
@@ -501,16 +581,42 @@ class ScriptView_Pane extends React.Component {
 
     const updatedTitle = this.GetTitle(bpName);
 
+    // BOOKMARK ---------------------------------------------------------------
+    const BookmarkList = (
+      <select
+        id="BookmarkSelector"
+        value={sel_bookmarklinenum}
+        onChange={this.OnBookmarkSelect}
+        className={classes.infoDataColor}
+      >
+        <option value={''}>-- select a bookmark --</option>
+        {bookmarks.map(b => (
+          <option key={b.lineNum} value={b.lineNum}>
+            {b.lineNum}:&nbsp;{b.comment}
+          </option>
+        ))}
+      </select>
+    );
+
     // TOP BAR ----------------------------------------------------------------
     const TopBar = (
-      <ToggleButtonGroup
-        value={viewMode}
-        exclusive
-        onChange={this.OnToggleWizard}
-      >
-        <StyledToggleButton value={VIEWMODE_WIZARD}>Wizard</StyledToggleButton>
-        <StyledToggleButton value={VIEWMODE_CODE}>Code</StyledToggleButton>
-      </ToggleButtonGroup>
+      <>
+        <ToggleButtonGroup
+          value={viewMode}
+          exclusive
+          onChange={this.OnToggleWizard}
+        >
+          <StyledToggleButton value={VIEWMODE_WIZARD}>Wizard</StyledToggleButton>
+          <StyledToggleButton value={VIEWMODE_CODE}>Code</StyledToggleButton>
+        </ToggleButtonGroup>
+        <div
+          className={classes.infoDataColor}
+          style={{ display: 'grid', gridTemplateColumns: '80px auto' }}
+        >
+          <div>Bookmarks:</div>
+          <div>{BookmarkList}</div>
+        </div>
+      </>
     );
 
     // BOTTOM BAR ----------------------------------------------------
@@ -582,6 +688,9 @@ class ScriptView_Pane extends React.Component {
     );
 
     // CODE -------------------------------------------------------------------
+    // codejar is initialized at mount and needs to be persistent, so it's
+    // always defined -- otherwise codejar will generate a 'Cannot read
+    // properties of null' error.
     const Code = (
       <pre
         className="language-gemscript line-numbers match-braces"
@@ -612,7 +721,6 @@ class ScriptView_Pane extends React.Component {
           width: '100%'
         }}
       >
-        {/* {jsx} */}
         <ScriptViewWiz_Block
           script_page={script_page}
           sel_linenum={sel_linenum}
@@ -630,6 +738,7 @@ class ScriptView_Pane extends React.Component {
         bottombar={BottomBar}
       >
         <div
+          id="ScriptViewScroller"
           style={{
             display: 'flex',
             flexDirection: 'column',

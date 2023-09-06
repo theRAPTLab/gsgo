@@ -99,8 +99,9 @@ every:
   glossary: >
     xxx
 
-_comment:
-  info: 'Comment lines help describe the code. They are not yet editable except in code view.'
+# _comment:
+//:
+  info: 'Comment lines help describe the code.'
   glossary: ''
 
 _directive:

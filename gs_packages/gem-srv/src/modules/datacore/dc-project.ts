@@ -122,6 +122,15 @@ async function ProjectFileLoadFromAsset(projId: string): Promise<TProject> {
   return project;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Read project data from assets and broadcast loaded data to
+ *  ac-project.  Loads a simple string.  Conversion to TOML happens
+ *  in ac-projects.LoadProjectFromAsset */
+async function PreferencesFileLoadFromAsset(): Promise<string> {
+  const PREFERENCES_LOADER = ASSETS.GetLoader('preferences');
+  const preferences = await PREFERENCES_LOADER.getPreferences();
+  return preferences;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: During Login, a user can elect to create a new project
  *  file out of existing template file.  PanelSelectSimulation
  *  calls this directly.  This will load the template file,
@@ -189,5 +198,6 @@ export {
 export {
   ProjectFileRequestWrite, // write to server
   ProjectFileLoadFromAsset, // load from server
+  PreferencesFileLoadFromAsset, //
   ProjectFileCreateFromTemplate //
 };

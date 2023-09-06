@@ -27,6 +27,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import ProjectLoader from 'modules/asset_core/as-load-projects';
+import PreferencesLoader from 'modules/asset_core/as-load-preferences';
 import { NormalizePath } from 'lib/util-path';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -37,6 +38,7 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class GEM_ProjectData {
   loader: ProjectLoader;
+  preferencesloader: PreferencesLoader;
   manifest: TManifest;
   asset_url: string;
 
@@ -121,6 +123,13 @@ class GEM_ProjectData {
     }
     if (DBG && match === undefined) console.error(`${fn} no match ${bpName}`);
     return match;
+  }
+
+  getPreferences() {
+    if (this.preferencesloader === undefined)
+      throw Error('GetPreferences: no settings loaded');
+    const preferences = this.preferencesloader.getPreferences();
+    return preferences;
   }
 
   /// ACCESSORS FOR DATA STRUCTURES ///////////////////////////////////////////

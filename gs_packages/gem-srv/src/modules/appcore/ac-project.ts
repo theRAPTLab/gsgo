@@ -65,11 +65,13 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import * as TOML from '@iarna/toml';
 import * as DCPROJECT from 'modules/datacore/dc-project';
 import * as ACMetadata from './ac-metadata';
 import * as ACRounds from './ac-rounds';
 import * as ACBlueprints from './ac-blueprints';
 import * as ACInstances from './ac-instances';
+import * as ACPreferences from './ac-preferences';
 import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -209,6 +211,9 @@ async function LoadProjectFromAsset(projId) {
     ACRounds.SetRounds(projId, project.rounds);
     ACBlueprints.SetBlueprints(projId, project.blueprints);
     ACInstances.SetInstances(projId, project.instances);
+    // Update Comment Styles from _comment_types.toml
+    const preferences = await DCPROJECT.PreferencesFileLoadFromAsset();
+    ACPreferences.SetPreferences(TOML.parse(preferences));
     // Update datacore
     DCPROJECT.SetCurrentProject(project);
     updateAndPublish(project);
