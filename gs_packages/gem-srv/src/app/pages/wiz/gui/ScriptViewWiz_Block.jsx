@@ -208,6 +208,7 @@ export function ScriptViewWiz_Block(props) {
         lineJSX = (
           <>
             <button
+              id="LineBtnAddBefore"
               className="outline btnAddBefore"
               onClick={e => EDITMGR.AddLine('before')}
             >

@@ -38,6 +38,7 @@ import * as ACProject from 'modules/appcore/ac-project';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
 import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import * as ACInstances from 'modules/appcore/ac-instances';
+import * as ACPreferences from 'modules/appcore/ac-preferences';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ReportMemory } from 'modules/render/api-render';
 import { IsRunning, RoundHasBeenStarted } from 'modules/sim/api-sim';
@@ -300,6 +301,14 @@ function RequestBpEditList(projId = CURRENT_PROJECT_ID) {
       'Tried to current GetProject before setting CURRENT_PROJECT_ID'
     );
   return ACBlueprints.GetBpEditList(projId);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Handle ScriptEditor's request for project settings (commentSTyles)
+ *  Used by REQ_PROJ_DATA
+ * @return [ {matchString, cssClass, color, backgroundColor, help, isBookmarked} ]
+ */
+function RequestPreferences() {
+  return ACPreferences.GetPreferences();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Used by REQ_PROJ_DATA and Main
@@ -740,6 +749,7 @@ function InstanceHoverOut(data) {
 const FN_LOOKUP = {
   RequestProject,
   RequestBpEditList,
+  RequestPreferences,
   GetProjectBoundary: GetBoundary,
   GetCharControlBpNames,
 

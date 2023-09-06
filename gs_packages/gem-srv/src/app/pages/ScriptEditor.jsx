@@ -35,6 +35,7 @@
                 EditSymbol_Block
                 or
                 ObjRefSelector_Block
+            SlotEditor_CommentBlock
 
       Script Selector View
 
@@ -65,6 +66,7 @@ import * as WIZCORE from 'modules/appcore/ac-wizcore';
 import * as SLOTCORE from 'modules/appcore/ac-slotcore';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as SIMDATA from 'modules/datacore/dc-sim-data';
+import * as CHELPER from 'script/tools/comment-utilities';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 // import PanelSimViewer from './components/PanelSimViewer';
@@ -269,6 +271,7 @@ class ScriptEditor extends React.Component {
     if (this.state.isReady) return; // already initialized
     const { projId } = this.state;
     this.RequestBpEditList(projId);
+    this.RequestPreferences();
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
   }
@@ -300,6 +303,20 @@ class ScriptEditor extends React.Component {
       parms: [projId]
     }).then(rdata => {
       return this.UpdateBpEditList(rdata.result);
+    });
+  }
+
+  /**
+   * This requests preferences data from project-server used to populate
+   * the list of comment styles.
+   */
+  RequestPreferences() {
+    const fnName = 'RequestPreferences';
+    UR.CallMessage('NET:REQ_PROJDATA', {
+      fnName,
+      parms: []
+    }).then(rdata => {
+      rdata.result.forEach(r => CHELPER.AddStyle(r));
     });
   }
 

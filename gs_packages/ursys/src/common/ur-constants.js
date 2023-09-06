@@ -43,9 +43,10 @@ const VALID_CHANNELS = ['LOCAL', 'NET', 'SVR', 'STATE']; // is all channels in l
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const VALID_ASSET_EXTS = {
   sprites: ['.png', '.gif', '.jpg', '.jpeg', '.json'],
-  projects: ['.gemprj']
+  projects: ['.gemprj'],
+  preferences: ['.toml', '.yaml'] // yaml can be supported but is not implemented
 };
-const VALID_ASSET_DIRS = ['sprites', 'projects']; // valid asset subdirectories
+const VALID_ASSET_DIRS = ['sprites', 'projects', 'preferences']; // valid asset subdirectories
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

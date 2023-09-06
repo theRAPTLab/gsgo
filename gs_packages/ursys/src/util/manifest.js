@@ -68,7 +68,7 @@ function f_SpriteAssets(subdirpath, files) {
   return { mediafiles: imgFiles };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** filter the filelist for valid sprite-related image files */
+/** filter the filelist for valid gem project files */
 function f_ProjectAssets(subdirpath, files) {
   // scan for project files in assets
   const jsfiles = files.filter(f => Path.extname(f).toLowerCase() === '.gemprj');
@@ -76,6 +76,16 @@ function f_ProjectAssets(subdirpath, files) {
     TERM(`... jsfiles contained ${jsfiles.length} project references`);
   }
   return { mediafiles: jsfiles };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** filter the filelist for valid TOML preferences files */
+function f_PreferencesAssets(subdirpath, files) {
+  // scan for toml files in assets
+  const tomlfiles = files.filter(f => Path.extname(f).toLowerCase() === '.toml');
+  if (DBG) {
+    TERM(`... jsfiles contained ${tomlfiles.length} preferences references`);
+  }
+  return { mediafiles: tomlfiles };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return a list of mediafiles for the assetype of the directory, which is
@@ -100,6 +110,10 @@ function m_ScanAssets(subdirpath) {
       case 'projects':
         mediaObj = f_ProjectAssets(subdirpath, files);
         if (DBG) TERM(`project scanAssets mediaObj ${JSON.stringify(mediaObj)}`);
+        break;
+      case 'preferences':
+        mediaObj = f_PreferencesAssets(subdirpath, files);
+        if (DBG) TERM(`preferences scanAssets mediaObj ${JSON.stringify(mediaObj)}`);
         break;
       default:
         mediaObj = { err: `unknown astype ${asType}` };

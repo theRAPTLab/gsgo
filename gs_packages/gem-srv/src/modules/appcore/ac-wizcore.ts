@@ -603,6 +603,12 @@ export function UpdateDBGConsole(validationLog: string[] = []) {
   buf.set(validationLog);
 }
 
+/// CONSOLE TOOL CALLS ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.AddConsoleTool('dumpstore', () => {
+  console.log('WIZCORE', STORE.State());
+});
+
 /// EXPORTED STATE METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { State, SendState, SubscribeState, UnsubscribeState, QueueEffect } = STORE;
