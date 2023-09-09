@@ -434,9 +434,17 @@ function K_DerefProp(refArg): DerefMethod {
     };
   } else if (len === 2) {
     /** EXPLICIT REF *******************************************************/
-    /// e.g. 'agent.x' or 'Bee.x' or 'global.x'
+    /// e.g. 'agent.x' or 'Bee.x' or 'global.x' or 'character.x'
+    /// 2023-08 UPDATE: team requested use of `character.Costume` instead of
+    ///                 `agent.Costume`, so we map `character` to `agent`
+    ///                 during compile time.
     deref = (agent: IAgent, context: any) => {
-      const c = ref[0] === 'agent' ? agent : context[ref[0]];
+      // ORIG CODE
+      // const c = ref[0] === 'agent' ? agent : context[ref[0]];
+      // NEW CODE 2023-09
+      // if script refers to `character` in wizard, replace the 'character'
+      // reference with `agent` during compile.  See #762
+      const c = ref[0] === 'character' ? agent : context[ref[0]];
       if (c === undefined)
         throw Error(
           `context missing '${ref[0]}' key. Agent is ${JSON.stringify(
