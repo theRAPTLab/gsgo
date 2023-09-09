@@ -582,7 +582,7 @@ class MissionControl extends React.Component {
         className={classes.root}
         style={{
           gridTemplateColumns: GRID_COLUMNS,
-          gridTemplateRows: '50px auto' // use '50px auto 100px' to show MESSAGES, to hide use '50px auto'
+          gridTemplateRows: '50px auto 0' // use '50px auto 100px' to show MESSAGES, to hide use '50px auto 0'
         }}
       >
         <div
