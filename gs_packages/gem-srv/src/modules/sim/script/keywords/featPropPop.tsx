@@ -45,9 +45,15 @@ export class featPropPop extends Keyword {
       };
     } else if (len === 2) {
       /** EXPLICIT REF *******************************************************/
-      /// e.g. 'agent.Costume' or 'Bee.Costume'
+      /// e.g. 'character.Costume' or 'agent.Costume' or 'Bee.Costume'
+      /// 2023-08 UPDATE: team requested use of `character.Costume` instead of
+      ///                 `agent.Costume`, so we map `character` to `agent`
+      ///                 during compile time.
       callRef = (agent: IAgent, context: any, pName: string, arg) => {
-        const c = context[ref[0] as string]; // SM_Agent context
+        // if script refers to `character` in wizard, replace the 'character'
+        // reference with `agent` during compile.  See #762
+        const bpRef = ref[0] === 'character' ? 'agent' : ref[0];
+        const c = context[bpRef as string]; // SM_Agent context
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         return c.getFeatProp(ref[1], pName).setTo(arg);
       };
@@ -55,7 +61,10 @@ export class featPropPop extends Keyword {
       /** NEW EXTENDED REF REQUIRED ******************************************/
       /// e.g. blueprint.feature.prop
       callRef = (agent: IAgent, context: any, arg) => {
-        const bpName = ref[0];
+        // if script refers to `character` in wizard, replace the 'character'
+        // reference with `agent` during compile.  See #762
+        const bpName = ref[0] === 'character' ? 'agent' : ref[0];
+        // const bpName = ref[0];
         const featName = ref[1];
         const propName = ref[2];
         const c = context[bpName as string]; // SM_Agent context

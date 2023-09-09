@@ -48,7 +48,7 @@ export class featCall extends Keyword {
       };
     } else if (len === 2) {
       /** EXPLICIT REF *******************************************************/
-      /// e.g. 'agent.Costume' or 'Bee.Costume'
+      /// e.g. 'character.Costume' or 'agent.Costume' or 'Bee.Costume'
       /// 2023-08 UPDATE: team requested use of `character.Costume` instead of
       ///                 `agent.Costume`, so we map `character` to `agent`
       ///                 during compile time.
@@ -56,7 +56,7 @@ export class featCall extends Keyword {
         // if script refers to `character` in wizard, replace the 'character'
         // reference with `agent` during compile.  See #762
         const bpRef = ref[0] === 'character' ? 'agent' : ref[0];
-        let c = context[bpRef as string]; // SM_Agent context
+        const c = context[bpRef as string]; // SM_Agent context
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         return c.callFeatMethod(ref[1], mName, ...prms);
       };
