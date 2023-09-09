@@ -61,6 +61,10 @@ class ExpressionEvaluator {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   evaluateMember(node, context) {
+    // hack to to support use of 'character' instead of 'agent' in ifExpr
+    // expressions
+    if (node.object.name === 'character') node.object.name = 'agent';
+    // end hack
     const object = this.evaluate(node.object, context);
     if (node.computed) {
       return [object, object[this.evaluate(node.property, context)]];

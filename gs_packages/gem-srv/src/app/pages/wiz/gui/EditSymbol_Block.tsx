@@ -158,6 +158,7 @@ export const ADVANCED_SYMBOLS = [
   'vision',
   // agent
   'agent',
+  'character', // replaces 'agent'
   'x',
   'y',
   'statustext',

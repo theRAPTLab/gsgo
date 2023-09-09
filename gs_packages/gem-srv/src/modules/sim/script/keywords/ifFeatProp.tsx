@@ -70,7 +70,9 @@ export class ifFeatProp extends Keyword {
         ...prms
       ) => {
         const featName = ref[1];
-        const bpName = ref[0];
+        // if script refers to `character` in wizard, replace the 'character'
+        // reference with `agent` during compile.  See #762
+        const bpName = ref[0] === 'character' ? 'agent' : ref[0];
         const c = context[bpName as string]; // SM_Agent context
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
         return GetFeatPropWithDebug(c, featName, pName, mName, prms);
@@ -79,7 +81,9 @@ export class ifFeatProp extends Keyword {
       /** NEW EXTENDED REF REQUIRED ******************************************/
       /// e.g. blueprint.feature.prop
       deref = (agent: IAgent, context: any, mName: string, ...prms) => {
-        const bpName = ref[0];
+        // if script refers to `character` in wizard, replace the 'character'
+        // reference with `agent` during compile.  See #762
+        const bpName = ref[0] === 'character' ? 'agent' : ref[0];
         const featName = ref[1];
         const pName = ref[2];
         const c = context[bpName as string]; // SM_Agent context
