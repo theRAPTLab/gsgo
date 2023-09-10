@@ -190,7 +190,7 @@
 }
 
 .gwiz.changeCommentHeader {
-  color: white;
+  color: rgb(0, 0, 0);
   background-color: #59cd90;
   font-style: normal;
 }
