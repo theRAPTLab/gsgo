@@ -103,8 +103,9 @@ import * as HELP from 'app/help/codex';
 import { SlotEditorSelect_Block } from './SlotEditorSelect_Block';
 import SlotEditor_CommentBlock from './SlotEditor_CommentBlock';
 import Dialog from '../../../pages/components/Dialog';
-import { GValidationToken, StackUnit } from '../SharedElements';
+import { GValidationToken, HelpLabel, StackUnit } from '../SharedElements';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
+import * as VDICTHELPER from 'script/tools/gvar-dict-utilities';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -487,6 +488,34 @@ class SlotEditor_Block extends React.Component {
       }
     }
 
+    /// 5. Special GVAR Dict Handling - - - - - - - - - - - - - - - - - - - - -
+    /// If the current script line contains a GVar that references "options" methods,
+    /// i.e. it uses GVar Dictionary entry to add "options"
+    ///    ex: `prop colour addOption 'RED' '#f00'`
+    /// then add a dictOptions array to populate a selection UI
+    let isDict = false;
+    let dictOptions = [];
+    if (slots_linescript[0] && validationTokenCount > 3) {
+      const [keywordTok, objrefTok, methodTok, nameTok] = validationTokens;
+      if (
+        keywordTok.gsName === 'keyword' &&
+        keywordTok.unitText === 'prop' &&
+        VDICTHELPER.OPTIONS_METHODS.includes(methodTok.unitText)
+      ) {
+        isDict = true;
+        const { script_tokens, cur_bpid, cur_bdl } = WIZCORE.State();
+
+        // TBD: Add global blueprint options?
+        // dictOptions = [...dictOptions, ...VDICTHELPER.GetGVarDicts(global_script_tokens)];
+
+        // for the current blueprint, get script_tokens
+        dictOptions = [
+          ...dictOptions,
+          ...VDICTHELPER.GetGVarDicts(script_tokens)
+        ];
+      }
+    }
+
     /// line edit help - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const lineEditHelp = (
       <>
@@ -546,19 +575,52 @@ class SlotEditor_Block extends React.Component {
     );
 
     /// choices - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    const choicesjsx = isComment ? (
-      /// -- show comment choices script line is a comment
+    let choicesjsx;
+    if (isComment) {
+      // COMMENT Choices
+      choicesjsx = (
       <div id="SEB_choices" className="gsled choices">
         <SlotEditor_CommentBlock
           defaultText={commentText}
           onChange={this.HandleCommentUpdate}
         />
       </div>
-    ) : (
-      /// -- else show keyword choices
+      );
+    } else if (isDict) {
+      // DICT Choices
+      choicesjsx = (
+        <div id="SEB_choices" className="gsled choices">
+          <div
+            style={{
+              margin: '0 10px',
+              padding: '10px 0'
+            }}
+          >
+            <HelpLabel
+              prompt={'A. (OPTIONAL) Select a Comment Style'}
+              info={'Use comment styles to auto-format comment text.'}
+              open
+              pad="5px"
+            />
+            <select value={''} onChange={() => alert('not implemented')}>
+              <option key={'cstyle'} value={''}>
+                -- no selection --
+              </option>
+              {dictOptions.map(o => (
+                <option key={o}>{o}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      );
+    } else {
+      // SELECT Choices
+      choicesjsx = (
       <div id="SEB_choices" className="gsled choices">
         {selectedError && (
-          <div className="gsled choicesline gwiz styleError">{selectedError}</div>
+            <div className="gsled choicesline gwiz styleError">
+              {selectedError}
+            </div>
         )}
         {extraTokenName && (
           <div className="gsled choicesline gwiz styleError">
@@ -573,6 +635,7 @@ class SlotEditor_Block extends React.Component {
         </div>
       </div>
     );
+    }
 
     /// save dialog - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     /// -- Save Dialog Display Data
