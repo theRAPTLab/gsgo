@@ -38,9 +38,6 @@ export class SM_String extends SM_Object {
   clear() {
     this.value = '';
   }
-  addOption(label: string, value: string) {
-    const val = value || label; // if `value` is not defined, use the label
-    this.map.set(label, val);
   addOption(optionLabel: string, optionValue: string) {
     const val = optionValue || optionLabel; // if `optionValue` is not defined, use the optionLabel
     this.map.set(optionLabel, val);
