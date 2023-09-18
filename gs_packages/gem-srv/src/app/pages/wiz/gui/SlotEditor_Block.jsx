@@ -131,6 +131,7 @@ class SlotEditor_Block extends React.Component {
     this.DeleteSlot = this.DeleteSlot.bind(this);
     this.HandleSaveDialogClick = this.HandleSaveDialogClick.bind(this);
     this.HandleCommentUpdate = this.HandleCommentUpdate.bind(this);
+    this.HandleOptionSelection = this.HandleOptionSelection.bind(this);
   }
 
   componentDidMount() {
@@ -186,6 +187,13 @@ class SlotEditor_Block extends React.Component {
     EDITMGR.UpdateSlot({
       value: String(commentText),
       type: 'comment' // script token type is 'comment'
+    });
+  }
+  /// -- Option Selection Update Handlers --
+  HandleOptionSelection(event) {
+    EDITMGR.UpdateSlot({
+      value: String(event.target.value),
+      type: 'string' // script token type is 'option'
     });
   }
 
@@ -305,10 +313,10 @@ class SlotEditor_Block extends React.Component {
     /// END 3.5. Comment Handling - - - - - - - - - - - - - - - - - - - - - - -
 
     /// 4. Process each validation token
+    let label;
     let extraTokenName;
     if (!isComment) {
       for (let i = 0; i < validationTokenCount; i++) {
-        let label;
         let type;
         let viewState;
         let error;
@@ -499,20 +507,31 @@ class SlotEditor_Block extends React.Component {
       const [keywordTok, objrefTok, methodTok, nameTok] = validationTokens;
       if (
         keywordTok.gsName === 'keyword' &&
-        keywordTok.unitText === 'prop' &&
-        VDICTHELPER.OPTIONS_METHODS.includes(methodTok.unitText)
+        (keywordTok.unitText === 'prop' || keywordTok.unitText === 'ifProp') &&
+        VDICTHELPER.OPTIONS_LIST_METHODS.includes(methodTok.unitText)
       ) {
         isDict = true;
         const { script_tokens, cur_bpid, cur_bdl } = WIZCORE.State();
 
+        // 1. get propName
+        let propName;
+        const objref = objrefTok.unitText.split('.');
+        if (Array.isArray(objref)) {
+          // ['character', 'colour']
+          if (objref.length > 1) propName = objref[1];
+          // ['colour']
+          else propName = objref[0];
+        } else {
+          // 'colour'
+          propName = objref;
+        }
+
         // TBD: Add global blueprint options?
         // dictOptions = [...dictOptions, ...VDICTHELPER.GetGVarDicts(global_script_tokens)];
 
-        // for the current blueprint, get script_tokens
-        dictOptions = [
-          ...dictOptions,
-          ...VDICTHELPER.GetGVarDicts(script_tokens)
-        ];
+        // 2. for the current propName, get script_tokens
+        const gvardicts = VDICTHELPER.GetGVarDicts(script_tokens);
+        dictOptions = [...dictOptions, ...gvardicts.get(propName)];
       }
     }
 
@@ -602,7 +621,7 @@ class SlotEditor_Block extends React.Component {
               open
               pad="5px"
             />
-            <select value={''} onChange={() => alert('not implemented')}>
+            <select value={label} onChange={this.HandleOptionSelection}>
               <option key={'cstyle'} value={''}>
                 -- no selection --
               </option>

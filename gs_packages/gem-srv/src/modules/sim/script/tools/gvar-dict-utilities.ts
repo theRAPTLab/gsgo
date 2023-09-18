@@ -9,9 +9,10 @@
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const GVAR_DICT = new Map<string, any>(); // key, { bpName, constantName, constantValue }
-const OPTIONS_METHODS = [
-  'addOption',
+const GVAR_DICT = new Map<string, any>(); // [ propName, [ constantName ] ]
+const OPTIONS_LIST_METHODS = [
+  // 'addOption', -- does not include 'addOption' because it is used to to add
+  // new options rather than select from a list of options
   'setToOption',
   'equalToOption',
   'notEqualToOption',
@@ -23,48 +24,49 @@ const OPTIONS_METHODS = [
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Constructs a list of "options" defined in a `map` dictionary for GVars
- *  via a GVars `addOption` method by parsing script tokens.
+ *  via a GVars `addOption` method by parsing script tokens
+ *  for the current blueprint
+ *  @param {Array} script_tokens Array of script lines
+ *  @returns {map} [ propName, [constantValues] ]
  */
 function GetGVarDicts(script_tokens): any {
-  const dict = [];
+  const dict = new Map();
   script_tokens.forEach(line_tokens => {
     if (line_tokens.length > 4) {
       const [keywordTok, objrefTok, methodTok, nameTok, valTok] = line_tokens;
       if (
         keywordTok.identifier === 'prop' &&
-        OPTIONS_METHODS.includes(methodTok.identifier)
+        methodTok.identifier === 'addOption'
+        // OPTIONS_LIST_METHODS.includes(methodTok.identifier)
       ) {
         let propName, constantValue;
 
-        // CURRENTLY NOT USED
-        // because we do not need to specify a specific agent.
-        // We simply return ALL constantValues for any CURRENT agent option-related method
-        // rather than restricting it based on the specific NON-CURRENT agent (local or global)
-        //
-        // // 1. get propName
-        // const objref = objrefTok.objref;
-        // if (Array.isArray(objref)) {
-        //   // ['character', 'colour']
-        //   if (objref.length > 1) propName = objref[1];
-        //   // ['colour']
-        //   else propName = objref[0];
-        // } else {
-        //   // 'colour'
-        //   propName = objref;
-        // }
+        // 1. get propName
+        const objref = objrefTok.objref;
+        if (Array.isArray(objref)) {
+          // ['character', 'colour']
+          if (objref.length > 1) propName = objref[1];
+          // ['colour']
+          else propName = objref[0];
+        } else {
+          // 'colour'
+          propName = objref;
+        }
 
         // 2. get constant value
         constantValue = nameTok.string;
 
-        dict.push(constantValue);
+        // 3. update constant values for each propName
+        const values = dict.get(propName) || [];
+        values.push(constantValue);
+        dict.set(propName, values);
       }
     }
   });
 
-  console.error('found gvar dicts', dict);
   return dict;
 }
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { GVAR_DICT, OPTIONS_METHODS, GetGVarDicts };
+export { GVAR_DICT, OPTIONS_LIST_METHODS, GetGVarDicts };

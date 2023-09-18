@@ -108,16 +108,17 @@ export class SM_String extends SM_Object {
         info: 'Defines a new option "label"-"value" pair, e.g. label "healthy" can be set to the string value "is healthy"'
       },
       setToOption: {
-        args: ['option:identifier'],
+        args: ['option:string'],
+        // args: ['option:identifier'],
         info: 'Sets the property to the value of the selected option'
       },
       equalToOption: {
-        args: [`option:identifier`],
+        args: [`option:string`],
         info: 'Returns whether this property is equal to the referenced option value',
         returns: 'isEqual:boolean'
       },
       notEqualToOption: {
-        args: [`option:identifier`],
+        args: [`option:string`],
         info: 'Returns whether this property is not equal to the referenced option value',
         returns: 'isNotEqual:boolean'
       }

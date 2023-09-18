@@ -315,36 +315,36 @@ export class SM_Number extends SM_Object implements ISM_Object {
         info: 'Defines a new option "label"-"value" pair, e.g. label "healthy" can be set to the numeric value "100"'
       },
       setToOption: {
-        args: ['option:identifier'],
+        args: ['option:string'],
         info: 'Sets the property to the value of the selected option'
       },
       equalToOption: {
-        args: [`option:identifier`],
+        args: [`option:string`],
         info: 'Returns whether this property is equal to the referenced option value',
         returns: 'isEqual:boolean'
       },
       notEqualToOption: {
-        args: [`option:identifier`],
+        args: [`option:string`],
         info: 'Returns whether this property is not equal to the referenced option value',
         returns: 'isNotEqual:boolean'
       },
       greaterThanOption: {
-        args: [`option:identifier`],
+        args: [`option:string`],
         info: 'Returns whether this property is greater than the referenced option value',
         returns: 'isEqual:boolean'
       },
       lessThanOption: {
-        args: [`option:identifier`],
+        args: [`option:string`],
         info: 'Returns whether this property is less than the referenced option value',
         returns: 'isNotEqual:boolean'
       },
       greaterThanOrEqualToOption: {
-        args: [`option:identifier`],
+        args: [`option:string`],
         info: 'Returns whether this property is greater than or equal to the referenced option value',
         returns: 'isEqual:boolean'
       },
       lessThanOrEqualToOption: {
-        args: [`option:identifier`],
+        args: [`option:string`],
         info: 'Returns whether this property is less than or equal to the referenced option value',
         returns: 'isNotEqual:boolean'
       }
