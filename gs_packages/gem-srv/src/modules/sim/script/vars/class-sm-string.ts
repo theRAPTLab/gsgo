@@ -38,19 +38,20 @@ export class SM_String extends SM_Object {
   clear() {
     this.value = '';
   }
+  // OPTIONS
   addOption(optionLabel: string, optionValue: string) {
     const val = optionValue || optionLabel; // if `optionValue` is not defined, use the optionLabel
     this.map.set(optionLabel, val);
   }
-  setToOption(label: string) {
+  setToOption(optionLabel: string) {
     // set this.value to the value associated with the option label
-    this.value = this.map.get(label);
+    this.value = this.map.get(optionLabel);
   }
-  equalToOption(label: string) {
-    return new SM_Boolean(this.value === this.map.get(label));
+  equalToOption(optionLabel: string) {
+    return new SM_Boolean(this.value === this.map.get(optionLabel));
   }
-  notEqualToOption(label: string) {
-    return new SM_Boolean(this.value !== this.map.get(label));
+  notEqualToOption(optionLabel: string) {
+    return new SM_Boolean(this.value !== this.map.get(optionLabel));
   }
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
@@ -101,6 +102,7 @@ export class SM_String extends SM_Object {
         returns: 'isNotEqual:boolean'
       },
       clear: { info: 'Clears the current property value' },
+      // OPTIONS
       addOption: {
         args: ['label:string', 'value:string'],
         info: 'Defines a new option "label"-"value" pair, e.g. label "healthy" can be set to the string value "is healthy"'
@@ -109,7 +111,6 @@ export class SM_String extends SM_Object {
         args: ['option:identifier'],
         info: 'Sets the property to the value of the selected option'
       },
-      m_getOptions: { returns: 'map:map' },
       equalToOption: {
         args: [`option:identifier`],
         info: 'Returns whether this property is equal to the referenced option value',

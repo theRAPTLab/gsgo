@@ -14,7 +14,11 @@ const OPTIONS_METHODS = [
   'addOption',
   'setToOption',
   'equalToOption',
-  'notEqualToOption'
+  'notEqualToOption',
+  'greaterThanOption',
+  'lessThanOption',
+  'greaterThanOrEqualToOption',
+  'lessThanOrEqualToOption'
 ];
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -20,6 +20,7 @@ export class SM_Boolean extends SM_Object {
     this.meta.type = Symbol.for('SM_Boolean');
     this.value = initial;
     this.fuzzy = fuzzy;
+    this.map = new Map();
   }
   setTo(value: boolean) {
     this.value = value;
@@ -66,6 +67,21 @@ export class SM_Boolean extends SM_Object {
   }
   mostlyFalse(): SM_Boolean {
     return new SM_Boolean(this.value && this.fuzzy < -0.75);
+  }
+  // OPTIONS
+  addOption(optionLabel: string, optionValue: boolean) {
+    const val = optionValue || false; // if `optionValue` is not defined, use false
+    this.map.set(optionLabel, val);
+  }
+  setToOption(optionLabel: string) {
+    // set this.value to the value associated with the option label
+    this.value = this.map.get(optionLabel);
+  }
+  equalToOption(optionLabel: string) {
+    return new SM_Boolean(this.value === this.map.get(optionLabel));
+  }
+  notEqualToOption(optionLabel: string) {
+    return new SM_Boolean(this.value !== this.map.get(optionLabel));
   }
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
@@ -116,7 +132,26 @@ export class SM_Boolean extends SM_Object {
       slightlyTrue: { returns: 'value:boolean' },
       mostlyTrue: { returns: 'value:boolean' },
       slightlyFalse: { returns: 'value:boolean' },
-      mostlyFalse: { returns: 'value:boolean' }
+      mostlyFalse: { returns: 'value:boolean' },
+      // OPTIONS
+      addOption: {
+        args: ['label:string', 'value:boolean'],
+        info: 'Defines a new option "label"-"value" pair, e.g. label "healthy" can be set to the boolean value "true"'
+      },
+      setToOption: {
+        args: ['option:identifier'],
+        info: 'Sets the property to the value of the selected option'
+      },
+      equalToOption: {
+        args: [`option:identifier`],
+        info: 'Returns whether this property is equal to the referenced option value',
+        returns: 'isEqual:boolean'
+      },
+      notEqualToOption: {
+        args: [`option:identifier`],
+        info: 'Returns whether this property is not equal to the referenced option value',
+        returns: 'isNotEqual:boolean'
+      }
     }
   };
 }
