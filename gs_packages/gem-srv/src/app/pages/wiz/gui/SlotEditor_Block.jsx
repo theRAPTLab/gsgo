@@ -616,8 +616,8 @@ class SlotEditor_Block extends React.Component {
             }}
           >
             <HelpLabel
-              prompt={'A. (OPTIONAL) Select a Comment Style'}
-              info={'Use comment styles to auto-format comment text.'}
+              prompt={'Select a predefined Option'}
+              info={'Use options to set or run tests against predefined values.'}
               open
               pad="5px"
             />
