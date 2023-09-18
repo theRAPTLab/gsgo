@@ -38,9 +38,20 @@ export class SM_String extends SM_Object {
   clear() {
     this.value = '';
   }
+  // Constant methods
+  // setToConstant(str: string): SM_String {
+  //   // read value from agent?!?!
+  //   str;
+  //   this.value = str;
+  //   return this;
+  // }
+  // adds a new option
   addOption(optionLabel: string, optionValue: string) {
     const val = optionValue || optionLabel; // if `optionValue` is not defined, use the optionLabel
     this.map.set(optionLabel, val);
+  }
+  m_getOptions(): SM_Dict {
+    return [...this.map.keys()];
   }
   setToOption(label: string) {
     // set this.value to the value associated with the option label
@@ -101,6 +112,12 @@ export class SM_String extends SM_Object {
         returns: 'isNotEqual:boolean'
       },
       clear: { info: 'Clears the current property value' },
+      // Constants
+      // setToConstant: {
+      //   args: [`constant:constant`],
+      //   info: 'Sets the property to a constant'
+      // }
+
       addOption: {
         args: ['label:string', 'value:string'],
         info: 'Defines a new option "label"-"value" pair, e.g. label "healthy" can be set to the string value "is healthy"'

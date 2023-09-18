@@ -232,7 +232,10 @@ class SlotEditor_Block extends React.Component {
     const validationTokenCount = validationTokens.length;
     const tokenList = [];
 
-    /// 3.5. Special Comment Handling - - - - - - - - - - - - - - - - - - - - -
+    // REVIEW
+    // Move this to comment-utilities?
+    //
+    /// 3.2. Special Comment Handling - - - - - - - - - - - - - - - - - - - - -
     ///      We inject vtokens for rendering and managing comments
     ///      and then rely on the standard GValidationToken rendering to handle
     ///      the rest of the UI.
@@ -579,12 +582,12 @@ class SlotEditor_Block extends React.Component {
     if (isComment) {
       // COMMENT Choices
       choicesjsx = (
-      <div id="SEB_choices" className="gsled choices">
-        <SlotEditor_CommentBlock
-          defaultText={commentText}
-          onChange={this.HandleCommentUpdate}
-        />
-      </div>
+        <div id="SEB_choices" className="gsled choices">
+          <SlotEditor_CommentBlock
+            defaultText={commentText}
+            onChange={this.HandleCommentUpdate}
+          />
+        </div>
       );
     } else if (isDict) {
       // DICT Choices
@@ -616,25 +619,25 @@ class SlotEditor_Block extends React.Component {
     } else {
       // SELECT Choices
       choicesjsx = (
-      <div id="SEB_choices" className="gsled choices">
-        {selectedError && (
+        <div id="SEB_choices" className="gsled choices">
+          {selectedError && (
             <div className="gsled choicesline gwiz styleError">
               {selectedError}
             </div>
-        )}
-        {extraTokenName && (
-          <div className="gsled choicesline gwiz styleError">
-            <button onClick={this.DeleteSlot} style={{ width: 'fit-content' }}>
-              DELETE &quot;{extraTokenName}&quot;
-            </button>
+          )}
+          {extraTokenName && (
+            <div className="gsled choicesline gwiz styleError">
+              <button onClick={this.DeleteSlot} style={{ width: 'fit-content' }}>
+                DELETE &quot;{extraTokenName}&quot;
+              </button>
+            </div>
+          )}
+          <SlotEditorSelect_Block selection={selectEditorSelection} />
+          <div className="gsled choicesline choiceshelp">
+            SELECTED: {selectedChoiceHelpTxt}
           </div>
-        )}
-        <SlotEditorSelect_Block selection={selectEditorSelection} />
-        <div className="gsled choicesline choiceshelp">
-          SELECTED: {selectedChoiceHelpTxt}
         </div>
-      </div>
-    );
+      );
     }
 
     /// save dialog - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

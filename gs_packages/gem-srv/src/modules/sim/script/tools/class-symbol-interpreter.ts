@@ -1605,6 +1605,8 @@ class SymbolInterpreter {
   argSymbol(methodArg, scriptToken): TSymbolData {
     const fn = 'argSymbol:';
 
+    // console.warn('argSymbol', methodArg, scriptToken);
+
     const gsArg = methodArg;
     const [argName, gsType] = CHECK.UnpackArg(methodArg);
     const [tokType, tokVal] = TOKENIZER.UnpackToken(scriptToken);
@@ -1871,6 +1873,87 @@ class SymbolInterpreter {
           }
         );
       }
+    }
+
+    // GVar options
+    if (gsType === 'constant') {
+      /// HACK to figure out data ----------------------------------------
+      // read blueprint bundles
+      // const list = SIMDATA.GetAllBlueprintBundles();
+      // console.error('BUNDLES', list);
+      // const blueprints = {};
+      // list.forEach(bundle => {
+      //   blueprints[bundle.name] = bundle.symbols;
+      // });
+      // console.error('BLUEPRINTS~', blueprints);
+
+      // const ctors = SIMDATA.GetAllPropTypeCtors();
+      // console.log('ctors', ctors);
+
+      // const str = SIMDATA.GetPropTypeSymbolsFor('string');
+      // console.log('str', str);
+
+      console.error(
+        'key!!! bdl_scope',
+        this.bdl_scope,
+        'tokType',
+        tokType,
+        'tokVal',
+        tokVal,
+        'tok',
+        tok
+      );
+      // need to define a valid token  instead of `blueprints`
+      // need to deconstruct the prop and read options
+      // pull out of bdl_scope
+
+      // but this is only the definition, it's not the actual
+      // function!!!  How can we pull it out?
+      // const dict = this.bdl_scope.props['colour']
+      //   ? this.bdl_scope.props['colour'].methods
+      //   : undefined;
+      // if (dict) {
+      //   console.log('...dicts', dict);
+      // }
+      //
+      /// END HACK to figure out data ----------------------------------------
+
+      // let value = TOKENIZER.TokenValue(tok, 'identifier');
+      let value = TOKENIZER.TokenValue(tok, 'identifier'); // 'identifier' works, not constant?!?!
+      console.error('finale value', value, typeof value);
+      const constants = {};
+      for (const [key, val] of Object.entries(this.bdl_scope.constants)) {
+        console.log('key/val', key, val, val.methods, val.methods.get);
+        // constants[key] = key; // keep the constant key, not the value.  value is used during compile.
+        constants[key] = key;
+        /**
+         *  constants[key] = val;
+         *  This doesn't work because val =
+         *      PRODUCER:
+         *        methods:
+         *          add: { args: ['string:string']
+         *  ...so `val.methods.add` returns an object, not a method
+         *  ...so we can't retrieve the options that have been defined
+         *  Unless there's some kind of symbolization step that I'm missing?
+         */
+      }
+      console.log('constants', constants);
+      if (typeof value === 'string') {
+        symData = new VSDToken(
+          // this only works for the local constant, not global
+          { constants },
+          { gsArg, unitText }
+        );
+      } else
+        symData = new VSDToken(
+          {},
+          {
+            gsArg,
+            unitText: TOKENIZER.TokenToUnitText(tok),
+            err_code: 'invalid',
+            err_info: `${tokType}:${tokVal} not a string`
+          }
+        );
     }
 
     if (symData === undefined) {

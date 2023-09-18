@@ -30,10 +30,12 @@ declare global {
     id: any;
     refId?: any;
     meta: { type: symbol; name?: string };
+    constant?: SM_Dict;
     prop?: SM_Dict;
     method?: SM_Dict;
     map?: SM_Dict;
     addMethod: (name: String, callable: TSM_Method) => void;
+    addConstant: (name: string, gv: ISM_Object) => ISM_Object;
     addProp: (name: string, gv: ISM_Object) => ISM_Object;
     getMethod: (name: string) => TSM_Method;
     getProp: (name: string) => ISM_Object;
@@ -195,6 +197,7 @@ declare global {
     directive?: string; // gobbleDirective()
     comment?: string; // gobbleComment()
     line?: string; // as-is line insertion
+    constant?: string;
   }
   type TScriptUnit = IToken[]; // tokens from script-parser
   /*  @SRI: this conflation of args and tokens continues to bite us in the ass
@@ -211,7 +214,12 @@ declare global {
   // symbol type declarations
   // fyi: using template string format allows us to specify strings that match
   // these types to filter string values! function myFunction(type:TSLit) works
-  type TSLit = `${'boolean'}` | `${'string'}` | `${'number'}` | `${'identifier'}`;
+  type TSLit =
+    | `${'boolean'}`
+    | `${'string'}`
+    | `${'number'}`
+    | `${'identifier'}`
+    | `${'constant'}`;
   type TSSMObj = `${'prop'}` | `${'method'}` | `${'propType'}` | `${'block'}`;
   type TSDeferred = `${'objref'}` | `${'expr'}`;
   type TSSpecial = `${'{value}'}` | `${'{string}'}` | `${'{any}'}`;
@@ -258,6 +266,7 @@ declare global {
     propTypes?: { [ctorName: string]: TSymbolData }; // constructor object if needed (used by var- props)
     pragmas?: { [prName: string]: TGSMethodSig }; // directives hack
     blueprints?: { [bpName: string]: TSymbolData }; // blueprints
+    constants?: { [propName: string]: TSymbolData };
     props?: { [propName: string]: TSymbolData };
     methods?: { [methodName: string]: TGSMethodSig };
     features?: { [featureName: string]: TSymbolData };

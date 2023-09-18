@@ -11,6 +11,7 @@
 /// USE DURING PROGRAM DEFINE or INIT
 export * from './addProp'; // define a property before use
 export * from './addFeature'; // specify a feature before use
+export * from './addConstant'; // define a constant before use
 
 /// USE DURING PROGRAM DEFINE, INIT, or UPDATE
 export * from './prop'; // prop_objref method args
@@ -29,6 +30,7 @@ export * from './exprPush'; // push expr onto data stack
 export * from './ifExpr'; // run code conditionally
 export * from './ifProp'; // run code conditionally
 export * from './ifFeatProp'; // run code conditionally
+export * from './constantPush'; // push constant value onto data stack
 
 // console debug keywords (deprecated but still in use)
 export * from './dbgOut';

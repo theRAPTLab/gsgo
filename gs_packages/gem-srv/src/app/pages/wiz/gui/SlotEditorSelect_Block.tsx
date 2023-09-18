@@ -237,6 +237,17 @@ function SlotEditorSelect_Block(props) {
         </div>
       );
       break;
+    case 'constant':
+      editor = (
+        <div id="SES_default">
+          <EditSymbol_Block
+            selection={selection}
+            expectedType={gsType}
+            locked={locked}
+          />
+        </div>
+      );
+      break;
     case 'prop':
       editor = (
         <div id="SES_prop" className="gsled input">

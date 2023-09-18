@@ -45,6 +45,7 @@ const GSTYPES: TGSType[] = [
   'boolean',
   'string',
   'number',
+  'constant',
   //
   'prop', // same as objref in some keywords
   'method',

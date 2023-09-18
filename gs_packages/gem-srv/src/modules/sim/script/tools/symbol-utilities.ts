@@ -37,6 +37,7 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
     blueprints,
     featuresList, // deprecate because features should be used for featProp
     features,
+    constants,
     props,
     methods,
     propTypes,
@@ -80,6 +81,13 @@ function DecodeSymbolViewData(symbolData: TSymbolData): TSymbolViewData {
   if (blueprints) {
     const items = Object.keys(blueprints);
     sv_data.blueprints = {
+      info: items.join(', '),
+      items
+    };
+  }
+  if (constants) {
+    const items = [...Object.keys(constants)];
+    sv_data.constants = {
       info: items.join(', '),
       items
     };

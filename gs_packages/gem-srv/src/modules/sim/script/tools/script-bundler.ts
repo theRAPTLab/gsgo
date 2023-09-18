@@ -248,6 +248,7 @@ function AddSymbols(symdata: TSymbolData) {
     return;
   }
 
+  console.log('working on symdata', symdata);
   if (symdata.features) {
     // featureName --> featureModule
     if (_bdlsym.features === undefined) _bdlsym.features = {};
@@ -289,6 +290,31 @@ function AddSymbols(symdata: TSymbolData) {
       // if (DBG) console.log(bdl.name, 'addProp', key, argType);
     }
   }
+  // fake constants
+  // _bdlsym.constants = { a: 'abc', b: 'bcd', c: 'cde' };
+  if (symdata.constants) {
+    // console.error('found constants!', symdata);
+    // constantName --->
+    if (_bdlsym.constants === undefined) _bdlsym.constants = {};
+    for (const [constantName, symbolData] of Object.entries(symdata.constants)) {
+      if (DBG && _bdlsym.constants[constantName]) {
+        console.groupCollapsed(
+          `%credefining prop ${constantName}`,
+          'color:rgba(0,0,0,0.25)'
+        );
+        console.log('old, new', _bdlsym.constants[constantName], symbolData);
+        console.groupEnd();
+      }
+      if (DBG) {
+        console.groupCollapsed(...PR(`AddSymbol: ${constantName}`));
+        console.log(symbolData);
+        console.groupEnd();
+      }
+      // console.log('constant', constantName, symbolData);
+      _bdlsym.constants[constantName] = symbolData;
+    }
+  }
+
   if (symdata.error) console.log('symbol error:', symdata.error);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

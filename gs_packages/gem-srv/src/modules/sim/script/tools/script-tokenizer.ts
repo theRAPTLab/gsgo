@@ -92,6 +92,7 @@ function TokenToString(tok: IToken, indent: number = 0) {
   const { directive, comment, line } = tok; // meta information
   const { identifier, value, string } = tok; // primitive values
   const { objref, program, block, expr } = tok; // req runtime eval
+  const { constant } = tok;
   // special case: this is a keyword or variable
   if (identifier !== undefined) return identifier;
   // regular tokens
@@ -113,6 +114,7 @@ function TokenToString(tok: IToken, indent: number = 0) {
   if (program) return `[[ ${program} ]]`; // { program = string name of stored program }
   if (directive) return '#';
   if (line !== undefined) return '';
+  if (constant) return `'${constant}'`;
   console.warn('unknown argument type:', tok);
   throw Error('unknown argument type');
 }

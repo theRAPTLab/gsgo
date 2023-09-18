@@ -113,7 +113,8 @@ const validTokenTypes = {
   objref: (arg: any) =>
     Array.isArray(arg) &&
     arg.every(item => typeof item === 'string' && item !== ''),
-  expr: (arg: any) => typeof arg === 'string' && arg !== ''
+  expr: (arg: any) => typeof arg === 'string' && arg !== '',
+  constant: (arg: any) => typeof arg === 'string'
 };
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

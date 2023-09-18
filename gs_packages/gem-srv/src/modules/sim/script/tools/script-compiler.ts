@@ -86,6 +86,10 @@ function DecodeToken(tok: IToken, refs: TSymbolRefs): any {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   if (type === 'block') return CompileScript(value, refs);
   if (type === 'program') return SIMDATA.GetProgram(value);
+  if (type === 'constant') {
+    console.error('compiling constant', value);
+    return value;
+  }
   throw Error(`DecodeToken unhandled type ${type}`);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

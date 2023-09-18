@@ -33,6 +33,7 @@ class SM_Object implements ISM_Object {
   refId?: any; // optional class specific id
   _value: any;
   meta: { type: symbol; name?: string };
+  constant: SM_Dict;
   prop: SM_Dict;
   method: SM_Dict;
   map: SM_Dict;
@@ -47,6 +48,7 @@ class SM_Object implements ISM_Object {
       type: Symbol.for('SM_Object')
     };
     if (typeof initValue === 'string') this.meta.name = initValue;
+    this.constant = {};
     this.prop = {};
     this.method = {};
   }
@@ -68,6 +70,13 @@ class SM_Object implements ISM_Object {
 
   /// API: SIM OBJECTS ////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Add a constant to SMC_Object constant map */
+  addConstant(cName: string, gvar: ISM_Object): ISM_Object {
+    const constant = this.constant[cName];
+    if (constant) throw Error(`constant '${cName}' already added`);
+    this.constant[cName] = gvar;
+    return gvar;
+  }
   /** Add a named property to SMC_Object prop map */
   addProp(pName: string, gvar: ISM_Object): ISM_Object {
     const prop = this.prop[pName];
@@ -81,6 +90,16 @@ class SM_Object implements ISM_Object {
     const method = this.method[mName];
     if (method) throw Error(`method '${mName}' already added`);
     method[mName] = code;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API: return the gvar associated with constantName */
+  getConstant(pName: string): ISM_Object {
+    console.log('pName', pName);
+    const parts = pName.split('.');
+    let propDict = parts.length === 1 ? undefined : parts[0];
+    let prop = parts.length === 1 ? parts[0] : parts[1];
+    if (propDict) return this.constant[propDict][prop];
+    return this.constant[prop];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: return the gvar associated with propName, which could be in objref

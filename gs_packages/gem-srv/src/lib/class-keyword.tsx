@@ -295,6 +295,7 @@ class Keyword implements IKeyword {
     if (ref === undefined) throw Error(`${fn} ${category}`);
     let deref: Function;
     if (DBG) console.log(`${fn} decoding '${category}' with ${ref.join('.')}`);
+    console.log('derefProp', category, objRef);
     switch (category) {
       case 'feature':
         deref = (agent: IAgent, context?: any) => {
@@ -402,7 +403,75 @@ function _evalRuntimeArg(arg: any, context): any {
   console.error('_evaluateArg: unknown arg type', arg);
   return undefined;
 }
-
+///
+/// HACK
+///
+/// Thi si sprobably not necessary because
+/// constnatPush is not doing any dereferencing?
+/// we can access the agent.constants directly?
+///
+/// But what about globals?
+///
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** used by keyword compile-time to retreve a prop object dereferencing function
+ *  that will be executed at runtime */
+function K_DerefConstant(refArg): DerefMethod {
+  const fn = 'K_DerefProp:';
+  // ref is an array of strings that are fields in dot addressing
+  // like agent.x
+  if (refArg === undefined)
+    // HACK
+    // TEMPORARY DEV Testing OVERRIDE -- don't throw error, just console log it
+    // throw Error(`${fn} objref arg is undefined (bad scriptText?)`);
+    // FIXME: We meed to properly deref this.
+    console.error(`${fn} objref arg is undefined (bad scriptText?)`);
+  const ref = refArg ? refArg.objref || [refArg] : 'badref';
+  const len = ref.length;
+  // create a function that will be used to dereferences the objref
+  // into an actual call
+  let deref;
+  if (len === 1) {
+    /** IMPLICIT REF *******************************************************/
+    /// e.g. 'x' is assumed to be 'agent.x'
+    deref = (agent: IAgent, context: any) => {
+      const p: ISM_Object = agent.getProp(ref[0]);
+      if (p === undefined) {
+        console.log('agent', agent);
+        throw Error(`agent missing prop '${ref[0]}'`);
+      }
+      return p;
+    };
+  } else if (len === 2) {
+    /** EXPLICIT REF *******************************************************/
+    /// e.g. 'agent.x' or 'Bee.x' or 'global.x' or 'character.x'
+    /// 2023-08 UPDATE: team requested use of `character.Costume` instead of
+    ///                 `agent.Costume`, so we map `character` to `agent`
+    ///                 during compile time.
+    deref = (agent: IAgent, context: any) => {
+      // ORIG CODE
+      // const c = ref[0] === 'agent' ? agent : context[ref[0]];
+      // NEW CODE 2023-09
+      // if script refers to `character` in wizard, replace the 'character'
+      // reference with `agent` during compile.  See #762
+      const c = ref[0] === 'character' ? agent : context[ref[0]];
+      if (c === undefined)
+        throw Error(
+          `context missing '${ref[0]}' key. Agent is ${JSON.stringify(
+            agent
+          )} Context is ${JSON.stringify(context)}`
+        );
+      console.error('derferf c', c, typeof c);
+      const p: ISM_Object = c.getProp(ref[1]);
+      if (p === undefined)
+        throw Error(`missing prop '${ref[1]}' from agent '${c}'`);
+      return p;
+    };
+  } else {
+    console.warn('error parse ref', ref);
+    deref = () => {};
+  }
+  return deref;
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** used by keyword compile-time to retreve a prop object dereferencing function
  *  that will be executed at runtime */
@@ -516,6 +585,7 @@ function K_EvalRuntimeUnitArgs(unit: TKWArguments, context: {}): any {
 export default Keyword; // default export: import Keyword
 export {
   K_EvalRuntimeUnitArgs, // convert all args in unit to runtime values
+  K_DerefConstant, // return function to access agent constant at runtime
   K_DerefProp, // return function to access agent prop at runtime
   K_DerefFeatureProp // return function to access agent prop at runtime
 };
