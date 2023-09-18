@@ -18,11 +18,13 @@ export class SM_String extends SM_Object {
     super();
     this.meta.type = Symbol.for('SM_String');
     this.value = initial;
+    this.map = new Map();
   }
   setTo(str: string): SM_String {
     this.value = str;
     return this;
   }
+  // REVIEW: Rename it to 'concatenate'?
   add(str: string): SM_String {
     this.value += str;
     return this;
@@ -35,6 +37,21 @@ export class SM_String extends SM_Object {
   }
   clear() {
     this.value = '';
+  }
+  // OPTIONS
+  addOption(optionLabel: string, optionValue: string) {
+    const val = optionValue || optionLabel; // if `optionValue` is not defined, use the optionLabel
+    this.map.set(optionLabel, val);
+  }
+  setToOption(optionLabel: string) {
+    // set this.value to the value associated with the option label
+    this.value = this.map.get(optionLabel);
+  }
+  equalToOption(optionLabel: string) {
+    return new SM_Boolean(this.value === this.map.get(optionLabel));
+  }
+  notEqualToOption(optionLabel: string) {
+    return new SM_Boolean(this.value !== this.map.get(optionLabel));
   }
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
@@ -81,9 +98,30 @@ export class SM_String extends SM_Object {
       },
       notEqual: {
         args: ['comparison string:string'],
+        info: 'Returns whether this property is not equal to the passed value',
         returns: 'isNotEqual:boolean'
       },
-      clear: { info: 'Clears the current property value' }
+      clear: { info: 'Clears the current property value' },
+      // OPTIONS
+      addOption: {
+        args: ['label:string', 'value:string'],
+        info: 'Defines a new option "label"-"value" pair, e.g. label "healthy" can be set to the string value "is healthy"'
+      },
+      setToOption: {
+        args: ['option:string'],
+        // args: ['option:identifier'],
+        info: 'Sets the property to the value of the selected option'
+      },
+      equalToOption: {
+        args: [`option:string`],
+        info: 'Returns whether this property is equal to the referenced option value',
+        returns: 'isEqual:boolean'
+      },
+      notEqualToOption: {
+        args: [`option:string`],
+        info: 'Returns whether this property is not equal to the referenced option value',
+        returns: 'isNotEqual:boolean'
+      }
     }
   };
 }
