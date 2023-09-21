@@ -79,7 +79,7 @@ import Dragger from './components/Dragger';
 
 /// WIZ GUI PANELS ////////////////////////////////////////////////////////////
 import ScriptView_Pane from './wiz/gui/ScriptView_Pane';
-import ScriptEditor_Block from './wiz/gui/SlotEditor_Block';
+import SlotEditor_Block from './wiz/gui/SlotEditor_Block';
 
 /// DATA /////////////////////////////////////////////////////////////////////
 /// Load RegisterWhenTests
@@ -642,7 +642,6 @@ class ScriptEditor extends React.Component {
         </div>
         <div id="console-main" className={classes.main}>
           <Dragger color="#064848" onDragUpdate={this.OnDraggerUpdate} />
-          <ScriptEditor_Block />
           {/* <PanelSimViewer id="sim" onClick={this.OnPanelClick} /> */}
         </div>
         {/* Hidden by gridTemplateRows at root div
@@ -670,6 +669,7 @@ class ScriptEditor extends React.Component {
               instances={instances}
               disallowDeRegister
             />
+          <SlotEditor_Block />
           </div>
         </div> */}
         {DialogNoMain}
