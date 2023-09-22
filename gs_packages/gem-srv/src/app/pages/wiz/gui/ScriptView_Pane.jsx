@@ -582,7 +582,14 @@ class ScriptView_Pane extends React.Component {
     const updatedTitle = this.GetTitle(bpName);
 
     // BOOKMARK ---------------------------------------------------------------
-    const BookmarkList = (
+    const BookmarkMenu =
+      bookmarks.length > 0 ? (
+        <div
+          className={classes.infoDataColor}
+          style={{ display: 'grid', gridTemplateColumns: '80px auto' }}
+        >
+          <div>Bookmarks:</div>
+          <div>
       <select
         id="BookmarkSelector"
         value={sel_bookmarklinenum}
@@ -596,6 +603,10 @@ class ScriptView_Pane extends React.Component {
           </option>
         ))}
       </select>
+          </div>
+        </div>
+      ) : (
+        ''
     );
 
     // TOP BAR ----------------------------------------------------------------
@@ -609,13 +620,7 @@ class ScriptView_Pane extends React.Component {
           <StyledToggleButton value={VIEWMODE_WIZARD}>Wizard</StyledToggleButton>
           <StyledToggleButton value={VIEWMODE_CODE}>Code</StyledToggleButton>
         </ToggleButtonGroup>
-        <div
-          className={classes.infoDataColor}
-          style={{ display: 'grid', gridTemplateColumns: '80px auto' }}
-        >
-          <div>Bookmarks:</div>
-          <div>{BookmarkList}</div>
-        </div>
+        {BookmarkMenu}
       </>
     );
 
