@@ -50,7 +50,7 @@ class PanelMapInstances extends React.Component {
 
   render() {
     const { title, instanceidList } = this.state;
-    const { id, isActive, classes } = this.props;
+    const { id, projId, isActive, classes } = this.props;
 
     // sort alphabetically
     const sortedInstances = instanceidList.sort((a, b) => {
@@ -104,7 +104,13 @@ class PanelMapInstances extends React.Component {
               }}
             >
               {sortedInstances.map(i => (
-                <InstanceEditor id={i.id} label={i.label} key={i.id} />
+                <InstanceEditor
+                  id={i.id}
+                  label={i.label}
+                  projId={projId}
+                  bpName={i.bpid}
+                  key={i.id}
+                />
               ))}
             </div>
             {/* DEPRECATED: Instances by Blueprint

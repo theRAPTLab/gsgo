@@ -335,7 +335,7 @@ class InstanceEditor extends React.Component {
   render() {
     const { instance, isEditable, isHovered, isSelected, showConfirmSave } =
       this.state;
-    const { id, label, classes } = this.props;
+    const { id, label, projId, bpName, classes } = this.props;
 
     // if 'instance' data has been loaded (we're editing) then use that
     // otherwise, use the label passed by PanelMapInstances
@@ -386,6 +386,9 @@ class InstanceEditor extends React.Component {
               </div>
               {nameInputJSX}
               <CodeEditor
+                projId={projId}
+                bpName={bpName}
+                instanceLabel={instance.label}
                 code={initScript}
                 showConfirmSave={showConfirmSave}
                 onSave={this.SaveInitScript}
