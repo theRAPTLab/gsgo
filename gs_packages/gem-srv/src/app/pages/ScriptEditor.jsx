@@ -562,7 +562,7 @@ class ScriptEditor extends React.Component {
         value={bpName}
         onChange={this.OnProjectMenuSelect}
         className={classes.select}
-        style={{ margin: '0 20px' }}
+          style={{ margin: '0 20px', minHeight: '32px', fontSize: '14px' }}
       >
         {sortedBlueprints.map(bp => (
           <option key={bp.name} value={bp.name}>
@@ -608,14 +608,15 @@ class ScriptEditor extends React.Component {
           className={clsx(classes.cell, classes.top)}
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
-          <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>SCRIPT EDITOR {projId}</span>
+          <div style={{ flexGrow: '1', textWrap: 'nowrap' }}>
+            <span style={{ fontSize: '24px' }}>SCRIPT EDITOR {projId}</span>
           </div>
           {ProjectSelectMenu}
           <button
             type="button"
             onClick={() => window.close()}
-            className={classes.navButton}
+            className={classes.buttonMedium}
+            style={{ width: '25%', margin: 0, minHeight: '32px' }}
           >
             CLOSE
           </button>
@@ -643,35 +644,8 @@ class ScriptEditor extends React.Component {
         <div id="console-main" className={classes.main}>
           <Dragger color="#064848" onDragUpdate={this.OnDraggerUpdate} />
           {/* <PanelSimViewer id="sim" onClick={this.OnPanelClick} /> */}
-        </div>
-        {/* Hidden by gridTemplateRows at root div
-        <div
-          id="console-bottom"
-          className={classes.bottom}
-          style={{ gridColumnEnd: 'span 3' }}
-        >
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 3fr',
-              columnGap: '5px',
-              height: '100%',
-              overflow: 'hidden'
-            }}
-          >
-            <PanelMessage
-              title="Log"
-              message={message}
-              isError={messageIsError}
-            />
-            <PanelInstances
-              id="instances"
-              instances={instances}
-              disallowDeRegister
-            />
           <SlotEditor_Block />
           </div>
-        </div> */}
         {DialogNoMain}
         {DialogProjectSwitch}
       </div>
