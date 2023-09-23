@@ -737,7 +737,7 @@ class ScriptView_Pane extends React.Component {
     return (
       <PanelChrome
         id={id} // used by click handler to identify panel
-        title={updatedTitle}
+        // title={updatedTitle} // hide title to reduce complexity
         onClick={onClick}
         topbar={TopBar}
         bottombar={BottomBar}
