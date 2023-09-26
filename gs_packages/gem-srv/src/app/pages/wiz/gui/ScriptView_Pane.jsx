@@ -199,7 +199,8 @@ if (DBG) console.log(...PR('PRISM gemscript types', types_regex));
 class ScriptView_Pane extends React.Component {
   constructor() {
     super();
-    const { script_page, script_text, sel_linenum } = WIZCORE.State();
+    const { script_page, script_text, sel_linenum, sel_linepos, cur_bdl } =
+      WIZCORE.State();
     this.state = {
       viewMode: VIEWMODE_WIZARD, // 'code',
       jsx: '',
@@ -207,11 +208,12 @@ class ScriptView_Pane extends React.Component {
       openConfirmDelete: false,
       openConfirmUnload: false,
       confirmUnloadCallback: {}, // fn called when user confirms unload
-      // script: demoscript // Replace the prop `script` with this to test scripts defined in this file
-      // post wizcore integration
-      script_page,
+      gemscript_page: script_page,
       script_text,
       sel_linenum,
+      sel_linepos,
+      isInitScript: false,
+      cur_bdl, // needed to update initScript
       bookmarks: [],
       sel_bookmarklinenum: 0,
       scrollContainer: {}
@@ -298,12 +300,21 @@ class ScriptView_Pane extends React.Component {
   /** INCOMING: handle WIZCORE event updates */
   HandleWizUpdate(vmStateEvent) {
     // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
-    const { script_page, script_text, script_page_needs_saving, sel_linenum } =
-      vmStateEvent;
-    const newState = {};
+    const { isInitScript } = this.state;
+    const {
+      script_page,
+      script_text,
+      init_script_page,
+      init_script_text,
+      script_page_needs_saving,
+      sel_linenum,
+      sel_linepos
+    } = vmStateEvent;
+    const newState = { isInitScript };
     let cb;
     if (script_page) {
-      newState.script_page = script_page;
+      newState.gemscript_page = script_page;
+      newState.isInitScript = false;
     }
     if (script_text) {
       newState.script_text = script_text;
@@ -312,6 +323,23 @@ class ScriptView_Pane extends React.Component {
         // Force Prism update otherwise line number highlight is not updated
         Prism.highlightElement(this.jarRef.current);
       };
+      newState.isInitScript = false;
+    }
+
+    // If `init_script_page` state is passed (instaed of `script_page`) then the
+    // state update is intended for the initSript.  Use that for the script_page
+    if (init_script_page) {
+      newState.gemscript_page = init_script_page;
+      newState.isInitScript = true;
+    }
+    if (init_script_text) {
+      newState.script_text = init_script_text;
+      cb = () => {
+        this.jar.updateCode(init_script_text);
+        // Force Prism update otherwise line number highlight is not updated
+        Prism.highlightElement(this.jarRef.current);
+      };
+      newState.isInitScript = true;
     }
 
     // If WIZCORE update included a line selection, then we need to update
@@ -419,12 +447,14 @@ class ScriptView_Pane extends React.Component {
     }
 
     // if we're in code view, update the code script first
-    const { viewMode } = this.state;
+    const { viewMode, isInitScript, cur_bdl } = this.state;
     const { projId, bpName } = this.props;
     let text;
     if (viewMode === VIEWMODE_CODE) {
       text = this.jar.toString();
-      WIZCORE.SendState({ script_text: text });
+      // retain the cur_bdl so initScript can reference the orig script text
+      if (isInitScript) WIZCORE.SendState({ cur_bdl, init_script_text: text });
+      else WIZCORE.SendState({ script_text: text });
     }
     WIZCORE.SaveToServer(projId, bpName);
     UR.LogEvent('ScriptEdit', ['Save to Server', bpName]);
@@ -493,6 +523,7 @@ class ScriptView_Pane extends React.Component {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   OnToggleWizard(event, value) {
+    const { cur_bdl, isInitScript } = this.state;
     if (value === null) return; // skip repeated clicks
     if (value === VIEWMODE_CODE) {
       // currently wizard, clicked on code
@@ -501,7 +532,10 @@ class ScriptView_Pane extends React.Component {
       EDITMGR.CancelSlotEdit();
     } else if (value === VIEWMODE_WIZARD) {
       const script_text = this.jar.toString();
-      WIZCORE.SendState({ script_text });
+      if (isInitScript) {
+        // retain the cur_bdl so initScript can reference the orig script text
+        WIZCORE.SendState({ cur_bdl, init_script_text: script_text });
+      } else WIZCORE.SendState({ script_text });
     }
     this.setState({ viewMode: value }, () => {
       // Force Prism update otherwise line number highlight is not updated
@@ -538,9 +572,10 @@ class ScriptView_Pane extends React.Component {
       lineHighlight,
       openConfirmDelete,
       openConfirmUnload,
-      script_page,
+      gemscript_page,
       script_text,
       sel_linenum,
+      sel_linepos,
       bookmarks,
       sel_bookmarklinenum
     } = this.state;
@@ -727,8 +762,9 @@ class ScriptView_Pane extends React.Component {
         }}
       >
         <ScriptViewWiz_Block
-          script_page={script_page}
+          gemscript_page={gemscript_page}
           sel_linenum={sel_linenum}
+          sel_linepos={sel_linepos}
         />
       </div>
     );

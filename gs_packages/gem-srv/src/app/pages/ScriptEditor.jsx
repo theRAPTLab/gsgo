@@ -3,14 +3,17 @@
 
   ScriptEditor - Edit Script Blueprints
 
+  Whimsical: https://whimsical.com/scripteditor-wizard-JDG8VuQKSRSRhQXZU35ZCS
+
   state.script is loaded when
       1. UR/APP_START waits for Main to come online
+         componentDidMount checks URL for `script=xxxx` to figure out which
+         script to load.
       2. Initialize() calls RequestBpEditList
       3. RequestBpEditList requests model data via URSYS
       4. URSYS callback calls UpdateBpEditList
       5. UpdateBpEditList sets OnSelectScript
       6. OnSelectScript loads the actual script
-
 
       RATIONALE
 
@@ -139,7 +142,9 @@ class ScriptEditor extends React.Component {
       projId: '',
       bpEditList: [],
       bpName: '',
-      script: '',
+      instanceLabel: '',
+      instancesEditList: [],
+      script_text: '',
       instances: [],
       monitoredInstances: [],
       message: '',
@@ -151,6 +156,9 @@ class ScriptEditor extends React.Component {
     this.Initialize = this.Initialize.bind(this);
     this.HandleEditMgrUpdate = this.HandleEditMgrUpdate.bind(this);
     this.RequestBpEditList = this.RequestBpEditList.bind(this);
+    this.RequestInstancesEditList = this.RequestInstancesEditList.bind(this);
+    this.UpdateInstancesEditList = this.UpdateInstancesEditList.bind(this);
+    this.SelectInstanceScript = this.SelectInstanceScript.bind(this);
     this.HandleProjectUpdate = this.HandleProjectUpdate.bind(this);
     this.HandleBlueprintsUpdate = this.HandleBlueprintsUpdate.bind(this);
     this.UpdateBpEditList = this.UpdateBpEditList.bind(this);
@@ -164,6 +172,7 @@ class ScriptEditor extends React.Component {
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
     this.HandleConfirmReload = this.HandleConfirmReload.bind(this);
     this.OnProjectMenuSelect = this.OnProjectMenuSelect.bind(this);
+    this.OnInstanceMenuSelect = this.OnInstanceMenuSelect.bind(this);
     this.OnDraggerUpdate = this.OnDraggerUpdate.bind(this);
 
     // Sent by PanelSelectAgent
@@ -225,21 +234,28 @@ class ScriptEditor extends React.Component {
     const params = new URLSearchParams(window.location.search.substring(1));
     const projId = params.get('project');
     const bpName = params.get('script');
-    document.title = bpName
-      ? `"${bpName}" Editor`
-      : `GEMSTEP SCRIPT EDITOR: ${projId}`;
-    let { panelConfiguration, script } = this.state;
+    const instanceLabel = params.get('instance');
+    if (instanceLabel) document.title = `${bpName} "${instanceLabel}" Editor`;
+    else if (bpName) document.title = `"${bpName}" Editor`;
+    else document.title = `GEMSTEP SCRIPT EDITOR: ${projId}`;
+    let { panelConfiguration, script_text } = this.state;
     if (bpName === '') {
       // New Script
       panelConfiguration = 'script';
-      script = SCRIPT_TEMPLATE;
+      script_text = SCRIPT_TEMPLATE;
       this.setState(
-        { panelConfiguration, projId, bpName, script },
+        { panelConfiguration, projId, bpName, script_text },
         () => this.SelectScript({ bpName: '' }) // Call SelectScript immediately to pre-populate the script template
       );
       return;
     }
-    this.setState({ panelConfiguration, projId, bpName, script });
+    this.setState({
+      panelConfiguration,
+      projId,
+      bpName,
+      instanceLabel,
+      script_text
+    });
 
     // NOTE: The script is selected with the UpdateBpEditList callback
     //       e.g. we select the script only after we receive the list of
@@ -269,8 +285,9 @@ class ScriptEditor extends React.Component {
 
   Initialize() {
     if (this.state.isReady) return; // already initialized
-    const { projId } = this.state;
+    const { projId, instanceLabel } = this.state;
     this.RequestBpEditList(projId);
+    if (instanceLabel) this.RequestInstancesEditList(); // get bp bundle first, then add initScript
     this.RequestPreferences();
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
@@ -306,6 +323,86 @@ class ScriptEditor extends React.Component {
     });
   }
 
+  /// INITSCRIPT METHODS /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   * This requests instances data from project-server used to populate
+   * the list of editable instances.
+   */
+  RequestInstancesEditList(projId) {
+    if (DBG) console.log(...PR('RequestInstancesEditList...', projId));
+    const fnName = 'RequestInstancesEditList';
+    UR.CallMessage('NET:REQ_PROJDATA', {
+      fnName,
+      parms: [projId]
+    }).then(rdata => {
+      return this.UpdateInstancesEditList(rdata.result);
+    });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   * Locally store list of editable instances
+   * and load the current script if it's been specified
+   * @param {[{name, scriptText}]} instancesEditList
+   */
+  UpdateInstancesEditList(instancesEditList) {
+    if (DBG) console.log(...PR('UpdateInstancesEditList', instancesEditList));
+    const { instanceLabel } = this.state;
+    this.setState({ instancesEditList }, () => {
+      const instanceExists = instancesEditList.find(
+        thing => thing.label === instanceLabel
+      );
+      if (instanceExists) this.SelectInstanceScript({ instanceLabel });
+    });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  SelectInstanceScript(data = {}) {
+    const { instanceLabel } = data;
+    if (DBG) console.warn(...PR('SelectInstanceScript', data));
+    // this.UnRegisterInstances(); necessary?
+    const { instancesEditList = [], bpName, projId } = this.state;
+    if (instancesEditList === undefined || instancesEditList.length < 1) {
+      console.warn(
+        'ScriptEditor.SelectInstanceScript: No instancesEditList to load',
+        instancesEditList
+      );
+    }
+    const instanceDef = instancesEditList.find(i => i.label === instanceLabel);
+    const init_script_text = instanceDef ? instanceDef.initScript : null; // wizcore requires use `null` if undefined
+
+    // add script to URL
+    window.history.pushState(
+      {},
+      '',
+      `/app/scripteditor?project=${projId}&script=${bpName}&instance=${instanceLabel}`
+    );
+
+    // Show script selector if bpName was not passed
+    let panelConfiguration = 'script';
+    if (instanceLabel === undefined) {
+      panelConfiguration = 'select';
+    }
+
+    // we need to keep the previously compiled cur_bdl so that we can add the initScript to it.
+    const { cur_bdl } = WIZCORE.State();
+    WIZCORE.SendState({
+      cur_bdl,
+      init_script_text,
+      cur_instance_label: instanceLabel,
+      script_page_needs_saving: false
+    });
+    SLOTCORE.SendState({ slots_need_saving: false });
+
+    this.setState({
+      panelConfiguration,
+      instanceLabel
+    });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// END INITSCRIPT METHODS //////////////////////////////////////////////////
+
+  /// REORg!!!
+
   /**
    * This requests preferences data from project-server used to populate
    * the list of comment styles.
@@ -320,11 +417,13 @@ class ScriptEditor extends React.Component {
     });
   }
 
-  /** needed to respond to blueprint deletion */
+  /** needed to respond to blueprint deletion or exist map edit*/
   HandleBlueprintsUpdate(data) {
     const { bpDefs } = data;
     if (Array.isArray(bpDefs) && bpDefs.length > 0)
       this.UpdateBpEditList(data.bpDefs);
+    const { instanceLabel } = this.state;
+    if (!instanceLabel) this.setState({ instancesEditList: [] }); // clear instances list if we're not editing instances
   }
 
   /**
@@ -359,7 +458,7 @@ class ScriptEditor extends React.Component {
     // Project data has been updated externally, re-request bp data if the
     // the updated project was what we have open
     const newProjId = (data && data.project && data.project.id) || '';
-    const { projId } = this.state;
+    const { projId, instanceLabel } = this.state;
     // Main selected a new project?
     const projectWasSwitched = newProjId !== projId;
     if (projectWasSwitched) {
@@ -368,6 +467,9 @@ class ScriptEditor extends React.Component {
     } else {
       // just update the list of bpNames
       this.RequestBpEditList(projId);
+      if (instanceLabel) this.RequestInstancesEditList();
+      // get bp bundle first, then add initScript
+      else this.setState({ instancesEditList: [] }); // clear instances if no longer editing instance
     }
   }
 
@@ -470,7 +572,7 @@ class ScriptEditor extends React.Component {
       );
     }
     const bpDef = bpEditList.find(b => b.name === bpName);
-    const script = bpDef ? bpDef.scriptText : SCRIPT_TEMPLATE;
+    const script_text = bpDef ? bpDef.scriptText : SCRIPT_TEMPLATE;
 
     // add script to URL
     window.history.pushState(
@@ -486,12 +588,12 @@ class ScriptEditor extends React.Component {
     }
 
     // Special WIZCORE handler to init state without triggering interceptState
-    WIZCORE.SendState({ script_text: script, script_page_needs_saving: false });
+    WIZCORE.SendState({ script_text, script_page_needs_saving: false });
     SLOTCORE.SendState({ slots_need_saving: false });
 
     this.setState({
       panelConfiguration,
-      script,
+      script_text,
       bpName
     });
   }
@@ -528,6 +630,10 @@ class ScriptEditor extends React.Component {
     this.SelectScript({ bpName: event.target.value });
   }
 
+  OnInstanceMenuSelect(event) {
+    this.SelectInstanceScript({ instanceLabel: event.target.value });
+  }
+
   OnDraggerUpdate(ratio) {
     this.setState({ scriptWidthPercent: ratio * 100 });
   }
@@ -545,11 +651,39 @@ class ScriptEditor extends React.Component {
       projId,
       bpEditList,
       bpName,
+      instancesEditList,
+      instanceLabel,
       selection,
       scriptWidthPercent
     } = this.state;
     const { classes } = this.props;
 
+    let ProjectSelectMenu;
+    if (instancesEditList.length > 0) {
+      // Instances list
+      const sortedInstances = instancesEditList
+        ? instancesEditList.sort((a, b) => {
+            if (a.label < b.label) return -1;
+            if (a.label > b.label) return 1;
+            return 0;
+          })
+        : [];
+      ProjectSelectMenu = (
+        <select
+          value={instanceLabel}
+          onChange={this.OnInstanceMenuSelect}
+          className={classes.select}
+          style={{ margin: '0 20px', minHeight: '32px', fontSize: '14px' }}
+        >
+          {sortedInstances.map(inst => (
+            <option key={inst.label} value={inst.label}>
+              {inst.label}
+            </option>
+          ))}
+        </select>
+      );
+    } else {
+      // Blueprints list
     const sortedBlueprints = bpEditList
       ? bpEditList.sort((a, b) => {
           if (a.name < b.name) return -1;
@@ -557,7 +691,7 @@ class ScriptEditor extends React.Component {
           return 0;
         })
       : [];
-    const ProjectSelectMenu = (
+      ProjectSelectMenu = (
       <select
         value={bpName}
         onChange={this.OnProjectMenuSelect}
@@ -571,6 +705,7 @@ class ScriptEditor extends React.Component {
         ))}
       </select>
     );
+    }
 
     const DialogNoMain = (
       <DialogConfirm

@@ -509,6 +509,21 @@ prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Updates existing instance on the stage
+ *       Used by ScriptEditor to edit initScript text
+ *  @param {label, initScript} data
+ */
+function InstanceUpdate(data) {
+  const instance = ACInstances.GetInstanceByLabel(data.label);
+  instance.label = data.label || instance.label;
+  instance.initScript = data.initScript || instance.initScript;
+  ACInstances.WriteInstance(instance);
+  // REVIEW: Is this necessary?
+  // RaiseModelUpdate(data.modelId); // not needed?  shouldn't state cause this?
+  // RaiseInstancesListUpdate(); // not needed?  name change is handled elsewhere?
+  return '{ok}'
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Removes instance from the stage
  *  @param {bpid, id} data
  */

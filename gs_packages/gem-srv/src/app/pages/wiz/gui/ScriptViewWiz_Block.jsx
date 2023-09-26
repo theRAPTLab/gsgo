@@ -3,8 +3,6 @@
   ScriptViewWiz_Block - Given a script_page array of renderable state, emit
   a clickable wizard GUI.
 
-  Was: ScriptViewPane.jsx
-
   `sel_linenum` is passed to cause ScriptViewWiz_Block to re-render the
   selected line (to show line add/delete buttons) if the user clicks on an
   existing line.
@@ -14,6 +12,8 @@
     <ScriptViewWiz_Block script_page={script_page} sel_linenum={sel_linenum} />
 
   where script_page is defined in ac-wizcore
+
+  Was: ScriptViewPane.jsx
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -71,15 +71,15 @@ let DBGTEXT = '';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ScriptViewWiz_Block(props) {
   // collect resources for rendering
-  let { script_page, sel_linenum } = props;
+  // gemscript_page can be either script_page or init_script_page
+  let { gemscript_page, sel_linenum, sel_linepos } = props;
 
   const [deleteDialogIsOpen, setDeleteDialogIsOpen] = useState(0);
   DBGTEXT = '';
 
-  const script_page_Validation = WIZCORE.ValidateScriptPage();
+  const script_page_Validation = WIZCORE.ValidateScriptPage(gemscript_page);
   const pageBuffer = [];
-  const selTokId = WIZCORE.SelectedTokenId();
-
+  const selTokId = WIZCORE.SelectedTokenId(sel_linenum, sel_linepos);
   // UI JSX: ADD LINE
   const addLineBtn = (
     <div className="gwiz">
@@ -127,7 +127,7 @@ export function ScriptViewWiz_Block(props) {
   // a page is an array of line viewmodel data
   // the line has token viewmodel data plus line metdata
   if (DBG) console.groupCollapsed('ScriptViewPane Validation');
-  script_page.forEach(line => {
+  gemscript_page.forEach(line => {
     const { lineNum, level, vmTokens } = line;
     const lineBuffer = [];
     const hasTokens = vmTokens.length > 0;
@@ -148,7 +148,6 @@ export function ScriptViewWiz_Block(props) {
       const lineValidationTokens = script_page_Validation[lineNum]
         ? script_page_Validation[lineNum].validationTokens
         : [];
-
       lineValidationTokens.forEach((validationToken, idx) => {
         const tokInfo = vmTokens[idx] || {};
         let { tokenKey } = tokInfo;
