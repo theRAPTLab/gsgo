@@ -66,10 +66,15 @@ function GetInstances() {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 function GetInstance(id) {
   const instances = _getKey('instances');
   return instances.find(i => i.id === id);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetInstanceByLabel(label) {
+  const instances = _getKey('instances');
+  return instances.find(i => i.label === label);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -285,6 +290,7 @@ export {
   // Getters
   GetInstances,
   GetInstance,
+  GetInstanceByLabel,
   GetInstanceidList,
   GetInstanceUID,
   // InstanceEditor

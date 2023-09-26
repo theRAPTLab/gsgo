@@ -303,6 +303,19 @@ function RequestBpEditList(projId = CURRENT_PROJECT_ID) {
   return ACBlueprints.GetBpEditList(projId);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Handle ScriptEditor's request for a list of editable instances
+ *  Used by REQ_PROJ_DATA
+ * @return [ {name, scriptText, editor} ]
+ */
+function RequestInstancesEditList(projId = CURRENT_PROJECT_ID) {
+  if (projId === undefined)
+    throw new Error(
+      'Tried to current GetProject before setting CURRENT_PROJECT_ID'
+    );
+  // REVIEW: Should get instances by project id, not default project
+  return ACInstances.GetInstances();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Handle ScriptEditor's request for project settings (commentSTyles)
  *  Used by REQ_PROJ_DATA
  * @return [ {matchString, cssClass, color, backgroundColor, help, isBookmarked} ]
@@ -749,6 +762,7 @@ function InstanceHoverOut(data) {
 const FN_LOOKUP = {
   RequestProject,
   RequestBpEditList,
+  RequestInstancesEditList,
   RequestPreferences,
   GetProjectBoundary: GetBoundary,
   GetCharControlBpNames,
@@ -804,6 +818,7 @@ UR.HandleMessage('NET:BLUEPRINT_DELETE', HandleBlueprintDelete);
 UR.HandleMessage('INJECT_BLUEPRINT', InjectBlueprint);
 /// INSTANCE EDITING UTILS ----------------------------------------------------
 UR.HandleMessage('LOCAL:INSTANCE_ADD', InstanceAdd);
+UR.HandleMessage('NET:INSTANCE_UPDATE', InstanceUpdate);
 UR.HandleMessage('LOCAL:INSTANCE_DELETE', InstanceDelete);
 UR.HandleMessage('NET:INSTANCE_UPDATE_POSITION', InstanceUpdatePosition);
 // INSPECTOR UTILS --------------------------------------------------------
@@ -844,6 +859,7 @@ export {
   InstanceDeselect, // <- NET:INSTANCE_DESELECT
   //
   InstanceAdd, // <- INSTANCE_ADD
+  InstanceUpdate, // <- INSTANCE_UPDATE
   InstanceDelete, // <- INSTANCE_DELETE
   InstanceHoverOver, // <- INSTANCE_HOVEROVER
   InstanceHoverOut // <- INSTANCE_HOVEROUT
