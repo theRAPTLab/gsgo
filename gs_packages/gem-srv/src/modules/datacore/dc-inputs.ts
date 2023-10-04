@@ -225,14 +225,6 @@ function m_PozyxDampen(
   return { x, y };
 }
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-function GetDefaultPozyxBpName() {
-  return ACBlueprints.GetPozyxControlDefaultBpName();
-}
-function GetDefaultPTrackBpName() {
-  return ACBlueprints.GetPTrackControlDefaultBpName();
-}
 ///////////////////////////////////////////////////////////////////////////////
 /// ENTITY_TO_COBJ (was POZYX_TO_COBJ) /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -250,11 +242,12 @@ ENTITY_TO_COBJ.setMapFunctions({
     );
     cobj.x = x;
     cobj.y = y;
-    // HACK Blueprints into cobj
-    cobj.bpid =
-      entity.type === TYPES.Pozyx
-        ? GetDefaultPozyxBpName()
-        : GetDefaultPTrackBpName();
+
+    cobj.bpid = ACBlueprints.GetDefaultInputBpName(entity.type);
+    // If user has selected a different bp for tags (pozyx, ptrack), use the override
+    const tagBpid = ACBlueprints.GetInputBp(cobj.id);
+    if (tagBpid !== undefined) cobj.bpid = tagBpid;
+
     cobj.label = entity.type === TYPES.Pozyx ? entity.id.substring(2) : entity.id;
     cobj.framesSinceLastUpdate = 0;
     UR.SendMessage('NET:SRV_RTLOG', {
@@ -281,9 +274,16 @@ ENTITY_TO_COBJ.setMapFunctions({
 
     cobj.x = pos.x;
     cobj.y = pos.y;
-    cobj.bpid = cobj.bpid; // keep the same blueprint
+
+    // If user has selected a different bp for tags (pozyx, ptrack), use the override
+    const tagBpid = ACBlueprints.GetInputBp(cobj.id);
+    if (tagBpid !== undefined && tagBpid !== cobj.bpid) {
+      cobj.bpid = tagBpid;
+    } else cobj.bpid = cobj.bpid; // keep the same blueprint
+
     cobj.label = entity.type === TYPES.Pozyx ? entity.id.substring(2) : entity.id;
     cobj.framesSinceLastUpdate = 0;
+
     UR.SendMessage('NET:SRV_RTLOG', {
       event: entity.type,
       items: [
