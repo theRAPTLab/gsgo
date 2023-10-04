@@ -314,8 +314,14 @@ function GetPTrackControlDefaultBpName(): string {
       `ACBlueprints.GetPTrackControlDefaultBpName: No controllable PTrack blueprints have been defined!!! Defaulting to "${defaultBpName}".`
     );
     return defaultBpName;
+  } else if (ptrackBpNames.length === 1) {
+    // if there's only one, use that one
+    return ptrackBpNames[0];
+  } else {
+    // pick a random blueprint out of all the blueprints that have PTrack enabled
+    const i = Math.round((ptrackBpNames.length - 1) * Math.random());
+    return ptrackBpNames[i];
   }
-  return ptrackBpNames[0];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Generates an array of blueprint names that have been tagged
@@ -348,10 +354,14 @@ function GetPozyxControlDefaultBpName(): string {
       `ACBlueprints.GetPozyxControlDefaultBpName: No controllable Pozyx blueprints have been defined!!! Defaulting to "${defaultBpName}".`
     );
     return defaultBpName;
+  } else if (pozyxBpNames.length === 1) {
+    // if there's only one, use that one
+    return pozyxBpNames[0];
+  } else {
+    // pick a random blueprint out of all the blueprints that have pozyx enabled
+    const i = Math.round((pozyxBpNames.length - 1) * Math.random());
+    return pozyxBpNames[i];
   }
-  // pick a random blueprint out of all the blueprints that have pozyx enabled
-  const i = Math.round((pozyxBpNames.length - 1) * Math.random());
-  return pozyxBpNames[i];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Returns array of properties {name, type, defaultvalue, isFeatProp}

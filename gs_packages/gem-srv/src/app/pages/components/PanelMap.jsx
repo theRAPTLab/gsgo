@@ -49,15 +49,8 @@ class PanelMap extends React.Component {
   // * intance group `tags` are dynamically generated instances like charcontrol and pozyx
   urInstancesStateUpdated(stateObj, cb) {
     const { instances, tags } = stateObj;
-    if (tags) {
-      // assign instances to default bp by default
-      const defaultBpName = ACBlueprints.GetDefaultInputBpName();
-      const defaultTags = tags.map(t => {
-        t.bpid = defaultBpName;
-        return t;
-      });
-      this.setState({ tags: defaultTags });
-    }
+    if (tags) this.setState({ tags });
+
     if (typeof cb === 'function') cb();
   }
 
