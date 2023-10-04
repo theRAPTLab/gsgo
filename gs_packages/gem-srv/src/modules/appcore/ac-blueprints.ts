@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -310,7 +311,7 @@ function GetPTrackControlDefaultBpName(): string {
   if (ptrackBpNames.length < 1) {
     const defaultBpName = STATE._getKey('defaultBpName');
     console.warn(
-      `ACBlueprints.GetPTrackControlDefaultBpName: No controllable PTrack blueprints have been defined!!! Defaulting to ${defaultBpName}.`
+      `ACBlueprints.GetPTrackControlDefaultBpName: No controllable PTrack blueprints have been defined!!! Defaulting to "${defaultBpName}".`
     );
     return defaultBpName;
   }
@@ -341,11 +342,10 @@ function GetPozyxControlBpNames(): string[] {
  */
 function GetPozyxControlDefaultBpName(): string {
   const pozyxBpNames = STATE._getKey('pozyxControlBpNames');
-  console.error('GetPozyxControlDefaultBpName');
   if (pozyxBpNames.length < 1) {
     const defaultBpName = STATE._getKey('defaultBpName');
     console.warn(
-      `ACBlueprints.GetPozyxControlDefaultBpName: No controllable Pozyx blueprints have been defined!!! Defaulting to ${defaultBpName}.`
+      `ACBlueprints.GetPozyxControlDefaultBpName: No controllable Pozyx blueprints have been defined!!! Defaulting to "${defaultBpName}".`
     );
     return defaultBpName;
   }
@@ -607,6 +607,7 @@ export {
   // Derived Blueprint Lists
   GetBpEditList, // used by ScriptEditor to display list of bp to edit
   GetBpNamesList,
+  GetDefaultInputBpName,
   GetCharControlBpNames,
   GetPTrackControlBpNames,
   GetPTrackControlDefaultBpName,
@@ -614,7 +615,6 @@ export {
   GetPozyxControlDefaultBpName,
   GetBlueprintProperties,
   GetBlueprintPropertiesMap,
-  // Updaters
   SetBlueprints,
   InjectBlueprint,
   UpdateBlueprint,

@@ -29,10 +29,13 @@ STATE.initializeState({
     }
   ],
   instanceidList: [],
+  // currentInstance is the instance currently being edited it should be undefined by default
   currentInstance: undefined,
-  tags: []
-  // currentInstance is the instance currently being edited
-  // it should be undefined by default
+  // list of input sources: pozyx, ptrack, faketrack
+  // Used by PanelMap to show the list of available inputs
+  // constructed by dc-inputs during input phase see InputUpdateEntityTracks
+  tags: [] // inputDefs {bpid, id, lable, x, y, ...}
+
   //
   // Uncomment to debug
   // currentInstance: {
@@ -111,6 +114,33 @@ function EditInstance(id) {
   const instance = GetInstance(id);
   updateKey({ currentInstance: instance });
   _publishState({ currentInstance: instance });
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function UpdateTag(inputId: string, bpName: string) {
+  const tags = STATE._getKey('tags');
+  const index = tags.findIndex(t => t.id === inputId);
+  const updatedTag = tags[index];
+  if (updatedTag === undefined)
+    throw new Error(
+      `UpdateTag inputId not found ${inputId} in tags: ${JSON.stringify(
+        tags
+      )}.  This shouldn't happen!`
+    );
+  updatedTag.bpid = bpName;
+  tags.splice(index, 1, updatedTag);
+  STATE.updateKey({ tags });
+  // STATE._publishState({ tags });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetTag(inputId: string) {
+  const tags = STATE._getKey('tags');
+  return tags.find(t => t.id === inputId);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetTagBpid(inputId: string) {
+  const tag = GetTag(inputId);
+  return tag ? tag.bpid : undefined;
 }
 
 /// LOADER ////////////////////////////////////////////////////////////////////
@@ -290,6 +320,10 @@ export {
   GetInstanceUID,
   // InstanceEditor
   EditInstance,
+  // Tags
+  UpdateTag,
+  GetTag,
+  GetTagBpid,
   // Multiple Setters
   SetInstances,
   WriteInstances,

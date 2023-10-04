@@ -16,6 +16,7 @@
 
 import UR from '@gemstep/ursys/client';
 import * as ACBlueprints from 'modules/appcore/ac-blueprints';
+import * as ACInstances from 'modules/appcore/ac-instances';
 import InputDef from 'lib/class-input-def';
 import SyncMap from 'lib/class-syncmap';
 import * as DCAGENTS from './dc-sim-agents';
@@ -34,6 +35,8 @@ let STAGE_HEIGHT = 100; // default
 export const INPUT_GROUPS = new Map(); // Each device can belong to a specific group
 export const INPUTDEFS = []; //
 const ACTIVE_DEVICES = new Map();
+
+let COBJ_ADDED = false; // Used to track when a new input has been added
 
 const PR = UR.PrefixUtil('DCINPT');
 const DBG = false;
@@ -245,11 +248,15 @@ ENTITY_TO_COBJ.setMapFunctions({
 
     cobj.bpid = ACBlueprints.GetDefaultInputBpName(entity.type);
     // If user has selected a different bp for tags (pozyx, ptrack), use the override
-    const tagBpid = ACBlueprints.GetInputBp(cobj.id);
+    const tagBpid = ACInstances.GetTagBpid(cobj.id);
     if (tagBpid !== undefined) cobj.bpid = tagBpid;
 
     cobj.label = entity.type === TYPES.Pozyx ? entity.id.substring(2) : entity.id;
     cobj.framesSinceLastUpdate = 0;
+
+    // Keep track of when a new COBJ has been added so we can truigger PanelMap updates
+    COBJ_ADDED = true;
+
     UR.SendMessage('NET:SRV_RTLOG', {
       event: entity.type,
       items: [
@@ -276,7 +283,7 @@ ENTITY_TO_COBJ.setMapFunctions({
     cobj.y = pos.y;
 
     // If user has selected a different bp for tags (pozyx, ptrack), use the override
-    const tagBpid = ACBlueprints.GetInputBp(cobj.id);
+    const tagBpid = ACInstances.GetTagBpid(cobj.id);
     if (tagBpid !== undefined && tagBpid !== cobj.bpid) {
       cobj.bpid = tagBpid;
     } else cobj.bpid = cobj.bpid; // keep the same blueprint
@@ -309,6 +316,11 @@ ENTITY_TO_COBJ.setMapFunctions({
   }
 });
 export function GetTrackerMap() {
+  // Prepare ENTITY_TO_COBJ definitions
+  // Clear the COBJ_ADDED flag so we can track when a new input has been added
+  // This is triggered by api-inputs.StartTrackerVisuals
+  COBJ_ADDED = false;
+
   return ENTITY_TO_COBJ;
 }
 
@@ -421,7 +433,14 @@ function InputUpdateCharControl(devAPI, bpname) {
   COBJ_TO_INPUTDEF.mapObjects();
 }
 function InputUpdateEntityTracks() {
-  COBJ_TO_INPUTDEF.syncFromArray(ENTITY_TO_COBJ.getMappedObjects());
+  const COBJS = ENTITY_TO_COBJ.getMappedObjects();
+  if (COBJ_ADDED) {
+    // Some new inputs were detected, so update the state's list of `tags`
+    // in the CHARACTER CONTROLLERS Panel so pozyx tags can select new bps
+    UR.WriteState('instances', 'tags', COBJS);
+    COBJ_ADDED = false;
+  }
+  COBJ_TO_INPUTDEF.syncFromArray(COBJS);
   COBJ_TO_INPUTDEF.mapObjects();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

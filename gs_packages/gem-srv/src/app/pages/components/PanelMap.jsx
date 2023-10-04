@@ -1,6 +1,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as ACBlueprints from 'modules/appcore/ac-blueprints';
+import * as ACInstances from 'modules/appcore/ac-instances';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../helpers/page-xui-styles';
 
@@ -60,10 +61,11 @@ class PanelMap extends React.Component {
     if (typeof cb === 'function') cb();
   }
 
-  // User has selected a new blueprint to map to the selecetd pozyx tag
+  // User has selected a new blueprint to map to the selected input tag
   // Create a new instance with the selected blueprint
   HandleTagSelect(event, inputID) {
-    ACBlueprints.RegisterInputBp(inputID, event.target.value);
+    const bpName = event.target.value;
+    ACInstances.UpdateTag(inputID, bpName);
   }
 
   render() {
