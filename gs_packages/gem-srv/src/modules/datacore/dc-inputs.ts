@@ -119,6 +119,23 @@ export const POZYX_TRANSFORM = {
   useAccelerometer: true
 };
 
+const FAKETRACK_TRANSFORM = {
+  scaleX: 1,
+  scaleY: 1,
+  translateX: 0,
+  translateY: 0,
+  rotation: 0,
+  useAccelerometer: false
+};
+
+const TRANSFORMS = {};
+TRANSFORMS[TYPES.Undefined] = PTRACK_TRANSFORM;
+TRANSFORMS[TYPES.Object] = PTRACK_TRANSFORM;
+TRANSFORMS[TYPES.People] = PTRACK_TRANSFORM;
+TRANSFORMS[TYPES.Pose] = PTRACK_TRANSFORM;
+TRANSFORMS[TYPES.Pozyx] = POZYX_TRANSFORM;
+TRANSFORMS[TYPES.Faketrack] = FAKETRACK_TRANSFORM;
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_Transform(
   position: {
@@ -226,9 +243,11 @@ const ENTITY_TO_COBJ = new SyncMap({
 });
 ENTITY_TO_COBJ.setMapFunctions({
   onAdd: (entity: any, cobj: InputDef) => {
-    const TRANSFORM =
-      entity.type === TYPES.Pozyx ? POZYX_TRANSFORM : PTRACK_TRANSFORM;
-    const { x, y } = m_Transform({ x: entity.x, y: entity.y }, TRANSFORM);
+    const TRANSFORM = TRANSFORMS[entity.type] || TRANSFORMS[TYPES.Faketrack]; // default to faketrack no transforms
+    const { x, y } = m_Transform(
+      { x: Number(entity.x), y: Number(entity.y) },
+      TRANSFORM
+    );
     cobj.x = x;
     cobj.y = y;
     // HACK Blueprints into cobj
@@ -251,9 +270,8 @@ ENTITY_TO_COBJ.setMapFunctions({
     });
   },
   onUpdate: (entity: any, cobj: InputDef) => {
-    const TRANSFORM =
-      entity.type === TYPES.Pozyx ? POZYX_TRANSFORM : PTRACK_TRANSFORM;
-    let pos = { x: entity.x, y: entity.y };
+    const TRANSFORM = TRANSFORMS[entity.type] || TRANSFORMS[TYPES.Faketrack]; // default to faketrack no transforms
+    let pos = { x: Number(entity.x), y: Number(entity.y) };
     if (entity.acc && TRANSFORM.useAccelerometer) {
       // has accelerometer data
       pos = m_PozyxDampen(cobj, pos, entity.acc); // dampen + transform
