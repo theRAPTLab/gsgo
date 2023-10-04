@@ -29,7 +29,8 @@ STATE.initializeState({
     }
   ],
   instanceidList: [],
-  currentInstance: undefined
+  currentInstance: undefined,
+  tags: []
   // currentInstance is the instance currently being edited
   // it should be undefined by default
   //
