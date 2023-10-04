@@ -86,29 +86,41 @@ class PanelMap extends React.Component {
     ];
 
     // JSX CONSTRUCTORS - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    const scriptEditorsJSX = scriptEditors.map(e => (
-      <div style={styleDeviceContainer} key={e.uaddr}>
-        <hr style={styleDeviceConnector} />
-        <div style={styleDeviceLeft} className={classes.filledOutline}>
-          <div className={classLabel}>{e.uaddr}:</div>
-          <div className={classData}>{e.name}</div>
-          <div className={classLabel}>Script:</div>
-          <div className={classData}>{e.script}</div>
-        </div>
-      </div>
-    ));
-    const controllersJSX = controllers.map(e => (
-      <div style={styleDeviceContainer} key={e.uaddr}>
-        <hr style={styleDeviceConnector} />
-        <div style={styleDeviceRight} className={classes.filledOutline}>
-          <div className={classLabel}>{e.uaddr}:</div>
-          <div className={classData}>{e.name}</div>
-          <div className={classLabel}>Control:</div>
-          <div className={classData}>{e.instance}</div>
-        </div>
-      </div>
-    ));
-    const observersJSX = observers.map(e => (
+
+    // OLD Development Code Demo
+    // const scriptEditorsJSX = scriptEditors.map(e => (
+    //   <div style={styleDeviceContainer} key={e.uaddr}>
+    //     <hr style={styleDeviceConnector} />
+    //     <div style={styleDeviceLeft} className={classes.filledOutline}>
+    //       <div className={classLabel}>{e.uaddr}:</div>
+    //       <div className={classData}>{e.name}</div>
+    //       <div className={classLabel}>Script:</div>
+    //       <div className={classData}>{e.script}</div>
+    //     </div>
+    //   </div>
+    // ));
+    // const controllersJSX = controllers.map(e => (
+    //   <div style={styleDeviceContainer} key={e.uaddr}>
+    //     <hr style={styleDeviceConnector} />
+    //     <div style={styleDeviceRight} className={classes.filledOutline}>
+    //       <div className={classLabel}>{e.uaddr}:</div>
+    //       <div className={classData}>{e.name}</div>
+    //       <div className={classLabel}>Control:</div>
+    //       <div className={classData}>{e.instance}</div>
+    //     </div>
+    //   </div>
+    // ));
+    // const observersJSX = observers.map(e => (
+    //   <div
+    //     style={styleDeviceCenter}
+    //     className={classes.filledOutline}
+    //     key={e.uaddr}
+    //   >
+    //     <div className={classLabel}>{e.uaddr}:</div>
+    //     <div className={classData}>{e.name}</div>
+    //     <div className={classLabel}>Observing</div>
+    //   </div>
+    // ));
       <div
         style={styleDeviceCenter}
         className={classes.filledOutline}
