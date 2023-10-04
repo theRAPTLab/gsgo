@@ -86,6 +86,8 @@ STATE.initializeState({
   bpDefs: [], // [{name, scriptText},...] raw blueprint script text used for saving to gemproj file
   // runtime states derived from bpDefs or bpBundles
   bpNamesList: [],
+  nonGlobalBpNamesList: [], // used for populating selection menus that exclude 'global'
+  defaultBpName: '', // derived from bpNamesList, used as fallback
   defaultPozyxBpid: '',
   charControlBpNames: [],
   ptrackControlBpNames: [],
@@ -359,14 +361,24 @@ function m_UpdateAndPublishDerivedBpLists() {
   const charControlBpNames = m_GenerateCharControlBpNames(bundles);
   const ptrackControlBpNames = m_GeneratePTrackControlBpNames(bundles);
   const pozyxControlBpNames = m_GeneratePozyxControlBpNames(bundles);
+
+  // Derive Default BPName, excluding 'global'
+  const nonGlobalBpNamesList = bpNamesList.filter(b => b !== GLOBAL_AGENT_NAME);
+  const defaultBpName =
+    nonGlobalBpNamesList.length > 0 ? nonGlobalBpNamesList[0] : undefined;
+
   STATE.updateKey({
     bpNamesList,
+    nonGlobalBpNamesList,
+    defaultBpName,
     charControlBpNames,
     ptrackControlBpNames,
     pozyxControlBpNames
   });
   STATE._publishState({
     bpNamesList,
+    nonGlobalBpNamesList,
+    defaultBpName,
     charControlBpNames,
     ptrackControlBpNames,
     pozyxControlBpNames
