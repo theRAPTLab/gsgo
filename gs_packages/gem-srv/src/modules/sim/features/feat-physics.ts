@@ -52,8 +52,9 @@ const PHYSICS_AGENTS = new Map();
  */
 function m_getAgent(agentId): IAgent {
   const a = SIMAGENTS.GetAgentById(agentId);
-  if (!a) PHYSICS_AGENTS.delete(agentId);
-  return a;
+  // Also delete if agent has switched bp and no longer has the feature
+  if (!a || !a.prop.Physics) PHYSICS_AGENTS.delete(agentId);
+  else return a;
 }
 
 /// PHYSICS LOOP ////////////////////////////////////////////////////////////

@@ -38,8 +38,9 @@ const VISION_AGENTS = new Map();
  *  WIDGET_AGENTS */
 function m_getAgent(agentId): IAgent {
   const a = SIMAGENTS.GetAgentById(agentId);
-  if (!a) VISION_AGENTS.delete(agentId);
-  return a;
+  // Also delete if agent has switched bp and no longer has the feature
+  if (!a || !a.prop.Vision) VISION_AGENTS.delete(agentId);
+  else return a;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_updateVisionCone(agent): { visionPoly: any[]; visionPath: any[] } {

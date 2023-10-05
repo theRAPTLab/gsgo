@@ -566,7 +566,8 @@ function m_InputsUpdate(frame) {
   // 2. Decide on Movement
   const agents = [...MOVEMENT_AGENTS.values()];
   agents.forEach(agent => {
-    if (!agent) return;
+    // Also ignore if agent has switched bp and no longer has the feature
+    if (!agent || !agent.prop.Movement) return;
     // being controlled by a cursor
     if (agent.cursor) m_QueuePosition(agent, agent.cursor.x, agent.cursor.y);
   });

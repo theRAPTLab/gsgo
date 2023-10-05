@@ -93,8 +93,9 @@ const AGENT_TOUCHTYPES = new Map(); // Touch-enabled Agents
  */
 function m_GetAgent(agentId): IAgent {
   const a = SIMAGENTS.GetAgentById(agentId);
-  if (!a) AGENT_TOUCHTYPES.delete(agentId);
-  return a;
+  // Also delete if agent has switched bp and no longer has the feature
+  if (!a || !a.prop.Touches) AGENT_TOUCHTYPES.delete(agentId);
+  else return a;
 }
 
 function m_Clear(agent: IAgent) {

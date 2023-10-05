@@ -1,4 +1,6 @@
 import React from 'react';
+import UR from '@gemstep/ursys/client';
+import * as ACInstances from 'modules/appcore/ac-instances';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../helpers/page-xui-styles';
 
@@ -18,19 +20,60 @@ class PanelMap extends React.Component {
     super();
     this.state = {
       title: 'CHARACTER CONTROLLERS',
-      simulationName: 'Aquatic Ecosystems'
+      simulationName: 'Aquatic Ecosystems',
+      pozyxControlBpNames: [],
+      tags: []
     };
+    this.urBlueprintsStateUpdated = this.urBlueprintsStateUpdated.bind(this);
+    this.urInstancesStateUpdated = this.urInstancesStateUpdated.bind(this);
+    this.UpdateTags = this.UpdateTags.bind(this);
+    this.HandleTagSelect = this.HandleTagSelect.bind(this);
+  }
+
+  componentDidMount() {
+    UR.SubscribeState('blueprints', this.urBlueprintsStateUpdated);
+    UR.SubscribeState('instances', this.urInstancesStateUpdated);
+    this.UpdateTags(ACInstances.GetTags()); // force update after Map Save
+  }
+
+  urBlueprintsStateUpdated(stateObj, cb) {
+    const { pozyxControlBpNames } = stateObj;
+    if (pozyxControlBpNames) {
+      this.setState({ pozyxControlBpNames });
+    }
+    if (typeof cb === 'function') cb();
+  }
+
+  // `instances` state includes:
+  // * instance group `instances` are map-defined instances (via Main SETUP)
+  // * intance group `tags` are dynamically generated instances like charcontrol and pozyx
+  urInstancesStateUpdated(stateObj, cb) {
+    const { instances, tags } = stateObj;
+    this.UpdateTags(tags);
+    if (typeof cb === 'function') cb();
+  }
+
+  UpdateTags(tags) {
+    if (tags) this.setState({ tags });
+  }
+
+  // User has selected a new blueprint to map to the selected input tag
+  // Create a new instance with the selected blueprint
+  HandleTagSelect(event, inputID) {
+    const bpName = event.target.value;
+    ACInstances.UpdateTag(inputID, bpName);
   }
 
   render() {
-    const { title, simulationName } = this.state;
+    const { title, simulationName, pozyxControlBpNames, tags } = this.state;
     const { id, devices, isMinimized, onClick, classes } = this.props;
+    if (!pozyxControlBpNames) return ''; // not loaded yet
 
     // STYLES - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const styleDeviceConnector = {
       border: 0,
       height: '1px',
-      margin: '20px 0 0 0',
+      margin: '5px 0 0 0',
       padding: 0,
       background: 'rgba(0,256,0,0.3)'
     };
@@ -40,7 +83,7 @@ class PanelMap extends React.Component {
     const styleDevice = {
       borderBottomLeftRadius: '10px',
       borderBottomRightRadius: '10px',
-      width: isMinimized ? '100px' : '200px',
+      width: isMinimized ? '200px' : '200px',
       padding: '3px',
       fontSize: '12px',
       textAlign: 'center'
@@ -57,6 +100,7 @@ class PanelMap extends React.Component {
       ...styleDevice,
       margin: isMinimized ? '5px' : '10px'
     };
+    const classActive = `${classes.infoData} ${classes.infoActive}`;
     const classLabel = isMinimized
       ? `${classes.infoLabel} ${classes.infoLabelMinimized}`
       : classes.infoLabel;
@@ -86,39 +130,43 @@ class PanelMap extends React.Component {
     ];
 
     // JSX CONSTRUCTORS - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    const scriptEditorsJSX = scriptEditors.map(e => (
-      <div style={styleDeviceContainer} key={e.uaddr}>
-        <hr style={styleDeviceConnector} />
-        <div style={styleDeviceLeft} className={classes.filledOutline}>
-          <div className={classLabel}>{e.uaddr}:</div>
-          <div className={classData}>{e.name}</div>
-          <div className={classLabel}>Script:</div>
-          <div className={classData}>{e.script}</div>
-        </div>
-      </div>
-    ));
-    const controllersJSX = controllers.map(e => (
-      <div style={styleDeviceContainer} key={e.uaddr}>
-        <hr style={styleDeviceConnector} />
-        <div style={styleDeviceRight} className={classes.filledOutline}>
-          <div className={classLabel}>{e.uaddr}:</div>
-          <div className={classData}>{e.name}</div>
-          <div className={classLabel}>Control:</div>
-          <div className={classData}>{e.instance}</div>
-        </div>
-      </div>
-    ));
-    const observersJSX = observers.map(e => (
-      <div
-        style={styleDeviceCenter}
-        className={classes.filledOutline}
-        key={e.uaddr}
-      >
-        <div className={classLabel}>{e.uaddr}:</div>
-        <div className={classData}>{e.name}</div>
-        <div className={classLabel}>Observing</div>
-      </div>
-    ));
+
+    // OLD Development Code Demo
+    // const scriptEditorsJSX = scriptEditors.map(e => (
+    //   <div style={styleDeviceContainer} key={e.uaddr}>
+    //     <hr style={styleDeviceConnector} />
+    //     <div style={styleDeviceLeft} className={classes.filledOutline}>
+    //       <div className={classLabel}>{e.uaddr}:</div>
+    //       <div className={classData}>{e.name}</div>
+    //       <div className={classLabel}>Script:</div>
+    //       <div className={classData}>{e.script}</div>
+    //     </div>
+    //   </div>
+    // ));
+    // const controllersJSX = controllers.map(e => (
+    //   <div style={styleDeviceContainer} key={e.uaddr}>
+    //     <hr style={styleDeviceConnector} />
+    //     <div style={styleDeviceRight} className={classes.filledOutline}>
+    //       <div className={classLabel}>{e.uaddr}:</div>
+    //       <div className={classData}>{e.name}</div>
+    //       <div className={classLabel}>Control:</div>
+    //       <div className={classData}>{e.instance}</div>
+    //     </div>
+    //   </div>
+    // ));
+    // const observersJSX = observers.map(e => (
+    //   <div
+    //     style={styleDeviceCenter}
+    //     className={classes.filledOutline}
+    //     key={e.uaddr}
+    //   >
+    //     <div className={classLabel}>{e.uaddr}:</div>
+    //     <div className={classData}>{e.name}</div>
+    //     <div className={classLabel}>Observing</div>
+    //   </div>
+    // ));
+
+    // charcontrollers
     const devicesJSX = devices.map(d => (
       <div
         style={styleDeviceCenter}
@@ -126,8 +174,34 @@ class PanelMap extends React.Component {
         key={d.udid}
       >
         <div className={classLabel}>Device</div>
-        <div className={classData}>{FriendlifyName(d.meta.uaddr)}</div>
-        {/* <div className={classData}>{[...Object.keys(d.inputs)].join(', ')}</div> */}
+        <div className={classActive} style={{ width: 'min-content' }}>
+          {FriendlifyName(d.meta.uaddr)}
+        </div>
+      </div>
+    ));
+
+    // pozyx, ptrack, or faketrack tags via inputDefs
+    const tagsJSX = tags.map(t => (
+      <div style={styleDeviceCenter} className={classes.filledOutline} key={t.id}>
+        <div className={classLabel}>Device</div>
+        <div
+          className={classActive}
+          style={{ width: 'min-content', paddingRight: '5px' }}
+        >
+          {t.label}
+        </div>
+        <select
+          value={t.bpid}
+          className={classes.select}
+          style={{ minHeight: '25px', fontSize: '12px' }}
+          onChange={event => this.HandleTagSelect(event, t.id)}
+        >
+          {pozyxControlBpNames.map(b => (
+            <option key={b} value={b}>
+              {b}
+            </option>
+          ))}
+        </select>
       </div>
     ));
 
@@ -156,6 +230,7 @@ class PanelMap extends React.Component {
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {/* {controllersJSX} */}
             {devicesJSX}
+            {tagsJSX}
           </div>
         </div>
         <div style={{ display: 'flex' }}>
