@@ -133,6 +133,10 @@ function UpdateTag(inputId: string, bpName: string) {
   // STATE._publishState({ tags });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetTags() {
+  return STATE._getKey('tags');
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetTag(inputId: string) {
   const tags = STATE._getKey('tags');
   return tags.find(t => t.id === inputId);
@@ -322,6 +326,7 @@ export {
   EditInstance,
   // Tags
   UpdateTag,
+  GetTags,
   GetTag,
   GetTagBpid,
   // Multiple Setters

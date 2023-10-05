@@ -1,6 +1,5 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import * as ACInstances from 'modules/appcore/ac-instances';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../helpers/page-xui-styles';
@@ -27,12 +26,14 @@ class PanelMap extends React.Component {
     };
     this.urBlueprintsStateUpdated = this.urBlueprintsStateUpdated.bind(this);
     this.urInstancesStateUpdated = this.urInstancesStateUpdated.bind(this);
+    this.UpdateTags = this.UpdateTags.bind(this);
     this.HandleTagSelect = this.HandleTagSelect.bind(this);
   }
 
   componentDidMount() {
     UR.SubscribeState('blueprints', this.urBlueprintsStateUpdated);
     UR.SubscribeState('instances', this.urInstancesStateUpdated);
+    this.UpdateTags(ACInstances.GetTags()); // force update after Map Save
   }
 
   urBlueprintsStateUpdated(stateObj, cb) {
@@ -48,8 +49,12 @@ class PanelMap extends React.Component {
   // * intance group `tags` are dynamically generated instances like charcontrol and pozyx
   urInstancesStateUpdated(stateObj, cb) {
     const { instances, tags } = stateObj;
-    if (tags) this.setState({ tags });
+    this.UpdateTags(tags);
     if (typeof cb === 'function') cb();
+  }
+
+  UpdateTags(tags) {
+    if (tags) this.setState({ tags });
   }
 
   // User has selected a new blueprint to map to the selected input tag
