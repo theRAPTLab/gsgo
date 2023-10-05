@@ -122,6 +122,8 @@ export const POZYX_TRANSFORM = {
   useAccelerometer: true
 };
 
+// FakeTrack transforms are actually handled by FakeTrack itself.
+// Since all inputs are transformed, we use FAKETRACK_TRANSFORM to support a 1-to-1 transform
 const FAKETRACK_TRANSFORM = {
   scaleX: 1,
   scaleY: 1,
