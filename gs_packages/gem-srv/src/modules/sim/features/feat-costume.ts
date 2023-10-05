@@ -98,8 +98,9 @@ function m_CalculateScale(agent: IAgent): { scale: number; scaleY: number } {
  */
 function m_getAgent(agentId): IAgent {
   const a = GetAgentById(agentId);
-  if (!a) COSTUME_AGENTS.delete(agentId);
-  return a;
+  // Also delete if agent has switched bp and no longer has the feature
+  if (!a || !a.prop.Costume) COSTUME_AGENTS.delete(agentId);
+  else return a;
 }
 
 /// UPDATES ////////////////////////////////////////////////////////////////////

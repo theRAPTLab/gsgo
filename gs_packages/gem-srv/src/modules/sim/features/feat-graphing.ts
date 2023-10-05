@@ -43,8 +43,9 @@ const WIDGET_AGENTS = new Map();
  */
 function m_getAgent(agentId): IAgent {
   const a = GetAgentById(agentId);
-  if (!a) WIDGET_AGENTS.delete(agentId);
-  return a;
+  // Also delete if agent has switched bp and no longer has the feature
+  if (!a || !a.prop.Graphing) WIDGET_AGENTS.delete(agentId);
+  else return a;
 }
 
 /// WIDGETS LOOP ////////////////////////////////////////////////////////////
