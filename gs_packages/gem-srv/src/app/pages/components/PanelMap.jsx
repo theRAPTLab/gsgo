@@ -22,7 +22,7 @@ class PanelMap extends React.Component {
     this.state = {
       title: 'CHARACTER CONTROLLERS',
       simulationName: 'Aquatic Ecosystems',
-      bpNamesList: [],
+      pozyxControlBpNames: [],
       tags: []
     };
     this.urBlueprintsStateUpdated = this.urBlueprintsStateUpdated.bind(this);
@@ -36,10 +36,9 @@ class PanelMap extends React.Component {
   }
 
   urBlueprintsStateUpdated(stateObj, cb) {
-    const { nonGlobalBpNamesList } = stateObj;
-    if (nonGlobalBpNamesList) {
-      // 'global' should not be selectable as a bp on PanelMaps
-      this.setState({ bpNamesList: nonGlobalBpNamesList });
+    const { pozyxControlBpNames } = stateObj;
+    if (pozyxControlBpNames) {
+      this.setState({ pozyxControlBpNames });
     }
     if (typeof cb === 'function') cb();
   }
@@ -50,7 +49,6 @@ class PanelMap extends React.Component {
   urInstancesStateUpdated(stateObj, cb) {
     const { instances, tags } = stateObj;
     if (tags) this.setState({ tags });
-
     if (typeof cb === 'function') cb();
   }
 
@@ -62,9 +60,9 @@ class PanelMap extends React.Component {
   }
 
   render() {
-    const { title, simulationName, bpNamesList, tags } = this.state;
+    const { title, simulationName, pozyxControlBpNames, tags } = this.state;
     const { id, devices, isMinimized, onClick, classes } = this.props;
-    if (!bpNamesList) return ''; // not loaded yet
+    if (!pozyxControlBpNames) return ''; // not loaded yet
 
     // STYLES - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const styleDeviceConnector = {
@@ -193,7 +191,7 @@ class PanelMap extends React.Component {
           style={{ minHeight: '25px', fontSize: '12px' }}
           onChange={event => this.HandleTagSelect(event, t.id)}
         >
-          {bpNamesList.map(b => (
+          {pozyxControlBpNames.map(b => (
             <option key={b} value={b}>
               {b}
             </option>
