@@ -463,15 +463,23 @@ function HandleBlueprintDelete(data) {
  *  @param {string[]} scriptTextLines -- Full ScriptText as an array of strings
  */
 function ReplacePropLine(propName, propMethod, params, scriptTextLines) {
+  let objref = ''; // 'blank' or 'agent' or 'character'
   const lineNumber = scriptTextLines.findIndex(line => {
     let found = line.includes(`prop ${propName} ${propMethod}`);
-    if (!found) found = line.includes(`prop agent.${propName} ${propMethod}`);
+    if (!found) {
+      found = line.includes(`prop agent.${propName} ${propMethod}`);
+      objref = 'agent.'
+    }
+    if (!found) {
+      found = line.includes(`prop character.${propName} ${propMethod}`);
+      objref = 'character.';
+    }
     return found;
   });
-  const newLine = `prop ${propName} ${propMethod} ${params}`;
+  const newLine = `prop ${objref}${propName} ${propMethod} ${params}`;
   if (lineNumber === -1) {
     console.warn(
-      `project-server.ReplacePositionLine: No "prop ${propName} ${propMethod}..." line found.  Inserting new line.`
+      `project-server.ReplacePositionLine: No "prop ${objref}${propName} ${propMethod}..." line found.  Inserting new line.`
     );
     scriptTextLines.push(newLine);
   } else {
