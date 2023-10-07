@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -68,6 +69,7 @@ import * as DCPROJECT from 'modules/datacore/dc-project';
 import * as SIMAGENTS from 'modules/sim/sim-agents';
 import * as TRANSPILER from '../sim/script/transpiler-v2';
 import { DEBUG_FLAGS } from 'config/dev-settings';
+import { TYPES } from '../step/lib/class-ptrack-endpoint';
 const { SYMBOLIZE_CALLS: DBG_SC } = DEBUG_FLAGS;
 import ERROR from 'modules/error-mgr';
 
@@ -86,6 +88,8 @@ STATE.initializeState({
   bpDefs: [], // [{name, scriptText},...] raw blueprint script text used for saving to gemproj file
   // runtime states derived from bpDefs or bpBundles
   bpNamesList: [],
+  nonGlobalBpNamesList: [], // used for populating selection menus that exclude 'global'
+  defaultBpName: '', // derived from bpNamesList, used as fallback
   defaultPozyxBpid: '',
   charControlBpNames: [],
   ptrackControlBpNames: [],
@@ -241,6 +245,22 @@ function GetBpNamesList(): string[] {
   return STATE._getKey('bpNamesList');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetDefaultInputBpName(type: string): string {
+  switch (type) {
+    case TYPES.Pozyx:
+      return GetPozyxControlDefaultBpName();
+    case TYPES.Object:
+      return GetPTrackControlDefaultBpName();
+    case TYPES.People:
+      return GetPTrackControlDefaultBpName();
+    case TYPES.Pose:
+      return GetPTrackControlDefaultBpName();
+    default:
+      // TYPES.Faketrack adds a suffix to the type, e.g. `ft-f`
+      return STATE._getKey('defaultBpName');
+  }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Generates an array of blueprint names that have been tagged
  *  as CharControllable by inspecting the bundle.
  *  Used to populate agent selection on charController.
@@ -288,8 +308,20 @@ function GetPTrackControlBpNames(): string[] {
  */
 function GetPTrackControlDefaultBpName(): string {
   const ptrackBpNames = STATE._getKey('ptrackControlBpNames');
-  if (ptrackBpNames.length < 1) return undefined;
-  return ptrackBpNames[0];
+  if (ptrackBpNames.length < 1) {
+    const defaultBpName = STATE._getKey('defaultBpName');
+    console.warn(
+      `ACBlueprints.GetPTrackControlDefaultBpName: No controllable PTrack blueprints have been defined!!! Defaulting to "${defaultBpName}".`
+    );
+    return defaultBpName;
+  } else if (ptrackBpNames.length === 1) {
+    // if there's only one, use that one
+    return ptrackBpNames[0];
+  } else {
+    // pick a random blueprint out of all the blueprints that have PTrack enabled
+    const i = Math.round((ptrackBpNames.length - 1) * Math.random());
+    return ptrackBpNames[i];
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Generates an array of blueprint names that have been tagged
@@ -316,10 +348,20 @@ function GetPozyxControlBpNames(): string[] {
  */
 function GetPozyxControlDefaultBpName(): string {
   const pozyxBpNames = STATE._getKey('pozyxControlBpNames');
-  if (pozyxBpNames.length < 1) return undefined;
-  // pick a random blueprint out of all the blueprints that have pozyx enabled
-  const i = Math.round((pozyxBpNames.length - 1) * Math.random());
-  return pozyxBpNames[i];
+  if (pozyxBpNames.length < 1) {
+    const defaultBpName = STATE._getKey('defaultBpName');
+    console.warn(
+      `ACBlueprints.GetPozyxControlDefaultBpName: No controllable Pozyx blueprints have been defined!!! Defaulting to "${defaultBpName}".`
+    );
+    return defaultBpName;
+  } else if (pozyxBpNames.length === 1) {
+    // if there's only one, use that one
+    return pozyxBpNames[0];
+  } else {
+    // pick a random blueprint out of all the blueprints that have pozyx enabled
+    const i = Math.round((pozyxBpNames.length - 1) * Math.random());
+    return pozyxBpNames[i];
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Returns array of properties {name, type, defaultvalue, isFeatProp}
@@ -359,14 +401,24 @@ function m_UpdateAndPublishDerivedBpLists() {
   const charControlBpNames = m_GenerateCharControlBpNames(bundles);
   const ptrackControlBpNames = m_GeneratePTrackControlBpNames(bundles);
   const pozyxControlBpNames = m_GeneratePozyxControlBpNames(bundles);
+
+  // Derive Default BPName, excluding 'global'
+  const nonGlobalBpNamesList = bpNamesList.filter(b => b !== GLOBAL_AGENT_NAME);
+  const defaultBpName =
+    nonGlobalBpNamesList.length > 0 ? nonGlobalBpNamesList[0] : undefined;
+
   STATE.updateKey({
     bpNamesList,
+    nonGlobalBpNamesList,
+    defaultBpName,
     charControlBpNames,
     ptrackControlBpNames,
     pozyxControlBpNames
   });
   STATE._publishState({
     bpNamesList,
+    nonGlobalBpNamesList,
+    defaultBpName,
     charControlBpNames,
     ptrackControlBpNames,
     pozyxControlBpNames
@@ -565,6 +617,7 @@ export {
   // Derived Blueprint Lists
   GetBpEditList, // used by ScriptEditor to display list of bp to edit
   GetBpNamesList,
+  GetDefaultInputBpName,
   GetCharControlBpNames,
   GetPTrackControlBpNames,
   GetPTrackControlDefaultBpName,
@@ -572,7 +625,6 @@ export {
   GetPozyxControlDefaultBpName,
   GetBlueprintProperties,
   GetBlueprintPropertiesMap,
-  // Updaters
   SetBlueprints,
   InjectBlueprint,
   UpdateBlueprint,
