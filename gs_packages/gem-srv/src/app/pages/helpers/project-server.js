@@ -463,8 +463,9 @@ function HandleBlueprintDelete(data) {
  *  @param {string[]} scriptTextLines -- Full ScriptText as an array of strings
  */
 function ReplacePropLine(propName, propMethod, params, scriptTextLines) {
-  let objref = ''; // 'blank' or 'agent' or 'character'
+  let objref; // 'blank' or 'agent' or 'character'
   const lineNumber = scriptTextLines.findIndex(line => {
+    objref = ''; // 'blank' or 'agent' or 'character'
     let found = line.includes(`prop ${propName} ${propMethod}`);
     if (!found) {
       found = line.includes(`prop agent.${propName} ${propMethod}`);
