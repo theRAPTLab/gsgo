@@ -102,7 +102,8 @@ export function ScriptViewWiz_Block(props) {
   }
   // -- Deletion Display Data
   const { vmPageLine } = WIZCORE.SelectedTokenInfo() || {}; // if no line is selected yet
-  const { lineScript } = vmPageLine || {}; // all of these values will be empty
+  const line = gemscript_page[sel_linenum - 1];
+  const lineScript = line ? line.lineScript : '';
   const selectedLineText = lineScript
     ? WIZCORE.GetLineScriptText(lineScript)
     : '';

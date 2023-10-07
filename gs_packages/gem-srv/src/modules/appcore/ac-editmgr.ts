@@ -394,12 +394,18 @@ function AddLine(position: VMLineScriptInsertionPosition) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API ScriptViewWiz_Block delete selected line */
 function DeleteSelectedLine(event) {
-  const { script_page, sel_linenum } = WIZCORE.State();
+  const { script_page, init_script_page, sel_linenum } = WIZCORE.State();
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
-  const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
+  const isInitScript = init_script_page.length > 0;
+  const page = isInitScript ? init_script_page : script_page;
+  const lsos = TRANSPILER.ScriptPageToEditableTokens(page);
   lsos.splice(lineIdx, 1);
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
-  WIZCORE.SendState({ script_tokens: nscript });
+  if (isInitScript) {
+    WIZCORE.SendState({ init_script_tokens: nscript });
+  } else {
+    WIZCORE.SendState({ script_tokens: nscript });
+  }
   CancelSlotEdit();
 }
 
