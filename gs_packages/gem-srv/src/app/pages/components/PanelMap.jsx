@@ -36,6 +36,11 @@ class PanelMap extends React.Component {
     this.UpdateTags(ACInstances.GetTags()); // force update after Map Save
   }
 
+  componentWillUnmount() {
+    UR.UnsubscribeState('blueprints', this.urBlueprintsStateUpdated);
+    UR.UnsubscribeState('instances', this.urInstancesStateUpdated);
+  }
+
   urBlueprintsStateUpdated(stateObj, cb) {
     const { pozyxControlBpNames } = stateObj;
     if (pozyxControlBpNames) {
