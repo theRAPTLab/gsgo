@@ -261,9 +261,14 @@ class ScriptView_Pane extends React.Component {
     }
 
     // Update Bookmarks
-    if (script_page) {
+    if (script_page && !init_script_page) {
+      // don't add bookmarks for init scripts
       CHELPER.MakeBookmarkViewData(script_page);
       newState.bookmarks = CHELPER.GetBookmarkViewData();
+    } else if (init_script_page) {
+      // initial script_page load will create bookmarks, so
+      // if init_script_page loads, we need to clear the bookmark
+      newState.bookmarks = [];
     }
 
     // if script_page_needs_saving, the setState will trigger a rerender
@@ -528,31 +533,31 @@ class ScriptView_Pane extends React.Component {
 
     // BOOKMARK ---------------------------------------------------------------
     const BookmarkMenu =
-      bookmarks.length > 0 ? (
+      bookmarks.length < 1 ? (
+        ''
+      ) : (
         <div
           className={classes.infoDataColor}
           style={{ display: 'grid', gridTemplateColumns: '80px auto' }}
         >
           <div>Bookmarks:</div>
           <div>
-      <select
-        id="BookmarkSelector"
-        value={sel_bookmarklinenum}
-        onChange={this.OnBookmarkSelect}
-        className={classes.infoDataColor}
-      >
-        <option value={''}>-- select a bookmark --</option>
-        {bookmarks.map(b => (
-          <option key={b.lineNum} value={b.lineNum}>
-            {b.lineNum}:&nbsp;{b.comment}
-          </option>
-        ))}
-      </select>
+            <select
+              id="BookmarkSelector"
+              value={sel_bookmarklinenum}
+              onChange={this.OnBookmarkSelect}
+              className={classes.infoDataColor}
+            >
+              <option value={''}>-- select a bookmark --</option>
+              {bookmarks.map(b => (
+                <option key={b.lineNum} value={b.lineNum}>
+                  {b.lineNum}:&nbsp;{b.comment}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
-      ) : (
-        ''
-    );
+      );
 
     // TOP BAR ----------------------------------------------------------------
     const TopBar = (
