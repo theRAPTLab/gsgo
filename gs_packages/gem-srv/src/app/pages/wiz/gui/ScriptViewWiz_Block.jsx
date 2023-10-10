@@ -128,8 +128,8 @@ export function ScriptViewWiz_Block(props) {
   // a page is an array of line viewmodel data
   // the line has token viewmodel data plus line metdata
   if (DBG) console.groupCollapsed('ScriptViewPane Validation');
-  gemscript_page.forEach(line => {
-    const { lineNum, level, vmTokens } = line;
+  gemscript_page.forEach(ln => {
+    const { lineNum, level, vmTokens } = ln;
     const lineBuffer = [];
     const hasTokens = vmTokens.length > 0;
     let lineHasLockedSymbols = false;
