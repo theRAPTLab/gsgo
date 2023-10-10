@@ -626,6 +626,10 @@ function SaveToServer(projId, bpName) {
       initScript: init_script_text
     }).then(result => {
       // Instance Saved
+      STORE.SendState({
+        old_bpid: null,
+        script_page_needs_saving: false
+      });
       // REVIEW: Is this necessary?
       // // select the new script otherwise wizard retains the old script
       // UR.RaiseMessage('SELECT_SCRIPT', { bpName: newBpName });
