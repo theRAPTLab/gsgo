@@ -457,27 +457,19 @@ function HandleBlueprintDelete(data) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Used by InstanceUpdatePosition to find and replace existing
  *  prop setting lines.
+ *  @param {string} bpName -- Blueprint name
  *  @param {string} propName -- Name of the prop to change, e.g. x/y
  *  @param {string} propMethd -- Prop method to change, e.g. setTo
  *  @param {string} params -- Parameter for the prop method, e.g. 200
  *  @param {string[]} scriptTextLines -- Full ScriptText as an array of strings
  */
-function ReplacePropLine(propName, propMethod, params, scriptTextLines) {
-  let objref; // 'blank' or 'agent' or 'character'
-  const lineNumber = scriptTextLines.findIndex(line => {
-    objref = ''; // 'blank' or 'agent' or 'character'
-    let found = line.includes(`prop ${propName} ${propMethod}`);
-    if (!found) {
-      found = line.includes(`prop agent.${propName} ${propMethod}`);
-      objref = 'agent.'
-    }
-    if (!found) {
-      found = line.includes(`prop character.${propName} ${propMethod}`);
-      objref = 'character.';
-    }
-    return found;
-  });
-  const newLine = `prop ${objref}${propName} ${propMethod} ${params}`;
+function ReplacePropLine(bpName, propName, propMethod, params, scriptTextLines) {
+  const lineNumber = scriptTextLines.findIndex(line =>
+    line.includes(`prop ${propName} ${propMethod}`) ||
+    line.includes(`prop ${bpName}.${propName} ${propMethod}`) ||
+    line.includes(`prop agent.${propName} ${propMethod}`) ||
+    line.includes(`prop character.${propName} ${propMethod}`));
+  const newLine = `prop ${bpName}.${propName} ${propMethod} ${params}`;
   if (lineNumber === -1) {
     console.warn(
       `project-server.ReplacePositionLine: No "prop ${objref}${propName} ${propMethod}..." line found.  Inserting new line.`
@@ -506,8 +498,8 @@ function InstanceAdd(data, sendUpdate = true) {
   const hasInit = blueprint.init && blueprint.init.length > 0;
   const SPREAD = 100;
   if (!hasInit && !instance.initScript) {
-    instance.initScript = `prop x setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}
-prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
+    instance.initScript = `prop ${instance.bpid}.x setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}
+prop ${instance.bpid}.y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
   }
 
   ACInstances.AddInstance(instance);
@@ -556,8 +548,8 @@ function InstanceUpdatePosition(data) {
   let scriptTextLines = instance.initScript
     ? instance.initScript.split('\n')
     : [];
-  ReplacePropLine('x', 'setTo', data.updatedData.x, scriptTextLines);
-  ReplacePropLine('y', 'setTo', data.updatedData.y, scriptTextLines);
+  ReplacePropLine(instance.bpid, 'x', 'setTo', data.updatedData.x, scriptTextLines);
+  ReplacePropLine(instance.bpid, 'y', 'setTo', data.updatedData.y, scriptTextLines);
   const scriptText = scriptTextLines.join('\n');
   instance.initScript = scriptText;
   ACInstances.WriteInstance(instance);
