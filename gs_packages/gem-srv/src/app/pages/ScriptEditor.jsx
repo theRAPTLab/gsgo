@@ -729,6 +729,8 @@ class ScriptEditor extends React.Component {
       />
     );
 
+    const windowName = isInitScript ? 'INSTANCE' : 'TYPE';
+
     // Overrides PANEL_CONFIG's previously defined column proportions
     // PANEL_CONFIG is still being used to keep track of view state
     const GRID_COLUMNS = `${scriptWidthPercent}% auto 0px`;
@@ -747,7 +749,7 @@ class ScriptEditor extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1', textWrap: 'nowrap' }}>
-            <span style={{ fontSize: '24px' }}>SCRIPT EDITOR {projId}</span>
+            <span style={{ fontSize: '24px' }}>{windowName} EDITOR</span>
           </div>
           {ProjectSelectMenu}
           <button

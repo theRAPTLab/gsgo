@@ -36,7 +36,9 @@ class PanelBlueprints extends React.Component {
 
   componentDidMount() {
     const { enableAdd } = this.props;
-    const title = enableAdd ? 'Add Characters' : 'Character Type Scripts';
+    const title = enableAdd
+      ? 'Add Character Instances'
+      : 'Character Type Scripts';
     this.setState({ title });
     UR.SubscribeState('blueprints', this.urStateUpdated);
   }

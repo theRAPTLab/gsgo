@@ -19,7 +19,7 @@ class PanelMapInstances extends React.Component {
     super();
     const { instanceidList } = UR.ReadFlatStateGroups('instances');
     this.state = {
-      title: 'Characters',
+      title: 'Character Instances',
       instanceidList
     };
     this.urStateUpdated = this.urStateUpdated.bind(this);
