@@ -539,7 +539,11 @@ class ScriptView_Pane extends React.Component {
       ) : (
         <div
           className={classes.infoDataColor}
-          style={{ display: 'grid', gridTemplateColumns: '80px auto' }}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '80px auto',
+            padding: '5px'
+          }}
         >
           <div>Bookmarks:</div>
           <div>
@@ -548,6 +552,7 @@ class ScriptView_Pane extends React.Component {
               value={sel_bookmarklinenum}
               onChange={this.OnBookmarkSelect}
               className={classes.infoDataColor}
+              style={{ fontSize: '1em', padding: '1px 0 0 5px', margin: '0' }}
             >
               <option value={''}>-- select a bookmark --</option>
               {bookmarks.map(b => (
