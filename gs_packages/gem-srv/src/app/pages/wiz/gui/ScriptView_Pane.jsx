@@ -422,6 +422,7 @@ class ScriptView_Pane extends React.Component {
       UR.RaiseMessage('NET:BLUEPRINT_DELETE', {
         blueprintName: bpName
       });
+      window.close();
     }
   }
 
