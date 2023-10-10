@@ -15,11 +15,11 @@
       5. UpdateBpEditList sets OnSelectScript
       6. OnSelectScript loads the actual script
 
-      RATIONALE
+  RATIONALE
 
-    We want Main to be the traffic cop, so it can keep track of edit state
-    and read/write permissions.  This method of loading also allows for
-    temporary non-saved versions of project files/blueprint scripts.
+      We want Main to be the traffic cop, so it can keep track of edit state
+      and read/write permissions.  This method of loading also allows for
+      temporary non-saved versions of project files/blueprint scripts.
 
 
   COMPONENT HIERARCHY
@@ -269,6 +269,7 @@ class ScriptEditor extends React.Component {
   componentWillUnmount() {
     this.CleanupComponents();
     window.removeEventListener('beforeunload', this.CleanupComponents);
+    document.removeEventListener('click', EDITMGR.DispatchClick);
     EDITMGR.UnsubscribeState(handleEditMgrUpdate);
   }
 
@@ -684,27 +685,27 @@ class ScriptEditor extends React.Component {
       );
     } else {
       // Blueprints list
-    const sortedBlueprints = bpEditList
-      ? bpEditList.sort((a, b) => {
-          if (a.name < b.name) return -1;
-          if (a.name > b.name) return 1;
-          return 0;
-        })
-      : [];
+      const sortedBlueprints = bpEditList
+        ? bpEditList.sort((a, b) => {
+            if (a.name < b.name) return -1;
+            if (a.name > b.name) return 1;
+            return 0;
+          })
+        : [];
       ProjectSelectMenu = (
-      <select
-        value={bpName}
-        onChange={this.OnProjectMenuSelect}
-        className={classes.select}
+        <select
+          value={bpName}
+          onChange={this.OnProjectMenuSelect}
+          className={classes.select}
           style={{ margin: '0 20px', minHeight: '32px', fontSize: '14px' }}
-      >
-        {sortedBlueprints.map(bp => (
-          <option key={bp.name} value={bp.name}>
-            {bp.name}
-          </option>
-        ))}
-      </select>
-    );
+        >
+          {sortedBlueprints.map(bp => (
+            <option key={bp.name} value={bp.name}>
+              {bp.name}
+            </option>
+          ))}
+        </select>
+      );
     }
 
     const DialogNoMain = (
@@ -780,7 +781,7 @@ class ScriptEditor extends React.Component {
           <Dragger color="#064848" onDragUpdate={this.OnDraggerUpdate} />
           {/* <PanelSimViewer id="sim" onClick={this.OnPanelClick} /> */}
           <SlotEditor_Block />
-          </div>
+        </div>
         {DialogNoMain}
         {DialogProjectSwitch}
       </div>
