@@ -492,6 +492,7 @@ class ScriptView_Pane extends React.Component {
       script_text,
       sel_linenum,
       sel_linepos,
+      isInitScript,
       bookmarks,
       sel_bookmarklinenum
     } = this.state;
@@ -581,7 +582,7 @@ class ScriptView_Pane extends React.Component {
     );
 
     // BOTTOM BAR ----------------------------------------------------
-    const BackBtn = (
+    const BackBtn = !isInitScript && (
       <button
         type="button"
         className={classes.button}
@@ -592,7 +593,8 @@ class ScriptView_Pane extends React.Component {
         &lt; SELECT SCRIPT
       </button>
     );
-    const DeleteBtn = (
+    // Only show DeleteButton if it's an init script
+    const DeleteBtn = !isInitScript && (
       <button
         type="button"
         className={`${classes.colorData} ${classes.buttonLink}`}
