@@ -174,6 +174,7 @@ class ScriptEditor extends React.Component {
     this.OnProjectMenuSelect = this.OnProjectMenuSelect.bind(this);
     this.OnInstanceMenuSelect = this.OnInstanceMenuSelect.bind(this);
     this.OnDraggerUpdate = this.OnDraggerUpdate.bind(this);
+    this.OnWindowClose = this.OnWindowClose.bind(this);
 
     // Sent by PanelSelectAgent
     UR.HandleMessage('SELECT_SCRIPT', this.SelectScript);
@@ -183,6 +184,7 @@ class ScriptEditor extends React.Component {
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleProjectUpdate);
     UR.HandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+    UR.HandleMessage('NET:SCRIPT_EDITOR_CLOSE', this.OnWindowClose);
   }
 
   componentDidMount() {
@@ -637,6 +639,17 @@ class ScriptEditor extends React.Component {
 
   OnDraggerUpdate(ratio) {
     this.setState({ scriptWidthPercent: ratio * 100 });
+  }
+
+  /**
+   * Only close window if the instances match
+   * @param {*} data
+   * @param {string} data.instanceLabel Instance label to target for closing
+   */
+  OnWindowClose(data) {
+    const { instanceLabel: thisInstanceLabel } = this.state;
+    const { instanceLabel: targettedLabel } = data;
+    if (thisInstanceLabel === targettedLabel) window.close();
   }
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
