@@ -401,11 +401,8 @@ function DeleteSelectedLine(event) {
   const lsos = TRANSPILER.ScriptPageToEditableTokens(page);
   lsos.splice(lineIdx, 1);
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
-  if (isInitScript) {
-    WIZCORE.SendState({ init_script_tokens: nscript });
-  } else {
-    WIZCORE.SendState({ script_tokens: nscript });
-  }
+  if (isInitScript) WIZCORE.SendState({ init_script_tokens: nscript });
+  else WIZCORE.SendState({ script_tokens: nscript });
   CancelSlotEdit();
 }
 
@@ -438,7 +435,8 @@ function SaveSlotLineScript(event) {
   const { script_page, init_script_page, sel_linenum } = WIZCORE.State();
   const { slots_linescript } = SLOTCORE.State();
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
-  const page = init_script_page.length > 0 ? init_script_page : script_page; // if initscript is present, use that
+  const isInitScript = init_script_page.length > 0;
+  const page = isInitScript ? init_script_page : script_page; // if initscript is present, use that
   const lsos = TRANSPILER.ScriptPageToEditableTokens(page);
   const lineToUpdate = lsos[lineIdx]; // clone existing line to retain block info
 
@@ -493,7 +491,7 @@ function SaveSlotLineScript(event) {
   }); // just update the lineScript
   lsos.splice(lineIdx, 1, lineToUpdate);
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
-  if (init_script_page) WIZCORE.SendState({ init_script_tokens: nscript });
+  if (isInitScript) WIZCORE.SendState({ init_script_tokens: nscript });
   else WIZCORE.SendState({ script_tokens: nscript });
   SLOTCORE.SendState({ slots_need_saving: false });
   UR.LogEvent('ScriptEdit', [

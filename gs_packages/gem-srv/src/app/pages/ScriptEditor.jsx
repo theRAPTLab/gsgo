@@ -659,8 +659,10 @@ class ScriptEditor extends React.Component {
     } = this.state;
     const { classes } = this.props;
 
+    const isInitScript = instancesEditList.length > 0;
+
     let ProjectSelectMenu;
-    if (instancesEditList.length > 0) {
+    if (isInitScript) {
       // Instances list
       const sortedInstances = instancesEditList
         ? instancesEditList.sort((a, b) => {
