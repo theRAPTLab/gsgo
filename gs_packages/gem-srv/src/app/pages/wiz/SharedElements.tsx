@@ -108,7 +108,8 @@ export const sScriptView = {
   backgroundColor: 'white',
   overflowY: 'scroll',
   overflowX: 'none',
-  whiteSpace: 'nowrap'
+  whiteSpace: 'nowrap',
+  padding: '14px 0'
 };
 
 /// LEFT: SCRIPT UNIT EDITOR //////////////////////////////////////////////////
