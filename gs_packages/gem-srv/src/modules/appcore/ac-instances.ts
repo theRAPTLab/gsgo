@@ -285,6 +285,8 @@ function WriteInstance(instance) {
   const index = instances.findIndex(i => i.id === id);
   instances.splice(index, 1, instance);
   UR.WriteState('instances', 'instances', instances); // calls updateAndPublish via hook_Effect
+  // also update the current instance state so the instanceDef is updated
+  UR.WriteState('instances', 'currentInstance', instance);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

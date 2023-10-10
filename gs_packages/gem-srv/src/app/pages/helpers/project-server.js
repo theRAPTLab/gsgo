@@ -618,6 +618,12 @@ function InstanceDefUpdate(data) {
  *  when the edit is submitted, InstanceEditor will trigger an `instances`
  *  state group update.  This in turn triggers an InstanceDefUpdate
  *  which will delete and recreate the instance.
+ *  Called by InstanceEditor and
+ *  ScriptEditor > ScriptView_Pane.SaveToServer
+ *  -> ac-wizcore.SaveToServer
+ *  -> 'NET:INSTANCE_UPDATE'
+ *  -> project-server.InstanceUpdate
+ *  -> ac-instance.WriteInstance
  */
 function urCurrentInstanceStateUpdated(stateObj, cb) {
   const { currentInstance } = stateObj;
