@@ -369,7 +369,8 @@ class ScriptView_Pane extends React.Component {
       text = this.jar.toString();
       // retain the cur_bdl so initScript can reference the orig script text
       if (isInitScript) WIZCORE.SendState({ cur_bdl, init_script_text: text });
-      else WIZCORE.SendState({ script_text: text });
+      // clear init_script_text if we're is not init script
+      else WIZCORE.SendState({ script_text: text, init_script_text: null });
     }
     WIZCORE.SaveToServer(projId, bpName);
     UR.LogEvent('ScriptEdit', ['Save to Server', bpName]);

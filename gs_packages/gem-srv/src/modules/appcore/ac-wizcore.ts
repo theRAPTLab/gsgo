@@ -566,7 +566,7 @@ function AddLine(position: VMLineScriptInsertionPosition) {
   // figure out what to update
   const newState: TStateObject = {};
   // replace with init_script_tokesn OR script_tokesn
-  if (init_script_page) newState.init_script_tokens = nscript;
+  if (init_script_page.length > 0) newState.init_script_tokens = nscript;
   else newState.script_tokens = nscript;
   STORE.SendState(newState);
 
