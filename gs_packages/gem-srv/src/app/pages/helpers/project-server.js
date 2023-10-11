@@ -648,7 +648,9 @@ function m_RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
   const scriptUnits = TRANSPILER.TextToScript(instance.initScript);
   const scrubbedScriptUnits = scriptUnits.filter(unit => {
     if (unit[0] && unit[0].identifier === 'prop') {
-      return validPropNames.includes(unit[1].identifier);
+      if (unit[1].objref && unit[1].objref.length === 2) // support '<bpname>.x'
+        return validPropNames.includes(unit[1].objref[1]);
+      else return validPropNames.includes(unit[1].identifier);
     }
     return true; // ignore other methods
   });
