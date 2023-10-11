@@ -472,7 +472,7 @@ function ReplacePropLine(bpName, propName, propMethod, params, scriptTextLines) 
   const newLine = `prop ${bpName}.${propName} ${propMethod} ${params}`;
   if (lineNumber === -1) {
     console.warn(
-      `project-server.ReplacePositionLine: No "prop ${objref}${propName} ${propMethod}..." line found.  Inserting new line.`
+      `project-server.ReplacePositionLine: No "prop ${bpName}.${propName} ${propMethod}..." line found.  Inserting new line.`
     );
     scriptTextLines.push(newLine);
   } else {
