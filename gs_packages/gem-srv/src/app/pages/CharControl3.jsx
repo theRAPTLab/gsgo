@@ -1,9 +1,12 @@
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  CharController - Main Application View
-  This is based on FakeTrack testbed for GEMSTEP, which is not feature
-  complete
+  CharController3 - Main Application View
+
+  Shows draggers on top of the simulation
+
+  This is based on CharCtonrol, which is in tur based on
+  FakeTrack testbed for GEMSTEP, which is not feature complete
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -38,10 +41,6 @@ class CharController extends React.Component {
   constructor(props) {
     super(props);
 
-    this.consoleRightRef = React.createRef();
-    this.panelSimViewerRef = React.createRef();
-    this.containerRef = React.createRef();
-
     // save instance of mod_charctrl
     if (typeof props.controller === 'object') {
       this.controller = props.controller;
@@ -73,7 +72,11 @@ class CharController extends React.Component {
       mprop: false,
       ctrl_name: '-',
       data_object_name: '-',
-      rate: 0
+      rate: 0,
+      dragContainerTop: 0,
+      dragContainerHeight: 0,
+      dragContainerLeft: 0,
+      dragContainerWidth: 0
     };
     this.init = this.init.bind(this);
     this.updateLogSettings = this.updateLogSettings.bind(this);
@@ -82,6 +85,12 @@ class CharController extends React.Component {
       this.handleSetCharControlBpidList.bind(this);
     this.requestBPNames = this.requestBPNames.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
+    this.HandleResize = this.HandleResize.bind(this);
+    this.RequestBoundary = this.RequestBoundary.bind(this);
+    this.SetBoundary = this.SetBoundary.bind(this);
+    this.HandleSetBoundary = this.HandleSetBoundary.bind(this);
+    // Sent by parent after it knows the Main Sim project has loaded
+    UR.HandleMessage('INIT_RENDERER', this.RequestBoundary);
     UR.HandleMessage(
       'NET:SET_CHARCONTROL_BPIDLIST',
       this.handleSetCharControlBpidList
@@ -97,7 +106,7 @@ class CharController extends React.Component {
     HookResize(window);
 
     // Update size of controller canvas and entities
-    window.addEventListener('resize', UpdateDimensions);
+    window.addEventListener('resize', this.HandleResize);
 
     UR.HookPhase('UR/APP_START', async () => {
       const devAPI = UR.SubscribeDeviceSpec({
@@ -114,58 +123,17 @@ class CharController extends React.Component {
         }
       });
     });
-
-    // ADDED via CHATGPT
-
-    const consoleRight = this.consoleRightRef.current;
-    const panelSimViewer = ReactDOM.findDOMNode(this.panelSimViewerRef.current);
-    const container = this.containerRef.current;
-
-    const handleResize = () => {
-      const { width, height, left, top } = panelSimViewer.getBoundingClientRect();
-
-      // Adjust the top position for padding
-      const paddingTop = parseInt(
-        window.getComputedStyle(panelSimViewer).paddingTop
-      );
-      let adjustedTop = top - paddingTop + 45;
-
-      // Adjust the left position for padding
-      const paddingLeft = parseInt(
-        window.getComputedStyle(panelSimViewer).paddingLeft
-      );
-      let adjustedLeft = left - paddingLeft;
-
-      // HACK: we know we want a square, so use the height to build it
-      let oldWidth = width;
-      let adjustedWidth = height;
-
-      adjustedLeft += (oldWidth - adjustedWidth) / 2;
-
-      console.log('width: ' + width);
-
-      container.style.width = `${adjustedWidth}px`;
-      container.style.height = `${height}px`;
-      container.style.left = `${adjustedLeft - consoleRight.offsetLeft}px`;
-      container.style.top = `${adjustedTop - consoleRight.offsetTop}px`;
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    this.cleanup = () => {
-      window.removeEventListener('resize', handleResize);
-    };
   }
 
   componentWillUnmount() {
     if (DBG) console.log(...PR('componentWillUnmount'));
+    UR.UnhandleMessage('INIT_RENDERER', this.RequestBoundary);
     UR.UnhandleMessage(
       'NET:SET_CHARCONTROL_BPIDLIST',
       this.handleSetCharControlBpidList
     );
     UR.UnhandleMessage('NET:LOG_ENABLE', this.updateLogSettings);
-
-    this.cleanup();
+    window.removeEventListener('resize', this.HandleResize);
   }
 
   init() {
@@ -173,7 +141,7 @@ class CharController extends React.Component {
     this.requestBPNames();
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
-    UR.LogEvent('Session', ['CharController Connect']);
+    UR.LogEvent('Session', ['CharController3 Connect']);
   }
 
   updateLogSettings(data) {
@@ -223,8 +191,75 @@ class CharController extends React.Component {
     HandleStateChange(name, value);
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   *  The simulation bounds is set by each project.  So it needs to be updated
+   *  whenever a project loads.  It also needs to be updated when the window
+   *  resizes.
+   */
+  HandleResize() {
+    this.RequestBoundary();
+  }
+  SetBoundary() {
+    UpdateDimensions();
+  }
+  RequestBoundary() {
+    UR.CallMessage('NET:REQ_PROJDATA', {
+      fnName: 'GetProjectBoundary'
+    }).then(this.HandleSetBoundary);
+  }
+  HandleSetBoundary(data) {
+    const renderRoot = document.getElementById('root-renderer');
+    // From api-render.RescaleToFit
+    const projectWidth = data.result.width; // project settings width
+    const projectHeight = data.result.height;
+    const scaleFactor = Math.min(
+      renderRoot.offsetWidth / projectWidth,
+      renderRoot.offsetHeight / projectHeight
+    );
+    // account for navbar and title bar
+    const navbarAndTitleHeight = 47.3; // px
+
+    let resizedDragContainerWidth;
+    let resizedDragContainerHeight;
+    if (projectWidth > projectHeight) {
+      resizedDragContainerWidth = renderRoot.offsetWidth;
+      resizedDragContainerHeight =
+        renderRoot.offsetHeight * scaleFactor - navbarAndTitleHeight;
+    } else {
+      resizedDragContainerWidth = renderRoot.offsetWidth * scaleFactor;
+      resizedDragContainerHeight = renderRoot.offsetHeight - navbarAndTitleHeight;
+    }
+    const dragContainerTop =
+      navbarAndTitleHeight +
+      (renderRoot.offsetHeight - resizedDragContainerHeight) / 2;
+    const dragContainerHeight = resizedDragContainerHeight;
+    const dragContainerLeft =
+      (renderRoot.offsetWidth - resizedDragContainerWidth) / 2;
+    const dragContainerWidth = resizedDragContainerWidth;
+
+    this.setState(
+      {
+        dragContainerTop,
+        dragContainerHeight,
+        dragContainerLeft,
+        dragContainerWidth
+      },
+      () => this.SetBoundary()
+    );
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
   render() {
-    const { noMain, tag, tags } = this.state;
+    const {
+      noMain,
+      tag,
+      tags,
+      dragContainerTop,
+      dragContainerHeight,
+      dragContainerLeft,
+      dragContainerWidth
+    } = this.state;
     const controlNames = [{ 'id': 'markers', 'label': 'markers' }];
     const { classes } = this.props;
     const selectedTag = tag || (tags.length > 0 && tags[0]) || '';
@@ -243,7 +278,7 @@ class CharController extends React.Component {
         className={classes.root}
         id="root"
         style={{
-          gridTemplateColumns: '50% 50%', // always fit
+          gridTemplateColumns: '100%',
           gridTemplateRows: '30px auto 0',
           boxSizing: 'border-box',
           overflow: 'hidden'
@@ -300,35 +335,19 @@ class CharController extends React.Component {
           </div>
         </div>
         {/* ------------------------------------------------------------------------------ */}
-
+        <PanelSimViewer id="sim" />
         <div
-          id="console-right"
-          ref={this.consoleRightRef}
-          className={classes.right}
           style={{
-            boxSizing: 'border-box',
-            gridColumnEnd: 'span 2',
-            minWidth: '280px'
+            position: 'absolute',
+            top: dragContainerTop,
+            height: dragContainerHeight,
+            left: dragContainerLeft,
+            width: dragContainerWidth,
+            backgroundColor: 'transparent'
           }}
-        >
-          <PanelSimViewer id="sim" ref={this.panelSimViewerRef} />
-          {}
-        </div>
-
-        {/* ------------------------------------------------------------------------------ */}
-
-        <div
-          className={classes.main + ' overlap'}
           id="container"
-          ref={this.containerRef}
-          style={{
-            boxSizing: 'border-box',
-            gridColumnEnd: 'span 2'
-          }}
         />
-
         {/* ------------------------------------------------------------------------------ */}
-
         <div
           id="console-bottom"
           className={clsx(classes.cell, classes.bottom)}
