@@ -70,10 +70,15 @@ function GetInstances() {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 function GetInstance(id) {
   const instances = _getKey('instances');
   return instances.find(i => i.id === id);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetInstanceByLabel(label) {
+  const instances = _getKey('instances');
+  return instances.find(i => i.label === label);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -280,6 +285,8 @@ function WriteInstance(instance) {
   const index = instances.findIndex(i => i.id === id);
   instances.splice(index, 1, instance);
   UR.WriteState('instances', 'instances', instances); // calls updateAndPublish via hook_Effect
+  // also update the current instance state so the instanceDef is updated
+  UR.WriteState('instances', 'currentInstance', instance);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -287,6 +294,9 @@ function WriteInstance(instance) {
 function DeleteInstance(id) {
   const instances = _getKey('instances');
   const index = instances.findIndex(i => i.id === id);
+  UR.CallMessage('NET:SCRIPT_EDITOR_CLOSE', {
+    instanceLabel: instances[index].label
+  });
   instances.splice(index, 1);
   UR.WriteState('instances', 'instances', instances); // calls updateAndPublish via hook_Effect
 }
@@ -320,6 +330,7 @@ export {
   // Getters
   GetInstances,
   GetInstance,
+  GetInstanceByLabel,
   GetInstanceidList,
   GetInstanceUID,
   // InstanceEditor

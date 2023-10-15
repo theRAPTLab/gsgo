@@ -94,7 +94,6 @@ function AddStyle(style: {
   let { matchString, cssClass, color, backgroundColor, help, isBookmark } = style;
   // Check for existence before styleMap
   if (COMMENTTYPEMAP.has(matchString)) {
-    console.warn(`Style ${matchString} overridden by preferences ${cssClass}`);
     const orig = COMMENTTYPEMAP.get(matchString);
     cssClass = cssClass || orig.cssClass;
     color = color || orig.color;

@@ -90,96 +90,6 @@ const StyledToggleButton = withStyles(theme => ({
   }
 }))(ToggleButton);
 
-/// TEST SCRIPT ///////////////////////////////////////////////////////////////
-/// These demo scripts are for testing the highlighting scheme only.
-/// They're not currently being used.  Scripts are directly loaded via
-/// props from ScriptEditor.
-
-// Script text for testing Prism highlighting and scrolling
-const highlighting_test_script = `# BLUEPRINT Bee
-# DEFINE
-addProp frame Number 3
-useFeature Movement
-# UPDATE
-setProp skin 'bunny.json'
-featureCall Movement jitterPos -5 5
-# EVENT
-onEvent Tick [[
-  // happens every second, and we check everyone
-  ifExpr {{ agent.getProp('name').value==='bun5' }} [[
-    dbgOut 'my tick' 'agent instance' {{ agent.getProp('name').value }}
-    dbgOut 'my tock'
-  ]]
-  setProp 'x'  0
-  setProp 'y'  0
-]]
-# CONDITION
-when Bee sometest [[
-  // dbgOut SingleTest
-]]
-when Bee sometest Bee [[
-  // dbgOut PairTest
-]]
-
-// Bad Matches
-preaddProp
-addPropPost
-not a # pragma
-addProp comment // comment after
-
-// EXTRA LONG SCRIPT TO TEST SCROLLING
-# DEFINE
-addProp frame Number 3
-useFeature Movement
-# UPDATE
-setProp skin 'bunny.json'
-featureCall Movement jitterPos -5 5
-# EVENT
-onEvent Tick [[
-  // happens every second, and we check everyone
-  ifExpr {{ agent.getProp('name').value==='bun5' }} [[
-    dbgOut 'my tick' 'agent instance' {{ agent.getProp('name').value }}
-    dbgOut 'my tock'
-  ]]
-  setProp 'x'  0
-  setProp 'y'  0
-]]
-# CONDITION
-when Bee sometest [[
-  // dbgOut SingleTest
-]]
-when Bee sometest Bee [[
-  // dbgOut PairTest
-]]
-`;
-
-// Working demoscript
-const demoscript = `# BLUEPRINT BunBun
-# PROGRAM DEFINE
-addProp frame Number 3
-useFeature Movement
-# PROGRAM UPDATE
-setProp skin 'bunny.json'
-featureCall Movement jitterPos -5 5
-# PROGRAM EVENT
-onEvent Tick [[
-  // happens every second, and we check everyone
-  ifExpr {{ agent.getProp('name').value==='bun5' }} [[
-    dbgOut 'my tick' 'agent instance' {{ agent.getProp('name').value }}
-    dbgOut 'my tock'
-  ]]
-  setProp 'x'  0
-  setProp 'y'  0
-]]
-# PROGRAM CONDITION
-when Bee sometest [[
-  // dbgOut SingleTest
-]]
-when Bee sometest Bee [[
-  // dbgOut PairTest
-]]
-`;
-
 /// PRISM GEMSCRIPT DEFINITION ////////////////////////////////////////////////
 const keywords = GetAllKeywords();
 const keywords_regex = new RegExp(
@@ -199,7 +109,8 @@ if (DBG) console.log(...PR('PRISM gemscript types', types_regex));
 class ScriptView_Pane extends React.Component {
   constructor() {
     super();
-    const { script_page, script_text, sel_linenum } = WIZCORE.State();
+    const { script_page, script_text, sel_linenum, sel_linepos, cur_bdl } =
+      WIZCORE.State();
     this.state = {
       viewMode: VIEWMODE_WIZARD, // 'code',
       jsx: '',
@@ -207,11 +118,12 @@ class ScriptView_Pane extends React.Component {
       openConfirmDelete: false,
       openConfirmUnload: false,
       confirmUnloadCallback: {}, // fn called when user confirms unload
-      // script: demoscript // Replace the prop `script` with this to test scripts defined in this file
-      // post wizcore integration
-      script_page,
+      gemscript_page: script_page,
       script_text,
       sel_linenum,
+      sel_linepos,
+      isInitScript: false,
+      cur_bdl, // needed to update initScript
       bookmarks: [],
       sel_bookmarklinenum: 0,
       scrollContainer: {}
@@ -298,12 +210,21 @@ class ScriptView_Pane extends React.Component {
   /** INCOMING: handle WIZCORE event updates */
   HandleWizUpdate(vmStateEvent) {
     // EASY VERSION REQUIRING CAREFUL WIZCORE CONTROL
-    const { script_page, script_text, script_page_needs_saving, sel_linenum } =
-      vmStateEvent;
-    const newState = {};
+    const { isInitScript } = this.state;
+    const {
+      script_page,
+      script_text,
+      init_script_page,
+      init_script_text,
+      script_page_needs_saving,
+      sel_linenum,
+      sel_linepos
+    } = vmStateEvent;
+    const newState = { isInitScript };
     let cb;
     if (script_page) {
-      newState.script_page = script_page;
+      newState.gemscript_page = script_page;
+      newState.isInitScript = false;
     }
     if (script_text) {
       newState.script_text = script_text;
@@ -312,6 +233,23 @@ class ScriptView_Pane extends React.Component {
         // Force Prism update otherwise line number highlight is not updated
         Prism.highlightElement(this.jarRef.current);
       };
+      newState.isInitScript = false;
+    }
+
+    // If `init_script_page` state is passed (instaed of `script_page`) then the
+    // state update is intended for the initSript.  Use that for the script_page
+    if (init_script_page) {
+      newState.gemscript_page = init_script_page;
+      newState.isInitScript = true;
+    }
+    if (init_script_text) {
+      newState.script_text = init_script_text;
+      cb = () => {
+        this.jar.updateCode(init_script_text);
+        // Force Prism update otherwise line number highlight is not updated
+        Prism.highlightElement(this.jarRef.current);
+      };
+      newState.isInitScript = true;
     }
 
     // If WIZCORE update included a line selection, then we need to update
@@ -323,9 +261,14 @@ class ScriptView_Pane extends React.Component {
     }
 
     // Update Bookmarks
-    if (script_page) {
+    if (script_page && !init_script_page) {
+      // don't add bookmarks for init scripts
       CHELPER.MakeBookmarkViewData(script_page);
       newState.bookmarks = CHELPER.GetBookmarkViewData();
+    } else if (init_script_page) {
+      // initial script_page load will create bookmarks, so
+      // if init_script_page loads, we need to clear the bookmark
+      newState.bookmarks = [];
     }
 
     // if script_page_needs_saving, the setState will trigger a rerender
@@ -419,12 +362,15 @@ class ScriptView_Pane extends React.Component {
     }
 
     // if we're in code view, update the code script first
-    const { viewMode } = this.state;
+    const { viewMode, isInitScript, cur_bdl } = this.state;
     const { projId, bpName } = this.props;
     let text;
     if (viewMode === VIEWMODE_CODE) {
       text = this.jar.toString();
-      WIZCORE.SendState({ script_text: text });
+      // retain the cur_bdl so initScript can reference the orig script text
+      if (isInitScript) WIZCORE.SendState({ cur_bdl, init_script_text: text });
+      // clear init_script_text if we're is not init script
+      else WIZCORE.SendState({ script_text: text, init_script_text: null });
     }
     WIZCORE.SaveToServer(projId, bpName);
     UR.LogEvent('ScriptEdit', ['Save to Server', bpName]);
@@ -477,6 +423,7 @@ class ScriptView_Pane extends React.Component {
       UR.RaiseMessage('NET:BLUEPRINT_DELETE', {
         blueprintName: bpName
       });
+      window.close();
     }
   }
 
@@ -493,6 +440,7 @@ class ScriptView_Pane extends React.Component {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   OnToggleWizard(event, value) {
+    const { cur_bdl, isInitScript } = this.state;
     if (value === null) return; // skip repeated clicks
     if (value === VIEWMODE_CODE) {
       // currently wizard, clicked on code
@@ -501,7 +449,10 @@ class ScriptView_Pane extends React.Component {
       EDITMGR.CancelSlotEdit();
     } else if (value === VIEWMODE_WIZARD) {
       const script_text = this.jar.toString();
-      WIZCORE.SendState({ script_text });
+      if (isInitScript) {
+        // retain the cur_bdl so initScript can reference the orig script text
+        WIZCORE.SendState({ cur_bdl, init_script_text: script_text });
+      } else WIZCORE.SendState({ script_text });
     }
     this.setState({ viewMode: value }, () => {
       // Force Prism update otherwise line number highlight is not updated
@@ -538,9 +489,11 @@ class ScriptView_Pane extends React.Component {
       lineHighlight,
       openConfirmDelete,
       openConfirmUnload,
-      script_page,
+      gemscript_page,
       script_text,
       sel_linenum,
+      sel_linepos,
+      isInitScript,
       bookmarks,
       sel_bookmarklinenum
     } = this.state;
@@ -582,21 +535,37 @@ class ScriptView_Pane extends React.Component {
     const updatedTitle = this.GetTitle(bpName);
 
     // BOOKMARK ---------------------------------------------------------------
-    const BookmarkList = (
-      <select
-        id="BookmarkSelector"
-        value={sel_bookmarklinenum}
-        onChange={this.OnBookmarkSelect}
-        className={classes.infoDataColor}
-      >
-        <option value={''}>-- select a bookmark --</option>
-        {bookmarks.map(b => (
-          <option key={b.lineNum} value={b.lineNum}>
-            {b.lineNum}:&nbsp;{b.comment}
-          </option>
-        ))}
-      </select>
-    );
+    const BookmarkMenu =
+      bookmarks.length < 1 ? (
+        ''
+      ) : (
+        <div
+          className={classes.infoDataColor}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '80px auto',
+            padding: '5px'
+          }}
+        >
+          <div>Bookmarks:</div>
+          <div>
+            <select
+              id="BookmarkSelector"
+              value={sel_bookmarklinenum}
+              onChange={this.OnBookmarkSelect}
+              className={classes.infoDataColor}
+              style={{ fontSize: '1em', padding: '1px 0 0 5px', margin: '0' }}
+            >
+              <option value={''}>-- select a bookmark --</option>
+              {bookmarks.map(b => (
+                <option key={b.lineNum} value={b.lineNum}>
+                  {b.lineNum}:&nbsp;{b.comment}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      );
 
     // TOP BAR ----------------------------------------------------------------
     const TopBar = (
@@ -609,18 +578,12 @@ class ScriptView_Pane extends React.Component {
           <StyledToggleButton value={VIEWMODE_WIZARD}>Wizard</StyledToggleButton>
           <StyledToggleButton value={VIEWMODE_CODE}>Code</StyledToggleButton>
         </ToggleButtonGroup>
-        <div
-          className={classes.infoDataColor}
-          style={{ display: 'grid', gridTemplateColumns: '80px auto' }}
-        >
-          <div>Bookmarks:</div>
-          <div>{BookmarkList}</div>
-        </div>
+        {BookmarkMenu}
       </>
     );
 
     // BOTTOM BAR ----------------------------------------------------
-    const BackBtn = (
+    const BackBtn = !isInitScript && (
       <button
         type="button"
         className={classes.button}
@@ -631,7 +594,8 @@ class ScriptView_Pane extends React.Component {
         &lt; SELECT SCRIPT
       </button>
     );
-    const DeleteBtn = (
+    // Only show DeleteButton if it's an init script
+    const DeleteBtn = !isInitScript && (
       <button
         type="button"
         className={`${classes.colorData} ${classes.buttonLink}`}
@@ -722,8 +686,9 @@ class ScriptView_Pane extends React.Component {
         }}
       >
         <ScriptViewWiz_Block
-          script_page={script_page}
+          gemscript_page={gemscript_page}
           sel_linenum={sel_linenum}
+          sel_linepos={sel_linepos}
         />
       </div>
     );
@@ -732,7 +697,7 @@ class ScriptView_Pane extends React.Component {
     return (
       <PanelChrome
         id={id} // used by click handler to identify panel
-        title={updatedTitle}
+        // title={updatedTitle} // hide title to reduce complexity
         onClick={onClick}
         topbar={TopBar}
         bottombar={BottomBar}

@@ -70,7 +70,7 @@ class MapEditor extends React.Component {
           bpNamesList={bpNamesList}
           enableAdd
         />
-        <PanelMapInstances id="instances" />
+        <PanelMapInstances id="instances" projId={projId} />
       </div>
     );
   }

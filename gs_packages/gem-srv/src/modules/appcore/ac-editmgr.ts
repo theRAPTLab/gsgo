@@ -172,8 +172,14 @@ function SelectSlot(sel_linenum, sel_linepos) {
   //    Coordinate wizcore with slotcore: select the new slot_linescript
   //    run validation and save result if new selected token
   if (sel_linenum && sel_linenum > 0) {
-    const { script_page } = WIZCORE.State();
-    const { lineScript } = script_page[CHECK.OffsetLineNum(sel_linenum, 'sub')];
+    // ORIG script_page call
+    // const { script_page } = WIZCORE.State();
+    // const { lineScript } = script_page[CHECK.OffsetLineNum(sel_linenum, 'sub')];
+    //
+    // REVISED version that can handle both script_page and init_script_page
+    const { script_page, init_script_page } = WIZCORE.State();
+    const page = init_script_page.length > 0 ? init_script_page : script_page;
+    const { lineScript } = page[CHECK.OffsetLineNum(sel_linenum, 'sub')];
     const new_slots_linescript = lineScript.map(t => ({ ...t }));
     newSlotState.slots_linescript = new_slots_linescript;
   }
@@ -388,12 +394,15 @@ function AddLine(position: VMLineScriptInsertionPosition) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API ScriptViewWiz_Block delete selected line */
 function DeleteSelectedLine(event) {
-  const { script_page, sel_linenum } = WIZCORE.State();
+  const { script_page, init_script_page, sel_linenum } = WIZCORE.State();
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
-  const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
+  const isInitScript = init_script_page.length > 0;
+  const page = isInitScript ? init_script_page : script_page;
+  const lsos = TRANSPILER.ScriptPageToEditableTokens(page);
   lsos.splice(lineIdx, 1);
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
-  WIZCORE.SendState({ script_tokens: nscript });
+  if (isInitScript) WIZCORE.SendState({ init_script_tokens: nscript });
+  else WIZCORE.SendState({ script_tokens: nscript });
   CancelSlotEdit();
 }
 
@@ -423,10 +432,12 @@ function UpdateSlot(data) {
  */
 function SaveSlotLineScript(event) {
   const fn = 'SaveSlotLineScript:';
-  const { script_page, sel_linenum } = WIZCORE.State();
+  const { script_page, init_script_page, sel_linenum } = WIZCORE.State();
   const { slots_linescript } = SLOTCORE.State();
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
-  const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
+  const isInitScript = init_script_page.length > 0;
+  const page = isInitScript ? init_script_page : script_page; // if initscript is present, use that
+  const lsos = TRANSPILER.ScriptPageToEditableTokens(page);
   const lineToUpdate = lsos[lineIdx]; // clone existing line to retain block info
 
   // HACK Block Support -------------------------------------------------------
@@ -480,7 +491,8 @@ function SaveSlotLineScript(event) {
   }); // just update the lineScript
   lsos.splice(lineIdx, 1, lineToUpdate);
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
-  WIZCORE.SendState({ script_tokens: nscript });
+  if (isInitScript) WIZCORE.SendState({ init_script_tokens: nscript });
+  else WIZCORE.SendState({ script_tokens: nscript });
   SLOTCORE.SendState({ slots_need_saving: false });
   UR.LogEvent('ScriptEdit', [
     'Save Slot',

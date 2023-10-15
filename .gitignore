@@ -63,3 +63,6 @@ Thumbs.db
 .env
 .env.build
 gs_packages/gem-srv/src/app/static/sprites/local
+
+# documentation files
+_ben*
