@@ -172,7 +172,8 @@ const useStylesHOC = theme => ({
   },
   panelTitle: {
     color: CLR_ACTIVE,
-    backgroundColor: CLR_PANEL_BG
+    backgroundColor: CLR_PANEL_BG,
+    userSelect: 'none'
   },
   panelMessage: {
     color: CLR_ACTIVE
