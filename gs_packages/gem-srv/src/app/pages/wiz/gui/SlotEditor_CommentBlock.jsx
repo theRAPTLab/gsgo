@@ -65,6 +65,11 @@ class SlotEditor_CommentBlock extends React.Component {
   m_DeconstructCommentText(rawcomment) {
     const COMMENTTYPEMAP = CHELPER.COMMENTTYPEMAP;
     const commentStyles = [...COMMENTTYPEMAP.keys()];
+    commentStyles.sort((a, b) => {
+      if (a.length > b.length) return -1;
+      else if (a.length < b.length) return 1;
+      else return 0;
+    });
     let commentTextPrefix = '';
     let commentTextBody = rawcomment;
     // Find the defined style
