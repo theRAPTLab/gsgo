@@ -83,11 +83,11 @@ class Home extends React.Component {
           <ul className={classes.list}>
             <NavItem route="login">login</NavItem>
             <NavItem route="main?project=aquatic_interactions">aquatic</NavItem>
-            <NavItem route="charcontrol">character controller</NavItem>
+            <NavItem route="charcontrol3">character controller</NavItem>
           </ul>
         </div>
         <div id="instructions" className={classes.main}>
-          <h2>GEM-STEP Version 1.0, September 2022</h2>
+          <h2>GEM-STEP Version 1.x, October 2023</h2>
           <p>
             {' '}
             <b>
@@ -109,20 +109,11 @@ class Home extends React.Component {
               it.
             </li>
             <li>
-              <a href="/app/viewer2">VIEWER 2</a> - Viewer with logs
+              <a href="/app/viewerLogs">Log VIEWER</a> - Viewer with logs
             </li>
             <li>
-              <a href="/app/charcontrol">CHARACTER CONTROLLER</a> - This lets you
-              control one or more characters in the currently running maain
-              window.
-            </li>
-            <li>
-              <a href="/app/charcontrol2">CHARACTER CONTROLLER 2</a> - Just the
-              controller.
-            </li>
-            <li>
-              <a href="/app/charcontrol3">CHARACTER CONTROLLER 3</a> -
-              Overlapping.
+              <a href="/app/charcontrol3">CHARACTER CONTROLLER</a> - Control
+              characters on-screen instead of with tracking tags.
             </li>
           </ol>
         </div>

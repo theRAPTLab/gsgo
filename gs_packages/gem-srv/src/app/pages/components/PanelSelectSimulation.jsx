@@ -11,6 +11,7 @@ import { GS_ASSETS_PROJECT_ROOT } from '../../../../config/gem-settings';
 
 import PanelChrome from './PanelChrome';
 import DialogFilename from './DialogFilename';
+import { colors } from '@material-ui/core';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -187,7 +188,7 @@ class PanelSelectSimulation extends React.Component {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '30% 70%',
+            gridTemplateColumns: '40% 60%',
             overflow: 'scroll'
           }}
         >
@@ -196,54 +197,104 @@ class PanelSelectSimulation extends React.Component {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'start',
-              padding: '30px'
+              padding: '10px',
+              textAlign: 'center'
             }}
           >
-            <div>
+            <div style={{ fontSize: '25pt' }}>
               <b>TEMPLATES</b>
             </div>
-            <div className={classes.instructions}>
+            <div className={classes.instructions} style={{ fontSize: '14pt' }}>
               <p>Create a new project from a Project Template:</p>
             </div>
             {projectTemplates.map(m => (
               <button
                 type="button"
                 className={classes.buttonSmall}
-                style={{ textAlign: 'left' }}
+                style={{
+                  textAlign: 'center',
+                  fontSize: '12pt',
+                  wordWrap: 'break-word',
+                  maxWidth: '100%',
+                  height: '100px'
+                }}
                 key={m.id}
                 title={m.id}
                 onClick={() => this.onSelectTemplate(m.id)}
               >
-                New {m.label} ({m.id})
+                New
+                <span style={{ fontSize: '14pt' }}>{m.label}</span>{' '}
+                {/* Style for the label */}
+                <br />
+                <span
+                  style={{
+                    fontSize: '10pt',
+                    fontStyle: 'italic',
+                    color: 'white'
+                  }}
+                >
+                  ({m.id})
+                </span>{' '}
+                {/* Style for the id */}
               </button>
             ))}
           </div>
           <div
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-around',
-              padding: '30px'
+              textAlign: 'center',
+              fontStyle: 'bold',
+              padding: '10px'
             }}
           >
-            <div>
+            <div style={{ fontSize: '25pt', padding: '0', margin: '0' }}>
               <b>PROJECTS</b>
             </div>
-            <div className={classes.instructions}>
+            <div
+              style={{ fontSize: '14pt', padding: '0', margin: '0' }}
+              className={classes.instructions}
+            >
               <p>Select a project to work on:</p>
             </div>
-            {projectFiles.map(m => (
-              <button
-                type="button"
-                className={classes.button}
-                style={{ textAlign: 'left' }}
-                key={m.id}
-                title={m.id}
-                onClick={() => this.onSelectProject(m.id)}
-              >
-                {m.label} ({m.id})
-              </button>
-            ))}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row', // Change from "column" to "row"
+                flexWrap: 'wrap', // Add this property to wrap the buttons
+                justifyContent: 'center',
+                padding: '10px'
+              }}
+            >
+              {projectFiles.map(m => (
+                <button
+                  type="button"
+                  className={classes.button}
+                  style={{
+                    textAlign: 'center',
+                    fontStyle: 'bold',
+                    wordWrap: 'break-word',
+                    width: '40%',
+                    height: '80px',
+                    flexGrow: 1
+                  }}
+                  key={m.id}
+                  title={m.id}
+                  onClick={() => this.onSelectProject(m.id)}
+                >
+                  <div>
+                    <span style={{ fontSize: '14pt' }}>{m.label}</span> <br />
+                    <span
+                      style={{
+                        fontSize: '10pt',
+                        fontStyle: 'italic',
+                        color: 'white'
+                      }}
+                    >
+                      ({m.id})
+                    </span>{' '}
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <DialogFilename

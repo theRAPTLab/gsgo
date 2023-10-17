@@ -14,7 +14,8 @@ class PanelSelect extends React.Component {
         // Dummy Data
         { route: 'main', label: 'Main' },
         { route: 'viewer', label: 'Viewer' },
-        { route: 'charcontrol', label: 'Character Controller' },
+        { route: 'viewerLogs', label: 'Log Viewer' },
+        { route: 'charcontrol3', label: 'Character Controller' },
         { route: 'scripteditor', label: 'Script Editor' }
       ]
     };

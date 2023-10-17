@@ -11,7 +11,7 @@ const Project = React.lazy(() => import('../pages/Project'));
 const Main = React.lazy(() => import('../pages/Main'));
 const ScriptEditor = React.lazy(() => import('../pages/ScriptEditor'));
 const Viewer = React.lazy(() => import('../pages/Viewer'));
-const Viewer2 = React.lazy(() => import('../pages/Viewer2'));
+const ViewerLogs = React.lazy(() => import('../pages/ViewerLogs'));
 const TrackerSetup = React.lazy(() => import('../pages/TrackerSetup'));
 const DevCompiler = React.lazy(() => import('../pages/DevCompiler'));
 const DevTracker = React.lazy(() => import('../pages/DevTracker'));
@@ -67,9 +67,9 @@ export const LazyViewer = () => (
     <Viewer />
   </Suspense>
 );
-export const LazyViewer2 = () => (
+export const LazyViewerLogs = () => (
   <Suspense fallback={<div>loading</div>}>
-    <Viewer2 />
+    <ViewerLogs />
   </Suspense>
 );
 export const LazyTrackerSetup = () => (
