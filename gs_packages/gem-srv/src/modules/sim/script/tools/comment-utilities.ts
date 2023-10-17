@@ -38,29 +38,31 @@
 /// These are defined in gem-ui.css
 const COMMENTTYPEMAP = new Map<string, any>();
 
-COMMENTTYPEMAP.set('🔎 WHAT', {
-  cssClass: 'explanationCommentHeader',
-  help: 'Explanation of how this code works',
-  isBookmark: false
-});
+// Default Comment Types (NOT USED)
+// See `/gs_assets/art-assets/preferences/_comment_types.toml` for the current
+// definitions -- having a single source for types makes them easier to manage
+//
+// COMMENTTYPEMAP.set('🔎 WHAT', {
+//   cssClass: 'explanationCommentHeader',
+//   help: 'Explanation of how this code works',
+//   isBookmark: false
+// });
+// COMMENTTYPEMAP.set('🔎', {
+//   cssClass: 'explanationCommentBody',
+//   help: 'Additional explanations of how something works',
+//   isBookmark: false
+// });
+// COMMENTTYPEMAP.set('✏️ CHANGE', {
+//   cssClass: 'changeCommentHeader',
+//   help: 'Code that should be changed by a student',
+//   isBookmark: true
+// });
+// COMMENTTYPEMAP.set('✏️', {
+//   cssClass: 'changeCommentBody',
+//   help: 'Additional details of what a student might change',
+//   isBookmark: false
+// });
 
-COMMENTTYPEMAP.set('🔎', {
-  cssClass: 'explanationCommentBody',
-  help: 'Additional explanations of how something works',
-  isBookmark: false
-});
-
-COMMENTTYPEMAP.set('✏️ CHANGE', {
-  cssClass: 'changeCommentHeader',
-  help: 'Code that should be changed by a student',
-  isBookmark: true
-});
-
-COMMENTTYPEMAP.set('✏️', {
-  cssClass: 'changeCommentBody',
-  help: 'Additional details of what a student might change',
-  isBookmark: false
-});
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Returns ALL of the values in COMMENTYPEMAP, including the matchstring
  *  @return {Array} [ ...{ matchString, cssClass, help, isBookmark }]
