@@ -125,6 +125,7 @@ function m_CreateEntities(container, num = m_CHARVIEW.state.num_entities) {
     const row = Math.floor(i / columns) * spacer;
     const col = Math.floor(i % columns) * spacer;
     child.style.transform = `translate3d(${col}px, ${row}px, 0)`;
+    child.style.opacity = 0.5;
   }
   return document.getElementsByClassName('entity');
 }
