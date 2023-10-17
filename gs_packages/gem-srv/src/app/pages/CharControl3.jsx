@@ -217,26 +217,21 @@ class CharController extends React.Component {
       renderRoot.offsetWidth / projectWidth,
       renderRoot.offsetHeight / projectHeight
     );
-    // account for navbar and title bar
-    const navbarAndTitleHeight = 47.3; // px
 
-    let resizedDragContainerWidth;
-    let resizedDragContainerHeight;
-    if (projectWidth > projectHeight) {
-      resizedDragContainerWidth = renderRoot.offsetWidth;
-      resizedDragContainerHeight =
-        renderRoot.offsetHeight * scaleFactor - navbarAndTitleHeight;
-    } else {
-      resizedDragContainerWidth = renderRoot.offsetWidth * scaleFactor;
-      resizedDragContainerHeight = renderRoot.offsetHeight - navbarAndTitleHeight;
-    }
-    const dragContainerTop =
+    // account for navbar and title bar
+    const navbarHeight = 30;
+    const titleHeight = 17.3;
+    const navbarAndTitleHeight = navbarHeight + titleHeight; // px
+
+    const dragContainerWidth = projectWidth * scaleFactor;
+    const dragContainerHeight = projectHeight * scaleFactor;
+
+    let dragContainerLeft =
+      titleHeight / 2 + (renderRoot.offsetWidth - dragContainerWidth) / 2;
+    let dragContainerTop =
       navbarAndTitleHeight +
-      (renderRoot.offsetHeight - resizedDragContainerHeight) / 2;
-    const dragContainerHeight = resizedDragContainerHeight;
-    const dragContainerLeft =
-      (renderRoot.offsetWidth - resizedDragContainerWidth) / 2;
-    const dragContainerWidth = resizedDragContainerWidth;
+      titleHeight / 2 +
+      (renderRoot.offsetHeight - dragContainerHeight) / 2;
 
     this.setState(
       {
