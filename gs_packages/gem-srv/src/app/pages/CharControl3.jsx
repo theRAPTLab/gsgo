@@ -226,12 +226,9 @@ class CharController extends React.Component {
     const dragContainerWidth = projectWidth * scaleFactor;
     const dragContainerHeight = projectHeight * scaleFactor;
 
-    let dragContainerLeft =
-      titleHeight / 2 + (renderRoot.offsetWidth - dragContainerWidth) / 2;
+    let dragContainerLeft = (renderRoot.offsetWidth - dragContainerWidth) / 2;
     let dragContainerTop =
-      navbarAndTitleHeight +
-      titleHeight / 2 +
-      (renderRoot.offsetHeight - dragContainerHeight) / 2;
+      navbarAndTitleHeight + (renderRoot.offsetHeight - dragContainerHeight) / 2;
 
     this.setState(
       {
