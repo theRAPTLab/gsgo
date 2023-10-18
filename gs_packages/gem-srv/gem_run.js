@@ -57,11 +57,11 @@ EXEC('arch', (error, stdout, stderr) => {
       const cmd = `arch -x86_64 ${process.env.SHELL}`;
       TOUT(`Type the following into terminal, then ${YL('try again')}:`);
       TOUT(`  ${YL(cmd)}`);
-      TOUT(
-        `NOTE: you might need to ${BL(
-          'npm ci; npm run bootstrap'
-        )} again if this is a fresh GEMSTEP install`
-      );
+      TOUT(`NOTE: you may need to ${BL('npm ci; npm run bootstrap')}`);
+      TOUT(`again if this is a fresh GEMSTEP install.`);
+      TOUT(`If you ran ${BL('npm install')} with the wrong arch, you`);
+      TOUT(`may need to ${ERR('re-pull')} the repo again to recover.`);
+      TOUT(`Ask the devteam for help!`);
       process.exit(101);
     } else {
       TOUT(`architecture is ${stdout}`);
@@ -83,8 +83,8 @@ EXEC('node --version', (error, stdout, stderr) => {
     stdout = stdout.trim();
     if (stdout !== NODE_VER) {
       TOUT(ERR('NODE VERSION MISMATCH'));
-      TOUT(`.. expected ${NODE_VER} got ${YL(stdout)}`);
-      TOUT(`.. did you remember to run ${BL('nvm use')}?`);
+      TOUT(`... expected ${NODE_VER} got ${YL(stdout)}`);
+      TOUT(`... did you remember to run ${BL('nvm use')}?`);
       // eslint-disable-next-line no-process-exit
       process.exit(102);
     }
