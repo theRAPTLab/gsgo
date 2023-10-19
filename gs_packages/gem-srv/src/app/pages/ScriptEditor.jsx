@@ -286,12 +286,12 @@ class ScriptEditor extends React.Component {
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
-  Initialize() {
+  async Initialize() {
     if (this.state.isReady) return; // already initialized
     const { projId, instanceLabel } = this.state;
+    await this.RequestPreferences();
     this.RequestBpEditList(projId);
     if (instanceLabel) this.RequestInstancesEditList(); // get bp bundle first, then add initScript
-    this.RequestPreferences();
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
   }
@@ -323,6 +323,23 @@ class ScriptEditor extends React.Component {
       parms: [projId]
     }).then(rdata => {
       return this.UpdateBpEditList(rdata.result);
+    });
+  }
+
+  /**
+   * This requests preferences data from project-server used to populate
+   * the list of comment styles.
+   */
+  async RequestPreferences() {
+    const fnName = 'RequestPreferences';
+    UR.CallMessage('NET:REQ_PROJDATA', {
+      fnName,
+      parms: []
+    }).then(rdata => {
+      // NOTE CHelper is being used on ac-preferences to do the iniital load
+      // but ScriptEditor loads its own unconnected CHELPER to manage comment styles
+      rdata.result.forEach(r => CHELPER.AddStyle(r));
+      return { ok: true };
     });
   }
 
