@@ -337,8 +337,8 @@ class ScriptEditor extends React.Component {
       parms: []
     }).then(rdata => {
       // NOTE CHelper is being used on ac-preferences to do the iniital load
-      // but ScriptEditor loads its own unconnected CHELPER to manage comment styles
-      rdata.result.forEach(r => CHELPER.AddStyle(r));
+      // but ScriptEditor loads its own unconnected CHELPER to manage comment types
+      rdata.result.forEach(r => CHELPER.AddType(r));
       return { ok: true };
     });
   }
@@ -420,22 +420,6 @@ class ScriptEditor extends React.Component {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// END INITSCRIPT METHODS //////////////////////////////////////////////////
-
-  /// REORg!!!
-
-  /**
-   * This requests preferences data from project-server used to populate
-   * the list of comment styles.
-   */
-  RequestPreferences() {
-    const fnName = 'RequestPreferences';
-    UR.CallMessage('NET:REQ_PROJDATA', {
-      fnName,
-      parms: []
-    }).then(rdata => {
-      rdata.result.forEach(r => CHELPER.AddStyle(r));
-    });
-  }
 
   /** needed to respond to blueprint deletion or exist map edit*/
   HandleBlueprintsUpdate(data) {

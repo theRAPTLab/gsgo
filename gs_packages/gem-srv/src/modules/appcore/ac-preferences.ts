@@ -8,6 +8,8 @@
   (Note that project 'metadata' are project-specific settings
   while 'preferences' apply to all projects.)
 
+  See `comment-utilities.ts` for more information.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
@@ -53,7 +55,7 @@ function updateAndPublish(settings) {
 function GetPreferences() {
   // Currently this only returns the comment types, but there's room to
   // add other preferences
-  return CHELPER.GetCommentTypes();
+  return CHELPER.GetCommentTypesWithMatchString();
 
   // REVIEW: Should this use state?
   // return { ..._getKey('commentTypes') }; // clone
@@ -68,7 +70,7 @@ function GetPreferences() {
 function SetPreferences(preferences) {
   const commentTypes = preferences.commentTypes;
   commentTypes.forEach(s => {
-    CHELPER.AddStyle(s);
+    CHELPER.AddType(s);
   });
 
   // REVIEW: Do we want to update state at all here?

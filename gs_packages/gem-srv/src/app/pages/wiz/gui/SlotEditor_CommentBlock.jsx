@@ -56,20 +56,14 @@ class SlotEditor_CommentBlock extends React.Component {
   }
 
   /** Deconstruct stored script comment text into components,
-   * splitting out prefix from body, e.g. `🔎 WHAT DOES THIS MODEL DO?` becomes:
-   *   prefix: `🔎 WHAT`
-   *   body: `DOES THIS MODEL DO?`
+   *  splitting out prefix from body, e.g. `🔎 WHAT DOES THIS MODEL DO?` becomes:
+   *    prefix: `🔎 WHAT`
+   *    body: `DOES THIS MODEL DO?`
    * @param {*} rawcomment
    * @returns {Object} { commentTextPrefix:string, commentTextBody:string }
    */
   m_DeconstructCommentText(rawcomment) {
-    const COMMENTTYPEMAP = CHELPER.COMMENTTYPEMAP;
-    const commentStyles = [...COMMENTTYPEMAP.keys()];
-    commentStyles.sort((a, b) => {
-      if (a.length > b.length) return -1;
-      else if (a.length < b.length) return 1;
-      else return 0;
-    });
+    const commentStyles = CHELPER.GetCommentTypeKeys();
     let commentTextPrefix = '';
     let commentTextBody = rawcomment;
     // Find the defined style
