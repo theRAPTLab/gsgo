@@ -325,7 +325,7 @@ export function GToken(props) {
   if (type === 'identifier' && position === 0) classes += ' styleKey';
 
   if (type === '{noncode}') {
-    classes += CHELPER.GetClasses(type, label);
+    classes += CHELPER.GetCSSClassNames(type, label);
     cssStyle = { ...CHELPER.GetCSSStyle(type, label) };
   }
   if (type === 'directive') classes += ' stylePragma';
@@ -364,7 +364,7 @@ export function GValidationToken(props) {
   // special types? use additional classes
   if (type === 'identifier' && position === 0) classes += ' styleKey';
   if (type === '{noncode}') {
-    classes += CHELPER.GetClasses(type, label);
+    classes += CHELPER.GetCSSClassNames(type, label);
     cssStyle = { ...CHELPER.GetCSSStyle(type, label) };
   }
   if (type === 'directive') classes += ' stylePragma';
