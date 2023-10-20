@@ -22,7 +22,22 @@
       "gs_packages/gem-srv/node_modules": true,
       "gs_packages/gem-srv/package-lock.json": true,
       "node_modules": true,
-      "package-lock.json": true,
+      "package-lock.json": true
+    },
+    "terminal.integrated.profiles.osx": {
+      "x86 macos": {
+        "path": "/usr/bin/arch",
+        "args": [
+          "-arch",
+          "x86_64",
+          "${env:SHELL}",
+          "-i",
+          "-c",
+          "export VSCODE_PROFILE='x86 shell';source .vscode/check_env; exec ${env:SHELL}"
+        ]
+      }
     }
+    // uncomment to force
+    // "terminal.integrated.defaultProfile.osx": "x86 macos"
   }
 }
