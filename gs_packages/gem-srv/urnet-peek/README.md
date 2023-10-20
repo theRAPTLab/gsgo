@@ -62,18 +62,19 @@ const DBG = {
 
 ## REFERENCE: URNET HANDLED MESSAGES
 
-This is a list of all declared handlers found by using RegEx. A challenge with GEMSTEP is applying rigor in the naming of messages; over multiple years of development the messaging nomenclature is inconsistent so for insight, use a case-sensitive search for the string `HandleMessage('MESSAGE_NAME')` to find out what it does.
+This is a list of **all declared handlers** found by using RegEx on `UR.HandleMessage` and `UR_HandleMessage`. A challenge with GEMSTEP is applying rigor in the naming of messages; over multiple years of development the messaging nomenclature is inconsistent so for insight, use a case-sensitive search for the string `HandleMessage('MESSAGE_NAME')` to find out what it does. Quite a few of them may no longer be working. 
 
 ### EXPLICIT LOCAL MESSAGES
-
+```
 'LOCAL:DC_WRITE_METADATA'
 'LOCAL:DC_WRITE_PROJECT_SETTINGS'
 'LOCAL:INSTANCE_ADD'
 'LOCAL:INSTANCE_DELETE'
 'LOCAL:SELF_HELLO'
+```
 
 ### INPLICIT LOCAL MESSAGES
-
+```
 'AGENT_PROGRAM'
 'ALL_AGENTS_PROGRAM'
 'BOUNDARY_UPDATE'
@@ -104,9 +105,10 @@ This is a list of all declared handlers found by using RegEx. A challenge with G
 'SIM_RESET'
 'TRACKER_SETUP_UPDATE'
 'WEBCAM_UPDATE'
+```
 
 ### NETWORK MESSAGES
-
+```
 'NET:BLUEPRINT_DELETE'
 'NET:BLUEPRINTS_UPDATE'
 'NET:BPNAMESLIST_UPDATE'
@@ -143,9 +145,9 @@ This is a list of all declared handlers found by using RegEx. A challenge with G
 'NET:SIM_WAS_RESET'
 'NET:TRANSFORM_REQ'
 'NET:UPDATE_MODEL'
-
-###SERVER HANDLERS
-
+```
+### SERVER HANDLERS
+```
 'NET:SRV_LOG_ENABLE'
 'NET:SRV_LOG_EVENT'
 'NET:SRV_LOG_JSON'
@@ -160,3 +162,4 @@ This is a list of all declared handlers found by using RegEx. A challenge with G
 'NET:SRV_DEVICE_REG'
 'NET:SRV_DEVICE_DIR'
 'NET:SRV_CONTROL_IN'
+```
