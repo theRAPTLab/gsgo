@@ -27,6 +27,15 @@ function SaveEndpoints(eps) {
   ENDPOINTS.NetNode = eps.NetNode; // used only for forwarding remote messages
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetEndpoints() {
+  const { LocalNode, NetNode } = ENDPOINTS;
+  return {
+    LocalNode,
+    NetNode
+  };
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return client uaddr */
 function MyUADDR() {
   const { uaddr } = CLIENT_UINFO;
@@ -43,4 +52,9 @@ function GetUAddressNumber() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { SaveEndpoints, GetUAddressNumber, SaveRegistration };
+module.exports = {
+  SaveEndpoints,
+  GetEndpoints,
+  GetUAddressNumber,
+  SaveRegistration
+};

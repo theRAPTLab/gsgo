@@ -14,7 +14,7 @@ const DATACORE = require('./datacore');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
+const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const CONNECT_OPTIONS = {
   hostname: 'localhost', // remote AppServer w/ URNET discovery service
@@ -28,16 +28,21 @@ let m_netinfo; // URNET connection info from webservie
 let m_regdata; // assigned UADDR from URNET
 let m_urlink; // endpoint for talking to URNET
 
-/// DECLARE MESSAGE HANDLERS //////////////////////////////////////////////////
+/// MAIN INTEGRATION AREA: DECLARE MESSAGE HANDLERS ///////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** send the list of handled messages to the server */
 function m_RegisterMessages() {
+  const { NetNode } = DATACORE.GetEndpoints();
   void (async () => {
-    m_urlink.handleMessage('NET:SERVER_CLIENT', async (msg, data) => {
-      console.log('handling NET:SERVER_CLIENT with payload', data);
+    // (1) define network messages to subscribe to
+    NetNode.handleMessage('NET:DISPLAY_LIST', async data => {
+      const entityCount = data.length;
+      console.log('got display list with', entityCount, 'entities');
     });
-    await m_urlink.ursysRegisterMessages();
+    // (2) register all message handlers with URNET to receive them
+    await NetNode.ursysRegisterMessages();
   })();
+  console.log('RUNNING');
 }
 
 /// SUPPORT METHODS ///////////////////////////////////////////////////////////
@@ -104,21 +109,21 @@ function m_HandleMessage(msgEvent) {
   switch (type) {
     case 'msend':
       // network message received
-      cons_received(pkt);
+      if (DBG) cons_received(pkt);
       m_urlink.sendMessage(msg, data, { fromNet: true });
       pkt.transactionReturn();
       break;
     case 'msig':
       // network signal to raise
-      cons_received(pkt);
+      if (DBG) cons_received(pkt);
       m_urlink.raiseMessage(msg, data, { fromNet: true });
       pkt.transactionReturn();
       break;
     case 'mcall':
       // network call received
-      if (dbgout) cons_received(pkt);
+      if (DBG) cons_received(pkt);
       m_urlink.callMessage(msg, data, { fromNet: true }).then(result => {
-        if (dbgout) cons_forwarded(pkt, result);
+        if (DBG) cons_forwarded(pkt, result);
         // now return the packet
         pkt.setData(result);
         pkt.transactionReturn();

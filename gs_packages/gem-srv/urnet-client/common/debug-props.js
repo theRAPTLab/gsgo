@@ -5,12 +5,12 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const DBG = {
-  init: true, // urnet initialization
-  mesg: true, // urnet message logic
-  sock: true, // socket logic
-  calls: true, // message brokering
+  init: false, // urnet initialization
+  mesg: false, // urnet message logic
+  sock: false, // socket logic
+  calls: false, // message brokering
   reg: true, // message registration
-  devices: true, // device connections
+  devices: false, // device connections
   controller: false, // controller returned from device subs
   cframe: false, // controlFrame data
   xact: false, // server-urnet mRouteMessage
