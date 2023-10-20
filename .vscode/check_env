@@ -26,27 +26,24 @@ if [ -z "$NVM_DIR" ]; then
   return
 fi
 
-
 # Check if shell is opening inside a VSCODE integrated terminal
 # is NVM is installed, there is a .nvmrc file and a .vscode directory?
 if [ -n "$NVM_DIR" ] && [ -s "./.nvmrc" ] && [ -d "./.vscode" ]; then
   NODE_VERSION=$(cat ./.nvmrc)
   str_out="(nvm)";
-  str_alias=$(nvm alias default "$NODE_VERSION")
   str_use=$(nvm use "$NODE_VERSION")
-  if [ -n "$str_use" ]; then
-    str_out="$str_out current version"
-  fi
-  if [ -n "$str_alias" ]; then
-    str_out="$str_out and alias"
-  fi
-  echo ""
   echo "vsenv: VISUAL STUDIO CODE INTEGRATED TERMINAL DETECTED"
-  echo "       ${str_out} detected setting: node ${INFO}$NODE_VERSION${NRML}"
+  echo "       ${str_out} desired node version is ${INFO}$NODE_VERSION${NRML}"
   CURRENT_VERSION=$(node --version)
-  if [ "$CURRENT_VERSION" != "$NODE_VERSION" ] && [ -n "$str_alias" ] && [ $NVM_FORCE_DEFAULT ]; then
-    echo "vsenv: ${BOLD}kill/restart VSCODE for nvm alias default to take effect!${NRML}"
-    echo "       this shell is using version ${INFO}$CURRENT_VERSION${NRML} until you do"
-    echo "       alternatively, type ${ALRT}nvm use $NODE_VERSION${NRML} to use it now"
+  if [ "$CURRENT_VERSION" != "$NODE_VERSION" ]; then
+    echo ""
+    echo "vsenv: This shell is using ${INFO}$CURRENT_VERSION${NRML} instead of ${INFO}$NODE_VERSION${NRML}"
+    echo "       Type ${ALRT}nvm use $NODE_VERSION${NRML} to use the correct version!"
+    echo ""
+    echo "       Alternatively type ${ALRT}nvm alias default $NODE_VERSION${NRML} to"
+    echo "       set it system-wide and then ${ALRT}restart Visual Studio Code${NRML} for"
+    echo "       it to take effect. This may break your other NodeJS projects"
+    echo "       if you do not use nvm to actively enforce version requirments."
+    echo ""
   fi
 fi
