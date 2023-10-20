@@ -1,15 +1,18 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  description
+  This is a stripped-down version of server-urnet that works as a minimal
+  client.
+
+  * Edit CONNECT_OPTIONS to change the hostname or IP of the GEMSTEP AppServer
+  * Turn on message DBG messages in common/debug-props.js
+  * The README.md has notes
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-const { resolveSrv } = require('dns');
 const http = require('http');
 const WebSocket = require('ws');
 const NetPacket = require('./class-netpacket');
 const EndPoint = require('./class-endpoint');
-const Messager = require('./class-messager');
 const DATACORE = require('./datacore');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
