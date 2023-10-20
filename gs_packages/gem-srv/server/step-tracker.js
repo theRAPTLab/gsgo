@@ -395,7 +395,9 @@ function m_BindPozyxListener(mqtturl) {
       });
     });
     mtrack_ss.subscribe('tags');
-  } catch (e) {}
+  } catch (e) {
+    mtrack_ss.end();
+  }
 }
 
 /// API CONNECT TRACKER ///////////////////////////////////////////////////////
