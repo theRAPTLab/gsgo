@@ -1,4 +1,4 @@
-## URNET OUTLINE
+## URNET OPERATIONAL OUTLINE
 
 The AppServer provides a way to access the connection information at route `/urnet/netinfo`, which is used to initiate a connect to the URNET websocket server.
 
@@ -23,6 +23,42 @@ GEMSTEP uses channels, which are set in the message using a prefix `NET:` or `LO
 To send or receive a NETWORK message, prefix with `NET:` as in `NET:DISPLAY_LIST`. The `urnet-peek` module does not need to implement local messages but it could register handlers for other apps on URNET.
 
 Data is sent and received as plain Javascript objects. The serialization is handled for you.
+
+## RUNNING THE TEST
+
+Assuming you have already gotten GEMSTEP to run:
+```
+npm run gem
+```
+Open a MAIN window and a CONTROLLER window after the AppServer starts up.
+Next, open a second terminal window and run the ur-peek code:
+```
+npm run urpeek
+```
+You'll see some reported stuff as it intercepts `NET:DISPLAY_LIST`
+
+#### CONNECTING FROM OTHER THAN LOCALHOST
+
+Open `gs_packages/gem-srv/urnet-peek/` directory and edit **peek.js**. Look for `CONNECT_OPTIONS.hostname` at the top.
+
+#### ADDING/MODIFYING MESSAGE HANDLERS
+
+Also in `gs_packages/gem-srv/urnet-peek/`, edit **peek.js** by finding `m_RegisterMessages()` function inside the async IIFE. Make sure that `NetNode.ursysRegisterMessages()` runs _after_ you have finished declaring your handlers.
+
+#### ENABLING MORE NETWORK DEBUGGING
+
+This is not recommended as the DEBUG flags are not maintained, but these might help:
+
+* In `peek.js` set `DBG=true`
+* In the **common** directory `gs_packages/gem-srv/urnet-peek/common/`, edit **debug-props.js** and enable these one of these options:
+```js
+const DBG = {
+  reg: false, // registration of messages
+  call: false, // message brokering
+  handle: false // check for unhandled messages
+};
+```
+* there are specific sets of flags in `class-messager.js` and `class-endpoint.js` but these are pretty esoteric and require deep knowledge of the underlying implementation.
 
 ## REFERENCE: URNET HANDLED MESSAGES
 
