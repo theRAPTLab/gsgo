@@ -357,26 +357,19 @@ function m_BindPozyxListener(mqtturl) {
 
   */
 
-  mtrack_ss.on('connect', () => {
-    console.log(...PR('1883 MQTT Connect'));
-    mtrack_ss.subscribe('presence', err => {
-      if (!err) {
-        console.log(...PR('MQTT present'));
-      } else {
-        console.log(...PR('MQTT Not Present!', err));
-      }
-    });
-  });
   mtrack_ss.on('message', (topic, message) => {
     let jsonstr = ConvertMQTTtoTrackerData(message);
     if (jsonstr) m_ForwardTrackerData(jsonstr);
   });
   mtrack_ss.on('error', err => {
-    console.log(...PR("MQTT Can't connect", err));
+    console.log(...PR('MQTT No Connection to port 1883'));
+    if (err.code === 'ECONNREFUSED') {
+      console.log(...PR('... is the MQTT server running?'));
+    }
     mtrack_ss.end();
   });
   mtrack_ss.on('close', () => {
-    console.log(...PR('MQTT Connection Closed'));
+    console.log(...PR('MQTT Socket Closed'));
     mtrack_ss.end();
   });
   mtrack_ss.on('disconnect', () => {
@@ -388,10 +381,21 @@ function m_BindPozyxListener(mqtturl) {
     mtrack_ss.end();
   });
   mtrack_ss.on('reconnect', () => {
-    console.log(...PR('MQTT reconnect'));
+    console.log(...PR('MQTT Reconnected'));
   });
-
-  mtrack_ss.subscribe('tags');
+  try {
+    mtrack_ss.on('connect', () => {
+      console.log(...PR('MQTT Connect to port 1883'));
+      mtrack_ss.subscribe('presence', err => {
+        if (!err) {
+          console.log(...PR('MQTT Present'));
+        } else {
+          console.log(...PR('MQTT Not Present!', err));
+        }
+      });
+    });
+    mtrack_ss.subscribe('tags');
+  } catch (e) {}
 }
 
 /// API CONNECT TRACKER ///////////////////////////////////////////////////////
