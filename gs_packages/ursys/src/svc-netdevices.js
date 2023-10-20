@@ -107,7 +107,7 @@ UR_HandleMessage('SRV_SOCKET_DELETED', cmd => {
   const { uaddr } = cmd;
   const dMap = DEVICE_BY_UADDR.get(uaddr);
   if (dMap === undefined) {
-    TERM(`... ${uaddr} has no registered device(s) to drop`);
+    if (DBG.devices) TERM(`... ${uaddr} has no registered device(s) to drop`);
   } else {
     TERM(`... ${uaddr} dropping ${dMap.size} registered device(s)`);
     DEVICE_BY_UADDR.delete(uaddr);
