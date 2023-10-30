@@ -112,6 +112,11 @@ export class SM_Number extends SM_Object implements ISM_Object {
     u_CheckMinMax(this);
     return this;
   }
+  setToColor(num: number) {
+    this.value = num;
+    u_CheckMinMax(this);
+    return this;
+  }
   setToRnd(min: number, max: number, integer: boolean) {
     this.value = u_RND(min, max, integer);
     u_CheckMinMax(this);
@@ -257,6 +262,10 @@ export class SM_Number extends SM_Object implements ISM_Object {
       setTo: {
         args: ['number:number'],
         info: 'Sets the property to a value'
+      },
+      setToColor: {
+        args: ['color:number'],
+        info: 'Sets the property to a color value'
       },
       setToRnd: {
         args: ['min value:number', 'max value:number', 'asInteger:boolean'],
