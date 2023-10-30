@@ -10,6 +10,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import * as PIXI from 'pixi.js';
 import { UnpackToken, TokenValue } from 'script/tools/script-tokenizer';
 import { GUI_EMPTY_TEXT } from 'modules/../types/t-script.d'; // workaround to import constant
 import * as CHELPER from 'script/tools/comment-utilities';
@@ -393,6 +394,13 @@ export function GValidationToken(props) {
   if (isRightSide) helpclasses += ' styleRight';
 
   const displayLabel = String(label); // force convert boolean to string
+
+  // show color swatch if gsType is 'color
+  if (type === 'color') {
+    const cssColor = PIXI.utils.hex2string(Number(label));
+    cssStyle = { backgroundColor: cssColor };
+  }
+
   const jsx = isSlot ? (
     <>
       <div className="gwiz gsled meta styleSyntax">
