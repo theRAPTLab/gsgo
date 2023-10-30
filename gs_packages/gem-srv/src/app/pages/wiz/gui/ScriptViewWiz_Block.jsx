@@ -152,7 +152,7 @@ export function ScriptViewWiz_Block(props) {
       lineValidationTokens.forEach((validationToken, idx) => {
         const tokInfo = vmTokens[idx] || {};
         let { tokenKey } = tokInfo;
-        const { gsType } = validationToken;
+        let { gsType, gsName } = validationToken;
         const { scriptToken } = tokInfo;
         let label;
         let selected;
@@ -173,6 +173,12 @@ export function ScriptViewWiz_Block(props) {
           else viewState = 'empty';
           tokenKey = `${lineNum},${idx + 1}`; // generate tokenKey
         }
+        // special color handling -- show color instead of color
+        if (gsName === 'color') {
+          // override gsType?
+          gsType = 'color';
+        }
+
         // locked
         if (LOCKED_SYMBOLS.includes(String(label).toLowerCase())) {
           viewState = 'locked';

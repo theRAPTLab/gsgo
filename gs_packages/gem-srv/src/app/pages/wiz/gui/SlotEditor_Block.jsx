@@ -312,6 +312,28 @@ class SlotEditor_Block extends React.Component {
     }
     /// END 3.5. Comment Handling - - - - - - - - - - - - - - - - - - - - - - -
 
+    /// 3.6. Special `COLOR` Handling - - - - - - - - - - - - - - - - - - - - -
+    ///      We inject vtokens for rendering and managing colors
+    ///      and then rely on the standard GValidationToken rendering to handle
+    ///      the rest of the UI.
+    ///      This way the syntax and core script data system remains prisitine
+    ///      and we are only providing visual overrides.
+    ///
+    ///      Look for `setToColor` method.
+    ///      Typical color line is:
+    ///         featProp charactert.Costume.color setToColor xxx
+    ///
+    if (slots_linescript[0] && validationTokenCount > 3) {
+      const vtok = validationTokens[2];
+      if (vtok.unitText === 'setToColor') {
+        // force color value type from gsType 'number' to gsType 'color
+        validationTokens[3].gsType = 'color';
+        validationTokens[3].gsName = 'color'; // for "INSTRUCTIONS"
+      }
+    }
+
+    /// END 3.6. COLOR Handling - - - - - - - - - - - - - - - - - - - - - - -
+
     /// 4. Process each validation token
     let label;
     let extraTokenName;
@@ -598,12 +620,12 @@ class SlotEditor_Block extends React.Component {
     if (isComment) {
       // COMMENT Choices
       choicesjsx = (
-      <div id="SEB_choices" className="gsled choices">
-        <SlotEditor_CommentBlock
-          defaultText={commentText}
-          onChange={this.HandleCommentUpdate}
-        />
-      </div>
+        <div id="SEB_choices" className="gsled choices">
+          <SlotEditor_CommentBlock
+            defaultText={commentText}
+            onChange={this.HandleCommentUpdate}
+          />
+        </div>
       );
     } else if (isDict) {
       // DICT Choices
@@ -635,25 +657,25 @@ class SlotEditor_Block extends React.Component {
     } else {
       // SELECT Choices
       choicesjsx = (
-      <div id="SEB_choices" className="gsled choices">
-        {selectedError && (
+        <div id="SEB_choices" className="gsled choices">
+          {selectedError && (
             <div className="gsled choicesline gwiz styleError">
               {selectedError}
             </div>
-        )}
-        {extraTokenName && (
-          <div className="gsled choicesline gwiz styleError">
-            <button onClick={this.DeleteSlot} style={{ width: 'fit-content' }}>
-              DELETE &quot;{extraTokenName}&quot;
-            </button>
+          )}
+          {extraTokenName && (
+            <div className="gsled choicesline gwiz styleError">
+              <button onClick={this.DeleteSlot} style={{ width: 'fit-content' }}>
+                DELETE &quot;{extraTokenName}&quot;
+              </button>
+            </div>
+          )}
+          <SlotEditorSelect_Block selection={selectEditorSelection} />
+          <div className="gsled choicesline choiceshelp">
+            SELECTED: {selectedChoiceHelpTxt}
           </div>
-        )}
-        <SlotEditorSelect_Block selection={selectEditorSelection} />
-        <div className="gsled choicesline choiceshelp">
-          SELECTED: {selectedChoiceHelpTxt}
         </div>
-      </div>
-    );
+      );
     }
 
     /// save dialog - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
