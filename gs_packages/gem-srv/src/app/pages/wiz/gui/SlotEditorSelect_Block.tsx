@@ -21,6 +21,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import * as PIXI from 'pixi.js';
 import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as HELP from 'app/help/codex';
@@ -111,6 +112,14 @@ function SlotEditorSelect_Block(props) {
       type: 'expr'
     });
   };
+  const processColorInput = e => {
+    e.preventDefault();
+    let colorstr = PIXI.utils.string2hex(e.target.value);
+    EDITMGR.UpdateSlot({
+      value: colorstr,
+      type: 'value'
+    });
+  };
 
   // Keypress Handlers
   const handleNumberKeypress = e => {
@@ -179,6 +188,20 @@ function SlotEditorSelect_Block(props) {
             type="number"
             onChange={processNumberInput}
             onKeyPress={handleNumberKeypress}
+          />
+        </div>
+      );
+      break;
+    case 'color':
+      const colorstr = PIXI.utils.hex2string(defaultNumber);
+      editor = (
+        <div id="SES_color" className="gsled input">
+          <HelpLabel prompt={helpPrompt} info={helpInfo} open pad="5px" />
+          <input
+            key={tkey}
+            defaultValue={colorstr}
+            type="color"
+            onChange={processColorInput}
           />
         </div>
       );

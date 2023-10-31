@@ -22,6 +22,11 @@ number:
   input: 'Enter digits. You may use a decimal point'
   info: 'Number properties can store numbers, including decimal points'
 
+color:
+  name: 'color (numeric value)'
+  input: 'Click to select a color.'
+  info: 'Colors are stored as number properties'
+
 identifier:
   name: 'identifier'
   input: 'Enter alphanumeric characters with no spaces or leading numbers'
