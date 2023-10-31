@@ -40,6 +40,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     dobj.zIndex = agent.zIndex !== undefined ? agent.zIndex : 0;
     if (agent.skin) dobj.skin = agent.skin;
     dobj.color = agent.color; // always copy color, set color = undefined to clear filters
+    if (agent.prop.glowColor.value !== undefined) dobj.glowColor = agent.prop.glowColor.value;
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
     if (agent.scale !== undefined) dobj.scale = agent.scale;
     if (agent.scaleY !== undefined) dobj.scaleY = agent.scaleY;
@@ -72,6 +73,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     dobj.zIndex = agent.zIndex !== undefined ? agent.zIndex : 0;
     if (agent.skin) dobj.skin = agent.skin;
     dobj.color = agent.color; // always copy color, set color = undefined to clear filters
+    if (agent.prop.glowColor.value !== undefined) dobj.glowColor = agent.prop.glowColor.value;
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
     if (agent.scale !== undefined) dobj.scale = agent.scale;
     if (agent.scaleY !== undefined) dobj.scaleY = agent.scaleY;
@@ -226,7 +228,7 @@ function FilterBlueprints(namesToKeep) {
 
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AgentSelect() {}
+function AgentSelect() { }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** placeholder function
  *  Main update

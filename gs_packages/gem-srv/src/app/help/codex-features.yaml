@@ -85,6 +85,8 @@ Costume:
     info: 'Flip the costume on the y axis (vertically).'
   glow:
     info: 'Set costume to glow for n number of seconds. If you set this to 0 it will stop glowing immediately.'
+  glowColor:
+    info: 'Set color of costume glow.  Defaults to yellow.'
   currentFrame:
     info: 'If you are using a character with multiple frames (e.g., a .json file), this sets it to a new one.'
   colorHue:

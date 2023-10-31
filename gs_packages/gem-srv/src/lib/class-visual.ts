@@ -50,7 +50,6 @@ let REF_ID_COUNTER = 0;
 /// outline filters
 const outlineHover = new OutlineFilter(3, 0xffff0088);
 const outlineSelected = new OutlineFilter(6, 0xffff00);
-const glow = new GlowFilter({ distance: 50, outerStrength: 3, color: 0xffff00 });
 
 // replacement for GLOBAL sprite
 const SPRITES = ASSETS.GetLoader('sprites');
@@ -115,6 +114,7 @@ class Visual implements IVisual, IPoolable, IActable {
   textContent: string; // cache value to avoid unecessary updates
   meterValue: number;
   assetId: number;
+  glow: GlowFilter; // PIXI.GlowFilter
   isSelected: boolean;
   isHovered: boolean;
   isGrouped: boolean;
@@ -144,6 +144,11 @@ class Visual implements IVisual, IPoolable, IActable {
     this.container.addChild(this.filterbox);
     this.assetId = 0;
     this.refId = REF_ID_COUNTER++;
+    this.glow = new GlowFilter({
+      distance: 50,
+      outerStrength: 3,
+      color: 0xffff00
+    });
     this.isSelected = false; // use primary selection effect
     this.isHovered = false; // use secondary highlight effect
     this.isGrouped = false; // use tertiary grouped effect
@@ -234,6 +239,13 @@ class Visual implements IVisual, IPoolable, IActable {
     this.filterAdjustment = new AdjustmentFilter({ red: r, green: g, blue: b });
   }
   /**
+   * glowColor is yellow by default
+   * This only runs if the agent has set a glowColor
+   */
+  setGlowColor(color: number) {
+    this.glow.color = color;
+  }
+  /**
    * Call this AFTER
    *  setAlpha
    *  setTexture
@@ -245,7 +257,7 @@ class Visual implements IVisual, IPoolable, IActable {
     const spriteFilters = []; // filters for the sprite texture only
     if (this.isSelected) filters.push(outlineSelected);
     if (this.isHovered) filters.push(outlineHover);
-    if (this.isGlowing) filters.push(glow);
+    if (this.isGlowing) filters.push(this.glow);
     if (this.filterColorOverlay) spriteFilters.push(this.filterColorOverlay);
     if (this.filterAdjustment) spriteFilters.push(this.filterAdjustment);
     if (this.isSelected || this.isHovered) {

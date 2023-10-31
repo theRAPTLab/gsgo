@@ -119,6 +119,8 @@ function Init(element) {
       else if (dobj.barGraph !== undefined) {
         vobj.setBarGraph(dobj.barGraph, dobj.barGraphLabels);
       }
+      if (dobj.glowColor !== undefined)
+        vobj.setGlowColor(dobj.glowColor);
 
       // Set selection state from flags.
       // This needs to be set before the setTexture call
@@ -166,6 +168,8 @@ function Init(element) {
         vobj.sprite.tint = 0xff0000;
         vobj.sprite.alpha = 0.5;
       }
+      if (dobj.glowColor !== undefined)
+        vobj.setGlowColor(dobj.glowColor);
 
       // inefficient texture update
       vobj.setVisible(dobj.visible);
@@ -214,7 +218,7 @@ function Init(element) {
       else vobj.removeDebug();
     },
     shouldRemove: () => true,
-    onRemove: () => {}
+    onRemove: () => { }
   });
   // make sure datacore has access to it for pure data manipulation
   SetModelRP(RP_DOBJ_TO_VOBJ);
@@ -238,7 +242,7 @@ function Init(element) {
       vobj.setPosition(ent.x * SCALE, ent.y * SCALE);
     },
     shouldRemove: () => true,
-    onRemove: () => {}
+    onRemove: () => { }
   });
   // make sure datacore has access to it for pure data manipulation
   SetTrackerRP(RP_PTRAK_TO_VOBJ);
