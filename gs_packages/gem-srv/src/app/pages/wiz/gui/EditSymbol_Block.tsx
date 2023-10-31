@@ -163,7 +163,7 @@ export const ADVANCED_SYMBOLS = [
   'y',
   'statustext',
   'zindex',
-  'color',
+  // 'color', // used by Costume featProp so NOT advanced
   'orientation',
   'visible',
   'alpha',
