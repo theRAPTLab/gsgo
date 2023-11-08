@@ -133,6 +133,15 @@ function Init(element) {
       vobj.setColorize(dobj.color);
       vobj.applyFilters();
 
+      //setup the text properties
+      if (dobj.fontSize != undefined)
+        vobj.setTextStyle('fontSize', dobj.fontSize);
+      if (dobj.wordWrapWidth != undefined)
+        vobj.setTextStyle('wordWrapWidth', dobj.wordWrapWidth);
+      if (dobj.textAlign != undefined) vobj.setTextAlign(dobj.textAlign);
+      if (dobj.textJustify != undefined) vobj.setTextJustify(dobj.textJustify);
+      if (dobj.textColor != undefined) vobj.setTextColor(dobj.textColor);
+
       if (dobj.debug) vobj.setDebug(dobj.debug);
 
       // Old Approach: Only enable drag and hover if controlMode is puppet (1)
@@ -213,6 +222,9 @@ function Init(element) {
         vobj.setTextStyle('fontSize', dobj.fontSize);
       if (dobj.wordWrapWidth != undefined)
         vobj.setTextStyle('wordWrapWidth', dobj.wordWrapWidth);
+      if (dobj.textAlign != undefined) vobj.setTextAlign(dobj.textAlign);
+      if (dobj.textJustify != undefined) vobj.setTextJustify(dobj.textJustify);
+      if (dobj.textColor != undefined) vobj.setTextColor(dobj.textColor);
 
       if (dobj.debug) vobj.setDebug(dobj.debug);
       else vobj.removeDebug();

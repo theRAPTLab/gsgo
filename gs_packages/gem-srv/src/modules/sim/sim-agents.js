@@ -65,6 +65,9 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.prop.Graphing !== undefined) {
       dobj.fontSize = agent.prop.Graphing.fontSize.value;
       dobj.wordWrapWidth = agent.prop.Graphing.wordWrapWidth.value;
+      dobj.textAlign = agent.prop.Graphing.textAlign.value;
+      dobj.textJustify = agent.prop.Graphing.textJustify.value;
+      dobj.textColor = agent.prop.Graphing.textColor.value;
     }
   },
   onUpdate: (agent, dobj) => {
@@ -93,6 +96,13 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.statusObject !== undefined) {
       dobj.barGraph = agent.statusObject.barGraph;
       dobj.barGraphLabels = agent.statusObject.barGraphLabels;
+    }
+    if (agent.prop.Graphing !== undefined) {
+      dobj.fontSize = agent.prop.Graphing.fontSize.value;
+      dobj.wordWrapWidth = agent.prop.Graphing.wordWrapWidth.value;
+      dobj.textAlign = agent.prop.Graphing.textAlign.value;
+      dobj.textJustify = agent.prop.Graphing.textJustify.value;
+      dobj.textColor = agent.prop.Graphing.textColor.value;
     }
   }
 });
