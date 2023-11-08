@@ -251,6 +251,10 @@ class WidgetPack extends SM_Feature {
     prop.addOption('center', FLAGS.ALIGNMENT.CENTER);
     prop.addOption('right', FLAGS.ALIGNMENT.RIGHT);
     this.featAddProp(agent, 'textAlign', prop);
+    prop = new SM_Number();
+    prop.addOption('left', FLAGS.JUSTIFICATION.LEFT);
+    prop.addOption('center', FLAGS.JUSTIFICATION.CENTER);
+    prop.addOption('right', FLAGS.JUSTIFICATION.RIGHT);
     this.featAddProp(agent, 'textJustify', prop);
     prop = new SM_Number();
     prop.setMax(16777215);
