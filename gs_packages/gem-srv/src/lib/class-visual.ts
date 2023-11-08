@@ -108,6 +108,9 @@ class Visual implements IVisual, IPoolable, IActable {
   filterbox: PIXI.Container; // Filters are applied to everything in this container
   sprite: PIXI.Sprite;
   text: PIXI.Text;
+  textAlign: number;
+  textJustify: number;
+  textColor: number;
   meter: PIXI.Graphics;
   graph: PIXI.Graphics;
   cone: PIXI.Graphics;
@@ -149,6 +152,9 @@ class Visual implements IVisual, IPoolable, IActable {
       outerStrength: 3,
       color: 0xffff00
     });
+    this.textAlign = 20; // bottom centered
+    this.textJustify = 2; // centered
+    this.textColor = 0xffffff; // white
     this.isSelected = false; // use primary selection effect
     this.isHovered = false; // use secondary highlight effect
     this.isGrouped = false; // use tertiary grouped effect
@@ -429,6 +435,7 @@ class Visual implements IVisual, IPoolable, IActable {
       //    We have to remove the child and reset it to update the text?
       this.container.removeChild(this.text);
       if (this.text) this.text.destroy();
+
       // -- Create new text
       this.text = new PIXI.Text(str, this.style);
 
@@ -436,13 +443,45 @@ class Visual implements IVisual, IPoolable, IActable {
       this.container.addChild(this.text);
     }
     if (this.text) {
-      // position text bottom centered
-      const width = this.text.width;
       const spacer = 5;
-      const x = -width / 2; //this.sprite.width; // for some reason text is offset?
-      const y = this.sprite.height / 2 + spacer;
+
+      // Update Style
+      // Justification only for multiline texts -- does not affect single lines
+      // To justify single line text, use textAlign
+      let justify;
+      if (this.textJustify & FLAGS.JUSTIFICATION.LEFT) justify = 'left';
+      if (this.textJustify & FLAGS.JUSTIFICATION.CENTER) justify = 'center';
+      if (this.textJustify & FLAGS.JUSTIFICATION.RIGHT) justify = 'right';
+      this.style.align = justify;
+
+      let x, y;
+      if (this.textAlign & FLAGS.ALIGNMENT.TOP)
+        y = -this.sprite.height / 2 - this.text.height / 2;
+      if (this.textAlign & FLAGS.ALIGNMENT.MIDDLE) y = 0;
+      if (this.textAlign & FLAGS.ALIGNMENT.BOTTOM)
+        y = this.sprite.height / 2 + this.text.height / 2;
+      if (this.textAlign & FLAGS.ALIGNMENT.LEFT)
+        x = -this.sprite.width / 2 - this.text.width / 2;
+      if (this.textAlign & FLAGS.ALIGNMENT.CENTER) x = 0;
+      if (this.textAlign & FLAGS.ALIGNMENT.RIGHT)
+        x = this.sprite.width / 2 + this.text.width / 2;
       this.text.position.set(x, y);
+      this.text.anchor.set(0.5, 0.5);
+
+      // update color
+      this.style.fill = [PIXI.utils.hex2string(this.textColor)];
     }
+  }
+  // Uses FLAGS.ALIGNMENT
+  setTextAlign(alignment: number) {
+    this.textAlign = alignment;
+  }
+  // Uses FLAGS.JUSTIFICATION
+  setTextJustify(justification: number) {
+    this.textJustify = justification;
+  }
+  setTextColor(color: number) {
+    this.textColor = color;
   }
 
   setTextStyle(key: string, value: string | number) {

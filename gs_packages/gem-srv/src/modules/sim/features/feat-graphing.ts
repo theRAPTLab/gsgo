@@ -243,8 +243,25 @@ class WidgetPack extends SM_Feature {
 
     this.featAddProp(agent, 'text', new SM_String(agent.name)); // default to agent name
     this.featAddProp(agent, 'textProp', new SM_String()); // agent prop name that text is bound to
-
     let prop = new SM_Number();
+    prop.addOption('top', FLAGS.ALIGNMENT.TOP);
+    prop.addOption('middle', FLAGS.ALIGNMENT.MIDDLE);
+    prop.addOption('bottom', FLAGS.ALIGNMENT.BOTTOM);
+    prop.addOption('left', FLAGS.ALIGNMENT.LEFT);
+    prop.addOption('center', FLAGS.ALIGNMENT.CENTER);
+    prop.addOption('right', FLAGS.ALIGNMENT.RIGHT);
+    this.featAddProp(agent, 'textAlign', prop);
+    prop = new SM_Number();
+    prop.addOption('left', FLAGS.JUSTIFICATION.LEFT);
+    prop.addOption('center', FLAGS.JUSTIFICATION.CENTER);
+    prop.addOption('right', FLAGS.JUSTIFICATION.RIGHT);
+    this.featAddProp(agent, 'textJustify', prop);
+    prop = new SM_Number();
+    prop.setMax(16777215);
+    prop.setMin(0);
+    this.featAddProp(agent, 'textColor', prop);
+
+    prop = new SM_Number();
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'meter', prop);
@@ -341,6 +358,13 @@ class WidgetPack extends SM_Feature {
         setTo: ['labelString:string']
       }),
       textProp: SM_String.Symbols,
+      textAlign: SM_Number.SymbolizeCustom({
+        setTo: ['textAlignment:number']
+      }),
+      textJustify: SM_Number.SymbolizeCustom({
+        setTo: ['textJustification:number']
+      }),
+      textColor: SM_Number.Symbols,
       meter: SM_Number.Symbols,
       meterProp: SM_String.SymbolizeCustom({
         setTo: ['propertyName:string']
