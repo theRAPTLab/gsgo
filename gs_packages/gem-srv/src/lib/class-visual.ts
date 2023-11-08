@@ -443,7 +443,6 @@ class Visual implements IVisual, IPoolable, IActable {
       this.container.addChild(this.text);
     }
     if (this.text) {
-      const width = this.text.width;
       const spacer = 5;
 
       // Update Style
@@ -457,16 +456,20 @@ class Visual implements IVisual, IPoolable, IActable {
 
       let x, y;
       if (this.textAlign & FLAGS.ALIGNMENT.TOP)
-        y = -this.sprite.height / 2 + spacer;
-      if (this.textAlign & FLAGS.ALIGNMENT.MIDDLE) y = -this.text.height / 2;
+        y = -this.sprite.height / 2 - this.text.height / 2;
+      if (this.textAlign & FLAGS.ALIGNMENT.MIDDLE) y = 0;
       if (this.textAlign & FLAGS.ALIGNMENT.BOTTOM)
-        y = this.sprite.height / 2 + spacer;
-      if (this.textAlign & FLAGS.ALIGNMENT.LEFT) x = -width;
-      if (this.textAlign & FLAGS.ALIGNMENT.CENTER) x = -width / 2; // for some reason text is offset?
+        y = this.sprite.height / 2 + this.text.height / 2;
+      if (this.textAlign & FLAGS.ALIGNMENT.LEFT)
+        x = -this.sprite.width / 2 - this.text.width / 2;
+      if (this.textAlign & FLAGS.ALIGNMENT.CENTER) x = 0;
       if (this.textAlign & FLAGS.ALIGNMENT.RIGHT)
-        x = this.sprite.width / 2 - width;
-
+        x = this.sprite.width / 2 + this.text.width / 2;
       this.text.position.set(x, y);
+      this.text.anchor.set(0.5, 0.5);
+
+      // update color
+      this.style.fill = [PIXI.utils.hex2string(this.textColor)];
     }
   }
   // Uses FLAGS.ALIGNMENT
