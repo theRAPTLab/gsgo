@@ -358,8 +358,12 @@ class WidgetPack extends SM_Feature {
         setTo: ['labelString:string']
       }),
       textProp: SM_String.Symbols,
-      textAlign: SM_Number.Symbols,
-      textJustify: SM_Number.Symbols,
+      textAlign: SM_Number.SymbolizeCustom({
+        setTo: ['textAlignment:number']
+      }),
+      textJustify: SM_Number.SymbolizeCustom({
+        setTo: ['textJustification:number']
+      }),
       textColor: SM_Number.Symbols,
       meter: SM_Number.Symbols,
       meterProp: SM_String.SymbolizeCustom({
