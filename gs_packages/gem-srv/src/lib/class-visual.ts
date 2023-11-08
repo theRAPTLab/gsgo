@@ -436,17 +436,6 @@ class Visual implements IVisual, IPoolable, IActable {
       this.container.removeChild(this.text);
       if (this.text) this.text.destroy();
 
-      // Update Style
-      this.style.fill = [PIXI.utils.hex2string(this.textColor)]; // [`#${(this.textColor, 16)}CC`];
-
-      // Justification only for multiline texts -- does not affect single lines
-      // To justify single line text, use textAlign
-      let justify;
-      if (this.textJustify & FLAGS.JUSTIFICATION.LEFT) justify = 'left';
-      if (this.textJustify & FLAGS.JUSTIFICATION.CENTER) justify = 'center';
-      if (this.textJustify & FLAGS.JUSTIFICATION.RIGHT) justify = 'right';
-      this.style.align = justify;
-
       // -- Create new text
       this.text = new PIXI.Text(str, this.style);
 
@@ -456,6 +445,15 @@ class Visual implements IVisual, IPoolable, IActable {
     if (this.text) {
       const width = this.text.width;
       const spacer = 5;
+
+      // Update Style
+      // Justification only for multiline texts -- does not affect single lines
+      // To justify single line text, use textAlign
+      let justify;
+      if (this.textJustify & FLAGS.JUSTIFICATION.LEFT) justify = 'left';
+      if (this.textJustify & FLAGS.JUSTIFICATION.CENTER) justify = 'center';
+      if (this.textJustify & FLAGS.JUSTIFICATION.RIGHT) justify = 'right';
+      this.style.align = justify;
 
       let x, y;
       if (this.textAlign & FLAGS.ALIGNMENT.TOP)
