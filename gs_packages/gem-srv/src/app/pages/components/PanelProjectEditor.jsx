@@ -8,6 +8,7 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import UR from '@gemstep/ursys/client';
+import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelChrome from './PanelChrome';
@@ -27,10 +28,12 @@ class ProjectEditor extends React.Component {
     super();
     this.state = {
       project: undefined,
-      isBeingEdited: false
+      isBeingEdited: false,
+      needsReset: false
     };
     this.urStateUpdated = this.urStateUpdated.bind(this);
-    this.onFormInputUpdate = this.onFormInputUpdate.bind(this);
+    this.UIFormInputUpdate = this.UIFormInputUpdate.bind(this);
+    this.UIDefaultCharacterSelect = this.UIDefaultCharacterSelect.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.EditProject = this.EditProject.bind(this);
     this.EndEditProject = this.EndEditProject.bind(this);
@@ -51,7 +54,13 @@ class ProjectEditor extends React.Component {
     UR.UnsubscribeState('project', this.urStateUpdated);
   }
 
-  onFormInputUpdate(e) {
+  urStateUpdated(stateObj, cb) {
+    const { project } = stateObj;
+    if (project) this.setState({ project });
+    if (typeof cb === 'function') cb();
+  }
+
+  UIFormInputUpdate(e) {
     let val;
     if (e.target.type === 'number') val = Number(e.target.value);
     else if (e.target.type === 'checkbox') val = Boolean(e.target.checked);
@@ -89,10 +98,12 @@ class ProjectEditor extends React.Component {
     });
   }
 
-  urStateUpdated(stateObj, cb) {
-    const { project } = stateObj;
-    if (project) this.setState({ project });
-    if (typeof cb === 'function') cb();
+  UIDefaultCharacterSelect(event) {
+    const { project } = this.state;
+    project.metadata.defaultCharacter = event.target.value;
+    this.setState({ project, needsReset: true }, () => {
+      this.SaveMetaData();
+    });
   }
 
   OnPanelClick(id) {
@@ -105,8 +116,10 @@ class ProjectEditor extends React.Component {
   }
 
   EndEditProject() {
+    const { needsReset } = this.state;
+    if (needsReset) UR.RaiseMessage('ENTITIES_RESET');
     UR.LogEvent('ProjSetup', ['Project Settings Save']);
-    this.setState({ isBeingEdited: false });
+    this.setState({ isBeingEdited: false, needsReset: false });
   }
 
   SaveProjectData() {
@@ -138,6 +151,9 @@ class ProjectEditor extends React.Component {
       'roundsCanLoop'
     ];
 
+    // default character selection menu
+    const pozyxBpNames = ACBlueprints.GetPozyxControlBpNames();
+
     const inputJsx = (
       <>
         <div
@@ -156,7 +172,7 @@ class ProjectEditor extends React.Component {
             <input
               id="label"
               defaultValue={project.label}
-              onChange={this.onFormInputUpdate}
+              onChange={this.UIFormInputUpdate}
             />
             <br />
             <br />
@@ -184,22 +200,47 @@ class ProjectEditor extends React.Component {
                       : typeof metadata[f]
                   }
                   checked={typeof metadata[f] === 'boolean' ? metadata[f] : false}
-                  onChange={this.onFormInputUpdate}
+                  onChange={this.UIFormInputUpdate}
                 />
               </div>
             </div>
           ))}
 
-          <div className={classes.inspectorLabel}>&nbsp;</div>
-          <div className={classes.inspectorData}>
-            <br />
-            <button
-              type="button"
-              onClick={this.EndEditProject}
-              className={classes.button}
-            >
-              Save Project Settings
-            </button>
+          <div
+            style={{
+              padding: '0 10px',
+              display: 'grid',
+              gridTemplateColumns: '120px auto',
+              gridTemplateRows: 'auto'
+            }}
+          >
+            <div className={classes.inspectorLabel}>default character&nbsp;</div>
+            <div className={classes.inspectorData}>
+              <select
+                value={metadata.defaultCharacter}
+                onChange={this.UIDefaultCharacterSelect}
+                className="form-control"
+              >
+                <option value={undefined}>-- select a character --</option>
+                {pozyxBpNames.map(bpName => (
+                  <option key={bpName} value={bpName}>
+                    {bpName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className={classes.inspectorLabel}>&nbsp;</div>
+            <div className={classes.inspectorData}>
+              <br />
+              <button
+                type="button"
+                onClick={this.EndEditProject}
+                className={classes.button}
+              >
+                Save Project Settings
+              </button>
+            </div>
           </div>
         </div>
       </>
