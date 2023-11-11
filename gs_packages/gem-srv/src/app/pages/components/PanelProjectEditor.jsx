@@ -221,7 +221,7 @@ class ProjectEditor extends React.Component {
                 onChange={this.UIDefaultCharacterSelect}
                 className="form-control"
               >
-                <option value={undefined}>-- select a character --</option>
+                <option value={''}>-- select a character --</option>
                 {pozyxBpNames.map(bpName => (
                   <option key={bpName} value={bpName}>
                     {bpName}

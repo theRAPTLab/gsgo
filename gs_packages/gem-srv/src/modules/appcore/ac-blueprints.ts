@@ -246,6 +246,9 @@ function GetBpNamesList(): string[] {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetDefaultInputBpName(type?: string): string {
+  // NOTE if a type is not selected, the default reverts back to the
+  // `STATE._getKey('defaultBpName')`, which is the first non-global blueprint
+  // found (set as a derived value in  m_UpdateAndPublishDerivedBpLists)
   switch (type) {
     case TYPES.Pozyx:
       return GetPozyxControlDefaultBpName();

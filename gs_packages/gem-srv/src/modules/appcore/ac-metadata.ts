@@ -190,13 +190,24 @@ function Wraps(wall = 'any') {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/** If defaultCharacter is not defined for the project, fall back to selecting
- *  a random blueprint.
+/** If defaultCharacter is defined, use that.
+ *  Else if defaultCharacter is not defined,'
+ *  then if a default pozyx-controllable character is available, use a random
+ *  pozyx-controllable character.
+ *  Else if no default is definedfor the project, fall back to selecting
+ *  the ac-metadata defined `defaultBpName` blueprint.
+ *  To force the selection of a random **pozyx-controllable** character, change
+ *  the `ACBlueprints.GetDefaultInputBpName();` call to
+ *  `ACBlueprints.GetPozyxControlDefaultBpName`
  */
 function GetDefaultBp() {
   const metadata = _getKey('metadata');
   if (metadata.defaultCharacter) return metadata.defaultCharacter;
-  else return ACBlueprints.GetDefaultInputBpName();
+  else {
+    const defaultPoxyBpName = ACBlueprints.GetPozyxControlDefaultBpName();
+    if (defaultPoxyBpName) return defaultPoxyBpName;
+    return ACBlueprints.GetDefaultInputBpName();
+  }
 }
 
 /// UPDATERS //////////////////////////////////////////////////////////////////
