@@ -17,6 +17,7 @@
 import UR from '@gemstep/ursys/client';
 import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import * as ACInstances from 'modules/appcore/ac-instances';
+import * as ACMetaData from 'modules/appcore/ac-metadata';
 import InputDef from 'lib/class-input-def';
 import SyncMap from 'lib/class-syncmap';
 import * as DCAGENTS from './dc-sim-agents';
@@ -248,7 +249,8 @@ ENTITY_TO_COBJ.setMapFunctions({
     cobj.x = x;
     cobj.y = y;
 
-    cobj.bpid = ACBlueprints.GetDefaultInputBpName(entity.type);
+    cobj.bpid = ACMetaData.GetDefaultBp();
+
     // If user has selected a different bp for tags (pozyx, ptrack), use the override
     const tagBpid = ACInstances.GetTagBpid(cobj.id);
     if (tagBpid !== undefined) cobj.bpid = tagBpid;
