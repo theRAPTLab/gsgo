@@ -28,8 +28,7 @@ class ProjectEditor extends React.Component {
     super();
     this.state = {
       project: undefined,
-      isBeingEdited: false,
-      needsReset: false
+      isBeingEdited: false
     };
     this.urStateUpdated = this.urStateUpdated.bind(this);
     this.UIFormInputUpdate = this.UIFormInputUpdate.bind(this);
@@ -76,6 +75,8 @@ class ProjectEditor extends React.Component {
       return boolstr.toLowerCase().trim() === 'true';
     }
 
+    // 'id' and 'label' are `projectData`
+    // everything else is `metaData`
     let isMetaData = false;
     const { project } = this.state;
     if (e.target.id === 'id') {
@@ -101,13 +102,14 @@ class ProjectEditor extends React.Component {
   UIDefaultCharacterSelect(event) {
     const { project } = this.state;
     project.metadata.defaultCharacter = event.target.value;
-    this.setState({ project, needsReset: true }, () => {
+    this.setState({ project }, () => {
       this.SaveMetaData();
+      UR.RaiseMessage('ENTITIES_RESET');
     });
   }
 
   OnPanelClick(id) {
-    console.log('click', id); // e, e.target, e.target.value);
+    console.log('click', id);
   }
 
   EditProject() {
@@ -116,10 +118,8 @@ class ProjectEditor extends React.Component {
   }
 
   EndEditProject() {
-    const { needsReset } = this.state;
-    if (needsReset) UR.RaiseMessage('ENTITIES_RESET');
     UR.LogEvent('ProjSetup', ['Project Settings Save']);
-    this.setState({ isBeingEdited: false, needsReset: false });
+    this.setState({ isBeingEdited: false });
   }
 
   SaveProjectData() {
@@ -238,7 +238,7 @@ class ProjectEditor extends React.Component {
                 onClick={this.EndEditProject}
                 className={classes.button}
               >
-                Save Project Settings
+                Close Project Settings
               </button>
             </div>
           </div>
