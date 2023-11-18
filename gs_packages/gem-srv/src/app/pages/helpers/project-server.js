@@ -348,6 +348,20 @@ function InjectBlueprint(data) {
   ACBlueprints.InjectBlueprint(CURRENT_PROJECT_ID, blueprint);
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Force reset of input definitions after changing default pozyx character
+ *       If the project metadata.defaultCharacter has changed we need to reset
+ *       the inputs, otherwise the old defaultCharacter will be retained
+*/
+function EntitiesReset() {
+  // HACK Force Project Reload
+  // Pozyx inputs need to be reset otherwise the old character will continue to
+  // be used.  The proper fix is add support to pools to reset the pool.
+  // See #801
+  setTimeout(() => location.reload(true), 1000);
+  // The timeout gives the system time to reset the inputs.
+}
+
 /// TRANSFORM UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function HandleTransformReq() {
@@ -593,7 +607,7 @@ function InstanceRequestEdit(data) {
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: User has edited the instance  using the InstanceEditor.
+/** API: User has edited the instance using the InstanceEditor.
  *  This usually means the instance name and/or the instance initScript
  *  has changed.
  *  The state has already been updated.
@@ -840,6 +854,8 @@ UR.HandleMessage('METADATA_UPDATE', UpdateMetadata);
 UR.HandleMessage('NET:SCRIPT_UPDATE', ScriptUpdate);
 UR.HandleMessage('NET:BLUEPRINT_DELETE', HandleBlueprintDelete);
 UR.HandleMessage('INJECT_BLUEPRINT', InjectBlueprint);
+///
+UR.HandleMessage('ENTITIES_RESET', EntitiesReset);
 /// INSTANCE EDITING UTILS ----------------------------------------------------
 UR.HandleMessage('LOCAL:INSTANCE_ADD', InstanceAdd);
 UR.HandleMessage('NET:INSTANCE_UPDATE', InstanceUpdate);
@@ -874,6 +890,8 @@ export {
   DoUnRegisterInspector, // <- NET:INSPECTOR_UNREGISTER { id }
   //
   InjectBlueprint, // <- INJECT_BLUEPRINT
+  //
+  EntitiesReset,
   //
   BlueprintDelete, // <- NET:BLUEPRINT_DELETE { blueprintId, modelName }
   //

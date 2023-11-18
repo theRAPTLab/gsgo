@@ -245,7 +245,10 @@ function GetBpNamesList(): string[] {
   return STATE._getKey('bpNamesList');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetDefaultInputBpName(type: string): string {
+function GetDefaultInputBpName(type?: string): string {
+  // NOTE if a type is not selected, the default reverts back to the
+  // `STATE._getKey('defaultBpName')`, which is the first non-global blueprint
+  // found (set as a derived value in  m_UpdateAndPublishDerivedBpLists)
   switch (type) {
     case TYPES.Pozyx:
       return GetPozyxControlDefaultBpName();
@@ -342,8 +345,8 @@ function m_GeneratePozyxControlBpNames(bundles: SM_Bundle[]): string[] {
 function GetPozyxControlBpNames(): string[] {
   return STATE._getKey('pozyxControlBpNames');
 }
-/** API: Returns the first pozyx controllable blueprint name as the default bp to use
- *  Used dc-inputs to determine mapping
+/** API: Returns a random pozyx controllable blueprint name as the default bp to use
+ *  Uses dc-inputs to determine mapping
  *  @returns {string} - bpName
  */
 function GetPozyxControlDefaultBpName(): string {
