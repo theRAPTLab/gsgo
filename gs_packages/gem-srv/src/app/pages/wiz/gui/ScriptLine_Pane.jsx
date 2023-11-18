@@ -1,5 +1,8 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+  DEPRECATED -- Early Development Prototypes.
+                Replaced by SlotEditor_Block
+
   ScriptContextor - Displays the overall context of a blueprint, as well
   as providing help as needed. I'm imagining it as an accordion view.
 

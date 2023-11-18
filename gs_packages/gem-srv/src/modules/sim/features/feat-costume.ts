@@ -98,8 +98,9 @@ function m_CalculateScale(agent: IAgent): { scale: number; scaleY: number } {
  */
 function m_getAgent(agentId): IAgent {
   const a = GetAgentById(agentId);
-  if (!a) COSTUME_AGENTS.delete(agentId);
-  return a;
+  // Also delete if agent has switched bp and no longer has the feature
+  if (!a || !a.prop.Costume) COSTUME_AGENTS.delete(agentId);
+  else return a;
 }
 
 /// UPDATES ////////////////////////////////////////////////////////////////////
@@ -136,10 +137,15 @@ function m_Update(frame) {
     }
 
     // Set COLOR
+    // COLOR can be set three different ways:
+    // 1. colorScale or
+    // 2. color
+    // 3. HSV
+    // We use HSV as the common denominator base color format,
+    // and convert to HEX when we assign the agent.prop.color.
+    // NOTE: color scale will override any color and hsv settings
     if (agent.prop.Costume.colorScaleIndex.value !== undefined) {
-      // COLOR can be set two different ways: colorScale or HSV
-      // NOTE: color scale will override any hsv settings
-      // retrieve color from color scale
+      // 1. colorScale -- retrieve color from color scale
       color = agent.prop.Costume._colorScale.get(
         agent.prop.Costume.colorScaleIndex.value
       );
@@ -148,8 +154,14 @@ function m_Update(frame) {
       agent.prop.Costume.colorHue.setTo(h);
       agent.prop.Costume.colorSaturation.setTo(s);
       agent.prop.Costume.colorValue.setTo(v);
+    } else if (agent.prop.Costume.color.value !== undefined) {
+      // 2. color hex
+      [h, s, v] = HSVfromHEX(agent.prop.Costume.color.value);
+      agent.prop.Costume.colorHue.setTo(h);
+      agent.prop.Costume.colorSaturation.setTo(s);
+      agent.prop.Costume.colorValue.setTo(v);
     }
-    //   convert feature color data to hex for agent
+    // 3. hsv -- convert feature color data to hex for agent
     h = agent.prop.Costume.colorHue.value;
     s = agent.prop.Costume.colorSaturation.value;
     v = agent.prop.Costume.colorValue.value;
@@ -162,6 +174,8 @@ function m_Update(frame) {
     // Set GLOW
     if (agent.prop.Costume.glow.value > 0) {
       agent.prop.Costume.glow.sub(1 / SIM_TICKS_PER_SEC); // frame rate
+      if (agent.prop.Costume.glowColor.value !== undefined)
+        agent.prop.glowColor.setTo(agent.prop.Costume.glowColor.value);
       agent.isGlowing = true;
     } else {
       agent.isGlowing = false;
@@ -267,9 +281,17 @@ class CostumePack extends SM_Feature {
     //         to enable applicaiton of flip?
     this.featAddProp(agent, 'flipX', new SM_Boolean(false));
     this.featAddProp(agent, 'flipY', new SM_Boolean(false));
-    // Costume color will override agent color during m_Update
     prop = new SM_Number();
     this.featAddProp(agent, 'glow', prop); // in seconds
+    prop = new SM_Number();
+    prop.setMax(16777215);
+    prop.setMin(0);
+    this.featAddProp(agent, 'glowColor', prop);
+    // Costume color will override agent color during m_Update
+    prop = new SM_Number();
+    prop.setMax(16777215);
+    prop.setMin(0);
+    this.featAddProp(agent, 'color', prop);
     prop = new SM_Number();
     prop.setMax(1);
     prop.setMin(0);
@@ -534,6 +556,8 @@ class CostumePack extends SM_Feature {
       flipX: SM_Boolean.Symbols,
       flipY: SM_Boolean.Symbols,
       glow: SM_Number.Symbols,
+      glowColor: SM_Number.Symbols,
+      color: SM_Number.Symbols, // hex css
       colorHue: SM_Number.Symbols,
       colorSaturation: SM_Number.Symbols,
       colorValue: SM_Number.Symbols,

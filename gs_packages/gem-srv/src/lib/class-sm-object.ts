@@ -35,6 +35,7 @@ class SM_Object implements ISM_Object {
   meta: { type: symbol; name?: string };
   prop: SM_Dict;
   method: SM_Dict;
+  map: SM_Dict;
 
   /// SETUP ///////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -118,7 +118,7 @@ class PanelSimViewer extends React.Component {
           id="root-renderer"
           style={{ color: bgcolor, width: '100%', height: '100%' }}
         >
-          Ho this is the sim!
+          This is the sim!
         </div>
       </PanelChrome>
     );

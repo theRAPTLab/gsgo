@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The Grapahing Class (Formerly Agent Widgets)
+  The Graphing Class (Formerly Agent Widgets)
 
   Widgets update during the SIM/UI_UPDATE phase.
 
@@ -43,8 +43,9 @@ const WIDGET_AGENTS = new Map();
  */
 function m_getAgent(agentId): IAgent {
   const a = GetAgentById(agentId);
-  if (!a) WIDGET_AGENTS.delete(agentId);
-  return a;
+  // Also delete if agent has switched bp and no longer has the feature
+  if (!a || !a.prop.Graphing) WIDGET_AGENTS.delete(agentId);
+  else return a;
 }
 
 /// WIDGETS LOOP ////////////////////////////////////////////////////////////
@@ -221,11 +222,13 @@ class WidgetPack extends SM_Feature {
   constructor(name) {
     super(name);
     this.featAddMethod('showMessage', this.showMessage);
+    this.featAddMethod('showMessageProp', this.showMessageProp);
     this.featAddMethod('setMeterPosition', this.setMeterPosition);
     this.featAddMethod(
       'bindLineGraphHistogramToFeatProp',
       this.bindLineGraphHistogramToFeatProp
     );
+
     UR.HookPhase('SIM/GRAPHS_UPDATE', m_GraphsUpdate);
     UR.HookPhase('SIM/FEATURES_UPDATE', m_FeaturesUpdate);
     UR.HookPhase('SIM/UI_UPDATE', m_UIUpdate);
@@ -234,9 +237,31 @@ class WidgetPack extends SM_Feature {
   decorate(agent) {
     super.decorate(agent);
     // Public Props
+    //default text properties
+    this.featAddProp(agent, 'fontSize', new SM_Number(18));
+    this.featAddProp(agent, 'wordWrapWidth', new SM_Number(125));
+
     this.featAddProp(agent, 'text', new SM_String(agent.name)); // default to agent name
     this.featAddProp(agent, 'textProp', new SM_String()); // agent prop name that text is bound to
     let prop = new SM_Number();
+    prop.addOption('top', FLAGS.ALIGNMENT.TOP);
+    prop.addOption('middle', FLAGS.ALIGNMENT.MIDDLE);
+    prop.addOption('bottom', FLAGS.ALIGNMENT.BOTTOM);
+    prop.addOption('left', FLAGS.ALIGNMENT.LEFT);
+    prop.addOption('center', FLAGS.ALIGNMENT.CENTER);
+    prop.addOption('right', FLAGS.ALIGNMENT.RIGHT);
+    this.featAddProp(agent, 'textAlign', prop);
+    prop = new SM_Number();
+    prop.addOption('left', FLAGS.JUSTIFICATION.LEFT);
+    prop.addOption('center', FLAGS.JUSTIFICATION.CENTER);
+    prop.addOption('right', FLAGS.JUSTIFICATION.RIGHT);
+    this.featAddProp(agent, 'textJustify', prop);
+    prop = new SM_Number();
+    prop.setMax(16777215);
+    prop.setMin(0);
+    this.featAddProp(agent, 'textColor', prop);
+
+    prop = new SM_Number();
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'meter', prop);
@@ -254,6 +279,7 @@ class WidgetPack extends SM_Feature {
     this.featAddProp(agent, 'graphGlobalProp', new SM_String()); // agent prop name that text is bound to
     prop = new SM_Number(30);
     this.featAddProp(agent, 'graphFrequency', prop);
+    this.featAddProp(agent, 'messageStringToShow', new SM_String());
 
     // Bar Graph
     this.featAddProp(agent, 'barGraphProp', new SM_String()); // this should be a dict prop
@@ -277,6 +303,11 @@ class WidgetPack extends SM_Feature {
    *  featCall Physics setRadius value
    */
   showMessage(agent: IAgent, message: string) {
+    UR.RaiseMessage('SHOW_MESSAGE', { message });
+  }
+
+  showMessageProp(agent: IAgent) {
+    const message = agent.prop.Graphing.messageStringToShow.value;
     UR.RaiseMessage('SHOW_MESSAGE', { message });
   }
 
@@ -327,6 +358,13 @@ class WidgetPack extends SM_Feature {
         setTo: ['labelString:string']
       }),
       textProp: SM_String.Symbols,
+      textAlign: SM_Number.SymbolizeCustom({
+        setTo: ['textAlignment:number']
+      }),
+      textJustify: SM_Number.SymbolizeCustom({
+        setTo: ['textJustification:number']
+      }),
+      textColor: SM_Number.Symbols,
       meter: SM_Number.Symbols,
       meterProp: SM_String.SymbolizeCustom({
         setTo: ['propertyName:string']
@@ -344,10 +382,13 @@ class WidgetPack extends SM_Feature {
       graphGlobalProp: SM_String.Symbols,
       graphFrequency: SM_Number.Symbols,
       barGraphProp: SM_String.Symbols,
-      barGraphPropFeature: SM_String.Symbols
+      barGraphPropFeature: SM_String.Symbols,
+      fontSize: SM_Number.Symbols,
+      wordWrapWidth: SM_Number.Symbols
     },
     methods: {
       showMessage: { args: ['messageString:string'] },
+      showMessageProp: { args: [] },
       setMeterPosition: { args: ['position:string'] },
       bindLineGraphHistogramToFeatProp: {
         args: ['featureName:feature', 'propName:prop']

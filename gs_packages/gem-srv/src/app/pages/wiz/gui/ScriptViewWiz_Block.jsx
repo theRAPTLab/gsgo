@@ -3,8 +3,6 @@
   ScriptViewWiz_Block - Given a script_page array of renderable state, emit
   a clickable wizard GUI.
 
-  Was: ScriptViewPane.jsx
-
   `sel_linenum` is passed to cause ScriptViewWiz_Block to re-render the
   selected line (to show line add/delete buttons) if the user clicks on an
   existing line.
@@ -14,6 +12,8 @@
     <ScriptViewWiz_Block script_page={script_page} sel_linenum={sel_linenum} />
 
   where script_page is defined in ac-wizcore
+
+  Was: ScriptViewPane.jsx
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -71,15 +71,15 @@ let DBGTEXT = '';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ScriptViewWiz_Block(props) {
   // collect resources for rendering
-  let { script_page, sel_linenum } = props;
+  // gemscript_page can be either script_page or init_script_page
+  let { gemscript_page, sel_linenum, sel_linepos } = props;
 
   const [deleteDialogIsOpen, setDeleteDialogIsOpen] = useState(0);
   DBGTEXT = '';
 
-  const script_page_Validation = WIZCORE.ValidateScriptPage();
+  const script_page_Validation = WIZCORE.ValidateScriptPage(gemscript_page);
   const pageBuffer = [];
-  const selTokId = WIZCORE.SelectedTokenId();
-
+  const selTokId = WIZCORE.SelectedTokenId(sel_linenum, sel_linepos);
   // UI JSX: ADD LINE
   const addLineBtn = (
     <div className="gwiz">
@@ -102,7 +102,8 @@ export function ScriptViewWiz_Block(props) {
   }
   // -- Deletion Display Data
   const { vmPageLine } = WIZCORE.SelectedTokenInfo() || {}; // if no line is selected yet
-  const { lineScript } = vmPageLine || {}; // all of these values will be empty
+  const line = gemscript_page[sel_linenum - 1];
+  const lineScript = line ? line.lineScript : '';
   const selectedLineText = lineScript
     ? WIZCORE.GetLineScriptText(lineScript)
     : '';
@@ -127,8 +128,8 @@ export function ScriptViewWiz_Block(props) {
   // a page is an array of line viewmodel data
   // the line has token viewmodel data plus line metdata
   if (DBG) console.groupCollapsed('ScriptViewPane Validation');
-  script_page.forEach(line => {
-    const { lineNum, level, vmTokens } = line;
+  gemscript_page.forEach(ln => {
+    const { lineNum, level, vmTokens } = ln;
     const lineBuffer = [];
     const hasTokens = vmTokens.length > 0;
     let lineHasLockedSymbols = false;
@@ -148,11 +149,10 @@ export function ScriptViewWiz_Block(props) {
       const lineValidationTokens = script_page_Validation[lineNum]
         ? script_page_Validation[lineNum].validationTokens
         : [];
-
       lineValidationTokens.forEach((validationToken, idx) => {
         const tokInfo = vmTokens[idx] || {};
         let { tokenKey } = tokInfo;
-        const { gsType } = validationToken;
+        let { gsType, gsName } = validationToken;
         const { scriptToken } = tokInfo;
         let label;
         let selected;
@@ -173,6 +173,12 @@ export function ScriptViewWiz_Block(props) {
           else viewState = 'empty';
           tokenKey = `${lineNum},${idx + 1}`; // generate tokenKey
         }
+        // special color handling -- show color instead of color
+        if (gsName === 'color') {
+          // override gsType?
+          gsType = 'color';
+        }
+
         // locked
         if (LOCKED_SYMBOLS.includes(String(label).toLowerCase())) {
           viewState = 'locked';
@@ -208,6 +214,7 @@ export function ScriptViewWiz_Block(props) {
         lineJSX = (
           <>
             <button
+              id="LineBtnAddBefore"
               className="outline btnAddBefore"
               onClick={e => EDITMGR.AddLine('before')}
             >

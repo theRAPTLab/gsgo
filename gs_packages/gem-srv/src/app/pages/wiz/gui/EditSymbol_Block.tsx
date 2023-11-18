@@ -49,7 +49,7 @@ export const HIDDEN_SYMBOLS = [
   'intersectsWith',
   'intersectsWithBounds',
   'intersectsCenterWithBounds',
-  'intersectsCenterWithAgentBounds',
+  'intersectsCenterWithCharacterBounds',
   // agent
   'skin',
   // 'scale', // needed by physics
@@ -113,6 +113,10 @@ export const ADVANCED_SYMBOLS = [
   'colorHSVWithinRange',
   'initHSVColorScale',
   'getHSVColorScaleColor',
+  'wordWrapWidth',
+  'fontSize',
+  'textAlign',
+  'textJustify',
   // movement
   'bounceAngle',
   'setRandomPositionX',
@@ -127,44 +131,48 @@ export const ADVANCED_SYMBOLS = [
   'bodyheight',
   'bodyshape',
   // population
-  'monitoredAgent',
-  'monitoredAgentProp',
-  'monitoredAgentPropFeature',
+  'monitoredCharacter',
+  'monitoredCharacterProp',
+  'monitoredCharacterPropFeature',
   'spawnMutationProp',
   'spawnMutationPropFeature',
   'spawnMutationMaxAdd',
   'spawnMutationMaxSubtract',
   'targetPopulationSize',
   'deleteAfterSpawning',
-  'createAgent',
+  'createCharacter',
   'spawnChild',
-  'removeAgent',
-  'getRandomActiveAgent',
-  'releaseAllAgents',
-  'releaseInertAgents',
-  'hideInertAgents',
-  'removeInertAgents',
-  'agentsReproduce',
-  'oneAgentReproduce',
+  'removeCharacter',
+  'getRandomActiveCharacter',
+  'releaseAllCharacters',
+  'releaseInertCharacters',
+  'hideInertCharacters',
+  'removeInertCharacters',
+  'charactersReproduce',
+  'oneCharacterReproduce',
   'populateBySpawning',
-  'agentsForEachActive',
-  'agentsForEach',
-  'countAgentsByPropType',
-  'setAgentsByFeatPropTypeKeys',
-  'countExistingAgentsByFeatPropType',
+  'charactersForEachActive',
+  'charactersForEach',
+  'countCharactersByPropType',
+  'setCharactersByFeatPropTypeKeys',
+  'countExistingCharactersByFeatPropType',
   // vision
   'vision',
   // agent
   'agent',
+  'character', // replaces 'agent'
   'x',
   'y',
   'statustext',
   'zindex',
-  'color',
+  // 'color', // used by Costume featProp so NOT advanced
   'orientation',
   'visible',
   'alpha',
-  'isinert'
+  'isinert',
+  // IU
+  'setupFunction',
+  'callFunction'
 ].map(w => w.toLowerCase());
 export const IGNORED_TYPES = ['{noncode}'].map(w => w.toLowerCase());
 

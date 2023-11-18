@@ -63,15 +63,8 @@ class InputField extends React.Component {
   }
 
   render() {
-    const {
-      index,
-      propName,
-      value,
-      type,
-      isEditable,
-      onChange,
-      classes
-    } = this.props;
+    const { index, propName, value, type, isEditable, onChange, classes } =
+      this.props;
 
     if (DBG) console.log('DUMMY log to clear eslint', index, onChange);
 
@@ -90,6 +83,7 @@ class InputField extends React.Component {
             type={type}
             value={value}
             className={classes.instanceEditorField}
+            placeholder={propName}
           />
         </div>
       );
@@ -98,7 +92,9 @@ class InputField extends React.Component {
       jsx = (
         <>
           {/* <div className={classes.inspectorLabel}>{propName}:&nbsp;</div> */}
-          <div className={classes.inspectorData}>{value}&nbsp; </div>
+          <div className={classes.inspectorData}>
+            {value === '' ? '...' : value}
+          </div>
         </>
       );
     }

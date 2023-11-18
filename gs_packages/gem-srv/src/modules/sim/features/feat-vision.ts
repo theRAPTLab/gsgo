@@ -38,8 +38,9 @@ const VISION_AGENTS = new Map();
  *  WIDGET_AGENTS */
 function m_getAgent(agentId): IAgent {
   const a = SIMAGENTS.GetAgentById(agentId);
-  if (!a) VISION_AGENTS.delete(agentId);
-  return a;
+  // Also delete if agent has switched bp and no longer has the feature
+  if (!a || !a.prop.Vision) VISION_AGENTS.delete(agentId);
+  else return a;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_updateVisionCone(agent): { visionPoly: any[]; visionPath: any[] } {
@@ -234,7 +235,7 @@ class VisionPack extends SM_Feature {
     super(name);
     this.featAddMethod('monitor', this.monitor);
     this.featAddMethod('isCamouflaged', this.isCamouflaged);
-    this.featAddMethod('canSeeColorOfAgent', this.canSeeColorOfAgent);
+    this.featAddMethod('canSeeColorOfCharacter', this.canSeeColorOfCharacter);
     UR.HookPhase('SIM/AGENTS_UPDATE', m_update);
     // use AGENTS_UPDATE so the vision calculations are in place for use during
     // movmeent's FEATURES_UPDATE
@@ -323,7 +324,7 @@ class VisionPack extends SM_Feature {
   }
 
   /** agent can see the color of the target against its background agent */
-  canSeeColorOfAgent(agent: IAgent, target: IAgent) {
+  canSeeColorOfCharacter(agent: IAgent, target: IAgent) {
     return m_IsTargetColorVisible(agent, target);
   }
 
@@ -363,7 +364,7 @@ class VisionPack extends SM_Feature {
         ]
       },
       // REVIEW TODO: target is an IAgent.  Should it be `blueprint`?
-      'canSeeColorOfAgent': { args: ['target:objref'] }
+      'canSeeColorOfCharacter': { args: ['target:objref'] }
     }
   };
 }

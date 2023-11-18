@@ -19,13 +19,19 @@ const Process = require('process');
 const Shell = require('shelljs');
 const Minimist = require('minimist');
 const UR = require('@gemstep/ursys/server');
+const EXEC = require('child_process').exec;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = 'GEMRUN';
 const TOUT = UR.TermOut(PR);
+const WR = s => `${PR} ${DP} \x1b[1;34m${s}\x1b[0m`;
+const BL = s => `\x1b[1;34m${s}\x1b[0m`;
+const YL = s => `\x1b[1;33m${s}\x1b[0m`;
+const ERR = s => `\x1b[33;41m ${s} \x1b[0m`;
 
-// ensure that local settings file exists
+/// ENSURE LOCAL SETTINGS FILE EXISTS /////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const localSettingsPath = Path.join(__dirname, 'config/local-settings.json');
 if (!UR.FILE.FileExists(localSettingsPath)) {
   TOUT('creating empty config/local-settings.json file');
@@ -37,6 +43,54 @@ if (!UR.FILE.FileExists(localSettingsPath)) {
     ]
   });
 }
+
+/// CHECK ARCH ////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// check architecture
+EXEC('arch', (error, stdout, stderr) => {
+  if (stdout) {
+    stdout = stdout.trim();
+    if (stdout !== 'i386') {
+      TOUT(`ARCHITECTURE: ${stdout}`);
+      TOUT(ERR('NOTICE: NETCREATE TESTED ON X86 NODEJS LIBRARIES'));
+      TOUT(ERR('ARM-based Macs must use i386-compatible shell'));
+      const cmd = `arch -x86_64 ${process.env.SHELL}`;
+      TOUT(`Type the following into terminal, then ${YL('try again')}:`);
+      TOUT(`  ${YL(cmd)}`);
+      TOUT(`NOTE: you may need to ${BL('npm ci; npm run bootstrap')}`);
+      TOUT(`again if this is a fresh GEMSTEP install.`);
+      TOUT(`If you ran ${BL('npm install')} with the wrong arch, you`);
+      TOUT(`may need to ${ERR('re-pull')} the repo again to recover.`);
+      TOUT(`Ask the devteam for help!`);
+      process.exit(101);
+    } else {
+      TOUT(`architecture is ${stdout}`);
+    }
+  }
+});
+
+/// CHECK NODE VERSION ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let NODE_VER;
+try {
+  NODE_VER = FS.readFileSync('../../.nvmrc', 'utf8').trim();
+} catch (err) {
+  TOUT(ERR('could not read .nvmrc', err));
+  throw Error(`Could not read .nvmrc ${err}`);
+}
+EXEC('node --version', (error, stdout, stderr) => {
+  if (stdout) {
+    stdout = stdout.trim();
+    if (stdout !== NODE_VER) {
+      TOUT(ERR('NODE VERSION MISMATCH'));
+      TOUT(`... expected ${NODE_VER} got ${YL(stdout)}`);
+      TOUT(`... did you remember to run ${BL('nvm use')}?`);
+      // eslint-disable-next-line no-process-exit
+      process.exit(102);
+    }
+    TOUT('nodejs version is', stdout);
+  }
+});
 
 /// LOAD GEMSTEP DEPENDENCIES /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

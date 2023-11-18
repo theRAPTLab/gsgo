@@ -39,6 +39,7 @@ class DisplayObject implements IPoolable {
   x: number;
   y: number;
   flag: number;
+  wordWrapWidth: number;
 
   constructor(id?: any) {
     this.init(id);

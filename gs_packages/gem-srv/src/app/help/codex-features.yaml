@@ -33,6 +33,10 @@ Graphing:
     info: 'Set the highest value that can be displayed on the y-axis of the graph. This will appear as a label next to the y-axis.'
   graphMinX:
     info: 'Set the lowest value that can be displayed on the x-axis of the graph.'
+  fontSize:
+    info: 'The size of the text on this character. The default is 18.'
+  wordWrapWidth:
+    info: 'The width of this text character.'
   graphMinY:
     info: 'Set the lowest value that can be displayed on the y-axis of the graph. This will appear as a label next to the y-axis.'
   graphFrequency:
@@ -41,6 +45,20 @@ Graphing:
     info: 'Set a bar graph to the value of this property and update the graph when the property does.'
   barGraphPropFeature:
     info: 'Help for barGraphPropFeature coming soon.'
+  textAlign:
+    info: 'Text alignment. Settings, which can be combined are TOP: 1, MIDDLE: 2, BOTTOM: 4, LEFT: 8, CENTER: 16, RIGHT: 32.'
+  textAlignment:
+    name: 'textAlignment'
+    input: 'Settings, which can be combined are TOP: 1, MIDDLE: 2, BOTTOM: 4, LEFT: 8, CENTER: 16, RIGHT: 32.'
+    info: 'Settings, which can be combined are TOP: 1, MIDDLE: 2, BOTTOM: 4, LEFT: 8, CENTER: 16, RIGHT: 32.'
+  textJustify:
+    info: 'Text alignment. Settings are LEFT: 1, CENTER: 2, RIGHT: 4.'
+  textJustification:
+    name: 'textAlignment'
+    input: 'Text alignment. Settings are LEFT: 1, CENTER: 2, RIGHT: 4.'
+    info: 'Text alignment. Settings are LEFT: 1, CENTER: 2, RIGHT: 4.'
+  textColor:
+    info: 'Text color. Use setToColor for options'
   # Graphing methods
   showMessage:
     info: 'This creates a popup message for the users to read.'
@@ -81,26 +99,28 @@ Costume:
     info: 'Flip the costume on the y axis (vertically).'
   glow:
     info: 'Set costume to glow for n number of seconds. If you set this to 0 it will stop glowing immediately.'
+  glowColor:
+    info: 'Set color of costume glow.  Defaults to yellow.'
   currentFrame:
     info: 'If you are using a character with multiple frames (e.g., a .json file), this sets it to a new one.'
   colorHue:
-    info: 'tbd'
+    info: '[help details coming soon]'
   colorSaturation:
-    info: 'tbd'
+    info: '[help details coming soon]'
   colorValue:
-    info: 'tbd'
+    info: '[help details coming soon]'
   colorScaleIndex:
-    info: 'tbd'
+    info: '[help details coming soon]'
   colorScaleHue:
-    info: 'tbd'
+    info: '[help details coming soon]'
   colorScaleSaturation:
-    info: 'tbd'
+    info: '[help details coming soon]'
   colorScaleValue:
-    info: 'tbd'
+    info: '[help details coming soon]'
   colorScaleType:
-    info: 'tbd'
+    info: '[help details coming soon]'
   colorScaleSteps:
-    info: 'tbd'
+    info: '[help details coming soon]'
   # Costume methods
   setAnimatedCostume:
     # REVIEW: Get rid of `hint`???
@@ -128,8 +148,8 @@ Costume:
     info: 'Apply a color filter to the character'
     syntax: 'frame number like 0'
   resetColorize:
-    hint: 'Apply a color filter to the character'
-    info: 'Apply a color filter to the character'
+    hint: 'Remove previous color settings'
+    info: 'Remove previous color settings'
     syntax: 'frame number like 0'
   initHSVColorScale:
     hint: 'Apply a color filter to the character'
@@ -138,6 +158,10 @@ Costume:
   getHSVColorScaleColor:
     hint: 'Apply a color filter to the character'
     info: 'Apply a color filter to the character'
+    syntax: 'frame number like 0'
+  getColorHSV:
+    hint: 'Check the HSV colors of a character'
+    info: 'Check the HSV colors of a character'
     syntax: 'frame number like 0'
 
 Cursor:
@@ -216,19 +240,34 @@ Physics:
   # Physics props
   bodyRadius:
     hint: 'bodyRadius hint'
-    info: 'change dimensions in pixels'
+    info: 'Change dimensions in pixels.'
     syntax: 'body radius integer width, integer height'
   bodyWidth:
-    info: 'xxx'
+    info: 'Width of character in pixels.'
   bodyHeight:
-    info: 'xxx'
+    info: 'Height of the character in pixels.'
   bodyShape:
-    info: 'circle or rectangle'
+    info: 'Circle or rectangle.'
   # Physics methods
   # (none)
 
 IU:
   info: 'Adds new features we are testing at IU'
+  logStringText:
+    name: 'logStringText'
+    info: '"logStringText" value determines the text to be logged'
+    input: 'Type the text you want to appear in the log. Use stack commands if you need to assemble it (e.g., push)'
+  # Population methods
+  logString:
+    info: 'Log a text string'
+  logProperty:
+    info: 'Log the text string that is saved as the logStringText property of this character'
+  handleClick:
+    info: 'A script block that will be called if the character is clicked on the main window'
+  setupFunction:
+    info: 'A script to define a function that you can call later using callFunction'
+  callFunction:
+    info: 'This triggers a script that is defined by setupFunction previously'
 
 Population:
   info: 'Adds ways to generate and manage spawned characters and statistical information'
@@ -243,67 +282,71 @@ Population:
     info: 'The smallest value of the property across this character type.'
   max:
     info: 'The highest value of the property across this character type.'
-  monitoredAgent:
-    info: 'xxx'
-  monitoredAgentProp:
-    info: 'xxx'
-  monitoredAgentPropFeature:
-    info: 'xxx'
+  monitoredCharacter:
+    info: 'The name of the character to look at when calculating the population values such as sum or average.'
+  monitoredCharacterProp:
+    info: 'The name of the property to look at when caclulating the population values such as sum or average.'
+  monitoredCharacterPropFeature:
+    info: '[help details coming soon]'
   spawnMutationProp:
-    info: 'xxx'
+    info: '[help details coming soon]'
   spawnMutationPropFeature:
-    info: 'xxx'
+    info: '[help details coming soon]'
   spawnMutationMaxAdd:
-    info: 'xxx'
+    info: '[help details coming soon]'
   spawnMutationMaxSubtract:
-    info: 'xxx'
+    info: '[help details coming soon]'
   targetPopulationSize:
-    info: 'xxx'
+    info: '[help details coming soon]'
   deleteAfterSpawning:
-    info: 'xxx'
+    info: '[help details coming soon]'
   # Population methods
-  createAgent:
-    info: 'createAgent'
+  createCharacter:
+    info: 'createCharacter'
   spawnChild:
     info: 'spawnChild'
-  removeAgent:
-    info: 'removeAgent'
-  getRandomActiveAgent:
-    info: 'getRandomActiveAgent'
-  releaseAllAgents:
-    info: 'releaseAllAgents'
-  releaseInertAgents:
-    info: 'releaseInertAgents'
-  hideInertAgents:
-    info: 'hideInertAgents'
-  removeInertAgents:
-    info: 'removeInertAgents'
+  removeCharacter:
+    info: 'removeCharacter'
+  getRandomActiveCharacter:
+    info: 'getRandomActiveCharacter'
+  releaseAllCharacters:
+    info: 'releaseAllCharacters'
+  releaseInertCharacters:
+    info: 'releaseInertCharacters'
+  hideInertCharacters:
+    info: 'hideInertCharacters'
+  removeInertCharacters:
+    info: 'removeInertCharacters'
   agentsReproduce:
     info: 'agentsReproduce'
-  oneAgentReproduce:
-    info: 'oneAgentReproduce'
+  oneCharacterReproduce:
+    info: 'oneCharacterReproduce'
   populateBySpawning:
     info: 'populateBySpawning'
   agentsForEachActive:
     info: 'agentsForEachActive'
   agentsForEach:
     info: 'agentsForEach'
-  getActiveAgentsCount:
-    info: 'getActiveAgentsCount'
-  countAgents:
-    info: 'countAgents'
-  countAgentProp:
-    info: 'countAgentProp'
-  minAgentProp:
-    info: 'minAgentProp'
-  maxAgentProp:
-    info: 'maxAgentProp'
-  countAgentsByPropType:
-    info: 'countAgentsByPropType'
-  setAgentsByFeatPropTypeKeys:
-    info: 'setAgentsByFeatPropTypeKeys'
-  countExistingAgentsByFeatPropType:
-    info: 'countExistingAgentsByFeatPropType'
+  getActiveCharactersCount:
+    info: 'getActiveCharactersCount'
+  countCharacters:
+    info: 'countCharacters'
+  countCharacterProp:
+    info: 'countCharacterProp'
+  minCharacterProp:
+    info: 'minCharacterProp'
+  maxCharacterProp:
+    info: 'maxCharacterProp'
+  countCharactersByPropType:
+    info: 'countCharactersByPropType'
+  setCharactersByFeatPropTypeKeys:
+    info: 'setCharactersByFeatPropTypeKeys'
+  countExistingCharactersByFeatPropType:
+    info: 'countExistingCharactersByFeatPropType'
+  tellCharacterByName:
+    info: 'Execute the script block with this specific character'
+  tellAllCharacters:
+    info: 'Execute the script block for all characters currently in the system'
 
 Touches:
   info: 'Adds tests to detect when characters touch each other'
@@ -342,5 +385,5 @@ Vision:
     info: 'monitor'
   isCamouflaged:
     info: 'isCamouflaged'
-  canSeeColorOfAgent:
-    info: 'canSeeColorOfAgent'
+  canSeeColorOfCharacter:
+    info: 'canSeeColorOfCharacter'

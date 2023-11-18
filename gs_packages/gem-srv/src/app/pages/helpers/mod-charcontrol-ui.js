@@ -125,6 +125,7 @@ function m_CreateEntities(container, num = m_CHARVIEW.state.num_entities) {
     const row = Math.floor(i / columns) * spacer;
     const col = Math.floor(i % columns) * spacer;
     child.style.transform = `translate3d(${col}px, ${row}px, 0)`;
+    child.style.opacity = 0.5;
   }
   return document.getElementsByClassName('entity');
 }
@@ -138,7 +139,7 @@ function m_AddMouseEvents(container) {
   // used to calculate deltas to apply to object group
   const o_clickHandler = e => {
     const id = e.target.getAttribute('entity-id');
-    if (id) console.log(`clicked entity-id ${id}`);
+    //  if (id) console.log(`clicked entity-id ${id}`);
   };
 
   let ox1;
@@ -377,6 +378,7 @@ async function Initialize(componentInstance, opt = {}) {
 /// resizes.
 function UpdateDimensions(e) {
   // Update entities
+
   if (!m_entities) return; // when page first loads, no m_entities are defined.
   for (let i = 0; i < m_entities.length; i++) {
     const fdiv = m_entities[i];

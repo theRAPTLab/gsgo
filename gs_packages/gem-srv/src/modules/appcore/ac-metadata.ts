@@ -7,6 +7,7 @@
 
 import UR from '@gemstep/ursys/client';
 import * as DCPROJECT from 'modules/datacore/dc-project';
+import * as ACBlueprints from './ac-blueprints';
 import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -28,6 +29,7 @@ STATE.initializeState({
       bounce: false,
       bgcolor: '0x006666',
       roundsCanLoop: false,
+      defaultCharacter: undefined,
       // webcam settings
       showWebCam: true,
       scaleX: 1,
@@ -186,6 +188,28 @@ function Wraps(wall = 'any') {
   }
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/** If defaultCharacter is defined, use that.
+ *  Else if defaultCharacter is not defined,'
+ *  then if a default pozyx-controllable character is available, use a random
+ *  pozyx-controllable character.
+ *  Else if no default is definedfor the project, fall back to selecting
+ *  the ac-metadata defined `defaultBpName` blueprint.
+ *  To force the selection of a random **pozyx-controllable** character, change
+ *  the `ACBlueprints.GetDefaultInputBpName();` call to
+ *  `ACBlueprints.GetPozyxControlDefaultBpName`
+ */
+function GetDefaultBp() {
+  const metadata = _getKey('metadata');
+  if (metadata.defaultCharacter) return metadata.defaultCharacter;
+  else {
+    const defaultPoxyBpName = ACBlueprints.GetPozyxControlDefaultBpName();
+    if (defaultPoxyBpName) return defaultPoxyBpName;
+    return ACBlueprints.GetDefaultInputBpName();
+  }
+}
+
 /// UPDATERS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -207,6 +231,10 @@ function SetMetadata(projId, metadata) {
   metadata.rotate = metadata.rotate !== undefined ? metadata.rotate : 0;
   metadata.mirrorX = metadata.mirrorX !== undefined ? metadata.mirrorX : false;
   metadata.mirrorY = metadata.mirrorY !== undefined ? metadata.mirrorY : false;
+  metadata.defaultCharacter =
+    metadata.defaultCharacter !== undefined
+      ? metadata.defaultCharacter
+      : undefined;
 
   // Update datacore
   DCPROJECT.UpdateProjectData({ metadata });
@@ -226,4 +254,4 @@ function SetMetadata(projId, metadata) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { GetMetadata, GetBoundary, Wraps, SetMetadata };
+export { GetMetadata, GetBoundary, Wraps, GetDefaultBp, SetMetadata };

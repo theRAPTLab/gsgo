@@ -65,6 +65,10 @@ STORE._initializeState({
   script_text: '# BLUEPRINT AWAIT LOAD', // the source text (WizardText)
   script_tokens: [], // source tokens (from text)
 
+  init_script_text: null, // init script source text
+  init_script_page: [],
+  init_script_tokens: [],
+
   script_page: [], // source tokens 'printed' as lines
   script_page_needs_saving: false, // track save status
   key_to_token: new Map(), // lookup map from tokenLine+Pos to original token
@@ -80,6 +84,7 @@ STORE._initializeState({
   cur_bpid: null, // current blueprint
   cur_bdl: null, // current blueprint bundle
   old_bpid: null, // original blueprint name before rename
+  cur_instance_label: null,
 
   // selection-driven data
   sel_symbol: null, // selection-dependent symbol data
@@ -111,11 +116,53 @@ function InitSetState(parms) {
 /// DERIVED STATE LOGIC ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// spy on incoming SendState events and modify/add events as needed
+/// There are two alternative approaches:
+///   A1 and A2 are used to process initScripts
+///   B1 and B2 are used to process regular script text.
 /// BL NOTE: `state` only contains state objects that have CHANGED, it does not include
 ///          ALL state objects, but it CAN be used to set other state vars?
 STORE._interceptState(state => {
-  const { script_text, script_tokens, sel_linenum } = state;
+  const {
+    script_text,
+    script_tokens,
+    init_script_text,
+    init_script_tokens,
+    sel_linenum
+  } = state;
+  // A1.  Handle init_script_text Loading
+  // called when an initScript is set
+  // ONLY update init_script_text, don't process other state updates
+  // this prevents general blueprint updates from
+  if (init_script_text) {
+    // try injecting to bundle.
+    state.cur_bdl.initScript = init_script_text;
+    let toks = TRANSPILER.TextToScript(init_script_text);
+    // toks = TRANSPILER.EnforceBlueprintPragmas(toks); // don't enforce pragmas for initScript
+    // do we need this?        state.script_tokens = toks;
+    // do we need this?        state.cur_bdl = TRANSPILER.SymbolizeBlueprint(toks);
 
+    const [vmPage, tokMap] = TRANSPILER.ScriptToLines(toks);
+    state.init_script_page = vmPage;
+
+    return;
+  }
+  // A2.  Handle initScript slot editor change
+  // called when student saves a initscript line in the slot editor
+  // (SlotEditor_Block call to ac-editmgr.SaveSlotLineScript)
+  // if script_tokens is changing, we also want to emit new script_text
+  if (init_script_tokens && !init_script_text) {
+    const text = TRANSPILER.ScriptToText(state.init_script_tokens);
+    state.init_script_text = text;
+    const [vmPage, tokMap] = TRANSPILER.ScriptToLines(state.init_script_tokens);
+    const programMap = TRANSPILER.ScriptToProgramMap(state.init_script_tokens);
+    state.init_script_page = vmPage;
+    state.script_page_needs_saving = true;
+    state.key_to_token = tokMap;
+    state.program_map = programMap;
+    return;
+  }
+
+  // B1.  Handle script_text Loading
   // 'script_text' is primarily used by components that show the raw code
   // called when ScriptView_Pane switches from wizard to code view
   // called when ScriptView_Pane triggers a save to server in code view
@@ -133,7 +180,7 @@ STORE._interceptState(state => {
     state.key_to_token = tokMap;
     state.program_map = programMap;
   }
-
+  // B2.  Handle script slot editor change
   // called when student saves a line in the slot editor
   // (SlotEditor_Block call to ac-editmgr.SaveSlotLineScript)
   // if script_tokens is changing, we also want to emit new script_text
@@ -142,7 +189,6 @@ STORE._interceptState(state => {
     state.script_tokens = TRANSPILER.EnforceBlueprintPragmas(script_tokens);
     // also symbolize blueprints -- eg after adding a feature, need to re-symbolize to make feature available
     state.cur_bdl = TRANSPILER.SymbolizeBlueprint(script_tokens);
-
     // ...did the name change?  if so, remove the old bundle
     const { cur_bdl } = STORE.State();
     if (cur_bdl !== null) {
@@ -296,12 +342,16 @@ function ScrollLineIntoView(lineNum: number) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return the string of form '1,2', which is the line number and line position
  *  with 1 being the first element. This string is used as a hash.
+ *  If `linenum` or `linenum` are not passed, we use the default state values
+ *  -- this is necessary to support selecting a specific slot with the wizard
  */
-function SelectedTokenId() {
-  const { sel_linenum, sel_linepos } = State();
-  if (sel_linenum < 1) return undefined; // START_COUNT=1 in script-to-lines
-  if (sel_linepos < 1) return `${sel_linenum}`;
-  return `${sel_linenum},${sel_linepos}`;
+function SelectedTokenId(
+  linenum = State.sel_linenum,
+  linepos = State.sel_linepos
+) {
+  if (linenum < 1) return undefined; // START_COUNT=1 in script-to-lines
+  if (linepos < 1) return `${linenum}`;
+  return `${linenum},${linepos}`;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return the current line number */
@@ -399,10 +449,9 @@ function ValidatePageLine(vmLine: VMPageLine): TValidatedScriptUnit {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Validate all the lines in the script_page and return the validation
- *  tokens. `validationTokens` are 1-based.
+ *  tokens. `validationTokens` are 1-based.  script_page mioght be init_script_page
  */
-function ValidateScriptPage(): TValidatedScriptUnit[] {
-  const { script_page } = STORE.State();
+function ValidateScriptPage(script_page): TValidatedScriptUnit[] {
   const validationTokens = []; // default to one-based
   const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
   script_page.forEach(l => {
@@ -495,9 +544,10 @@ function WizardTestLine(text: string) {
  *  outside of the block to insert.
  */
 function AddLine(position: VMLineScriptInsertionPosition) {
-  const { script_page, sel_linenum } = STORE.State();
+  const { script_page, init_script_page, sel_linenum } = STORE.State();
+  const page = init_script_page.length > 0 ? init_script_page : script_page;
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
-  const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
+  const lsos = TRANSPILER.ScriptPageToEditableTokens(page);
   const newLine: VMLineScriptLine = { lineScript: [{ line: '' }] };
   let newLineNum;
   if (position === 'before') {
@@ -515,7 +565,9 @@ function AddLine(position: VMLineScriptInsertionPosition) {
 
   // figure out what to update
   const newState: TStateObject = {};
-  newState.script_tokens = nscript;
+  // replace with init_script_tokesn OR script_tokesn
+  if (init_script_page.length > 0) newState.init_script_tokens = nscript;
+  else newState.script_tokens = nscript;
   STORE.SendState(newState);
 
   // Auto-select the new line for editing
@@ -564,30 +616,54 @@ function GetProgramContextForLine(lineNum: number): TLineContext {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API Save script_page to server */
 function SaveToServer(projId, bpName) {
-  const { script_text, old_bpid } = State();
-  UR.CallMessage('NET:SCRIPT_UPDATE', {
-    projId,
-    script: script_text,
-    origBlueprintName: bpName
-  }).then(result => {
-    const newBpName = result.bpName;
+  const { script_text, old_bpid, init_script_text, cur_instance_label } = State();
 
-    // BP Renamed, delete old name after saving to server
-    if (old_bpid)
-      UR.RaiseMessage('NET:BLUEPRINT_DELETE', {
-        blueprintName: old_bpid
+  // A. InitScript
+  // Update the current instance -- this may not work?
+  if (init_script_text) {
+    UR.CallMessage('NET:INSTANCE_UPDATE', {
+      label: cur_instance_label,
+      initScript: init_script_text
+    }).then(result => {
+      // Instance Saved
+      STORE.SendState({
+        old_bpid: null,
+        script_page_needs_saving: false
       });
-    STORE.SendState({
-      old_bpid: null,
-      script_page_needs_saving: false
+      // REVIEW: Is this necessary?
+      // // select the new script otherwise wizard retains the old script
+      // UR.RaiseMessage('SELECT_SCRIPT', { bpName: newBpName });
+      // // Post Script Updated message on Main and ScriptEditor
+      // UR.RaiseMessage('NET:SCRIPT_UPDATED', { script: script_text });
     });
+    return;
+  }
 
-    // select the new script otherwise wizard retains the old script
-    UR.RaiseMessage('SELECT_SCRIPT', { bpName: newBpName });
+  // B. Script Page
+  if (script_text) {
+    UR.CallMessage('NET:SCRIPT_UPDATE', {
+      projId,
+      script: script_text,
+      origBlueprintName: bpName
+    }).then(result => {
+      const newBpName = result.bpName;
+      // BP Renamed, delete old name after saving to server
+      if (old_bpid)
+        UR.RaiseMessage('NET:BLUEPRINT_DELETE', {
+          blueprintName: old_bpid
+        });
+      STORE.SendState({
+        old_bpid: null,
+        script_page_needs_saving: false
+      });
 
-    // Post Script Updated message on Main and ScriptEditor
-    UR.RaiseMessage('NET:SCRIPT_UPDATED', { script: script_text });
-  });
+      // select the new script otherwise wizard retains the old script
+      UR.RaiseMessage('SELECT_SCRIPT', { bpName: newBpName });
+
+      // Post Script Updated message on Main and ScriptEditor
+      UR.RaiseMessage('NET:SCRIPT_UPDATED', { script: script_text });
+    });
+  }
 }
 
 /// DEBUG CONSOLE /////////////////////////////////////////////////////////////
@@ -602,6 +678,12 @@ export function UpdateDBGConsole(validationLog: string[] = []) {
   const buf = GetTextBuffer(STORE.State().dbg_console);
   buf.set(validationLog);
 }
+
+/// CONSOLE TOOL CALLS ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.AddConsoleTool('dumpstore', () => {
+  console.log('WIZCORE', STORE.State());
+});
 
 /// EXPORTED STATE METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -1105,11 +1105,11 @@ class SymbolInterpreter {
         propName = cleanedPropRef;
       }
     }
-    bpName = bpName === 'agent' ? agentName : bpName; // map 'agent' to the current bundle's bpName
-    // inject `agent` matching the current agent name
-    const agent = {
-      agent: SIMDATA.GetBlueprintBundle(agentName).symbols
-    };
+    bpName = bpName === 'character' ? agentName : bpName; // map 'character' to the current bundle's bpName (was `agent`)
+    // inject `character` matching the current agent name
+    // Originally `agent` was used to refer the current agent but the team
+    // wanted to replace `agent` with `character`.
+    const agent = { character: SIMDATA.GetBlueprintBundle(agentName).symbols };
     blueprints = { ...blueprints, ...agent };
     const bp = blueprints[bpName] || {};
     const props = bp.props;
@@ -1127,12 +1127,12 @@ class SymbolInterpreter {
     // we want to use our custom symbol dict for processing
     this.setCurrentScope(symbols);
     // check validity
-    // PART 1 should be agent or Blueprint
+    // PART 1 should be agent 'character' or Blueprint
     const goodBlueprint =
-      bpName === 'agent' || SIMDATA.HasBlueprintBundle(bpName);
+      bpName === 'character' || SIMDATA.HasBlueprintBundle(bpName);
     // Part 2 should be valid propName
-    const prop = props[propName];
-    const goodProp = props[propName] !== undefined;
+    const prop = props ? props[propName] : undefined;
+    const goodProp = props ? props[propName] !== undefined : undefined;
     if (goodBlueprint && goodProp) {
       // Found a goodProp, so add the prop methods to the cur_scope
       // so that the next slot (methodName) knows which methods are
@@ -1179,9 +1179,9 @@ class SymbolInterpreter {
     }
     let [bpName, featureName, propName] = propRef;
     let blueprints = SIMDATA.GetBlueprintSymbols();
-    // inject 'agent' matching the current bundle
+    // inject 'character' matching the current bundle
     let agentName = this.getBundleName(); // fallback to bundle
-    const agent = { agent: SIMDATA.GetBlueprintBundle(agentName).symbols };
+    const agent = { character: SIMDATA.GetBlueprintBundle(agentName).symbols };
     blueprints = { ...blueprints, ...agent }; // add the blueprint for "agent" also
     // Catch propRef = "undefined" string
     // When first adding a featProp line, 'token' will be "undefined"
@@ -1265,9 +1265,9 @@ class SymbolInterpreter {
     // figure out what we got
     let [bpName, featureName, methodName] = propRef;
     let blueprints = SIMDATA.GetBlueprintSymbols();
-    // inject 'agent' matching the current bundle
+    // inject 'character' matching the current bundle
     const agentName = this.getBundleName();
-    const agent = { agent: SIMDATA.GetBlueprintBundle(agentName).symbols };
+    const agent = { character: SIMDATA.GetBlueprintBundle(agentName).symbols };
     blueprints = { ...blueprints, ...agent };
     if (tokType === 'identifier')
       return this.badToken(token, { blueprints } as TSymbolData, {

@@ -39,7 +39,7 @@ import {
 } from 'lib/util-vector';
 
 ANGLES.SCALE = Math.PI * 2; // radians
-ANGLES.DIRECTIONS = ['E', 'W'];
+ANGLES.DIRECTIONS = ['N', 'E', 'S', 'W'];
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -244,7 +244,7 @@ function m_ProcessPosition(agent, frame) {
   agent.prop.Movement.compassDirection.setTo(
     // For N/E/S/W Use `orientation + Math.PI / 2`
     // For E/W Use `orientation + Math.PI / 4`
-    ANGLES.compass(orientation + Math.PI / 4)
+    ANGLES.compass(orientation + Math.PI / 2)
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -296,12 +296,8 @@ function moveEdgeToEdge(agent: IAgent) {
   let hwidth = pad; // half width -- default to some padding
   let hheight = pad;
 
-  // If agent uses physics, we can get height/width, otherwise default
-  // to small padding.
-  if (agent.hasFeature('Physics')) {
-    hwidth = agent.getFeatProp('Physics', 'bodyWidth').value / 2;
-    hheight = agent.getFeatProp('Physics', 'bodyHeight').value / 2;
-  }
+  // NOTE - Joshua removed the code that was using physics to calculate the size
+  // because it was returning a NaN and it seems we moved away from that elsewhere
 
   let direction = agent.prop.Movement.direction.value;
 
@@ -390,18 +386,18 @@ function seek(agent: IAgent, target: { x; y }) {
   m_setDirection(agent, angle);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// _seekAgent
-function _seekAgent(agent: IAgent) {
+/// _seekCharacter
+function _seekCharacter(agent: IAgent) {
   const targetId = agent.prop.Movement._targetId;
   if (!targetId) return; // no target, just idle
   const target = GetAgentById(targetId);
   seek(agent, target);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// _seekAgentOrWander
+/// _seekCharacterOrWander
 /// -- Move toward the target agent until the targetId
 ///    is removed (e.g. if you lost sight of it).  Then just wander.
-function _seekAgentOrWander(agent: IAgent, frame: number) {
+function _seekCharacterOrWander(agent: IAgent, frame: number) {
   const targetId = agent.prop.Movement._targetId;
   if (!targetId) {
     moveWander(agent); // no target, wander instead
@@ -411,10 +407,10 @@ function _seekAgentOrWander(agent: IAgent, frame: number) {
   seek(agent, target);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// wanderUntilAgent
-function wanderUntilAgent(agent: IAgent, frame: number) {
+/// wanderUntilCharacter
+function wanderUntilCharacter(agent: IAgent, frame: number) {
   // Requires Touches
-  const fn = `wanderUntilAgent`;
+  const fn = `wanderUntilCharacter`;
   if (!agent.hasFeature('Physics')) console.error(fn, 'requires Physics!');
   if (!agent.hasFeature('Touches'))
     console.error(fn, 'requires Touches monitoring "binb"!');
@@ -457,9 +453,9 @@ const MOVEMENT_FUNCTIONS: Map<string, Function> = new Map([
   ['goLocation'.toLowerCase(), moveGoLocation],
   ['jitter'.toLowerCase(), moveJitter],
   ['float'.toLowerCase(), moveFloat],
-  ['wanderUntilAgent'.toLowerCase(), wanderUntilAgent],
-  ['_seekAgent'.toLowerCase(), _seekAgent], // internal method!
-  ['_seekAgentOrWander'.toLowerCase(), _seekAgentOrWander] // internal method!
+  ['wanderUntilCharacter'.toLowerCase(), wanderUntilCharacter],
+  ['_seekCharacter'.toLowerCase(), _seekCharacter], // internal method!
+  ['_seekCharacterOrWander'.toLowerCase(), _seekCharacterOrWander] // internal method!
 ]);
 
 /// SEEK ALGORITHMS ///////////////////////////////////////////////////////////
@@ -482,11 +478,11 @@ function m_FindNearestAgent(agent, targetType) {
 /// Returns array of all agents of targetType that are within the vision distance
 /// NOTE This is a pre-filter before using the more expensive vision cone processing
 /// NOTE This assumes Vision
-function m_FindNearbyAgents(agent, targetType) {
+function m_FindNearbyCharacters(agent, targetType) {
   // Only run this after m_FeaturesUpdate sets distances
   if (!agent.distanceTo) {
     console.log(
-      `m_FindNearbyAgents skipping ${agent.blueprint.name} ${agent.id} because distanceTo was not yet calculated by SIM/PHYSICS_UPDATE.`
+      `m_FindNearbyCharacters skipping ${agent.blueprint.name} ${agent.id} because distanceTo was not yet calculated by SIM/PHYSICS_UPDATE.`
     );
     return [];
   }
@@ -531,7 +527,7 @@ function m_FeaturesThinkSeek(frame) {
     // Find nearest agent
     // 1. Start with agents within vision distance
     //    Sorted by distance
-    const nearAgents = m_FindNearbyAgents(agent, options.targetType);
+    const nearAgents = m_FindNearbyCharacters(agent, options.targetType);
     if (nearAgents === undefined) return; // no agents
     const target = nearAgents.find(near => {
       // 2. Find first active (non-inert) agent within the cone
@@ -570,7 +566,8 @@ function m_InputsUpdate(frame) {
   // 2. Decide on Movement
   const agents = [...MOVEMENT_AGENTS.values()];
   agents.forEach(agent => {
-    if (!agent) return;
+    // Also ignore if agent has switched bp and no longer has the feature
+    if (!agent || !agent.prop.Movement) return;
     // being controlled by a cursor
     if (agent.cursor) m_QueuePosition(agent, agent.cursor.x, agent.cursor.y);
   });
@@ -595,7 +592,16 @@ function m_FeaturesThink(frame) {
     const moveType = String(agent.prop.Movement.movementType.value).toLowerCase();
     const moveFn = MOVEMENT_FUNCTIONS.get(moveType);
     // cancel seek?  NOTE: seek stops one frame after
-    if (!['seekAgent', 'seekAgentOrWander'].includes(moveType))
+    // NOTE: This array needs to be lower case!!!! b/c moveType has been lowercased
+    if (
+      ![
+        'seekagent',
+        'seekagentorwander',
+        '_seekcharacter',
+        '_seekcharacterorrwander',
+        '_seekcharacterorwander'
+      ].includes(moveType)
+    )
       SEEKING_AGENTS.delete(agent.id);
     if (moveFn) moveFn(agent, frame);
   });
@@ -775,7 +781,7 @@ class MovementPack extends SM_Feature {
     // Clear any existing target.  This is especially important between rounds.
     agent.prop.Movement._targetId = undefined;
     SEEKING_AGENTS.set(agent.id, { targetType, useVisionCone: false });
-    agent.prop.Movement.movementType.setTo('_seekAgent');
+    agent.prop.Movement.movementType.setTo('_seekCharacter');
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // vision cone visible
@@ -783,7 +789,7 @@ class MovementPack extends SM_Feature {
     // Clear any existing target.  This is especially important between rounds.
     agent.prop.Movement._targetId = undefined;
     SEEKING_AGENTS.set(agent.id, { targetType, useVisionCone: true });
-    agent.prop.Movement.movementType.setTo('_seekAgentOrWander');
+    agent.prop.Movement.movementType.setTo('_seekCharacterOrWander');
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // color visible
@@ -791,7 +797,7 @@ class MovementPack extends SM_Feature {
     // Clear any existing target.  This is especially important between rounds.
     agent.prop.Movement._targetId = undefined;
     SEEKING_AGENTS.set(agent.id, { targetType, useVisionColor: true });
-    agent.prop.Movement.movementType.setTo('_seekAgentOrWander');
+    agent.prop.Movement.movementType.setTo('_seekCharacterOrWander');
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

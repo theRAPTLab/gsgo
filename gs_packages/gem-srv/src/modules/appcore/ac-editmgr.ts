@@ -172,8 +172,14 @@ function SelectSlot(sel_linenum, sel_linepos) {
   //    Coordinate wizcore with slotcore: select the new slot_linescript
   //    run validation and save result if new selected token
   if (sel_linenum && sel_linenum > 0) {
-    const { script_page } = WIZCORE.State();
-    const { lineScript } = script_page[CHECK.OffsetLineNum(sel_linenum, 'sub')];
+    // ORIG script_page call
+    // const { script_page } = WIZCORE.State();
+    // const { lineScript } = script_page[CHECK.OffsetLineNum(sel_linenum, 'sub')];
+    //
+    // REVISED version that can handle both script_page and init_script_page
+    const { script_page, init_script_page } = WIZCORE.State();
+    const page = init_script_page.length > 0 ? init_script_page : script_page;
+    const { lineScript } = page[CHECK.OffsetLineNum(sel_linenum, 'sub')];
     const new_slots_linescript = lineScript.map(t => ({ ...t }));
     newSlotState.slots_linescript = new_slots_linescript;
   }
@@ -227,36 +233,47 @@ function DispatchClick(event) {
 
   const { slots_need_saving } = SLOTCORE.State();
 
-  /** (1) GToken was clicked? ************************************************
+  /** (1a) "BookmarkSelector" was clicked, or... *****************************/
+  let tokenKey, line, pos;
+  if (event.target.id === 'BookmarkSelector') {
+    line = Number(event.target.value);
+    pos = 0;
+  }
+  /** (1b) ...GToken was clicked? *********************************************
    *      User clicked on script page line or word
    *      a. set `sel_linenum` and `sel_linepos`
    *      b. set the slot as a secondary action
    *         --  set `sel_slotpos`
    *      c. NOTE the state update will result in `slots_linescript` and `slots_validation` updates
    */
-  const tokenKey = event.target.getAttribute('data-key');
+  tokenKey = event.target.getAttribute('data-key');
   if (tokenKey !== null) {
+    [line, pos] = tokenKey.split(',');
+  }
+  /** (1c) Process Click ************************************************======
+   *       Either...
+   *       * BookmarkSelect was selected, or
+   *       * User clicked on a GToken
+   *       ...so process the click and select the line
+   */
+  if (line !== undefined && pos !== undefined) {
     // if slots need saving, don't allow click
     if (slots_need_saving) {
       SLOTCORE.SendState({ slots_save_dialog_is_open: true });
       return;
     }
-
     // WIZCORE: notify subscribers of new current line and token index
-    const [line, pos] = tokenKey.split(',');
     const sel_linenum = Number(line);
     const sel_linepos = Number(pos) || 1; // if click on line number, default to keyword
     newWizState.sel_linenum = sel_linenum; // STATE UPDATE: selected line
     newWizState.sel_linepos = sel_linepos; // STATE UPDATE: selected pos
     WIZCORE.SendState(newWizState);
-
     // SLOTCORE: notify slotcore
     SelectSlot(sel_linenum, sel_linepos);
-
     // EDITMGR
     STORE.SendState({ selection: 'force ScriptEditor props update' });
-
     if (sel_linenum > 0 && sel_linepos >= 0) {
+      // Successful click, stop processing.
       // sel_linepos = 0 if user clicked on line number
       return;
     }
@@ -270,7 +287,8 @@ function DispatchClick(event) {
     // If the slot was disabled, don't let it be clicked
     if (event.target.className.includes('styleFlagDisabled')) return;
     // Else, select the slot
-    const [line, pos] = slotKey.split(',');
+    // const [line, pos] = slotKey.split(',');
+    [line, pos] = slotKey.split(',');
     newSlotState.sel_slotpos = Number(pos); // STATE UPDATE: selected line
     SLOTCORE.SendState(newSlotState);
     const { sel_slotpos } = SLOTCORE.State();
@@ -357,6 +375,7 @@ function DispatchClick(event) {
     CancelSlotEdit();
     return;
   }
+
   /** (N) unhandled click oops **********************************************/
   const err = 'unhandled click in';
   // console.log(err, event.target);
@@ -375,12 +394,15 @@ function AddLine(position: VMLineScriptInsertionPosition) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API ScriptViewWiz_Block delete selected line */
 function DeleteSelectedLine(event) {
-  const { script_page, sel_linenum } = WIZCORE.State();
+  const { script_page, init_script_page, sel_linenum } = WIZCORE.State();
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
-  const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
+  const isInitScript = init_script_page.length > 0;
+  const page = isInitScript ? init_script_page : script_page;
+  const lsos = TRANSPILER.ScriptPageToEditableTokens(page);
   lsos.splice(lineIdx, 1);
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
-  WIZCORE.SendState({ script_tokens: nscript });
+  if (isInitScript) WIZCORE.SendState({ init_script_tokens: nscript });
+  else WIZCORE.SendState({ script_tokens: nscript });
   CancelSlotEdit();
 }
 
@@ -410,11 +432,13 @@ function UpdateSlot(data) {
  */
 function SaveSlotLineScript(event) {
   const fn = 'SaveSlotLineScript:';
-  const { script_page, sel_linenum } = WIZCORE.State();
+  const { script_page, init_script_page, sel_linenum } = WIZCORE.State();
   const { slots_linescript } = SLOTCORE.State();
   const lineIdx = CHECK.OffsetLineNum(sel_linenum, 'sub'); // 1-based
-  const lsos = TRANSPILER.ScriptPageToEditableTokens(script_page);
-  const updatedLine = lsos[lineIdx]; // clone existing line to retain block info
+  const isInitScript = init_script_page.length > 0;
+  const page = isInitScript ? init_script_page : script_page; // if initscript is present, use that
+  const lsos = TRANSPILER.ScriptPageToEditableTokens(page);
+  const lineToUpdate = lsos[lineIdx]; // clone existing line to retain block info
 
   // HACK Block Support -------------------------------------------------------
   // When adding a new line, insert a block if the it's required
@@ -428,15 +452,26 @@ function SaveSlotLineScript(event) {
     )
   )
     isBlockCommand = true;
-  // 2. Is block command? e.g. 'createAgent' or 'spawnChild' featCall
+  // 2. Is featCall block command? e.g. 'createAgent' or 'spawnChild'
   if (String(new_kw).toLowerCase() === 'featcall') {
     slots_linescript.forEach(tok => {
-      if (['createAgent', 'spawnChild'].includes(tok.identifier))
+      if (
+        [
+          'createAgent',
+          'spawnChild',
+          'charactersForEach',
+          'charactersForEachActive',
+          'handleClick',
+          'tellCharacterByName',
+          'tellAllCharacters',
+          'setupFunction'
+        ].includes(tok.identifier)
+      )
         isBlockCommand = true;
     });
   }
   // 3. Already has a block?
-  const hasBlock = updatedLine.marker === 'start';
+  const hasBlock = lineToUpdate.marker === 'start';
   // 4. Add a block if needed!
   if (isBlockCommand && !hasBlock) {
     slots_linescript.push({
@@ -445,7 +480,7 @@ function SaveSlotLineScript(event) {
   }
   // END HACK Block Support ---------------------------------------------------
 
-  updatedLine.lineScript = slots_linescript.filter(({ identifier }) => {
+  lineToUpdate.lineScript = slots_linescript.filter(({ identifier }) => {
     // SelectEditorLineSlot() treats lineScript tokens as "view data" and
     // stores { identifier:'' } as part of its GUI operation, but this is an
     // illegal script token so we can't just send it as a real token...filtering
@@ -454,9 +489,10 @@ function SaveSlotLineScript(event) {
     if (identifier === '') return false;
     return true;
   }); // just update the lineScript
-  lsos.splice(lineIdx, 1, updatedLine);
+  lsos.splice(lineIdx, 1, lineToUpdate);
   const nscript = TRANSPILER.EditableTokensToScript(lsos);
-  WIZCORE.SendState({ script_tokens: nscript });
+  if (isInitScript) WIZCORE.SendState({ init_script_tokens: nscript });
+  else WIZCORE.SendState({ script_tokens: nscript });
   SLOTCORE.SendState({ slots_need_saving: false });
   UR.LogEvent('ScriptEdit', [
     'Save Slot',

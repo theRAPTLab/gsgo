@@ -1,0 +1,16 @@
+ol.events li.start {
+  margin-top: 1em;
+}
+ol.events li.start:before {
+  content: '\25B6';
+  width: 1.2em;
+  color: rgb(0, 156, 156);
+  margin: 1em 2em 0px -3em;
+}
+ol.events li.end:before {
+  content: '\23F9';
+  width: 1.2em;
+  color: rgb(0, 156, 156);
+  margin: 0px 2em 0px -2.6em;
+  font-size: 110%;
+}

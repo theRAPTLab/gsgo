@@ -11,7 +11,7 @@
   note:
   the script being rendered is using RAW scriptTokens that are being
   interpreted very simply. However, validationTokens are intepetreted using
-  the richer GEMSTEP types, so a weakness of thecurrent system is having to
+  the richer GEMSTEP types, so a weakness of the current system is having to
   constantly reconcile scriptTokens to validationTokens to figure out
   what to draw and what is the "context" of a current token in GEMSTEP terms;
   the scriptToken by itself is not sufficient. This is what the validation
@@ -21,6 +21,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import * as PIXI from 'pixi.js';
 import * as EDITMGR from 'modules/appcore/ac-editmgr';
 import * as CHECK from 'modules/datacore/dc-sim-data-utils';
 import * as HELP from 'app/help/codex';
@@ -111,6 +112,14 @@ function SlotEditorSelect_Block(props) {
       type: 'expr'
     });
   };
+  const processColorInput = e => {
+    e.preventDefault();
+    let colorstr = PIXI.utils.string2hex(e.target.value);
+    EDITMGR.UpdateSlot({
+      value: colorstr,
+      type: 'value'
+    });
+  };
 
   // Keypress Handlers
   const handleNumberKeypress = e => {
@@ -183,6 +192,20 @@ function SlotEditorSelect_Block(props) {
         </div>
       );
       break;
+    case 'color':
+      const colorstr = PIXI.utils.hex2string(defaultNumber);
+      editor = (
+        <div id="SES_color" className="gsled input">
+          <HelpLabel prompt={helpPrompt} info={helpInfo} open pad="5px" />
+          <input
+            key={tkey}
+            defaultValue={colorstr}
+            type="color"
+            onChange={processColorInput}
+          />
+        </div>
+      );
+      break;
     case 'string':
       // UnpackToken inserts the string "undefined" for undefined tokens
       // so we need to strip it out here so the input field doesn't default
@@ -202,7 +225,6 @@ function SlotEditorSelect_Block(props) {
       );
       break;
     case 'boolean':
-      // NOTE `unitText` is a string
       /* RATIONALE: While a checkbox is the normal UI element for booleans,
          the choice of true or false is somewhat implicit.
          A range slider makes it clearer which selection is true
@@ -210,6 +232,12 @@ function SlotEditorSelect_Block(props) {
          in the token to a range value between 0 and 1.  This conversion
          is all done in SelectEditor.
       */
+      // When first defining a boolean, set it to False by default
+      if (unitText === 'undefined')
+        EDITMGR.UpdateSlot({
+          value: false,
+          type: 'value' // validTokenTypes = value with arg=boolean
+        });
       editor = (
         <div id="SES_bool">
           <HelpLabel prompt={helpPrompt} info={helpInfo} open pad="10px" />
@@ -222,7 +250,7 @@ function SlotEditorSelect_Block(props) {
             </label>
             <input
               key={tkey}
-              checked={unitText === 'true'}
+              checked={unitText === 'true'} // 'unitText' is a string
               type="checkbox"
               role="switch"
               onChange={processBooleanInput}

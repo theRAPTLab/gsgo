@@ -86,6 +86,7 @@ export class SM_Number extends SM_Object implements ISM_Object {
     this.min = undefined;
     this.max = undefined;
     this.wrap = false;
+    this.map = new Map();
   }
   setWrap(flag: boolean = true) {
     this.wrap = flag;
@@ -107,6 +108,11 @@ export class SM_Number extends SM_Object implements ISM_Object {
     return this;
   }
   setTo(num: number) {
+    this.value = num;
+    u_CheckMinMax(this);
+    return this;
+  }
+  setToColor(num: number) {
     this.value = num;
     u_CheckMinMax(this);
     return this;
@@ -185,6 +191,33 @@ export class SM_Number extends SM_Object implements ISM_Object {
   clear() {
     this.value = null;
   }
+  // OPTIONS
+  addOption(optionLabel: string, optionValue: number) {
+    const val = optionValue || 0; // if `optionValue` is not defined, use 0 so it's a valid number
+    this.map.set(optionLabel, val);
+  }
+  setToOption(label: string) {
+    // set this.value to the value associated with the option label
+    this.value = this.map.get(label);
+  }
+  equalToOption(optionLabel: string) {
+    return new SM_Boolean(this.value === this.map.get(optionLabel));
+  }
+  notEqualToOption(optionLabel: string) {
+    return new SM_Boolean(this.value !== this.map.get(optionLabel));
+  }
+  greaterThanOption(optionLabel: string) {
+    return new SM_Boolean(this.value > this.map.get(optionLabel));
+  }
+  lessThanOption(optionLabel: string) {
+    return new SM_Boolean(this.value < this.map.get(optionLabel));
+  }
+  greaterThanOrEqualToOption(optionLabel: string) {
+    return new SM_Boolean(this.value >= this.map.get(optionLabel));
+  }
+  lessThanOrEqualToOption(optionLabel: string) {
+    return new SM_Boolean(this.value <= this.map.get(optionLabel));
+  }
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -229,6 +262,10 @@ export class SM_Number extends SM_Object implements ISM_Object {
       setTo: {
         args: ['number:number'],
         info: 'Sets the property to a value'
+      },
+      setToColor: {
+        args: ['color:number'],
+        info: 'Sets the property to a color value'
       },
       setToRnd: {
         args: ['min value:number', 'max value:number', 'asInteger:boolean'],
@@ -280,6 +317,45 @@ export class SM_Number extends SM_Object implements ISM_Object {
       lessThanOrEqual: {
         args: ['number:number'],
         info: 'returns current less than or equal to value'
+      },
+      // OPTIONS
+      addOption: {
+        args: ['label:string', 'value:number'],
+        info: 'Defines a new option "label"-"value" pair, e.g. label "healthy" can be set to the numeric value "100"'
+      },
+      setToOption: {
+        args: ['option:string'],
+        info: 'Sets the property to the value of the selected option'
+      },
+      equalToOption: {
+        args: [`option:string`],
+        info: 'Returns whether this property is equal to the referenced option value',
+        returns: 'isEqual:boolean'
+      },
+      notEqualToOption: {
+        args: [`option:string`],
+        info: 'Returns whether this property is not equal to the referenced option value',
+        returns: 'isNotEqual:boolean'
+      },
+      greaterThanOption: {
+        args: [`option:string`],
+        info: 'Returns whether this property is greater than the referenced option value',
+        returns: 'isEqual:boolean'
+      },
+      lessThanOption: {
+        args: [`option:string`],
+        info: 'Returns whether this property is less than the referenced option value',
+        returns: 'isNotEqual:boolean'
+      },
+      greaterThanOrEqualToOption: {
+        args: [`option:string`],
+        info: 'Returns whether this property is greater than or equal to the referenced option value',
+        returns: 'isEqual:boolean'
+      },
+      lessThanOrEqualToOption: {
+        args: [`option:string`],
+        info: 'Returns whether this property is less than or equal to the referenced option value',
+        returns: 'isNotEqual:boolean'
       }
     }
   };

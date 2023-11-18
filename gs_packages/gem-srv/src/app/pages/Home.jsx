@@ -82,12 +82,12 @@ class Home extends React.Component {
           <b className={classes.title}>Quick Links</b>
           <ul className={classes.list}>
             <NavItem route="login">login</NavItem>
-            <NavItem route="main?project=aquatic">aquatic</NavItem>
-            <NavItem route="charcontrol">character controller</NavItem>
+            <NavItem route="main?project=aquatic_interactions">aquatic</NavItem>
+            <NavItem route="charcontrol3">character controller</NavItem>
           </ul>
         </div>
         <div id="instructions" className={classes.main}>
-          <h2>GEM-STEP Version 1.0, September 2022</h2>
+          <h2>GEM-STEP Version 1.x, October 2023</h2>
           <p>
             {' '}
             <b>
@@ -100,18 +100,20 @@ class Home extends React.Component {
               also create new projects from this screen.
             </li>
             <li>
-              <a href="/app/main?project=aquatic">AQUATIC</a> - This goes directly
-              to the Aquatic model.
+              <a href="/app/main?project=aquatic_interactions">AQUATIC</a> - This
+              goes directly to the Aquatic model.
             </li>
             <li>
-              <a href="/app/viewer">VIEWER</a> - This let's you view a model that
+              <a href="/app/viewer">VIEWER</a> - This lets you view a model that
               is already running on another machine, but you cannot interact with
               it.
             </li>
             <li>
-              <a href="/app/charcontrol">CHARACTER CONTROLLER</a> - This lets you
-              control one or more characters in the currently running maain
-              window.
+              <a href="/app/viewerLogs">Log VIEWER</a> - Viewer with logs
+            </li>
+            <li>
+              <a href="/app/charcontrol3">CHARACTER CONTROLLER</a> - Control
+              characters on-screen instead of with tracking tags.
             </li>
           </ol>
         </div>

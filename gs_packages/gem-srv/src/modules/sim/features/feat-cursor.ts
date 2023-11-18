@@ -73,7 +73,7 @@ addFeature Physics
 addFeature Touches
 ${touchscripts}
 
-addFeature AgentWidgets
+addFeature Graphing
 
 // always on top
 prop zIndex setTo 1000
@@ -137,10 +137,10 @@ function m_UpdateInhabitAgent(frametime) {
 
     target.cursor = c;
     c.prop.isInhabitingTarget.setTo(true);
-    c.prop.AgentWidgets.text.setTo(''); // clear label
+    c.prop.Graphing.text.setTo(''); // clear label
     c.prop.statusValue.setTo(undefined); // clear meter
-    c.prop.AgentWidgets.meter.setTo(undefined);
-    c.prop.AgentWidgets.meterProp.setTo(undefined);
+    c.prop.Graphing.meter.setTo(undefined);
+    c.prop.Graphing.meterProp.setTo(undefined);
     c.prop.Cursor.cursorTargetId.setTo(targetId);
     return true;
   });
@@ -173,7 +173,7 @@ class CursorPack extends SM_Feature {
     if (!agent.hasFeature('Movement')) {
       // eslint-disable-next-line no-alert
       alert(
-        `Cursor control of ${agent.blueprint.name} requires the Movement feature!  Add 'useFeature Movement' to ${agent.blueprint.name} script BEFORE 'useFeature Cursor'!`
+        `Cursor control of ${agent.blueprint.name} requires the Movement feature!  Add 'addFeature Movement' to ${agent.blueprint.name} script BEFORE 'addFeature Cursor'!`
       );
     }
   }
@@ -197,6 +197,31 @@ class CursorPack extends SM_Feature {
       agent.cursor = undefined;
     }
   }
+
+  /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** static method to return symbol data */
+  static Symbolize(): TSymbolData {
+    return SM_Feature._SymbolizeNames(CursorPack.Symbols);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** instance method to return symbol data */
+  symbolize(): TSymbolData {
+    return CursorPack.Symbolize();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  static _CachedSymbols: TSymbolData;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** declaration of base symbol data; methods will be modified to include
+   *  the name parameter in each methodSignature */
+  static Symbols: TSymbolData = {
+    props: {
+      cursorTargetId: SM_String.Symbols
+    },
+    methods: {
+      releaseCursor: {}
+    }
+  };
 }
 
 /// REGISTER FEATURE SINGLETON ////////////////////////////////////////////////

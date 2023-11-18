@@ -171,6 +171,12 @@
   font-style: normal;
 }
 
+.gwiz.commentKeyHeader {
+  color: white;
+  background-color: #33322f;
+  font-style: normal;
+}
+
 .gwiz.explanationCommentHeader {
   color: white;
   background-color: #ff990a;
@@ -184,7 +190,7 @@
 }
 
 .gwiz.changeCommentHeader {
-  color: white;
+  color: black;
   background-color: #59cd90;
   font-style: normal;
 }
@@ -470,7 +476,7 @@
 
 .gsled.panel {
   /* main slot editor base panel */
-  padding: 10px;
+  padding: 10px 10px 10px 20px;
   height: 100%;
   background-color: #666;
 }

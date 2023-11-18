@@ -89,35 +89,41 @@ class PopulationPack extends SM_Feature {
   constructor(name) {
     super(name);
     // Population Management
-    this.featAddMethod('createAgent', this.createAgent);
+    this.featAddMethod('createCharacter', this.createCharacter);
     this.featAddMethod('spawnChild', this.spawnChild);
-    this.featAddMethod('removeAgent', this.removeAgent);
-    this.featAddMethod('getRandomActiveAgent', this.getRandomActiveAgent);
+    this.featAddMethod('removeCharacter', this.removeCharacter);
+    this.featAddMethod('getRandomActiveCharacter', this.getRandomActiveCharacter);
     // Global Population Management
-    this.featAddMethod('releaseAllAgents', this.releaseAllAgents);
-    this.featAddMethod('releaseInertAgents', this.releaseInertAgents);
-    this.featAddMethod('hideInertAgents', this.hideInertAgents);
-    this.featAddMethod('removeInertAgents', this.removeInertAgents);
-    this.featAddMethod('agentsReproduce', this.agentsReproduce);
-    this.featAddMethod('oneAgentReproduce', this.oneAgentReproduce);
+    this.featAddMethod('releaseAllCharacters', this.releaseAllCharacters);
+    this.featAddMethod('releaseInertCharacters', this.releaseInertCharacters);
+    this.featAddMethod('hideInertCharacters', this.hideInertCharacters);
+    this.featAddMethod('removeInertCharacters', this.removeInertCharacters);
+    this.featAddMethod('charactersReproduce', this.charactersReproduce);
+    this.featAddMethod('oneCharacterReproduce', this.oneCharacterReproduce);
     this.featAddMethod('populateBySpawning', this.populateBySpawning);
-    this.featAddMethod('agentsForEachActive', this.agentsForEachActive);
-    this.featAddMethod('agentsForEach', this.agentsForEach);
+    this.featAddMethod('charactersForEachActive', this.charactersForEachActive);
+    this.featAddMethod('charactersForEach', this.charactersForEach);
+    this.featAddMethod('tellCharacterByName', this.tellCharacterByName);
+    this.featAddMethod('tellAllCharacters', this.tellAllCharacters);
+
     // Statistics
-    this.featAddMethod('getActiveAgentsCount', this.getActiveAgentsCount);
-    this.featAddMethod('countAgents', this.countAgents);
-    this.featAddMethod('countAgentProp', this.countAgentProp);
-    this.featAddMethod('minAgentProp', this.minAgentProp);
-    this.featAddMethod('maxAgentProp', this.maxAgentProp);
+    this.featAddMethod('getActiveCharactersCount', this.getActiveCharactersCount);
+    this.featAddMethod('countCharacters', this.countCharacters);
+    this.featAddMethod('countCharacterProp', this.countCharacterProp);
+    this.featAddMethod('minCharacterProp', this.minCharacterProp);
+    this.featAddMethod('maxCharacterProp', this.maxCharacterProp);
     // Histogram
-    this.featAddMethod('countAgentsByPropType', this.countAgentsByPropType);
     this.featAddMethod(
-      'setAgentsByFeatPropTypeKeys',
-      this.setAgentsByFeatPropTypeKeys
+      'countCharactersByPropType',
+      this.countCharactersByPropType
     );
     this.featAddMethod(
-      'countExistingAgentsByFeatPropType',
-      this.countExistingAgentsByFeatPropType
+      'setCharctersByFeatPropTypeKeys',
+      this.setCharctersByFeatPropTypeKeys
+    );
+    this.featAddMethod(
+      'countExistingCharactersByFeatPropType',
+      this.countExistingCharactersByFeatPropType
     );
 
     UR.HookPhase('SIM/DELETE', m_Delete);
@@ -144,10 +150,10 @@ class PopulationPack extends SM_Feature {
     this.featAddProp(agent, 'min', new SM_Number());
     this.featAddProp(agent, 'max', new SM_Number());
 
-    // used by countAgentProp without parameters
-    this.featAddProp(agent, 'monitoredAgent', new SM_String());
-    this.featAddProp(agent, 'monitoredAgentProp', new SM_String());
-    this.featAddProp(agent, 'monitoredAgentPropFeature', new SM_String());
+    // used by countCharacterProp without parameters
+    this.featAddProp(agent, 'monitoredCharacter', new SM_String());
+    this.featAddProp(agent, 'monitoredCharacterProp', new SM_String());
+    this.featAddProp(agent, 'monitoredCharacterPropFeature', new SM_String());
 
     // Used by spawnChild
     this.featAddProp(agent, 'spawnMutationProp', new SM_String());
@@ -172,7 +178,7 @@ class PopulationPack extends SM_Feature {
    * @param blueprintName
    * @param initScript
    */
-  createAgent(agent: IAgent, blueprintName: string, initScript: string) {
+  createCharacter(agent: IAgent, blueprintName: string, initScript: string) {
     const label = `${blueprintName}${COUNT++}`;
     // Queue Instance Defs
     const def = {
@@ -207,7 +213,7 @@ class PopulationPack extends SM_Feature {
   /**
    * Removes self
    */
-  removeAgent(agent: IAgent) {
+  removeCharacter(agent: IAgent) {
     AGENTS_TO_REMOVE.push(agent.id);
   }
   /**
@@ -215,16 +221,18 @@ class PopulationPack extends SM_Feature {
    * @param agent
    * @param spawnScript
    */
-  getRandomActiveAgent(agent: IAgent, bpname: string): IAgent {
+  getRandomActiveCharacter(agent: IAgent, bpname: string): IAgent {
     const agents = SIMAGENTS.GetAgentsByType(bpname);
     if (agents.length < 1) {
-      console.error(`Population:getRandomActiveAgent: No ${bpname} agents left!`);
+      console.error(
+        `Population:getRandomActiveCharacter: No ${bpname} agents left!`
+      );
       return undefined; // no agents
     }
     const activeAgents = agents.filter(a => !a.isInert);
     if (activeAgents.length < 1) {
       console.error(
-        `Population:getRandomActiveAgent: No non-inert ${bpname} agents left!`
+        `Population:getRandomActiveCharacter: No non-inert ${bpname} agents left!`
       );
       return undefined; // no non-inert agents
     }
@@ -237,7 +245,7 @@ class PopulationPack extends SM_Feature {
   /**
    * Release cursors for ALL agents globally
    */
-  releaseAllAgents(agent: IAgent) {
+  releaseAllCharacters(agent: IAgent) {
     const agents = SIMAGENTS.GetAllAgents();
     agents.forEach(a => {
       if (a.hasFeature('Cursor') && a.blueprint.name !== 'Cursor') {
@@ -249,7 +257,7 @@ class PopulationPack extends SM_Feature {
   /**
    * Release cursors for ALL inert agents globally
    */
-  releaseInertAgents(agent: IAgent) {
+  releaseInertCharacters(agent: IAgent) {
     const agents = SIMAGENTS.GetAllAgents();
     agents.forEach(a => {
       if (a.isInert && a.hasFeature('Cursor'))
@@ -259,7 +267,7 @@ class PopulationPack extends SM_Feature {
   /**
    * Turn off visible property for ALL inert agents globally
    */
-  hideInertAgents(agent: IAgent) {
+  hideInertCharacters(agent: IAgent) {
     const agents = SIMAGENTS.GetAllAgents();
     agents.forEach(a => {
       if (a.isInert) {
@@ -271,10 +279,10 @@ class PopulationPack extends SM_Feature {
   /**
    * Remove ALL inert agents globally
    */
-  removeInertAgents(agent: IAgent) {
+  removeInertCharacters(agent: IAgent) {
     const agents = SIMAGENTS.GetAllAgents();
     agents.forEach(a => {
-      if (a.isInert) this.removeAgent(a);
+      if (a.isInert) this.removeCharacter(a);
     });
   }
 
@@ -284,7 +292,7 @@ class PopulationPack extends SM_Feature {
    * @param bpname
    * @param spawnScript
    */
-  agentsReproduce(agent: IAgent, bpname: string, spawnScript: string) {
+  charactersReproduce(agent: IAgent, bpname: string, spawnScript: string) {
     const deleteAfterSpawning = agent.prop.Population.deleteAfterSpawning.value;
     const agents = SIMAGENTS.GetAgentsByType(bpname);
     const def = {
@@ -306,13 +314,13 @@ class PopulationPack extends SM_Feature {
    * @param bpname
    * @param spawnScript
    */
-  oneAgentReproduce(agent: IAgent, bpname: string, spawnScript: string) {
+  oneCharacterReproduce(agent: IAgent, bpname: string, spawnScript: string) {
     console.error('oneagentreproduce');
     const deleteAfterSpawning = agent.prop.Population.deleteAfterSpawning.value;
-    const parent = this.getRandomActiveAgent(agent, bpname);
+    const parent = this.getRandomActiveCharacter(agent, bpname);
     if (parent === undefined) {
       console.error(
-        'Popuation.oneAgentReproduce was not able to find a non-inert parent agent to reproduce from!'
+        'Popuation.oneCharacterReproduce was not able to find a non-inert parent agent to reproduce from!'
       );
       return;
     }
@@ -380,7 +388,7 @@ class PopulationPack extends SM_Feature {
     m_Create(0);
 
     if (deleteAfterSpawning) {
-      agents.forEach(a => this.removeAgent(a));
+      agents.forEach(a => this.removeCharacter(a));
       // force immediate delete otherwise deletion happens only after START ROUND
       m_Delete(0);
     }
@@ -389,7 +397,7 @@ class PopulationPack extends SM_Feature {
   /**
    * For all agents of type bpname, call program if not inert
    */
-  agentsForEachActive(agent: IAgent, bpname: string, program: TSMCProgram) {
+  charactersForEachActive(agent: IAgent, bpname: string, program: TSMCProgram) {
     const agents = SIMAGENTS.GetAgentsByType(bpname);
     agents.forEach(a => {
       if (!a.isInert) a.exec(program, { agent: a });
@@ -398,8 +406,25 @@ class PopulationPack extends SM_Feature {
   /**
    * For all agents of type bpname, call program regardless of inert state
    */
-  agentsForEach(agent: IAgent, bpname: string, program: TSMCProgram) {
+  charactersForEach(agent: IAgent, bpname: string, program: TSMCProgram) {
     const agents = SIMAGENTS.GetAgentsByType(bpname);
+    agents.forEach(a => a.exec(program, { agent: a }));
+  }
+
+  /**
+   * Call this program for the characters with the given ID if not inert
+   */
+
+  tellCharacterByName(agent: IAgent, name: string, program: TSMCProgram) {
+    const a = SIMAGENTS.GetAgentByName(name);
+    if (a) {
+      console.log('found one');
+      a.exec(program, { agent: a });
+    }
+  }
+
+  tellAllCharacters(agent: IAgent, program: TSMCProgram) {
+    const agents = SIMAGENTS.GetAllAgents();
     agents.forEach(a => a.exec(program, { agent: a }));
   }
 
@@ -413,7 +438,7 @@ class PopulationPack extends SM_Feature {
   /**
    * Returns the number of active (non-inert) agents of a particular blueprint type
    */
-  getActiveAgentsCount(agent: IAgent, blueprintName: string) {
+  getActiveCharactersCount(agent: IAgent, blueprintName: string) {
     const agents = SIMAGENTS.GetAgentsByType(blueprintName);
     let count = 0;
     agents.forEach(a => {
@@ -422,7 +447,7 @@ class PopulationPack extends SM_Feature {
     return count;
   }
 
-  countAgents(agent: IAgent, blueprintName: string) {
+  countCharacters(agent: IAgent, blueprintName: string) {
     const agents = SIMAGENTS.GetAgentsByType(blueprintName);
     let prop = agent.getFeatProp(this.name, 'count');
     (prop as SM_Number).setTo(agents.length);
@@ -436,24 +461,25 @@ class PopulationPack extends SM_Feature {
    *
    * Using featProps
    * To use this with Script Wizard UI:
-   * 1. First set monitoredAgent: featProp Population monitoredAgent setTo Moth
-   * 2. Set monitoredAgentProp: featProp Population monitoredAgentProp setTo energyLevel
-   * 3. Then call this without paramaeters: featCall Population countAgentProp
+   * 1. First set monitoredCharacter: featProp Population monitoredCharacter setTo Moth
+   * 2. Set monitoredCharacterProp: featProp Population monitoredCharacterProp setTo energyLevel
+   * 3. Then call this without paramaeters: featCall Population countCharacterProp
    *
    * @param agent
-   * @param blueprintName (optional -- falls back to monitoredAgent)
-   * @param prop (optional -- falls back to monitoredAgentProp)
+   * @param blueprintName (optional -- falls back to monitoredCharacter)
+   * @param prop (optional -- falls back to monitoredCharacterProp)
    * @returns Sets three feature propertie: count, sum, avg
    */
-  countAgentProp(agent: IAgent, blueprintName: string, prop: string) {
+  countCharacterProp(agent: IAgent, blueprintName: string, prop: string) {
     if (blueprintName === undefined)
-      blueprintName = agent.prop.Population.monitoredAgent.value;
+      blueprintName = agent.prop.Population.monitoredCharacter.value;
     const agents = SIMAGENTS.GetAgentsByType(blueprintName);
     if (agents.length < 1) {
       this.clearCounts(agent);
       return;
     }
-    if (prop === undefined) prop = agent.prop.Population.monitoredAgentProp.value;
+    if (prop === undefined)
+      prop = agent.prop.Population.monitoredCharacterProp.value;
     const sum = agents
       .map(a => a.getProp(prop).value)
       .reduce((acc, cur) => acc + cur);
@@ -465,7 +491,7 @@ class PopulationPack extends SM_Feature {
     (p as SM_String).setTo(Number(sum / agents.length).toFixed(2));
   }
   /// Returns the minimum number of agents of type blueprintName
-  minAgentProp(agent: IAgent, blueprintName: string, prop: string) {
+  minCharacterProp(agent: IAgent, blueprintName: string, prop: string) {
     const agents = SIMAGENTS.GetAgentsByType(blueprintName);
     if (agents.length < 1) return;
     const minimizer = (min, cur) => Math.min(min, cur);
@@ -476,7 +502,7 @@ class PopulationPack extends SM_Feature {
     (p as SM_Number).setTo(min);
   }
   /// Returns the maximum number of agents of type blueprintName
-  maxAgentProp(agent: IAgent, blueprintName: string, prop: string) {
+  maxCharacterProp(agent: IAgent, blueprintName: string, prop: string) {
     const agents = SIMAGENTS.GetAgentsByType(blueprintName);
     if (agents.length < 1) return;
     const maximizer = (max, cur) => Math.max(max, cur);
@@ -530,7 +556,7 @@ class PopulationPack extends SM_Feature {
    * @param blueprintName
    * @param prop
    */
-  countAgentsByPropType(
+  countCharactersByPropType(
     agent: IAgent,
     blueprintName: string,
     prop: string,
@@ -555,7 +581,7 @@ class PopulationPack extends SM_Feature {
   /// Prepopulate the countsByProp map with keys
   /// This is necessary so all bars in the histogram will have values
   /// otherwise, bars without values are not plotted.
-  setAgentsByFeatPropTypeKeys(agent: IAgent, ...keys: string[]) {
+  setCharctersByFeatPropTypeKeys(agent: IAgent, ...keys: string[]) {
     agent.prop.Population._countsByPropKeys = keys;
   }
 
@@ -571,7 +597,7 @@ class PopulationPack extends SM_Feature {
    *
    * The result is stored in agent.prop.Population._countsByProp
    *
-   * This assumes we only have a single countAgentsByFeatPropType
+   * This assumes we only have a single countCharactersByFeatPropType
    * property.
    *
    * @param agent
@@ -617,22 +643,24 @@ class PopulationPack extends SM_Feature {
    *
    * Using featProps
    * To use this with Script Wizard UI:
-   * 1. First set monitoredAgent: featProp Population monitoredAgent setTo Moth
-   * 2. Set monitoredAgentProp: featProp Population monitoredAgentProp setTo energyLevel
-   * 3. Then call this without paramaeters: featCall Population countAgentProp
+   * 1. First set monitoredCharacter: featProp Population monitoredCharacter setTo Moth
+   * 2. Set monitoredCharacterProp: featProp Population monitoredCharacterProp setTo energyLevel
+   * 3. Then call this without paramaeters: featCall Population countCharacterProp
    *
    */
-  countExistingAgentsByFeatPropType(
+  countExistingCharactersByFeatPropType(
     agent: IAgent,
     blueprintName: string,
     feature: string,
     featprop: string,
     clear: boolean // REVIEW: `clear` hard to set with if using featProp method?
-    // e.g. have to use `featCall countExistingAgentsByFeatPropType undefined undefined undefined true`
+    // e.g. have to use `featCall countExistingCharactersByFeatPropType undefined undefined undefined true`
   ) {
-    const bpname = blueprintName || agent.prop.Population.monitoredAgent.value;
-    const feat = feature || agent.prop.Population.monitoredAgentPropFeature.value;
-    const prop = featprop || agent.prop.Population.monitoredAgentProp.value;
+    const bpname =
+      blueprintName || agent.prop.Population.monitoredCharacter.value;
+    const feat =
+      feature || agent.prop.Population.monitoredCharacterPropFeature.value;
+    const prop = featprop || agent.prop.Population.monitoredCharacterProp.value;
     const agents = SIMAGENTS.GetAgentsByType(bpname);
     this.m_CountAgentsByFeatPropType(agent, agents, feat, prop, clear);
   }
@@ -641,7 +669,7 @@ class PopulationPack extends SM_Feature {
   /// AGENTS_TO_CREATE Is an array of isntanceDefs, not actual agents.
   /// so we can't inspect its featprops.
   ///
-  /// Counts agents newly spawned by agentsReproduce that have yet to be
+  /// Counts agents newly spawned by charactersReproduce that have yet to be
   /// created. AGENTS_TO_CREATE
   // countSpawnedAgentsByFeatPropType(
   //   agent: IAgent,
@@ -652,7 +680,7 @@ class PopulationPack extends SM_Feature {
   // ) {
   //   const agents = AGENTS_TO_CREATE.filter(a => a.blueprint === blueprintName);
   //   console.error('Agents-to-create', AGENTS_TO_CREATE, agents);
-  //   this.countAgentsByFeatPropType(
+  //   this.countCharactersByFeatPropType(
   //     agent,
   //     agents,
   //     blueprintName,
@@ -685,9 +713,9 @@ class PopulationPack extends SM_Feature {
       'avg': SM_Number.Symbols,
       'min': SM_Number.Symbols,
       'max': SM_Number.Symbols,
-      'monitoredAgent': SM_String.Symbols,
-      'monitoredAgentProp': SM_String.Symbols,
-      'monitoredAgentPropFeature': SM_String.Symbols,
+      'monitoredCharacter': SM_String.Symbols,
+      'monitoredCharacterProp': SM_String.Symbols,
+      'monitoredCharacterPropFeature': SM_String.Symbols,
       'spawnMutationProp': SM_String.Symbols,
       'spawnMutationPropFeature': SM_String.Symbols,
       'spawnMutationMaxAdd': SM_Number.Symbols,
@@ -696,31 +724,33 @@ class PopulationPack extends SM_Feature {
       'deleteAfterSpawning': SM_Number.Symbols
     },
     methods: {
-      'createAgent': {
+      'createCharacter': {
         args: ['blueprintName:identifier', 'initScript:block']
       },
       'spawnChild': { args: ['spawnScript:string', 'def:objref'] },
-      'removeAgent': {},
-      'getRandomActiveAgent': { args: ['bpname:number'] },
-      'releaseAllAgents': {},
-      'releaseInertAgents': {},
-      'hideInertAgents': {},
-      'removeInertAgents': {},
-      'agentsReproduce': { args: ['bpname:string', 'spawnScript:string'] },
-      'oneAgentReproduce': { args: ['bpname:string', 'spawnScript:string'] },
+      'removeCharacter': {},
+      'getRandomActiveCharacter': { args: ['bpname:number'] },
+      'releaseAllCharacters': {},
+      'releaseInertCharacters': {},
+      'hideInertCharacters': {},
+      'removeInertCharacters': {},
+      'charactersReproduce': { args: ['bpname:string', 'spawnScript:string'] },
+      'oneCharacterReproduce': { args: ['bpname:string', 'spawnScript:string'] },
       'populateBySpawning': { args: ['bpname:string', 'spawnScript:string'] },
-      'agentsForEachActive': { args: ['bpname:string', 'program:program'] },
-      'agentsForEach': { args: ['bpname:string', 'program:program'] },
-      'getActiveAgentsCount': { args: ['blueprintName:string'] },
-      'countAgents': { args: ['blueprintName:string'] },
-      'countAgentProp': { args: ['blueprintName:string', 'prop:string'] },
-      'minAgentProp': { args: ['bpname:string', 'prop:string'] },
-      'maxAgentProp': { args: ['bpname:string', 'prop:string'] },
-      'countAgentsByPropType': {
+      'charactersForEachActive': { args: ['bpname:string', 'program:block'] },
+      'charactersForEach': { args: ['bpname:identifier', 'program:block'] },
+      'tellCharacterByName': { args: ['name:string', 'program:block'] },
+      'tellAllCharacters': { args: ['program:block'] },
+      'getActiveCharactersCount': { args: ['blueprintName:string'] },
+      'countCharacters': { args: ['blueprintName:string'] },
+      'countCharacterProp': { args: ['blueprintName:string', 'prop:string'] },
+      'minCharacterProp': { args: ['bpname:string', 'prop:string'] },
+      'maxCharacterProp': { args: ['bpname:string', 'prop:string'] },
+      'countCharactersByPropType': {
         args: ['bpname:string', 'prop:string', 'clear:boolean']
       },
-      'setAgentsByFeatPropTypeKeys': { args: ['bpname:string', 'keys:{...}'] },
-      'countExistingAgentsByFeatPropType': {
+      'setCharctersByFeatPropTypeKeys': { args: ['bpname:string', 'keys:{...}'] },
+      'countExistingCharactersByFeatPropType': {
         args: [
           'blueprintName:string',
           'feature:string',

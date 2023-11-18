@@ -4,11 +4,14 @@ import React, { Suspense } from 'react';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const Home = React.lazy(() => import('../pages/Home'));
 const CharControl = React.lazy(() => import('../pages/CharControl'));
+const CharControl2 = React.lazy(() => import('../pages/CharControl2'));
+const CharControl3 = React.lazy(() => import('../pages/CharControl3'));
 const Login = React.lazy(() => import('../pages/Login'));
 const Project = React.lazy(() => import('../pages/Project'));
 const Main = React.lazy(() => import('../pages/Main'));
 const ScriptEditor = React.lazy(() => import('../pages/ScriptEditor'));
 const Viewer = React.lazy(() => import('../pages/Viewer'));
+const ViewerLogs = React.lazy(() => import('../pages/ViewerLogs'));
 const TrackerSetup = React.lazy(() => import('../pages/TrackerSetup'));
 const DevCompiler = React.lazy(() => import('../pages/DevCompiler'));
 const DevTracker = React.lazy(() => import('../pages/DevTracker'));
@@ -27,6 +30,16 @@ export const LazyHome = () => (
 export const LazyCharacterController = () => (
   <Suspense fallback={<div>loading</div>}>
     <CharControl />
+  </Suspense>
+);
+export const LazyCharacterController2 = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <CharControl2 />
+  </Suspense>
+);
+export const LazyCharacterController3 = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <CharControl3 />
   </Suspense>
 );
 export const LazyLogin = () => (
@@ -52,6 +65,11 @@ export const LazyScriptEditor = () => (
 export const LazyViewer = () => (
   <Suspense fallback={<div>loading</div>}>
     <Viewer />
+  </Suspense>
+);
+export const LazyViewerLogs = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <ViewerLogs />
   </Suspense>
 );
 export const LazyTrackerSetup = () => (

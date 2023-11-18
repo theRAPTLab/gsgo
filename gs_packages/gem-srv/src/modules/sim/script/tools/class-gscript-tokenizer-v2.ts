@@ -820,7 +820,7 @@ function KeywordFromToken(kwTok: any): string {
   const fn = 'KeywordFromToken:';
   const [type, value] = UnpackToken(kwTok);
   if (type === 'directive') return '_directive';
-  if (type === 'comment') return '_comment';
+  if (type === 'comment') return '//'; // use '//' instead of '_comment'
   if (type === 'line') return '_line';
   if (type !== 'identifier') {
     console.log(`${fn} bad token`, kwTok);

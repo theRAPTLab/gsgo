@@ -1,5 +1,3 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Edit a single round's parameters
@@ -56,15 +54,15 @@ class PanelRoundEditor extends React.Component {
   // Save is triggered by any change in form data
   onSave() {
     const { round } = this.state;
-    const { roundId, onFormChange } = this.props;
-    onFormChange({ roundId, round });
+    const { roundIndex, onFormChange } = this.props;
+    onFormChange({ roundIndex, round });
   }
 
   urStateUpdated(stateObj, cb) {
     const { rounds } = stateObj;
     if (rounds) {
-      const { roundId } = this.props;
-      const round = rounds.find(r => r.id === roundId);
+      const { roundIndex } = this.props;
+      const round = rounds[roundIndex];
       if (round) this.setState({ round });
     }
     if (typeof cb === 'function') cb();

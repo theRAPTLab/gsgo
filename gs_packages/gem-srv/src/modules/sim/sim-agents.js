@@ -40,6 +40,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     dobj.zIndex = agent.zIndex !== undefined ? agent.zIndex : 0;
     if (agent.skin) dobj.skin = agent.skin;
     dobj.color = agent.color; // always copy color, set color = undefined to clear filters
+    if (agent.prop.glowColor.value !== undefined) dobj.glowColor = agent.prop.glowColor.value;
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
     if (agent.scale !== undefined) dobj.scale = agent.scale;
     if (agent.scaleY !== undefined) dobj.scaleY = agent.scaleY;
@@ -60,6 +61,14 @@ AGENT_TO_DOBJ.setMapFunctions({
       dobj.barGraph = agent.statusObject.barGraph;
       dobj.barGraphLabels = agent.statusObject.barGraphLabels;
     }
+
+    if (agent.prop.Graphing !== undefined) {
+      dobj.fontSize = agent.prop.Graphing.fontSize.value;
+      dobj.wordWrapWidth = agent.prop.Graphing.wordWrapWidth.value;
+      dobj.textAlign = agent.prop.Graphing.textAlign.value;
+      dobj.textJustify = agent.prop.Graphing.textJustify.value;
+      dobj.textColor = agent.prop.Graphing.textColor.value;
+    }
   },
   onUpdate: (agent, dobj) => {
     dobj.x = agent.x;
@@ -67,6 +76,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     dobj.zIndex = agent.zIndex !== undefined ? agent.zIndex : 0;
     if (agent.skin) dobj.skin = agent.skin;
     dobj.color = agent.color; // always copy color, set color = undefined to clear filters
+    if (agent.prop.glowColor.value !== undefined) dobj.glowColor = agent.prop.glowColor.value;
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
     if (agent.scale !== undefined) dobj.scale = agent.scale;
     if (agent.scaleY !== undefined) dobj.scaleY = agent.scaleY;
@@ -86,6 +96,13 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.statusObject !== undefined) {
       dobj.barGraph = agent.statusObject.barGraph;
       dobj.barGraphLabels = agent.statusObject.barGraphLabels;
+    }
+    if (agent.prop.Graphing !== undefined) {
+      dobj.fontSize = agent.prop.Graphing.fontSize.value;
+      dobj.wordWrapWidth = agent.prop.Graphing.wordWrapWidth.value;
+      dobj.textAlign = agent.prop.Graphing.textAlign.value;
+      dobj.textJustify = agent.prop.Graphing.textJustify.value;
+      dobj.textColor = agent.prop.Graphing.textColor.value;
     }
   }
 });
@@ -221,7 +238,7 @@ function FilterBlueprints(namesToKeep) {
 
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AgentSelect() {}
+function AgentSelect() { }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** placeholder function
  *  Main update
@@ -269,7 +286,6 @@ export function AllAgentsProgram(data) {
   // 3. Create Instances from Script
   SCRIPT_TO_INSTANCE.syncFromArray(instancesSpec);
   SCRIPT_TO_INSTANCE.mapObjects();
-
 
   // 4. Broadcast update to network devices
   UR.RaiseMessage('NET:INSTANCES_UPDATE', {

@@ -17,7 +17,7 @@ import { RegisterKeyword } from 'modules/datacore';
 export class _comment extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
-    super('_comment');
+    super('//'); // use '//' as the comment keyword (orig was '_comment')
     this.args = ['?:{...}'];
   }
 
