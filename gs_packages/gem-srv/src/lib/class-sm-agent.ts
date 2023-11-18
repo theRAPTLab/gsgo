@@ -29,6 +29,7 @@ const INTERNAL_PROPS: TPropRecord[] = [
   { name: 'trackerId', type: 'string' },
   { name: 'zIndex', type: 'number' },
   { name: 'color', type: 'number' },
+  { name: 'glowColor', type: 'number' },
   { name: 'scale', type: 'number' },
   { name: 'scaleY', type: 'number' },
   { name: 'orientation', type: 'number' },
@@ -96,6 +97,7 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
     this.prop.zIndex = new SM_Number();
     this.prop.skin = new SM_String();
     this.prop.color = new SM_Number();
+    this.prop.glowColor = new SM_Number();
     this.prop.scale = new SM_Number();
     this.prop.scale.setMax(10);
     this.prop.scale.setMin(-10);
@@ -163,6 +165,12 @@ class SM_Agent extends SM_Object implements IAgent, IActable {
   }
   set color(num: number) {
     this.prop.color.value = num;
+  }
+  get glowColor() {
+    return this.prop.glowColor.value;
+  }
+  set glowColor(num: number) {
+    this.prop.glowColor.setTo(num);
   }
   get scale() {
     return this.prop.scale.value;

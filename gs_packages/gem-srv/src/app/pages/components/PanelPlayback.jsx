@@ -1,6 +1,6 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import { SIMSTATUS } from 'modules/sim/api-sim';
+import { IsRunning, SIMSTATUS } from 'modules/sim/api-sim';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../helpers/page-xui-styles';
 
@@ -11,8 +11,7 @@ class PanelPlayback extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Control',
-      isRunning: false
+      title: 'Control'
     };
     this.OnResetClick = this.OnResetClick.bind(this);
     this.OnCostumesClick = this.OnCostumesClick.bind(this);
@@ -23,37 +22,33 @@ class PanelPlayback extends React.Component {
   componentWillUnmount() {}
 
   OnResetClick() {
-    this.setState({ isRunning: false });
     UR.LogEvent('SimEvent', ['Reset Stage']);
     UR.RaiseMessage('NET:SIM_RESET');
   }
 
   OnCostumesClick() {
-    this.setState({ isRunning: false });
     UR.LogEvent('SimEvent', ['Pick Characters']);
     UR.RaiseMessage('NET:HACK_SIM_COSTUMES');
   }
 
   OnNextRoundClick() {
-    this.setState({ isRunning: false });
     UR.LogEvent('SimEvent', ['Next Round']);
     UR.RaiseMessage('NET:HACK_SIM_NEXTROUND');
   }
 
   OnStartClick() {
-    const { isRunning } = this.state;
-    if (isRunning) {
+    if (IsRunning()) {
       UR.LogEvent('SimEvent', ['Stop Round']);
       UR.RaiseMessage('NET:HACK_SIM_STOP');
     } else {
       UR.LogEvent('SimEvent', ['Start Round']);
       UR.RaiseMessage('NET:HACK_SIM_START');
     }
-    this.setState({ isRunning: !isRunning });
   }
 
   render() {
-    const { title, isRunning } = this.state;
+    const { title } = this.state;
+    const isRunning = IsRunning();
     const { id, isDisabled, needsUpdate, isActive, classes } = this.props;
 
     const onClick = () => {

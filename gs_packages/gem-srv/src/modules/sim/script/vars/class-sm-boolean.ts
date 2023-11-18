@@ -20,6 +20,7 @@ export class SM_Boolean extends SM_Object {
     this.meta.type = Symbol.for('SM_Boolean');
     this.value = initial;
     this.fuzzy = fuzzy;
+    this.map = new Map();
   }
   setTo(value: boolean) {
     this.value = value;
@@ -35,42 +36,52 @@ export class SM_Boolean extends SM_Object {
     this.value = !this.value;
     return this.value;
   }
+  // NOTE this is a logic operation, not an assignment
   and(comparison: any): SM_Boolean {
     if (this.fuzzy) throw Error("'and' incompatible with fuzzy logic");
-    this.value &= comparison;
-    return this;
+    return new SM_Boolean(this.value && comparison);
   }
+  // NOTE this is a logic operation, not an assignment
   or(comparison: any): SM_Boolean {
     if (this.fuzzy) throw Error("'or' incompatible with fuzzy logic");
-    this.value |= comparison;
-    return this;
+    return new SM_Boolean(this.value || comparison);
   }
+  // NOTE this is a logic operation, not an assignment
   equal(comparison: any): SM_Boolean {
     if (this.fuzzy)
       throw Error(`'equal' incompatible with fuzzy logic.  fuzzy=${this.fuzzy}`);
-    this.value = this.value === comparison;
-    return this;
+    return new SM_Boolean(this.value === comparison);
   }
   notEqual(comparison: any): SM_Boolean {
     if (this.fuzzy) throw Error("'equal' incompatible with fuzzy logic");
-    this.value = this.value !== comparison;
-    return this;
+    return new SM_Boolean(this.value !== comparison);
   }
   slightlyTrue(): SM_Boolean {
-    this.value = this.value && this.fuzzy > 0 && this.fuzzy < 0.25;
-    return this;
+    return new SM_Boolean(this.value && this.fuzzy > 0 && this.fuzzy < 0.25);
   }
   mostlyTrue(): SM_Boolean {
-    this.value = this.value && this.fuzzy > 0.75;
-    return this;
+    return new SM_Boolean(this.value && this.fuzzy > 0.75);
   }
   slightlyFalse(): SM_Boolean {
-    this.value = this.value && this.fuzzy < 0 && this.fuzzy > -0.25;
-    return this;
+    return new SM_Boolean(this.value && this.fuzzy < 0 && this.fuzzy > -0.25);
   }
   mostlyFalse(): SM_Boolean {
-    this.value = this.value && this.fuzzy < -0.75;
-    return this;
+    return new SM_Boolean(this.value && this.fuzzy < -0.75);
+  }
+  // OPTIONS
+  addOption(optionLabel: string, optionValue: boolean) {
+    const val = optionValue || false; // if `optionValue` is not defined, use false
+    this.map.set(optionLabel, val);
+  }
+  setToOption(optionLabel: string) {
+    // set this.value to the value associated with the option label
+    this.value = this.map.get(optionLabel);
+  }
+  equalToOption(optionLabel: string) {
+    return new SM_Boolean(this.value === this.map.get(optionLabel));
+  }
+  notEqualToOption(optionLabel: string) {
+    return new SM_Boolean(this.value !== this.map.get(optionLabel));
   }
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
@@ -121,7 +132,26 @@ export class SM_Boolean extends SM_Object {
       slightlyTrue: { returns: 'value:boolean' },
       mostlyTrue: { returns: 'value:boolean' },
       slightlyFalse: { returns: 'value:boolean' },
-      mostlyFalse: { returns: 'value:boolean' }
+      mostlyFalse: { returns: 'value:boolean' },
+      // OPTIONS
+      addOption: {
+        args: ['label:string', 'value:boolean'],
+        info: 'Defines a new option "label"-"value" pair, e.g. label "healthy" can be set to the boolean value "true"'
+      },
+      setToOption: {
+        args: ['option:string'],
+        info: 'Sets the property to the value of the selected option'
+      },
+      equalToOption: {
+        args: [`option:string`],
+        info: 'Returns whether this property is equal to the referenced option value',
+        returns: 'isEqual:boolean'
+      },
+      notEqualToOption: {
+        args: [`option:string`],
+        info: 'Returns whether this property is not equal to the referenced option value',
+        returns: 'isNotEqual:boolean'
+      }
     }
   };
 }

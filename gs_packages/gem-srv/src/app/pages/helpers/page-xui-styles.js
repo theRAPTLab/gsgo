@@ -101,7 +101,7 @@ const useStylesHOC = theme => ({
     height: '100vh',
     gridTemplateColumns: '240px auto 120px',
     gridTemplateRows: '50px auto 100px',
-    gridGap: theme.spacing(1),
+    // gridGap: theme.spacing(1), // remove gap for dragger bars
     fontFamily: 'sans-serif',
     backgroundColor: '#000',
     scrollbarColor: 'red yellow',
@@ -172,7 +172,8 @@ const useStylesHOC = theme => ({
   },
   panelTitle: {
     color: CLR_ACTIVE,
-    backgroundColor: CLR_PANEL_BG
+    backgroundColor: CLR_PANEL_BG,
+    userSelect: 'none'
   },
   panelMessage: {
     color: CLR_ACTIVE
@@ -321,6 +322,13 @@ const useStylesHOC = theme => ({
     borderRightColor: CLR_HI2,
     borderBottomColor: CLR_HI2
   },
+  buttonMedium: {
+    ...BUTTON,
+    fontSize: '12px',
+    minHeight: '35px',
+    minWidth: '25px',
+    borderRadius: '5px'
+  },
   buttonSmall: {
     ...BUTTON,
     fontSize: '12px',
@@ -377,6 +385,17 @@ const useStylesHOC = theme => ({
     transform: 'rotate(180deg)'
   },
   input: {
+    fontSize: '18px',
+    color: CLR_ACTIVE,
+    borderTopColor: BaseColorShift(-240, 0.2),
+    borderLeftColor: BaseColorShift(-240, 0.2),
+    borderRightColor: BaseColorShift(0, 0.1),
+    borderBottomColor: BaseColorShift(0, 0.1),
+    backgroundColor: CLR_OBJECT_CLICKABLE
+  },
+  select: {
+    minHeight: '40px', // match navButton
+    paddingTop: '3px',
     fontSize: '18px',
     color: CLR_ACTIVE,
     borderTopColor: BaseColorShift(-240, 0.2),

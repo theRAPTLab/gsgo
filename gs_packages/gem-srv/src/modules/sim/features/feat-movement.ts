@@ -39,7 +39,7 @@ import {
 } from 'lib/util-vector';
 
 ANGLES.SCALE = Math.PI * 2; // radians
-ANGLES.DIRECTIONS = ['E', 'W'];
+ANGLES.DIRECTIONS = ['N', 'E', 'S', 'W'];
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -244,7 +244,7 @@ function m_ProcessPosition(agent, frame) {
   agent.prop.Movement.compassDirection.setTo(
     // For N/E/S/W Use `orientation + Math.PI / 2`
     // For E/W Use `orientation + Math.PI / 4`
-    ANGLES.compass(orientation + Math.PI / 4)
+    ANGLES.compass(orientation + Math.PI / 2)
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -296,12 +296,8 @@ function moveEdgeToEdge(agent: IAgent) {
   let hwidth = pad; // half width -- default to some padding
   let hheight = pad;
 
-  // If agent uses physics, we can get height/width, otherwise default
-  // to small padding.
-  if (agent.hasFeature('Physics')) {
-    hwidth = agent.getFeatProp('Physics', 'bodyWidth').value / 2;
-    hheight = agent.getFeatProp('Physics', 'bodyHeight').value / 2;
-  }
+  // NOTE - Joshua removed the code that was using physics to calculate the size
+  // because it was returning a NaN and it seems we moved away from that elsewhere
 
   let direction = agent.prop.Movement.direction.value;
 
@@ -570,7 +566,8 @@ function m_InputsUpdate(frame) {
   // 2. Decide on Movement
   const agents = [...MOVEMENT_AGENTS.values()];
   agents.forEach(agent => {
-    if (!agent) return;
+    // Also ignore if agent has switched bp and no longer has the feature
+    if (!agent || !agent.prop.Movement) return;
     // being controlled by a cursor
     if (agent.cursor) m_QueuePosition(agent, agent.cursor.x, agent.cursor.y);
   });
@@ -595,7 +592,16 @@ function m_FeaturesThink(frame) {
     const moveType = String(agent.prop.Movement.movementType.value).toLowerCase();
     const moveFn = MOVEMENT_FUNCTIONS.get(moveType);
     // cancel seek?  NOTE: seek stops one frame after
-    if (!['seekAgent', 'seekAgentOrWander'].includes(moveType))
+    // NOTE: This array needs to be lower case!!!! b/c moveType has been lowercased
+    if (
+      ![
+        'seekagent',
+        'seekagentorwander',
+        '_seekcharacter',
+        '_seekcharacterorrwander',
+        '_seekcharacterorwander'
+      ].includes(moveType)
+    )
       SEEKING_AGENTS.delete(agent.id);
     if (moveFn) moveFn(agent, frame);
   });

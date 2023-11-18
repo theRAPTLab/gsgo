@@ -40,6 +40,7 @@
   -----
   Currently this is used in:
     * InstanceEditor
+    * SubpanelScript (for RoundEditor)
   It can be used for Round Editing in the future.
 
 
@@ -148,15 +149,32 @@ class CodeEditor extends React.Component {
     this.stopEdit();
   }
   startEdit() {
-    const { code } = this.props;
-    this.setState(
-      {
-        origCode: code,
-        isBeingEdited: true
-      },
-      () => this.enableEditing()
+    // EDIT INSTANCE
+
+    // NEW Edit Code
+    // Edit initScripts using ScriptEditor
+    const { projId, bpName, instanceLabel } = this.props;
+    // Panel is in RUN mode: Open script in a new window
+    const w = window.innerWidth * 0.9;
+    const h = window.innerHeight * 0.9;
+    window.open(
+      `/app/scripteditor?project=${projId}&script=${bpName}&instance=${instanceLabel}`,
+      bpName,
+      `innerWidth=${w}, innerHeight=${h}`
     );
-    UR.LogEvent('ProjSetup', ['Edit Instance InitScript']);
+    UR.LogEvent('ProjSetup', [`Edit Instance InitScript ${instanceLabel}`]);
+
+    // ORIG Edit Code
+    // The original version was used to edit short initScripts in-line in Main
+    // with a mini codejar view.
+    // const { code } = this.props;
+    // this.setState(
+    //   {
+    //     origCode: code,
+    //     isBeingEdited: true
+    //   },
+    //   () => this.enableEditing()
+    // );
   }
   stopEdit() {
     this.setDirty(false);

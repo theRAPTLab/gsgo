@@ -1,5 +1,3 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Lists all the rounds defined for a model
@@ -44,7 +42,7 @@ class PanelRounds extends React.Component {
     this.setState(
       state => {
         const rounds = state.rounds;
-        const idx = rounds.findIndex(r => r.id === data.roundId);
+        const idx = data.roundIndex;
         console.error(
           'replacing round',
           data.roundId,
@@ -110,10 +108,10 @@ class PanelRounds extends React.Component {
                   style={{
                     flex: '0 1 auto'
                   }}
-                  key={r.id}
+                  key={index}
                 >
                   <PanelRoundEditor
-                    roundId={r.id}
+                    roundIndex={index}
                     onFormChange={this.onRoundChange}
                   />
                 </div>

@@ -50,19 +50,7 @@ let REF_ID_COUNTER = 0;
 /// outline filters
 const outlineHover = new OutlineFilter(3, 0xffff0088);
 const outlineSelected = new OutlineFilter(6, 0xffff00);
-const glow = new GlowFilter({ distance: 50, outerStrength: 3, color: 0xffff00 });
-// text styles
-const style = new PIXI.TextStyle({
-  fontFamily: 'Arial',
-  fontSize: 18,
-  fontWeight: 'bold',
-  fill: ['#ffffffcc'],
-  stroke: '#333333cc',
-  strokeThickness: 3,
-  wordWrapWidth: 125,
-  wordWrap: true,
-  align: 'center'
-});
+
 // replacement for GLOBAL sprite
 const SPRITES = ASSETS.GetLoader('sprites');
 
@@ -120,12 +108,16 @@ class Visual implements IVisual, IPoolable, IActable {
   filterbox: PIXI.Container; // Filters are applied to everything in this container
   sprite: PIXI.Sprite;
   text: PIXI.Text;
+  textAlign: number;
+  textJustify: number;
+  textColor: number;
   meter: PIXI.Graphics;
   graph: PIXI.Graphics;
   cone: PIXI.Graphics;
   textContent: string; // cache value to avoid unecessary updates
   meterValue: number;
   assetId: number;
+  glow: GlowFilter; // PIXI.GlowFilter
   isSelected: boolean;
   isHovered: boolean;
   isGrouped: boolean;
@@ -139,6 +131,7 @@ class Visual implements IVisual, IPoolable, IActable {
   _pool_id: any;
   // sprite
   root: PIXI.Container; // parent container
+  style: any;
 
   constructor(id: number) {
     this.id = id; // store reference
@@ -154,6 +147,14 @@ class Visual implements IVisual, IPoolable, IActable {
     this.container.addChild(this.filterbox);
     this.assetId = 0;
     this.refId = REF_ID_COUNTER++;
+    this.glow = new GlowFilter({
+      distance: 50,
+      outerStrength: 3,
+      color: 0xffff00
+    });
+    this.textAlign = 20; // bottom centered
+    this.textJustify = 2; // centered
+    this.textColor = 0xffffff; // white
     this.isSelected = false; // use primary selection effect
     this.isHovered = false; // use secondary highlight effect
     this.isGrouped = false; // use tertiary grouped effect
@@ -161,6 +162,18 @@ class Visual implements IVisual, IPoolable, IActable {
     this.isGlowing = false;
     this.filterColorOverlay = undefined;
     this.filterAdjustment = undefined;
+
+    this.style = new PIXI.TextStyle({
+      fontFamily: 'Arial',
+      fontSize: 18,
+      fontWeight: 'bold',
+      fill: ['#ffffffcc'],
+      stroke: '#333333cc',
+      strokeThickness: 3,
+      wordWrapWidth: 125,
+      wordWrap: true,
+      align: 'center'
+    });
   }
 
   setSelected = (mode = this.isSelected) => (this.isSelected = mode);
@@ -232,6 +245,13 @@ class Visual implements IVisual, IPoolable, IActable {
     this.filterAdjustment = new AdjustmentFilter({ red: r, green: g, blue: b });
   }
   /**
+   * glowColor is yellow by default
+   * This only runs if the agent has set a glowColor
+   */
+  setGlowColor(color: number) {
+    this.glow.color = color;
+  }
+  /**
    * Call this AFTER
    *  setAlpha
    *  setTexture
@@ -243,7 +263,7 @@ class Visual implements IVisual, IPoolable, IActable {
     const spriteFilters = []; // filters for the sprite texture only
     if (this.isSelected) filters.push(outlineSelected);
     if (this.isHovered) filters.push(outlineHover);
-    if (this.isGlowing) filters.push(glow);
+    if (this.isGlowing) filters.push(this.glow);
     if (this.filterColorOverlay) spriteFilters.push(this.filterColorOverlay);
     if (this.filterAdjustment) spriteFilters.push(this.filterAdjustment);
     if (this.isSelected || this.isHovered) {
@@ -415,19 +435,58 @@ class Visual implements IVisual, IPoolable, IActable {
       //    We have to remove the child and reset it to update the text?
       this.container.removeChild(this.text);
       if (this.text) this.text.destroy();
+
       // -- Create new text
-      this.text = new PIXI.Text(str, style);
+      this.text = new PIXI.Text(str, this.style);
+
       this.textContent = str; // cache
       this.container.addChild(this.text);
     }
     if (this.text) {
-      // position text bottom centered
-      const width = this.text.width;
-      style.wordWrapWidth = width > 125 ? width : 125; // This sets aa minimum for text only casses
       const spacer = 5;
-      const x = -width / 2; //this.sprite.width; // for some reason text is offset?
-      const y = this.sprite.height / 2 + spacer;
+
+      // Update Style
+      // Justification only for multiline texts -- does not affect single lines
+      // To justify single line text, use textAlign
+      let justify;
+      if (this.textJustify & FLAGS.JUSTIFICATION.LEFT) justify = 'left';
+      if (this.textJustify & FLAGS.JUSTIFICATION.CENTER) justify = 'center';
+      if (this.textJustify & FLAGS.JUSTIFICATION.RIGHT) justify = 'right';
+      this.style.align = justify;
+
+      let x, y;
+      if (this.textAlign & FLAGS.ALIGNMENT.TOP)
+        y = -this.sprite.height / 2 - this.text.height / 2;
+      if (this.textAlign & FLAGS.ALIGNMENT.MIDDLE) y = 0;
+      if (this.textAlign & FLAGS.ALIGNMENT.BOTTOM)
+        y = this.sprite.height / 2 + this.text.height / 2;
+      if (this.textAlign & FLAGS.ALIGNMENT.LEFT)
+        x = -this.sprite.width / 2 - this.text.width / 2;
+      if (this.textAlign & FLAGS.ALIGNMENT.CENTER) x = 0;
+      if (this.textAlign & FLAGS.ALIGNMENT.RIGHT)
+        x = this.sprite.width / 2 + this.text.width / 2;
       this.text.position.set(x, y);
+      this.text.anchor.set(0.5, 0.5);
+
+      // update color
+      this.style.fill = [PIXI.utils.hex2string(this.textColor)];
+    }
+  }
+  // Uses FLAGS.ALIGNMENT
+  setTextAlign(alignment: number) {
+    this.textAlign = alignment;
+  }
+  // Uses FLAGS.JUSTIFICATION
+  setTextJustify(justification: number) {
+    this.textJustify = justification;
+  }
+  setTextColor(color: number) {
+    this.textColor = color;
+  }
+
+  setTextStyle(key: string, value: string | number) {
+    if (this.text) {
+      this.style[key] = value;
     }
   }
 

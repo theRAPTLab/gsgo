@@ -16,6 +16,8 @@
 
 import UR from '@gemstep/ursys/client';
 import * as ACBlueprints from 'modules/appcore/ac-blueprints';
+import * as ACInstances from 'modules/appcore/ac-instances';
+import * as ACMetaData from 'modules/appcore/ac-metadata';
 import InputDef from 'lib/class-input-def';
 import SyncMap from 'lib/class-syncmap';
 import * as DCAGENTS from './dc-sim-agents';
@@ -34,6 +36,8 @@ let STAGE_HEIGHT = 100; // default
 export const INPUT_GROUPS = new Map(); // Each device can belong to a specific group
 export const INPUTDEFS = []; //
 const ACTIVE_DEVICES = new Map();
+
+let COBJ_ADDED = false; // Used to track when a new input has been added
 
 const PR = UR.PrefixUtil('DCINPT');
 const DBG = false;
@@ -118,6 +122,25 @@ export const POZYX_TRANSFORM = {
   rotation: 0,
   useAccelerometer: true
 };
+
+// FakeTrack transforms are actually handled by FakeTrack itself.
+// Since all inputs are transformed, we use FAKETRACK_TRANSFORM to support a 1-to-1 transform
+const FAKETRACK_TRANSFORM = {
+  scaleX: 1,
+  scaleY: 1,
+  translateX: 0,
+  translateY: 0,
+  rotation: 0,
+  useAccelerometer: false
+};
+
+const TRANSFORMS = {};
+TRANSFORMS[TYPES.Undefined] = PTRACK_TRANSFORM;
+TRANSFORMS[TYPES.Object] = PTRACK_TRANSFORM;
+TRANSFORMS[TYPES.People] = PTRACK_TRANSFORM;
+TRANSFORMS[TYPES.Pose] = PTRACK_TRANSFORM;
+TRANSFORMS[TYPES.Pozyx] = POZYX_TRANSFORM;
+TRANSFORMS[TYPES.Faketrack] = FAKETRACK_TRANSFORM;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_Transform(
@@ -208,14 +231,6 @@ function m_PozyxDampen(
   return { x, y };
 }
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-function GetDefaultPozyxBpName() {
-  return ACBlueprints.GetPozyxControlDefaultBpName();
-}
-function GetDefaultPTrackBpName() {
-  return ACBlueprints.GetPTrackControlDefaultBpName();
-}
 ///////////////////////////////////////////////////////////////////////////////
 /// ENTITY_TO_COBJ (was POZYX_TO_COBJ) /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -226,18 +241,26 @@ const ENTITY_TO_COBJ = new SyncMap({
 });
 ENTITY_TO_COBJ.setMapFunctions({
   onAdd: (entity: any, cobj: InputDef) => {
-    const TRANSFORM =
-      entity.type === TYPES.Pozyx ? POZYX_TRANSFORM : PTRACK_TRANSFORM;
-    const { x, y } = m_Transform({ x: entity.x, y: entity.y }, TRANSFORM);
+    const TRANSFORM = TRANSFORMS[entity.type] || TRANSFORMS[TYPES.Faketrack]; // default to faketrack no transforms
+    const { x, y } = m_Transform(
+      { x: Number(entity.x), y: Number(entity.y) },
+      TRANSFORM
+    );
     cobj.x = x;
     cobj.y = y;
-    // HACK Blueprints into cobj
-    cobj.bpid =
-      entity.type === TYPES.Pozyx
-        ? GetDefaultPozyxBpName()
-        : GetDefaultPTrackBpName();
+
+    cobj.bpid = ACMetaData.GetDefaultBp();
+
+    // If user has selected a different bp for tags (pozyx, ptrack), use the override
+    const tagBpid = ACInstances.GetTagBpid(cobj.id);
+    if (tagBpid !== undefined) cobj.bpid = tagBpid;
+
     cobj.label = entity.type === TYPES.Pozyx ? entity.id.substring(2) : entity.id;
     cobj.framesSinceLastUpdate = 0;
+
+    // Keep track of when a new COBJ has been added so we can truigger PanelMap updates
+    COBJ_ADDED = true;
+
     UR.SendMessage('NET:SRV_RTLOG', {
       event: entity.type,
       items: [
@@ -251,9 +274,8 @@ ENTITY_TO_COBJ.setMapFunctions({
     });
   },
   onUpdate: (entity: any, cobj: InputDef) => {
-    const TRANSFORM =
-      entity.type === TYPES.Pozyx ? POZYX_TRANSFORM : PTRACK_TRANSFORM;
-    let pos = { x: entity.x, y: entity.y };
+    const TRANSFORM = TRANSFORMS[entity.type] || TRANSFORMS[TYPES.Faketrack]; // default to faketrack no transforms
+    let pos = { x: Number(entity.x), y: Number(entity.y) };
     if (entity.acc && TRANSFORM.useAccelerometer) {
       // has accelerometer data
       pos = m_PozyxDampen(cobj, pos, entity.acc); // dampen + transform
@@ -263,12 +285,16 @@ ENTITY_TO_COBJ.setMapFunctions({
 
     cobj.x = pos.x;
     cobj.y = pos.y;
-    cobj.bpid =
-      entity.type === TYPES.Pozyx
-        ? GetDefaultPozyxBpName()
-        : GetDefaultPTrackBpName();
+
+    // If user has selected a different bp for tags (pozyx, ptrack), use the override
+    const tagBpid = ACInstances.GetTagBpid(cobj.id);
+    if (tagBpid !== undefined && tagBpid !== cobj.bpid) {
+      cobj.bpid = tagBpid;
+    } else cobj.bpid = cobj.bpid; // keep the same blueprint
+
     cobj.label = entity.type === TYPES.Pozyx ? entity.id.substring(2) : entity.id;
     cobj.framesSinceLastUpdate = 0;
+
     UR.SendMessage('NET:SRV_RTLOG', {
       event: entity.type,
       items: [
@@ -294,6 +320,11 @@ ENTITY_TO_COBJ.setMapFunctions({
   }
 });
 export function GetTrackerMap() {
+  // Prepare ENTITY_TO_COBJ definitions
+  // Clear the COBJ_ADDED flag so we can track when a new input has been added
+  // This is triggered by api-inputs.StartTrackerVisuals
+  COBJ_ADDED = false;
+
   return ENTITY_TO_COBJ;
 }
 
@@ -406,7 +437,14 @@ function InputUpdateCharControl(devAPI, bpname) {
   COBJ_TO_INPUTDEF.mapObjects();
 }
 function InputUpdateEntityTracks() {
-  COBJ_TO_INPUTDEF.syncFromArray(ENTITY_TO_COBJ.getMappedObjects());
+  const COBJS = ENTITY_TO_COBJ.getMappedObjects();
+  if (COBJ_ADDED) {
+    // Some new inputs were detected, so update the state's list of `tags`
+    // in the CHARACTER CONTROLLERS Panel so pozyx tags can select new bps
+    UR.WriteState('instances', 'tags', COBJS);
+    COBJ_ADDED = false;
+  }
+  COBJ_TO_INPUTDEF.syncFromArray(COBJS);
   COBJ_TO_INPUTDEF.mapObjects();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -425,9 +463,8 @@ export function InputsUpdate() {
   });
   // 2. Process PTrack, Pozyx, FakeTrack Inputs
   //    ENTITY_TO_COBJ is regularly updated by api-input.StartTrackerVisuals
-  if (GetDefaultPozyxBpName() !== undefined) {
-    InputUpdateEntityTracks();
-  }
+  if (ENTITY_TO_COBJ.getMappedObjects().length > 0) InputUpdateEntityTracks();
+
   // 3. Combine them all
   INPUTDEFS.push(...COBJ_TO_INPUTDEF.getMappedObjects());
 }

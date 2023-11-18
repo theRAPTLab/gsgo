@@ -27,12 +27,12 @@ import './scrollbar.css';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('VIEWER');
-const DBG = true;
+const DBG = false;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
-PANEL_CONFIG.set('instances', '15% auto 150px'); // columns
-PANEL_CONFIG.set('sim', '110px auto 150px'); // columns
+PANEL_CONFIG.set('instances', '25% auto 0'); // columns
+PANEL_CONFIG.set('sim', '0px auto 250px'); // columns
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -52,6 +52,7 @@ class Viewer extends React.Component {
     this.RequestProjectData = this.RequestProjectData.bind(this);
     this.HandleBpNamesListUpdate = this.HandleBpNamesListUpdate.bind(this);
     this.HandleInstancesList = this.HandleInstancesList.bind(this);
+    this.HandleLogEvent = this.HandleLogEvent.bind(this);
     this.HandleInspectorUpdate = this.HandleInspectorUpdate.bind(this);
     this.OnModelClick = this.OnModelClick.bind(this);
     this.OnHomeClick = this.OnModelClick.bind(this);
@@ -59,6 +60,8 @@ class Viewer extends React.Component {
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
     UR.HandleMessage('NET:BPNAMESLIST_UPDATE', this.HandleBpNamesListUpdate);
     UR.HandleMessage('NET:INSTANCESLIST_UPDATE', this.HandleInstancesList);
+
+    UR.HandleMessage('NET:LOG_EVENT', this.HandleLogEvent);
 
     // Instance Interaction Handlers
     UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
@@ -97,6 +100,8 @@ class Viewer extends React.Component {
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
     UR.UnhandleMessage('NET:BPNAMESLIST_UPDATE', this.HandleBpNamesListUpdate);
     UR.UnhandleMessage('NET:INSTANCESLIST_UPDATE', this.HandleInstancesList);
+    UR.UnhandleMessage('NET:LOG_EVENT', this.HandleLogEvent);
+
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
   }
 
@@ -146,6 +151,10 @@ class Viewer extends React.Component {
   OnModelClick() {
     const { projId } = this.state;
     window.location = `/app/project?project=${projId}`;
+  }
+
+  HandleLogEvent(data) {
+    console.log(data.logString);
   }
 
   OnPanelClick(id) {

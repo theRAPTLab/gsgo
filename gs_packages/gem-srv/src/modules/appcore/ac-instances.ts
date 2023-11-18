@@ -29,9 +29,13 @@ STATE.initializeState({
     }
   ],
   instanceidList: [],
-  currentInstance: undefined
-  // currentInstance is the instance currently being edited
-  // it should be undefined by default
+  // currentInstance is the instance currently being edited it should be undefined by default
+  currentInstance: undefined,
+  // list of input sources: pozyx, ptrack, faketrack
+  // Used by PanelMap to show the list of available inputs
+  // constructed by dc-inputs during input phase see InputUpdateEntityTracks
+  tags: [] // inputDefs {bpid, id, lable, x, y, ...}
+
   //
   // Uncomment to debug
   // currentInstance: {
@@ -66,10 +70,15 @@ function GetInstances() {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 function GetInstance(id) {
   const instances = _getKey('instances');
   return instances.find(i => i.id === id);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetInstanceByLabel(label) {
+  const instances = _getKey('instances');
+  return instances.find(i => i.label === label);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -110,6 +119,37 @@ function EditInstance(id) {
   const instance = GetInstance(id);
   updateKey({ currentInstance: instance });
   _publishState({ currentInstance: instance });
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function UpdateTag(inputId: string, bpName: string) {
+  const tags = STATE._getKey('tags');
+  const index = tags.findIndex(t => t.id === inputId);
+  const updatedTag = tags[index];
+  if (updatedTag === undefined)
+    throw new Error(
+      `UpdateTag inputId not found ${inputId} in tags: ${JSON.stringify(
+        tags
+      )}.  This shouldn't happen!`
+    );
+  updatedTag.bpid = bpName;
+  tags.splice(index, 1, updatedTag);
+  STATE.updateKey({ tags });
+  // STATE._publishState({ tags });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetTags() {
+  return STATE._getKey('tags');
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetTag(inputId: string) {
+  const tags = STATE._getKey('tags');
+  return tags.find(t => t.id === inputId);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetTagBpid(inputId: string) {
+  const tag = GetTag(inputId);
+  return tag ? tag.bpid : undefined;
 }
 
 /// LOADER ////////////////////////////////////////////////////////////////////
@@ -245,6 +285,8 @@ function WriteInstance(instance) {
   const index = instances.findIndex(i => i.id === id);
   instances.splice(index, 1, instance);
   UR.WriteState('instances', 'instances', instances); // calls updateAndPublish via hook_Effect
+  // also update the current instance state so the instanceDef is updated
+  UR.WriteState('instances', 'currentInstance', instance);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -252,6 +294,9 @@ function WriteInstance(instance) {
 function DeleteInstance(id) {
   const instances = _getKey('instances');
   const index = instances.findIndex(i => i.id === id);
+  UR.CallMessage('NET:SCRIPT_EDITOR_CLOSE', {
+    instanceLabel: instances[index].label
+  });
   instances.splice(index, 1);
   UR.WriteState('instances', 'instances', instances); // calls updateAndPublish via hook_Effect
 }
@@ -285,10 +330,16 @@ export {
   // Getters
   GetInstances,
   GetInstance,
+  GetInstanceByLabel,
   GetInstanceidList,
   GetInstanceUID,
   // InstanceEditor
   EditInstance,
+  // Tags
+  UpdateTag,
+  GetTags,
+  GetTag,
+  GetTagBpid,
   // Multiple Setters
   SetInstances,
   WriteInstances,

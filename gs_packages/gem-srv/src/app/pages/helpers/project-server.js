@@ -38,6 +38,7 @@ import * as ACProject from 'modules/appcore/ac-project';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
 import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import * as ACInstances from 'modules/appcore/ac-instances';
+import * as ACPreferences from 'modules/appcore/ac-preferences';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ReportMemory } from 'modules/render/api-render';
 import { IsRunning, RoundHasBeenStarted } from 'modules/sim/api-sim';
@@ -302,6 +303,27 @@ function RequestBpEditList(projId = CURRENT_PROJECT_ID) {
   return ACBlueprints.GetBpEditList(projId);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Handle ScriptEditor's request for a list of editable instances
+ *  Used by REQ_PROJ_DATA
+ * @return [ {name, scriptText, editor} ]
+ */
+function RequestInstancesEditList(projId = CURRENT_PROJECT_ID) {
+  if (projId === undefined)
+    throw new Error(
+      'Tried to current GetProject before setting CURRENT_PROJECT_ID'
+    );
+  // REVIEW: Should get instances by project id, not default project
+  return ACInstances.GetInstances();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Handle ScriptEditor's request for project settings (commentSTyles)
+ *  Used by REQ_PROJ_DATA
+ * @return [ {matchString, cssClass, color, backgroundColor, help, isBookmarked} ]
+ */
+function RequestPreferences() {
+  return ACPreferences.GetPreferences();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Used by REQ_PROJ_DATA and Main
  */
 function GetBoundary() {
@@ -324,6 +346,20 @@ function InjectBlueprint(data) {
     return;
   }
   ACBlueprints.InjectBlueprint(CURRENT_PROJECT_ID, blueprint);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Force reset of input definitions after changing default pozyx character
+ *       If the project metadata.defaultCharacter has changed we need to reset
+ *       the inputs, otherwise the old defaultCharacter will be retained
+*/
+function EntitiesReset() {
+  // HACK Force Project Reload
+  // Pozyx inputs need to be reset otherwise the old character will continue to
+  // be used.  The proper fix is add support to pools to reset the pool.
+  // See #801
+  setTimeout(() => location.reload(true), 1000);
+  // The timeout gives the system time to reset the inputs.
 }
 
 /// TRANSFORM UTILITIES ///////////////////////////////////////////////////////
@@ -435,21 +471,22 @@ function HandleBlueprintDelete(data) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Used by InstanceUpdatePosition to find and replace existing
  *  prop setting lines.
+ *  @param {string} bpName -- Blueprint name
  *  @param {string} propName -- Name of the prop to change, e.g. x/y
  *  @param {string} propMethd -- Prop method to change, e.g. setTo
  *  @param {string} params -- Parameter for the prop method, e.g. 200
  *  @param {string[]} scriptTextLines -- Full ScriptText as an array of strings
  */
-function ReplacePropLine(propName, propMethod, params, scriptTextLines) {
-  const lineNumber = scriptTextLines.findIndex(line => {
-    let found = line.includes(`prop ${propName} ${propMethod}`);
-    if (!found) found = line.includes(`prop agent.${propName} ${propMethod}`);
-    return found;
-  });
-  const newLine = `prop ${propName} ${propMethod} ${params}`;
+function ReplacePropLine(bpName, propName, propMethod, params, scriptTextLines) {
+  const lineNumber = scriptTextLines.findIndex(line =>
+    line.includes(`prop ${propName} ${propMethod}`) ||
+    line.includes(`prop ${bpName}.${propName} ${propMethod}`) ||
+    line.includes(`prop agent.${propName} ${propMethod}`) ||
+    line.includes(`prop character.${propName} ${propMethod}`));
+  const newLine = `prop ${bpName}.${propName} ${propMethod} ${params}`;
   if (lineNumber === -1) {
     console.warn(
-      `project-server.ReplacePositionLine: No "prop ${propName} ${propMethod}..." line found.  Inserting new line.`
+      `project-server.ReplacePositionLine: No "prop ${bpName}.${propName} ${propMethod}..." line found.  Inserting new line.`
     );
     scriptTextLines.push(newLine);
   } else {
@@ -475,8 +512,8 @@ function InstanceAdd(data, sendUpdate = true) {
   const hasInit = blueprint.init && blueprint.init.length > 0;
   const SPREAD = 100;
   if (!hasInit && !instance.initScript) {
-    instance.initScript = `prop x setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}
-prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
+    instance.initScript = `prop ${instance.bpid}.x setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}
+prop ${instance.bpid}.y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
   }
 
   ACInstances.AddInstance(instance);
@@ -485,6 +522,21 @@ prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
     RaiseModelUpdate(data.modelId);
     RaiseInstancesListUpdate();
   }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Updates existing instance on the stage
+ *       Used by ScriptEditor to edit initScript text
+ *  @param {label, initScript} data
+ */
+function InstanceUpdate(data) {
+  const instance = ACInstances.GetInstanceByLabel(data.label);
+  instance.label = data.label || instance.label;
+  instance.initScript = data.initScript || instance.initScript;
+  ACInstances.WriteInstance(instance);
+  // REVIEW: Is this necessary?
+  // RaiseModelUpdate(data.modelId); // not needed?  shouldn't state cause this?
+  // RaiseInstancesListUpdate(); // not needed?  name change is handled elsewhere?
+  return '{ok}'
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Removes instance from the stage
@@ -510,8 +562,8 @@ function InstanceUpdatePosition(data) {
   let scriptTextLines = instance.initScript
     ? instance.initScript.split('\n')
     : [];
-  ReplacePropLine('x', 'setTo', data.updatedData.x, scriptTextLines);
-  ReplacePropLine('y', 'setTo', data.updatedData.y, scriptTextLines);
+  ReplacePropLine(instance.bpid, 'x', 'setTo', data.updatedData.x, scriptTextLines);
+  ReplacePropLine(instance.bpid, 'y', 'setTo', data.updatedData.y, scriptTextLines);
   const scriptText = scriptTextLines.join('\n');
   instance.initScript = scriptText;
   ACInstances.WriteInstance(instance);
@@ -555,7 +607,7 @@ function InstanceRequestEdit(data) {
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: User has edited the instance  using the InstanceEditor.
+/** API: User has edited the instance using the InstanceEditor.
  *  This usually means the instance name and/or the instance initScript
  *  has changed.
  *  The state has already been updated.
@@ -580,6 +632,12 @@ function InstanceDefUpdate(data) {
  *  when the edit is submitted, InstanceEditor will trigger an `instances`
  *  state group update.  This in turn triggers an InstanceDefUpdate
  *  which will delete and recreate the instance.
+ *  Called by InstanceEditor and
+ *  ScriptEditor > ScriptView_Pane.SaveToServer
+ *  -> ac-wizcore.SaveToServer
+ *  -> 'NET:INSTANCE_UPDATE'
+ *  -> project-server.InstanceUpdate
+ *  -> ac-instance.WriteInstance
  */
 function urCurrentInstanceStateUpdated(stateObj, cb) {
   const { currentInstance } = stateObj;
@@ -604,7 +662,9 @@ function m_RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
   const scriptUnits = TRANSPILER.TextToScript(instance.initScript);
   const scrubbedScriptUnits = scriptUnits.filter(unit => {
     if (unit[0] && unit[0].identifier === 'prop') {
-      return validPropNames.includes(unit[1].identifier);
+      if (unit[1].objref && unit[1].objref.length === 2) // support '<bpname>.x'
+        return validPropNames.includes(unit[1].objref[1]);
+      else return validPropNames.includes(unit[1].identifier);
     }
     return true; // ignore other methods
   });
@@ -740,6 +800,8 @@ function InstanceHoverOut(data) {
 const FN_LOOKUP = {
   RequestProject,
   RequestBpEditList,
+  RequestInstancesEditList,
+  RequestPreferences,
   GetProjectBoundary: GetBoundary,
   GetCharControlBpNames,
 
@@ -792,8 +854,11 @@ UR.HandleMessage('METADATA_UPDATE', UpdateMetadata);
 UR.HandleMessage('NET:SCRIPT_UPDATE', ScriptUpdate);
 UR.HandleMessage('NET:BLUEPRINT_DELETE', HandleBlueprintDelete);
 UR.HandleMessage('INJECT_BLUEPRINT', InjectBlueprint);
+///
+UR.HandleMessage('ENTITIES_RESET', EntitiesReset);
 /// INSTANCE EDITING UTILS ----------------------------------------------------
 UR.HandleMessage('LOCAL:INSTANCE_ADD', InstanceAdd);
+UR.HandleMessage('NET:INSTANCE_UPDATE', InstanceUpdate);
 UR.HandleMessage('LOCAL:INSTANCE_DELETE', InstanceDelete);
 UR.HandleMessage('NET:INSTANCE_UPDATE_POSITION', InstanceUpdatePosition);
 // INSPECTOR UTILS --------------------------------------------------------
@@ -826,6 +891,8 @@ export {
   //
   InjectBlueprint, // <- INJECT_BLUEPRINT
   //
+  EntitiesReset,
+  //
   BlueprintDelete, // <- NET:BLUEPRINT_DELETE { blueprintId, modelName }
   //
   InstanceUpdatePosition, // <- NET:INSTANCE_UPDATE_POSITION
@@ -834,6 +901,7 @@ export {
   InstanceDeselect, // <- NET:INSTANCE_DESELECT
   //
   InstanceAdd, // <- INSTANCE_ADD
+  InstanceUpdate, // <- INSTANCE_UPDATE
   InstanceDelete, // <- INSTANCE_DELETE
   InstanceHoverOver, // <- INSTANCE_HOVEROVER
   InstanceHoverOut // <- INSTANCE_HOVEROUT

@@ -119,6 +119,8 @@ function Init(element) {
       else if (dobj.barGraph !== undefined) {
         vobj.setBarGraph(dobj.barGraph, dobj.barGraphLabels);
       }
+      if (dobj.glowColor !== undefined)
+        vobj.setGlowColor(dobj.glowColor);
 
       // Set selection state from flags.
       // This needs to be set before the setTexture call
@@ -130,6 +132,15 @@ function Init(element) {
       vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
       vobj.setColorize(dobj.color);
       vobj.applyFilters();
+
+      //setup the text properties
+      if (dobj.fontSize != undefined)
+        vobj.setTextStyle('fontSize', dobj.fontSize);
+      if (dobj.wordWrapWidth != undefined)
+        vobj.setTextStyle('wordWrapWidth', dobj.wordWrapWidth);
+      if (dobj.textAlign != undefined) vobj.setTextAlign(dobj.textAlign);
+      if (dobj.textJustify != undefined) vobj.setTextJustify(dobj.textJustify);
+      if (dobj.textColor != undefined) vobj.setTextColor(dobj.textColor);
 
       if (dobj.debug) vobj.setDebug(dobj.debug);
 
@@ -166,6 +177,8 @@ function Init(element) {
         vobj.sprite.tint = 0xff0000;
         vobj.sprite.alpha = 0.5;
       }
+      if (dobj.glowColor !== undefined)
+        vobj.setGlowColor(dobj.glowColor);
 
       // inefficient texture update
       vobj.setVisible(dobj.visible);
@@ -204,11 +217,20 @@ function Init(element) {
       // see sim-agents.js for TestJitterAgents
       // TestRenderParameters(dobj, vobj);
 
+      //setup the text properties
+      if (dobj.fontSize != undefined)
+        vobj.setTextStyle('fontSize', dobj.fontSize);
+      if (dobj.wordWrapWidth != undefined)
+        vobj.setTextStyle('wordWrapWidth', dobj.wordWrapWidth);
+      if (dobj.textAlign != undefined) vobj.setTextAlign(dobj.textAlign);
+      if (dobj.textJustify != undefined) vobj.setTextJustify(dobj.textJustify);
+      if (dobj.textColor != undefined) vobj.setTextColor(dobj.textColor);
+
       if (dobj.debug) vobj.setDebug(dobj.debug);
       else vobj.removeDebug();
     },
     shouldRemove: () => true,
-    onRemove: () => {}
+    onRemove: () => { }
   });
   // make sure datacore has access to it for pure data manipulation
   SetModelRP(RP_DOBJ_TO_VOBJ);
@@ -232,7 +254,7 @@ function Init(element) {
       vobj.setPosition(ent.x * SCALE, ent.y * SCALE);
     },
     shouldRemove: () => true,
-    onRemove: () => {}
+    onRemove: () => { }
   });
   // make sure datacore has access to it for pure data manipulation
   SetTrackerRP(RP_PTRAK_TO_VOBJ);

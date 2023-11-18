@@ -34,6 +34,7 @@ import UR from '@gemstep/ursys/client';
 import { GS_ASSETS_ROUTE, GS_ASSETS_PATH } from 'config/gem-settings';
 import SpriteLoader from './as-load-sprites';
 import ProjectLoader from './as-load-projects';
+import PreferencesLoader from './as-load-preferences';
 import AssetLoader from './class-asset-loader';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -141,6 +142,7 @@ function DBG_ForceLoadAsset(subdir) {
 /// register for every type within this asset manager
 m_RegisterLoader(new SpriteLoader());
 m_RegisterLoader(new ProjectLoader());
+m_RegisterLoader(new PreferencesLoader());
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

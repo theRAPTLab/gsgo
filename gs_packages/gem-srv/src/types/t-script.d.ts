@@ -32,6 +32,7 @@ declare global {
     meta: { type: symbol; name?: string };
     prop?: SM_Dict;
     method?: SM_Dict;
+    map?: SM_Dict;
     addMethod: (name: String, callable: TSM_Method) => void;
     addProp: (name: string, gv: ISM_Object) => ISM_Object;
     getMethod: (name: string) => TSM_Method;

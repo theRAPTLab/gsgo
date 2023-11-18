@@ -113,6 +113,10 @@ export const ADVANCED_SYMBOLS = [
   'colorHSVWithinRange',
   'initHSVColorScale',
   'getHSVColorScaleColor',
+  'wordWrapWidth',
+  'fontSize',
+  'textAlign',
+  'textJustify',
   // movement
   'bounceAngle',
   'setRandomPositionX',
@@ -156,15 +160,19 @@ export const ADVANCED_SYMBOLS = [
   'vision',
   // agent
   'agent',
+  'character', // replaces 'agent'
   'x',
   'y',
   'statustext',
   'zindex',
-  'color',
+  // 'color', // used by Costume featProp so NOT advanced
   'orientation',
   'visible',
   'alpha',
-  'isinert'
+  'isinert',
+  // IU
+  'setupFunction',
+  'callFunction'
 ].map(w => w.toLowerCase());
 export const IGNORED_TYPES = ['{noncode}'].map(w => w.toLowerCase());
 

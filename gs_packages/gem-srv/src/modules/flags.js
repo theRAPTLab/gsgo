@@ -24,6 +24,21 @@ FLAGS.POSITION = {
   INSIDE_RIGHT: 8,
   OUTSIDE_RIGHT: 16
 };
+// text alignment relative to center of character
+FLAGS.ALIGNMENT = {
+  TOP: 1,
+  MIDDLE: 2,
+  BOTTOM: 4,
+  LEFT: 8,
+  CENTER: 16,
+  RIGHT: 32
+};
+// character text justification for multiple rows of text
+FLAGS.JUSTIFICATION = {
+  LEFT: 1,
+  CENTER: 2,
+  RIGHT: 4
+};
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
