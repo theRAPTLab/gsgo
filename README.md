@@ -22,7 +22,7 @@ Please read the [WIKI](../../wiki) for current project status and general instru
 
 If you have not installed the development tools required to run the project, you'll have to do this once. Follow the guide in [Installing the Development Tools on a New Machine](../../wiki/Install-Development-Tools). 
 
-First, please read [Installation Overview](https://gitlab.com/stepsys/gem-step/gsgo/-/wikis/Installation-Overview) to familiarize yourself with the whole system and installation process.
+First, please read [Installation Overview](../../wiki/Installation-Overview) to familiarize yourself with the whole system and installation process.
 
 ## Running the System
 
