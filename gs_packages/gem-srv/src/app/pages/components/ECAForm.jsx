@@ -6,47 +6,64 @@ Used to communicate with an Embodied Conversational Agent
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 import React from 'react';
+import { useState } from 'react';
 
 export default function ECAForm() {
-  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState('');
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    const ecaUrl = 'https://tracedata-01.csc.ncsu.edu/GetECAResponse';
+    const form = e.target;
+    const formData = new FormData(form);
+    const formJson = Object.fromEntries(formData.entries());
+
+    const payload = {
+      'Utterance': formData.get('Utterance'),
+      'ECAType': 'Knowledge_Pollination',
+      'ConfidenceThreshold': 0.6
+    };
+
+    console.log(formJson);
+
+    fetch(ecaUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+
+      body: JSON.stringify(payload)
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error. Status ${response.status}`);
+        }
+
+        response
+          .text()
+          .then(text => setAnswer(text))
+          .catch(error => {
+            console.error(`Problem with ECA response: ${error}`);
+            setAnswer('An error occurred.');
+          });
+      })
+      .catch(error => {
+        console.error(`Problem calling ECA ${error}`);
+      });
+  }
 
   return (
-    <form>
-      <label>
-        Question: <textarea id="utterance" name="Utterance" rows="4" cols="50" />
-      </label>
+    <>
+      <form method="post" onSubmit={handleSubmit}>
+        <label>
+          Question:
+          <textarea id="utterance" name="Utterance" rows="4" cols="50" />
+        </label>
 
-      <label>
-        ECAType:
-        <select id="ecatype" name="ECAType">
-          <option value="CI">CI</option>
-          <option value="GameHelp">GameHelp</option>
-          <option value="GameHelp_FoodJustice">GameHelp_FoodJustice</option>
-          <option value="GameHelp_Collaboration">GameHelp_Collaboration</option>
-          <option value="Knowledge_Pollination">Knowledge_Pollination</option>
-          <option value="Knowledge_FoodJustice">Knowledge_FoodJustice</option>
-          <option value="ConversationBumpers">ConversationBumpers</option>
-          <option value="GEMSTEP_Modeling">GEMSTEP_Modeling</option>
-        </select>
-      </label>
-
-      <label>
-        Confidence Threshold:
-        <input
-          type="number"
-          id="confidenceThreshold"
-          name="ConfidenceThreshold"
-          min="0"
-          max="1"
-          step="0.01"
-          value="0.6"
-        />
-      </label>
-
-      <input type="submit" value="Submit" />
-      <span id="loading" style="display:none;">
-        Loading...
-      </span>
-    </form>
+        <input type="submit" value="Submit" />
+      </form>
+      <div style={{ color: 'pink' }}>{answer}</div>
+    </>
   );
 }

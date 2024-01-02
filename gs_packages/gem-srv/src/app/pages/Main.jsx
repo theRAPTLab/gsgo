@@ -31,6 +31,7 @@ import DialogConfirm from './components/DialogConfirm';
 
 import PanelTracker from './components/PanelTracker';
 import FormTransform from './components/FormTransform';
+import ECAForm from './components/ECAForm';
 import Dragger from './components/Dragger';
 import 'lib/css/tracker.css';
 import 'lib/css/gem-ui.css';
@@ -638,6 +639,9 @@ class MissionControl extends React.Component {
               overflow: 'hidden'
             }}
           >
+            <>
+              <ECAForm />
+            </>
             {panelConfiguration === 'tracker' && (
               <>
                 <div className={classes.ioTransform}>
