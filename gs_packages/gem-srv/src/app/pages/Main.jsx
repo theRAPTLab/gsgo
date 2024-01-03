@@ -125,6 +125,7 @@ class MissionControl extends React.Component {
     this.OnToggleNetworkMapSize = this.OnToggleNetworkMapSize.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectView = this.OnSelectView.bind(this);
+    this.onToggleECA = this.onToggleECA.bind(this);
     this.OnToggleTracker = this.OnToggleTracker.bind(this);
     this.OnDraggerLeftUpdate = this.OnDraggerLeftUpdate.bind(this);
     this.OnDraggerRightUpdate = this.OnDraggerRightUpdate.bind(this);
@@ -396,6 +397,14 @@ class MissionControl extends React.Component {
     window.dispatchEvent(new Event('resize'));
   }
 
+  onToggleECA() {
+    this.setState(state => ({
+      panelConfiguration: state.panelConfiguration !== 'eca' ? 'eca' : 'run'
+    }));
+    // Trigger Window Resize so that PanelSimulation will resize
+    window.dispatchEvent(new Event('resize'));
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   OnDraggerLeftUpdate(ratio) {
     this.setState({ consoleLeftWidth: ratio * 100 });
@@ -484,6 +493,13 @@ class MissionControl extends React.Component {
         <span style={{ opacity: 0.5 }}>
           MAIN -- <span style={{ fontStyle: 'italic' }}>{UR.BranchString()}</span>
         </span>
+        <button
+          role="button"
+          className={classes.buttonSmall}
+          onClick={this.onToggleECA}
+        >
+          eca
+        </button>
         <button
           role="button"
           className={classes.buttonSmall}
@@ -639,9 +655,7 @@ class MissionControl extends React.Component {
               overflow: 'hidden'
             }}
           >
-            <>
-              <ECAForm />
-            </>
+            {panelConfiguration === 'eca' && <ECAForm />}
             {panelConfiguration === 'tracker' && (
               <>
                 <div className={classes.ioTransform}>

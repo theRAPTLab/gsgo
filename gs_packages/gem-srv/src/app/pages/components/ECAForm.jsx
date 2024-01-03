@@ -7,8 +7,10 @@ Used to communicate with an Embodied Conversational Agent
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 import React from 'react';
 import { useState } from 'react';
+import PanelChrome from './PanelChrome';
 
 export default function ECAForm() {
+  const panelName = 'ECA';
   const [answer, setAnswer] = useState('');
 
   function handleSubmit(e) {
@@ -54,7 +56,7 @@ export default function ECAForm() {
   }
 
   return (
-    <>
+    <PanelChrome id={panelName} title={panelName}>
       <form method="post" onSubmit={handleSubmit}>
         <label>
           Question:
@@ -63,7 +65,7 @@ export default function ECAForm() {
 
         <input type="submit" value="Submit" />
       </form>
-      <div style={{ color: 'pink' }}>{answer}</div>
-    </>
+      <div>{answer}</div>
+    </PanelChrome>
   );
 }
