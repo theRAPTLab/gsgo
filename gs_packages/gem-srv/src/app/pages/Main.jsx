@@ -69,6 +69,7 @@ class MissionControl extends React.Component {
     super();
     const { bpNamesList } = UR.ReadFlatStateGroups('blueprints');
     this.state = {
+      showECA: false,
       panelConfiguration: 'run',
       message: '',
       projId: '', // set by project-server
@@ -399,10 +400,10 @@ class MissionControl extends React.Component {
 
   onToggleECA() {
     this.setState(state => ({
-      panelConfiguration: state.panelConfiguration !== 'eca' ? 'eca' : 'run'
+      showECA: !state.showECA
     }));
     // Trigger Window Resize so that PanelSimulation will resize
-    window.dispatchEvent(new Event('resize'));
+    // window.dispatchEvent(new Event('resize'));
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -433,6 +434,7 @@ class MissionControl extends React.Component {
    */
   render() {
     const {
+      showECA,
       panelConfiguration,
       message,
       projId,
@@ -655,7 +657,7 @@ class MissionControl extends React.Component {
               overflow: 'hidden'
             }}
           >
-            {panelConfiguration === 'eca' && <ECAForm />}
+            {showECA && <ECAForm />}
             {panelConfiguration === 'tracker' && (
               <>
                 <div className={classes.ioTransform}>
