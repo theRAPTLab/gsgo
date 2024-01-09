@@ -657,7 +657,7 @@ class MissionControl extends React.Component {
               overflow: 'hidden'
             }}
           >
-            {showECA && <ECAForm />}
+            {showECA && <ECAForm projId={projId}></ECAForm>}
             {panelConfiguration === 'tracker' && (
               <>
                 <div className={classes.ioTransform}>
