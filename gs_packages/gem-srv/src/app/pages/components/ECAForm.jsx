@@ -9,9 +9,12 @@ import React from 'react';
 import { useState, useMemo } from 'react';
 import PanelChrome from './PanelChrome';
 import * as ACConversationAgent from '../../../modules/appcore/ac-conversation-agent';
+import { withStyles } from '@material-ui/core/styles';
+import { useStylesHOC } from '../helpers/page-xui-styles';
 
-export default function ECAForm({ projId }) {
+function ECAForm(props) {
   const panelName = 'ECA';
+  const { classes, projId } = props;
   const [answer, setAnswer] = useState('');
   // useMemo ensures that ResolveECAType is called once, and then only again if projId changes
   const ecaType = useMemo(
@@ -38,12 +41,15 @@ export default function ECAForm({ projId }) {
     content = (
       <>
         <form method="post" onSubmit={handleSubmit}>
-          <label>
-            Question:
+          <div className={'row'}>
+            <label>Question:</label>
+          </div>
+          <div className={'row'}>
             <textarea id="utterance" name="Utterance" rows="4" cols="50" />
-          </label>
-
-          <input type="submit" value="Submit" />
+          </div>
+          <div className={'row'}>
+            <input className={classes.input} type="submit" value="Submit" />
+          </div>
         </form>
         <div>{answer}</div>
       </>
@@ -58,3 +64,5 @@ export default function ECAForm({ projId }) {
     </PanelChrome>
   );
 }
+
+export default withStyles(useStylesHOC)(ECAForm);
