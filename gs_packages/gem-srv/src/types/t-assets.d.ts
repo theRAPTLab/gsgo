@@ -40,6 +40,7 @@ declare global {
     description: string;
     metadata: TMetadata;
     rounds: TRounds[];
+    ecaTypes?: TConversationAgent[];
     blueprints: TBlueprint[];
     instances: TInstanceDef[];
   };
@@ -66,6 +67,12 @@ declare global {
     outtro: string;
     initScript: string;
     endScript: string;
+  };
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** embodied conversation agents associated with the project */
+  type TConversationAgent = {
+    label?: string;
+    name: string;
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** blueprint scripts */

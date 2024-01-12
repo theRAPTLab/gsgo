@@ -7,10 +7,24 @@ Manages the following for the Embodied Conversational Agent:
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import * as ECA from '../../app/data/eca-type-map';
+import UR from '@gemstep/ursys/client';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ECAURL = 'https://tracedata-01.csc.ncsu.edu/GetECAResponse';
+const STATE = new UR.class.StateGroupMgr('ecaTypes');
+
+STATE.initializeState({
+  ecaTypes: [
+    {
+      'label': '',
+      'name': ''
+    }
+  ]
+});
+
+const { _getKey, updateKey, _publishState } = STATE;
+
 interface payload {
   Utterance: string;
   ECAType: string;
@@ -22,6 +36,10 @@ let requestPayload: payload = {
   ECAType: '',
   ConfidenceThreshold: 0.6
 };
+
+function GetECATypes() {
+  return { ..._getKey('ecaTypes') };
+}
 
 /**
  * Chooses the required ECAType to pass to the ECA from the projId.
@@ -76,4 +94,17 @@ async function FetchResponse(
   return response.text();
 }
 
-export { FetchResponse, ResolveECAType };
+function updateAndPublish(ecaTypes) {
+  updateKey({ ecaTypes });
+  _publishState({ ecaTypes });
+}
+
+function SetECATypes(ecaTypes) {
+  try {
+    updateAndPublish(ecaTypes);
+  } catch {
+    console.log('No ecaTypes found for current project');
+  }
+}
+
+export { FetchResponse, ResolveECAType, GetECATypes, SetECATypes };

@@ -5,7 +5,7 @@ ECAForm
 Used to communicate with an Embodied Conversational Agent
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 import { useState, useMemo } from 'react';
 import PanelChrome from './PanelChrome';
 import * as ACConversationAgent from '../../../modules/appcore/ac-conversation-agent';
@@ -21,6 +21,10 @@ function ECAForm(props) {
     () => ACConversationAgent.ResolveECAType(projId),
     [projId]
   );
+  useLayoutEffect(() => {
+    const ecaTypesFromProjFile = ACConversationAgent.GetECATypes();
+    console.log(ecaTypesFromProjFile);
+  }, []);
 
   function handleSubmit(e) {
     e.preventDefault();

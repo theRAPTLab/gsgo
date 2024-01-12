@@ -72,6 +72,7 @@ import * as ACRounds from './ac-rounds';
 import * as ACBlueprints from './ac-blueprints';
 import * as ACInstances from './ac-instances';
 import * as ACPreferences from './ac-preferences';
+import * as ACConversationAgents from './ac-conversation-agent';
 import ERROR from 'modules/error-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -214,6 +215,7 @@ async function LoadProjectFromAsset(projId) {
     // Update Comment Styles from _comment_types.toml
     const preferences = await DCPROJECT.PreferencesFileLoadFromAsset();
     ACPreferences.SetPreferences(TOML.parse(preferences));
+    ACConversationAgents.SetECATypes(project.ecaTypes);
     // Update datacore
     DCPROJECT.SetCurrentProject(project);
     updateAndPublish(project);
