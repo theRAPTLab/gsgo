@@ -6,7 +6,6 @@ Manages the following for the Embodied Conversational Agent:
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import * as ECA from '../../app/data/eca-type-map';
 import UR from '@gemstep/ursys/client';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -37,27 +36,9 @@ let requestPayload: payload = {
   ConfidenceThreshold: 0.6
 };
 
-function GetECATypes() {
-  return { ..._getKey('ecaTypes') };
-}
-
-/**
- * Chooses the required ECAType to pass to the ECA from the projId.
- * There MUST be a mapping for each project in ECATYPEMAP or this function will return null.
- * @param {string} projId - The project Id
- * @returns {string | null} - The ECAType for the project, or null if the project is not mapped to an ECAType.
- */
-function ResolveECAType(projId: string): string | null {
-  const mappings: Array<ECA.ecaMapping> = ECA.ECATYPEMAP.mappings;
-  let ecaType: string | null;
-
-  mappings.forEach(mapping => {
-    if (mapping.projects.includes(projId)) {
-      ecaType = mapping.ECAType;
-    }
-  });
-
-  return ecaType;
+function GetECATypes(): TConversationAgent[] | null {
+  const ecaTypes: TConversationAgent[] = { ..._getKey('ecaTypes') };
+  return ecaTypes[0].name === '' ? null : ecaTypes;
 }
 
 /**
@@ -107,4 +88,4 @@ function SetECATypes(ecaTypes) {
   }
 }
 
-export { FetchResponse, ResolveECAType, GetECATypes, SetECATypes };
+export { FetchResponse, GetECATypes, SetECATypes };
