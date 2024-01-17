@@ -31,7 +31,7 @@ import DialogConfirm from './components/DialogConfirm';
 
 import PanelTracker from './components/PanelTracker';
 import FormTransform from './components/FormTransform';
-import ECAForm from './components/ECAForm';
+import ECAForm from './components/ECAForm/ECAForm';
 import Dragger from './components/Dragger';
 import 'lib/css/tracker.css';
 import 'lib/css/gem-ui.css';
