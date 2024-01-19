@@ -42,10 +42,10 @@ function ECAForm(props) {
       })
       .finally(() => {
         // Don't allow the history to grow over 5 question/answer pairs
-        const truncatedHistory =
-          history.length >= 5 ? history.slice(1) : history.slice();
+        // const truncatedHistory =
+        //   history.length >= 3 ? history.slice(1) : history.slice();
         setHistory([
-          ...truncatedHistory,
+          ...history,
           { utterance: formUtterance, answer: lastResponse }
         ]);
         console.log(history);
@@ -55,17 +55,13 @@ function ECAForm(props) {
   const dialogues = history.map((dialogue, index) => {
     if (dialogue.utterance) {
       return (
-        <li>
-          <p>{dialogue.utterance}</p>
-          <p>{dialogue.answer}</p>
-        </li>
+        <>
+          <div className={'message you'}>{dialogue.utterance}</div>
+          <div className={'message them'}>{dialogue.answer}</div>
+        </>
       );
     } else {
-      return (
-        <li>
-          <p>No input provided.</p>
-        </li>
-      );
+      return <p>No input provided.</p>;
     }
   });
 
@@ -73,31 +69,20 @@ function ECAForm(props) {
   if (ecaTypes) {
     content = (
       <>
-        <form method="post" onSubmit={handleSubmit}>
-          <div className={'row'}>
-            <label htmlFor="utterance">Question:</label>
-          </div>
-          <div className={'row'}>
-            <textarea id="utterance" name="Utterance" rows="4" cols="50" />
-          </div>
-          <div className={'row'}>
-            <select id="ecatype" name="ECAType" className={classes.select}>
-              {ecaTypes.map(eca => (
-                <option key={eca.label} value={eca.name}>
-                  {eca.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className={'row'}>
-            <input className={classes.input} type="submit" value="Submit" />
-          </div>
-        </form>
-        <div>{answer}</div>
-        <section>
-          <div className={classes.title}>History</div>
-          <ul>{dialogues}</ul>
+        <section className={'history'}>
+          <div className={'dialogues'}>{dialogues}</div>
         </section>
+        <form method="post" onSubmit={handleSubmit}>
+          <textarea id="utterance" name="Utterance" rows="4" cols="50" />
+          <select id="ecatype" name="ECAType" className={'type-dropdown'}>
+            {ecaTypes.map(eca => (
+              <option key={eca.label} value={eca.name}>
+                {eca.label}
+              </option>
+            ))}
+          </select>
+          <input className={'send'} type="submit" value="Send" />
+        </form>
       </>
     );
   } else {
