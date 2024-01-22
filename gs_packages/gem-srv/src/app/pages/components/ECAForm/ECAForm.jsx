@@ -48,17 +48,16 @@ function ECAForm(props) {
           ...history,
           { utterance: formUtterance, answer: lastResponse }
         ]);
-        console.log(history);
       });
   }
 
   const dialogues = history.map((dialogue, index) => {
     if (dialogue.utterance) {
       return (
-        <>
+        <div key={index}>
           <div className={'message you'}>{dialogue.utterance}</div>
           <div className={'message them'}>{dialogue.answer}</div>
-        </>
+        </div>
       );
     } else {
       return <p>No input provided.</p>;

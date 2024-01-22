@@ -666,20 +666,22 @@ class MissionControl extends React.Component {
                 <PanelTracker />
               </>
             )}
-            {panelConfiguration !== 'edit' && panelConfiguration !== 'tracker' && (
-              <>
-                <PanelPlayback
-                  id="playback"
-                  isDisabled={!projectIsLoaded}
-                  needsUpdate={scriptsNeedUpdate}
-                />
-                <PanelInstances
-                  id="instances"
-                  instances={inspectorInstances}
-                  disallowDeRegister={false}
-                />
-              </>
-            )}
+            {panelConfiguration !== 'edit' &&
+              panelConfiguration !== 'tracker' &&
+              !showECA && (
+                <>
+                  <PanelPlayback
+                    id="playback"
+                    isDisabled={!projectIsLoaded}
+                    needsUpdate={scriptsNeedUpdate}
+                  />
+                  <PanelInstances
+                    id="instances"
+                    instances={inspectorInstances}
+                    disallowDeRegister={false}
+                  />
+                </>
+              )}
           </div>
         </div>
         <div
