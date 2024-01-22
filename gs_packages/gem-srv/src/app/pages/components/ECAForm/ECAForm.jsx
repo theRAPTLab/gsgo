@@ -68,22 +68,22 @@ function ECAForm(props) {
   let content;
   if (ecaTypes) {
     content = (
-      <>
-        <section className={'history'}>
-          <div className={'dialogues'}>{dialogues}</div>
-        </section>
-        <form method="post" onSubmit={handleSubmit}>
-          <textarea id="utterance" name="Utterance" rows="4" cols="50" />
-          <select id="ecatype" name="ECAType" className={'type-dropdown'}>
-            {ecaTypes.map(eca => (
-              <option key={eca.label} value={eca.name}>
-                {eca.label}
-              </option>
-            ))}
-          </select>
-          <input className={'send'} type="submit" value="Send" />
-        </form>
-      </>
+      <div className="chat">
+        <div className={'dialogues'}>{dialogues}</div>
+        <div className={'text-input'}>
+          <form method="post" onSubmit={handleSubmit}>
+            <textarea id="utterance" name="Utterance" rows="4" cols="50" />
+            <select id="ecatype" name="ECAType" className={'type-dropdown'}>
+              {ecaTypes.map(eca => (
+                <option key={eca.label} value={eca.name}>
+                  {eca.label}
+                </option>
+              ))}
+            </select>
+            <input className={'send'} type="submit" value="Send" />
+          </form>
+        </div>
+      </div>
     );
   } else {
     content = <p>No ECA Type exists for this project</p>;

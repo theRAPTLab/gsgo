@@ -1,9 +1,19 @@
+.chat {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .dialogues {
   position: relative;
   overflow: scroll;
   padding: 0 35px 92px;
-  border-width: 1px 1px 1px 0;
-  border-style: solid;
+  z-index: 0;
+}
+
+.text-input {
+  z-index: 1;
 }
 
 .message {
@@ -29,10 +39,6 @@
   color: black;
   background-color: #eceff1;
   align-self: flex-end;
-}
-
-.history {
-  margin-top: 8px;
 }
 
 textarea {
