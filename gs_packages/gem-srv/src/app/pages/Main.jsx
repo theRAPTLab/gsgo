@@ -653,7 +653,7 @@ class MissionControl extends React.Component {
           <div
             style={{
               display: 'grid',
-              gridTemplateRows: '290px auto',
+              gridTemplateRows: 'auto',
               overflow: 'hidden'
             }}
           >

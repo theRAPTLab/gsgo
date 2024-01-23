@@ -19,7 +19,6 @@ function ECAForm(props) {
   const ecaTypes = ecaTypesFromProjFile
     ? Object.values(ecaTypesFromProjFile)
     : null;
-  const [answer, setAnswer] = useState('');
   const [history, setHistory] = useState([]);
 
   function handleSubmit(e) {
@@ -32,12 +31,10 @@ function ECAForm(props) {
 
     ACConversationAgent.FetchResponse(formUtterance, formECAType)
       .then(response => {
-        setAnswer(response);
         lastResponse = response;
       })
       .catch(error => {
         console.error(`Problem with ECA response: ${error}`);
-        setAnswer('An error occurred.');
         lastResponse = 'An error occurred.';
       })
       .finally(() => {
@@ -46,7 +43,11 @@ function ECAForm(props) {
         //   history.length >= 3 ? history.slice(1) : history.slice();
         setHistory([
           ...history,
-          { utterance: formUtterance, answer: lastResponse }
+          {
+            utterance: formUtterance,
+            answer: lastResponse,
+            responder: formECAType
+          }
         ]);
       });
   }
@@ -55,8 +56,14 @@ function ECAForm(props) {
     if (dialogue.utterance) {
       return (
         <div key={index}>
-          <div className={'message you'}>{dialogue.utterance}</div>
-          <div className={'message them'}>{dialogue.answer}</div>
+          <div className={'message'}>
+            <span className={'message-sender'}>You</span>
+            <div className={'message you'}>{dialogue.utterance}</div>
+          </div>
+          <div className={'message'}>
+            <span className={'message-responder'}>{dialogue.responder}</span>
+            <div className={'message them'}>{dialogue.answer}</div>
+          </div>
         </div>
       );
     } else {

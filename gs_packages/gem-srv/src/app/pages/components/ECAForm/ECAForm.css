@@ -10,21 +10,27 @@
   overflow: scroll;
   padding: 0 35px 92px;
   z-index: 0;
+  height: 90%;
 }
 
 .text-input {
+  padding: 10px;
   z-index: 1;
 }
 
 .message {
   font-size: 16px;
   position: relative;
-  display: inline-block;
+  display: block;
   clear: both;
   margin-bottom: 8px;
   padding: 13px 14px;
-  vertical-align: top;
   border-radius: 5px;
+}
+
+.message-sender {
+  font-size: 12px;
+  float: right;
 }
 
 .you {
@@ -32,6 +38,11 @@
   color: white;
   background-color: rgb(6, 180, 238);
   align-self: flex-start;
+}
+
+.message-responder {
+  font-size: 12px;
+  float: left;
 }
 
 .them {
