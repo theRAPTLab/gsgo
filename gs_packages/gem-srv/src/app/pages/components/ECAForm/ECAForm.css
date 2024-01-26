@@ -81,8 +81,6 @@ textarea {
 }
 
 select {
-  appearance: none;
-  -webkit-appearance: none;
   border: 1px solid rgba(0, 156, 156, 1);
   border-radius: 0.25rem;
   background-color: transparent;

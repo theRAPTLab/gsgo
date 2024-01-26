@@ -20,6 +20,15 @@ function ECAForm(props) {
     ? Object.values(ecaTypesFromProjFile)
     : null;
   const [history, setHistory] = useState([]);
+  const [ecaTypeLabel, setECATypeLabel] = useState(
+    ecaTypes ? ecaTypes[0].label : null
+  );
+
+  // Get the label of the dropdown, instead of the value
+  // so it can be used in the chat history
+  function handleECADropdownChange(selectedOptionIndex) {
+    setECATypeLabel(ecaTypes[selectedOptionIndex].label);
+  }
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -38,17 +47,16 @@ function ECAForm(props) {
         lastResponse = 'An error occurred.';
       })
       .finally(() => {
-        // Don't allow the history to grow over 5 question/answer pairs
-        // const truncatedHistory =
-        //   history.length >= 3 ? history.slice(1) : history.slice();
         setHistory([
           ...history,
           {
             utterance: formUtterance,
             answer: lastResponse,
-            responder: formECAType
+            responder: ecaTypeLabel
           }
         ]);
+        // clear the textarea after submit
+        document.getElementById('utterance').value = '';
       });
   }
 
@@ -79,9 +87,14 @@ function ECAForm(props) {
         <div className={'text-input'}>
           <form method="post" onSubmit={handleSubmit}>
             <textarea id="utterance" name="Utterance" rows="4" cols="50" />
-            <select id="ecatype" name="ECAType" className={'type-dropdown'}>
+            <select
+              id="ecatype"
+              name="ECAType"
+              className={'type-dropdown'}
+              onChange={e => handleECADropdownChange(e.target.selectedIndex)}
+            >
               {ecaTypes.map(eca => (
-                <option key={eca.label} value={eca.name}>
+                <option key={eca.label} value={eca.name} label={eca.label}>
                   {eca.label}
                 </option>
               ))}
