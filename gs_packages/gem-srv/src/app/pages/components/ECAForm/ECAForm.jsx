@@ -5,7 +5,7 @@ ECAForm
 Used to communicate with an Embodied Conversational Agent
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import PanelChrome from '../PanelChrome';
 import * as ACConversationAgent from '../../../../modules/appcore/ac-conversation-agent';
 import { withStyles } from '@material-ui/core/styles';
@@ -14,6 +14,7 @@ import './ECAForm.css';
 
 function ECAForm(props) {
   const panelName = 'ECA';
+  const chatBottomRef = useRef(null);
   const { classes } = props;
   const ecaTypesFromProjFile = ACConversationAgent.GetECATypes();
   const ecaTypes = ecaTypesFromProjFile
@@ -57,6 +58,11 @@ function ECAForm(props) {
         ]);
         // clear the textarea after submit
         document.getElementById('utterance').value = '';
+        // scroll to the bottom of the chat so the most recent message is visible
+        chatBottomRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'end'
+        });
       });
   }
 
@@ -83,7 +89,10 @@ function ECAForm(props) {
   if (ecaTypes) {
     content = (
       <div className="chat">
-        <div className={'dialogues'}>{dialogues}</div>
+        <div className={'dialogues'}>
+          {dialogues}
+          <div className={'chat-bottom'} ref={chatBottomRef}></div>
+        </div>
         <div className={'text-input'}>
           <form method="post" onSubmit={handleSubmit}>
             <textarea id="utterance" name="Utterance" rows="4" cols="50" />

@@ -52,6 +52,13 @@
   align-self: flex-end;
 }
 
+.chat-bottom {
+  position: relative;
+  display: block;
+  clear: both;
+  width: 100%;
+}
+
 textarea {
   width: 100%;
   border: none;
