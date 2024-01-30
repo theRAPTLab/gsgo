@@ -46,6 +46,7 @@ import 'lib/css/gem-ui.css';
 import { useStylesHOC } from './helpers/page-xui-styles';
 import './scrollbar.css';
 import PanelProjectEditor from './components/PanelProjectEditor';
+import ECAManager from './components/ECAForm/ECAManager';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -657,7 +658,7 @@ class MissionControl extends React.Component {
               overflow: 'hidden'
             }}
           >
-            {showECA && <ECAForm projId={projId}></ECAForm>}
+            <ECAManager showECAChat={showECA} />
             {panelConfiguration === 'tracker' && (
               <>
                 <div className={classes.ioTransform}>

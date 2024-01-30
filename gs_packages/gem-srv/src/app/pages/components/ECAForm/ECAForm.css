@@ -87,6 +87,12 @@ textarea {
   background-color: white;
 }
 
+.send:disabled {
+  color: gray;
+  cursor: auto;
+  background-color: transparent;
+}
+
 select {
   border: 1px solid rgba(0, 156, 156, 1);
   border-radius: 0.25rem;

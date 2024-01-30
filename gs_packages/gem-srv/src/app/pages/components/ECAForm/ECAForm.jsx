@@ -12,18 +12,17 @@ import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../../helpers/page-xui-styles';
 import './ECAForm.css';
 
-function ECAForm(props) {
+function ECAForm({ messages, onNewMessage }) {
   const panelName = 'ECA';
   const chatBottomRef = useRef(null);
-  const { classes } = props;
   const ecaTypesFromProjFile = ACConversationAgent.GetECATypes();
   const ecaTypes = ecaTypesFromProjFile
     ? Object.values(ecaTypesFromProjFile)
     : null;
-  const [history, setHistory] = useState([]);
   const [ecaTypeLabel, setECATypeLabel] = useState(
     ecaTypes ? ecaTypes[0].label : null
   );
+  const [messageContent, setMessageContent] = useState('');
 
   // Get the label of the dropdown, instead of the value
   // so it can be used in the chat history
@@ -48,8 +47,8 @@ function ECAForm(props) {
         lastResponse = 'An error occurred.';
       })
       .finally(() => {
-        setHistory([
-          ...history,
+        onNewMessage([
+          ...messages,
           {
             utterance: formUtterance,
             answer: lastResponse,
@@ -66,23 +65,19 @@ function ECAForm(props) {
       });
   }
 
-  const dialogues = history.map((dialogue, index) => {
-    if (dialogue.utterance) {
-      return (
-        <div key={index}>
-          <div className={'message'}>
-            <span className={'message-sender'}>You</span>
-            <div className={'message you'}>{dialogue.utterance}</div>
-          </div>
-          <div className={'message'}>
-            <span className={'message-responder'}>{dialogue.responder}</span>
-            <div className={'message them'}>{dialogue.answer}</div>
-          </div>
+  const dialogues = messages.map((dialogue, index) => {
+    return (
+      <div key={index}>
+        <div className={'message'}>
+          <span className={'message-sender'}>You</span>
+          <div className={'message you'}>{dialogue.utterance}</div>
         </div>
-      );
-    } else {
-      return <p>No input provided.</p>;
-    }
+        <div className={'message'}>
+          <span className={'message-responder'}>{dialogue.responder}</span>
+          <div className={'message them'}>{dialogue.answer}</div>
+        </div>
+      </div>
+    );
   });
 
   let content;
@@ -95,7 +90,14 @@ function ECAForm(props) {
         </div>
         <div className={'text-input'}>
           <form method="post" onSubmit={handleSubmit}>
-            <textarea id="utterance" name="Utterance" rows="4" cols="50" />
+            <textarea
+              id="utterance"
+              name="Utterance"
+              value={messageContent}
+              onChange={e => setMessageContent(e.target.value)}
+              rows={4}
+              cols={50}
+            />
             <select
               id="ecatype"
               name="ECAType"
@@ -108,7 +110,12 @@ function ECAForm(props) {
                 </option>
               ))}
             </select>
-            <input className={'send'} type="submit" value="Send" />
+            <input
+              className={'send'}
+              type="submit"
+              value="Send"
+              disabled={!messageContent}
+            />
           </form>
         </div>
       </div>
