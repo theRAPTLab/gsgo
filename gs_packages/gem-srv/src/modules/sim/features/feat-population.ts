@@ -418,7 +418,7 @@ class PopulationPack extends SM_Feature {
   tellCharacterByName(agent: IAgent, name: string, program: TSMCProgram) {
     const a = SIMAGENTS.GetAgentByName(name);
     if (a) {
-      console.log('found one');
+      //console.log('found one');
       a.exec(program, { agent: a });
     }
   }
