@@ -5,7 +5,7 @@ ECAForm
 Used to communicate with an Embodied Conversational Agent
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import PanelChrome from '../PanelChrome';
 import * as ACConversationAgent from '../../../../modules/appcore/ac-conversation-agent';
 import { withStyles } from '@material-ui/core/styles';
@@ -23,6 +23,13 @@ function ECAForm({ messages, onNewMessage }) {
     ecaTypes ? ecaTypes[0].label : null
   );
   const [messageContent, setMessageContent] = useState('');
+
+  useEffect(() => {
+    chatBottomRef.current.scrollIntoView({
+      behavior: 'smooth',
+      block: 'end'
+    });
+  }, []); // only runs once, when component is displayed
 
   // Get the label of the dropdown, instead of the value
   // so it can be used in the chat history
@@ -56,7 +63,7 @@ function ECAForm({ messages, onNewMessage }) {
           }
         ]);
         // clear the textarea after submit
-        document.getElementById('utterance').value = '';
+        setMessageContent('');
         // scroll to the bottom of the chat so the most recent message is visible
         chatBottomRef.current.scrollIntoView({
           behavior: 'smooth',
