@@ -17,7 +17,8 @@ STATE.initializeState({
   ecaTypes: [
     {
       'label': '',
-      'name': ''
+      'name': '',
+      'initialMessage': ''
     }
   ]
 });
@@ -38,6 +39,7 @@ let requestPayload: payload = {
 
 function GetECATypes(): TConversationAgent[] | null {
   const ecaTypes: TConversationAgent[] = { ..._getKey('ecaTypes') };
+  // console.log(`GetECATypes: ${ecaTypes[0].name}`);
   return ecaTypes[0].name === '' ? null : ecaTypes;
 }
 

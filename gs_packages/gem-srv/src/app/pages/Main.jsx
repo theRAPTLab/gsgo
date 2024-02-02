@@ -403,8 +403,6 @@ class MissionControl extends React.Component {
     this.setState(state => ({
       showECA: !state.showECA
     }));
-    // Trigger Window Resize so that PanelSimulation will resize
-    // window.dispatchEvent(new Event('resize'));
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
