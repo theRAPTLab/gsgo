@@ -40,7 +40,7 @@ function ECAManager({ showECAChat }) {
         }
       });
       // put the initial messages in the chat history
-      setHistory([ecaPrompts]);
+      setHistory(ecaPrompts);
       // set this to false, so the initial messages don't get added multiple times
       setInitLoad(false);
     }
