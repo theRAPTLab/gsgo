@@ -75,10 +75,12 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
   const dialogues = messages.map((dialogue, index) => {
     return (
       <div key={index}>
-        <div className={'message'}>
-          <span className={'message-sender'}>You</span>
-          <div className={'message you'}>{dialogue.utterance}</div>
-        </div>
+        {dialogue.utterance !== '' && (
+          <div className={'message'}>
+            <span className={'message-sender'}>You</span>
+            <div className={'message you'}>{dialogue.utterance}</div>
+          </div>
+        )}
         <div className={'message'}>
           <span className={'message-responder'}>{dialogue.responder}</span>
           <div className={'message them'}>{dialogue.answer}</div>
