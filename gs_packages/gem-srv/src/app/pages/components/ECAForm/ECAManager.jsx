@@ -16,6 +16,11 @@ function ECAManager({ showECAChat }) {
   const [initLoad, setInitLoad] = useState(true);
   const [ecaTypes, setECATypes] = useState([]);
 
+  // I use useEffect and check showECAChat here because
+  // when I only check initLoad, GetECATypes() does not return anything.
+  // There has to be a delay between loading this component and calling
+  // GetECATypes() for it to return anything.
+  // Seems like there should be a better way.
   useEffect(() => {
     // If the ECA Chat is displayed
     // and it's the first time it has been opened
@@ -29,7 +34,6 @@ function ECAManager({ showECAChat }) {
 
       let ecaPrompts = [];
       // load an array with each eca type's initial message
-      console.log(formattedECATypes);
       formattedECATypes.forEach(eca => {
         if (eca.initialMessage) {
           ecaPrompts.push({
