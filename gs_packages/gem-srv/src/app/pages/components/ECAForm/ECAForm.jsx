@@ -29,10 +29,12 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
 
   // scroll down to the bottom of the chat history
   useEffect(() => {
-    chatBottomRef.current.scrollIntoView({
-      behavior: 'smooth',
-      block: 'end'
-    });
+    if (ecaTypes.length > 0) {
+      chatBottomRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end'
+      });
+    }
   }, []); // only runs once, when component is displayed
 
   // Get the label of the dropdown, instead of the value
@@ -97,7 +99,7 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
   });
 
   let content;
-  if (ecaTypes) {
+  if (ecaTypes.length > 0) {
     content = (
       <div className="chat">
         <div className={'dialogues'}>
@@ -137,7 +139,7 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
       </div>
     );
   } else {
-    content = <p>No ECA Type exists for this project</p>;
+    content = <p>No ECA Types exist for this project</p>;
   }
 
   return (
