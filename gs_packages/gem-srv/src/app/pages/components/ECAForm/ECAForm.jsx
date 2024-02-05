@@ -15,10 +15,17 @@ import './ECAForm.css';
 function ECAForm({ messages, onNewMessage, ecaTypes }) {
   const panelName = 'ECA';
   const chatBottomRef = useRef(null);
-  const [ecaTypeLabel, setECATypeLabel] = useState(
-    ecaTypes.length > 0 ? ecaTypes[0].label : null
-  );
+  const [ecaTypeLabel, setECATypeLabel] = useState(null);
   const [messageContent, setMessageContent] = useState('');
+
+  // Using useEffect here because the first response from a message sent by a user
+  // in the chat would always have null for its responder.
+  // This did not affect the dropdown itself. Doing this forces
+  // ecaTypeLabel to update and show a responder for the first response to a
+  // message sent by the user.
+  useEffect(() => {
+    setECATypeLabel(ecaTypes.length > 0 ? ecaTypes[0].label : null);
+  }, [ecaTypes]);
 
   // scroll down to the bottom of the chat history
   useEffect(() => {
