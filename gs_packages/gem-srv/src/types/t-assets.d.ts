@@ -73,6 +73,7 @@ declare global {
   type TConversationAgent = {
     label?: string;
     name: string;
+    initialMessage?: string;
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** blueprint scripts */

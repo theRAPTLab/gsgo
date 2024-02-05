@@ -12,18 +12,15 @@ import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../../helpers/page-xui-styles';
 import './ECAForm.css';
 
-function ECAForm({ messages, onNewMessage }) {
+function ECAForm({ messages, onNewMessage, ecaTypes }) {
   const panelName = 'ECA';
   const chatBottomRef = useRef(null);
-  const ecaTypesFromProjFile = ACConversationAgent.GetECATypes();
-  const ecaTypes = ecaTypesFromProjFile
-    ? Object.values(ecaTypesFromProjFile)
-    : null;
   const [ecaTypeLabel, setECATypeLabel] = useState(
-    ecaTypes ? ecaTypes[0].label : null
+    ecaTypes.length > 0 ? ecaTypes[0].label : null
   );
   const [messageContent, setMessageContent] = useState('');
 
+  // scroll down to the bottom of the chat history
   useEffect(() => {
     chatBottomRef.current.scrollIntoView({
       behavior: 'smooth',
@@ -72,13 +69,18 @@ function ECAForm({ messages, onNewMessage }) {
       });
   }
 
+  // convert the messages array JSX used by the component
+  // @Joshua, this is where the initialMessages should be appearing, as dialogue.answer
+  // for some reason, they are showing up blank.
   const dialogues = messages.map((dialogue, index) => {
     return (
       <div key={index}>
-        <div className={'message'}>
-          <span className={'message-sender'}>You</span>
-          <div className={'message you'}>{dialogue.utterance}</div>
-        </div>
+        {dialogue.utterance !== '' && (
+          <div className={'message'}>
+            <span className={'message-sender'}>You</span>
+            <div className={'message you'}>{dialogue.utterance}</div>
+          </div>
+        )}
         <div className={'message'}>
           <span className={'message-responder'}>{dialogue.responder}</span>
           <div className={'message them'}>{dialogue.answer}</div>
