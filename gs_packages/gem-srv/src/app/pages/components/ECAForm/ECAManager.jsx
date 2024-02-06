@@ -6,6 +6,7 @@ Holds the history of chat messages from the ECA
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
 import React, { useEffect, useState } from 'react';
 import ECAForm from './ECAForm';
 import * as ACConversationAgent from '../../../../modules/appcore/ac-conversation-agent';
@@ -15,6 +16,14 @@ function ECAManager({ showECAChat }) {
   const [history, setHistory] = useState([]);
   const [initLoad, setInitLoad] = useState(true);
   const [ecaTypes, setECATypes] = useState([]);
+
+  useEffect(() => {
+    if (showECAChat) {
+      UR.LogEvent('ECA Panel Opened', ['by button click']);
+    } else {
+      UR.LogEvent('ECA Panel Closed', ['by button click']);
+    }
+  }, [showECAChat]);
 
   // I use useEffect and check showECAChat here because
   // when I only check initLoad, GetECATypes() does not return anything.

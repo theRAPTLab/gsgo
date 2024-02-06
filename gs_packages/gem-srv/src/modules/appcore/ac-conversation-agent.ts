@@ -62,6 +62,9 @@ async function FetchResponse(
     isNaN(value) ? value : +value
   );
 
+  // log the request
+  UR.LogEvent('ECA Request Sent', [formattedPayload]);
+
   let response = await fetch(ECAURL, {
     method: 'POST',
     headers: {
@@ -70,8 +73,18 @@ async function FetchResponse(
     body: formattedPayload
   });
 
+  // log the response
+  // Create a clone of the response specifically for logging,
+  // so that response.text() can still be returned.
+  const logResponse = response.clone();
+  await logResponse
+    .text()
+    .then(text => UR.LogEvent('ECA Response Received', [text]));
+
   if (!response.ok) {
-    throw new Error(`HTTP error. Status ${response.status}`);
+    throw new Error(
+      `HTTP error. Status ${response.status}, ${response.statusText}`
+    );
   }
 
   return response.text();
