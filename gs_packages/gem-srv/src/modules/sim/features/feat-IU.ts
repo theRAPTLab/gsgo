@@ -36,6 +36,8 @@ class IUPack extends SM_Feature {
     this.featAddMethod('logString', this.logString);
     this.featAddMethod('logProperty', this.logProperty);
 
+    this.featAddMethod('forceNext', this.forceNext);
+
     this.HandleSimInstanceClick = this.HandleSimInstanceClick.bind(this);
     UR.HandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
 
@@ -71,6 +73,14 @@ class IUPack extends SM_Feature {
     UR.LogEvent(LOG_ID, [logString]);
     // send around so viewers can do something with this
     UR.RaiseMessage('NET:LOG_EVENT', { logString: logString });
+  }
+
+  // For some sequences of rounds it is irritating to have to press "prep"
+  // So this lets us skip it using a call from endScript
+  // Be careful in using this! Ideally we might move this to a round property
+  forceNext(agent: IAgent) {
+    UR.LogEvent('SimEvent', ['Next Round']);
+    UR.RaiseMessage('NET:HACK_SIM_NEXTROUND');
   }
 
   handleClick(agent: IAgent, program: TSMCProgram) {
