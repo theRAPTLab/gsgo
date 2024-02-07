@@ -127,10 +127,11 @@ class MissionControl extends React.Component {
     this.OnToggleNetworkMapSize = this.OnToggleNetworkMapSize.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectView = this.OnSelectView.bind(this);
-    this.onToggleECA = this.onToggleECA.bind(this);
+    this.OnToggleECA = this.OnToggleECA.bind(this);
     this.OnToggleTracker = this.OnToggleTracker.bind(this);
     this.OnDraggerLeftUpdate = this.OnDraggerLeftUpdate.bind(this);
     this.OnDraggerRightUpdate = this.OnDraggerRightUpdate.bind(this);
+    UR.HandleMessage('ECA_TOGGLE', this.OnToggleECA);
 
     // Project Data
     this.OnExport = this.OnExport.bind(this);
@@ -184,6 +185,7 @@ class MissionControl extends React.Component {
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleSimInstanceHoverOut);
     UR.UnhandleMessage('SHOW_MESSAGE', this.DoShowMessage);
+    UR.UnhandleMessage('ECA_TOGGLE', this.OnToggleECA);
   }
 
   GetUDID() {
@@ -399,7 +401,7 @@ class MissionControl extends React.Component {
     window.dispatchEvent(new Event('resize'));
   }
 
-  onToggleECA() {
+  OnToggleECA() {
     this.setState(state => ({
       showECA: !state.showECA
     }));
@@ -497,7 +499,7 @@ class MissionControl extends React.Component {
         <button
           role="button"
           className={classes.buttonSmall}
-          onClick={this.onToggleECA}
+          onClick={this.OnToggleECA}
         >
           eca
         </button>

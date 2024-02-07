@@ -37,6 +37,7 @@ class IUPack extends SM_Feature {
     this.featAddMethod('logProperty', this.logProperty);
 
     this.featAddMethod('forceNext', this.forceNext);
+    this.featAddMethod('toggleECA', this.toggleECA);
 
     this.HandleSimInstanceClick = this.HandleSimInstanceClick.bind(this);
     UR.HandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
@@ -81,6 +82,11 @@ class IUPack extends SM_Feature {
   forceNext(agent: IAgent) {
     UR.LogEvent('SimEvent', ['Next Round']);
     UR.RaiseMessage('NET:HACK_SIM_NEXTROUND');
+  }
+
+  toggleECA() {
+    UR.LogEvent('ECA Panel Opened', ['by simulation']);
+    UR.RaiseMessage('ECA_TOGGLE');
   }
 
   handleClick(agent: IAgent, program: TSMCProgram) {
