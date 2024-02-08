@@ -84,7 +84,7 @@ class IUPack extends SM_Feature {
     UR.RaiseMessage('NET:HACK_SIM_NEXTROUND');
   }
 
-  toggleECA() {
+  toggleECA(agent: IAgent) {
     UR.LogEvent('ECA Panel Opened', ['by simulation']);
     UR.RaiseMessage('ECA_TOGGLE');
   }
@@ -148,6 +148,8 @@ class IUPack extends SM_Feature {
     methods: {
       'logString': { args: ['text:string'] },
       'logProperty': {},
+      'forceNext': {},
+      'toggleECA': {},
       'handleClick': { args: ['program:block'] },
       'setupFunction': { args: ['functionName:string', 'program:block'] },
       'callFunction': { args: ['functionName:string'] }
