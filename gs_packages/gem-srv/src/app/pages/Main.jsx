@@ -26,12 +26,14 @@ import MissionRun from './MissionRun';
 import PanelSimulation from './components/PanelSimulation';
 import PanelPlayback from './components/PanelPlayback';
 import PanelInstances from './components/PanelInstances';
-import PanelMessage from './components/PanelMessage';
 import DialogConfirm from './components/DialogConfirm';
 
 import PanelTracker from './components/PanelTracker';
 import FormTransform from './components/FormTransform';
-import ECAForm from './components/ECAForm/ECAForm';
+import ECAManager from './components/ECAForm/ECAManager';
+import PanelProjectEditor from './components/PanelProjectEditor';
+import TabMenu from './components/TabMenu/TabMenu';
+import TabButton from './components/TabMenu/TabButton';
 import Dragger from './components/Dragger';
 import 'lib/css/tracker.css';
 import 'lib/css/gem-ui.css';
@@ -45,8 +47,6 @@ import 'lib/css/gem-ui.css';
 // this is where classes.* for css are defined
 import { useStylesHOC } from './helpers/page-xui-styles';
 import './scrollbar.css';
-import PanelProjectEditor from './components/PanelProjectEditor';
-import ECAManager from './components/ECAForm/ECAManager';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,6 +70,7 @@ class MissionControl extends React.Component {
     super();
     const { bpNamesList } = UR.ReadFlatStateGroups('blueprints');
     this.state = {
+      selectedTab: 'control',
       showECA: false,
       panelConfiguration: 'run',
       message: '',
@@ -127,11 +128,14 @@ class MissionControl extends React.Component {
     this.OnToggleNetworkMapSize = this.OnToggleNetworkMapSize.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectView = this.OnSelectView.bind(this);
-    this.OnToggleECA = this.OnToggleECA.bind(this);
     this.OnToggleTracker = this.OnToggleTracker.bind(this);
     this.OnDraggerLeftUpdate = this.OnDraggerLeftUpdate.bind(this);
     this.OnDraggerRightUpdate = this.OnDraggerRightUpdate.bind(this);
-    UR.HandleMessage('ECA_TOGGLE', this.OnToggleECA);
+    this.openECA = this.openECA.bind(this);
+    this.closeECA = this.closeECA.bind(this);
+    this.handleSelect = this.handleSelect.bind(this);
+    this.handleECAToggleMessage = this.handleECAToggleMessage.bind(this);
+    UR.HandleMessage('ECA_TOGGLE', this.handleECAToggleMessage);
 
     // Project Data
     this.OnExport = this.OnExport.bind(this);
@@ -185,7 +189,7 @@ class MissionControl extends React.Component {
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleSimInstanceHoverOut);
     UR.UnhandleMessage('SHOW_MESSAGE', this.DoShowMessage);
-    UR.UnhandleMessage('ECA_TOGGLE', this.OnToggleECA);
+    UR.UnhandleMessage('ECA_TOGGLE', this.handleECAToggleMessage);
   }
 
   GetUDID() {
@@ -401,10 +405,33 @@ class MissionControl extends React.Component {
     window.dispatchEvent(new Event('resize'));
   }
 
-  OnToggleECA() {
-    this.setState(state => ({
-      showECA: !state.showECA
-    }));
+  handleSelect(selectedButton) {
+    // selectedButton => 'messages', 'control'
+    if (selectedButton === 'messages') {
+      this.openECA();
+    } else {
+      this.closeECA();
+    }
+    this.setState({ selectedTab: selectedButton });
+  }
+
+  // Created this specifically to be the handler for a message
+  // when using just this.handleSelect('messages') as the handler
+  // got an error.
+  handleECAToggleMessage() {
+    this.handleSelect('messages');
+  }
+
+  openECA() {
+    this.setState({
+      showECA: true
+    });
+  }
+
+  closeECA() {
+    this.setState({
+      showECA: false
+    });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -435,6 +462,7 @@ class MissionControl extends React.Component {
    */
   render() {
     const {
+      selectedTab,
       showECA,
       panelConfiguration,
       message,
@@ -496,13 +524,6 @@ class MissionControl extends React.Component {
         <span style={{ opacity: 0.5 }}>
           MAIN -- <span style={{ fontStyle: 'italic' }}>{UR.BranchString()}</span>
         </span>
-        <button
-          role="button"
-          className={classes.buttonSmall}
-          onClick={this.OnToggleECA}
-        >
-          eca
-        </button>
         <button
           role="button"
           className={classes.buttonSmall}
@@ -652,12 +673,27 @@ class MissionControl extends React.Component {
         </div>
         <div id="console-right" className={classes.right}>
           <div
+            // Use fit-content for the first row to accomodate the tab menu
             style={{
               display: 'grid',
-              gridTemplateRows: 'auto',
+              gridTemplateRows: 'fit-content(5%) auto',
               overflow: 'hidden'
             }}
           >
+            <TabMenu>
+              <TabButton
+                isSelected={this.state.selectedTab === 'messages'}
+                onSelect={() => this.handleSelect('messages')}
+              >
+                Messages
+              </TabButton>
+              <TabButton
+                isSelected={this.state.selectedTab === 'control'}
+                onSelect={() => this.handleSelect('control')}
+              >
+                Control
+              </TabButton>
+            </TabMenu>
             <ECAManager showECAChat={showECA} />
             {panelConfiguration === 'tracker' && (
               <>

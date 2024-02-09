@@ -1,0 +1,24 @@
+li {
+  float: left;
+}
+
+.tabButton {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+  color: rgba(60, 256, 256, 0.8);
+}
+
+.tabButton:hover {
+  background-color: white;
+  color: inherit;
+}
+
+.active {
+  color: inherit;
+  background-color: rgba(60, 256, 256, 0.8);
+}

@@ -13,7 +13,7 @@ import { useStylesHOC } from '../../helpers/page-xui-styles';
 import './ECAForm.css';
 
 function ECAForm({ messages, onNewMessage, ecaTypes }) {
-  const panelName = 'ECA';
+  const panelName = 'Messages';
   const chatBottomRef = useRef(null);
   const [ecaTypeLabel, setECATypeLabel] = useState(null);
   const [messageContent, setMessageContent] = useState('');
