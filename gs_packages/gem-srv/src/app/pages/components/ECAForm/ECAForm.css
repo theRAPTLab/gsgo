@@ -79,7 +79,7 @@ textarea {
   cursor: pointer;
   background-color: transparent;
   color: white;
-  padding: 0.5em 1em 0.5em 1em;
+  padding: 0.5em;
 }
 
 .send:hover {
@@ -100,7 +100,7 @@ select {
   color: white;
   font-size: 16px;
   cursor: pointer;
-  padding: 0.5em 3em 0.5em 1em;
+  padding: 0.5em;
 }
 
 .type-dropdown {
