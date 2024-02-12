@@ -85,7 +85,7 @@ class MissionControl extends React.Component {
       dialogMessage: undefined,
       showWebCam: false,
       consoleLeftWidth: 15, // as % of screen
-      consoleRightWidth: 15 // as % of screen
+      consoleRightWidth: 18 // as % of screen
     };
 
     // Initialization
@@ -682,16 +682,16 @@ class MissionControl extends React.Component {
           >
             <TabMenu>
               <TabButton
-                isSelected={this.state.selectedTab === 'messages'}
-                onSelect={() => this.handleSelect('messages')}
-              >
-                Messages
-              </TabButton>
-              <TabButton
                 isSelected={this.state.selectedTab === 'control'}
                 onSelect={() => this.handleSelect('control')}
               >
                 Control
+              </TabButton>
+              <TabButton
+                isSelected={this.state.selectedTab === 'messages'}
+                onSelect={() => this.handleSelect('messages')}
+              >
+                Messages
               </TabButton>
             </TabMenu>
             <ECAManager showECAChat={showECA} />
