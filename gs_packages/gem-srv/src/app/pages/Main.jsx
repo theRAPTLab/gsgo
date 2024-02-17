@@ -85,7 +85,7 @@ class MissionControl extends React.Component {
       dialogMessage: undefined,
       showWebCam: false,
       consoleLeftWidth: 15, // as % of screen
-      consoleRightWidth: 18 // as % of screen
+      consoleRightWidth: 20 // as % of screen
     };
 
     // Initialization
