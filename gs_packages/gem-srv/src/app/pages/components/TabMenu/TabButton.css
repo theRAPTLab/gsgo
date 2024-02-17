@@ -22,3 +22,7 @@ li {
   color: inherit;
   background-color: rgba(60, 256, 256, 0.8);
 }
+
+.TabButton::marker {
+  margin: 0;
+}
