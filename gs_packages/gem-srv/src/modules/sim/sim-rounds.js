@@ -94,6 +94,9 @@ function RoundInit(SIMSTATUS) {
     if (round.time !== undefined) {
       ROUND_TIMER_START_VALUE = round.time;
       RSIMSTATUS.timer = ROUND_TIMER_START_VALUE;
+    } else {
+      ROUND_TIMER_START_VALUE = undefined;
+      RSIMSTATUS.timer = undefined;
     }
     if (round.intro) {
       const message = `Round ${ROUNDS_COUNTER + 1}: ${round.intro}`;
