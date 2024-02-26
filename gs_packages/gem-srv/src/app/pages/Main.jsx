@@ -680,22 +680,20 @@ class MissionControl extends React.Component {
               overflow: 'hidden'
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <TabMenu style={{ display: 'flex', justifyContent: 'center' }}>
               <TabButton
                 isSelected={this.state.selectedTab === 'control'}
                 onSelect={() => this.handleSelect('control')}
-                style={{ margin: 0, listStyleType: 'none' }}
               >
                 Control
               </TabButton>
               <TabButton
                 isSelected={this.state.selectedTab === 'messages'}
                 onSelect={() => this.handleSelect('messages')}
-                style={{ margin: 0, listStyleType: 'none' }}
               >
                 Messages
               </TabButton>
-            </div>
+            </TabMenu>
             <ECAManager showECAChat={showECA} />
             {panelConfiguration === 'tracker' && (
               <>

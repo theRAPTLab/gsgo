@@ -7,10 +7,11 @@ Generic tab menu
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import './TabMenu.css';
 
-export default function TabMenu({ children }) {
+export default function TabMenu({ children, style }) {
   return (
-    <div>
+    <div style={style}>
       <menu>{children}</menu>
     </div>
   );
