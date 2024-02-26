@@ -409,8 +409,20 @@ class MissionControl extends React.Component {
     // selectedButton => 'messages', 'control'
     if (selectedButton === 'messages') {
       this.openECA();
+      // log file
+      UR.LogEvent('ECA Panel Opened', ['by button click']);
+      // log viewer
+      UR.RaiseMessage('NET:LOG_EVENT', {
+        logString: 'ECA Panel Opened by button click'
+      });
     } else {
       this.closeECA();
+      // log file
+      UR.LogEvent('ECA Panel Closed', ['by button click']);
+      // log viewer
+      UR.RaiseMessage('NET:LOG_EVENT', {
+        logString: 'ECA Panel Closed by button click'
+      });
     }
     this.setState({ selectedTab: selectedButton });
   }
@@ -419,7 +431,7 @@ class MissionControl extends React.Component {
   // when using just this.handleSelect('messages') as the handler
   // got an error.
   handleECAToggleMessage() {
-    this.handleSelect('messages');
+    this.openECA();
   }
 
   openECA() {

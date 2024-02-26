@@ -85,7 +85,12 @@ class IUPack extends SM_Feature {
   }
 
   toggleECA(agent: IAgent) {
+    // log file
     UR.LogEvent('ECA Panel Opened', ['by simulation']);
+    // log viewer
+    UR.RaiseMessage('NET:LOG_EVENT', {
+      logString: 'ECA Panel Opened by simulation'
+    });
     UR.RaiseMessage('ECA_TOGGLE');
   }
 

@@ -17,14 +17,6 @@ function ECAManager({ showECAChat }) {
   const [initLoad, setInitLoad] = useState(true);
   const [ecaTypes, setECATypes] = useState([]);
 
-  useEffect(() => {
-    if (showECAChat) {
-      UR.LogEvent('ECA Panel Opened', ['by button click']);
-    } else {
-      UR.LogEvent('ECA Panel Closed', ['by button click']);
-    }
-  }, [showECAChat]);
-
   // I use useEffect and check showECAChat here because
   // when I only check initLoad, GetECATypes() does not return anything.
   // There has to be a delay between loading this component and calling
