@@ -71,7 +71,6 @@ class MissionControl extends React.Component {
     const { bpNamesList } = UR.ReadFlatStateGroups('blueprints');
     this.state = {
       selectedTab: 'control',
-      showECA: false,
       panelConfiguration: 'run',
       message: '',
       projId: '', // set by project-server
@@ -436,13 +435,13 @@ class MissionControl extends React.Component {
 
   openECA() {
     this.setState({
-      showECA: true
+      selectedTab: 'messages'
     });
   }
 
   closeECA() {
     this.setState({
-      showECA: false
+      selectedTab: 'control'
     });
   }
 
@@ -475,7 +474,6 @@ class MissionControl extends React.Component {
   render() {
     const {
       selectedTab,
-      showECA,
       panelConfiguration,
       message,
       projId,
@@ -706,7 +704,7 @@ class MissionControl extends React.Component {
                 Messages
               </TabButton>
             </TabMenu>
-            <ECAManager showECAChat={showECA} />
+            <ECAManager showECAChat={selectedTab === 'messages' ? true : false} />
             {panelConfiguration === 'tracker' && (
               <>
                 <div className={classes.ioTransform}>
@@ -717,7 +715,7 @@ class MissionControl extends React.Component {
             )}
             {panelConfiguration !== 'edit' &&
               panelConfiguration !== 'tracker' &&
-              !showECA && (
+              selectedTab === 'control' && (
                 <>
                   <PanelPlayback
                     id="playback"
