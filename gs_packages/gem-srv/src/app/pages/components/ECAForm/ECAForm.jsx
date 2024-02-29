@@ -17,6 +17,7 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
   const chatBottomRef = useRef(null);
   const [ecaTypeLabel, setECATypeLabel] = useState(null);
   const [messageContent, setMessageContent] = useState('');
+  const [isMessageLoading, setIsMessageLoading] = useState(false);
 
   // Using useEffect here because the first response from a message sent by a user
   // in the chat would always have null for its responder.
@@ -50,10 +51,13 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
     const formUtterance = formData.get('Utterance');
     const formECAType = formData.get('ECAType');
     let lastResponse = '';
+    setIsMessageLoading(true);
 
     ACConversationAgent.FetchResponse(formUtterance, formECAType)
       .then(response => {
         lastResponse = response;
+        // clear the textarea after submit
+        setMessageContent('');
       })
       .catch(error => {
         console.error(`Problem with ECA response: ${error}`);
@@ -68,8 +72,7 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
             responder: ecaTypeLabel
           }
         ]);
-        // clear the textarea after submit
-        setMessageContent('');
+        setIsMessageLoading(false);
         // scroll to the bottom of the chat so the most recent message is visible
         chatBottomRef.current.scrollIntoView({
           behavior: 'smooth',
@@ -79,8 +82,6 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
   }
 
   // convert the messages array JSX used by the component
-  // @Joshua, this is where the initialMessages should be appearing, as dialogue.answer
-  // for some reason, they are showing up blank.
   const dialogues = messages.map((dialogue, index) => {
     return (
       <div key={index}>
@@ -104,6 +105,13 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
       <div className="chat">
         <div className={'dialogues'}>
           {dialogues}
+          {isMessageLoading && (
+            <div className={'container'}>
+              <div className={'dot'}></div>
+              <div className={'dot'}></div>
+              <div className={'dot'}></div>
+            </div>
+          )}
           <div className={'chat-bottom'} ref={chatBottomRef}></div>
         </div>
         <div className={'text-input'}>

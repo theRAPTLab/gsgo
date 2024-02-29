@@ -106,3 +106,41 @@ select {
 .type-dropdown {
   float: left;
 }
+
+.dot {
+  border-radius: 9999px;
+  height: 0.5rem;
+  width: 0.5rem;
+
+  background: rgba(148 163 184 / 1);
+  animation: blink 1s infinite;
+  opacity: 0;
+}
+
+.dot:nth-child(1) {
+  animation-delay: 0.3333s;
+}
+.dot:nth-child(2) {
+  animation-delay: 0.6666s;
+}
+.dot:nth-child(3) {
+  animation-delay: 0.9999s;
+}
+
+.container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+
+  background: #eceff1;
+  border-radius: 9999px;
+  padding: 1rem;
+  width: 4rem;
+}
+
+@keyframes blink {
+  50% {
+      opacity: 1;
+  }
+}
