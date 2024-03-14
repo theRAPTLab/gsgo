@@ -87,13 +87,20 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
       <div key={index}>
         {dialogue.utterance !== '' && (
           <div className={'message'}>
-            <span className={'message-sender'}>You</span>
-            <div className={'message you'}>{dialogue.utterance}</div>
+            <div className={'message-sender'}>You</div>
+            <div className={'you'}>{dialogue.utterance}</div>
           </div>
         )}
         <div className={'message'}>
-          <span className={'message-responder'}>{dialogue.responder}</span>
-          <div className={'message them'}>{dialogue.answer}</div>
+          <div className={'message-responder'}>{dialogue.responder}</div>
+          <div className={'responder-image-container'}>
+            <img
+              id="responder-image"
+              alt="responder profile image"
+              src={'https://picsum.photos/200'}
+            ></img>
+          </div>
+          <div className={'them'}>{dialogue.answer}</div>
         </div>
       </div>
     );
