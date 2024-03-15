@@ -15,17 +15,17 @@ import './ECAForm.css';
 function ECAForm({ messages, onNewMessage, ecaTypes }) {
   const panelName = 'Messages';
   const chatBottomRef = useRef(null);
-  const [ecaTypeLabel, setECATypeLabel] = useState(null);
+  const [ecaType, setECAType] = useState(null);
   const [messageContent, setMessageContent] = useState('');
   const [isMessageLoading, setIsMessageLoading] = useState(false);
 
   // Using useEffect here because the first response from a message sent by a user
   // in the chat would always have null for its responder.
   // This did not affect the dropdown itself. Doing this forces
-  // ecaTypeLabel to update and show a responder for the first response to a
+  // ecaType to update and show a responder for the first response to a
   // message sent by the user.
   useEffect(() => {
-    setECATypeLabel(ecaTypes.length > 0 ? ecaTypes[0].label : null);
+    setECAType(ecaTypes.length > 0 ? {label: ecaTypes[0].label, image: ecaTypes[0].profileImage} : null);
   }, [ecaTypes]);
 
   // scroll down to the bottom of the chat history
@@ -38,10 +38,10 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
     }
   }, []); // only runs once, when component is displayed
 
-  // Get the label of the dropdown, instead of the value
+  // Get the label and image of the selected ecaType
   // so it can be used in the chat history
   function handleECADropdownChange(selectedOptionIndex) {
-    setECATypeLabel(ecaTypes[selectedOptionIndex].label);
+    setECAType({label: ecaTypes[selectedOptionIndex].label, image: ecaTypes[selectedOptionIndex].profileImage});
   }
 
   function handleSubmit(e) {
@@ -69,7 +69,8 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
           {
             utterance: formUtterance,
             answer: lastResponse,
-            responder: ecaTypeLabel
+            responder: ecaType.label,
+            image: ecaType.image
           }
         ]);
         setIsMessageLoading(false);
@@ -87,13 +88,20 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
       <div key={index}>
         {dialogue.utterance !== '' && (
           <div className={'message'}>
-            <span className={'message-sender'}>You</span>
-            <div className={'message you'}>{dialogue.utterance}</div>
+            <div className={'message-sender'}>You</div>
+            <div className={'you'}>{dialogue.utterance}</div>
           </div>
         )}
         <div className={'message'}>
-          <span className={'message-responder'}>{dialogue.responder}</span>
-          <div className={'message them'}>{dialogue.answer}</div>
+          <div className={'message-responder'}>{dialogue.responder}</div>
+          <div className={'responder-image-container'}>
+            {dialogue.image && <img
+              id="responder-image"
+              alt="responder profile image"
+              src={dialogue.image}
+            ></img>}
+          </div>
+          <div className={'them'}>{dialogue.answer}</div>
         </div>
       </div>
     );

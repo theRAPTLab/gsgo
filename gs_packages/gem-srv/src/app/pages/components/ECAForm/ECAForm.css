@@ -21,35 +21,52 @@
 .message {
   font-size: 14px;
   position: relative;
-  display: block;
+  display: grid;
+  grid-template-columns: 1fr 4fr;
   clear: both;
-  margin-bottom: 8px;
-  padding: 13px 14px;
-  border-radius: 5px;
 }
 
 .message-sender {
   font-size: 12px;
-  float: right;
+  grid-column-start: 2;
+  justify-self: end;
 }
 
 .you {
-  float: right;
+  grid-column-start: 2;
   color: white;
   background-color: rgb(6, 180, 238);
-  align-self: flex-start;
+  justify-self: end;
+  margin-bottom: 8px;
+  padding: 13px 14px;
+  border-radius: 5px;
+  max-width: 300px;
 }
 
 .message-responder {
   font-size: 12px;
-  float: left;
+  grid-column-start: 2;
+}
+
+.responder-image-container{
+  justify-self: right;
+  padding-right: 5px;
+}
+
+#responder-image {
+  border-radius: 9999px;
+  height: 2rem;
+  width: 2rem;
 }
 
 .them {
-  float: left;
   color: black;
   background-color: #eceff1;
-  align-self: flex-end;
+  margin-bottom: 8px;
+  padding: 13px 14px;
+  border-radius: 5px;
+  max-width: 300px;
+  justify-self: start;
 }
 
 .chat-bottom {

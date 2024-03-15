@@ -11,6 +11,8 @@ import UR from '@gemstep/ursys/client';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ECAURL = 'https://tracedata-01.csc.ncsu.edu/GetECAResponse';
+// This determines the path where the profile images come from
+const PROFILEIMAGEPATH = '/assets/art-assets/sprites/';
 const STATE = new UR.class.StateGroupMgr('ecaTypes');
 
 STATE.initializeState({
@@ -18,7 +20,8 @@ STATE.initializeState({
     {
       'label': '',
       'name': '',
-      'initialMessage': ''
+      'initialMessage': '',
+      'profileImage': ''
     }
   ]
 });
@@ -38,9 +41,26 @@ let requestPayload: payload = {
 };
 
 function GetECATypes(): TConversationAgent[] | null {
-  const ecaTypes: TConversationAgent[] = { ..._getKey('ecaTypes') };
-  // console.log(`GetECATypes: ${ecaTypes[0].name}`);
-  return ecaTypes[0].name === '' ? null : ecaTypes;
+  const ecaTypes: TConversationAgent[] = [..._getKey('ecaTypes')];
+  let ecaTypesWithImagePath: TConversationAgent[] = [];
+  // there is at least one ECA type for the project
+  if (ecaTypes[0].name !== '') {
+    ecaTypes.forEach((ecaType) => {
+      if (ecaType.profileImage) {
+        // add the image path to the profile image property
+        ecaTypesWithImagePath.push({
+          ...ecaType,
+          profileImage: PROFILEIMAGEPATH + ecaType.profileImage
+        });
+      } else {
+        // if there is no profileImage property, leave the ecaType as is
+        ecaTypesWithImagePath.push({...ecaType});
+      }
+    });
+    return ecaTypesWithImagePath;
+  } else {
+    return null;
+  }
 }
 
 /**
