@@ -74,6 +74,7 @@ declare global {
     label?: string;
     name: string;
     initialMessage?: string;
+    profileImage?: string;
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** blueprint scripts */

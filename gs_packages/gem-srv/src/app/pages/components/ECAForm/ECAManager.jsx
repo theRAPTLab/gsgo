@@ -40,7 +40,8 @@ function ECAManager({ showECAChat }) {
           ecaPrompts.push({
             utterance: '',
             answer: eca.initialMessage,
-            responder: eca.label
+            responder: eca.label,
+            image: eca.profileImage
           });
         }
       });
