@@ -54,7 +54,13 @@ class AIPack extends SM_Feature {
     UR.RaiseMessage('ECA_TOGGLE');
   }
 
-  setEcaStatus(agent: IAgent) {}
+  setEcaStatus(agent: IAgent, text: string) {
+    agent.prop.AI.ecaStatusString.setTo(text);
+    if (DBG)
+      console.log(
+        'Setting ECA status string to: ' + agent.prop.AI.ecaStatusString.value
+      );
+  }
 
   /// SYMBOL DECLARATIONS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
