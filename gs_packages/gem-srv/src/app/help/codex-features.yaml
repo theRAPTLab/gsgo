@@ -252,7 +252,7 @@ Physics:
   # (none)
 
 IU:
-  info: 'Adds new features we are testing at IU'
+  info: 'Adds new features we are testing at IU.'
   logStringText:
     name: 'logStringText'
     info: '"logStringText" value determines the text to be logged'
@@ -270,8 +270,15 @@ IU:
     info: 'This triggers a script that is defined by setupFunction previously'
   forceNext:
     info: 'Use carefully to skip the prep round button and display start button'
+
+AI:
+  info: 'Adds new features related to AI such as the ECA functionality.'
   toggleECA:
     info: 'Toggle the ECA button / panel'
+  ecaStatusString:
+    info: 'A string that will be passed to the ECA'
+  setEcaStatus:
+    info: 'Set the status string to be passed to the ECA'
 
 Population:
   info: 'Adds ways to generate and manage spawned characters and statistical information'

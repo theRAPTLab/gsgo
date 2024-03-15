@@ -18,3 +18,4 @@ import './features/feat-timer';
 import './features/feat-touches';
 import './features/feat-vision';
 import './features/feat-IU';
+import './features/feat-AI';

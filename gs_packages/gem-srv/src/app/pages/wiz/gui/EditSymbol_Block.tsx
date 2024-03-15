@@ -173,8 +173,7 @@ export const ADVANCED_SYMBOLS = [
   // IU
   'setupFunction',
   'callFunction',
-  'forceNext',
-  'toggleECA'
+  'forceNext'
 ].map(w => w.toLowerCase());
 export const IGNORED_TYPES = ['{noncode}'].map(w => w.toLowerCase());
 
