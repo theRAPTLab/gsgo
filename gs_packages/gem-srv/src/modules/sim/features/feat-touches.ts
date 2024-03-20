@@ -168,10 +168,10 @@ function m_Update(frame) {
           }
           if (c2c || c2b || b2b || binb)
             UR.LogEvent('Touched', [
-              'agentId',
-              agentId,
-              'targetId',
-              t.id,
+              'agent',
+              agent.id + '(' + agent.blueprint.name + ':' + agent.name + ')',
+              'target',
+              t.id + '(' + t.blueprint.name + ':' + t.name + ')',
               'b2b',
               b2b,
               'binb',

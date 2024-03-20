@@ -59,6 +59,14 @@ function m_Create(frame) {
         // just copy x/y
         agent.x = parent.x + RNG() * 8 - 4;
         agent.y = parent.y + RNG() * 8 - 4;
+        UR.LogEvent(
+          'Creating agentId ' +
+            agent.id +
+            ' type: ' +
+            agent.blueprint.name +
+            ' name: ' +
+            agent.name
+        );
       }
     }
 
