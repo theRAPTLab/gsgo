@@ -18,6 +18,7 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
   const [ecaType, setECAType] = useState(null);
   const [messageContent, setMessageContent] = useState('');
   const [isMessageLoading, setIsMessageLoading] = useState(false);
+  const [isReading, setIsReading] = useState(false); // State to track whether it's currently reading or not
 
   // Using useEffect here because the first response from a message sent by a user
   // in the chat would always have null for its responder.
@@ -25,7 +26,15 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
   // ecaType to update and show a responder for the first response to a
   // message sent by the user.
   useEffect(() => {
-    setECAType(ecaTypes.length > 0 ? {label: ecaTypes[0].label, image: ecaTypes[0].profileImage} : null);
+    setECAType(
+      ecaTypes.length > 0
+        ? {
+            label: ecaTypes[0].label,
+            image: ecaTypes[0].profileImage,
+            voice: ecaTypes[0].profileVoice
+          }
+        : null
+    );
   }, [ecaTypes]);
 
   // scroll down to the bottom of the chat history
@@ -41,7 +50,11 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
   // Get the label and image of the selected ecaType
   // so it can be used in the chat history
   function handleECADropdownChange(selectedOptionIndex) {
-    setECAType({label: ecaTypes[selectedOptionIndex].label, image: ecaTypes[selectedOptionIndex].profileImage});
+    setECAType({
+      label: ecaTypes[selectedOptionIndex].label,
+      image: ecaTypes[selectedOptionIndex].profileImage,
+      voice: ecaTypes[selectedOptionIndex].profileVoice
+    });
   }
 
   function handleSubmit(e) {
@@ -70,7 +83,8 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
             utterance: formUtterance,
             answer: lastResponse,
             responder: ecaType.label,
-            image: ecaType.image
+            image: ecaType.image,
+            voice: ecaType.voice
           }
         ]);
         setIsMessageLoading(false);
@@ -95,17 +109,80 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
         <div className={'message'}>
           <div className={'message-responder'}>{dialogue.responder}</div>
           <div className={'responder-image-container'}>
-            {dialogue.image && <img
-              id="responder-image"
-              alt="responder profile image"
-              src={dialogue.image}
-            ></img>}
+            {dialogue.image && (
+              <img
+                id="responder-image"
+                alt="responder profile image"
+                src={dialogue.image}
+              ></img>
+            )}
           </div>
-          <div className={'them'}>{dialogue.answer}</div>
+          <div className={'them'}>
+            {dialogue.answer}
+            <button onClick={() => toggleSpeech(dialogue.answer, dialogue.voice)}>
+              {isReading ? 'Stop' : 'Read'}
+            </button>
+          </div>
         </div>
       </div>
     );
   });
+
+  // Function to toggle speech synthesis
+  function toggleSpeech(text, voiceName) {
+    if (isReading) {
+      // If currently reading, stop speech synthesis
+      window.speechSynthesis.cancel();
+    } else {
+      // If not currently reading, start speech synthesis
+      speak(text, voiceName);
+    }
+    // Toggle the reading state
+    setIsReading(!isReading);
+  }
+
+  // Function to speak text using speech synthesis
+  function speak(text, voiceName) {
+    const synth = window.speechSynthesis;
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    // Retrieve the desired voice
+    const voice = getVoices(voiceName);
+
+    // Set the voice for the utterance
+    utterance.voice = voice;
+
+    if (!voice) {
+      setTimeout(() => {
+        speak(text, voiceName); // Call speak again after a brief delay
+      }, 500); // Adjust the delay time as needed
+      return;
+    }
+    // Speak the text
+    synth.speak(utterance);
+
+    // Listen for the end of speech
+    utterance.onend = () => {
+      // When speech ends, update the button label
+      setIsReading(false); // Set reading state to false
+    };
+
+    // Update the button label immediately
+    setIsReading(true); // Set reading state to true
+  }
+
+  // Function to retrieve voices
+  function getVoices(voiceName) {
+    const synth = window.speechSynthesis;
+    // Get all available voices
+    const voices = synth.getVoices();
+
+    // Find the desired voice by name
+    const desiredVoice = voices.find(voice => voice.name === voiceName);
+
+    // Return the desired voice or the default voice if not found
+    return desiredVoice ? desiredVoice : synth.getVoices()[0];
+  }
 
   let content;
   if (ecaTypes.length > 0) {

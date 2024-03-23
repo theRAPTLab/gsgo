@@ -41,7 +41,8 @@ function ECAManager({ showECAChat }) {
             utterance: '',
             answer: eca.initialMessage,
             responder: eca.label,
-            image: eca.profileImage
+            image: eca.profileImage,
+            voice: eca.profileVoice
           });
         }
       });

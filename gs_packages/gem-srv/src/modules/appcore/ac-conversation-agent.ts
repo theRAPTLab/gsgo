@@ -21,7 +21,8 @@ STATE.initializeState({
       'label': '',
       'name': '',
       'initialMessage': '',
-      'profileImage': ''
+      'profileImage': '',
+      'profileVoice': ''
     }
   ]
 });
@@ -45,7 +46,7 @@ function GetECATypes(): TConversationAgent[] | null {
   let ecaTypesWithImagePath: TConversationAgent[] = [];
   // there is at least one ECA type for the project
   if (ecaTypes[0].name !== '') {
-    ecaTypes.forEach((ecaType) => {
+    ecaTypes.forEach(ecaType => {
       if (ecaType.profileImage) {
         // add the image path to the profile image property
         ecaTypesWithImagePath.push({
@@ -54,7 +55,7 @@ function GetECATypes(): TConversationAgent[] | null {
         });
       } else {
         // if there is no profileImage property, leave the ecaType as is
-        ecaTypesWithImagePath.push({...ecaType});
+        ecaTypesWithImagePath.push({ ...ecaType });
       }
     });
     return ecaTypesWithImagePath;
