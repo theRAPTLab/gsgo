@@ -118,8 +118,11 @@ function ECAForm({ messages, onNewMessage, ecaTypes }) {
             )}
           </div>
           <div className={'them'}>
-            {dialogue.answer}
-            <button onClick={() => toggleSpeech(dialogue.answer, dialogue.voice)}>
+            {dialogue.answer}{' '}
+            <button
+              onClick={() => toggleSpeech(dialogue.answer, dialogue.voice)}
+              style={{ width: '60px' }}
+            >
               {isReading ? 'Stop' : 'Read'}
             </button>
           </div>
