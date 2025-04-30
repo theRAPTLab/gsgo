@@ -57,7 +57,7 @@ class IUPack extends SM_Feature {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
     super.decorate(agent);
-    this.featAddProp(agent, 'joyceArray', new SM_Array());
+    this.featAddProp(agent, 'globalArray', new SM_Array());
     this.featAddProp(agent, 'logStringText', new SM_String('INIT'));
     agent.prop.IU.logStringText.setTo('INIT');
   }
@@ -93,12 +93,12 @@ class IUPack extends SM_Feature {
 
     arrayMethods.forEach(methodName => {
       this.featAddMethod(methodName, (agent, ...args) => {
-        const joyceArray = agent.prop.IU.joyceArray;
+        const globalArray = agent.prop.IU.globalArray;
         if (
-          joyceArray instanceof SM_Array &&
-          typeof joyceArray[methodName] === 'function'
+          globalArray instanceof SM_Array &&
+          typeof globalArray[methodName] === 'function'
         ) {
-          return joyceArray[methodName](...args);
+          return globalArray[methodName](...args);
         }
         console.error(`Invalid method or SM_Array: ${methodName}`);
         return null;
@@ -181,7 +181,7 @@ class IUPack extends SM_Feature {
    *  the name parameter in each methodSignature */
   static Symbols: TSymbolData = {
     props: {
-      joyceArray: SM_Array.Symbolize(),
+      globalArray: SM_Array.Symbolize(),
       logStringText: SM_String.SymbolizeCustom({
         setTo: ['logStringText:string']
       })
