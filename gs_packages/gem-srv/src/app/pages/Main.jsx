@@ -558,7 +558,11 @@ class MissionControl extends React.Component {
         </label>
         <label>
           Log:
-          <input type="checkbox" onChange={this.UpdateLogSetting} />
+          <input
+            type="checkbox"
+            checked={true}
+            onChange={this.UpdateLogSetting}
+          />
         </label>
         &emsp;
       </div>
