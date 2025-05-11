@@ -96,6 +96,79 @@ export class SM_Array extends SM_Object {
     return null;
   }
 
+  // Get a random item from the array
+  getRandom(): any {
+    if (this.arrayValue.length === 0) {
+      console.error('Cannot get a random item from an empty array.');
+      return null;
+    }
+    const randomIndex = Math.floor(Math.random() * this.arrayValue.length);
+    return this.arrayValue[randomIndex];
+  }
+
+  // Get a random item from the array, starting at `startIndex` and stepping by `offset`
+  getRandomIndexed(startIndex: number, offset: number): any {
+    if (this.arrayValue.length === 0) {
+      console.error('Cannot get a random item from an empty array.');
+      return null;
+    }
+
+    if (startIndex < 0 || offset <= 0 || startIndex >= this.arrayValue.length) {
+      console.error('Invalid startIndex or offset.');
+      return null;
+    }
+
+    const candidates: any[] = [];
+
+    for (let i = startIndex; i < this.arrayValue.length; i += offset) {
+      candidates.push(this.arrayValue[i]);
+    }
+
+    if (candidates.length === 0) {
+      console.error('No candidates found with given startIndex and offset.');
+      return null;
+    }
+
+    const randomIndex = Math.floor(Math.random() * candidates.length);
+    return candidates[randomIndex];
+  }
+
+  getRandomIndex(startIndex: number, offset: number): number {
+    //console.log('JOYCE getRandomIndex', startIndex, offset);
+    if (this.arrayValue.length === 0) {
+      console.error('Cannot get a random item from an empty array.');
+      return -1; // Return -1 for an empty array as a way to indicate an invalid index.
+    }
+
+    // Create a list of indices that are valid based on startIndex and offset
+    const validIndices: number[] = [];
+    for (let i = startIndex; i < this.arrayValue.length; i += offset) {
+      /*
+      console.log(
+        'Index ',
+        i + offset - 1,
+        'used before = ',
+        this.arrayValue[i + offset - 1]
+      );
+      */
+      if (this.arrayValue[i + offset - 1] === false) {
+        validIndices.push(i);
+      }
+    }
+
+    // If there are no valid indices, return -1
+    if (validIndices.length === 0) {
+      console.error('No valid indices found.');
+      return -1;
+    }
+    //console.log('Valid Indices', validIndices);
+    // Pick a random index from the valid indices
+    const randomIndex =
+      validIndices[Math.floor(Math.random() * validIndices.length)];
+    //console.log('Random Index Chosen', randomIndex);
+    return randomIndex;
+  }
+
   // Clear the array
   clear(): SM_Array {
     this.arrayValue = [];
@@ -120,6 +193,18 @@ export class SM_Array extends SM_Object {
       console.error(`Index ${index} is out of bounds.`);
     }
     return this;
+  }
+
+  // Replace an item at a specific index and return true if successful, false otherwise
+  setAndCheck(index: number, value: any): boolean {
+    //console.log('SET AND CHECK', index, value);
+    if (index >= 0 && index < this.arrayValue.length) {
+      this.arrayValue[index] = value; // Modify the array at the given index
+      return true; // Return true indicating the array was successfully modified
+    } else {
+      console.error(`Index ${index} is out of bounds.`);
+      return false; // Return false if the index is out of bounds
+    }
   }
 
   /// Additional Array Methods /////////////////////////////////////////////////
@@ -248,6 +333,19 @@ export class SM_Array extends SM_Object {
         info: 'Returns the item at the specified index.',
         returns: 'item:identifier'
       },
+      getRandom: {
+        info: 'Returns a random item from the list.',
+        returns: 'item:identifier'
+      },
+      getRandomIndexed: {
+        args: ['startIndex:number', 'offset:number'],
+        info: 'Returns a random item from the list, starting at the specified index and stepping by the offset.',
+        returns: 'item:identifier'
+      },
+      getRandomIndex: {
+        args: ['startIndex:number', 'offset:number'],
+        returns: 'index:number'
+      },
       clear: {
         info: 'Clears the list.'
       },
@@ -264,6 +362,10 @@ export class SM_Array extends SM_Object {
       set: {
         args: ['index:number', 'value:identifier'],
         info: 'Replaces the item at the specified index with a new value.'
+      },
+      setAndCheck: {
+        args: ['index:number', 'value:identifier'],
+        info: 'Replaces the item at the specified index with a new value and returns true if successful.'
       },
       sort: {
         args: ['compareFn:identifier'],
