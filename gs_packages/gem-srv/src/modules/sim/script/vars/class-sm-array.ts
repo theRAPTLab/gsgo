@@ -261,7 +261,7 @@ export class SM_Array extends SM_Object {
   }
 
   filterByPosition(startIndex: number, offset: number): SM_Array {
-    console.log('FILTER BY POSITION startIndex:', startIndex, 'offset:', offset);
+    //console.log('FILTER BY POSITION startIndex:', startIndex, 'offset:', offset);
     if (startIndex < 0 || startIndex >= this.arrayValue.length || offset <= 0) {
       console.error(
         'Invalid startIndex or offset. startIndex must be within array bounds, and offset must be positive.'
@@ -274,7 +274,7 @@ export class SM_Array extends SM_Object {
     );
 
     this.arrayValue = filtered;
-    console.log('RESULT', this.arrayValue);
+    //console.log('RESULT', this.arrayValue);
     return this;
   }
 
