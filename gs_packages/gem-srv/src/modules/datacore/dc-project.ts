@@ -66,6 +66,7 @@ let AUTOTIMER: number;
  *  to the server, and the server will update the *.gemproj file. */
 async function m_ProjectFileWrite(projId: string, project: TProject) {
   // REVIEW: Should the url be parameterized, e.g. 'localhost' might be remote?
+  console.log(JSON.stringify(project));
   const response = await fetch(`http://localhost/assets-update/${projId}`, {
     method: 'PUT',
     body: JSON.stringify(project),
@@ -170,7 +171,7 @@ function UpdateProjectData(projData) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// This is used to test the server's ability to handle a project file write.
 function putproject() {
-  console.log('putproject');
+  //console.log('putproject');
   fetch('http://localhost/assets-update/aquatic', {
     method: 'PUT',
     body: JSON.stringify({

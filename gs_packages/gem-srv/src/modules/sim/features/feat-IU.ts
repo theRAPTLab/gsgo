@@ -73,6 +73,7 @@ class IUPack extends SM_Feature {
   addArrayMethods() {
     const arrayMethods = [
       'add',
+      'addAndCheck',
       'remove',
       'get',
       'getRandom',
@@ -92,7 +93,8 @@ class IUPack extends SM_Feature {
       'sortNumericDescending',
       'sortStringAscending',
       'sortStringDescending',
-      'filterByPosition'
+      'filterByPosition',
+      'filterByValidFlag'
     ];
 
     arrayMethods.forEach(methodName => {
@@ -199,6 +201,7 @@ class IUPack extends SM_Feature {
       'callFunction': { args: ['functionName:string'] },
       // Add array methods here for symbolization
       'add': { args: ['item:identifier'] },
+      'addAndCheck': { args: ['item:identifier'] },
       'remove': { args: ['index:number'] },
       'get': { args: ['index:number'] },
       'getRandom': {},
@@ -233,6 +236,10 @@ class IUPack extends SM_Feature {
         info: 'Sorts the array in string descending order.'
       },
       'filterByPosition': {
+        args: ['position:number'],
+        returns: 'array:identifier'
+      },
+      'filterByValidFlag': {
         args: ['position:number'],
         returns: 'array:identifier'
       }

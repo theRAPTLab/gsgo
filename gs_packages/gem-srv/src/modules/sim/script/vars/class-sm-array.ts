@@ -2,6 +2,7 @@ import merge from 'deepmerge';
 import SM_Object from 'lib/class-sm-object';
 import { RegisterPropType } from 'modules/datacore';
 import { SM_Boolean } from './class-sm-boolean';
+import { array } from 'prop-types';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 export class SM_Array extends SM_Object {
@@ -75,6 +76,12 @@ export class SM_Array extends SM_Object {
   add(item: any): SM_Array {
     this.arrayValue.push(item);
     return this;
+  }
+
+  addAndCheck(item: any): boolean {
+    console.log('ADD AND CHECK', item);
+    this.arrayValue.push(item);
+    return true;
   }
 
   // Remove an item by index
@@ -261,7 +268,9 @@ export class SM_Array extends SM_Object {
   }
 
   filterByPosition(startIndex: number, offset: number): SM_Array {
-    //console.log('FILTER BY POSITION startIndex:', startIndex, 'offset:', offset);
+    this.filterByValidFlag(offset - 1);
+    console.log('FILTER BY POSITION startIndex:', startIndex, 'offset:', offset);
+    startIndex--;
     if (startIndex < 0 || startIndex >= this.arrayValue.length || offset <= 0) {
       console.error(
         'Invalid startIndex or offset. startIndex must be within array bounds, and offset must be positive.'
@@ -274,7 +283,34 @@ export class SM_Array extends SM_Object {
     );
 
     this.arrayValue = filtered;
-    //console.log('RESULT', this.arrayValue);
+    console.log('RESULT', this.arrayValue);
+    return this;
+  }
+
+  filterByValidFlag(groupSize: number): SM_Array {
+    console.log('Original array:', this.arrayValue);
+    const result = [];
+
+    let i = 1; // Skip index 0, start from 1
+
+    while (i < this.arrayValue.length) {
+      const group = this.arrayValue.slice(i, i + groupSize);
+      const flag = this.arrayValue[i + groupSize];
+
+      if (typeof flag !== 'boolean') {
+        console.error(`Expected boolean at index ${i + groupSize}, got:`, flag);
+        break;
+      }
+
+      if (flag === true) {
+        result.push(...group, flag); // Keep group + its flag
+      }
+
+      i += groupSize + 1; // Move to the next group
+    }
+
+    this.arrayValue = result;
+    console.log('Filtered array:', this.arrayValue);
     return this;
   }
 
@@ -323,6 +359,10 @@ export class SM_Array extends SM_Object {
       add: {
         args: ['item:identifier'],
         info: 'Adds an item to the list.'
+      },
+      addAndCheck: {
+        args: ['item:identifier'],
+        info: 'Adds an item to the list and returns true if success.'
       },
       remove: {
         args: ['index:number'],
@@ -390,6 +430,10 @@ export class SM_Array extends SM_Object {
       filterByPosition: {
         args: ['startIndex:number', 'offset:number'],
         info: 'Filters the array to keep elements starting at the specified index and including every nth element based on the offset.'
+      },
+      filterByValidFlag: {
+        args: ['groupSize:number'],
+        info: 'Filters the array to remove sets not used, based on boolean at the end of the set.'
       },
       clone: {
         info: 'Returns a new list that is a copy of the current list.'
