@@ -325,6 +325,96 @@ export class SM_Array extends SM_Object {
     return `JOYCE2 [${this.arrayValue.join(', ')}]`;
   }
 
+  /**
+   * Filters out song attribute groups where the boolean flag is false,
+   * sorts the remaining by two criteria (by index and direction),
+   * and mutates the array to retain only the two selected attributes per group.
+   */
+  filterAndSortSongs(
+    attrCount: number,
+    flagIndex: number,
+    primarySortIndex: number,
+    primaryAsc: boolean,
+    secondarySortIndex: number,
+    secondaryAsc: boolean
+  ): SM_Array {
+    console.log(
+      'JOYCE filterAndSortSongs',
+      attrCount,
+      flagIndex,
+      primarySortIndex,
+      primaryAsc,
+      secondarySortIndex,
+      secondaryAsc
+    );
+
+    const result = [];
+
+    // Skip header (e.g., 'Song Attributes' at index 0)
+    let i = 1;
+
+    while (i + attrCount <= this.arrayValue.length) {
+      const group = this.arrayValue.slice(i, i + attrCount);
+      const flag = group[flagIndex];
+
+      if (typeof flag !== 'boolean') {
+        console.error(
+          `Expected boolean at index ${flagIndex} in group, got:`,
+          flag
+        );
+        i += attrCount;
+        continue;
+      }
+
+      if (flag === true) {
+        result.push(group);
+      }
+
+      i += attrCount;
+    }
+
+    // Sort by primary and secondary criteria
+    result.sort((a, b) => {
+      const primaryA = a[primarySortIndex];
+      const primaryB = b[primarySortIndex];
+      const secondaryA = a[secondarySortIndex];
+      const secondaryB = b[secondarySortIndex];
+
+      let cmp = 0;
+
+      if (typeof primaryA === 'string' && typeof primaryB === 'string') {
+        cmp = primaryA.localeCompare(primaryB);
+      } else {
+        cmp = primaryA - primaryB;
+      }
+
+      if (!primaryAsc) cmp *= -1;
+
+      if (cmp === 0) {
+        if (typeof secondaryA === 'string' && typeof secondaryB === 'string') {
+          cmp = secondaryA.localeCompare(secondaryB);
+        } else {
+          cmp = secondaryA - secondaryB;
+        }
+
+        if (!secondaryAsc) cmp *= -1;
+      }
+
+      return cmp;
+    });
+
+    // Keep only the two sorted attributes and flatten
+    const trimmed = result
+      .map(group => [group[primarySortIndex], group[secondarySortIndex]])
+      .flat();
+
+    // Mutate internal array
+    this.arrayValue = trimmed;
+    console.log('Filtered and sorted array:', this.arrayValue);
+    // Return the modified array
+    return this;
+  }
+
   /// Symbolization and Metadata //////////////////////////////////////////////
 
   /** Static method to return symbol data */
@@ -445,6 +535,17 @@ export class SM_Array extends SM_Object {
       size: {
         info: 'Returns the number of items in the list.',
         returns: 'size:number'
+      },
+      filterAndSortSongs: {
+        args: [
+          'attrCount:number',
+          'flagIndex:number',
+          'primarySortIndex:number',
+          'primaryAsc:boolean',
+          'secondarySortIndex:number',
+          'secondaryAsc:boolean'
+        ],
+        info: 'Filters and sorts grouped song attributes by availability and two sort criteria, keeping only those fields.'
       }
     }
   };

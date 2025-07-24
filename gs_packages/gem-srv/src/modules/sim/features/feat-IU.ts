@@ -94,7 +94,8 @@ class IUPack extends SM_Feature {
       'sortStringAscending',
       'sortStringDescending',
       'filterByPosition',
-      'filterByValidFlag'
+      'filterByValidFlag',
+      'filterAndSortSongs'
     ];
 
     arrayMethods.forEach(methodName => {
@@ -242,6 +243,18 @@ class IUPack extends SM_Feature {
       'filterByValidFlag': {
         args: ['position:number'],
         returns: 'array:identifier'
+      },
+      'filterAndSortSongs': {
+        args: [
+          'attrCount:number',
+          'flagIndex:number',
+          'primarySortIndex:number',
+          'primaryAsc:boolean',
+          'secondarySortIndex:number',
+          'secondaryAsc:boolean'
+        ],
+        returns: 'array:identifier',
+        info: 'Filters and sorts grouped song attributes by availability and two sort fields, then flattens to those fields only.'
       }
     }
   };
