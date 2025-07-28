@@ -7,7 +7,7 @@ import { array } from 'prop-types';
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 export class SM_Array extends SM_Object {
   private arrayValue: any[]; // Internal array storage
-
+  private flattened: boolean = false; // Flag to indicate if the array is flattened
   constructor(initial?: string | any[]) {
     super();
     this.meta.type = Symbol.for('SM_Array');
@@ -347,19 +347,31 @@ export class SM_Array extends SM_Object {
       secondarySortIndex,
       secondaryAsc
     );
+    if (this.flattened) {
+      return this; // No need to filter and sort if already flattened
+    }
+    // Step 1: Remove header if present
+    if (this.arrayValue.length > 0 && typeof this.arrayValue[0] === 'string') {
+      console.log('Removing header:', this.arrayValue[0]);
+      this.arrayValue = this.arrayValue.slice(1);
+    }
+
+    // Step 2: Adjust indices (user provided 1-based indexes)
+    const localFlagIndex = flagIndex - 1;
+    const localPrimarySortIndex = primarySortIndex - 1;
+    const localSecondarySortIndex = secondarySortIndex - 1;
 
     const result = [];
 
-    // Skip header (e.g., 'Song Attributes' at index 0)
-    let i = 1;
-
+    // Step 3: Iterate over song groups
+    let i = 0;
     while (i + attrCount <= this.arrayValue.length) {
       const group = this.arrayValue.slice(i, i + attrCount);
-      const flag = group[flagIndex];
+      const flag = group[localFlagIndex];
 
       if (typeof flag !== 'boolean') {
         console.error(
-          `Expected boolean at index ${flagIndex} in group, got:`,
+          `Expected boolean at localFlagIndex ${localFlagIndex} in group, got:`,
           flag
         );
         i += attrCount;
@@ -373,12 +385,12 @@ export class SM_Array extends SM_Object {
       i += attrCount;
     }
 
-    // Sort by primary and secondary criteria
+    // Step 4: Sort by primary and secondary keys
     result.sort((a, b) => {
-      const primaryA = a[primarySortIndex];
-      const primaryB = b[primarySortIndex];
-      const secondaryA = a[secondarySortIndex];
-      const secondaryB = b[secondarySortIndex];
+      const primaryA = a[localPrimarySortIndex];
+      const primaryB = b[localPrimarySortIndex];
+      const secondaryA = a[localSecondarySortIndex];
+      const secondaryB = b[localSecondarySortIndex];
 
       let cmp = 0;
 
@@ -403,15 +415,17 @@ export class SM_Array extends SM_Object {
       return cmp;
     });
 
-    // Keep only the two sorted attributes and flatten
+    // Step 5: Extract sorted values
     const trimmed = result
-      .map(group => [group[primarySortIndex], group[secondarySortIndex]])
+      .map(group => [
+        group[localPrimarySortIndex],
+        group[localSecondarySortIndex]
+      ])
       .flat();
 
-    // Mutate internal array
     this.arrayValue = trimmed;
     console.log('Filtered and sorted array:', this.arrayValue);
-    // Return the modified array
+    this.flattened = true; // Mark as flattened
     return this;
   }
 
