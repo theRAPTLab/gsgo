@@ -16,7 +16,7 @@ const MSGR = require('./client-messager');
 const DBG = false;
 const PR = PROMPTS.makeStyleFormatter('LOGGER');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let LOGGING_ENABLED = false; // default
+let LOGGING_ENABLED = true; // default
 
 /// LOG ASSET ERRORS //////////////////////////////////////////////////////////
 /** API: used by asset manager if it's unable to load an asset */
