@@ -156,7 +156,6 @@ LOG.StartLogging = StartLogging;
 LOG.PacketInspector = pkt => {
   // log to separate real-time file
   // ONLY log NET:DISPLAY_LIST updates
-  console.log('JOYCE LOGGER');
   if (LOGGING_ENABLED && pkt.msg === 'NET:DISPLAY_LIST')
     RTLogLine(pkt.s_uaddr, pkt.msg, JSON.stringify(pkt.data));
 };
